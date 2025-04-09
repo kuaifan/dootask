@@ -1,7 +1,7 @@
 <template>
-    <div id="app">
+    <div id="app" class="app-view" :style="appStyle">
         <keep-alive>
-            <router-view class="child-view" @hook:mounted.once="onRouterViewMounted"></router-view>
+            <router-view class="child-view" :style="childStyle" @hook:mounted.once="onRouterViewMounted"></router-view>
         </keep-alive>
 
         <!--任务操作-->
@@ -30,15 +30,31 @@
 
         <!--引导页-->
         <GuidePage/>
+
+        <!--返回效果-->
+        <MobileBack/>
+
+        <!--移动端通知-->
+        <MobileNotification/>
     </div>
 </template>
 
 
 <style lang="scss" scoped>
+.app-view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
 .child-view {
     position: absolute;
-    width: 100%;
-    min-height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    will-change: transform;
     transition: all .3s cubic-bezier(.55, 0, .1, 1);
 }
 </style>
@@ -51,6 +67,8 @@ import NetworkException from "./components/NetworkException";
 import GuidePage from "./components/GuidePage";
 import TaskOperation from "./pages/manage/components/TaskOperation";
 import MeetingManager from "./pages/manage/components/MeetingManager";
+import MobileNotification from "./components/Mobile/Notification.vue";
+import MobileBack from "./components/Mobile/Back.vue";
 import DropdownMenu from "./components/DropdownMenu";
 import {ctrlPressed} from "./mixins/ctrlPressed";
 import {mapState} from "vuex";
@@ -60,6 +78,7 @@ export default {
     mixins: [ctrlPressed],
 
     components: {
+        MobileBack, MobileNotification,
         AuthException,
         MeetingManager,
         DropdownMenu,
@@ -74,8 +93,9 @@ export default {
     data() {
         return {
             appInter: null,
+            appBackgroundColor: "#f8f8f8",
             countDown: Math.min(30, 60 - $A.daytz().second()),
-            lastCheckUpgradeYmd: $A.daytz().format('YYYY-MM-DD')
+            lastCheckUpgradeYmd: $A.daytz().format('YYYY-MM-DD'),
         }
     },
 
@@ -95,14 +115,28 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'themeConf', 'windowOrientation']),
+        ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize']),
+
+        appStyle({appBackgroundColor}) {
+            return {
+                backgroundColor: appBackgroundColor,
+            }
+        },
+
+        childStyle({safeAreaSize}) {
+            return {
+                top: `${safeAreaSize.top}px`,
+                bottom: `${safeAreaSize.bottom}px`,
+            }
+        },
     },
 
     watch: {
         '$route': {
-            handler(to) {
-                this.$store.state.routeName = to.name
-                this.$store.state.routePath = to.path
+            handler({name, path, params}) {
+                this.$store.state.routeName = name
+                this.$store.state.routePath = path
+                this.$store.state.mobileTabbar = (name === 'manage-project' && !/^\d+$/.test(params.projectId)) || ['manage-dashboard', 'manage-messenger', 'manage-application'].includes(name);
             },
             immediate: true,
         },

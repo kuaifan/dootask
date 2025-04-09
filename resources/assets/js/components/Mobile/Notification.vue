@@ -14,6 +14,8 @@
 </template>
 
 <script>
+import emitter from "../../store/events";
+
 export default {
     name: "MobileNotification",
     data() {
@@ -31,7 +33,12 @@ export default {
         };
     },
 
+    mounted() {
+        emitter.on('openMobileNotification', this.open);
+    },
+
     beforeDestroy() {
+        emitter.off('openMobileNotification', this.open);
         this.timer && clearTimeout(this.timer);
         this.show = false;
     },

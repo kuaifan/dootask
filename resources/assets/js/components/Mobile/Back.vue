@@ -10,12 +10,6 @@ import microApp from '@micro-zoe/micro-app'
 
 export default {
     name: "MobileBack",
-    props: {
-        showTabbar: {
-            type: Boolean,
-            default: false
-        },
-    },
 
     data() {
         return {
@@ -46,7 +40,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['fileLists', 'messengerSearchKey']),
+        ...mapState(['fileLists', 'messengerSearchKey', 'mobileTabbar']),
 
         style() {
             const offset = 135;
@@ -112,7 +106,7 @@ export default {
         },
 
         canBack() {
-            if (!this.showTabbar) {
+            if (!this.mobileTabbar) {
                 return true;
             }
             if (this.$Modal.visibles().length > 0) {

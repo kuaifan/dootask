@@ -1,5 +1,5 @@
 <template>
-    <div class="page-manage" :class="{'show-tabbar': showMobileTabbar, 'not-logged': userId <= 0}">
+    <div class="page-manage" :class="pageClass">
         <div class="manage-box-menu">
             <Dropdown
                 class="page-manage-menu-dropdown main-menu"
@@ -333,10 +333,8 @@
 
         <!--移动端选项卡-->
         <transition name="mobile-slide">
-            <MobileTabbar v-if="showMobileTabbar" @on-click="onTabbarClick"/>
+            <MobileTabbar v-if="mobileTabbar" @on-click="onTabbarClick"/>
         </transition>
-        <MobileBack :showTabbar="showMobileTabbar"/>
-        <MobileNotification ref="mobileNotification"/>
 
         <!-- okr明细 -->
         <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :datas="okrWindow"/>
@@ -357,8 +355,6 @@ import DrawerOverlay from "../components/DrawerOverlay";
 import MobileTabbar from "../components/Mobile/Tabbar";
 import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
-import MobileBack from "../components/Mobile/Back";
-import MobileNotification from "../components/Mobile/Notification";
 import longpress from "../directives/longpress";
 import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
@@ -385,8 +381,6 @@ export default {
         ApproveExport,
         TaskModal,
         DialogModal,
-        MobileNotification,
-        MobileBack,
         MobileTabbar,
         TaskAdd,
         Report,
@@ -518,12 +512,30 @@ export default {
 
             'okrWindow',
 
-            'formOptions'
+            'formOptions',
+
+            'mobileTabbar'
         ]),
 
         ...mapGetters(['dashboardTask']),
 
-        // okr路由
+        /**
+         * page className
+         * @param mobileTabbar
+         * @param userId
+         * @returns {{"show-tabbar", "not-logged": boolean}}
+         */
+        pageClass({mobileTabbar, userId}) {
+            return {
+                'show-tabbar': mobileTabbar,
+                'not-logged': userId <= 0
+            }
+        },
+
+        /**
+         * okr路由
+         * @returns {any|string}
+         */
         okrUrl() {
             return import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr")
         },
@@ -679,13 +691,6 @@ export default {
             return cacheTaskBrowse.filter(({userid}) => userid === userId).map(({id}) => {
                 return cacheTasks.find(task => task.id === id) || {}
             });
-        },
-
-        showMobileTabbar() {
-            if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
-                return true;
-            }
-            return ['manage-dashboard','manage-messenger', 'manage-application'].includes(this.routeName)
         },
     },
 
@@ -1077,14 +1082,14 @@ export default {
                 if (this.__notificationId === id) {
                     this.__notificationId = null
                     if (this.$isEEUiApp) {
-                        this.$refs.mobileNotification.open({
+                        emitter.emit('openMobileNotification', {
                             userid: userid,
                             title,
                             desc: body,
                             callback: () => {
                                 this.$store.dispatch('openDialog', dialog_id)
                             }
-                        })
+                        });
                     } else if (this.$Electron) {
                         this.$Electron.sendMessage('openNotification', {
                             icon: userimg || $A.originUrl('images/logo.png'),

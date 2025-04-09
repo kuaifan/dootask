@@ -21,7 +21,7 @@ export default {
     // 浏览器尺寸信息
     windowWidth: windowWidth,
     windowHeight: windowHeight,
-    safeAreaSize: {top: 0, bottom: 0, data: {}},   // 安全区域尺寸
+    safeAreaSize: {top: 0, bottom: 0, data: null},   // 安全区域尺寸
 
     // 浏览器窗口方向
     windowOrientation: windowOrientation,
@@ -54,6 +54,9 @@ export default {
     routeHistorys: [],
     routeHistoryLast: {},
     routeLoading: 0,
+
+    // 显示移动端Tabbar
+    mobileTabbar: false,
 
     // 请求时间
     callAt: [],

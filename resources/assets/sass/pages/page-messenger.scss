@@ -661,7 +661,7 @@ body.window-portrait {
     .page-messenger {
         .messenger-wrapper {
             .messenger-select {
-                position: fixed;
+                position: absolute;
                 top: 0;
                 left: 0;
                 width: 100%;
@@ -690,9 +690,7 @@ body.window-portrait {
                     }
                 }
                 .messenger-menu {
-                    border-top: 0;
-                    height: 60px;
-                    opacity: 0;
+                    display: none;
                 }
                 .messenger-list {
                     ul {
