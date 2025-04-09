@@ -685,7 +685,6 @@ export default {
                     });
                     break;
             }
-            this.meetingShow = false;
         },
         // 扫一扫
         scanResult(text) {
