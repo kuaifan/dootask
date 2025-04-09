@@ -1644,7 +1644,7 @@ export default {
             }
             //
             if (this.taskDetail.dialog_id) {
-                this.openDialogBefore(this.taskDetail.dialog_id, msgText)
+                this.openDialogBefore(this.taskDetail.dialog_id, msgText, onlyOpen)
                 return;
             }
             //
@@ -1662,7 +1662,7 @@ export default {
             }).then(async ({data}) => {
                 await this.$store.dispatch("saveTask", {id: data.id, dialog_id: data.dialog_id});
                 await this.$store.dispatch("saveDialog", data.dialog_data);
-                await this.openDialogBefore(data.dialog_id, msgText)
+                await this.openDialogBefore(data.dialog_id, msgText, onlyOpen)
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -1674,7 +1674,7 @@ export default {
             });
         },
 
-        async openDialogBefore(dialogId, msgText) {
+        async openDialogBefore(dialogId, msgText, onlyOpen) {
             if ($A.isSubElectron) {
                 await this.resizeDialog()
                 this.sendDialogMsg(msgText);
@@ -1683,19 +1683,22 @@ export default {
             this.$nextTick(() => {
                 if (this.windowPortrait) {
                     $A.onBlur();
-                    const transferData = {
-                        time: $A.dayjs().unix() + 10,
-                        msgRecord: this.msgRecord,
-                        msgFile: this.msgFile,
-                        msgText: typeof msgText === 'string' && msgText ? msgText : this.msgText,
-                        dialogId,
-                    };
-                    this.msgRecord = {};
-                    this.msgFile = [];
-                    this.msgText = "";
+                    const openSuccess = () => {
+                        const transferData = {
+                            time: $A.dayjs().unix() + 10,
+                            msgRecord: this.msgRecord,
+                            msgFile: this.msgFile,
+                            msgText: typeof msgText === 'string' && msgText ? msgText : this.msgText,
+                            dialogId,
+                        };
+                        this.msgRecord = {};
+                        this.msgFile = [];
+                        this.msgText = "";
+                        this.$store.state.dialogMsgTransfer = transferData
+                    }
                     this.$nextTick(_ => {
                         this.$store.dispatch('openDialog', dialogId).then(_ => {
-                            this.$store.state.dialogMsgTransfer = transferData
+                            !onlyOpen && openSuccess()
                         }).catch(({msg}) => {
                             $A.modalError(msg);
                         })
