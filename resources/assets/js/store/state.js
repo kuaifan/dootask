@@ -36,8 +36,8 @@ export default {
     },
 
     // 键盘状态（仅iOS）
-    keyboardType: null, // show|hide
-    keyboardHeight: 0,  // 键盘高度
+    keyboardShow: false,    // 键盘可见
+    keyboardHeight: 0,      // 键盘高度
 
     // 是否按下Ctrl/Command键
     isModKey: false,

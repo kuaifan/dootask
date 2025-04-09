@@ -988,7 +988,8 @@
 .chat-input-full-input {
     .ivu-modal {
         .ivu-modal-content {
-            margin-top: 46px;
+            margin-top: calc(var(--status-bar-height) + 46px) !important;
+            margin-bottom: 0 !important;
             border-top-left-radius: 18px !important;
             border-top-right-radius: 18px !important;
             .ivu-modal-body {

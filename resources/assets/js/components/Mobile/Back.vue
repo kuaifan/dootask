@@ -85,7 +85,9 @@ export default {
             const pageX = event.type === 'touchmove' ? event.targetTouches[0].pageX : event.pageX;
             const pageY = event.type === 'touchmove' ? event.targetTouches[0].pageY : event.pageY;
             if (typeof this.isScrolling === 'undefined') {
-                this.isScrolling = !!(this.isScrolling || Math.abs(pageY - this.touchesStart.y) > Math.abs(pageX - this.touchesStart.x));
+                const verticalMove = Math.abs(pageY - this.touchesStart.y);
+                const horizontalMove = Math.abs(pageX - this.touchesStart.x) * 1.5; // 可调整的阈值
+                this.isScrolling = verticalMove > horizontalMove;
             }
             if (this.isScrolling) {
                 this.isTouched = false;

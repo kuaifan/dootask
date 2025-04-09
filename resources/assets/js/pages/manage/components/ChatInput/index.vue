@@ -559,9 +559,10 @@ export default {
 
             'cacheTranscriptionLanguage',
             'cacheKeyboard',
-            'keyboardType',
+            'keyboardShow',
             'keyboardHeight',
             'isModKey',
+            'safeAreaSize',
         ]),
 
         ...mapGetters(['getDialogDraft', 'getDialogQuote']),
@@ -613,8 +614,8 @@ export default {
         },
 
         recordConvertFooterStyle() {
-            const {recordConvertFocus, keyboardType, keyboardHeight} = this;
-            return (recordConvertFocus && keyboardType === 'show' && keyboardHeight > 120) ? {
+            const {recordConvertFocus, keyboardShow, keyboardHeight} = this;
+            return (recordConvertFocus && keyboardShow && keyboardHeight > 120) ? {
                 alignItems: 'flex-start',
                 transform: 'translateY(12px)'
             } : {}
@@ -719,10 +720,12 @@ export default {
             return this.getDialogQuote(this.dialogId)?.type === 'update'
         },
 
-        chatInputBoxStyle({iOSDevices, fullInput, viewportHeight}) {
+        chatInputBoxStyle({iOSDevices, fullInput, keyboardShow, viewportHeight, safeAreaSize}) {
             const style = {}
-            if (iOSDevices && fullInput && viewportHeight > 0) {
-                style.height = Math.max(100, viewportHeight - 70) + 'px'
+            if (iOSDevices && fullInput && keyboardShow && viewportHeight > 0) {
+                style.height = Math.max(100, viewportHeight - 70 - safeAreaSize.top) + 'px'
+            } else {
+                style.paddingBottom = `${safeAreaSize.bottom}px`
             }
             return style
         }

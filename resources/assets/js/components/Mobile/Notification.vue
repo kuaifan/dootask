@@ -15,6 +15,7 @@
 
 <script>
 import emitter from "../../store/events";
+import {mapState} from "vuex";
 
 export default {
     name: "MobileNotification",
@@ -44,9 +45,11 @@ export default {
     },
 
     computed: {
-        notifyStyle() {
+        ...mapState(['safeAreaSize']),
+
+        notifyStyle({windowScrollY, safeAreaSize}) {
             return {
-                marginTop: this.$store.state.windowScrollY + 'px',
+                marginTop: (windowScrollY + safeAreaSize.top) + 'px',
             };
         },
     },
@@ -64,7 +67,7 @@ export default {
             this.show = true;
             this.timer && clearTimeout(this.timer);
             if (this.duration > 0) {
-                this.timer = setTimeout(this.close, this.duration)
+                // this.timer = setTimeout(this.close, this.duration)
             }
             $A.eeuiAppSendMessage({
                 action: 'setVibrate',

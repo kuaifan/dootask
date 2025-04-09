@@ -279,6 +279,10 @@ body {
         .ivu-modal {
             top: 100px;
             padding-bottom: 100px;
+            @media (max-width: 768px) {
+                top: 60px;
+                padding-bottom: 60px;
+            }
             @media (max-height: 900px) {
                 top: 35px;
                 padding-bottom: 35px;
@@ -364,6 +368,8 @@ body {
 
             .ivu-modal-content {
                 border-radius: 18px;
+                margin-top: var(--status-bar-height);
+                margin-bottom: var(--navigation-bar-height);
 
                 .ivu-modal-close {
                     .ivu-icon-ios-close {

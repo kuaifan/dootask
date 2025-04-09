@@ -61,7 +61,7 @@
 
         // 获取页面信息
         eeuiAppGetPageInfo(pageName) {
-            return this.eeuiModule()?.getPageInfo(pageName);
+            return this.eeuiModule()?.getPageInfo(pageName || "");
         },
 
         // 打开app新页面

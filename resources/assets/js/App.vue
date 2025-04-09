@@ -1,8 +1,15 @@
 <template>
-    <div id="app" class="app-view" :style="appStyle">
+    <div id="app" class="app-view">
+        <!--顶部状态栏-->
+        <div class="child-status-bar"></div>
+
+        <!--主路由视图-->
         <keep-alive>
-            <router-view class="child-view" :style="childStyle" @hook:mounted.once="onRouterViewMounted"></router-view>
+            <router-view class="child-view" @hook:mounted.once="onRouterViewMounted"/>
         </keep-alive>
+
+        <!--底部导航栏-->
+        <div class="child-navigation-bar"></div>
 
         <!--任务操作-->
         <TaskOperation/>
@@ -25,9 +32,6 @@
         <!--身份提示-->
         <AuthException/>
 
-        <!--网络提示-->
-        <NetworkException v-if="windowLandscape"/>
-
         <!--引导页-->
         <GuidePage/>
 
@@ -36,6 +40,9 @@
 
         <!--移动端通知-->
         <MobileNotification/>
+
+        <!--网络提示-->
+        <NetworkException v-if="windowLandscape"/>
     </div>
 </template>
 
@@ -47,15 +54,27 @@
     left: 0;
     right: 0;
     bottom: 0;
-}
-.child-view {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    will-change: transform;
-    transition: all .3s cubic-bezier(.55, 0, .1, 1);
+    display: flex;
+    flex-direction: column;
+
+    .child-status-bar {
+        flex-shrink: 0;
+        height: var(--status-bar-height);
+        background-color: var(--status-bar-color);
+    }
+
+    .child-navigation-bar {
+        flex-shrink: 0;
+        height: var(--navigation-bar-height);
+        background-color: var(--navigation-bar-color);
+    }
+
+    .child-view {
+        flex: 1;
+        height: 0;
+        will-change: transform;
+        transition: all .3s cubic-bezier(.55, 0, .1, 1);
+    }
 }
 </style>
 <script>
@@ -78,7 +97,8 @@ export default {
     mixins: [ctrlPressed],
 
     components: {
-        MobileBack, MobileNotification,
+        MobileBack,
+        MobileNotification,
         AuthException,
         MeetingManager,
         DropdownMenu,
@@ -93,7 +113,6 @@ export default {
     data() {
         return {
             appInter: null,
-            appBackgroundColor: "#f8f8f8",
             countDown: Math.min(30, 60 - $A.daytz().second()),
             lastCheckUpgradeYmd: $A.daytz().format('YYYY-MM-DD'),
         }
@@ -115,18 +134,31 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize']),
+        ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize', 'mobileTabbar']),
 
-        appStyle({appBackgroundColor}) {
-            return {
-                backgroundColor: appBackgroundColor,
+        statusColor({routeName}) {
+            if (!routeName) {
+                return null
             }
+            if (['manage-messenger', 'manage-project'].includes(routeName)) {
+                return '#f8f8f8'
+            }
+            if (routeName.startsWith('manage-setting')) {
+                return '#f8f8f8'
+            }
+            return null
         },
 
-        childStyle({safeAreaSize}) {
+        navigationColor({statusColor, mobileTabbar}) {
+            return statusColor || (mobileTabbar ? '#f8f8f8' : null)
+        },
+
+        rootStyle() {
             return {
-                top: `${safeAreaSize.top}px`,
-                bottom: `${safeAreaSize.bottom}px`,
+                '--status-bar-height': `${this.safeAreaSize.top}px`,
+                '--status-bar-color': this.statusColor || '#ffffff',
+                '--navigation-bar-height': `${this.safeAreaSize.bottom}px`,
+                '--navigation-bar-color': this.navigationColor || '#ffffff',
             }
         },
     },
@@ -178,6 +210,15 @@ export default {
                             url: $A.apiUrl('users/umeng/alias')
                         });
                     }
+                }
+            },
+            immediate: true
+        },
+
+        rootStyle: {
+            handler(style) {
+                for (const key in style) {
+                    document.documentElement.style.setProperty(key, style[key])
                 }
             },
             immediate: true
@@ -625,9 +666,9 @@ export default {
                 if (!$A.isJson(event)) {
                     return;
                 }
-                this.$store.state.keyboardType = event.keyboardType;
+                this.$store.state.keyboardShow = event.keyboardType === 'show';
                 this.$store.state.keyboardHeight = event.keyboardHeight;
-                $A.eeuiAppShakeToEditEnabled(this.$store.state.keyboardType === 'show')
+                $A.eeuiAppShakeToEditEnabled(this.$store.state.keyboardShow)
             }
             // 通知权限
             window.__onNotificationPermissionStatus = (ret) => {

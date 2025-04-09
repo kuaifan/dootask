@@ -338,14 +338,17 @@ const $preload = async () => {
             }
             return
         }
-        $A.eeuiAppGetSafeAreaInsets().then(data => {
-            const proportion = data.height / window.outerHeight
-            store.state.safeAreaSize = {
-                top: Math.round(data.top / proportion * 100) / 100,
-                bottom: Math.round(data.bottom / proportion * 100) / 100,
-                data
-            }
-        }).catch(console.warn)
+        const pageInfo = $A.eeuiAppGetPageInfo() || {};
+        if (pageInfo.pageName === 'firstPage') {
+            $A.eeuiAppGetSafeAreaInsets().then(data => {
+                const proportion = data.height / window.outerHeight
+                store.state.safeAreaSize = {
+                    top: Math.round(data.top / proportion * 100) / 100,
+                    bottom: Math.round(data.bottom / proportion * 100) / 100,
+                    data
+                }
+            }).catch(console.warn)
+        }
     }
 
     await store.dispatch("preload");

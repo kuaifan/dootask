@@ -143,7 +143,7 @@ export default {
     computed: {
         ...mapState([
             'themeName',
-            'keyboardType'
+            'keyboardShow'
         ]),
 
         isFullscreen({windowWidth}) {
@@ -248,7 +248,7 @@ export default {
         },
 
         onTouchstart() {
-            if (this.keyboardType === "show") {
+            if (this.keyboardShow) {
                 $A.eeuiAppKeyboardHide();
             }
         },

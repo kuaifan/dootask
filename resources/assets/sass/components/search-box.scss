@@ -6,7 +6,8 @@
             max-width: none;
 
             .ivu-modal-content {
-                margin-top: 46px;
+                margin-top: calc(var(--status-bar-height) + 46px);
+                margin-bottom: 0;
                 border-top-left-radius: 18px !important;
                 border-top-right-radius: 18px !important;
 
@@ -16,6 +17,7 @@
 
                         .search-list {
                             max-height: none;
+                            padding-bottom: var(--navigation-bar-height);
                         }
                     }
                 }
