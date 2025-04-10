@@ -66,6 +66,7 @@
                             :multiple-max="10"
                             :avatar-size="28"
                             :project-id="cascader[0]"
+                            :disabled-choice="updateData.assist_userids"
                             :add-icon="false"/>
                     </div>
                 </div>
@@ -78,6 +79,7 @@
                             :multiple-max="10"
                             :avatar-size="28"
                             :project-id="cascader[0]"
+                            :disabled-choice="updateData.owner_userids"
                             :add-icon="false"/>
                     </div>
                 </div>
@@ -130,12 +132,11 @@ export default {
             flowItemId: 0,
             ownerUserids: [],
             assistUserids: [],
-            updateData:{
+            updateData: {
                 flow: {},
                 owner_userids: [],
                 assist_userids: []
             }
-
         }
     },
 
