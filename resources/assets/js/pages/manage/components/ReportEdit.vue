@@ -178,8 +178,8 @@ export default {
                 this.prevCycleText = this.$L("上一周");
                 this.nextCycleText = this.$L("下一周");
             } else {
-                this.prevCycleText = this.$L("上一天");
-                this.nextCycleText = this.$L("下一天");
+                this.prevCycleText = this.$L("前一天");
+                this.nextCycleText = this.$L("后一天");
             }
             this.getTemplate();
         },
