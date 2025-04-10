@@ -36,10 +36,10 @@
         <GuidePage/>
 
         <!--返回效果-->
-        <MobileBack/>
+        <MobileBack v-if="isFirstPage"/>
 
         <!--移动端通知-->
-        <MobileNotification/>
+        <MobileNotification v-if="isFirstPage"/>
 
         <!--网络提示-->
         <NetworkException v-if="windowLandscape"/>
@@ -134,7 +134,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize', 'mobileTabbar']),
+        ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize', 'isFirstPage', 'mobileTabbar']),
 
         statusColor({routeName}) {
             if (!routeName) {

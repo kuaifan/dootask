@@ -339,7 +339,8 @@ const $preload = async () => {
             return
         }
         const pageInfo = $A.eeuiAppGetPageInfo() || {};
-        if (pageInfo.pageName === 'firstPage') {
+        store.state.isFirstPage = pageInfo.pageName === 'firstPage'
+        if (store.state.isFirstPage) {
             $A.eeuiAppGetSafeAreaInsets().then(data => {
                 const proportion = data.height / window.outerHeight
                 store.state.safeAreaSize = {

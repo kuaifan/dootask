@@ -23,6 +23,9 @@ export default {
     windowHeight: windowHeight,
     safeAreaSize: {top: 0, bottom: 0, data: null},   // 安全区域尺寸
 
+    // 是否第一个页面（eeui）
+    isFirstPage: false,
+
     // 浏览器窗口方向
     windowOrientation: windowOrientation,
     windowLandscape: windowOrientation === 'landscape', // 横屏
