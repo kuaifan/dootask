@@ -2,7 +2,7 @@
     <div class="page-messenger">
         <PageTitle :title="$L(tabActive==='dialog' ? '消息' : '通讯录')"/>
         <div class="messenger-wrapper">
-            <div class="messenger-select">
+            <div ref="select" class="messenger-select">
                 <div class="messenger-search">
                     <div class="search-wrapper">
                         <div class="search-pre">
@@ -164,84 +164,6 @@
                             {{$L(contactsKey ? `没有任何与"${contactsKey}"相关的结果` : `没有任何联系人`)}}
                         </li>
                     </ul>
-                    <div class="operate-position" :style="operateStyles" v-show="operateVisible">
-                        <Dropdown
-                            trigger="custom"
-                            transferClassName="scrollbar-hidden"
-                            :placement="windowLandscape ? 'bottom' : 'top'"
-                            :visible="operateVisible"
-                            @on-clickoutside="operateVisible = false"
-                            transfer>
-                            <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
-                            <DropdownMenu slot="list" class="messenger-dialog-operation">
-                                <template v-if="operateType==='dialog'">
-                                    <DropdownItem @click.native="handleDialogClick('top')">
-                                        <div class="item">
-                                            {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
-                                            <i class="taskfont" v-html="operateItem.top_at ? '&#xe7e3;' : '&#xe7e6;'"></i>
-                                        </div>
-                                    </DropdownItem>
-                                    <DropdownItem @click.native="handleDialogClick('read')">
-                                        <div class="item">
-                                            {{ $L($A.getDialogUnread(operateItem, true) > 0 ? '标记已读' : '标记未读') }}
-                                            <i class="taskfont" v-html="$A.getDialogUnread(operateItem, true) > 0 ? '&#xe7e8;' : '&#xe7e9;'"></i>
-                                        </div>
-
-                                    </DropdownItem>
-                                    <DropdownItem @click.native="handleDialogClick('silence')" :disabled="silenceDisabled(operateItem)">
-                                        <div class="item">
-                                            {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
-                                            <i class="taskfont" v-html="operateItem.silence ? '&#xe7eb;' : '&#xe7d7;'"></i>
-                                        </div>
-                                    </DropdownItem>
-                                    <DropdownItem v-if="$Electron" divided @click.native="handleDialogClick('single')">
-                                        <div class="item">
-                                            {{ $L('独立窗口显示') }}
-                                            <i class="taskfont">&#xe776;</i>
-                                        </div>
-                                    </DropdownItem>
-                                    <DropdownItem @click.native="handleDialogClick('hide')" :disabled="!!operateItem.top_at">
-                                        <div class="item">
-                                            {{ $L('不显示该会话') }}
-                                            <i class="taskfont">&#xe881;</i>
-                                        </div>
-                                    </DropdownItem>
-                                    <DropdownItem @click.native="handleDialogClick('color', c.color)" v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0"  v-if="k<6" >
-                                        <div class="item">
-                                            {{$L(c.name)}}
-                                            <i class="taskfont color" :style="{color:c.primary||'#ddd'}" v-html="c.color == (operateItem.color||'') ? '&#xe61d;' : '&#xe61c;'"></i>
-                                        </div>
-                                    </DropdownItem>
-                                </template>
-                                <template v-else>
-                                    <DropdownItem @click.native="handleUserClick('msg')">
-                                        <div class="item">
-                                            {{ $L('发送消息') }}
-                                            <i class="taskfont">&#xe6eb;</i>
-                                        </div>
-                                    </DropdownItem>
-                                    <DropdownItem @click.native="handleUserClick('meet')">
-                                        <div class="item">
-                                            {{ $L('发起会议') }}
-                                            <i class="taskfont">&#xe794;</i>
-                                        </div>
-                                    </DropdownItem>
-                                    <DropdownItem @click.native="handleUserClick('group')">
-                                        <div class="item">
-                                            {{ $L('创建群组') }}
-                                            <i class="taskfont">&#xe63f;</i>
-                                        </div>
-                                    </DropdownItem>
-                                    <DropdownItem @click.native="handleUserClick('avatar')">
-                                        <div class="item">
-                                            {{ $L('查看头像') }}
-                                            <i class="taskfont">&#xe7bc;</i>
-                                        </div>
-                                    </DropdownItem>
-                                </template>
-                            </DropdownMenu>
-                        </Dropdown>
-                    </div>
                 </Scrollbar>
                 <div class="messenger-menu">
                     <div class="menu-icon">
@@ -251,6 +173,84 @@
                     <div class="menu-icon">
                         <Icon @click="tabActive='contacts'" :class="{active:tabActive==='contacts'}" type="md-person" />
                     </div>
+                </div>
+                <div class="operate-position" :style="operateStyles" v-show="operateVisible">
+                    <Dropdown
+                        trigger="custom"
+                        transferClassName="scrollbar-hidden"
+                        :placement="windowLandscape ? 'bottom' : 'top'"
+                        :visible="operateVisible"
+                        @on-clickoutside="operateVisible = false"
+                        transfer>
+                        <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
+                        <DropdownMenu slot="list" class="messenger-dialog-operation">
+                            <template v-if="operateType==='dialog'">
+                                <DropdownItem @click.native="handleDialogClick('top')">
+                                    <div class="item">
+                                        {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
+                                        <i class="taskfont" v-html="operateItem.top_at ? '&#xe7e3;' : '&#xe7e6;'"></i>
+                                    </div>
+                                </DropdownItem>
+                                <DropdownItem @click.native="handleDialogClick('read')">
+                                    <div class="item">
+                                        {{ $L($A.getDialogUnread(operateItem, true) > 0 ? '标记已读' : '标记未读') }}
+                                        <i class="taskfont" v-html="$A.getDialogUnread(operateItem, true) > 0 ? '&#xe7e8;' : '&#xe7e9;'"></i>
+                                    </div>
+
+                                </DropdownItem>
+                                <DropdownItem @click.native="handleDialogClick('silence')" :disabled="silenceDisabled(operateItem)">
+                                    <div class="item">
+                                        {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
+                                        <i class="taskfont" v-html="operateItem.silence ? '&#xe7eb;' : '&#xe7d7;'"></i>
+                                    </div>
+                                </DropdownItem>
+                                <DropdownItem v-if="$Electron" divided @click.native="handleDialogClick('single')">
+                                    <div class="item">
+                                        {{ $L('独立窗口显示') }}
+                                        <i class="taskfont">&#xe776;</i>
+                                    </div>
+                                </DropdownItem>
+                                <DropdownItem @click.native="handleDialogClick('hide')" :disabled="!!operateItem.top_at">
+                                    <div class="item">
+                                        {{ $L('不显示该会话') }}
+                                        <i class="taskfont">&#xe881;</i>
+                                    </div>
+                                </DropdownItem>
+                                <DropdownItem @click.native="handleDialogClick('color', c.color)" v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0"  v-if="k<6" >
+                                    <div class="item">
+                                        {{$L(c.name)}}
+                                        <i class="taskfont color" :style="{color:c.primary||'#ddd'}" v-html="c.color == (operateItem.color||'') ? '&#xe61d;' : '&#xe61c;'"></i>
+                                    </div>
+                                </DropdownItem>
+                            </template>
+                            <template v-else>
+                                <DropdownItem @click.native="handleUserClick('msg')">
+                                    <div class="item">
+                                        {{ $L('发送消息') }}
+                                        <i class="taskfont">&#xe6eb;</i>
+                                    </div>
+                                </DropdownItem>
+                                <DropdownItem @click.native="handleUserClick('meet')">
+                                    <div class="item">
+                                        {{ $L('发起会议') }}
+                                        <i class="taskfont">&#xe794;</i>
+                                    </div>
+                                </DropdownItem>
+                                <DropdownItem @click.native="handleUserClick('group')">
+                                    <div class="item">
+                                        {{ $L('创建群组') }}
+                                        <i class="taskfont">&#xe63f;</i>
+                                    </div>
+                                </DropdownItem>
+                                <DropdownItem @click.native="handleUserClick('avatar')">
+                                    <div class="item">
+                                        {{ $L('查看头像') }}
+                                        <i class="taskfont">&#xe7bc;</i>
+                                    </div>
+                                </DropdownItem>
+                            </template>
+                        </DropdownMenu>
+                    </Dropdown>
                 </div>
             </div>
 
@@ -1060,9 +1060,9 @@ export default {
             this.operateVisible = false;
             this.operateItem = $A.isJson(item) ? item : {};
             this.$nextTick(() => {
-                const parentRect = this.$refs.list?.$el?.getBoundingClientRect() || {top: 0, left: 0}
+                const parentRect = this.$refs.select?.getBoundingClientRect() || {top: 0, left: 0}
                 this.operateStyles = {
-                    left: `${clientX - parentRect.left}px`,
+                    left: `${clientX}px`,
                     top: `${rect.top + this.windowScrollY - parentRect.top}px`,
                     height: rect.height + 'px',
                 }
