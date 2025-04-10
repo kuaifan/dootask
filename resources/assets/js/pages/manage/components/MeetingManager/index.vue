@@ -351,7 +351,15 @@ export default {
                 // App 直接使用新窗口打开会议
                 if ($A.isEEUiApp) {
                     loader(true);
-                    setTimeout(_ => loader(false), 1200)
+                    this.loadNum = 0
+                    this.loadTimer && clearInterval(this.loadTimer)
+                    this.loadTimer = setInterval(() => {
+                        if (this.addShow && ++this.loadNum < 10) {
+                            return
+                        }
+                        clearInterval(this.loadTimer)
+                        loader(false)
+                    }, 1000)
                     $A.eeuiAppSendMessage({
                         action: 'startMeeting',
                         meetingParams: {
