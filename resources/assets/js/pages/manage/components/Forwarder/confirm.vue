@@ -64,11 +64,11 @@
                 <ul class="radio-group">
                     <li v-if="aiUser.length > 0" :class="{selected: ainew}">
                         <Icon @click="onAinew" class="radio-icon" :type="ainew ? 'ios-checkmark-circle' : 'ios-radio-button-off'"/>
-                        <span class="radio-label">{{ $L('AI开启新会话') }}</span>
+                        <span @click="onAinew" class="radio-label">{{ $L('AI开启新会话') }}</span>
                     </li>
                     <li v-if="!senderHidden" :class="{selected: !sender}">
                         <Icon @click="onSender" class="radio-icon" :type="sender ? 'ios-radio-button-off' : 'ios-checkmark-circle'"/>
-                        <span class="radio-label">{{ $L('不显示原发送者信息') }}</span>
+                        <span @click="onSender" class="radio-label">{{ $L('不显示原发送者信息') }}</span>
                     </li>
                 </ul>
             </div>
@@ -135,8 +135,9 @@ export default {
             loading: false,
 
             message: '',    // 留言
-            ainew: true,    // 是否AI开启新会话
-            sender: true,   // 是否隐藏原发送者信息
+
+            ainew: $A.getStorageBoolean('forwarder.ainew', true),       // 是否AI开启新会话
+            sender: $A.getStorageBoolean('forwarder.sender', true),     // 是否隐藏原发送者信息
         }
     },
 
@@ -156,13 +157,17 @@ export default {
         value(val) {
             this.show = val;
         },
+        ainew(v) {
+            $A.setStorage('forwarder.ainew', v);
+        },
+        sender(v) {
+            $A.setStorage('forwarder.sender', v);
+        },
         show(val) {
             this.$emit('input', val);
             if (!val) {
                 this.loading = false;
                 this.message = '';
-                this.ainew = true;
-                this.sender = true;
             }
         }
     },
