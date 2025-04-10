@@ -155,6 +155,7 @@ export default {
 
         rootStyle() {
             return {
+                '--window-scroll-y': `${this.windowScrollY}px`,
                 '--status-bar-height': `${this.safeAreaSize.top}px`,
                 '--status-bar-color': this.statusColor || '#ffffff',
                 '--navigation-bar-height': `${this.safeAreaSize.bottom}px`,

@@ -273,6 +273,11 @@ body {
         }
     }
 
+    .ivu-notice,
+    .ivu-message {
+        margin-top: calc(var(--window-scroll-y) + var(--status-bar-height));
+    }
+
     .ivu-modal-wrap {
         overflow: overlay;
 

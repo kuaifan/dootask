@@ -67,7 +67,7 @@ export default {
             this.show = true;
             this.timer && clearTimeout(this.timer);
             if (this.duration > 0) {
-                // this.timer = setTimeout(this.close, this.duration)
+                this.timer = setTimeout(this.close, this.duration)
             }
             $A.eeuiAppSendMessage({
                 action: 'setVibrate',

@@ -66,7 +66,7 @@
                 <Scrollbar
                     ref="list"
                     class="messenger-list"
-                    :hide-bar="this.operateVisible"
+                    :hide-bar="operateVisible"
                     @touchstart.native="listTouch"
                     @on-scroll="listScroll">
                     <ul v-if="tabActive==='dialog'" ref="ul" class="dialog">
