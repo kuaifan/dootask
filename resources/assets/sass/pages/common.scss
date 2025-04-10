@@ -293,15 +293,6 @@ body {
                 padding-bottom: 35px;
             }
 
-            &.ivu-modal-fullscreen {
-                top: 0;
-                padding-bottom: 0;
-                .ivu-modal-content {
-                    border-radius: 0;
-                    box-shadow: none;
-                }
-            }
-
             .ivu-modal-header,
             .ivu-modal-footer {
                 border-color: transparent;
@@ -372,9 +363,9 @@ body {
             }
 
             .ivu-modal-content {
-                border-radius: 18px;
                 margin-top: var(--status-bar-height);
                 margin-bottom: var(--navigation-bar-height);
+                border-radius: 18px;
 
                 .ivu-modal-close {
                     .ivu-icon-ios-close {
@@ -389,6 +380,16 @@ body {
                             transform: rotate(-90deg);
                         }
                     }
+                }
+            }
+
+            &.ivu-modal-fullscreen {
+                top: 0;
+                padding-bottom: 0;
+
+                .ivu-modal-content {
+                    border-radius: 0;
+                    box-shadow: none;
                 }
             }
         }
@@ -821,16 +822,19 @@ body {
         &.common-drawer-overlay {
             overflow: hidden;
         }
-        &.common-drawer-modal{
-            .ivu-modal-body{
+
+        &.common-drawer-modal {
+            .ivu-modal-body {
                 padding: 0 !important;
-                .dialog-wrapper{
-                    &.inde-list{
+
+                .dialog-wrapper {
+                    &.inde-list {
                         border-radius: 0
                     }
                 }
             }
-            .ivu-modal-close{
+
+            .ivu-modal-close {
                 z-index: 3;
             }
         }

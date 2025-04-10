@@ -15,6 +15,10 @@ body {
                         overflow: hidden;
                     }
                 }
+
+                &.ivu-modal-fullscreen {
+                    background-color: #f8f8f8;
+                }
             }
         }
 

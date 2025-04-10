@@ -140,17 +140,20 @@ export default {
             if (!routeName) {
                 return null
             }
-            if (['manage-messenger', 'manage-project'].includes(routeName)) {
-                return '#f8f8f8'
-            }
-            if (routeName.startsWith('manage-setting')) {
+            if (['manage-messenger', 'manage-project'].includes(routeName) || routeName.startsWith('manage-setting')) {
                 return '#f8f8f8'
             }
             return null
         },
 
-        navigationColor({statusColor, mobileTabbar}) {
-            return statusColor || (mobileTabbar ? '#f8f8f8' : null)
+        navigationColor({routeName, mobileTabbar}) {
+            if (!routeName) {
+                return null
+            }
+            if (['manage-messenger', 'manage-project', 'manage-setting'].includes(routeName)) {
+                return '#f8f8f8'
+            }
+            return mobileTabbar ? '#f8f8f8' : null
         },
 
         rootStyle() {

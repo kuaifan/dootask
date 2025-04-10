@@ -10,7 +10,9 @@
         :beforeClose="beforeClose"
         fullscreen
         :class-name="modalClass">
-        <slot v-if="isFullscreen" />
+        <div v-if="isFullscreen" class="overlay-body">
+            <slot/>
+        </div>
         <DrawerOverlayView v-else
             :placement="transitionName"
             :size="size"
