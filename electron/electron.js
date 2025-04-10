@@ -58,7 +58,8 @@ let childWindow = [],
     mediaType = null,
     webTabWindow = null,
     webTabView = [],
-    webTabHeight = 40;
+    webTabHeight = 40,
+    webTabClosedByShortcut = false;
 
 let showState = {},
     onShowWindow = (win) => {
@@ -618,12 +619,15 @@ function createWebTabWindow(args) {
         })
 
         webTabWindow.on('close', event => {
-            if (!willQuitApp) {
-                closeWebTab(0)
-                event.preventDefault()
-            } else {
-                userConf.set('webTabWindow', webTabWindow.getBounds())
+            if (webTabClosedByShortcut) {
+                webTabClosedByShortcut = false
+                if (!willQuitApp) {
+                    closeWebTab(0)
+                    event.preventDefault()
+                    return
+                }
             }
+            userConf.set('webTabWindow', webTabWindow.getBounds())
         })
 
         webTabWindow.on('closed', () => {
@@ -650,6 +654,8 @@ function createWebTabWindow(args) {
             if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'r') {
                 reloadWebTab(0)
                 event.preventDefault()
+            } else if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'w') {
+                webTabClosedByShortcut = true
             } else if (utils.isMetaOrControl(input) && input.shift && input.key.toLowerCase() === 'i') {
                 devToolsWebTab(0)
             }
@@ -745,6 +751,8 @@ function createWebTabWindow(args) {
         if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'r') {
             browserView.webContents.reload()
             event.preventDefault()
+        } else if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'w') {
+            webTabClosedByShortcut = true
         } else if (utils.isMetaOrControl(input) && input.shift && input.key.toLowerCase() === 'i') {
             browserView.webContents.toggleDevTools()
         }
