@@ -767,6 +767,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     config.onCancel();
                 }
             };
+            $A.eeuiAppKeyboardHide()
             $A.Modal.confirm({
                 render: (h) => {
                     return h('div', [
@@ -840,6 +841,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     })
                 }
             }
+            $A.eeuiAppKeyboardHide()
             $A.Modal.confirm($A.modalConfig(config));
         },
 
@@ -851,6 +853,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 setTimeout(() => { $A.modalSuccess(config) }, millisecond);
                 return;
             }
+            $A.eeuiAppKeyboardHide()
             $A.Modal.success($A.modalConfig(config));
         },
 
@@ -862,6 +865,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 setTimeout(() => { $A.modalInfo(config) }, millisecond);
                 return;
             }
+            $A.eeuiAppKeyboardHide()
             $A.Modal.info($A.modalConfig(config));
         },
 
@@ -876,6 +880,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 setTimeout(() => { $A.modalWarning(config) }, millisecond);
                 return;
             }
+            $A.eeuiAppKeyboardHide()
             $A.Modal.warning($A.modalConfig(config));
         },
 
@@ -890,6 +895,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 setTimeout(() => { $A.modalError(config) }, millisecond);
                 return;
             }
+            $A.eeuiAppKeyboardHide()
             $A.Modal.error($A.modalConfig(config));
         },
 
@@ -897,6 +903,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
             if (msg === false) {
                 return;
             }
+            $A.eeuiAppKeyboardHide()
             alert($A.L(msg));
         },
 
@@ -936,6 +943,9 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
         },
 
         noticeSuccess(config) {
+            if (config === false) {
+                return;
+            }
             $A.Notice.success($A.noticeConfig(config));
         },
 
