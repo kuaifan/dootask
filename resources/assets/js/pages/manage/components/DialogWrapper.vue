@@ -41,7 +41,7 @@
                                 <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
                                     <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
                                 </template>
-                                <h2>{{dialogData.name}}</h2>
+                                <h2 class="user-select-auto">{{dialogData.name}}</h2>
                                 <em v-if="peopleNum > 0" @click="onDialogMenu('groupInfo')">({{peopleNum}})</em>
                                 <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
                                 <Tag v-if="dialogData.type === 'user' && approvaUserStatus" class="after" color="red" :fade="false">{{$L(approvaUserStatus)}}</Tag>
@@ -2360,14 +2360,19 @@ export default {
             if ($A.isIos()) {
                 this.tempRepeat && this.tempRepeat()
                 this.tempRepeat = $A.repeatWithCount(() => {
-                    this.$refs.footer.scrollIntoView({block: 'end'})
-                }, 50, 10)
+                    this.$refs.footer?.scrollIntoView({
+                        block: 'end',
+                        behavior: 'smooth'
+                    })
+                }, 500, 100, 3)
             }
         },
 
         onEventBlur() {
             this.focusTimer = setTimeout(_ => this.focusLazy = false, 10)
             this.$emit("on-blur")
+            //
+            this.tempRepeat && this.tempRepeat()
         },
 
         onEventMore(e) {

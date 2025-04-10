@@ -1348,17 +1348,14 @@ const timezone = require("dayjs/plugin/timezone");
         /**
          * 执行指定次数的定时任务，返回一个可以取消的对象
          * @param {Function} fn 要执行的函数
+         * @param {number} delay 首次执行的延迟时间(毫秒)
          * @param {number} interval 间隔时间(毫秒)
          * @param {number} times 执行次数
          * @returns {object} 包含 clear 方法的对象
          */
-        repeatWithCount(fn, interval, times) {
+        repeatWithCount(fn, delay, interval = 0, times = 0) {
             if (typeof fn !== 'function') {
                 return () => {}; // 返回空函数而不是null，保持返回类型一致
-            }
-
-            if (interval < 0 || times < 0) {
-                return () => {}; // 返回空函数
             }
 
             let count = 0;
@@ -1393,7 +1390,7 @@ const timezone = require("dayjs/plugin/timezone");
             };
 
             // 立即开始第一次执行
-            timer = setTimeout(execute, 0);
+            timer = setTimeout(execute, delay);
 
             // 直接返回clear函数
             return clear;
