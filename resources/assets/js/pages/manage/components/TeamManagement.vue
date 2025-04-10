@@ -643,18 +643,24 @@ export default {
                                 }, [h('div', this.$L('修改MAC地址'))])
                             ])
                         }
+                        dropdownItems.push(h('EDropdownItem', {
+                            props: {
+                                command: 'openDialog',
+                                divided: this.checkinMode
+                            },
+                        }, [h('div', this.$L('打开会话窗口'))]));
                         if (identity.includes('admin')) {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'clearadmin',
-                                    divided: this.checkinMode
+                                    divided: true
                                 },
                             }, [h('div', this.$L('取消管理员'))]));
                         } else {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'setadmin',
-                                    divided: this.checkinMode
+                                    divided: true
                                 },
                             }, [h('div', this.$L('设为管理员'))]));
                         }
@@ -675,6 +681,7 @@ export default {
                             h('EDropdownItem', {
                                 props: {
                                     command: 'email',
+                                    divided: true
                                 },
                             }, [h('div', this.$L('修改邮箱'))]),
                             h('EDropdownItem', {
@@ -692,6 +699,7 @@ export default {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'cleardisable',
+                                    divided: true
                                 },
                                 style: {
                                     color: 'red'
@@ -701,6 +709,7 @@ export default {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'setdisable',
+                                    divided: true
                                 },
                                 style: {
                                     color: 'red'
@@ -1024,6 +1033,12 @@ export default {
                         faceimg: row.checkin_face
                     };
                     this.checkinFaceEditShow = true;
+                    break;
+
+                case 'openDialog':
+                    this.$store.dispatch("openDialogUserid", row.userid).catch(({msg}) => {
+                        $A.modalError(msg)
+                    });
                     break;
 
                 case 'setadmin':
