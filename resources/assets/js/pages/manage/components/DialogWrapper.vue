@@ -2356,6 +2356,13 @@ export default {
             this.focusTimer && clearTimeout(this.focusTimer)
             this.focusLazy = true
             this.$emit("on-focus")
+            //
+            if ($A.isIos()) {
+                this.tempRepeat && this.tempRepeat()
+                this.tempRepeat = $A.repeatWithCount(() => {
+                    this.$refs.footer.scrollIntoView({block: 'end'})
+                }, 50, 10)
+            }
         },
 
         onEventBlur() {
