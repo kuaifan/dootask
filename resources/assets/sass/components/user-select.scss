@@ -300,10 +300,16 @@
                             }
                         }
 
-                        &.disabled,
-                        &.disabled:hover {
+                        &.disabled {
                             color: #c5c8ce;
                             cursor: not-allowed;
+                            &:hover {
+                                color: #c5c8ce;
+                                cursor: not-allowed;
+                            }
+                            .user-modal-icon {
+                                color: #c5c8ce;
+                            }
                         }
 
                         .user-modal-icon {

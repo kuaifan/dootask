@@ -108,10 +108,11 @@
                         v-for="item in lists"
                         :class="{
                             selected: selects.includes(item.userid),
-                            disabled: isUncancelable(item.userid) || isDisabled(item.userid)
+                            disabled: isNoChoice(item.userid)
                         }"
                         @click="onSelectItem(item)">
                         <Icon v-if="selects.includes(item.userid)" class="user-modal-icon" type="ios-checkmark-circle" />
+                        <Icon v-else-if="isNoChoice(item.userid)" class="user-modal-icon" type="ios-remove-circle-outline" />
                         <Icon v-else class="user-modal-icon" type="ios-radio-button-off" />
                         <div v-if="item.type=='group'" class="user-modal-avatar">
                             <EAvatar v-if="item.avatar" class="img-avatar" :src="item.avatar" :size="40"></EAvatar>
@@ -445,6 +446,10 @@ export default {
                 return false;
             }
             return this.disabledChoice.includes(userid)
+        },
+
+        isNoChoice(userid) {
+            return this.isUncancelable(userid) || this.isDisabled(userid)
         },
 
         formatSelect(list) {
