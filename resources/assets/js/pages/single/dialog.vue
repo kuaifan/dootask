@@ -1,7 +1,7 @@
 <template>
     <div class="electron-dialog">
         <PageTitle :title="dialogData.name"/>
-        <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" location="modal"/>
+        <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId"/>
     </div>
 </template>
 

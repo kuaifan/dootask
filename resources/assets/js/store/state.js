@@ -18,6 +18,9 @@ export default {
     // 安全区域尺寸（顶部状态栏、底部导航栏）
     safeAreaSize: {top: 0, bottom: 0, data: null},
 
+    // 浏览器可视区域高度
+    viewportHeight: 0,
+
     // 浏览器支持触摸事件
     windowTouch: "ontouchend" in document,
 

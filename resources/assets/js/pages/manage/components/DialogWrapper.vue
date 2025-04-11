@@ -695,6 +695,7 @@ export default {
             type: Boolean,
             default: false
         },
+        // 组件使用位置
         location: {
             type: String,
             default: ""
@@ -877,8 +878,9 @@ export default {
             'readLoadNum',
             'readTimeout',
             'formOptions',
+            'cacheTranslationLanguage',
             'longpressData',
-            'cacheTranslationLanguage'
+            'viewportHeight',
         ]),
 
         ...mapGetters(['isLoad', 'isMessengerPage', 'getDialogQuote']),
@@ -1411,6 +1413,19 @@ export default {
                 return
             }
             document.getSelection().removeAllRanges();
+        },
+
+        viewportHeight() {
+            if (this.location !== 'modal' || !this.$isEEUiApp) {
+                return
+            }
+            this.tempRepeat && this.tempRepeat()
+            this.tempRepeat = $A.repeatWithCount(() => {
+                this.$refs.footer?.scrollIntoView({
+                    block: 'end',
+                    behavior: 'smooth'
+                })
+            }, 500, 500, 3)
         }
     },
 
@@ -2359,23 +2374,11 @@ export default {
             this.focusTimer && clearTimeout(this.focusTimer)
             this.focusLazy = true
             this.$emit("on-focus")
-            //
-            if ($A.isIos()) {
-                this.tempRepeat && this.tempRepeat()
-                this.tempRepeat = $A.repeatWithCount(() => {
-                    this.$refs.footer?.scrollIntoView({
-                        block: 'end',
-                        behavior: 'smooth'
-                    })
-                }, 500, 500, 3)
-            }
         },
 
         onEventBlur() {
             this.focusTimer = setTimeout(_ => this.focusLazy = false, 10)
             this.$emit("on-blur")
-            //
-            this.tempRepeat && this.tempRepeat()
         },
 
         onEventMore(e) {

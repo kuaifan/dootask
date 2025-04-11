@@ -491,7 +491,6 @@ export default {
                 },
             ],
 
-            viewportHeight: 0,
             iOSDevices: $A.isIos(),
         };
     },
@@ -500,10 +499,6 @@ export default {
     },
     mounted() {
         this.init();
-        //
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', this.visualViewportResize);
-        }
         //
         this.recordInter = setInterval(_ => {
             if (this.recordState === 'ing') {
@@ -544,9 +539,6 @@ export default {
         if (this.recordInter) {
             clearInterval(this.recordInter)
         }
-        if (window.visualViewport) {
-            window.visualViewport.removeEventListener('resize', this.visualViewportResize);
-        }
     },
     computed: {
         ...mapState([
@@ -563,6 +555,7 @@ export default {
             'keyboardHeight',
             'isModKey',
             'safeAreaSize',
+            'viewportHeight',
         ]),
 
         ...mapGetters(['getDialogDraft', 'getDialogQuote']),
@@ -2316,10 +2309,6 @@ export default {
             if (mention.isOpen) {
                 mention.setMentionContainerPosition()
             }
-        },
-
-        visualViewportResize() {
-            this.viewportHeight = window.visualViewport?.height || 0;
         },
     }
 }

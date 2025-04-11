@@ -59,6 +59,10 @@ export default {
                 $A("body").removeClass("fullscreen-mode")
             }
         });
+
+        window.visualViewport?.addEventListener('resize', () => {
+            state.viewportHeight = window.visualViewport?.height || 0;
+        });
     },
 
     /**

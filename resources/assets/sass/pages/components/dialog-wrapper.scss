@@ -911,6 +911,7 @@
                                     cursor: pointer;
                                     max-width: 100%;
                                     max-height: 220px;
+                                    border-radius: 6px;
                                     vertical-align: bottom;
 
                                     &.emoticon {
@@ -1035,12 +1036,12 @@
                                 display: flex;
                                 max-width: 220px;
                                 max-height: 220px;
-                                border-radius: 6px;
                                 overflow: hidden;
 
                                 .file-img {
                                     display: flex;
                                     cursor: pointer;
+                                    border-radius: 6px;
                                 }
                             }
                         }
