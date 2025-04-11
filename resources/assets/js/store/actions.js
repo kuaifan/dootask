@@ -1171,13 +1171,15 @@ export default {
      */
     userUrl({state}, url) {
         return new Promise(resolve => {
-            const newUrl = $A.urlAddParams(url, {
+            const params = {
                 language: languageName,
                 theme: state.themeConf,
                 userid: state.userId,
-                token: state.userToken,
-            })
-            resolve(newUrl)
+            }
+            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) || $A.getProtocol(url) == "file:") {
+                params.token = state.userToken
+            }
+            resolve($A.urlAddParams(url, params))
         })
     },
 

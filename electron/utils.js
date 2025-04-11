@@ -275,9 +275,22 @@ const utils = {
      * @returns {string|string}
      */
     getDomain(weburl) {
-        let urlReg = /http(s)?:\/\/([^\/]+)/i;
-        let domain = (weburl + "").match(urlReg);
+        const urlReg = /http(s)?:\/\/([^\/]+)/i;
+        const domain = `${weburl}`.match(urlReg);
         return ((domain != null && domain.length > 0) ? domain[2] : "");
+    },
+
+    /**
+     * 提取 URL 协议
+     * @param weburl
+     * @returns {string}
+     */
+    getProtocol(weburl) {
+        try {
+            return new URL(weburl).protocol
+        } catch(e){
+            return ""
+        }
     },
 
     /**

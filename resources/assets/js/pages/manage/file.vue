@@ -1123,7 +1123,7 @@ export default {
                     params: {
                         titleFixed: true,
                         allowAccess: true,
-                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
+                        url: $A.urlReplaceHash(path)
                     },
                 });
             } else {

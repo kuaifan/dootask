@@ -2364,7 +2364,7 @@ export default {
                         block: 'end',
                         behavior: 'smooth'
                     })
-                }, 500, 100, 3)
+                }, 500, 500, 3)
             }
         },
 
@@ -3799,7 +3799,7 @@ export default {
                     params: {
                         titleFixed: true,
                         allowAccess: true,
-                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
+                        url: $A.urlReplaceHash(path)
                     },
                 })
             } else {

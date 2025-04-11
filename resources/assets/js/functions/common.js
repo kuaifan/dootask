@@ -652,6 +652,51 @@ const timezone = require("dayjs/plugin/timezone");
         },
 
         /**
+         * 替换url中的hash
+         * @param {string} url - 要修改的URL；如果只提供一个参数，则作为新的hash路径，URL默认为当前页面
+         * @param {string} [path] - 新的hash路径，可包含或不包含#前缀
+         * @returns {string} 替换hash后的URL
+         */
+        urlReplaceHash(url, path = undefined) {
+            // 如果只传了一个参数，将其视为path，url默认为当前页面
+            if (path === undefined) {
+                path = url;
+                url = window.location.href;
+            }
+
+            // 确保url有值
+            url = url || window.location.href;
+
+            try {
+                // 使用URL API正确解析URL各部分
+                const urlObj = new URL(url);
+
+                // 确保path是字符串并格式正确
+                path = String(path || '');
+                if (path && path.startsWith('#')) {
+                    path = path.substring(1);
+                }
+
+                // 设置新的hash
+                urlObj.hash = path;
+
+                return urlObj.toString();
+            } catch (e) {
+                // 如果URL解析失败，回退到简单的字符串替换方法
+                if (!path) {
+                    return url.replace(/#.*$/, '');
+                }
+
+                const hashPath = path.startsWith('#') ? path : '#' + path;
+                if (url.includes('#')) {
+                    return url.replace(/#.*$/, hashPath);
+                } else {
+                    return url + hashPath;
+                }
+            }
+        },
+
+        /**
          * 刷新当前地址
          * @returns {string}
          */
@@ -1017,9 +1062,22 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {string|string}
          */
         getDomain(weburl) {
-            let urlReg = /http(s)?:\/\/([^\/]+)/i;
-            let domain = (weburl + "").match(urlReg);
+            const urlReg = /http(s)?:\/\/([^\/]+)/i;
+            const domain = `${weburl}`.match(urlReg);
             return ((domain != null && domain.length > 0) ? domain[2] : "");
+        },
+
+        /**
+         * 提取 URL 协议
+         * @param weburl
+         * @returns {string}
+         */
+        getProtocol(weburl) {
+            try {
+                return new URL(weburl).protocol
+            } catch(e){
+                return ""
+            }
         },
 
         /**
