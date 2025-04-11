@@ -182,7 +182,10 @@
         </div>
 
         <!--消息部分-->
-        <div ref="msgs" class="dialog-msgs">
+        <div
+            ref="msgs"
+            class="dialog-msgs"
+            v-longpress="{callback: handleLongpress, delay: 300}">
             <!--定位提示-->
             <div v-if="positionShow && positionMsg" class="dialog-position">
                 <div class="position-label" @click="onPositionMark(positionMsg.msg_id)">
@@ -211,8 +214,6 @@
                 @range="onRange"
                 @visible="onVisible"
 
-                @on-mention="onMention"
-                @on-longpress="onLongpress"
                 @on-view-reply="onViewReply"
                 @on-view-text="onViewText"
                 @on-view-file="onViewFile"
@@ -653,6 +654,7 @@ import DialogGroupWordChain from "./DialogGroupWordChain";
 import DialogGroupVote from "./DialogGroupVote";
 import DialogComplaint from "./DialogComplaint";
 import touchclick from "../../../directives/touchclick";
+import longpress from "../../../directives/longpress";
 import {languageList} from "../../../language";
 import {isLocalResourcePath} from "../../../components/Replace/utils";
 import emitter from "../../../store/events";
@@ -678,7 +680,7 @@ export default {
         DialogGroupVote,
         DialogComplaint,
     },
-    directives: {touchclick},
+    directives: {touchclick, longpress},
 
     props: {
         dialogId: {
@@ -875,6 +877,7 @@ export default {
             'readLoadNum',
             'readTimeout',
             'formOptions',
+            'longpressData',
             'cacheTranslationLanguage'
         ]),
 
@@ -3003,6 +3006,92 @@ export default {
             }
         },
 
+        handleLongpress(event) {
+            const {type, data, element} = this.longpressData;
+            this.$store.commit("longpress/clear")
+            //
+            switch (type) {
+                // 长按触发提及
+                case "mention":
+                    const user = this.cacheUserBasic.find(({userid}) => userid == data.userid);
+                    if (user) {
+                        this.$refs.input?.addMention({
+                            denotationChar: "@",
+                            id: user.userid,
+                            value: user.nickname,
+                        })
+                    }
+                    break;
+
+                // 长按触发消息操作
+                case "operateMsg":
+                    this.operateVisible = $A.isJson(data) && this.operateItem.id === data.id;
+                    this.operateItem = $A.isJson(data) ? data : {};
+                    this.operateCopys = []
+                    if (event.target.nodeName === 'IMG') {
+                        if (this.$Electron) {
+                            this.operateCopys.push({
+                                type: 'image',
+                                icon: '&#xe7cd;',
+                                label: '复制图片',
+                                value: $A.thumbRestore(event.target.currentSrc),
+                            })
+                        }
+                        if (data.type !== 'file' && !isLocalResourcePath(event.target.currentSrc)) {
+                            this.operateCopys.push({
+                                type: 'imagedown',
+                                icon: '&#xe7a8;',
+                                label: '下载图片',
+                                value: $A.thumbRestore(event.target.currentSrc),
+                            })
+                        }
+                    } else if (event.target.nodeName === 'A') {
+                        if (event.target.classList.contains("mention") && event.target.classList.contains("file")) {
+                            this.findOperateFile(this.operateItem.id, event.target.href)
+                        }
+                        this.operateCopys.push({
+                            type: 'link',
+                            icon: '&#xe7cb;',
+                            label: '复制链接',
+                            value: event.target.href,
+                        })
+                    }
+                    this.operateCopys.push({
+                        type: 'selected',
+                        icon: '&#xe7df;',
+                        label: '复制选择',
+                        value: '',
+                        visible: false,
+                    })
+                    if (data.type === 'text') {
+                        if (data.msg.text.replace(/<[^>]+>/g,"").length > 0) {
+                            this.operateCopys.push({
+                                type: 'text',
+                                icon: '&#xe77f;',
+                                label: null,
+                                title: this.operateCopys.length > 1 ? '复制文本' : '复制',
+                                value: '',
+                            })
+                        }
+                        if (data.msg.type === 'md') {
+                            this.operateCopys.push({
+                                type: 'md',
+                                icon: '&#xe77f;',
+                                label: '复制原文',
+                                value: '',
+                            })
+                        }
+                    }
+                    this.$nextTick(() => {
+                        this.operateItem.clientX = event.clientX
+                        this.operateItem.clientY = event.clientY
+                        this.onSelectionchange()
+                        this.onUpdateOperate(element)
+                    })
+                    break;
+            }
+        },
+
         onMsgType(type) {
             switch (type) {
                 case 'project':
@@ -3025,83 +3114,6 @@ export default {
                     }
                     break;
             }
-        },
-
-        onMention(data) {
-            const user = this.cacheUserBasic.find(({userid}) => userid == data.userid);
-            if (user) {
-                this.$refs.input?.addMention({
-                    denotationChar: "@",
-                    id: user.userid,
-                    value: user.nickname,
-                })
-            }
-        },
-
-        onLongpress({event, el, msgData}) {
-            this.operateVisible = this.operateItem.id === msgData.id;
-            this.operateItem = $A.isJson(msgData) ? msgData : {};
-            this.operateCopys = []
-            if (event.target.nodeName === 'IMG') {
-                if (this.$Electron) {
-                    this.operateCopys.push({
-                        type: 'image',
-                        icon: '&#xe7cd;',
-                        label: '复制图片',
-                        value: $A.thumbRestore(event.target.currentSrc),
-                    })
-                }
-                if (msgData.type !== 'file' && !isLocalResourcePath(event.target.currentSrc)) {
-                    this.operateCopys.push({
-                        type: 'imagedown',
-                        icon: '&#xe7a8;',
-                        label: '下载图片',
-                        value: $A.thumbRestore(event.target.currentSrc),
-                    })
-                }
-            } else if (event.target.nodeName === 'A') {
-                if (event.target.classList.contains("mention") && event.target.classList.contains("file")) {
-                    this.findOperateFile(this.operateItem.id, event.target.href)
-                }
-                this.operateCopys.push({
-                    type: 'link',
-                    icon: '&#xe7cb;',
-                    label: '复制链接',
-                    value: event.target.href,
-                })
-            }
-            this.operateCopys.push({
-                type: 'selected',
-                icon: '&#xe7df;',
-                label: '复制选择',
-                value: '',
-                visible: false,
-            })
-            if (msgData.type === 'text') {
-                if (msgData.msg.text.replace(/<[^>]+>/g,"").length > 0) {
-                    this.operateCopys.push({
-                        type: 'text',
-                        icon: '&#xe77f;',
-                        label: null,
-                        title: this.operateCopys.length > 1 ? '复制文本' : '复制',
-                        value: '',
-                    })
-                }
-                if (msgData.msg.type === 'md') {
-                    this.operateCopys.push({
-                        type: 'md',
-                        icon: '&#xe77f;',
-                        label: '复制原文',
-                        value: '',
-                    })
-                }
-            }
-            this.$nextTick(() => {
-                this.operateItem.clientX = event.clientX
-                this.operateItem.clientY = event.clientY
-                this.onSelectionchange()
-                this.onUpdateOperate(el)
-            })
         },
 
         onSelectionchange() {

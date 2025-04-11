@@ -29,12 +29,12 @@
             {{source.msg.source === 'api' ? source.msg.notice : $L(source.msg.notice)}}
         </div>
         <template v-else>
-            <div class="dialog-avatar">
-                <UserAvatar
-                    v-longpress="{callback: onMention, delay: 300}"
-                    @open-dialog="onOpenDialog"
-                    :userid="source.userid"
-                    :size="30"/>
+            <div
+                ref="avatar"
+                class="dialog-avatar"
+                @contextmenu="handleOperation"
+                @touchstart="handleOperation">
+                <UserAvatar :userid="source.userid" :size="30" @open-dialog="onOpenDialog"/>
             </div>
             <DialogView
                 :msg-data="source"
@@ -46,7 +46,6 @@
                 :operate-action="operateVisible && source.id === operateItem.id"
                 :pointer-mouse="pointerMouse"
                 :is-right-msg="isRightMsg"
-                @on-longpress="onLongpress"
                 @on-view-reply="onViewReply"
                 @on-view-text="onViewText"
                 @on-view-file="onViewFile"
@@ -63,12 +62,10 @@
 <script>
 import {mapState} from "vuex";
 import DialogView from "./DialogView";
-import longpress from "../../../directives/longpress";
 
 export default {
     name: "DialogItem",
     components: {DialogView},
-    directives: {longpress},
     props: {
         source: {
             type: Object,
@@ -217,20 +214,20 @@ export default {
             })
         },
 
+        handleOperation() {
+            this.$store.commit("longpress/set", {
+                type: 'mention',
+                data: this.source,
+                element: this.$refs.avatar
+            })
+        },
+
         onOpenDialog(userid) {
             if (this.dialogData.type == 'group' || ![this.dialogData.dialog_user?.userid, this.userId].includes(userid)) {
                 this.$store.dispatch("openDialogUserid", userid).catch(({msg}) => {
                     $A.modalError(msg)
                 });
             }
-        },
-
-        onMention() {
-            this.dispatch("on-mention", this.source)
-        },
-
-        onLongpress(e) {
-            this.dispatch("on-longpress", e)
         },
 
         onViewReply(data) {

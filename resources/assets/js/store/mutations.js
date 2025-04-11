@@ -284,4 +284,13 @@ export default {
             $A.IDBSave("dialogQuotes", state.dialogQuotes)
         }
     },
+
+    // 长按事件
+    'longpress/set': function(state, {type, data, element}) {
+        state.longpressData = {type, data, element}
+    },
+
+    'longpress/clear': function(state) {
+        state.longpressData = {type: '', data: null, element: null}
+    },
 }

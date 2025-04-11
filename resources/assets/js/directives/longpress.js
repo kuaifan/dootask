@@ -7,7 +7,7 @@ const longpress = {
             mode = 'default',
             isCall = false,
             pressTimer = null,
-            callback = binding.value;
+            callback = binding.value;   // 回调函数：第一个参数是事件对象（点到的对象），第二个参数是元素对象（注册绑定的对象）
         if ($A.isJson(binding.value)) {
             delay = binding.value.delay || 500;
             callback = binding.value.callback;

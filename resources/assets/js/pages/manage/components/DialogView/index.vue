@@ -6,10 +6,12 @@
         </div>
 
         <div
+            ref="dialogHead"
             class="dialog-head"
             :class="headClass"
             @click="handleClick"
-            v-longpress="{callback: handleLongpress, delay: 300}">
+            @contextmenu="handleOperation"
+            @touchstart="handleOperation">
             <!--回复-->
             <div v-if="!hideReply && msgData.reply_id && showReplyData(msgData.msg.reply_data)" class="dialog-reply no-dark-content" :class="replyClass" @click="viewReply">
                 <div class="reply-avatar">
@@ -178,7 +180,6 @@
 <script>
 import WCircle from "../../../../components/WCircle";
 import {mapGetters, mapState} from "vuex";
-import longpress from "../../../../directives/longpress";
 
 import TextMsg from "./text.vue";
 import LongTextMsg from "./longtext.vue";
@@ -209,7 +210,6 @@ export default {
         FileMsg,
         WCircle
     },
-    directives: {longpress},
     props: {
         msgData: {
             type: Object,
@@ -394,8 +394,12 @@ export default {
     },
 
     methods: {
-        handleLongpress(event, el) {
-            this.$emit("on-longpress", {event, el, msgData: this.msgData})
+        handleOperation() {
+            this.$store.commit("longpress/set", {
+                type: 'operateMsg',
+                data: this.msgData,
+                element: this.$refs.dialogHead
+            })
         },
 
         handleClick() {

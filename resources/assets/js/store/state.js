@@ -261,5 +261,8 @@ export default {
     cacheTranscriptionLanguage: '',
 
     // 下拉菜单操作
-    menuOperation: {}
+    menuOperation: {},
+
+    // 长按数据
+    longpressData: {type: '', data: null, element: null},
 };
