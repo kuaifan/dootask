@@ -1,3 +1,55 @@
+.common-task-modal {
+    display: flex;
+    flex-direction: column;
+
+    .ivu-modal {
+        .ivu-modal-content {
+            .ivu-modal-close {
+                z-index: 2;
+            }
+        }
+
+        &.ivu-modal-fullscreen {
+            .ivu-modal-content {
+                margin-top: calc(var(--status-bar-height) + 46px);
+                margin-bottom: 0;
+                border-top-left-radius: 18px !important;
+                border-top-right-radius: 18px !important;
+                overflow: hidden;
+
+                .ivu-modal-body {
+                    padding: 0;
+
+                    .task-detail {
+                        position: absolute;
+                        inset: 0;
+                        margin: 0;
+                        padding: 0 20px 0 15px;
+                        overflow: auto;
+                        -webkit-overflow-scrolling: touch;
+
+                        .task-info {
+                            .head {
+                                position: sticky;
+                                top: 0;
+                                z-index: 1;
+                                background-color: #fff;
+                                padding-top: 14px;
+                                padding-right: 4px;
+                                height: 58px;
+                            }
+                        }
+
+                        .task-dialog {
+                            padding-bottom: calc(var(--navigation-bar-height) + 20px);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 .task-detail {
     display: flex;
     flex-direction: column;
@@ -594,7 +646,7 @@
             display: flex;
             align-items: center;
             height: 42px;
-            margin-left: 5px;
+            margin: 0 5px;
             padding-bottom: 10px;
             color: #888888;
             position: relative;

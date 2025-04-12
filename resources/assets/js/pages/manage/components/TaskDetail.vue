@@ -56,7 +56,8 @@
     <!--主任务-->
     <div
         v-else-if="ready"
-        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}"
+        class="task-detail"
+        :class="taskDetailClass"
         :style="taskDetailStyle">
         <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
@@ -829,6 +830,14 @@ export default {
             return {
                 minHeight: (height - factor - 48) + 'px',
                 width: taskDialogWidth + 'px',
+            }
+        },
+
+        taskDetailClass() {
+            const {taskDetail, hasOpenDialog} = this;
+            return {
+                'open-dialog': hasOpenDialog,
+                'completed': taskDetail.complete_at
             }
         },
 

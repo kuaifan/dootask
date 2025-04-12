@@ -5,25 +5,13 @@
         :styles="styles"
         :mask-closable="false"
         :footer-hide="true"
+        :fullscreen="windowPortrait"
         :beforeClose="onBeforeClose"
-        class-name="task-modal">
+        class-name="common-task-modal">
         <TaskDetail ref="taskDetail" :task-id="taskId" :open-task="taskData" modalMode/>
     </Modal>
 </template>
 
-<style lang="scss">
-body {
-    .ivu-modal-wrap {
-        &.task-modal {
-            display: flex;
-            flex-direction: column;
-            .ivu-modal-close {
-                z-index: 2;
-            }
-        }
-    }
-}
-</style>
 <script>
 import {mapGetters, mapState} from "vuex";
 import TaskDetail from "./TaskDetail";
