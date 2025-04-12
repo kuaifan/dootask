@@ -28,7 +28,8 @@
                         overflow: auto;
                         -webkit-overflow-scrolling: touch;
 
-                        .task-info {
+                        .task-info,
+                        .task-dialog {
                             .head {
                                 position: sticky;
                                 top: 0;
@@ -42,6 +43,7 @@
 
                         .task-dialog {
                             padding-bottom: calc(var(--navigation-bar-height) + 20px);
+                            margin-top: 4px;
                         }
                     }
                 }
