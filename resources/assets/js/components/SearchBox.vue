@@ -136,7 +136,7 @@ export default {
         },
 
         showModal(v) {
-            $A.eeuiAppSetScrollEnabled(!v)
+            $A.eeuiAppSetScrollDisabled(v)
         }
     },
 

@@ -334,7 +334,7 @@ export default {
                 this.searchKey = ""
             }
             this.$emit("on-show-change", v)
-            $A.eeuiAppSetScrollEnabled(!v)
+            $A.eeuiAppSetScrollDisabled(v)
         },
 
         searchKey() {

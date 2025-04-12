@@ -1419,13 +1419,16 @@ export default {
             if (this.location !== 'modal' || !this.$isEEUiApp) {
                 return
             }
-            this.tempRepeat && this.tempRepeat()
-            this.tempRepeat = $A.repeatWithCount(() => {
+            if (this.viewportTimer) {
+                this.viewportTimer()
+                this.viewportTimer = null
+            }
+            this.viewportTimer = $A.repeatWithCount(() => {
                 this.$refs.footer?.scrollIntoView({
                     block: 'end',
                     behavior: 'smooth'
                 })
-            }, 500, 500, 3)
+            }, 500, 500, 2)
         }
     },
 

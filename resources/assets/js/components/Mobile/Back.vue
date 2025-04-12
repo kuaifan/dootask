@@ -111,7 +111,7 @@ export default {
             if (!this.mobileTabbar) {
                 return true;
             }
-            if (this.$Modal.visibles().length > 0) {
+            if (this.$Modal.visibleList().length > 0) {
                 return true;
             }
             if (this.fileFolderId > 0) {

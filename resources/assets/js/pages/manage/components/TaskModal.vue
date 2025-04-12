@@ -50,11 +50,11 @@ export default {
     },
 
     mounted() {
-        emitter.on('taskModalMoveTop', this.handleMoveTop);
+        emitter.on('handleMoveTop', this.handleMoveTop);
     },
 
     beforeDestroy() {
-        emitter.off('taskModalMoveTop', this.handleMoveTop);
+        emitter.off('handleMoveTop', this.handleMoveTop);
     },
 
     methods: {
@@ -69,8 +69,8 @@ export default {
                 return true;
             }
         },
-        handleMoveTop() {
-            this.$refs.modal?.handleMoveTop();
+        handleMoveTop(type) {
+            type === 'taskModal' && this.$refs.modal?.handleMoveTop();
         }
     }
 }

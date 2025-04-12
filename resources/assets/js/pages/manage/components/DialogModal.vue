@@ -38,11 +38,11 @@ export default {
     },
 
     mounted() {
-        emitter.on('dialogModalMoveTop', this.handleMoveTop);
+        emitter.on('handleMoveTop', this.handleMoveTop);
     },
 
     beforeDestroy() {
-        emitter.off('dialogModalMoveTop', this.handleMoveTop);
+        emitter.off('handleMoveTop', this.handleMoveTop);
     },
 
     computed: {
@@ -89,7 +89,7 @@ export default {
         },
 
         show(v) {
-            $A.eeuiAppSetScrollEnabled(!v)
+            $A.eeuiAppSetScrollDisabled(v)
         }
     },
 
@@ -105,8 +105,8 @@ export default {
                 this.closIng--
             })
         },
-        handleMoveTop() {
-            this.$refs.modal?.handleMoveTop();
+        handleMoveTop(type) {
+            type === 'dialogModal' && this.$refs.modal?.handleMoveTop();
         }
     }
 }

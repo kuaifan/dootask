@@ -61,7 +61,7 @@ export default {
         });
 
         window.visualViewport?.addEventListener('resize', () => {
-            state.viewportHeight = window.visualViewport?.height || 0;
+            state.viewportHeight = window.visualViewport.height || 0;
         });
     },
 
@@ -2312,7 +2312,7 @@ export default {
             return
         }
         if (state.taskId > 0) {
-            emitter.emit('taskModalMoveTop');   // 已打开任务时将任务窗口置顶
+            emitter.emit('handleMoveTop', 'taskModal');   // 已打开任务时将任务窗口置顶
         }
         state.taskArchiveView = task_id;
         state.taskId = task_id;
@@ -3084,7 +3084,7 @@ export default {
             }
             //
             if (state.dialogId) {
-                emitter.emit('dialogModalMoveTop'); // 已打开对话时将对话窗口置顶
+                emitter.emit('handleMoveTop', 'dialogModal'); // 已打开对话时将对话窗口置顶
             }
             //
             requestAnimationFrame(_ => {

@@ -191,10 +191,16 @@
             this.eeuiModule()?.copyText(text)
         },
 
-        // 设置是否允许滚动
-        eeuiAppSetScrollEnabled(enabled) {
-            this.eeuiModule("webview")?.setScrollEnabled(enabled);
+        // 设置是否禁止滚动
+        eeuiAppSetScrollDisabled(disabled) {
+            if (disabled) {
+                this.__setScrollDisabledNum++
+            } else {
+                this.__setScrollDisabledNum--
+            }
+            this.eeuiModule("webview")?.setScrollEnabled(this.__setScrollDisabledNum <= 0);
         },
+        __setScrollDisabledNum: 0,
 
         // 设置应用程序级别的摇动撤销（仅支持iOS、android无效）
         eeuiAppShakeToEditEnabled(enabled) {
