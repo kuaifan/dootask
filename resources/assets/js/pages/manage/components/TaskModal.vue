@@ -30,7 +30,9 @@ export default {
         },
 
         styles() {
-            return {
+            return this.windowPortrait ? {
+                width: '100%',
+            } : {
                 width: '90%',
                 maxWidth: this.taskData.dialog_id ? '1200px' : '700px'
             }

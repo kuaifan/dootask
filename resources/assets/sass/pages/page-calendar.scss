@@ -12,23 +12,34 @@
             display: flex;
             align-items: center;
             margin-bottom: 16px;
-            .calendar-title {
+            gap: 2px;
+            .calendar-nav {
+                flex-shrink: 0;
                 display: flex;
                 align-items: center;
-                margin-right: 36px;
-                > h1 {
-                    color: $primary-title-color;
-                    font-size: 28px;
-                    font-weight: 600;
+                .calendar-title {
+                    display: flex;
+                    align-items: center;
+                    margin-right: 24px;
+                    > h1 {
+                        color: $primary-title-color;
+                        font-size: 28px;
+                        font-weight: 600;
+                        overflow: hidden;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 1;
+                        -webkit-box-orient: vertical;
+                    }
                 }
-            }
-            .calendar-arrow {
-                margin-right: 12px;
-                > button {
-                    color: #888888;
-                    font-size: 12px;
-                    &:focus {
-                        box-shadow: none;
+                .calendar-arrow {
+                    flex-shrink: 0;
+                    margin-left: 12px;
+                    > button {
+                        color: #888888;
+                        font-size: 12px;
+                        &:focus {
+                            box-shadow: none;
+                        }
                     }
                 }
             }
@@ -36,6 +47,7 @@
                 flex: 1;
                 display: flex;
                 justify-content: flex-end;
+                margin-left: 24px;
                 > button {
                     &:focus {
                         box-shadow: none;
@@ -51,6 +63,26 @@
         padding: 0 48px 6px;
         overflow: hidden;
     }
+    .toastui-calendar-grid-cell-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 0 5px;
+        overflow: hidden;
+        .toastui-calendar-grid-cell-more-events {
+            padding-right: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    }
+    .toastui-calendar-grid-cell-date {
+        .toastui-calendar-weekday-grid-date {
+            &.toastui-calendar-weekday-grid-date-decorator {
+                background-color: $primary-color;
+            }
+        }
+    }
 }
 
 body.window-portrait {
@@ -58,15 +90,14 @@ body.window-portrait {
         .calendar-head {
             margin: 24px 16px 16px;
             .calendar-titbox {
-                .calendar-title {
-                    flex: 1;
-                }
-                .calendar-arrow {
-                    margin-left: 12px;
-                    margin-right: 0;
-                }
-                .calendar-view {
-                    display: none;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                .calendar-nav {
+                    width: 100%;
+                    .calendar-title {
+                        flex: 1;
+                    }
                 }
             }
         }

@@ -3,21 +3,23 @@
         <PageTitle :title="$L('日历')"/>
         <div class="calendar-head">
             <div class="calendar-titbox">
-                <div class="calendar-title">
-                    <div class="common-nav-back portrait" @click="goForward({name: 'manage-application'}, true)"><i class="taskfont">&#xe676;</i></div>
-                    <h1>{{ rangeText }}</h1>
+                <div class="calendar-nav">
+                    <div class="calendar-title">
+                        <div class="common-nav-back portrait" @click="goForward({name: 'manage-application'}, true)"><i class="taskfont">&#xe676;</i></div>
+                        <h1>{{ rangeText }}</h1>
+                    </div>
+                    <ButtonGroup class="calendar-arrow" size="small">
+                        <Button @click="onMove(-1)">
+                            <Icon type="ios-arrow-back"></Icon>
+                        </Button>
+                        <Button @click="onMove(1)">
+                            <Icon type="ios-arrow-forward"></Icon>
+                        </Button>
+                    </ButtonGroup>
+                    <ButtonGroup class="calendar-arrow" size="small">
+                        <Button @click="onToDay">{{ $L('今天') }}</Button>
+                    </ButtonGroup>
                 </div>
-                <ButtonGroup class="calendar-arrow" size="small">
-                    <Button @click="onMove(-1)">
-                        <Icon type="ios-arrow-back"></Icon>
-                    </Button>
-                    <Button @click="onMove(1)">
-                        <Icon type="ios-arrow-forward"></Icon>
-                    </Button>
-                </ButtonGroup>
-                <ButtonGroup class="calendar-arrow" size="small">
-                    <Button @click="onToDay">{{ $L('今天') }}</Button>
-                </ButtonGroup>
                 <ButtonGroup class="calendar-view">
                     <Button @click="setView('day')" :type="options.view == 'day' ? 'primary' : 'default'">{{ $L('日') }}</Button>
                     <Button @click="setView('week')" :type="options.view == 'week' ? 'primary' : 'default'">{{ $L('周') }}</Button>
@@ -34,6 +36,7 @@
                 :theme="options.theme"
                 :template="options.template"
                 :events="events"
+                :is-read-only="windowTouch"
                 @selectDateTime="onSelectDateTime"
                 @beforeUpdateEvent="onBeforeUpdateEvent"
                 @clickDayName="onClickDayName"
