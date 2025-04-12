@@ -435,13 +435,24 @@
 
 body.window-portrait {
     .page-manage {
+        .manage-box-menu {
+            display: none;
+        }
         &.show-tabbar {
             .manage-box-main {
                 margin-bottom: 60px;
             }
-        }
-        .manage-box-menu {
-            display: none;
+            .mobile-tabbar {
+                display: flex;
+            }
+            @media (max-height: 400px) {
+                .manage-box-main {
+                    margin-bottom: 0;
+                }
+                .mobile-tabbar {
+                    display: none;
+                }
+            }
         }
     }
 }

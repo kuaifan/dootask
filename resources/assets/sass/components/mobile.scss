@@ -354,26 +354,9 @@ body.window-touch {
 }
 
 body.window-portrait {
-    .mobile-tabbar {
-        display: flex;
-    }
-
     .mobile-notification {
         top: 12px;
         width: 94%;
         max-width: none;
-    }
-
-    @media (max-height: 400px) {
-        .mobile-tabbar {
-            display: none !important;
-        }
-        .page-manage {
-            &.show-tabbar {
-                .manage-box-main {
-                    margin-bottom: 0 !important;
-                }
-            }
-        }
     }
 }
