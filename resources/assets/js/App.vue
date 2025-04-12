@@ -136,9 +136,12 @@ export default {
     computed: {
         ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize', 'isFirstPage', 'mobileTabbar']),
 
-        statusColor({routeName}) {
+        statusColor({routeName, windowLandscape}) {
             if (!routeName) {
                 return null
+            }
+            if (windowLandscape) {
+                return "#f4f5f7"
             }
             if (['manage-messenger', 'manage-project'].includes(routeName) || routeName.startsWith('manage-setting')) {
                 return '#f8f8f8'
@@ -146,9 +149,12 @@ export default {
             return null
         },
 
-        navigationColor({routeName, mobileTabbar}) {
+        navigationColor({routeName, windowLandscape, mobileTabbar}) {
             if (!routeName) {
                 return null
+            }
+            if (windowLandscape) {
+                return "#f4f5f7"
             }
             if (['manage-messenger', 'manage-project', 'manage-setting'].includes(routeName)) {
                 return '#f8f8f8'
