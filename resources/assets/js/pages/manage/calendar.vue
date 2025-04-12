@@ -368,9 +368,9 @@ export default {
                     const startYear = start.getFullYear();
                     const endYear = end.getFullYear();
                     if (startYear !== endYear) {
-                        this.rangeText = $A.dayjs(date).format("YYYY.MM.DD") + " ~ " + $A.dayjs(end).format("YYYY.MM.DD");
+                        this.rangeText = $A.dayjs(start).format("YYYY.MM.DD") + " ~ " + $A.dayjs(end).format("YYYY.MM.DD");
                     } else {
-                        this.rangeText = $A.dayjs(date).format("YYYY.MM.DD") + " ~ " + $A.dayjs(end).format("MM.DD");
+                        this.rangeText = $A.dayjs(start).format("YYYY.MM.DD") + " ~ " + $A.dayjs(end).format("MM.DD");
                     }
                     break;
             }
