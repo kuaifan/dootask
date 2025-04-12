@@ -12,7 +12,10 @@
                 </Form>
             </div>
         </div>
-        <ul @touchstart="onTouchStart" @scroll="onScroll">
+        <ul
+            @scroll="onScroll"
+            @touchstart="onTouchStart"
+            v-longpress="handleLongpress">
             <template v-if="projectLists.length === 0">
                 <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
                 <li v-else class="nothing">
@@ -24,7 +27,7 @@
                 :key="key"
                 :data-id="item.id"
                 :class="{operate: item.id == operateItem.id && operateVisible}"
-                v-longpress="handleLongpress"
+                @pointerdown="handleOperation"
                 @click="toggleRoute('project', {projectId: item.id})">
                 <div class="project-item">
                     <div class="item-left">
@@ -90,7 +93,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheProjects', 'loadProjects']),
+        ...mapState(['cacheProjects', 'loadProjects', 'longpressData']),
 
         projectLists() {
             const {projectKeyValue, cacheProjects} = this;
@@ -173,16 +176,21 @@ export default {
             });
         },
 
-        handleLongpress(event, el) {
-            const projectId = $A.getAttr(el, 'data-id')
-            const projectItem = this.projectLists.find(item => item.id == projectId)
+        handleLongpress(event) {
+            const {type, data, element} = this.longpressData;
+            this.$store.commit("longpress/clear")
+            //
+            if (type !== 'projectList') {
+                return
+            }
+            const projectItem = this.projectLists.find(item => item.id == data.projectId)
             if (!projectItem) {
                 return
             }
             this.operateVisible = false;
             this.operateItem = $A.isJson(projectItem) ? projectItem : {};
             this.$nextTick(() => {
-                const rect = el.getBoundingClientRect();
+                const rect = element.getBoundingClientRect();
                 const parentRect = this.$el.getBoundingClientRect() || {top: 0, left: 0}
                 this.operateStyles = {
                     left: `${event.clientX - parentRect.left}px`,
@@ -190,6 +198,16 @@ export default {
                     height: rect.height + 'px',
                 }
                 this.operateVisible = true;
+            })
+        },
+
+        handleOperation({currentTarget}) {
+            this.$store.commit("longpress/set", {
+                type: 'projectList',
+                data: {
+                    projectId: $A.getAttr(currentTarget, 'data-id')
+                },
+                element: currentTarget
             })
         },
 

@@ -68,7 +68,8 @@
                     class="messenger-list"
                     :hide-bar="operateVisible"
                     @touchstart.native="listTouch"
-                    @on-scroll="listScroll">
+                    @on-scroll="listScroll"
+                    v-longpress="handleLongpress">
                     <ul v-if="tabActive==='dialog'" ref="ul" class="dialog">
                         <template v-if="dialogList.length > 0">
                             <li
@@ -76,13 +77,14 @@
                                 :ref="`dialog_${dialog.id}`"
                                 :key="key"
                                 :data-id="dialog.id"
+                                data-type="dialog"
                                 :class="dialogClass(dialog)"
                                 @click="openDialog({
                                     dialog_id: dialog.id,
                                     dialog_msg_id: dialog.search_msg_id,
                                     search_msg_id: dialog.search_msg_id,
                                 })"
-                                v-longpress="handleDialogLongpress"
+                                @pointerdown="handleOperation"
                                 :style="{'background-color':dialog.color}">
                                 <template v-if="dialog.type=='group'">
                                     <EAvatar v-if="dialog.avatar" class="img-avatar" :src="dialog.avatar" :size="42"></EAvatar>
@@ -141,9 +143,10 @@
                                         v-for="(user, index) in items.list"
                                         :key="index"
                                         :data-id="user.userid"
+                                        data-type="contacts"
                                         :class="userClass(user)"
                                         @click="openContacts(user)"
-                                        v-longpress="handleUserLongpress">
+                                        @pointerdown="handleOperation">
                                         <div class="avatar"><UserAvatar :userid="user.userid" :size="contactAvatarSize"/></div>
                                         <div class="nickname">
                                             <em>{{user.nickname}}</em>
@@ -366,7 +369,8 @@ export default {
             'dialogMsgs',
             'messengerSearchKey',
             'appNotificationPermission',
-            'taskColorList'
+            'taskColorList',
+            'longpressData'
         ]),
 
         ...mapGetters(['getDialogDraft', 'tagDialogDraft']),
@@ -1031,42 +1035,49 @@ export default {
             })
         },
 
-        handleDialogLongpress(event, el) {
-            if (this.dialogSearchKey) {
-                return;
-            }
-            const dialogId = $A.getAttr(el, 'data-id')
-            const dialogItem = this.dialogList.find(item => item.id == dialogId)
-            if (!dialogItem) {
+        handleLongpress(event) {
+            const {type, data, element} = this.longpressData;
+            this.$store.commit("longpress/clear")
+            //
+            if (type !== 'messenger') {
                 return
             }
-            this.handleLongpress(dialogItem, el.getBoundingClientRect(), event.clientX)
-        },
-
-        handleUserLongpress(event, el) {
-            if (this.contactsKey) {
-                return;
-            }
-            const userId = $A.getAttr(el, 'data-id')
-            const userItem = this.contactsFilter.find(item => item.userid == userId)
-            if (!userItem) {
-                return
-            }
-            this.handleLongpress(userItem, el.getBoundingClientRect(), event.clientX)
-        },
-
-        handleLongpress(item, rect, clientX) {
             this.operateType = this.tabActive;
             this.operateVisible = false;
-            this.operateItem = $A.isJson(item) ? item : {};
+            if (data.dataType === 'contacts') {
+                if (this.contactsKey) {
+                    return;
+                }
+                this.operateItem = this.contactsFilter.find(item => item.userid == data.dataId)
+            } else {
+                if (this.dialogSearchKey) {
+                    return;
+                }
+                this.operateItem = this.dialogList.find(item => item.id == data.dataId)
+            }
+            if (!this.operateItem) {
+                return
+            }
+            const rect = element.getBoundingClientRect();
             this.$nextTick(() => {
                 const parentRect = this.$refs.select?.getBoundingClientRect() || {top: 0, left: 0}
                 this.operateStyles = {
-                    left: `${clientX}px`,
+                    left: `${event.clientX}px`,
                     top: `${rect.top + this.windowScrollY - parentRect.top}px`,
                     height: rect.height + 'px',
                 }
                 this.operateVisible = true;
+            })
+        },
+
+        handleOperation({currentTarget}) {
+            this.$store.commit("longpress/set", {
+                type: 'messenger',
+                data: {
+                    dataId: $A.getAttr(currentTarget, 'data-id'),
+                    dataType: $A.getAttr(currentTarget, 'data-type'),
+                },
+                element: currentTarget
             })
         },
 

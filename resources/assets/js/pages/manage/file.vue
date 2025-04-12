@@ -119,7 +119,7 @@
                         <p>{{$L('没有任何文件')}}</p>
                     </div>
                     <div v-else class="file-list" @contextmenu.prevent="handleContextmenu">
-                        <ul>
+                        <ul v-longpress="handleLongpress">
                             <li v-for="item in fileList">
                                 <div
                                     class="file-item"
@@ -129,7 +129,7 @@
                                         operate: contextMenuVisible && item.id === contextMenuItem.id,
                                     }"
                                     :data-id="item.id"
-                                    v-longpress="handleLongpress"
+                                    @pointerdown="handleOperation"
                                     @click="dropFile(item, 'openCheckMenu')">
                                     <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
                                         <Checkbox :value="selectIds.includes(item.id)"/>
@@ -769,7 +769,17 @@ export default {
     },
 
     computed: {
-        ...mapState(['systemConfig', 'userIsAdmin', 'userInfo', 'fileLists', 'wsOpenNum', 'windowWidth', 'filePackLists', 'fileShakeId']),
+        ...mapState([
+            'systemConfig',
+            'userIsAdmin',
+            'userInfo',
+            'fileLists',
+            'wsOpenNum',
+            'windowWidth',
+            'filePackLists',
+            'fileShakeId',
+            'longpressData'
+        ]),
 
         pid() {
             const {folderId} = this.$route.params;
@@ -1018,13 +1028,28 @@ export default {
             this.autoBlur(id)
         },
 
-        handleLongpress(event, el) {
-            const fileId = $A.getAttr(el, 'data-id')
-            const fileItem = this.fileList.find(item => item.id == fileId)
+        handleLongpress(event) {
+            const {type, data} = this.longpressData;
+            this.$store.commit("longpress/clear")
+            //
+            if (type !== 'file') {
+                return
+            }
+            const fileItem = this.fileList.find(item => item.id == data.fileId)
             if (!fileItem) {
                 return
             }
             this.handleRightClick(event, fileItem)
+        },
+
+        handleOperation({currentTarget}) {
+            this.$store.commit("longpress/set", {
+                type: 'file',
+                data: {
+                    fileId: $A.getAttr(currentTarget, 'data-id')
+                },
+                element: currentTarget
+            })
         },
 
         handleContextmenu(event) {

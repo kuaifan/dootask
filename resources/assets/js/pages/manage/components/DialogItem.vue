@@ -30,10 +30,8 @@
         </div>
         <template v-else>
             <div
-                ref="avatar"
                 class="dialog-avatar"
-                @contextmenu="handleOperation"
-                @touchstart="handleOperation">
+                @pointerdown="handleOperation">
                 <UserAvatar :userid="source.userid" :size="30" @open-dialog="onOpenDialog"/>
             </div>
             <DialogView
@@ -214,11 +212,11 @@ export default {
             })
         },
 
-        handleOperation() {
+        handleOperation({currentTarget}) {
             this.$store.commit("longpress/set", {
                 type: 'mention',
                 data: this.source,
-                element: this.$refs.avatar
+                element: currentTarget
             })
         },
 

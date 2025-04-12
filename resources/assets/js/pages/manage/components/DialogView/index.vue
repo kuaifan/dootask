@@ -6,12 +6,10 @@
         </div>
 
         <div
-            ref="dialogHead"
             class="dialog-head"
             :class="headClass"
             @click="handleClick"
-            @contextmenu="handleOperation"
-            @touchstart="handleOperation">
+            @pointerdown="handleOperation">
             <!--回复-->
             <div v-if="!hideReply && msgData.reply_id && showReplyData(msgData.msg.reply_data)" class="dialog-reply no-dark-content" :class="replyClass" @click="viewReply">
                 <div class="reply-avatar">
@@ -394,11 +392,11 @@ export default {
     },
 
     methods: {
-        handleOperation() {
+        handleOperation({currentTarget}) {
             this.$store.commit("longpress/set", {
                 type: 'operateMsg',
                 data: this.msgData,
-                element: this.$refs.dialogHead
+                element: currentTarget
             })
         },
 
