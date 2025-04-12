@@ -248,9 +248,7 @@ export default {
         },
 
         onTouchstart() {
-            if (this.keyboardShow) {
-                $A.eeuiAppKeyboardHide();
-            }
+            $A.eeuiAppKeyboardHide();
         },
 
         onTag(type, e) {

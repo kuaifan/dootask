@@ -1234,49 +1234,6 @@ const timezone = require("dayjs/plugin/timezone");
         },
 
         /**
-         * 主动失去焦点（关闭键盘）
-         * @param el
-         * @param inputMode
-         */
-        onBlur(el = null, inputMode = false) {
-            setTimeout(_ => {
-                $A.eeuiAppKeyboardHide();
-                if (typeof el === "boolean") {
-                    inputMode = el;
-                    el = null;
-                }
-                if (el) {
-                    el.blur();
-                } else {
-                    if (document.activeElement) {
-                        if (inputMode === true && document.activeElement.tagName === "BODY") {
-                            let inputElement = document.getElementById("toLoseFocusInput")
-                            if (!inputElement) {
-                                inputElement = document.createElement("input");
-                                inputElement.id = "toLoseFocusInput";
-                                inputElement.type = "text";
-                                inputElement.style.position = "fixed";
-                                inputElement.style.top = "0px";
-                                inputElement.style.left = "0px";
-                                inputElement.style.zIndex = "-1";
-                                inputElement.style.opacity = "0";
-                                inputElement.addEventListener("focus", e => {
-                                    document.activeElement.blur();
-                                });
-                                document.body.appendChild(inputElement);
-                            }
-                            setTimeout(_ => {
-                                inputElement.focus()
-                            }, 1)
-                        } else {
-                            document.activeElement.blur();
-                        }
-                    }
-                }
-            }, 1);
-        },
-
-        /**
          * 排序JSON对象
          * @param obj
          * @param ignore

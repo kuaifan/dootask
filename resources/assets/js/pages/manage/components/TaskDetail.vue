@@ -1025,9 +1025,7 @@ export default {
                 if (id > 0) {
                     this.ready = true;
                 } else {
-                    if (this.windowPortrait) {
-                        $A.onBlur();
-                    }
+                    $A.eeuiAppKeyboardHide()
                     this.timeOpen = false;
                     this.timeForce = false;
                     this.loopForce = false;
@@ -1682,7 +1680,6 @@ export default {
             }
             this.$nextTick(() => {
                 if (this.windowPortrait) {
-                    $A.onBlur();
                     const openSuccess = () => {
                         const transferData = {
                             time: $A.dayjs().unix() + 10,
@@ -1696,13 +1693,12 @@ export default {
                         this.msgText = "";
                         this.$store.state.dialogMsgTransfer = transferData
                     }
-                    this.$nextTick(_ => {
-                        this.$store.dispatch('openDialog', dialogId).then(_ => {
-                            !onlyOpen && openSuccess()
-                        }).catch(({msg}) => {
-                            $A.modalError(msg);
-                        })
+                    this.$store.dispatch('openDialog', dialogId).then(_ => {
+                        !onlyOpen && openSuccess()
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
                     })
+                    $A.eeuiAppKeyboardHide();
                 } else {
                     this.sendDialogMsg(msgText);
                 }

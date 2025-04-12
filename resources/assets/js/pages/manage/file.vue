@@ -917,9 +917,7 @@ export default {
         fileShow(val) {
             if (!val) {
                 this.browseFile(0)
-                if (this.windowPortrait) {
-                    $A.onBlur(true)
-                }
+                $A.eeuiAppKeyboardHide()
             }
         },
 
