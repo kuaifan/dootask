@@ -819,7 +819,6 @@ export default {
             preventRangeLoad: 0,                // 大于0阻止范围加载
             preventToBottom: false,             // 阻止滚动到底部
             scrollToBottomRefresh: false,       // 滚动到底部重新获取消息
-            androidKeyboardVisible: false,      // Android键盘是否可见
             replyMsgAutoMention: false,         // 允许回复消息后自动@
             waitUnreadData: new Map(),          // 等待未读数据
             replyEmojiIngs: {},                 // 是否回复表情中（避免重复回复）
@@ -881,6 +880,8 @@ export default {
             'cacheTranslationLanguage',
             'longpressData',
             'viewportHeight',
+            'keyboardShow',
+            'keyboardHeight',
         ]),
 
         ...mapGetters(['isLoad', 'isMessengerPage', 'getDialogQuote']),
@@ -1022,23 +1023,23 @@ export default {
         },
 
         isDefaultSize() {
-            return this.windowScrollY === 0 && !this.androidKeyboardVisible
+            return !(this.keyboardShow && this.keyboardHeight > 120)
         },
 
         quickShow() {
-            return this.quickMsgs.length > 0 && this.isDefaultSize && this.quoteId === 0
+            return this.isDefaultSize && this.quickMsgs.length > 0 && this.quoteId === 0
         },
 
         todoShow() {
-            return this.todoList.length > 0 && this.isDefaultSize && this.quoteId === 0
+            return this.isDefaultSize && this.todoList.length > 0 && this.quoteId === 0
         },
 
         typeShow() {
-            return this.msgTypes.length > 1 && this.isDefaultSize && !this.searchShow
+            return this.isDefaultSize && this.msgTypes.length > 1 && !this.searchShow
         },
 
         topShow() {
-            return this.topMsg && this.isDefaultSize && !this.searchShow && this.msgType === ''
+            return this.isDefaultSize && this.topMsg && !this.searchShow && this.msgType === ''
         },
 
         wrapperClass() {
@@ -1385,7 +1386,6 @@ export default {
         },
 
         windowHeight() {
-            this.androidKeyboardVisible = $A.isAndroid() && $A.eeuiAppKeyboardStatus()
             requestAnimationFrame(_ => {
                 this.$refs.input?.updateTools()
             })
@@ -2272,7 +2272,7 @@ export default {
 
         onTouchStart() {
             // Android 阻止长按反馈导致失去焦点页面抖动
-            if (this.androidKeyboardVisible) {
+            if (this.keyboardShow) {
                 $A.eeuiAppSetDisabledUserLongClickSelect(500);
             }
         },

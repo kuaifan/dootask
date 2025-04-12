@@ -43,7 +43,7 @@ export default {
         labelWidth: windowWidth > 576 ? 'auto' : '',
     },
 
-    // 键盘状态（仅iOS）
+    // 键盘状态
     keyboardShow: false,    // 键盘可见
     keyboardHeight: 0,      // 键盘高度
 

@@ -97,7 +97,7 @@
                     </div>
                 </div>
             </div>
-            <Scrollbar ref="scroller" class="scroller">
+            <Scrollbar ref="scroller" class="scroller" :touch-content-blur="false">
                 <Alert v-if="taskDetail.task_user !== undefined && getOwner.length === 0" class="receive-box" type="warning">
                     <span class="receive-text">{{$L('该任务尚未被领取，点击这里')}}</span>
                     <EPopover
@@ -758,7 +758,8 @@ export default {
             'taskFiles',
             'taskPriority',
 
-            'formOptions'
+            'formOptions',
+            'keyboardShow'
         ]),
 
         projectName() {
@@ -842,15 +843,17 @@ export default {
         },
 
         taskDetailStyle() {
-            const {modalMode, windowHeight, hasOpenDialog} = this;
-            const height = Math.min(1100, windowHeight)
-            if (modalMode && hasOpenDialog) {
-                const factor = height > 900 ? 200 : 70;
-                return {
-                    maxHeight: (height - factor - 30) + 'px'
+            const {modalMode, keyboardShow, windowHeight, hasOpenDialog} = this;
+            const style = {}
+            if (modalMode) {
+                if (hasOpenDialog) {
+                    style.maxHeight = `${Math.min(1100, windowHeight) - (windowHeight > 900 ? 200 : 70) - 30}px`;
+                }
+                if (keyboardShow && $A.isIos()) {
+                    style.overflow = 'hidden'
                 }
             }
-            return {}
+            return style
         },
 
         cutTime() {

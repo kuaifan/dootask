@@ -608,7 +608,7 @@ export default {
 
         recordConvertFooterStyle() {
             const {recordConvertFocus, keyboardShow, keyboardHeight} = this;
-            return (recordConvertFocus && keyboardShow && keyboardHeight > 120) ? {
+            return (recordConvertFocus && keyboardShow && keyboardHeight > 120 && $A.isIos()) ? {
                 alignItems: 'flex-start',
                 transform: 'translateY(12px)'
             } : {}
@@ -715,7 +715,7 @@ export default {
 
         chatInputBoxStyle({iOSDevices, fullInput, keyboardShow, viewportHeight, safeAreaSize}) {
             const style = {}
-            if (iOSDevices && fullInput && keyboardShow && viewportHeight > 0) {
+            if (iOSDevices && fullInput && keyboardShow && viewportHeight > 0 && $A.isIos()) {
                 style.height = Math.max(100, viewportHeight - 70 - safeAreaSize.top) + 'px'
             } else {
                 style.paddingBottom = `${safeAreaSize.bottom}px`
