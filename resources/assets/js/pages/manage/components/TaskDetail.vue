@@ -431,7 +431,11 @@
             </Scrollbar>
             <TaskUpload ref="upload" class="upload" @on-select-file="onSelectFile"/>
         </div>
-        <div v-show="taskDetail.id > 0" class="task-dialog" :style="dialogStyle">
+        <div
+            v-show="taskDetail.id > 0"
+            ref="taskDialog"
+            class="task-dialog"
+            :style="dialogStyle">
             <template v-if="hasOpenDialog">
                 <ResizeLine
                     class="task-resize"
@@ -485,11 +489,18 @@
                         </div>
                     </div>
                 </div>
-                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
-                <div v-else class="no-dialog"
-                     @drop.prevent="taskPasteDrag($event, 'drag')"
-                     @dragover.prevent="taskDragOver(true, $event)"
-                     @dragleave.prevent="taskDragOver(false, $event)">
+                <ProjectLog
+                    v-if="navActive=='log' && taskId > 0"
+                    ref="log"
+                    :task-id="taskDetail.id"
+                    :show-load="false"
+                    @on-load-change="logLoadChange"/>
+                <div
+                    v-else
+                    class="no-dialog"
+                    @drop.prevent="taskPasteDrag($event, 'drag')"
+                    @dragover.prevent="taskDragOver(true, $event)"
+                    @dragleave.prevent="taskDragOver(false, $event)">
                     <div class="no-input">
                         <ChatInput
                             ref="chatInput"
@@ -668,8 +679,9 @@ export default {
 
             loopForce: false,
 
-            nowTime: $A.dayjs().unix(),
-            nowInterval: null,
+            keepInterval: null,
+            keepIntoTimer: null,
+            keepUnix: $A.dayjs().unix(),
 
             msgText: '',
             msgFile: [],
@@ -732,15 +744,16 @@ export default {
     },
 
     mounted() {
-        this.nowInterval = setInterval(() => {
-            this.nowTime = $A.dayjs().unix();
+        this.keepInterval = setInterval(() => {
+            this.keepUnix = $A.dayjs().unix();
+            this.keepIntoInput();
         }, 1000);
         //
         emitter.on('receiveTask', this.onReceiveShow);
     },
 
     destroyed() {
-        clearInterval(this.nowInterval);
+        clearInterval(this.keepInterval);
         //
         emitter.off('receiveTask', this.onReceiveShow);
     },
@@ -1046,7 +1059,7 @@ export default {
                     this.visibleForce = false;
                     this.addsubForce = false;
                     this.receiveShow = false;
-                    this.$refs.chatInput && this.$refs.chatInput.hidePopover();
+                    this.$refs.chatInput?.hidePopover();
                 }
             },
             immediate: true
@@ -1126,11 +1139,11 @@ export default {
         },
 
         within24Hours(date) {
-            return ($A.dayjs(date).unix() - this.nowTime) < 86400
+            return ($A.dayjs(date).unix() - this.keepUnix) < 86400
         },
 
         expiresFormat(date) {
-            return $A.countDownFormat(this.nowTime, date)
+            return $A.countDownFormat(this.keepUnix, date)
         },
 
         tagColor(taskDetail) {
@@ -1784,7 +1797,7 @@ export default {
         },
 
         onSend(msgText) {
-            this.$refs.chatInput && this.$refs.chatInput.hidePopover();
+            this.$refs.chatInput?.hidePopover();
             if (msgText === 'open') {
                 this.msgDialog(null, true);
             } else {
@@ -2127,6 +2140,25 @@ export default {
                     this.$refs.dialog?.onMsgType(type)
                 }
             }
+        },
+
+        keepIntoInput() {
+            if (!this.$isEEUiApp) {
+                return
+            }
+            this.keepIntoTimer && clearTimeout(this.keepIntoTimer)
+            this.keepIntoTimer = setTimeout(_ => {
+                if (!this.keyboardShow) {
+                    return true;    // 键盘未弹出
+                }
+                if (!this.$refs.chatInput?.isFocus) {
+                    return true;    // 输入框未聚焦
+                }
+                this.$refs.taskDialog?.scrollIntoView({
+                    block: 'end',
+                    behavior: 'smooth'
+                })
+            }, 500)
         }
     }
 }

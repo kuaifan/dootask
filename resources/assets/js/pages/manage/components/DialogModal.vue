@@ -89,7 +89,7 @@ export default {
         },
 
         show(v) {
-            $A.eeuiAppSetScrollDisabled(v)
+            $A.eeuiAppSetScrollDisabled(v && this.windowPortrait)
         }
     },
 

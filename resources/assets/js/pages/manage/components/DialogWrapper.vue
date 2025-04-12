@@ -722,6 +722,9 @@ export default {
             focusLazy: false,
             focusTimer: null,
 
+            keepInterval: null,
+            keepIntoTimer: null,
+
             allMsgs: [],
             tempMsgs: [],
             tempId: $A.randNum(1000000000, 9999999999),
@@ -833,11 +836,13 @@ export default {
     mounted() {
         emitter.on('websocketMsg', this.onWebsocketMsg);
         emitter.on('dialogMsgChange', this.onMsgChange);
+        this.keepInterval = setInterval(this.keepIntoInput, 1000)
         this.windowTouch && document.addEventListener('selectionchange', this.onSelectionchange);
     },
 
     beforeDestroy() {
         this.windowTouch && document.removeEventListener('selectionchange', this.onSelectionchange);
+        clearInterval(this.keepInterval);
         emitter.off('dialogMsgChange', this.onMsgChange);
         emitter.off('websocketMsg', this.onWebsocketMsg);
         this.generateUnreadData(this.dialogId)
@@ -879,7 +884,6 @@ export default {
             'formOptions',
             'cacheTranslationLanguage',
             'longpressData',
-            'viewportHeight',
             'keyboardShow',
             'keyboardHeight',
         ]),
@@ -1414,22 +1418,6 @@ export default {
             }
             document.getSelection().removeAllRanges();
         },
-
-        viewportHeight() {
-            if (this.location !== 'modal' || !this.$isEEUiApp) {
-                return
-            }
-            if (this.viewportTimer) {
-                this.viewportTimer()
-                this.viewportTimer = null
-            }
-            this.viewportTimer = $A.repeatWithCount(() => {
-                this.$refs.footer?.scrollIntoView({
-                    block: 'end',
-                    behavior: 'smooth'
-                })
-            }, 500, 500, 2)
-        }
     },
 
     methods: {
@@ -4391,6 +4379,25 @@ export default {
             } catch (e) {
                 // console.log(e)
             }
+        },
+
+        keepIntoInput() {
+            if (!this.$isEEUiApp) {
+                return
+            }
+            this.keepIntoTimer && clearTimeout(this.keepIntoTimer)
+            this.keepIntoTimer = setTimeout(_ => {
+                if (!this.keyboardShow) {
+                    return true;    // 键盘未弹出
+                }
+                if (!this.$refs.input?.isFocus) {
+                    return true;    // 输入框未聚焦
+                }
+                this.$refs.footer?.scrollIntoView({
+                    block: 'end',
+                    behavior: 'smooth'
+                })
+            }, 500)
         }
     }
 }

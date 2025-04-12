@@ -414,6 +414,9 @@ export default {
             }
             let value = $A.rightDelete(this.cacheServerUrl, "/api/");
             value = $A.leftDelete(value, "http://");
+            if (!value && /^https?:/.test(window.location.protocol)) {
+                value = window.location.host
+            }
             $A.modalInput({
                 title: "使用 SSO 登录",
                 value,

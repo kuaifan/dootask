@@ -39,6 +39,12 @@ export default {
         }
     },
 
+    watch: {
+        show(v) {
+            $A.eeuiAppSetScrollDisabled(v && this.windowPortrait)
+        }
+    },
+
     mounted() {
         emitter.on('handleMoveTop', this.handleMoveTop);
     },
