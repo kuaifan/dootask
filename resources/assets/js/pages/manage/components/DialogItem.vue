@@ -32,7 +32,7 @@
             <div
                 class="dialog-avatar"
                 @pointerdown="handleOperation">
-                <UserAvatar :userid="source.userid" :size="30" @open-dialog="onOpenDialog"/>
+                <UserAvatar :userid="source.userid" :size="30" click-open-detail/>
             </div>
             <DialogView
                 :msg-data="source"
@@ -218,14 +218,6 @@ export default {
                 data: this.source,
                 element: currentTarget
             })
-        },
-
-        onOpenDialog(userid) {
-            if (this.dialogData.type == 'group' || ![this.dialogData.dialog_user?.userid, this.userId].includes(userid)) {
-                this.$store.dispatch("openDialogUserid", userid).catch(({msg}) => {
-                    $A.modalError(msg)
-                });
-            }
         },
 
         onViewReply(data) {

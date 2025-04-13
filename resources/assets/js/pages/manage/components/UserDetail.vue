@@ -11,7 +11,7 @@
                     :userid="userData.userid"
                     :size="120"
                     :show-state-dot="false"
-                    @open-dialog="onOpenAvatar"/>
+                    @on-click="onOpenAvatar"/>
                 <ul>
                     <li>
                         <h1>{{userData.nickname}}</h1>

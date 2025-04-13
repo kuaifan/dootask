@@ -2,7 +2,7 @@
     <div
         v-if="user"
         class="avatar-wrapper common-avatar"
-        :class="{'avatar-pointer': clickOpenDialog}"
+        :class="{'avatar-pointer': clickOpenDetail}"
         @click="onClickOpen">
         <div
             v-if="showIcon"
@@ -174,10 +174,10 @@ export default {
         },
 
         onClickOpen() {
-            if (this.clickOpenDialog) {
-                this.openDialog()
+            if (this.clickOpenDetail) {
+                emitter.emit('openUser', this.userid);
             } else {
-                this.$emit('open-dialog', this.userid)
+                this.$emit('on-click', this.userid)
             }
         },
 

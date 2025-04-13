@@ -16,6 +16,10 @@ export default {
             type: Boolean,
             default: false
         },
+        showStateDot: {
+            type: Boolean,
+            default: true
+        },
         nameText: {
             type: String,
             default: ''   // showName = true 时有效，留空就显示会员昵称
@@ -28,16 +32,12 @@ export default {
             type: String,
             default: ''
         },
-        clickOpenDialog: {
+        clickOpenDetail: {
             type: Boolean,
             default: false
         },
         userResult: {
             default: null
-        },
-        showStateDot: {
-            type: Boolean,
-            default: true
         }
     }
 }

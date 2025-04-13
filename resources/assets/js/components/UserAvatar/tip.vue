@@ -19,11 +19,11 @@
                 :size="size"
                 :showIcon="showIcon"
                 :showName="showName"
+                :showStateDot="showStateDot"
                 :nameText="nameText"
                 :borderWitdh="borderWitdh"
                 :borderColor="borderColor"
-                :clickOpenDialog="clickOpenDialog"
-                :showStateDot="showStateDot"
+                :clickOpenDetail="clickOpenDetail"
                 :userResult="onUserResult"/>
         </div>
     </ETooltip>

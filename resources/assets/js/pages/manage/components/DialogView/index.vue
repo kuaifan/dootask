@@ -1,15 +1,15 @@
 <template>
     <div class="dialog-view" :class="viewClass" :data-id="msgData.id">
         <!--昵称-->
-        <div v-if="dialogType === 'group'" class="dialog-username">
-            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" click-open-dialog/>
+        <div v-if="dialogType === 'group'" class="dialog-username" @pointerdown="handleOperation($event, 'mention')">
+            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" click-open-detail/>
         </div>
 
         <div
             class="dialog-head"
             :class="headClass"
             @click="handleClick"
-            @pointerdown="handleOperation">
+            @pointerdown="handleOperation($event, 'operateMsg')">
             <!--回复-->
             <div v-if="!hideReply && msgData.reply_id && showReplyData(msgData.msg.reply_data)" class="dialog-reply no-dark-content" :class="replyClass" @click="viewReply">
                 <div class="reply-avatar">
@@ -392,9 +392,9 @@ export default {
     },
 
     methods: {
-        handleOperation({currentTarget}) {
+        handleOperation({currentTarget}, type) {
             this.$store.commit("longpress/set", {
-                type: 'operateMsg',
+                type,
                 data: this.msgData,
                 element: currentTarget
             })
