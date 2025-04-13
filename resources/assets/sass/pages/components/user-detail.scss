@@ -34,12 +34,17 @@
                     gap: 16px;
                     padding: 84px 24px;
 
+                    .avatar-wrapper {
+                        cursor: pointer;
+                    }
+
                     > ul {
+                        width: 80%;
+
                         > li {
                             list-style: none;
                             display: flex;
                             justify-content: center;
-                            max-width: 80%;
                             margin: 12px auto;
 
                             > span {

@@ -245,10 +245,10 @@
                                         <i class="taskfont">&#xe63f;</i>
                                     </div>
                                 </DropdownItem>
-                                <DropdownItem @click.native="handleUserClick('avatar')">
+                                <DropdownItem @click.native="handleUserClick('detail')">
                                     <div class="item">
-                                        {{ $L('查看头像') }}
-                                        <i class="taskfont">&#xe7bc;</i>
+                                        {{ $L('查看详情') }}
+                                        <i class="taskfont">&#xe71b;</i>
                                     </div>
                                 </DropdownItem>
                             </template>
@@ -1184,8 +1184,8 @@ export default {
                     }
                     break;
 
-                case 'avatar':
-                    this.$store.dispatch("previewImage", this.operateItem.userimg)
+                case 'detail':
+                    emitter.emit("openUser", this.operateItem.userid)
                     break;
             }
         },

@@ -18,7 +18,7 @@
                     </div>
 
                     <div class="dialog-block">
-                        <div class="dialog-avatar" @click="onViewAvatar">
+                        <div class="dialog-avatar" @click="onViewDetail">
                             <template v-if="dialogData.type=='group'">
                                 <EAvatar v-if="dialogData.avatar" class="img-avatar" :src="dialogData.avatar" :size="42"></EAvatar>
                                 <i v-else-if="dialogData.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
@@ -41,7 +41,7 @@
                                 <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
                                     <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
                                 </template>
-                                <h2 class="user-select-auto" @click="onViewAvatar">{{dialogData.name}}</h2>
+                                <h2 class="user-select-auto" @click="onViewDetail">{{dialogData.name}}</h2>
                                 <em v-if="peopleNum > 0" @click="onDialogMenu('groupInfo')">({{peopleNum}})</em>
                                 <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
                                 <Tag v-if="dialogData.type === 'user' && approvaUserStatus" class="after" color="red" :fade="false">{{$L(approvaUserStatus)}}</Tag>
@@ -83,8 +83,8 @@
                                 <div>{{$L('独立窗口')}}</div>
                             </EDropdownItem>
                             <template v-if="dialogData.type === 'user'">
-                                <EDropdownItem v-if="dialogData.userimg" command="previewAvatar">
-                                    <div>{{$L('查看头像')}}</div>
+                                <EDropdownItem command="previewDetail">
+                                    <div>{{$L('查看详情')}}</div>
                                 </EDropdownItem>
                                 <EDropdownItem v-if="isManageBot" command="modifyNormal">
                                     <div>{{$L('修改资料')}}</div>
@@ -2712,6 +2712,10 @@ export default {
                     this.modifyShow = true
                     break;
 
+                case "previewDetail":
+                    emitter.emit("openUser", this.dialogData.dialog_user?.userid)
+                    break;
+
                 case "previewAvatar":
                     if (this.dialogData.type === 'user') {
                         this.$store.dispatch("previewImage", this.dialogData.userimg)
@@ -4272,7 +4276,7 @@ export default {
             return "";
         },
 
-        onViewAvatar(e) {
+        onViewDetail(e) {
             if (this.dialogData.type == 'group') {
                 let src = null
                 if (e.target.tagName === "IMG") {
