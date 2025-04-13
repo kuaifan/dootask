@@ -19,6 +19,7 @@
             <Dropdown
                 trigger="custom"
                 :visible="operateVisible"
+                placement="bottom-start"
                 @on-clickoutside="operateVisible = false"
                 transfer>
                 <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
@@ -117,11 +118,12 @@ export default {
     },
 
     mounted() {
+        const containsName = this.windowPortrait ? "task-detail" : "ivu-modal-wrap";
         let parent = this.$parent.$el.parentNode;
         while (parent) {
-            if (parent.classList?.contains(".ivu-modal-wrap")) {
+            if (parent.classList?.contains(containsName)) {
                 this.listener = parent;
-                parent.addEventListener("scroll", this.onTouchstart);
+                this.listener.addEventListener("scroll", this.onTouchstart);
                 break;
             }
             parent = parent.parentNode;
@@ -197,7 +199,7 @@ export default {
             if (!this.windowTouch) {
                 return
             }
-            if (Date.now() - this.operateHiddenTime < 300) {
+            if (Date.now() - this.operateHiddenTime < 350) {
                 return;
             }
             event.stopPropagation()

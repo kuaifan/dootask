@@ -35,7 +35,7 @@
                         </li>
                         <li>
                             <span>{{$L('最后在线')}}: </span>
-                            {{userData.line_at || '-'}}
+                            {{userData.line_at ? $A.dayjs(userData.line_at).format("YYYY-MM-DD HH:mm") : '-'}}
                         </li>
                     </template>
                 </ul>

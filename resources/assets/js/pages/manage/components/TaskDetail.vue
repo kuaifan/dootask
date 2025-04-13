@@ -59,7 +59,7 @@
         class="task-detail"
         :class="taskDetailClass"
         :style="taskDetailStyle">
-        <div v-show="taskDetail.id > 0" class="task-info">
+        <div v-show="taskDetail.id > 0" class="task-info" v-resize-observer="scrollIntoInput">
             <div class="head">
                 <TaskMenu
                     :ref="`taskMenu_${taskDetail.id}`"
@@ -599,6 +599,7 @@ import ResizeLine from "../../../components/ResizeLine.vue";
 import TaskContentHistory from "./TaskContentHistory.vue";
 import TaskTagAdd from "./ProjectTaskTag/add.vue";
 import emitter from "../../../store/events";
+import resizeObserver from "../../../directives/resize-observer";
 
 export default {
     name: "TaskDetail",
@@ -618,6 +619,7 @@ export default {
         TaskUpload,
         TaskPriority,
     },
+    directives: {resizeObserver},
     props: {
         taskId: {
             type: Number,
@@ -1653,9 +1655,7 @@ export default {
         },
 
         onFocus() {
-            this.$refs.taskDialog?.scrollIntoView({
-                block: "end"
-            })
+            this.scrollIntoInput()
         },
 
         onEventMore(e) {
@@ -2150,14 +2150,29 @@ export default {
             }
         },
 
+        autoScrollInto() {
+            return this.$isEEUiApp
+                && this.windowPortrait
+                && this.$refs.chatInput?.isFocus
+        },
+
+        scrollIntoInput() {
+            if (!this.autoScrollInto()) {
+                return;
+            }
+            this.$refs.taskDialog?.scrollIntoView({
+                block: "end"
+            })
+        },
+
         keepIntoInput() {
-            if (!this.$isEEUiApp) {
-                return
+            if (!this.autoScrollInto()) {
+                return;
             }
             this.keepIntoTimer && clearTimeout(this.keepIntoTimer)
             this.keepIntoTimer = setTimeout(_ => {
-                if (!this.$refs.chatInput?.isFocus) {
-                    return true;    // 输入框未聚焦
+                if (!this.autoScrollInto()) {
+                    return;
                 }
                 this.$store.dispatch("scrollBottom", this.$refs.taskDialog)
             }, 500)

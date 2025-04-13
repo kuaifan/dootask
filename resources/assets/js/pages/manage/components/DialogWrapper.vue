@@ -2365,10 +2365,6 @@ export default {
             this.focusTimer && clearTimeout(this.focusTimer)
             this.focusLazy = true
             this.$emit("on-focus")
-            //
-            this.$refs.footer?.scrollIntoView({
-                block: "end"
-            })
         },
 
         onEventBlur() {
@@ -4393,14 +4389,21 @@ export default {
             }
         },
 
+        autoScrollInto() {
+            return this.location === "modal"
+                && this.$isEEUiApp
+                && this.windowPortrait
+                && this.$refs.input?.isFocus
+        },
+
         keepIntoInput() {
-            if (!this.$isEEUiApp) {
-                return
+            if (!this.autoScrollInto()) {
+                return;
             }
             this.keepIntoTimer && clearTimeout(this.keepIntoTimer)
             this.keepIntoTimer = setTimeout(_ => {
-                if (!this.$refs.input?.isFocus) {
-                    return true;    // 输入框未聚焦
+                if (!this.autoScrollInto()) {
+                    return;
                 }
                 this.$store.dispatch("scrollBottom", this.$refs.footer)
             }, 500)
