@@ -4395,9 +4395,6 @@ export default {
             }
             this.keepIntoTimer && clearTimeout(this.keepIntoTimer)
             this.keepIntoTimer = setTimeout(_ => {
-                if (!this.keyboardShow) {
-                    return true;    // 键盘未弹出
-                }
                 if (!this.$refs.input?.isFocus) {
                     return true;    // 输入框未聚焦
                 }

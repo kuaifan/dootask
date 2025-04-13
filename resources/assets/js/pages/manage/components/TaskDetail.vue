@@ -746,7 +746,7 @@ export default {
     mounted() {
         this.keepInterval = setInterval(() => {
             this.keepUnix = $A.dayjs().unix();
-            this.keepIntoInput();
+            this.keepIntoInput(500);
         }, 1000);
         //
         emitter.on('receiveTask', this.onReceiveShow);
@@ -1131,6 +1131,10 @@ export default {
             }
             $A.setStorage('task.dialogWidth', w);
         },
+
+        taskContent(v) {
+            v && this.keepIntoInput(10)
+        }
     },
 
     methods: {
@@ -2143,15 +2147,12 @@ export default {
             }
         },
 
-        keepIntoInput() {
+        keepIntoInput(delay) {
             if (!this.$isEEUiApp) {
                 return
             }
             this.keepIntoTimer && clearTimeout(this.keepIntoTimer)
             this.keepIntoTimer = setTimeout(_ => {
-                if (!this.keyboardShow) {
-                    return true;    // 键盘未弹出
-                }
                 if (!this.$refs.chatInput?.isFocus) {
                     return true;    // 输入框未聚焦
                 }
@@ -2159,7 +2160,7 @@ export default {
                     block: 'end',
                     behavior: 'smooth'
                 })
-            }, 500)
+            }, delay)
         }
     }
 }

@@ -922,17 +922,19 @@
 
     &.completed {
         .task-info {
-            &:before {
-                content: "\f373";
-                font-family: Ionicons, serif;
-                pointer-events: none;
-                position: absolute;
-                top: 0;
-                right: 13%;
-                font-size: 72px;
-                color: #19be6b;
-                opacity: .2;
-                z-index: 1;
+            .head {
+                &:after {
+                    content: "\f373";
+                    font-family: Ionicons, serif;
+                    pointer-events: none;
+                    position: absolute;
+                    top: 0;
+                    right: 13%;
+                    font-size: 72px;
+                    color: #19be6b;
+                    opacity: .2;
+                    z-index: 2;
+                }
             }
         }
     }

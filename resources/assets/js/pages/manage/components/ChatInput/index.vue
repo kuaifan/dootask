@@ -918,6 +918,13 @@ export default {
                 window.scrollTo(0, 0)
             }
         },
+
+        keyboardShow(val) {
+            if (!val && this.isFocus) {
+                this.isFocus = false
+                this.quill?.blur()
+            }
+        },
     },
     methods: {
         init() {
