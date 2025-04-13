@@ -1312,6 +1312,7 @@ export default {
                         },
                         onCancel: () => {
                             this.$refs.desc.updateContent(this.taskContent);
+                            this.$refs.desc.updateTouchContent();
                         }
                     });
                     return;

@@ -43,7 +43,13 @@
             <Icon type="ios-loading" class="icon-loading"></Icon>
             <div>{{$L('正在上传文件...')}}</div>
         </Spin>
-        <Modal v-model="transfer" class="teditor-transfer" @on-visible-change="transferChange" footer-hide fullscreen transfer>
+        <Modal
+            v-model="transfer"
+            class="teditor-transfer"
+            @on-visible-change="transferChange"
+            footer-hide
+            fullscreen
+            transfer>
             <div slot="close">
                 <Button type="primary" size="small">{{$L('完成')}}</Button>
             </div>

@@ -41,9 +41,15 @@
                             }
                         }
 
+                        .task-info {
+                            .scroller {
+                                margin-bottom: 4px;
+                            }
+                        }
+
                         .task-dialog {
                             padding-bottom: calc(var(--navigation-bar-height) + 20px);
-                            margin-top: 4px;
+                            margin-top: 0;
                         }
                     }
                 }
