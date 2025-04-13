@@ -41,7 +41,7 @@
                                 <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
                                     <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
                                 </template>
-                                <h2 class="user-select-auto">{{dialogData.name}}</h2>
+                                <h2 class="user-select-auto" @click="onViewAvatar">{{dialogData.name}}</h2>
                                 <em v-if="peopleNum > 0" @click="onDialogMenu('groupInfo')">({{peopleNum}})</em>
                                 <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
                                 <Tag v-if="dialogData.type === 'user' && approvaUserStatus" class="after" color="red" :fade="false">{{$L(approvaUserStatus)}}</Tag>
@@ -4273,15 +4273,19 @@ export default {
         },
 
         onViewAvatar(e) {
-            let src = null
-            if (e.target.tagName === "IMG") {
-                src = e.target.src
-            } else {
-                src = $A(e.target).find("img").attr("src")
+            if (this.dialogData.type == 'group') {
+                let src = null
+                if (e.target.tagName === "IMG") {
+                    src = e.target.src
+                } else {
+                    src = $A(e.target).find("img").attr("src")
+                }
+                if (src) {
+                    this.$store.dispatch("previewImage", src)
+                }
+                return;
             }
-            if (src) {
-                this.$store.dispatch("previewImage", src)
-            }
+            emitter.emit("openUser", this.dialogData.dialog_user?.userid)
         },
 
         onTopOperate() {

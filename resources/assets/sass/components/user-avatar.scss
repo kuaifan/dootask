@@ -126,23 +126,4 @@
             }
         }
     }
-    .avatar-icons {
-        margin-top: 12px;
-        border-top: 1px solid rgba(244, 244, 245, 0.5);
-        padding: 8px 0 0;
-        display: flex;
-        align-items: center;
-        > i {
-            cursor: pointer;
-            font-size: 22px;
-            margin-right: 12px;
-            color: #F4F4F5;
-            &:last-child {
-                margin-right: 0;
-            }
-            &:hover {
-                color: #ffffff;
-            }
-        }
-    }
 }

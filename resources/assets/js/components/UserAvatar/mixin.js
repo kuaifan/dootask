@@ -34,6 +34,10 @@ export default {
         },
         userResult: {
             default: null
+        },
+        showStateDot: {
+            type: Boolean,
+            default: true
         }
     }
 }

@@ -1,0 +1,56 @@
+.common-user-detail-modal {
+    .ivu-modal {
+        max-width: 90%;
+
+        &.ivu-modal-fullscreen {
+            max-width: none;
+
+            .ivu-modal-content {
+                margin-top: calc(var(--status-bar-height) + 46px);
+                margin-bottom: 0;
+                border-top-left-radius: 18px !important;
+                border-top-right-radius: 18px !important;
+
+                .ivu-modal-body {
+                    .user-detail-body {
+                        padding-bottom: var(--navigation-bar-height);
+                    }
+                }
+            }
+        }
+
+        .ivu-modal-content {
+            overflow: hidden;
+
+            .ivu-modal-body {
+                padding: 0 !important;
+                display: flex;
+                flex-direction: column;
+
+                .user-detail-body {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 16px;
+                    padding: 84px 24px;
+
+                    > ul {
+                        > li {
+                            list-style: none;
+                            display: flex;
+                            justify-content: center;
+                            max-width: 80%;
+                            margin: 12px auto;
+
+                            > span {
+                                flex-shrink: 0;
+                                opacity: 0.8;
+                                padding-right: 4px;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

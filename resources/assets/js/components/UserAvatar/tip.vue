@@ -11,9 +11,6 @@
             <p v-if="user.delete_at"><strong>{{$L('删除时间')}}: {{user.delete_at}}</strong></p>
             <p v-else-if="user.disable_at"><strong>{{$L('离职时间')}}: {{user.disable_at}}</strong></p>
             <slot name="end"/>
-            <div v-if="showMenu" class="avatar-icons">
-                <Icon type="ios-chatbubbles" @click="onOpenDialog"/>
-            </div>
         </div>
         <div>
             <UserAvatar
@@ -26,6 +23,7 @@
                 :borderWitdh="borderWitdh"
                 :borderColor="borderColor"
                 :clickOpenDialog="clickOpenDialog"
+                :showStateDot="showStateDot"
                 :userResult="onUserResult"/>
         </div>
     </ETooltip>
@@ -39,10 +37,6 @@ export default {
     mixins: [mixin],
     props: {
         tooltipDisabled: {
-            type: Boolean,
-            default: false
-        },
-        showIconMenu: {
             type: Boolean,
             default: false
         },
@@ -75,26 +69,12 @@ export default {
     },
 
     computed: {
-        showMenu() {
-            if (this.$store.state.userId == this.userid) {
-                return false
-            }
-            if (this.user.delete_at || this.user.disable_at) {
-                return false
-            }
-            return this.showIconMenu
-        },
-
         isBot() {
             return !!(this.user && this.user.bot);
         },
     },
 
     methods: {
-        onOpenDialog() {
-            this.$refs.avatar.openDialog();
-        },
-
         onUserResult(info) {
             if (typeof this.userResult === "function") {
                 this.userResult(info);
