@@ -2365,6 +2365,10 @@ export default {
             this.focusTimer && clearTimeout(this.focusTimer)
             this.focusLazy = true
             this.$emit("on-focus")
+            //
+            this.$refs.footer?.scrollIntoView({
+                block: "end"
+            })
         },
 
         onEventBlur() {
@@ -4398,10 +4402,7 @@ export default {
                 if (!this.$refs.input?.isFocus) {
                     return true;    // 输入框未聚焦
                 }
-                this.$refs.footer?.scrollIntoView({
-                    block: 'end',
-                    behavior: 'smooth'
-                })
+                this.$store.dispatch("scrollBottom", this.$refs.footer)
             }, 500)
         }
     }

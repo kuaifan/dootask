@@ -510,6 +510,7 @@
                             :maxlength="200000"
                             :placeholder="$L('输入消息...')"
                             :send-menu="false"
+                            @on-focus="onFocus"
                             @on-more="onEventMore"
                             @on-file="onSelectFile"
                             @on-record="onRecord"
@@ -746,7 +747,7 @@ export default {
     mounted() {
         this.keepInterval = setInterval(() => {
             this.keepUnix = $A.dayjs().unix();
-            this.keepIntoInput(500);
+            this.keepIntoInput();
         }, 1000);
         //
         emitter.on('receiveTask', this.onReceiveShow);
@@ -1130,10 +1131,6 @@ export default {
                 return;
             }
             $A.setStorage('task.dialogWidth', w);
-        },
-
-        taskContent(v) {
-            v && this.keepIntoInput(10)
         }
     },
 
@@ -1655,6 +1652,12 @@ export default {
             }
         },
 
+        onFocus() {
+            this.$refs.taskDialog?.scrollIntoView({
+                block: "end"
+            })
+        },
+
         onEventMore(e) {
             if (['image', 'file'].includes(e)) {
                 this.onUploadClick(false)
@@ -2147,7 +2150,7 @@ export default {
             }
         },
 
-        keepIntoInput(delay) {
+        keepIntoInput() {
             if (!this.$isEEUiApp) {
                 return
             }
@@ -2156,11 +2159,8 @@ export default {
                 if (!this.$refs.chatInput?.isFocus) {
                     return true;    // 输入框未聚焦
                 }
-                this.$refs.taskDialog?.scrollIntoView({
-                    block: 'end',
-                    behavior: 'smooth'
-                })
-            }, delay)
+                this.$store.dispatch("scrollBottom", this.$refs.taskDialog)
+            }, 500)
         }
     }
 }

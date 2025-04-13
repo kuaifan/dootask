@@ -1163,6 +1163,25 @@ export default {
         }
     },
 
+    /**
+     * 滚动到底部（将 el 底部对齐到网页底部）
+     * @param state
+     * @param el
+     */
+    scrollBottom({state}, el) {
+        if (!el) {
+            return
+        }
+        const rect = el.getBoundingClientRect();
+        if (!rect) {
+            return;
+        }
+        window.scrollTo({
+            top: rect.bottom + state.safeAreaSize.bottom,
+            behavior: 'smooth'
+        });
+    },
+
     /** *****************************************************************************************/
     /** *************************************** 新窗口打开 ****************************************/
     /** *****************************************************************************************/
