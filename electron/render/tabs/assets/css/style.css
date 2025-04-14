@@ -23,11 +23,17 @@ html, body {
     color: #333;
 }
 
+.app {
+    display: flex;
+    align-items: center;
+}
+
 .nav {
     font-family: var(--tab-font-family);
     font-feature-settings: 'clig', 'kern';
+    flex: 1;
+    width: 0;
     display: flex;
-    width: 100%;
     cursor: default;
     background-color: var(--tab-background);
     -webkit-app-region: drag;
@@ -36,7 +42,7 @@ html, body {
 .nav ul {
     display: flex;
     height: 35px;
-    margin: 5px 46px 0 0;
+    margin-top: 5px;
     user-select: none;
     overflow-x: auto;
     overflow-y: hidden;
@@ -96,14 +102,13 @@ html, body {
 
 /* 浏览器打开 */
 .browser {
-    position: absolute;
-    top: 0;
-    right: 0;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    height: 38px;
+    height: 40px;
     padding: 0 14px;
     cursor: pointer;
+    background-color: var(--tab-background);
     -webkit-app-region: none;
 }
 .browser span {

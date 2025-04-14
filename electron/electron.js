@@ -442,11 +442,16 @@ function createChildWindow(args) {
     // 加载地址
     const hash = `${args.hash || args.path}`;
     if (/^https?:/i.test(hash)) {
-        browser.loadURL(hash).then(_ => { }).catch(_ => { })
+        browser.loadURL(hash)
+            .then(_ => { })
+            .catch(_ => { })
     } else if (isPreload) {
-        browser.webContents.executeJavaScript(`if(typeof window.__initializeApp === 'function'){window.__initializeApp('${hash}')}else{throw new Error('no function')}`, true).catch(() => {
-            utils.loadUrlOrFile(browser, devloadUrl, hash)
-        });
+        browser
+            .webContents
+            .executeJavaScript(`if(typeof window.__initializeApp === 'function'){window.__initializeApp('${hash}')}else{throw new Error('no function')}`, true)
+            .catch(() => {
+                utils.loadUrlOrFile(browser, devloadUrl, hash)
+            });
     } else {
         utils.loadUrlOrFile(browser, devloadUrl, hash)
     }
@@ -567,10 +572,6 @@ function createWebTabWindow(args) {
         args = {url: args}
     }
 
-    if (!allowedUrls.test(args.url)) {
-        return;
-    }
-
     // 创建父级窗口
     if (!webTabWindow) {
         const titleBarOverlay = {
@@ -601,6 +602,12 @@ function createWebTabWindow(args) {
                 nativeWindowOpen: true
             },
         }, userConf.get('webTabWindow', {})))
+
+        const originalClose = webTabWindow.close;
+        webTabWindow.close = function() {
+            webTabClosedByShortcut = true;
+            return originalClose.apply(this, arguments);
+        };
 
         webTabWindow.on('resize', () => {
             resizeWebTab(0)

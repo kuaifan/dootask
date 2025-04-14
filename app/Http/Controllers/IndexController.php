@@ -471,7 +471,7 @@ class IndexController extends InvokeController
                                 action: "eeuiAppSendMessage",
                                 data: [
                                     {
-                                        action: 'setPageData',
+                                        action: 'setPageData',  // 设置页面数据
                                         data: {
                                             showProgress: true,
                                             titleFixed: true,
@@ -479,7 +479,7 @@ class IndexController extends InvokeController
                                         }
                                     },
                                     {
-                                        action: 'createTarget',
+                                        action: 'createTarget', // 创建目标（访问新地址）
                                         url: "{$redirectUrl}",
                                     }
                                 ]

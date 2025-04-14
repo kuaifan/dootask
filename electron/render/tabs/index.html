@@ -20,7 +20,7 @@
             </li>
         </ul>
     </div>
-    <div v-if="tabs.length > 0" class="browser" @click="onBrowser">
+    <div v-if="canBrowser" class="browser" @click="onBrowser">
         <span></span>
     </div>
 </div>
@@ -119,15 +119,23 @@
             }
         },
         computed: {
+            activeItem() {
+                if (this.tabs.length === 0) {
+                    return null
+                }
+                return this.tabs.find(item => item.id === this.activeId)
+            },
             pageTitle() {
-                const activeItem = this.tabs.find(item => item.id === this.activeId)
-                return activeItem ? activeItem.title : 'Untitled'
+                return this.activeItem ? this.activeItem.title : 'Untitled'
+            },
+            canBrowser() {
+                return !(this.activeItem && /^file:/.test(this.activeItem.url))
             }
         },
         watch: {
             pageTitle(title) {
                 document.title = title;
-            }
+            },
         },
         methods: {
             onSwitch(item) {
