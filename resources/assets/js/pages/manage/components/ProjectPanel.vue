@@ -1176,6 +1176,8 @@ export default {
                 $A.modalError(msg);
                 this.sortDisabled = false;
                 this.$store.dispatch("getTaskForProject", this.projectId).catch(() => {})
+            }).finally(_ => {
+                this.handleColumnDebounce();
             });
         },
 
