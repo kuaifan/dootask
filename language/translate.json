@@ -29422,5 +29422,41 @@
         "fr": "Échec du démarrage d'une nouvelle session avec l'IA",
         "id": "Gagal memulai sesi baru dengan AI",
         "ru": "Не удалось начать новый сеанс с ИИ"
+    },
+    {
+        "key": "前一天",
+        "zh": "",
+        "zh-CHT": "前一天",
+        "en": "Previous Day",
+        "ko": "전날",
+        "ja": "前日",
+        "de": "Vorheriger Tag",
+        "fr": "Jour précédent",
+        "id": "Hari sebelumnya",
+        "ru": "Предыдущий день"
+    },
+    {
+        "key": "后一天",
+        "zh": "",
+        "zh-CHT": "後一天",
+        "en": "Next Day",
+        "ko": "다음 날",
+        "ja": "次の日",
+        "de": "Nächster Tag",
+        "fr": "Jour suivant",
+        "id": "Hari berikutnya",
+        "ru": "Следующий день"
+    },
+    {
+        "key": "打开会话窗口",
+        "zh": "",
+        "zh-CHT": "打開會話窗口",
+        "en": "Open Session Window",
+        "ko": "세션 창 열기",
+        "ja": "セッションウィンドウを開く",
+        "de": "Sitzungsfenster öffnen",
+        "fr": "Ouvrir la fenêtre de session",
+        "id": "Buka Jendela Sesi",
+        "ru": "Открыть окно сессии"
     }
 ]

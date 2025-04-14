@@ -1194,27 +1194,17 @@ export default {
      */
     userUrl({state}, url) {
         return new Promise(resolve => {
+            // 基本参数
             const params = {
                 language: languageName,
                 theme: state.themeConf,
                 userid: state.userId,
             }
+            // 如果是访问：服务器域名 或 本地文件，则添加 token 参数
             if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) || $A.getProtocol(url) == "file:") {
                 params.token = state.userToken
             }
             resolve($A.urlAddParams(url, params))
-        })
-    },
-
-    /**
-     * 打开子窗口（App）
-     * @param dispatch
-     * @param objects
-     */
-    openAppChildPage({dispatch}, objects) {
-        dispatch("userUrl", objects.params.url).then(url => {
-            objects.params.url = url
-            $A.eeuiAppOpenPage(objects)
         })
     },
 
@@ -1260,6 +1250,16 @@ export default {
                 }
             })
         })
+    },
+
+    /**
+     * 打开子窗口（App）
+     * @param dispatch
+     * @param objects
+     */
+    async openAppChildPage({dispatch}, objects) {
+        objects.params.url = await dispatch("userUrl", objects.params.url)
+        $A.eeuiAppOpenPage(objects)
     },
 
     /**
