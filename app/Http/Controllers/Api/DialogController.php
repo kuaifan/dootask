@@ -19,6 +19,7 @@ use App\Module\TimeRange;
 use App\Module\MsgTool;
 use App\Module\Table\OnlineData;
 use App\Models\FileContent;
+use App\Models\ProjectTask;
 use App\Models\AbstractModel;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
@@ -1541,6 +1542,45 @@ class DialogController extends AbstractController
         }
         //
         return WebSocketDialogMsg::sendMsgBatch($user, $userids, $dialogids, $fileMsg);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/sendtaskid          29. 通过任务ID发送任务
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendtaskid
+     *
+     * @apiParam {Number} task_id           消息ID
+     * @apiParam {Array} dialogids          转发给的对话ID
+     * @apiParam {Array} userids            转发给的成员ID
+     * @apiParam {String} leave_message     转发留言
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__sendtaskid()
+    {
+        $user = User::auth();
+        //
+        $task_id = intval(Request::input("task_id"));
+        $dialogids = Request::input('dialogids');
+        $userids = Request::input('userids');
+        $leave_message = Request::input('leave_message');
+        //
+        if (empty($dialogids) && empty($userids)) {
+            return Base::retError("请选择对话或成员");
+        }
+        //
+        $task = ProjectTask::userTask($task_id, null);
+        $taskMsg = "<p><span class=\"mention task\" data-id=\"{$task_id}\">#{$task->name}</span></p>";
+        if ($leave_message) {
+            $taskMsg .= "<p>{$leave_message}</p>";
+        }
+        //
+        return WebSocketDialogMsg::sendMsgBatch($user, $userids, $dialogids, $taskMsg);
     }
 
     /**

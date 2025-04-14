@@ -43,7 +43,12 @@
 
                         <template v-if="task.parent_id === 0">
                             <template v-if="operationShow">
-                                <EDropdownItem :divided="turns.length > 0" command="archived">
+                                <EDropdownItem command="send" :divided="turns.length > 0">
+                                    <div class="item">
+                                        <i class="taskfont movefont">&#xe606;</i>{{$L('发送')}}
+                                    </div>
+                                </EDropdownItem>
+                                <EDropdownItem command="archived">
                                     <div class="item">
                                         <Icon type="ios-filing" />{{$L(task.archived_at ? '还原归档' : '归档')}}
                                     </div>
@@ -89,16 +94,28 @@
             footer-hide>
             <TaskMove ref="addTask" v-model="moveTaskShow" :task="task"/>
         </Modal>
+
+        <!-- 发送任务 -->
+        <Forwarder
+            ref="forwarder"
+            :title="$L('发送任务')"
+            :confirm-title="$L('确认发送')"
+            :confirm-placeholder="$L('附言')"
+            :multiple-max="50"
+            :before-submit="onSendTask"
+            sender-hidden/>
     </div>
 </template>
 
 <script>
 import {mapGetters, mapState} from "vuex";
 import TaskMove from "./TaskMove";
+import Forwarder from "./Forwarder/index.vue";
 
 export default {
     name: "TaskOperation",
     components: {
+        Forwarder,
         TaskMove,
     },
     data() {
@@ -285,6 +302,10 @@ export default {
                     })
                     break;
 
+                case 'send':
+                    this.$refs.forwarder.onSelection()
+                    break;
+
                 case 'archived':
                 case 'remove':
                     this.archivedOrRemoveTask(command);
@@ -435,6 +456,28 @@ export default {
         getStyleComputedProperty(element, property) {
             const css = window.getComputedStyle(element, null);
             return css[property];
+        },
+
+        onSendTask({dialogids, userids, message}) {
+            return new Promise((resolve, reject) => {
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/sendtaskid',
+                    data: {
+                        dialogids,
+                        userids,
+                        leave_message: message,
+                        task_id: this.task.id
+                    }
+                }).then(({data, msg}) => {
+                    this.$store.dispatch("saveDialogMsg", data.msgs);
+                    this.$store.dispatch("updateDialogLastMsg", data.msgs);
+                    $A.messageSuccess(msg);
+                    resolve();
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    reject();
+                });
+            })
         }
     },
 }
