@@ -256,17 +256,21 @@ export default {
                 return;
             }
             this.loadIng++;
+            const callData = {
+                task_id: this.task.id,
+                project_id: this.cascader[0],
+                column_id: this.cascader[1],
+                flow_item_id: this.updateData.flow.flow_item_id || 0,
+                owner: this.updateData.owner_userids,
+                assist: this.updateData.assist_userids,
+            };
+            if (!this.updateData.flow.flow_item_id && this.updateData.flow.flow_item_status) {
+                // 没有工作流 但是有状态
+                callData.completed = this.updateData.flow.complete_at ? 1 : 0;
+            }
             this.$store.dispatch("call", {
                 url: "project/task/move",
-                data: {
-                    task_id: this.task.id,
-                    project_id: this.cascader[0],
-                    column_id: this.cascader[1],
-                    flow_item_id: this.updateData.flow.flow_item_id || 0,
-                    complete_at: this.updateData.flow.complete_at || '',
-                    owner: this.updateData.owner_userids,
-                    assist: this.updateData.assist_userids,
-                }
+                data: callData
             }).then(({data, msg}) => {
                 this.loadIng--;
                 this.$store.dispatch("saveTask", data);

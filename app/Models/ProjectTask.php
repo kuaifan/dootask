@@ -1851,12 +1851,12 @@ class ProjectTask extends AbstractModel
      * @param int $flowItemId
      * @param array $owner
      * @param array $assist
-     * @param string $completeAt
+     * @param string|null $completed
      * @return bool
      */
-    public function moveTask(int $projectId, int $columnId,int $flowItemId = 0,array $owner = [], array $assist = [], string $completeAt='')
+    public function moveTask(int $projectId, int $columnId, int $flowItemId = 0, array $owner = [], array $assist = [], ?string $completed = null)
     {
-        AbstractModel::transaction(function () use ($projectId, $columnId, $flowItemId, $owner, $assist, $completeAt) {
+        AbstractModel::transaction(function () use ($projectId, $columnId, $flowItemId, $owner, $assist, $completed) {
             $newTaskUser =  array_merge($owner, $assist);
             //
             $oldProject = Project::find($this->project_id);
@@ -1867,6 +1867,14 @@ class ProjectTask extends AbstractModel
             //
             $this->project_id = $projectId;
             $this->column_id = $columnId;
+            // 日志
+            $log = $this->addLog("移动{任务}", [
+                'change' => [$oldProject->name, $newProject->name]
+            ]);
+            if ($this->dialog_id) {
+                $notice = $oldProject->id != $newProject->id ? "「{$oldProject->name}」移动至「{$newProject->name}」" : $log->detail;
+                WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', ['notice' => $notice], User::userid(), true, true);
+            }
             // 任务内容
             if ($this->content) {
                 $this->content->project_id = $projectId;
@@ -1913,22 +1921,12 @@ class ProjectTask extends AbstractModel
                 // 没有流程只更新状态
                 $this->flow_item_id = 0;
                 $this->flow_item_name = '';
-                if ($completeAt) {
-                    $this->completeTask(Carbon::parse($completeAt));
-                } else {
-                    $this->completeTask(null);
+                if ($completed !== null) {
+                    $this->completeTask($completed ? Carbon::now(): null);
                 }
             }
             //
             $this->save();
-            //
-            $log = $this->addLog("移动{任务}", [
-                'change' => [$oldProject->name, $newProject->name]
-            ]);
-            if ($this->dialog_id) {
-                $notice = $oldProject->id != $newProject->id ? "「{$oldProject->name}」移动至「{$newProject->name}」" : $log->detail;
-                WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', ['notice' => $notice], User::userid(), true, true);
-            }
         });
         $this->pushMsg('update');
         return true;

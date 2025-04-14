@@ -2417,6 +2417,11 @@ class ProjectController extends AbstractController
      * @apiParam {Number} flow_item_id          工作流id
      * @apiParam {Array} owner                  负责人
      * @apiParam {Array} assist                 协助人
+     * @apiParam {String} [completed]           是否已完成
+     * - 没有 工作流id 时此参数才生效
+     * - 有值表示已完成
+     * - 空值表示未完成
+     * - 不存在不改变状态
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -2433,7 +2438,7 @@ class ProjectController extends AbstractController
         $flow_item_id = intval(Request::input('flow_item_id'));
         $owner = Request::input('owner', []);
         $assist = Request::input('assist', []);
-        $completeAt = trim(Request::input('complete_at', ''));
+        $completed = Request::exists('completed') ? (bool)Request::input('completed') : null;
         //
         $task = ProjectTask::userTask($task_id);
         //
@@ -2454,13 +2459,13 @@ class ProjectController extends AbstractController
             if (empty($flowItem)) {
                 return Base::retError('任务状态不存在');
             }
-        } else if (!$flow_item_id && !$completeAt) {
+        } else {
             if (projectFlowItem::whereProjectId($project->id)->count() > 0) {
                 return Base::retError('请选择移动后状态', [], 102);
             }
         }
         //
-        $task->moveTask($project_id, $column_id, $flow_item_id, $owner, $assist, $completeAt);
+        $task->moveTask($project_id, $column_id, $flow_item_id, $owner, $assist, $completed);
         //
         $data = [];
         $mainTask = ProjectTask::userTask($task_id)?->toArray();
