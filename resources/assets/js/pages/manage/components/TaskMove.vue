@@ -2,21 +2,23 @@
     <div class="task-move">
 
         <Cascader
-        v-model="cascader"
-        :data="cascaderData"
-        :clearable="false"
-        :placeholder="$L('请选择项目')"
-        :load-data="cascaderLoadData"
-        @on-visible-change="cascaderShow=!cascaderShow"
-        filterable/>
+            v-model="cascader"
+            :data="cascaderData"
+            :clearable="false"
+            :placeholder="$L('请选择项目')"
+            :load-data="cascaderLoadData"
+            @on-visible-change="cascaderShow=!cascaderShow"
+            filterable/>
 
         <div class="task-move-content">
             <div class="task-move-content-old">
                 <div class="task-move-title">{{ $L('移动前') }}</div>
                 <div class="task-move-row">
                     <span class="label">{{$L('状态')}}:</span>
-                    <div v-if="task.flow_item_name" class="flow">
-                        <span :class="task.flow_item_status">{{task.flow_item_name}}</span>
+                    <div class="flow">
+                        <span v-if="task.flow_item_name" :class="task.flow_item_status">{{task.flow_item_name}}</span>
+                        <span v-else-if="task.complete_at" class="end">{{$L('已完成')}}</span>
+                        <span v-else class="start">{{$L('未完成')}}</span>
                     </div>
                 </div>
                 <div class="task-move-row" :class="{'not-flex': windowPortrait}">
@@ -51,8 +53,8 @@
                         :color-show="false"
                         :operation-show="false"
                         :load-status="task.loading === true"
-                        @on-update="onStatusUpdate"
-                    />
+                        placement="bottom-start"
+                        @on-update="onStatusUpdate"/>
                     <div v-if="updateData.flow.flow_item_name" class="flow">
                         <span :class="updateData.flow.flow_item_status" @click.stop="openMenu($event, tasks)">{{updateData.flow.flow_item_name}}</span>
                     </div>
@@ -290,8 +292,14 @@ export default {
         },
 
         onStatusUpdate(val) {
-            if (val.complete_at && !val.flow_item_id) {
-                val.flow_item_name = this.$L('已完成');
+            if (!val.flow_item_id) {
+                if (this.updateData.flow.flow_item_name) {
+                    val.flow_item_status = "";
+                    val.flow_item_name = "";
+                } else {
+                    val.flow_item_status = val.complete_at ? 'end' : 'start';
+                    val.flow_item_name = this.$L(val.complete_at ? '转为已完成' : '转为未完成');
+                }
             }
             this.tasks.flow_item_id = val.flow_item_id;
             this.updateData.flow = val

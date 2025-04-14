@@ -735,7 +735,9 @@ class ProjectTask extends AbstractModel
                     if (count($older) == 0 && count($array) == 1 && $array[0] == User::userid()) {
                         $this->addLog("认领{任务}");
                     } else {
-                        $this->addLog("修改{任务}负责人", ['userid' => $array]);
+                        if (array_merge(array_diff($array, $older), array_diff($older, $array))) {
+                            $this->addLog("修改{任务}负责人", ['userid' => $array]);
+                        }
                     }
                     $this->taskPush(array_values(array_diff($array, $older)), 0);
                 }
@@ -890,6 +892,7 @@ class ProjectTask extends AbstractModel
                 }
                 // 协助人员
                 if (Arr::exists($data, 'assist')) {
+                    $older = $this->taskUser->where('owner', 0)->pluck('userid')->toArray();
                     $array = [];
                     $assist = is_array($data['assist']) ? $data['assist'] : [$data['assist']];
                     if (count($assist) > 10) {
@@ -910,7 +913,9 @@ class ProjectTask extends AbstractModel
                         $array[] = $uid;
                     }
                     if ($array) {
-                        $this->addLog("修改{任务}协助人员", ['userid' => $array]);
+                        if (array_merge(array_diff($array, $older), array_diff($older, $array))) {
+                            $this->addLog("修改{任务}协助人员", ['userid' => $array]);
+                        }
                     }
                     $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(0)->whereNotIn('userid', $array)->get();
                     if ($rows->isNotEmpty()) {
@@ -1349,6 +1354,9 @@ class ProjectTask extends AbstractModel
             $addMsg = $this->parent_id == 0 && $this->dialog_id > 0;
             if ($complete_at === null) {
                 // 标记未完成
+                if (!$this->complete_at) {
+                    return; // 本来就未完成
+                }
                 $this->complete_at = null;
                 $this->addLog("标记{任务}未完成");
                 if ($addMsg) {
@@ -1358,6 +1366,9 @@ class ProjectTask extends AbstractModel
                 }
             } else {
                 // 标记已完成
+                if ($this->complete_at) {
+                    return; // 本来就已完成
+                }
                 if ($this->parent_id == 0) {
                     if (self::whereParentId($this->id)->whereCompleteAt(null)->exists()) {
                         throw new ApiException('子任务未完成', [
@@ -1848,6 +1859,12 @@ class ProjectTask extends AbstractModel
         AbstractModel::transaction(function () use ($projectId, $columnId, $flowItemId, $owner, $assist, $completeAt) {
             $newTaskUser =  array_merge($owner, $assist);
             //
+            $oldProject = Project::find($this->project_id);
+            $newProject = $this->project_id != $projectId ? Project::find($projectId) : $oldProject;
+            if (!$oldProject || !$newProject) {
+                throw new ApiException('项目不存在');
+            }
+            //
             $this->project_id = $projectId;
             $this->column_id = $columnId;
             // 任务内容
@@ -1883,6 +1900,7 @@ class ProjectTask extends AbstractModel
             ]);
             //
             if ($flowItemId) {
+                // 更新任务流程
                 $flowItem = projectFlowItem::whereProjectId($projectId)->whereId($flowItemId)->first();
                 $this->flow_item_id = $flowItemId;
                 $this->flow_item_name = $flowItem->status . "|" . $flowItem->name;
@@ -1892,17 +1910,25 @@ class ProjectTask extends AbstractModel
                     $this->completeTask(null);
                 }
             } else {
+                // 没有流程只更新状态
                 $this->flow_item_id = 0;
                 $this->flow_item_name = '';
-            }
-            //
-            if ($completeAt) {
-                $this->complete_at = $completeAt;
+                if ($completeAt) {
+                    $this->completeTask(Carbon::parse($completeAt));
+                } else {
+                    $this->completeTask(null);
+                }
             }
             //
             $this->save();
             //
-            $this->addLog("移动{任务}");
+            $log = $this->addLog("移动{任务}", [
+                'change' => [$oldProject->name, $newProject->name]
+            ]);
+            if ($this->dialog_id) {
+                $notice = $oldProject->id != $newProject->id ? "「{$oldProject->name}」移动至「{$newProject->name}」" : $log->detail;
+                WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', ['notice' => $notice], User::userid(), true, true);
+            }
         });
         $this->pushMsg('update');
         return true;

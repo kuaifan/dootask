@@ -5,9 +5,9 @@
             trigger="click"
             :disabled="disabled"
             :size="size"
+            :placement="placement"
             :style="styles"
             class="general-operation-dropdown"
-            placement="bottom"
             @command="dropTask"
             @visible-change="visibleChange">
             <div ref="icon" class="general-operation-icon"></div>
@@ -127,6 +127,7 @@ export default {
             updateBefore: false,
             disabled: false,
             size: 'small',
+            placement: 'bottom',
             projectId: 0,
             onUpdate: null,
 
@@ -193,6 +194,7 @@ export default {
                 this.updateBefore = typeof data.updateBefore === "undefined" ? false : data.updateBefore;
                 this.disabled = typeof data.disabled === "undefined" ? false : data.disabled;
                 this.size = typeof data.size === "undefined" ? "small" : data.size;
+                this.placement = typeof data.placement === "undefined" ? "bottom" : data.placement;
                 this.projectId = typeof data.projectId === "undefined" ? 0 : data.projectId;
                 this.onUpdate = typeof data.onUpdate === "function" ? data.onUpdate : null;
                 //

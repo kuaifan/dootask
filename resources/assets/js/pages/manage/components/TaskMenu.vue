@@ -44,6 +44,10 @@ export default {
             type: String,
             default: 'small'
         },
+        placement: {
+            type: String,
+            default: 'bottom'
+        },
         icon: {
             type: String,
             default: 'md-radio-button-off'
@@ -83,6 +87,7 @@ export default {
                 updateBefore: this.updateBefore,
                 disabled: this.disabled,
                 size: this.size,
+                placement: this.placement,
                 projectId: this.projectId,
                 onUpdate: data => {
                     this.$emit("on-update", data)
