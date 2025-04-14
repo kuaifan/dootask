@@ -47,6 +47,29 @@
                             justify-content: center;
                             margin: 12px auto;
 
+                            &.user-name {
+                                align-items: center;
+                            }
+
+                            > em {
+                                font-style: normal;
+                                &.disabled,
+                                &.deleted {
+                                    display: inline-block;
+                                    margin-left: 2px;
+                                    white-space: nowrap;
+                                    font-size: 12px;
+                                    height: 20px;
+                                    line-height: 20px;
+                                    padding: 0 6px;
+                                    border-radius: 3px;
+                                    transform: scale(0.9);
+                                    transform-origin: right center;
+                                    color: #ffffff;
+                                    background-color: #ED4014;
+                                }
+                            }
+
                             > span {
                                 flex-shrink: 0;
                                 opacity: 0.8;

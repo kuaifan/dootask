@@ -13,13 +13,13 @@
                     :show-state-dot="false"
                     @on-click="onOpenAvatar"/>
                 <ul class="user-select-auto">
-                    <li>
+                    <li class="user-name">
                         <h1>{{userData.nickname}}</h1>
                         <em v-if="userData.delete_at" class="deleted no-dark-content">{{$L('已删除')}}</em>
                         <em v-else-if="userData.disable_at" class="disabled no-dark-content">{{$L('已离职')}}</em>
                     </li>
                     <template v-if="!userData.bot">
-                        <li class="department-name">
+                        <li>
                             <span>{{$L('部门')}}: </span>
                             {{userData.department_name || '-'}}
                         </li>
@@ -27,15 +27,15 @@
                             <span>{{$L('职位/职称')}}: </span>
                             {{userData.profession || '-'}}
                         </li>
+                        <li>
+                            <span>{{$L('最后在线')}}: </span>
+                            {{userData.line_at ? $A.dayjs(userData.line_at).format("YYYY-MM-DD HH:mm") : '-'}}
+                        </li>
                         <li v-if="userData.delete_at">
                             <strong><span>{{$L('删除时间')}}: </span>{{userData.delete_at}}</strong>
                         </li>
                         <li v-else-if="userData.disable_at">
                             <strong><span>{{$L('离职时间')}}: </span>{{userData.disable_at}}</strong>
-                        </li>
-                        <li>
-                            <span>{{$L('最后在线')}}: </span>
-                            {{userData.line_at ? $A.dayjs(userData.line_at).format("YYYY-MM-DD HH:mm") : '-'}}
                         </li>
                     </template>
                 </ul>
