@@ -54,8 +54,15 @@ function __callData(key, requestData, state) {
             } else {
                 deleted_id = []
             }
+            if ($A.isEEUiApp) {
+                hasUpdate = state.isFirstPage
+            }
             if (hasUpdate) {
-                await $A.IDBSet("callAt", state.callAt)
+                if ($A.isSubElectron || ($A.isEEUiApp && !state.isFirstPage)) {
+                    // 子窗口（Electron）、不是第一个页面（App） 不保存
+                } else {
+                    await $A.IDBSet("callAt", state.callAt)
+                }
             }
             resolve(deleted_id)
         })

@@ -1424,11 +1424,12 @@ class ProjectTask extends AbstractModel
                 $this->archived_at = null;
                 $this->archived_userid = User::userid();
                 $this->archived_follow = 0;
-                $this->addLog("任务取消归档");
+                $logText = "任务取消归档";
+                $userid = 0;
             } else {
                 // 归档任务
                 if ($isAuto === true) {
-                    $logText = "自动任务归档";
+                    $logText = "任务自动归档";
                     $userid = 0;
                 } else {
                     $logText = "任务归档";
@@ -1437,13 +1438,20 @@ class ProjectTask extends AbstractModel
                 $this->archived_at = $archived_at;
                 $this->archived_userid = $userid;
                 $this->archived_follow = 0;
-                $this->addLog($logText, [], $userid);
             }
+            // 添加日志
+            $this->addLog($logText, [], $userid);
+            // 推送状态
             $this->pushMsg($archived_at === null ? 'recovery' : 'archived', [
                 'id' => $this->id,
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
             ]);
+            // 更新对话时间
+            if ($this->dialog_id > 0) {
+                WebSocketDialogUser::whereDialogId($this->dialog_id)->update(['updated_at' => Carbon::now()]);  // 因为是若提醒，可以直接使用 update 更新
+            }
+            // 更新保存
             self::whereParentId($this->id)->change([
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,

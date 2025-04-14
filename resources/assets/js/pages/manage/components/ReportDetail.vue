@@ -27,7 +27,7 @@
                         {{ $L("汇报对象") }}
                     </div>
                     <div class="report-value">
-                        <template v-if="data.receives_user.length === 0">-</template>
+                        <template v-if="data.receives_user && data.receives_user.length === 0">-</template>
                         <UserAvatar v-else v-for="(item, key) in data.receives_user" :key="key" :userid="item.userid" :size="28"/>
                     </div>
                 </li>

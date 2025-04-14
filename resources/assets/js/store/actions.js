@@ -709,7 +709,11 @@ export default {
             state.userId = userInfo.userid;
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
-            await $A.IDBSet("userInfo", state.userInfo);
+            if ($A.isSubElectron) {
+                // 子窗口（Electron）保存
+            } else {
+                await $A.IDBSet("userInfo", state.userInfo);
+            }
             //
             $A.eeuiAppSendMessage({
                 action: 'userChatList',

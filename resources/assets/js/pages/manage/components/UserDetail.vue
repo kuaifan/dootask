@@ -12,7 +12,7 @@
                     :size="120"
                     :show-state-dot="false"
                     @on-click="onOpenAvatar"/>
-                <ul>
+                <ul class="user-select-auto">
                     <li>
                         <h1>{{userData.nickname}}</h1>
                         <em v-if="userData.delete_at" class="deleted no-dark-content">{{$L('已删除')}}</em>
