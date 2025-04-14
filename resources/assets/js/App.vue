@@ -150,7 +150,7 @@ export default {
             if (windowLandscape) {
                 return "#f4f5f7"
             }
-            if (['manage-messenger', 'manage-project'].includes(routeName) || routeName.startsWith('manage-setting')) {
+            if (['login', 'manage-messenger', 'manage-project'].includes(routeName) || routeName.startsWith('manage-setting')) {
                 return '#f8f8f8'
             }
             return null
@@ -163,7 +163,7 @@ export default {
             if (windowLandscape) {
                 return "#f4f5f7"
             }
-            if (['manage-messenger', 'manage-project', 'manage-setting'].includes(routeName)) {
+            if (['login', 'manage-messenger', 'manage-project', 'manage-setting'].includes(routeName)) {
                 return '#f8f8f8'
             }
             return mobileTabbar ? '#f8f8f8' : null
