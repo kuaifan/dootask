@@ -29458,5 +29458,53 @@
         "fr": "Ouvrir la fenêtre de session",
         "id": "Buka Jendela Sesi",
         "ru": "Открыть окно сессии"
+    },
+    {
+        "key": "转为已完成",
+        "zh": "",
+        "zh-CHT": "轉為已完成",
+        "en": "Mark as Completed",
+        "ko": "완료로 전환",
+        "ja": "完了に変更",
+        "de": "Als erledigt markieren",
+        "fr": "Marquer comme terminé",
+        "id": "Tandai sebagai Selesai",
+        "ru": "Отметить как выполненное"
+    },
+    {
+        "key": "转为未完成",
+        "zh": "",
+        "zh-CHT": "轉為未完成",
+        "en": "Mark as Incomplete",
+        "ko": "미완료로 전환",
+        "ja": "未完了に変更",
+        "de": "Als unvollständig markieren",
+        "fr": "Marquer comme incomplet",
+        "id": "Tandai sebagai Belum Selesai",
+        "ru": "Отметить как несовершенное"
+    },
+    {
+        "key": "「(%T1)」移动至「(%T2)」",
+        "zh": "",
+        "zh-CHT": "「(%T1)」移動至「(%T2)」",
+        "en": "\"(%T1)\" moved to \"(%T2)\"",
+        "ko": "\"(%T1)\"이(가) \"(%T2)\"로 이동되었습니다",
+        "ja": "「(%T1)」が「(%T2)」へ移動しました",
+        "de": "\"(%T1)\" wurde zu \"(%T2)\" verschoben",
+        "fr": "\"(%T1)\" déplacé vers \"(%T2)\"",
+        "id": "\"(%T1)\" dipindahkan ke \"(%T2)\"",
+        "ru": "\"(%T1)\" перемещен в \"(%T2)\""
+    },
+    {
+        "key": "自动任务归档",
+        "zh": "",
+        "zh-CHT": "自動任務歸檔",
+        "en": "Automatic Task Archiving",
+        "ko": "자동 작업 보관",
+        "ja": "自動タスクアーカイブ",
+        "de": "Automatische Aufgabenarchivierung",
+        "fr": "Archivage automatique des tâches",
+        "id": "Arsip Tugas Otomatis",
+        "ru": "Автоматическое архивирование задач"
     }
 ]
