@@ -667,6 +667,18 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 检查是否是单人对话
+     * @return bool
+     */
+    public function isSelfDialog()
+    {
+        if ($this->type !== 'user') {
+            return false;
+        }
+        return WebSocketDialogUser::whereDialogId($this->id)->where('userid', '>', 0)->count() === 1;
+    }
+
+    /**
      * 获取对话（同时检验对话身份）
      * @param $dialog_id
      * @param bool|string $checkOwner 是否校验群组身份，'auto'时有群主为true无群主为false
