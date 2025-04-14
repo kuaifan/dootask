@@ -1927,7 +1927,6 @@ export default {
                     url: 'web.js',
                     params: {
                         titleFixed: true,
-                        allowAccess: true,
                         url: $A.urlReplaceHash(path)
                     },
                 });

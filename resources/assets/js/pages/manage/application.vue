@@ -713,9 +713,7 @@ export default {
                     pageTitle: ' ',
                     url: 'web.js',
                     params: {
-                        url: text,
-                        browser: true,
-                        showProgress: true,
+                        url: text
                     },
                 });
             }

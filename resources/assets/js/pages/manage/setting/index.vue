@@ -188,11 +188,7 @@ export default {
                     pageType: 'app',
                     pageTitle: ' ',
                     url: 'web.js',
-                    params: {
-                        url,
-                        browser: true,
-                        showProgress: true,
-                    },
+                    params: {url},
                 });
             } else {
                 window.open(url)

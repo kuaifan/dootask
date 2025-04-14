@@ -235,7 +235,6 @@ export default {
                                         pageTitle: this.$L(title),
                                         url: 'web.js',
                                         params: {
-                                            allowAccess: true,
                                             url: $A.urlReplaceHash(path)
                                         },
                                     })

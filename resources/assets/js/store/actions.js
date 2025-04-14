@@ -1194,6 +1194,21 @@ export default {
      */
     userUrl({state}, url) {
         return new Promise(resolve => {
+            // 如果是访问：服务器域名 且 当前是本地文件，则将服务器域名替换成本地路径
+            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) && window.location.protocol == "file:") {
+                try {
+                    const remoteURL = new URL(url)
+                    if (/^\/(single|meeting)\//.test(remoteURL.pathname)) {
+                        // 判断将服务器域名替换成本地路径
+                        const localURL = new URL(window.location)
+                        localURL.hash = remoteURL.pathname + remoteURL.search
+                        return resolve(localURL.toString())
+                    }
+                } catch (e) {
+                    // 解析失败则不做任何处理
+                }
+            }
+
             // 基本参数
             const params = {
                 language: languageName,
@@ -1235,7 +1250,6 @@ export default {
                 url: 'web.js',
                 params: {
                     titleFixed: true,
-                    allowAccess: true,
                     hiddenDone: true,
                     url
                 },
@@ -1259,6 +1273,16 @@ export default {
      */
     async openAppChildPage({dispatch}, objects) {
         objects.params.url = await dispatch("userUrl", objects.params.url)
+
+        if (typeof objects.params.allowAccess === "undefined") {
+            // 如果是本地文件，则允许跨域
+            objects.params.allowAccess = $A.getProtocol(objects.params.url) == "file:"
+        }
+        if (typeof objects.params.showProgress === "undefined") {
+            // 如果不是本地文件，则显示进度条
+            objects.params.showProgress = $A.getProtocol(objects.params.url) != "file:"
+        }
+
         $A.eeuiAppOpenPage(objects)
     },
 
