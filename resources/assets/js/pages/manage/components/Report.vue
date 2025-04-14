@@ -117,7 +117,7 @@ export default {
                     force: false,
                     config
                 });
-            }else{
+            } else {
                 this.showDetailDrawer = true;
             }
         },

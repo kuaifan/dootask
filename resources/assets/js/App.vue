@@ -35,6 +35,9 @@
         <!--引导页-->
         <GuidePage/>
 
+        <!--会员详情窗口-->
+        <UserDetail/>
+
         <!--返回效果-->
         <MobileBack v-if="isFirstPage"/>
 
@@ -92,11 +95,15 @@ import DropdownMenu from "./components/DropdownMenu";
 import {ctrlPressed} from "./mixins/ctrlPressed";
 import {mapState} from "vuex";
 import emitter from "./store/events";
+import SearchBox from "./components/SearchBox.vue";
+import UserDetail from "./pages/manage/components/UserDetail.vue";
 
 export default {
     mixins: [ctrlPressed],
 
     components: {
+        SearchBox,
+        UserDetail,
         MobileBack,
         MobileNotification,
         AuthException,

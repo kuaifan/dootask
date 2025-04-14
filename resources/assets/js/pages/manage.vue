@@ -291,9 +291,6 @@
         <!--搜索框-->
         <SearchBox ref="searchBox"/>
 
-        <!--会员详情窗口-->
-        <UserDetail/>
-
         <!--工作报告-->
         <DrawerOverlay
             v-model="workReportShow"
@@ -372,11 +369,9 @@ import ApproveDetails from "./manage/approve/details.vue";
 import notificationKoro from "notification-koro1";
 import emitter from "../store/events";
 import SearchBox from "../components/SearchBox.vue";
-import UserDetail from "./manage/components/UserDetail.vue";
 
 export default {
     components: {
-        UserDetail,
         SearchBox,
         ApproveDetails,
         ImgUpload,

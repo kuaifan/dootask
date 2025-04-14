@@ -53,6 +53,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'report/detail',
                 data,
+                spinner: 600,
             }).then(({data}) => {
                 this.detailData = data;
             }).catch(({msg}) => {

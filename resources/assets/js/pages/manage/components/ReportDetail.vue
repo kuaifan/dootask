@@ -2,9 +2,9 @@
     <div class="report-detail">
         <div class="report-title user-select-auto">
             {{ data.title }}
-            <Icon v-if="loadIng > 0" type="ios-loading" class="icon-loading"></Icon>
+            <Icon v-if="loadIng > 0" type="ios-loading" class="icon-loading"/>
         </div>
-        <div class="report-detail-context">
+        <div v-if="data.id" class="report-detail-context">
             <ul>
                 <li>
                     <div class="report-label">
