@@ -709,8 +709,8 @@ export default {
             state.userId = userInfo.userid;
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
-            if ($A.isSubElectron) {
-                // 子窗口（Electron）保存
+            if ($A.isSubElectron || ($A.isEEUiApp && !state.isFirstPage)) {
+                // 子窗口（Electron）、不是第一个页面（App） 不保存
             } else {
                 await $A.IDBSet("userInfo", state.userInfo);
             }

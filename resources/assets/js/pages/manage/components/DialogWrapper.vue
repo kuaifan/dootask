@@ -3162,6 +3162,9 @@ export default {
                 top: `${top}px`,
                 height: `${height}px`,
             }
+            if (this.location === 'messenger') {
+                this.operateStyles.marginTop = "calc(var(--status-bar-height) * -1)"
+            }
             this.operateClient = {x: left, y: this.operateItem.clientY};
             if (this.operateVisible) {
                 try {
