@@ -84,8 +84,12 @@ export default {
     },
 
     watch: {
-        dialogId(id) {
-            this.show = id > 0 && (this.windowPortrait || this.routeName !== 'manage-messenger')
+        dialogId() {
+            this.handleShow()
+        },
+
+        windowPortrait() {
+            this.handleShow()
         },
 
         show(v) {
@@ -104,6 +108,9 @@ export default {
                 await new Promise(resolve => setTimeout(resolve, 300))
                 this.closIng--
             })
+        },
+        handleShow() {
+            this.show = this.dialogId > 0 && (this.windowPortrait || this.routeName !== 'manage-messenger')
         },
         handleMoveTop(type) {
             type === 'dialogModal' && this.$refs.modal?.handleMoveTop();

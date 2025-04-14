@@ -3,11 +3,11 @@
         <PageTitle :title="$L('日历')"/>
         <div class="calendar-head">
             <div class="calendar-titbox">
+                <div class="calendar-title">
+                    <div class="common-nav-back portrait" @click="goForward({name: 'manage-application'}, true)"><i class="taskfont">&#xe676;</i></div>
+                    <h1>{{ rangeText }}</h1>
+                </div>
                 <div class="calendar-nav">
-                    <div class="calendar-title">
-                        <div class="common-nav-back portrait" @click="goForward({name: 'manage-application'}, true)"><i class="taskfont">&#xe676;</i></div>
-                        <h1>{{ rangeText }}</h1>
-                    </div>
                     <ButtonGroup class="calendar-arrow" size="small">
                         <Button @click="onMove(-1)">
                             <Icon type="ios-arrow-back"></Icon>
@@ -107,6 +107,9 @@ export default {
         this.options.week.dayNames = dayNames;
         this.options.month.dayNames = dayNames;
         this.options.view = this.$store.state.cacheCalendarView || this.options.view;
+        if (this.windowWidth < 600) {
+            this.options.template.monthGridHeaderExceed = (hiddenEvents) => `<span>+${hiddenEvents}</span>`
+        }
     },
 
     activated() {
