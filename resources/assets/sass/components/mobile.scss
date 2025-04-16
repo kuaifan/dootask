@@ -350,6 +350,12 @@ body.window-touch {
         a, img {
             -webkit-touch-callout: default;
         }
+        .content-text,
+        .content-file {
+            img {
+                -webkit-touch-callout: none;
+            }
+        }
     }
 }
 
