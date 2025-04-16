@@ -3549,7 +3549,7 @@ export default {
             switch (type) {
                 case 'image':
                     if (this.$Electron) {
-                        this.getBase64Image(value).then(base64 => {
+                        $A.generateBase64Image(value).then(base64 => {
                             this.$Electron.sendMessage('copyBase64Image', {base64});
                         })
                     }
@@ -4239,31 +4239,6 @@ export default {
                     fileId: null,
                     shakeId: data.id
                 },
-            })
-        },
-
-        getBase64Image(url) {
-            return new Promise(resolve => {
-                let canvas = document.createElement('CANVAS'),
-                    ctx = canvas.getContext('2d'),
-                    img = new Image;
-                img.crossOrigin = 'Anonymous';
-                img.onload = () => {
-                    canvas.height = img.height;
-                    canvas.width = img.width;
-                    ctx.drawImage(img, 0, 0);
-                    let format = "png";
-                    if ($A.rightExists(url, "jpg") || $A.rightExists(url, "jpeg")) {
-                        format = "jpeg"
-                    } else if ($A.rightExists(url, "webp")) {
-                        format = "webp"
-                    } else if ($A.rightExists(url, "git")) {
-                        format = "git"
-                    }
-                    resolve(canvas.toDataURL(`image/${format}`));
-                    canvas = null;
-                };
-                img.src = url;
             })
         },
 

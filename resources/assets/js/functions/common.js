@@ -1409,7 +1409,74 @@ const timezone = require("dayjs/plugin/timezone");
 
             // 直接返回clear函数
             return clear;
-        }
+        },
+
+        /**
+         * 通过URL生成base64图片
+         * @param url       图片URL
+         * @param quality   图片质量，默认0.8
+         * @param maxWidth  最大宽度，0表示不限制
+         * @param maxHeight 最大高度，0表示不限制
+         * @returns {Promise<unknown>}
+         */
+        generateBase64Image(url, quality = 1, maxWidth = 0, maxHeight = 0) {
+            return new Promise(resolve => {
+                let canvas = document.createElement('canvas'),
+                    ctx = canvas.getContext('2d'),
+                    img = new Image;
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    // 处理等比例缩放
+                    if ((maxWidth > 0 || maxHeight > 0) && (width > 0 && height > 0)) {
+                        // 计算宽高比
+                        const ratio = width / height;
+
+                        if (maxWidth > 0 && maxHeight > 0) {
+                            // 同时指定了最大宽度和高度，按照最小比例缩放
+                            if (width > maxWidth || height > maxHeight) {
+                                const ratioWidth = maxWidth / width;
+                                const ratioHeight = maxHeight / height;
+                                const ratioMin = Math.min(ratioWidth, ratioHeight);
+
+                                width = Math.round(width * ratioMin);
+                                height = Math.round(height * ratioMin);
+                            }
+                        } else if (maxWidth > 0 && width > maxWidth) {
+                            // 只指定了最大宽度
+                            width = maxWidth;
+                            height = Math.round(width / ratio);
+                        } else if (maxHeight > 0 && height > maxHeight) {
+                            // 只指定了最大高度
+                            height = maxHeight;
+                            width = Math.round(height * ratio);
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    let format = "png";
+                    if ($A.rightExists(url, "jpg") || $A.rightExists(url, "jpeg")) {
+                        format = "jpeg"
+                    } else if ($A.rightExists(url, "webp")) {
+                        format = "webp"
+                    } else if ($A.rightExists(url, "git")) {
+                        format = "git"
+                    }
+                    resolve(canvas.toDataURL(`image/${format}`, quality));
+
+                    // 清理资源
+                    canvas = null;
+                    img = null;
+                    ctx = null;
+                };
+                img.src = url;
+            })
+        },
     });
 
     /**
