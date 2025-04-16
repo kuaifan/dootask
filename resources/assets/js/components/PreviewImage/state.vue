@@ -14,6 +14,7 @@ export default {
         ...mapState([
             'previewImageIndex',
             'previewImageList',
+            'previewImageBase64',
         ]),
     },
     data() {
@@ -92,7 +93,15 @@ export default {
                 $A.eeuiAppSendMessage({
                     action: 'picturePreview',
                     position: index,
-                    paths
+                    paths: paths.map(item => {
+                        if (!$A.isJson(item)) {
+                            item = {path: item}
+                        }
+                        if (this.previewImageBase64.has(item.path)) {
+                            item.preview = this.previewImageBase64.get(item.path);
+                        }
+                        return item
+                    })
                 });
             } else if ($A.isElectron) {
                 this.$Electron.sendMessage('openMediaViewer', {
