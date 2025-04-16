@@ -419,11 +419,10 @@ if [ $# -gt 0 ]; then
         fi
         # 目录权限
         volumes=(
-            "docker/log/supervisor"
-            "docker/mysql/data"
-            "docker/office/logs"
-            "docker/office/data"
-            "docker/es/data"
+            "bootstrap/cache"
+            "docker"
+            "public"
+            "storage"
         )
         cmda=""
         cmdb=""

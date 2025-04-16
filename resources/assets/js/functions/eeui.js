@@ -165,7 +165,7 @@
             return this.eeuiModule()?.getCachesString(key, defaultVal);
         },
 
-        // 长按内容震动（仅支持android、iOS无效）
+        // 是否长按内容震动（仅支持android、iOS无效）
         eeuiAppSetHapticBackEnabled(val) {
             this.eeuiModule("webview").setHapticBackEnabled(val);
         },
@@ -302,20 +302,6 @@
                     reject(e);
                 }
             })
-        },
-
-        // 添加导航栏遮罩
-        eeuiAppAddNavMask(color) {
-            return this.eeuiModule()?.addNavMask(color)
-        },
-
-        // 移除导航栏遮罩
-        eeuiAppRemoveNavMask(name = null) {
-            if (name === true) {
-                this.eeuiModule()?.removeAllNavMasks()  // 移除所有遮罩
-            } else if (name) {
-                this.eeuiModule()?.removeNavMask(name)  // 移除指定遮罩
-            }
         },
 
         // 获取导航栏和状态栏高度

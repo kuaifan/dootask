@@ -185,7 +185,7 @@
         <div
             ref="msgs"
             class="dialog-msgs"
-            v-longpress="{callback: handleLongpress, delay: 300}">
+            v-longpress="{callback: handleLongpress, touchend: handleTouchend, delay: 300}">
             <!--定位提示-->
             <div v-if="positionShow && positionMsg" class="dialog-position">
                 <div class="position-label" @click="onPositionMark(positionMsg.msg_id)">
@@ -3087,6 +3087,14 @@ export default {
                         this.onUpdateOperate(element)
                     })
                     break;
+            }
+        },
+
+        handleTouchend() {
+            if (this.keyboardShow) {
+                // 防止键盘关闭时菜单又隐藏
+                this.operatePreventScroll++
+                setTimeout(() => this.operatePreventScroll--, 300)
             }
         },
 
