@@ -166,7 +166,7 @@ class ZincSearchUserMsg
      * @param WebSocketDialogUser $dialogUser
      * @return string
      */
-    public static function generateUserDocId(WebSocketDialogUser $dialogUser): string
+    public static function generateJoinKeyFromUser(WebSocketDialogUser $dialogUser): string
     {
         return "dialog_{$dialogUser->dialog_id}_user_{$dialogUser->userid}";
     }
@@ -255,7 +255,7 @@ class ZincSearchUserMsg
     public static function deleteUser(WebSocketDialogUser $dialogUser): void
     {
         try {
-            $docId = self::generateUserDocId($dialogUser);
+            $docId = self::generateJoinKeyFromUser($dialogUser);
 
             // 首先查询相关消息
             $searchParams = [
@@ -291,27 +291,15 @@ class ZincSearchUserMsg
     // ==============================
 
     /**
-     * 会话消息 - 生成父文档ID
-     *
-     * @param WebSocketDialogMsg $dialogMsg
-     * @param string $userid
-     * @return string
-     */
-    public static function generateMsgJoinKey(WebSocketDialogMsg $dialogMsg, string $userid): string
-    {
-        return "dialog_{$dialogMsg->dialog_id}_user_{$userid}";
-    }
-
-    /**
      * 会话消息 - 生成文档ID
      *
      * @param WebSocketDialogMsg $dialogMsg
      * @param string $userid
      * @return string
      */
-    public static function generateMsgDocId(WebSocketDialogMsg $dialogMsg, string $userid): string
+    public static function generateJoinKeyFromMsg(WebSocketDialogMsg $dialogMsg, string $userid): string
     {
-        return "msg_{$dialogMsg->id}_user_{$userid}";
+        return "dialog_{$dialogMsg->dialog_id}_user_{$userid}";
     }
 
     /**
@@ -335,7 +323,7 @@ class ZincSearchUserMsg
             'bot' => $dialogMsg->bot ? 1 : 0,
 
             '_join_type' => 'dialog_msg',
-            '_join_key' => self::generateMsgJoinKey($dialogMsg, $userid)
+            '_join_key' => self::generateJoinKeyFromMsg($dialogMsg, $userid)
         ];
     }
 
@@ -357,18 +345,15 @@ class ZincSearchUserMsg
 
             $docs = [];
             foreach ($dialogUsers as $dialogUser) {
-                $docId = self::generateMsgDocId($dialogMsg, $dialogUser->userid);
                 $docFormat = self::generateMsgFormat($dialogMsg, $dialogUser->userid);
                 $docs[] = $docFormat;
             }
 
             if (!empty($docs)) {
-                if (ZincSearchBase::indexExists(self::$indexName)) {
-                    ZincSearchBase::addDocs(self::$indexName, $docs);
-                } else {
+                if (!ZincSearchBase::indexExists(self::$indexName)) {
                     self::generateIndex();
-                    ZincSearchBase::addDocs(self::$indexName, $docs);
                 }
+                ZincSearchBase::addDocs(self::$indexName, $docs);
             }
         } catch (\Exception $e) {
             Log::error('syncMsg: ' . $e->getMessage());
@@ -418,12 +403,10 @@ class ZincSearchUserMsg
 
             // 批量写入
             if (!empty($docs)) {
-                if (ZincSearchBase::indexExists(self::$indexName)) {
-                    ZincSearchBase::addDocs(self::$indexName, $docs);
-                } else {
+                if (!ZincSearchBase::indexExists(self::$indexName)) {
                     self::generateIndex();
-                    ZincSearchBase::addDocs(self::$indexName, $docs);
                 }
+                ZincSearchBase::addDocs(self::$indexName, $docs);
             }
         } catch (\Exception $e) {
             Log::error('batchSyncMsgs: ' . $e->getMessage());
@@ -441,17 +424,48 @@ class ZincSearchUserMsg
     public static function deleteMsg(WebSocketDialogMsg $dialogMsg): void
     {
         try {
-            // 获取此会话的所有用户
-            $dialogUsers = WebSocketDialogUser::whereDialogId($dialogMsg->dialog_id)->get();
+            $batchSize = 1000; // 每批处理的文档数量
+            $from = 0;
+            $totalDeleted = 0;
 
-            if ($dialogUsers->isEmpty()) {
-                return;
+            while (true) {
+                // 根据消息ID查找相关文档，使用分页
+                $searchParams = [
+                    'search_type' => 'term',
+                    'query' => [
+                        'field' => 'msg_id',
+                        'term' => $dialogMsg->id
+                    ],
+                    'from' => $from,
+                    'max_results' => $batchSize
+                ];
+
+                $result = ZincSearchBase::advancedSearch(self::$indexName, $searchParams);
+                $hits = $result['data']['hits']['hits'] ?? [];
+
+                // 如果没有更多文档，退出循环
+                if (empty($hits)) {
+                    break;
+                }
+
+                // 删除本批次找到的所有文档
+                foreach ($hits as $hit) {
+                    if (isset($hit['_id'])) {
+                        ZincSearchBase::deleteDoc(self::$indexName, $hit['_id']);
+                        $totalDeleted++;
+                    }
+                }
+
+                // 如果返回的文档数少于批次大小，说明已经没有更多文档了
+                if (count($hits) < $batchSize) {
+                    break;
+                }
+
+                // 移动到下一批
+                $from += $batchSize;
             }
 
-            foreach ($dialogUsers as $dialogUser) {
-                $docId = self::generateMsgDocId($dialogMsg, $dialogUser->userid);
-                ZincSearchBase::deleteDoc(self::$indexName, $docId);
-            }
+            Log::info("deleteMsg: 已删除消息ID {$dialogMsg->id} 的 {$totalDeleted} 条相关文档");
         } catch (\Exception $e) {
             Log::error('deleteMsg: ' . $e->getMessage());
         }
