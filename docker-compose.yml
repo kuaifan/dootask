@@ -217,21 +217,6 @@ services:
         ipv4_address: "${APP_IPPR}.14"
     restart: unless-stopped
 
-  es:
-    container_name: "dootask-es-${APP_ID}"
-    image: "elasticsearch:8.17.2"
-    volumes:
-      - ./docker/es/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      - ./docker/es/data:/usr/share/elasticsearch/data
-    environment:
-      discovery.type: single-node
-      xpack.security.enabled: false
-      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
-    networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.15"
-    restart: unless-stopped
-
   search:
     container_name: "dootask-search-${APP_ID}"
     image: "public.ecr.aws/zinclabs/zincsearch:0.4.10"
@@ -246,7 +231,7 @@ services:
       ZINC_FIRST_ADMIN_PASSWORD: "${DB_PASSWORD}"
     networks:
       extnetwork:
-        ipv4_address: "${APP_IPPR}.16"
+        ipv4_address: "${APP_IPPR}.15"
     restart: unless-stopped
 
 networks:

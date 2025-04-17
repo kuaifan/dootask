@@ -131,7 +131,21 @@ class ZincSearchUserMsg
         ];
 
         try {
-            return ZincSearchBase::elasticSearch(self::$indexName, $searchParams);
+            $result = ZincSearchBase::elasticSearch(self::$indexName, $searchParams);
+            return array_map(function ($hit) {
+                $source = $hit['_source'];
+                return [
+                    'id' => $source['dialog_id'],
+                    'top_at' => $source['top_at'],
+                    'last_at' => $source['last_at'],
+                    'mark_unread' => $source['mark_unread'],
+                    'silence' => $source['silence'],
+                    'hide' => $source['hide'],
+                    'color' => $source['color'],
+                    'user_at' => $source['updated_at'],
+                    'search_msg_id' => $source['msg_id'],
+                ];
+            }, $result['data']['hits']['hits'] ?? []);
         } catch (\Exception $e) {
             Log::error('搜索对话消息失败: ' . $e->getMessage());
             return [

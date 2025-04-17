@@ -20,7 +20,6 @@
         "ext-simplexml": "*",
         "ext-zip": "*",
         "directorytree/ldaprecord-laravel": "^2.7",
-        "elasticsearch/elasticsearch": "^8.17",
         "fideloper/proxy": "^4.4.1",
         "firebase/php-jwt": "^6.9",
         "fruitcake/laravel-cors": "^2.0.4",

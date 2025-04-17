@@ -14,10 +14,8 @@ use App\Module\Base;
 use App\Module\Timer;
 use App\Models\Setting;
 use App\Module\Extranet;
-use App\Module\ElasticSearch\ElasticSearchUserMsg;
 use App\Module\TimeRange;
 use App\Module\MsgTool;
-use App\Module\Table\OnlineData;
 use App\Models\FileContent;
 use App\Models\ProjectTask;
 use App\Models\AbstractModel;
@@ -29,6 +27,8 @@ use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogMsgTodo;
 use App\Models\WebSocketDialogMsgTranslate;
 use App\Models\WebSocketDialogSession;
+use App\Module\Table\OnlineData;
+use App\Module\ZincSearch\ZincSearchUserMsg;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
@@ -174,7 +174,7 @@ class DialogController extends AbstractController
         }
         // 搜索消息会话
         if (count($list) < 20) {
-            $searchResults = ElasticSearchUserMsg::searchByKeyword($user->userid, $key, 20 - count($list));
+            $searchResults = ZincSearchUserMsg::searchByKeyword($user->userid, $key, 0, 20 - count($list));
             if ($searchResults) {
                 foreach ($searchResults as $item) {
                     if ($dialog = WebSocketDialog::find($item['id'])) {
@@ -728,7 +728,7 @@ class DialogController extends AbstractController
         $key = trim(Request::input('key'));
         $list = [];
         //
-        $searchResults = ElasticSearchUserMsg::searchByKeyword($user->userid, $key, Base::getPaginate(50, 20));
+        $searchResults = ZincSearchUserMsg::searchByKeyword($user->userid, $key, 0, Base::getPaginate(50, 20));
         if ($searchResults) {
             foreach ($searchResults as $item) {
                 if ($dialog = WebSocketDialog::find($item['id'])) {
