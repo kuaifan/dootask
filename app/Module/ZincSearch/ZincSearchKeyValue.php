@@ -181,17 +181,6 @@ class ZincSearchKeyValue
     }
 
     /**
-     * 获取键值，返回数组
-     * @param string $key 键名
-     * @param array $default 默认值，当键不存在时返回
-     * @return array
-     */
-    public static function getArray(string $key, array $default = []): array
-    {
-        return Base::string2array(self::get($key, $default));
-    }
-
-    /**
      * 删除键值
      *
      * @param string $key 键名

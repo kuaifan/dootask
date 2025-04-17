@@ -69,8 +69,8 @@ class ZincSearchUserMsg
                     'bot' => ['type' => 'numeric', 'index' => true],
 
                     // 关联字段
-                    '_userid_msg_id_' => ['type' => 'keyword', 'index' => true],
-                    '_userid_dialog_id_' => ['type' => 'keyword', 'index' => true],
+                    'userid_msg_id' => ['type' => 'keyword', 'index' => true],
+                    'userid_dialog_id' => ['type' => 'keyword', 'index' => true],
                 ]
             ];
             $result = ZincSearchBase::createIndex(self::$indexName, $mappings);
@@ -193,8 +193,8 @@ class ZincSearchUserMsg
             'key' => $dialogMsg->key,
             'bot' => $dialogMsg->bot ? 1 : 0,
 
-            '_userid_msg_id_' => self::generateUseridMsgId($dialogMsg, $dialogUser),
-            '_userid_dialog_id_' => self::generateUseridDialogId($dialogUser),
+            'userid_msg_id' => self::generateUseridMsgId($dialogMsg, $dialogUser),
+            'userid_dialog_id' => self::generateUseridDialogId($dialogUser),
         ];
     }
 
@@ -356,8 +356,11 @@ class ZincSearchUserMsg
     public static function syncUser(WebSocketDialogUser $dialogUser): void
     {
         $batchSize = 1000;  // 每批处理的文档数量
+        $lastId = 0;        // 上次处理的最后ID
+
         do {
             $dialogMsgs = WebSocketDialogMsg::whereDialogId($dialogUser->dialog_id)
+                ->where('id', '>', $lastId)
                 ->orderBy('id')
                 ->limit($batchSize)
                 ->get();
@@ -367,6 +370,10 @@ class ZincSearchUserMsg
             }
 
             ZincSearchUserMsg::batchSyncMsgs($dialogMsgs);
+
+            // 记录最后处理的ID
+            $lastId = $dialogMsgs->last()->id;
+
         } while (count($dialogMsgs) == $batchSize);
     }
 
@@ -401,7 +408,7 @@ class ZincSearchUserMsg
                 $result = ZincSearchBase::advancedSearch(self::$indexName, [
                     'search_type' => 'term',
                     'query' => [
-                        'field' => '_userid_dialog_id_',
+                        'field' => 'userid_dialog_id',
                         'term' => self::generateUseridDialogId($dialogUser),
                     ],
                     'from' => $from,
