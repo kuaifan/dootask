@@ -74,9 +74,9 @@ class ZincSearchUserMsg
                 'key' => ['type' => 'text', 'index' => true],
                 'bot' => ['type' => 'numeric', 'index' => true],
 
-                // 关联字段 - ZincSearch不支持父子文档，使用引用字段代替
-                'parent_id' => ['type' => 'keyword', 'index' => true],
-                'doc_type' => ['type' => 'keyword', 'index' => true] // dialog_user 或 dialog_msg
+                // 关联字段
+                '_join_type' => ['type' => 'keyword', 'index' => true],
+                '_join_key' => ['type' => 'keyword', 'index' => true],
             ]
         ];
 
@@ -168,7 +168,7 @@ class ZincSearchUserMsg
      */
     public static function generateUserDocId(WebSocketDialogUser $dialogUser): string
     {
-        return "user_{$dialogUser->userid}_dialog_{$dialogUser->dialog_id}";
+        return "dialog_{$dialogUser->dialog_id}_user_{$dialogUser->userid}";
     }
 
     /**
@@ -192,8 +192,8 @@ class ZincSearchUserMsg
             'hide' => $dialogUser->hide ?: 0,
             'color' => $dialogUser->color,
 
-            'doc_type' => 'dialog_user',
-            'parent_id' => '' // 用户文档没有父文档
+            '_join_type' => 'dialog_user',
+            '_join_key' => '' // 用户文档没有父文档
         ];
     }
 
@@ -261,7 +261,7 @@ class ZincSearchUserMsg
             $searchParams = [
                 'search_type' => 'term',
                 'query' => [
-                    'field' => 'parent_id',
+                    'field' => '_join_key',
                     'term' => $docId
                 ],
                 'from' => 0,
@@ -297,9 +297,9 @@ class ZincSearchUserMsg
      * @param string $userid
      * @return string
      */
-    public static function generateMsgParentId(WebSocketDialogMsg $dialogMsg, string $userid): string
+    public static function generateMsgJoinKey(WebSocketDialogMsg $dialogMsg, string $userid): string
     {
-        return "user_{$userid}_dialog_{$dialogMsg->dialog_id}";
+        return "dialog_{$dialogMsg->dialog_id}_user_{$userid}";
     }
 
     /**
@@ -334,8 +334,8 @@ class ZincSearchUserMsg
             'key' => $dialogMsg->key,
             'bot' => $dialogMsg->bot ? 1 : 0,
 
-            'doc_type' => 'dialog_msg',
-            'parent_id' => self::generateMsgParentId($dialogMsg, $userid)
+            '_join_type' => 'dialog_msg',
+            '_join_key' => self::generateMsgJoinKey($dialogMsg, $userid)
         ];
     }
 
