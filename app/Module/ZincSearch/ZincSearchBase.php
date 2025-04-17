@@ -24,19 +24,6 @@ class ZincSearchBase
     }
 
     /**
-     * 获取配置
-     */
-    private function config(): array
-    {
-        return [
-            'host' => $this->host,
-            'port' => $this->port,
-            'user' => $this->user,
-            'pass' => $this->pass
-        ];
-    }
-
-    /**
      * 通用请求方法
      */
     private function request($path, $body = null, $method = 'POST')

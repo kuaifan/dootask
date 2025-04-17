@@ -44,22 +44,10 @@ class ZincSearchKeyValue
         if (!ZincSearchBase::indexExists(self::$indexName)) {
             $mappings = [
                 'properties' => [
-                    'key' => [
-                        'type' => 'keyword',
-                        'index' => true
-                    ],
-                    'value' => [
-                        'type' => 'text',
-                        'index' => true
-                    ],
-                    'created_at' => [
-                        'type' => 'date',
-                        'index' => true
-                    ],
-                    'updated_at' => [
-                        'type' => 'date',
-                        'index' => true
-                    ]
+                    'key' => ['type' => 'keyword', 'index' => true],
+                    'value' => ['type' => 'text', 'index' => true],
+                    'created_at' => ['type' => 'date', 'index' => true],
+                    'updated_at' => ['type' => 'date', 'index' => true]
                 ]
             ];
             $result = ZincSearchBase::createIndex(self::$indexName, $mappings);
@@ -94,10 +82,20 @@ class ZincSearchKeyValue
             }
         }
 
-        // 检查是否存在相同键的文档
-        $searchResult = ZincSearchBase::search(self::$indexName, $key, 0, 1);
-        $docs = $searchResult['data']['hits']['hits'] ?? [];
-        $now = date('Y-m-d H:i:s');
+        // 检查是否存在相同键的文档 - 使用精确查询而不是普通搜索
+        $searchParams = [
+            'search_type' => 'term',
+            'query' => [
+                'field' => 'key',
+                'term' => $key
+            ],
+            'from' => 0,
+            'max_results' => 1
+        ];
+
+        $result = ZincSearchBase::advancedSearch(self::$indexName, $searchParams);
+        $docs = $result['data']['hits']['hits'] ?? [];
+        $now = date('c');
 
         if (!empty($docs)) {
             $docId = $docs[0]['_id'] ?? null;
@@ -231,7 +229,7 @@ class ZincSearchKeyValue
         }
 
         $docs = [];
-        $now = date('Y-m-d H:i:s');
+        $now = date('c');
 
         foreach ($keyValues as $key => $value) {
             $docs[] = [

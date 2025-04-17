@@ -219,7 +219,7 @@ class ZincSearchUserMsg
     /**
      * 批量同步会话用户
      *
-     * @param array|iterable $dialogUsers WebSocketDialogUser对象集合
+     * @param WebSocketDialogUser[] $dialogUsers WebSocketDialogUser对象集合
      * @return int 成功同步的用户数
      */
     public static function batchSyncUsers($dialogUsers): int
@@ -378,7 +378,7 @@ class ZincSearchUserMsg
     /**
      * 批量同步会话消息
      *
-     * @param array|iterable $dialogMsgs WebSocketDialogMsg对象集合
+     * @param WebSocketDialogMsg[] $dialogMsgs WebSocketDialogMsg对象集合
      * @return int 成功同步的消息数
      */
     public static function batchSyncMsgs($dialogMsgs): int
@@ -390,8 +390,8 @@ class ZincSearchUserMsg
 
             // 预处理：收集所有涉及的对话ID
             $dialogIds = [];
-            foreach ($dialogMsgs as $message) {
-                $dialogIds[] = $message->dialog_id;
+            foreach ($dialogMsgs as $dialogMsg) {
+                $dialogIds[] = $dialogMsg->dialog_id;
             }
             $dialogIds = array_unique($dialogIds);
 
@@ -406,10 +406,10 @@ class ZincSearchUserMsg
             }
 
             // 为每条消息准备所有相关用户的文档
-            foreach ($dialogMsgs as $message) {
-                if (isset($userDialogs[$message->dialog_id])) {
-                    foreach ($userDialogs[$message->dialog_id] as $dialogUser) {
-                        $docFormat = self::generateMsgFormat($message, $dialogUser->userid);
+            foreach ($dialogMsgs as $dialogMsg) {
+                if (isset($userDialogs[$dialogMsg->dialog_id])) {
+                    foreach ($userDialogs[$dialogMsg->dialog_id] as $dialogUser) {
+                        $docFormat = self::generateMsgFormat($dialogMsg, $dialogUser->userid);
                         $docs[] = $docFormat;
                         $count++;
                     }
