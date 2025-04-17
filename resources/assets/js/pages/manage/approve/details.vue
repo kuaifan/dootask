@@ -7,8 +7,9 @@
             </div>
             <h2>{{$L('审批详情')}}</h2>
         </div>
+
         <!-- 审批详情 -->
-        <div class="approve-details-box" ref="approveDetailsBox">
+        <div v-if="datas.id" class="approve-details-box" ref="approveDetailsBox">
             <h2 class="approve-details-title">
                 <span>{{$L(datas.proc_def_name || '- -')}}</span>
                 <Tag v-if="datas.state == 0" color="cyan">{{$L('待审批')}}</Tag>
@@ -17,8 +18,10 @@
                 <Tag v-if="datas.state == 3" color="red">{{$L('已拒绝')}}</Tag>
                 <Tag v-if="datas.state == 4" color="red">{{$L('已撤回')}}</Tag>
             </h2>
-            <h3 class="approve-details-subtitle" @click="onAvatar(datas.start_user_id)">
-                <Avatar :src="datas.userimg" size="24"/>
+            <h3 class="approve-details-subtitle">
+                <span @click="onAvatar(datas.start_user_id)">
+                    <Avatar :src="datas.userimg" size="24"/>
+                </span>
                 <span>{{datas.start_user_name}}</span>
             </h3>
             <h3 class="approve-details-subtitle"><span>{{$L('提交于')}} {{datas.start_time}}</span></h3>
@@ -182,7 +185,7 @@
         </div>
 
         <!--审批操作-->
-        <div class="approve-operation">
+        <div v-if="datas.id" class="approve-operation">
             <Button type="primary" v-if="isShowAgreeBtn && !loadIng" @click="approve(1)">{{$L('同意')}}</Button>
             <Button type="error" v-if="isShowAgreeBtn && !loadIng"  @click="approve(2)">{{$L('拒绝')}}</Button>
             <Button type="warning" v-if="isShowWarningBtn && !loadIng" @click="revocation">{{$L('撤销')}}</Button>
@@ -463,8 +466,7 @@ export default {
         // 滚动到容器底部
         scrollToBottom() {
             this.$nextTick(() => {
-                const container = this.$refs.approveDetailsBox
-                container.scrollTo({
+                this.$refs.approveDetailsBox?.scrollTo({
                     top: container.scrollHeight + 1000,
                     behavior: 'smooth'
                 });

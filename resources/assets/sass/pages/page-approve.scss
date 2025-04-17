@@ -198,7 +198,6 @@
     }
 }
 
-
 .approve-details {
     flex: 1 1 auto;
     display: flex;
@@ -244,6 +243,7 @@
         .approve-details-subtitle {
             margin-top: 8px;
             display: flex;
+            align-items: center;
 
             .ivu-avatar {
                 margin-right: 8px;
@@ -436,7 +436,6 @@
     }
 }
 
-
 .page-approve-setting{
 
     .approve-row {
@@ -514,7 +513,12 @@
     }
 }
 
-//
+.ivu-modal {
+    .approve-details {
+        border-width: 0;
+    }
+}
+
 body.window-portrait {
     .page-approve{
         .approve-head {
