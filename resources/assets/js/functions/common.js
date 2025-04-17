@@ -343,15 +343,19 @@ const timezone = require("dayjs/plugin/timezone");
 
         /**
          * 克隆对象
-         * @param myObj
+         * @param value
+         * @param useParse
          * @returns {*}
          */
-        cloneJSON(myObj) {
+        cloneJSON(value, useParse = false) {
+            if (useParse === true) {
+                return $A.jsonParse($A.jsonStringify(value))
+            }
             try {
-                return structuredClone(myObj);
+                return structuredClone(value);
             } catch (e) {
-                if (typeof myObj !== 'object' || myObj === null) return myObj;
-                return $A.jsonParse($A.jsonStringify(myObj))
+                if (typeof value !== 'object' || value === null) return value;
+                return $A.jsonParse($A.jsonStringify(value))
             }
         },
 
