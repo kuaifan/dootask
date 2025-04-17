@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Module;
+namespace App\Module\ZincSearch;
 
 /**
  * ZincSearch 公共类
  */
-class ZincSearch
+class ZincSearchBase
 {
     private mixed $host;
     private mixed $port;
@@ -98,6 +98,15 @@ class ZincSearch
     }
 
     /**
+     * 判断索引是否存在
+     */
+    public static function indexExists($index): bool
+    {
+        $result = self::getIndex($index);
+        return $result['success'] && isset($result['data']['name']);
+    }
+
+    /**
      * 获取所有索引
      */
     public static function listIndices(): array
@@ -111,6 +120,41 @@ class ZincSearch
     public static function deleteIndex($index): array
     {
         return (new self())->request("/api/index/{$index}", null, 'DELETE');
+    }
+
+    /**
+     * 删除所有索引
+     */
+    public static function deleteAllIndices(): array
+    {
+        $instance = new self();
+        $result = $instance->request("/api/index", null, 'GET');
+
+        if (!$result['success']) {
+            return $result;
+        }
+
+        $indices = $result['data'] ?? [];
+        $deleteResults = [];
+        $success = true;
+
+        foreach ($indices as $index) {
+            $indexName = $index['name'] ?? '';
+            if (!empty($indexName)) {
+                $deleteResult = $instance->request("/api/index/{$indexName}", null, 'DELETE');
+                $deleteResults[$indexName] = $deleteResult;
+
+                if (!$deleteResult['success']) {
+                    $success = false;
+                }
+            }
+        }
+
+        return [
+            'success' => $success,
+            'message' => $success ? '所有索引删除成功' : '部分索引删除失败',
+            'details' => $deleteResults
+        ];
     }
 
     /**
