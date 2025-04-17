@@ -47,10 +47,9 @@ class ZincSearchUserMsg
         if (!ZincSearchBase::indexExists(self::$indexName)) {
             $mappings = [
                 'properties' => [
-                    // 共用字段
-                    'dialog_id' => ['type' => 'keyword', 'index' => true],
-                    'created_at' => ['type' => 'date', 'index' => true],
-                    'updated_at' => ['type' => 'date', 'index' => true],
+                    // 关联字段
+                    '_id' => ['type' => 'keyword', 'index' => true],
+                    '_dialog_userid' => ['type' => 'keyword', 'index' => true],
 
                     // dialog_users 字段
                     'userid' => ['type' => 'keyword', 'index' => true],
@@ -63,14 +62,13 @@ class ZincSearchUserMsg
 
                     // dialog_msgs 字段
                     'msg_id' => ['type' => 'keyword', 'index' => true],
+                    'dialog_id' => ['type' => 'keyword', 'index' => true],
                     'sender_userid' => ['type' => 'keyword', 'index' => true],
                     'msg_type' => ['type' => 'keyword', 'index' => true],
                     'key' => ['type' => 'text', 'index' => true],
                     'bot' => ['type' => 'numeric', 'index' => true],
-
-                    // 关联字段
-                    'userid_msg_id' => ['type' => 'keyword', 'index' => true],
-                    'userid_dialog_id' => ['type' => 'keyword', 'index' => true],
+                    'created_at' => ['type' => 'date', 'index' => true],
+                    'updated_at' => ['type' => 'date', 'index' => true],
                 ]
             ];
             $result = ZincSearchBase::createIndex(self::$indexName, $mappings);
@@ -115,19 +113,25 @@ class ZincSearchUserMsg
      */
     public static function searchByKeyword(string $userid, string $keyword, int $from = 0, int $size = 20): array
     {
-        // 构建复杂的搜索查询
         $searchParams = [
-            'search_type' => 'querystring',
             'query' => [
-                'term' => "+userid:{$userid} +key:*{$keyword}*"
+                'bool' => [
+                    'must' => [
+                        ['term' => ['userid' => $userid]],
+                        ['term' => ['bot' => 0]],
+                        ['match_phrase' => ['key' => $keyword]]
+                    ]
+                ]
             ],
             'from' => $from,
-            'max_results' => $size,
-            'sort_fields' => ["updated_at:desc"]
+            'size' => $size,
+            'sort' => [
+                ['updated_at' => 'desc']
+            ]
         ];
 
         try {
-            return ZincSearchBase::advancedSearch(self::$indexName, $searchParams);
+            return ZincSearchBase::elasticSearch(self::$indexName, $searchParams);
         } catch (\Exception $e) {
             Log::error('搜索对话消息失败: ' . $e->getMessage());
             return [
@@ -149,9 +153,9 @@ class ZincSearchUserMsg
      * @param WebSocketDialogUser $dialogUser
      * @return string
      */
-    private static function generateUseridMsgId(WebSocketDialogMsg $dialogMsg, WebSocketDialogUser $dialogUser): string
+    private static function generateDocId(WebSocketDialogMsg $dialogMsg, WebSocketDialogUser $dialogUser): string
     {
-        return "{$dialogUser->userid}_{$dialogMsg->id}";
+        return "{$dialogMsg->id}_{$dialogUser->userid}";
     }
 
     /**
@@ -160,9 +164,9 @@ class ZincSearchUserMsg
      * @param WebSocketDialogUser $dialogUser
      * @return string
      */
-    private static function generateUseridDialogId(WebSocketDialogUser $dialogUser): string
+    private static function generateDialogUserid(WebSocketDialogUser $dialogUser): string
     {
-        return "{$dialogUser->userid}_{$dialogUser->dialog_id}";
+        return "{$dialogUser->dialog_id}_{$dialogUser->userid}";
     }
 
     /**
@@ -175,9 +179,8 @@ class ZincSearchUserMsg
     private static function generateMsgFormat(WebSocketDialogMsg $dialogMsg, WebSocketDialogUser $dialogUser): array
     {
         return [
-            'dialog_id' => $dialogMsg->dialog_id,
-            'created_at' => $dialogMsg->created_at,
-            'updated_at' => $dialogMsg->updated_at,
+            '_id' => self::generateDocId($dialogMsg, $dialogUser),
+            '_dialog_userid' => self::generateDialogUserid($dialogUser),
 
             'userid' => $dialogUser->userid,
             'top_at' => $dialogUser->top_at,
@@ -188,13 +191,13 @@ class ZincSearchUserMsg
             'color' => $dialogUser->color,
 
             'msg_id' => $dialogMsg->id,
+            'dialog_id' => $dialogMsg->dialog_id,
             'sender_userid' => $dialogMsg->userid,
             'msg_type' => $dialogMsg->type,
             'key' => $dialogMsg->key,
             'bot' => $dialogMsg->bot ? 1 : 0,
-
-            'userid_msg_id' => self::generateUseridMsgId($dialogMsg, $dialogUser),
-            'userid_dialog_id' => self::generateUseridDialogId($dialogUser),
+            'created_at' => $dialogMsg->created_at,
+            'updated_at' => $dialogMsg->updated_at,
         ];
     }
 
@@ -220,6 +223,14 @@ class ZincSearchUserMsg
 
             $docs = [];
             foreach ($dialogUsers as $dialogUser) {
+                if (empty($dialogMsg->key)) {
+                    // 如果消息没有关键词，跳过
+                    continue;
+                }
+                if ($dialogUser->userid == 0) {
+                    // 跳过系统用户
+                    continue;
+                }
                 $docs[] = self::generateMsgFormat($dialogMsg, $dialogUser);
             }
 
@@ -270,11 +281,21 @@ class ZincSearchUserMsg
 
             // 为每条消息准备所有相关用户的文档
             foreach ($dialogMsgs as $dialogMsg) {
-                if (isset($userDialogs[$dialogMsg->dialog_id])) {
-                    foreach ($userDialogs[$dialogMsg->dialog_id] as $dialogUser) {
-                        $docs[] = self::generateMsgFormat($dialogMsg, $dialogUser);
-                        $count++;
+                if (!isset($userDialogs[$dialogMsg->dialog_id])) {
+                    // 如果该会话没有用户，跳过
+                    continue;
+                }
+                foreach ($userDialogs[$dialogMsg->dialog_id] as $dialogUser) {
+                    if (empty($dialogMsg->key)) {
+                        // 如果消息没有关键词，跳过
+                        continue;
                     }
+                    if ($dialogUser->userid == 0) {
+                        // 跳过系统用户
+                        continue;
+                    }
+                    $docs[] = self::generateMsgFormat($dialogMsg, $dialogUser);
+                    $count++;
                 }
             }
 
@@ -297,7 +318,7 @@ class ZincSearchUserMsg
      */
     public static function deleteMsg(WebSocketDialogMsg $dialogMsg): int
     {
-        $batchSize = 1000;  // 每批处理的文档数量
+        $batchSize = 500;   // 每批处理的文档数量
         $totalDeleted = 0;  // 总共删除的文档数量
         $from = 0;
 
@@ -308,7 +329,7 @@ class ZincSearchUserMsg
                     'search_type' => 'term',
                     'query' => [
                         'field' => 'msg_id',
-                        'term' => $dialogMsg->id
+                        'term' => (string) $dialogMsg->id
                     ],
                     'from' => $from,
                     'max_results' => $batchSize
@@ -355,7 +376,7 @@ class ZincSearchUserMsg
      */
     public static function syncUser(WebSocketDialogUser $dialogUser): void
     {
-        $batchSize = 1000;  // 每批处理的文档数量
+        $batchSize = 500;   // 每批处理的文档数量
         $lastId = 0;        // 上次处理的最后ID
 
         do {
@@ -398,7 +419,7 @@ class ZincSearchUserMsg
      */
     public static function deleteUser(WebSocketDialogUser $dialogUser): int
     {
-        $batchSize = 1000;  // 每批处理的文档数量
+        $batchSize = 500;  // 每批处理的文档数量
         $totalDeleted = 0;  // 总共删除的文档数量
         $from = 0;
 
@@ -408,8 +429,8 @@ class ZincSearchUserMsg
                 $result = ZincSearchBase::advancedSearch(self::$indexName, [
                     'search_type' => 'term',
                     'query' => [
-                        'field' => 'userid_dialog_id',
-                        'term' => self::generateUseridDialogId($dialogUser),
+                        'field' => '_dialog_userid',
+                        'term' => self::generateDialogUserid($dialogUser),
                     ],
                     'from' => $from,
                     'max_results' => $batchSize

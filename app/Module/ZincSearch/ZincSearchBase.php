@@ -239,6 +239,15 @@ class ZincSearchBase
     }
 
     /**
+     * 兼容ES查询文档
+     */
+    public static function elasticSearch($index, $searchParams): array
+    {
+        $body = json_encode($searchParams);
+        return (new self())->request("/es/{$index}/_search", $body);
+    }
+
+    /**
      * 多索引查询
      */
     public static function multiSearch($queries): array

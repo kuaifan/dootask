@@ -7,7 +7,7 @@ use App\Module\ZincSearch\ZincSearchKeyValue;
 use App\Module\ZincSearch\ZincSearchUserMsg;
 use Illuminate\Console\Command;
 
-class SyncDialogUserMsgToZincSearch extends Command
+class SyncUserMsgToZincSearch extends Command
 {
     /**
      * 更新数据
@@ -18,7 +18,7 @@ class SyncDialogUserMsgToZincSearch extends Command
      * --c: 清除索引
      */
 
-    protected $signature = 'zinc:sync-dialog-user-msg {--f} {--i} {--c} {--batch=1000}';
+    protected $signature = 'zinc:sync-user-msg {--f} {--i} {--c} {--batch=1000}';
     protected $description = '同步聊天会话用户和消息到 ZincSearch';
 
     /**
