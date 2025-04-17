@@ -6,11 +6,14 @@ use App\Module\Base;
 
 /**
  * ZincSearch 键值存储类
- * 基于ZincSearch实现简单的键值存储功能
  *
  * 使用方法:
  *
- * 1. 基本操作
+ * 1. 基础方法
+ *     - 确保索引存在: ZincSearchKeyValue::ensureIndex();
+ *     - 清空所有数据: ZincSearchKeyValue::clear();
+ *
+ * 2. 基本操作
  *    - 设置键值: ZincSearchKeyValue::set('site_name', '我的网站');
  *    - 设置复杂数据: ZincSearchKeyValue::set('site_config', ['logo' => 'logo.png', 'theme' => 'dark']);
  *    - 合并现有数据: ZincSearchKeyValue::set('site_config', ['footer' => '版权所有'], true);
@@ -18,12 +21,9 @@ use App\Module\Base;
  *    - 获取键值带默认值: $theme = ZincSearchKeyValue::get('theme', 'light');
  *    - 删除键值: ZincSearchKeyValue::delete('temporary_data');
  *
- * 2. 批量操作
+ * 3. 批量操作
  *    - 批量设置: ZincSearchKeyValue::batchSet(['user_count' => 100, 'active_users' => 50]);
  *    - 批量获取: $stats = ZincSearchKeyValue::batchGet(['user_count', 'active_users']);
- *
- * 3. 其他操作
- *    - 清空所有数据: ZincSearchKeyValue::clear();
  */
 class ZincSearchKeyValue
 {
@@ -39,7 +39,7 @@ class ZincSearchKeyValue
     /**
      * 确保索引存在
      */
-    private static function ensureIndex(): bool
+    public static function ensureIndex(): bool
     {
         if (!ZincSearchBase::indexExists(self::$indexName)) {
             $mappings = [
@@ -54,6 +54,27 @@ class ZincSearchKeyValue
             return $result['success'] ?? false;
         }
         return true;
+    }
+
+    /**
+     * 清空所有键值
+     *
+     * @return bool 是否成功
+     */
+    public static function clear(): bool
+    {
+        // 检查索引是否存在
+        if (!ZincSearchBase::indexExists(self::$indexName)) {
+            return true;
+        }
+
+        // 删除再重建索引
+        $deleteResult = ZincSearchBase::deleteIndex(self::$indexName);
+        if (!($deleteResult['success'] ?? false)) {
+            return false;
+        }
+
+        return self::ensureIndex();
     }
 
     // ==============================
@@ -264,30 +285,5 @@ class ZincSearchKeyValue
         }
 
         return $results;
-    }
-
-    // ==============================
-    // 其他操作
-    // ==============================
-
-    /**
-     * 清空所有键值
-     *
-     * @return bool 是否成功
-     */
-    public static function clear(): bool
-    {
-        // 检查索引是否存在
-        if (!ZincSearchBase::indexExists(self::$indexName)) {
-            return true;
-        }
-
-        // 删除再重建索引
-        $deleteResult = ZincSearchBase::deleteIndex(self::$indexName);
-        if (!($deleteResult['success'] ?? false)) {
-            return false;
-        }
-
-        return self::ensureIndex();
     }
 }
