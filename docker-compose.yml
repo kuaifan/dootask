@@ -232,6 +232,23 @@ services:
         ipv4_address: "${APP_IPPR}.15"
     restart: unless-stopped
 
+  search:
+    container_name: "dootask-search-${APP_ID}"
+    image: "public.ecr.aws/zinclabs/zincsearch:0.4.10"
+    ports:
+      - "4080:4080"
+      - "4081:4081"
+    volumes:
+      - ./docker/search/zincsearch:/data
+    environment:
+      ZINC_DATA_PATH: "/data"
+      ZINC_FIRST_ADMIN_USER: "${DB_USERNAME}"
+      ZINC_FIRST_ADMIN_PASSWORD: "${DB_PASSWORD}"
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.16"
+    restart: unless-stopped
+
 networks:
   extnetwork:
     name: "dootask-networks-${APP_ID}"

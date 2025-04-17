@@ -580,19 +580,21 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {*}
          */
         urlParameter(key) {
-            let params = this.urlParameterAll();
+            const params = this.urlParameterAll();
             return typeof key === "undefined" ? params : params[key];
         },
 
+        /**
+         * 获取所有url参数
+         * @returns {{}}
+         */
         urlParameterAll() {
-            let search = window.location.search || window.location.hash || "";
-            let arr = [];
-            if (this.strExists(search, "?")) {
-                arr = this.getMiddle(search, "?").split("&");
-            }
-            let params = {};
+            const search = window.location.search || window.location.hash || "";
+            const index = search.indexOf("?");
+            const arr = index !== -1 ? search.substring(index + 1).split("&") : [];
+            const params = {};
             for (let i = 0; i < arr.length; i++) {
-                let data = arr[i].split("=");
+                const data = arr[i].split("=");
                 if (data.length === 2) {
                     params[data[0]] = data[1];
                 }
@@ -603,33 +605,36 @@ const timezone = require("dayjs/plugin/timezone");
         /**
          * 删除地址中的参数
          * @param url
-         * @param parameter
+         * @param keys
          * @returns {string|*}
          */
-        removeURLParameter(url, parameter) {
-            if (parameter instanceof Array) {
-                parameter.forEach((key) => {
+        removeURLParameter(url, keys) {
+            if (keys instanceof Array) {
+                keys.forEach((key) => {
                     url = $A.removeURLParameter(url, key)
                 });
                 return url;
             }
-            let urlparts = url.split('?');
-            if (urlparts.length >= 2) {
-                //参数名前缀
-                let prefix = encodeURIComponent(parameter) + '=';
-                let pars = urlparts[1].split(/[&;]/g);
-
-                //循环查找匹配参数
-                for (let i = pars.length; i-- > 0;) {
-                    if (pars[i].lastIndexOf(prefix, 0) !== -1) {
-                        //存在则删除
-                        pars.splice(i, 1);
+            try {
+                // 使用URL API正确解析URL各部分
+                const urlObj = new URL(url);
+                urlObj.searchParams.delete(keys);
+                return urlObj.toString();
+            } catch (e) {
+                // 如果URL解析失败，回退到简单的字符串处理方法
+                const urlparts = url.split('?');
+                if (urlparts.length >= 2) {
+                    const prefix = encodeURIComponent(keys) + '=';
+                    const pars = urlparts[1].split(/[&;]/g);
+                    for (let i = pars.length; i-- > 0;) {
+                        if (pars[i].lastIndexOf(prefix, 0) !== -1) {
+                            pars.splice(i, 1);
+                        }
                     }
+                    return urlparts[0] + (pars.length > 0 ? '?' + pars.join('&') : '');
                 }
-
-                return urlparts[0] + (pars.length > 0 ? '?' + pars.join('&') : '');
+                return url;
             }
-            return url;
         },
 
         /**
@@ -639,7 +644,21 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {*}
          */
         urlAddParams(url, params) {
-            if ($A.isJson(params)) {
+            if (!$A.isJson(params)) {
+                return url;
+            }
+            try {
+                // 使用URL API正确解析URL各部分
+                const urlObj = new URL(url);
+                for (let key in params) {
+                    if (!params.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    urlObj.searchParams.set(key, params[key]);
+                }
+                return urlObj.toString();
+            } catch (e) {
+                // 如果URL解析失败，回退到简单的字符串拼接方法
                 if (url) {
                     url = this.removeURLParameter(url, Object.keys(params))
                 }
@@ -651,8 +670,8 @@ const timezone = require("dayjs/plugin/timezone");
                     }
                     url+= '&' + key + '=' + params[key];
                 }
+                return this.rightDelete(url.replace("?&", "?"), '?');
             }
-            return this.rightDelete(url.replace("?&", "?"), '?');
         },
 
         /**
