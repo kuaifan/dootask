@@ -177,7 +177,12 @@
                         <Icon @click="tabActive='contacts'" :class="{active:tabActive==='contacts'}" type="md-person" />
                     </div>
                 </div>
-                <div class="operate-position" :style="operateStyles" v-show="operateVisible">
+                <div
+                    v-transfer-dom
+                    :data-transfer="true"
+                    class="operate-position"
+                    :style="operateStyles"
+                    v-show="operateVisible">
                     <Dropdown
                         trigger="custom"
                         transferClassName="scrollbar-hidden"
@@ -272,6 +277,7 @@
 import {mapGetters, mapState} from "vuex";
 import DialogWrapper from "./components/DialogWrapper";
 import longpress from "../../directives/longpress";
+import TransferDom from "../../directives/transfer-dom";
 import emitter from "../../store/events";
 
 const navDatas = {
@@ -290,7 +296,7 @@ const navDatas = {
 
 export default {
     components: {DialogWrapper},
-    directives: {longpress},
+    directives: {longpress, TransferDom},
     data() {
         return {
             firstLoad: true,
@@ -1058,13 +1064,12 @@ export default {
             if (!this.operateItem) {
                 return
             }
-            const rect = element.getBoundingClientRect();
-            this.$nextTick(() => {
-                const parentRect = this.$refs.select?.getBoundingClientRect() || {top: 0, left: 0}
+            requestAnimationFrame(() => {
+                const rect = element.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX}px`,
-                    top: `${rect.top + this.windowScrollY - parentRect.top}px`,
-                    height: rect.height + 'px',
+                    top: `${rect.top}px`,
+                    height: `${rect.height}px`,
                 }
                 this.operateVisible = true;
             })

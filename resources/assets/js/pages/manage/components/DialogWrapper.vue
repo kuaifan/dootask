@@ -292,7 +292,12 @@
         </div>
 
         <!--长按、右键-->
-        <div class="operate-position" :style="operateStyles" v-show="operateVisible">
+        <div
+            class="operate-position"
+            v-transfer-dom
+            :data-transfer="true"
+            :style="operateStyles"
+            v-show="operateVisible">
             <Dropdown
                 ref="operate"
                 trigger="custom"
@@ -655,6 +660,7 @@ import DialogGroupVote from "./DialogGroupVote";
 import DialogComplaint from "./DialogComplaint";
 import touchclick from "../../../directives/touchclick";
 import longpress from "../../../directives/longpress";
+import TransferDom from "../../../directives/transfer-dom";
 import {languageList} from "../../../language";
 import {isLocalResourcePath} from "../../../components/Replace/utils";
 import emitter from "../../../store/events";
@@ -680,7 +686,7 @@ export default {
         DialogGroupVote,
         DialogComplaint,
     },
-    directives: {touchclick, longpress},
+    directives: {touchclick, longpress, TransferDom},
 
     props: {
         dialogId: {
@@ -3080,7 +3086,7 @@ export default {
                             })
                         }
                     }
-                    this.$nextTick(() => {
+                    requestAnimationFrame(() => {
                         this.operateItem.clientX = event.clientX
                         this.operateItem.clientY = event.clientY
                         this.onSelectionchange()
@@ -3146,34 +3152,36 @@ export default {
                 return
             }
             //
-            const rect = el.getBoundingClientRect();
-            const scrollerRect = this.$refs.scroller.$el.getBoundingClientRect();
-            let top = rect.top + this.windowScrollY,
-                height = rect.height;
+            const rect = el.getBoundingClientRect(),
+                scrollerRect = this.$refs.scroller.$el.getBoundingClientRect();
+            const operatePosition = {
+                left: this.operateItem.clientX,
+                top: rect.top,
+                height: rect.height
+            }
             if (rect.top < scrollerRect.top) {
-                top = scrollerRect.top
-                height -= scrollerRect.top - rect.top
+                operatePosition.top = scrollerRect.top
+                operatePosition.height -= scrollerRect.top - rect.top
             }
             if (rect.bottom > scrollerRect.bottom) {
-                height -= rect.bottom - scrollerRect.bottom
+                operatePosition.height -= rect.bottom - scrollerRect.bottom
             }
-            let left = this.operateItem.clientX
             if (this.windowWidth < 500) {
                 if (this.operateItem.created_at) {
-                    left = this.windowWidth / 2
+                    operatePosition.left = this.windowWidth / 2
                 } else {
-                    left = rect.left + (rect.width / 2)
+                    operatePosition.left = rect.left + (rect.width / 2)
                 }
             }
             this.operateStyles = {
-                left: `${left}px`,
-                top: `${top}px`,
-                height: `${height}px`,
+                left: `${operatePosition.left}px`,
+                top: `${operatePosition.top}px`,
+                height: `${operatePosition.height}px`,
             }
-            if (this.location === 'messenger') {
-                this.operateStyles.marginTop = "calc(var(--status-bar-height) * -1)"
-            }
-            this.operateClient = {x: left, y: this.operateItem.clientY};
+            this.operateClient = {
+                x: operatePosition.left,
+                y: this.operateItem.clientY
+            };
             if (this.operateVisible) {
                 try {
                     this.$refs.operate.$refs.drop.popper.update()

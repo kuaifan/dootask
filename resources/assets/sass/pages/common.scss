@@ -999,3 +999,16 @@ body.window-portrait {
         margin-left: 54px;
     }
 }
+
+/*操作位置*/
+.operate-position {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: auto;
+    margin-top: var(--window-scroll-y);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}

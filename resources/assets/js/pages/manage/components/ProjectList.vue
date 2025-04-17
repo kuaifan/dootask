@@ -56,7 +56,12 @@
                 </div>
             </li>
         </ul>
-        <div class="operate-position" :style="operateStyles" v-show="operateVisible">
+        <div
+            v-transfer-dom
+            :data-transfer="true"
+            class="operate-position"
+            :style="operateStyles"
+            v-show="operateVisible">
             <Dropdown
                 trigger="custom"
                 :placement="windowLandscape ? 'bottom' : 'top'"
@@ -77,10 +82,11 @@
 <script>
 import {mapState} from "vuex";
 import longpress from "../../../directives/longpress";
+import TransferDom from "../../../directives/transfer-dom";
 
 export default {
     name: "ProjectList",
-    directives: {longpress},
+    directives: {longpress, TransferDom},
     data() {
         return {
             projectKeyValue: '',
@@ -189,13 +195,12 @@ export default {
             }
             this.operateVisible = false;
             this.operateItem = $A.isJson(projectItem) ? projectItem : {};
-            this.$nextTick(() => {
+            requestAnimationFrame(() => {
                 const rect = element.getBoundingClientRect();
-                const parentRect = this.$el.getBoundingClientRect() || {top: 0, left: 0}
                 this.operateStyles = {
-                    left: `${event.clientX - parentRect.left}px`,
-                    top: `${rect.top + this.windowScrollY - parentRect.top}px`,
-                    height: rect.height + 'px',
+                    left: `${event.clientX}px`,
+                    top: `${rect.top}px`,
+                    height: `${rect.height}px`,
                 }
                 this.operateVisible = true;
             })
