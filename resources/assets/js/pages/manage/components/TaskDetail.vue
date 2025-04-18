@@ -1917,7 +1917,7 @@ export default {
                 {label: '任务人员', value: 2},
                 {label: '指定成员', value: 3},
             ];
-            this.$store.state.menuOperation = {
+            this.$store.commit('menu/operation', {
                 event,
                 list,
                 size: 'large',
@@ -1925,7 +1925,7 @@ export default {
                 onUpdate: (value) => {
                     this.dropVisible(value)
                 }
-            }
+            })
         },
 
         showAtDropdown(event){
@@ -1935,14 +1935,14 @@ export default {
                 {label: '修改时间', value: 2},
                 {label: '清除时间', value: 3},
             ];
-            this.$store.state.menuOperation = {
+            this.$store.commit('menu/operation', {
                 event,
                 list,
                 size: 'large',
                 onUpdate: (value) => {
                     this.dropDeadline(value)
                 }
-            }
+            })
         },
 
         visibleUserSelectShowChange(isShow){
@@ -2033,16 +2033,16 @@ export default {
             const list = [
                 {label: '查看附件', value: 1},
                 {label: '下载附件', value: 2},
-                {label: '删除附件', value: 3, className: 'task-calc-warn-text'},
+                {label: '删除附件', value: 3, style: {color:'#FF7070'}},
             ];
-            this.$store.state.menuOperation = {
+            this.$store.commit('menu/operation', {
                 event,
                 list,
                 size: 'large',
                 onUpdate: (value) => {
                     this.dropFile(value)
                 }
-            }
+            })
         },
 
         dropFile(command) {
@@ -2113,16 +2113,17 @@ export default {
             if (this.msgTypes.length === 0) {
                 return
             }
-            this.$store.state.menuOperation = {
+            this.$store.commit('menu/operation', {
                 event,
                 list: this.msgTypes,
                 active: this.msgType,
                 activeClick: true,
+                language: false,
                 onUpdate: (type) => {
                     this.navActive = 'dialog'
                     this.$refs.dialog?.onMsgType(type)
                 }
-            }
+            })
         },
 
         autoScrollInto() {

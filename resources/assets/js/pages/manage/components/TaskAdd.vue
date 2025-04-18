@@ -555,7 +555,7 @@ export default {
                 {label: '任务人员', value: 2},
                 {label: '指定成员', value: 3},
             ];
-            this.$store.state.menuOperation = {
+            this.$store.commit('menu/operation', {
                 event,
                 list,
                 size: 'large',
@@ -563,7 +563,7 @@ export default {
                 onUpdate: (value) => {
                     this.dropVisible(value)
                 }
-            }
+            })
         },
 
         visibleUserSelectShowChange(isShow){

@@ -293,4 +293,9 @@ export default {
     'longpress/clear': function(state) {
         state.longpressData = {type: '', data: null, element: null}
     },
+
+    // 通用菜单
+    'menu/operation': function(state, data) {
+        state.menuOperation = data
+    },
 }

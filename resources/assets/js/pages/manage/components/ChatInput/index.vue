@@ -1572,22 +1572,23 @@ export default {
             if (type === 'transcription') {
                 // 语音转文字
                 list.unshift(...[
-                    {label: '选择识别语言', value: '', disabled: true},
-                    {label: '自动识别', value: '', divided: true},
+                    {label: this.$L('选择识别语言'), value: '', disabled: true},
+                    {label: this.$L('自动识别'), value: '', divided: true},
                 ])
                 active = this.cacheTranscriptionLanguage
             } else {
                 // 翻译
                 list.unshift(...[
-                    {label: '选择翻译结果', value: '', disabled: true},
-                    {label: '不翻译结果', value: '', divided: true},
+                    {label: this.$L('选择翻译结果'), value: '', disabled: true},
+                    {label: this.$L('不翻译结果'), value: '', divided: true},
                 ])
                 active = this.recordConvertTranslate
             }
-            this.$store.state.menuOperation = {
+            this.$store.commit('menu/operation', {
                 event,
                 list,
                 active,
+                language: false,
                 onUpdate: async (language) => {
                     if (type === 'transcription') {
                         await this.$store.dispatch('setTranscriptionLanguage', language)
@@ -1596,7 +1597,7 @@ export default {
                     }
                     this.convertRecord()
                 }
-            }
+            })
         },
 
         convertSend(type) {

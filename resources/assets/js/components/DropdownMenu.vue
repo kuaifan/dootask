@@ -10,17 +10,16 @@
         @visible-change="visibleChange">
         <div ref="icon" class="general-operation-icon"></div>
         <EDropdownMenu ref="dropdownMenu" slot="dropdown" class="general-operation-more-dropdown menu-dropdown">
-            <li class="general-operation-more-warp" :class="[size]">
+            <li class="general-operation-more-warp" :class="size">
                 <ul :style="ulStyle">
                     <EDropdownItem
                         v-for="(item, key) in list"
                         :key="key"
-                        :class="item.className"
                         :command="item.value"
                         :divided="!!item.divided"
                         :disabled="(active === item.value && !activeClick) || !!item.disabled">
-                        <div class="item-box">
-                            <div class="item">{{item.label}}</div>
+                        <div class="item-box" :style="item.style" :class="item.className">
+                            <div class="item">{{language ? $L(item.label) : item.label}}</div>
                             <div v-if="tickShow" class="tick">
                                 <i v-if="active === item.value && !item.disabled" class="taskfont">&#xe684;</i>
                             </div>
@@ -40,13 +39,14 @@ export default {
             visible: false,
 
             list: [],           // 数据列表: [{label: '', value: ''}]
-            active: '',         // 当前选中的值
             size: 'small',      // 下拉框大小
+            active: '',         // 当前选中的值
             activeClick: false, // 当前选中的值是否可以被点击
             onUpdate: null,     // 选中后的回调函数
             scrollHide: true,   // 滚动立即隐藏
-            tickShow: true,     // 是否显示打勾
+            tickShow: true,     // 是否显示打勾（默认为：true，如果 active === undefined 默认为：false）
             maxHeight: 0,       // 滚动区域最大高度
+            language: true,     // 是否国际化 item.label
 
             element: null,
             target: null,
@@ -83,13 +83,14 @@ export default {
                     height: `${eventRect.height}px`,
                 }
                 this.list = data.list;
-                this.active = data.active && this.list.find(item => item.value === data.active) ? data.active : '';
                 this.size = ['small', 'medium', 'large'].includes(data.size) ? data.size : 'small';
+                this.active = data.active && this.list.find(item => item.value === data.active) ? data.active : '';
                 this.activeClick = typeof data.activeClick === "boolean" ? data.activeClick : false;
                 this.onUpdate = typeof data.onUpdate === "function" ? data.onUpdate : null;
                 this.scrollHide = typeof data.scrollHide === "boolean" ? data.scrollHide : true;
-                this.tickShow = typeof data.tickShow === "boolean" ? data.tickShow : true;
+                this.tickShow = typeof data.tickShow === "boolean" ? data.tickShow : (typeof data.active !== "undefined");
                 this.maxHeight = typeof data.maxHeight === "number" ? data.maxHeight : 0;
+                this.language = typeof data.language === "boolean" ? data.language : true;
                 //
                 this.$refs.icon.focus();
                 this.show();

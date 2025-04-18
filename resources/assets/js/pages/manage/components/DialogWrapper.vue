@@ -1874,10 +1874,11 @@ export default {
                     if (!active && item.config?.model) {
                         active = item.config.model
                     }
-                    this.$store.state.menuOperation = {
+                    this.$store.commit('menu/operation', {
                         event,
                         list,
                         active,
+                        language: false,
                         onUpdate: async model => {
                             this.dialogAiModel = [
                                 ...this.dialogAiModel.filter(({dialog_id}) => dialog_id !== this.dialogId),
@@ -1885,7 +1886,7 @@ export default {
                             ]
                             await $A.IDBSet('dialogAiModel', this.dialogAiModel)
                         }
-                    }
+                    })
                     break;
 
                 // 开启新会话
@@ -3541,20 +3542,21 @@ export default {
                 value: item
             }))
             list.push(...[
-                {label: '重新翻译', value: 'retranslation', divided: true},
-                {label: '隐藏翻译', value: 'hidden'},
+                {label: this.$L('重新翻译'), value: 'retranslation', divided: true},
+                {label: this.$L('隐藏翻译'), value: 'hidden'},
             ])
-            this.$store.state.menuOperation = {
+            this.$store.commit('menu/operation', {
                 event,
                 list,
                 active: this.cacheTranslationLanguage,
+                language: false,
                 onUpdate: async (language) => {
                     if (languageList[language]) {
                         await this.$store.dispatch("setTranslationLanguage", language);
                     }
                     this.onTranslation(language);
                 }
-            }
+            })
         },
 
         onCopy(data) {

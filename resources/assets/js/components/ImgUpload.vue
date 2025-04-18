@@ -240,7 +240,7 @@ export default {
                     }
                 ])
             }
-            this.$store.state.menuOperation = {
+            this.$store.commit('menu/operation', {
                 event,
                 list,
                 onUpdate: async (act) => {
@@ -259,7 +259,7 @@ export default {
                             break;
                     }
                 }
-            }
+            })
         },
         handleView(item) {
             //查看
