@@ -109,9 +109,7 @@ services:
     environment:
       KK_CONTEXT_PATH: "/fileview"
       KK_OFFICE_PREVIEW_SWITCH_DISABLED: true
-      KK_FILE_UPLOAD_ENABLED: true
-      KK_MEDIA: "mp3,wav,mp4,mov,avi,wmv"
-      ES_JAVA_OPTS: "-Xmx1g"
+      KK_MEDIA_CONVERT_DISABLE: true
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.7"
@@ -221,9 +219,6 @@ services:
   search:
     container_name: "dootask-search-${APP_ID}"
     image: "public.ecr.aws/zinclabs/zincsearch:0.4.10"
-    ports:
-      - "4080:4080"
-      - "4081:4081"
     volumes:
       - ./docker/search/zincsearch:/data
     environment:

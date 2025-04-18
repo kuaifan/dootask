@@ -117,7 +117,7 @@ class File extends AbstractModel
         'jpg', 'jpeg', 'webp', 'png', 'gif', 'bmp', 'ico', 'raw',
         'tif', 'tiff',
         'mp3', 'wav', 'mp4', 'flv',
-        'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
+        // 'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',    // 这一排是要转换的，无法使用本地播放
     ];
 
     /**
