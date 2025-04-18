@@ -44,6 +44,9 @@
                             height: 26px;
                             text-align: right;
                             margin-left: 6px;
+                            display: flex;
+                            justify-content: flex-end;
+                            align-items: center;
 
                             > i {
                                 font-size: 14px;

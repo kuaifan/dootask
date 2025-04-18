@@ -374,60 +374,6 @@
                         </EDropdownMenu>
                     </EDropdown>
                 </div>
-                <EDropdown ref="eDropdownRef" class="calculate-dropdown" trigger="click" placement="bottom" @command="dropVisible">
-                    <div class="calculate-content"></div>
-                    <EDropdownMenu slot="dropdown">
-                        <EDropdownItem :command="1">
-                            <div class="task-menu-icon">
-                                <Icon v-if="taskDetail.visibility == 1" class="completed" :type="'md-checkmark-circle'"/>
-                                <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                {{$L('项目人员')}}
-                            </div>
-                        </EDropdownItem>
-                        <EDropdownItem :command="2">
-                            <div class="task-menu-icon">
-                                <Icon v-if="taskDetail.visibility == 2" class="completed" :type="'md-checkmark-circle'"/>
-                                <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                {{$L('任务人员')}}
-                            </div>
-                        </EDropdownItem>
-                        <EDropdownItem :command="3">
-                            <div class="task-menu-icon">
-                                <Icon v-if="taskDetail.visibility == 3" class="completed" :type="'md-checkmark-circle'"/>
-                                <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                {{$L('指定成员')}}
-                            </div>
-                        </EDropdownItem>
-                    </EDropdownMenu>
-                </EDropdown>
-                <EDropdown ref="eDeadlineRef" class="calculate-dropdown" trigger="click" placement="bottom" @command="dropDeadline">
-                    <div class="calculate-content"></div>
-                    <EDropdownMenu slot="dropdown">
-                        <EDropdownItem :command="1">
-                            {{$L('任务延期')}}
-                        </EDropdownItem>
-                        <EDropdownItem :command="2">
-                            {{$L('修改时间')}}
-                        </EDropdownItem>
-                        <EDropdownItem :command="3">
-                            {{$L('清除时间')}}
-                        </EDropdownItem>
-                    </EDropdownMenu>
-                </EDropdown>
-                <EDropdown ref="eFileRef" class="calculate-dropdown" trigger="click" placement="bottom" @command="dropFile">
-                    <div class="calculate-content"></div>
-                    <EDropdownMenu slot="dropdown">
-                        <EDropdownItem :command="1">
-                            {{$L('查看附件')}}
-                        </EDropdownItem>
-                        <EDropdownItem :command="2">
-                            {{$L('下载附件')}}
-                        </EDropdownItem>
-                        <EDropdownItem :command="3" class="task-calc-warn-text">
-                            {{$L('删除附件')}}
-                        </EDropdownItem>
-                    </EDropdownMenu>
-                </EDropdown>
             </Scrollbar>
             <TaskUpload ref="upload" class="upload" @on-select-file="onSelectFile"/>
         </div>
@@ -1623,7 +1569,9 @@ export default {
                 case 'visible':
                     this.visibleForce = true;
                     this.$nextTick(() => {
-                        this.showCisibleDropdown(null);
+                        this.showCisibleDropdown({
+                            target: this.$refs.visibilityText
+                        });
                     });
                     break;
 
@@ -1963,22 +1911,38 @@ export default {
             }, 0)
         },
 
-        showCisibleDropdown(e){
-            let eRect = null
-            if (e === null) {
-                eRect = this.$refs.visibilityText?.getBoundingClientRect()
-            } else {
-                eRect = e.target.getBoundingClientRect()
+        showCisibleDropdown(event){
+            const list = [
+                {label: '项目人员', value: 1},
+                {label: '任务人员', value: 2},
+                {label: '指定成员', value: 3},
+            ];
+            this.$store.state.menuOperation = {
+                event,
+                list,
+                size: 'large',
+                active: this.taskDetail.visibility,
+                onUpdate: (value) => {
+                    this.dropVisible(value)
+                }
             }
-            if (eRect === null) {
-                return
-            }
-            this.showDropdown(this.$refs.eDropdownRef, eRect)
         },
 
-        showAtDropdown({target}){
+        showAtDropdown(event){
             this.timeOpen = false
-            this.showDropdown(this.$refs.eDeadlineRef, target.getBoundingClientRect())
+            const list = [
+                {label: '任务延期', value: 1},
+                {label: '修改时间', value: 2},
+                {label: '清除时间', value: 3},
+            ];
+            this.$store.state.menuOperation = {
+                event,
+                list,
+                size: 'large',
+                onUpdate: (value) => {
+                    this.dropDeadline(value)
+                }
+            }
         },
 
         visibleUserSelectShowChange(isShow){
@@ -2064,9 +2028,21 @@ export default {
             })
         },
 
-        showFileDropdown(file, {target}){
+        showFileDropdown(file, event){
             this.operationFile = file
-            this.showDropdown(this.$refs.eFileRef, target.getBoundingClientRect())
+            const list = [
+                {label: '查看附件', value: 1},
+                {label: '下载附件', value: 2},
+                {label: '删除附件', value: 3, className: 'task-calc-warn-text'},
+            ];
+            this.$store.state.menuOperation = {
+                event,
+                list,
+                size: 'large',
+                onUpdate: (value) => {
+                    this.dropFile(value)
+                }
+            }
         },
 
         dropFile(command) {

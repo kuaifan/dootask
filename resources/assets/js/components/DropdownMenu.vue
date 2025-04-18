@@ -4,17 +4,18 @@
         trigger="click"
         class="general-operation-dropdown"
         placement="bottom"
-        size="small"
+        :size="size"
         :style="styles"
         @command="onCommand"
         @visible-change="visibleChange">
         <div ref="icon" class="general-operation-icon"></div>
         <EDropdownMenu ref="dropdownMenu" slot="dropdown" class="general-operation-more-dropdown menu-dropdown">
-            <li class="general-operation-more-warp small">
+            <li class="general-operation-more-warp" :class="[size]">
                 <ul :style="ulStyle">
                     <EDropdownItem
                         v-for="(item, key) in list"
                         :key="key"
+                        :class="item.className"
                         :command="item.value"
                         :divided="!!item.divided"
                         :disabled="(active === item.value && !activeClick) || !!item.disabled">
@@ -40,6 +41,7 @@ export default {
 
             list: [],           // 数据列表: [{label: '', value: ''}]
             active: '',         // 当前选中的值
+            size: 'small',      // 下拉框大小
             activeClick: false, // 当前选中的值是否可以被点击
             onUpdate: null,     // 选中后的回调函数
             scrollHide: true,   // 滚动立即隐藏
@@ -82,6 +84,7 @@ export default {
                 }
                 this.list = data.list;
                 this.active = data.active && this.list.find(item => item.value === data.active) ? data.active : '';
+                this.size = ['small', 'medium', 'large'].includes(data.size) ? data.size : 'small';
                 this.activeClick = typeof data.activeClick === "boolean" ? data.activeClick : false;
                 this.onUpdate = typeof data.onUpdate === "function" ? data.onUpdate : null;
                 this.scrollHide = typeof data.scrollHide === "boolean" ? data.scrollHide : true;
