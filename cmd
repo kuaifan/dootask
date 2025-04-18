@@ -457,8 +457,6 @@ if [ $# -gt 0 ]; then
                 sleep 3
             fi
         done
-        # 设置ES索引后缀
-        env_set ES_INDEX_SUFFIX "$(rand_string 6)"
         # 启动容器
         [[ "$(arg_get port)" -gt 0 ]] && env_set APP_PORT "$(arg_get port)"
         $COMPOSE up php -d
@@ -479,7 +477,7 @@ if [ $# -gt 0 ]; then
         # 数据库迁移
         run_exec php "php artisan migrate --seed"
         # 启动其他容器
-        $COMPOSE up -d
+        $COMPOSE up -d --remove-orphans
         success "安装完成"
         info "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
         # 设置初始化密码
@@ -504,7 +502,7 @@ if [ $# -gt 0 ]; then
         run_exec php "php artisan migrate"
         run_exec nginx "nginx -s reload"
         restart_php
-        $COMPOSE up -d
+        $COMPOSE up -d --remove-orphans
     elif [[ "$1" == "uninstall" ]]; then
         shift 1
         read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(Y/n): " uninstall

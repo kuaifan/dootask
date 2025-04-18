@@ -387,7 +387,7 @@ class ZincSearchDialogMsg
                 }
                 if ($dialogMsg->bot) {
                     // 如果是机器人消息，跳过
-                    return true;
+                    continue;
                 }
                 /** @var WebSocketDialogUser $dialogUser */
                 foreach ($userDialogs[$dialogMsg->dialog_id] as $dialogUser) {

@@ -111,6 +111,7 @@ services:
       KK_OFFICE_PREVIEW_SWITCH_DISABLED: true
       KK_FILE_UPLOAD_ENABLED: true
       KK_MEDIA: "mp3,wav,mp4,mov,avi,wmv"
+      ES_JAVA_OPTS: "-Xmx1g"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.7"
@@ -229,6 +230,11 @@ services:
       ZINC_DATA_PATH: "/data"
       ZINC_FIRST_ADMIN_USER: "${DB_USERNAME}"
       ZINC_FIRST_ADMIN_PASSWORD: "${DB_PASSWORD}"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.15"
