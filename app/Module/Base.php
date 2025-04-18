@@ -2022,6 +2022,7 @@ class Base
         chmod=>权限(默认0644),
         quality=>压缩图片质量(默认：0不压缩),
         convertVideo=>转换视频格式(默认false) ,
+        compressVideo=>压缩视频(默认false，如果转换就不压缩) ,
      ]
      * @return array [
         name=>原文件名,
@@ -2179,6 +2180,7 @@ class Base
                 }
                 @shell_exec($command);
                 if (file_exists($output) && filesize($output) > 0) {
+                    // 压缩后的文件正常
                     @unlink($array['file']);
                     $array = array_merge($array, [
                         "name" => Base::rightReplace($array['name'], ".{$array['ext']}", '.mp4'),
@@ -2188,6 +2190,27 @@ class Base
                         "url" => Base::rightReplace($array['url'], ".{$array['ext']}", '.mp4'),
                         "ext" => 'mp4',
                     ]);
+                }
+                $param['compressVideo'] = false; // 如果转换就不压缩
+            }
+            if ($param['compressVideo'] && $array['ext'] == 'mp4') {
+                // 压缩视频
+                $output = $array['file'] . '_compress';
+                $command = sprintf("ffmpeg -y -i %s -c:v libx264 -crf 28 -preset medium -c:a aac -b:a 96k %s 2>&1", escapeshellarg($array['file']), escapeshellarg($output));
+                @shell_exec($command);
+                if (file_exists($output) && filesize($output) > 0) {
+                    // 压缩后的文件正常
+                    if (filesize($output) < filesize($array['file'])) {
+                        // 小于原文件
+                        @unlink($array['file']);
+                        $array = array_merge($array, [
+                            "size" => Base::twoFloat(filesize($output) / 1024, true),
+                            "file" => $output,
+                        ]);
+                    } else {
+                        // 大于原文件
+                        @unlink($output);
+                    }
                 }
             }
             if (in_array($array['ext'], ['mov', 'webm', 'mp4'])) {

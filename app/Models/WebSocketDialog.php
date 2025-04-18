@@ -879,13 +879,15 @@ class WebSocketDialog extends AbstractModel
                 Base::makeDir(public_path($path));
                 copy($filePath, public_path($path) . basename($filePath));
             } else {
+                $setting = Base::setting("system");
                 $data = Base::upload([
                     "file" => $files,
                     "type" => 'more',
                     "path" => $path,
                     "fileName" => $fileName,
                     "quality" => true,
-                    "convertVideo" => true
+                    "convertVideo" => $setting['convert_video'] === 'open',
+                    "compressVideo" => $setting['compress_video'] === 'open',
                 ]);
             }
             //

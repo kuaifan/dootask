@@ -41,7 +41,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'voice2text', 'translation', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'system_alias', 'system_welcome', 'image_compress', 'image_quality', 'image_save_local', 'start_home']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'voice2text', 'translation', 'convert_video', 'compress_video', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'system_alias', 'system_welcome', 'image_compress', 'image_quality', 'image_save_local', 'start_home']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -70,6 +70,8 @@ class SystemController extends AbstractController
                     'anon_message',
                     'voice2text',
                     'translation',
+                    'convert_video',
+                    'compress_video',
                     'e2e_message',
                     'msg_rev_limit',
                     'msg_edit_limit',
@@ -136,6 +138,8 @@ class SystemController extends AbstractController
         $setting['anon_message'] = $setting['anon_message'] ?: 'open';
         $setting['voice2text'] = $setting['voice2text'] ?: 'close';
         $setting['translation'] = $setting['translation'] ?: 'close';
+        $setting['convert_video'] = $setting['convert_video'] ?: 'close';
+        $setting['compress_video'] = $setting['compress_video'] ?: 'close';
         $setting['e2e_message'] = $setting['e2e_message'] ?: 'close';
         $setting['msg_rev_limit'] = $setting['msg_rev_limit'] ?: '';
         $setting['msg_edit_limit'] = $setting['msg_edit_limit'] ?: '';

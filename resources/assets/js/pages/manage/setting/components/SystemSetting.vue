@@ -198,6 +198,22 @@
                         <div v-if="formDatum.translation == 'open'" class="form-tip">{{$L('长按文本消息可翻译成当前设置的语言。')}} ({{$L('需要在应用中开启 ChatGPT AI 机器人')}})</div>
                         <div v-else class="form-tip">{{$L('关闭文本消息翻译功能。')}}</div>
                     </FormItem>
+                    <FormItem :label="$L('视频转换')" prop="convertVideo">
+                        <RadioGroup v-model="formDatum.convert_video">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.convert_video == 'open'" class="form-tip">{{$L('将MOV、WEBM格式的视频转换为MP4格式。')}}</div>
+                        <div v-else class="form-tip">{{$L('关闭视频格式转换功能。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('视频压缩')" prop="compressVideo">
+                        <RadioGroup v-model="formDatum.compress_video">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.compress_video == 'open'" class="form-tip">{{$L('对MP4格式的视频进行压缩处理。')}}</div>
+                        <div v-else class="form-tip">{{$L('关闭视频压缩功能。')}}</div>
+                    </FormItem>
                     <FormItem :label="$L('端到端加密')" prop="e2eMessage">
                         <RadioGroup v-model="formDatum.e2e_message">
                             <Radio label="open">{{$L('开启')}}</Radio>
