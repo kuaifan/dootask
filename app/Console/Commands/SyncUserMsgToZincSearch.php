@@ -4,10 +4,11 @@ namespace App\Console\Commands;
 
 use App\Models\WebSocketDialogMsg;
 use App\Module\ZincSearch\ZincSearchKeyValue;
-use App\Module\ZincSearch\ZincSearchDialogUserMsg;
+use App\Module\ZincSearch\ZincSearchDialogMsg;
+use Cache;
 use Illuminate\Console\Command;
 
-class SyncUserMsgToSearch extends Command
+class SyncUserMsgToZincSearch extends Command
 {
     /**
      * 更新数据
@@ -18,7 +19,7 @@ class SyncUserMsgToSearch extends Command
      * --c: 清除索引
      */
 
-    protected $signature = 'search:sync-user-msg {--f} {--i} {--c} {--batch=1000}';
+    protected $signature = 'zinc:sync-user-msg {--f} {--i} {--c} {--batch=1000}';
     protected $description = '同步聊天会话用户和消息到 ZincSearch';
 
     /**
@@ -26,23 +27,35 @@ class SyncUserMsgToSearch extends Command
      */
     public function handle(): int
     {
-        // 清除索引
-        if ($this->option('c')) {
-            $this->info('清除索引...');
-            ZincSearchKeyValue::clear();
-            ZincSearchDialogUserMsg::clear();
-            $this->info("索引删除成功");
-            return 0;
+        // 使用缓存锁确保一次只能运行一个实例
+        $lock = Cache::lock('zinc:sync-user-msg', 3600 * 6); // 锁定6小时
+        if (!$lock->get()) {
+            $this->error('命令已在运行中，请等待当前实例完成');
+            return 1;
         }
 
-        $this->info('开始同步聊天数据...');
+        try {
+            // 清除索引
+            if ($this->option('c')) {
+                $this->info('清除索引...');
+                ZincSearchKeyValue::clear();
+                ZincSearchDialogMsg::clear();
+                $this->info("索引删除成功");
+                return 0;
+            }
 
-        // 同步消息数据
-        $this->syncDialogMsgs();
+            $this->info('开始同步聊天数据...');
 
-        // 完成
-        $this->info("\n同步完成");
-        return 0;
+            // 同步消息数据
+            $this->syncDialogMsgs();
+
+            // 完成
+            $this->info("\n同步完成");
+            return 0;
+        } finally {
+            // 确保无论如何都会释放锁
+            $lock->release();
+        }
     }
 
     /**
@@ -78,7 +91,7 @@ class SyncUserMsgToSearch extends Command
             $this->info("{$num}/{$count} ({$progress}%) 正在同步消息ID {$lastId} ~ {$dialogMsgs->last()->id}");
 
             // 同步数据
-            ZincSearchDialogUserMsg::batchSync($dialogMsgs);
+            ZincSearchDialogMsg::batchSync($dialogMsgs);
 
             // 更新最后ID
             $lastId = $dialogMsgs->last()->id;

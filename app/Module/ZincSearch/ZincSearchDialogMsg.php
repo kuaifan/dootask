@@ -4,7 +4,9 @@ namespace App\Module\ZincSearch;
 
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogUser;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Swoole\Coroutine;
 
 /**
  * ZincSearch 会话消息类
@@ -21,9 +23,9 @@ use Illuminate\Support\Facades\Log;
  *    - 单个同步: sync(WebSocketDialogMsg $dialogMsg);
  *    - 批量同步: batchSync(WebSocketDialogMsg[] $dialogMsgs);
  *    - 用户同步: userSync(WebSocketDialogUser $dialogUser);
- *    - 删除消息: delete(WebSocketDialogMsg|WebSocketDialogUser $data);
+ *    - 删除消息: delete(WebSocketDialogMsg|WebSocketDialogUser|int $data);
  */
-class ZincSearchDialogUserMsg
+class ZincSearchDialogMsg
 {
     /**
      * 索引名称
@@ -45,6 +47,7 @@ class ZincSearchDialogUserMsg
                 'properties' => [
                     // 拓展数据
                     'dialog_userid' => ['type' => 'keyword', 'index' => true],  // 对话ID+用户ID
+                    'to_userid' => ['type' => 'numeric', 'index' => true],      // 此消息发给的用户ID
 
                     // 消息数据
                     'id' => ['type' => 'numeric', 'index' => true],
@@ -130,8 +133,7 @@ class ZincSearchDialogUserMsg
             'query' => [
                 'bool' => [
                     'must' => [
-                        ['term' => ['userid' => $userid]],
-                        ['term' => ['bot' => 0]],
+                        ['term' => ['to_userid' => $userid]],
                         ['match_phrase' => ['key' => $keyword]]
                     ]
                 ]
@@ -145,18 +147,84 @@ class ZincSearchDialogUserMsg
 
         try {
             $result = ZincSearchBase::elasticSearch(self::$indexNameMsg, $searchParams);
-            return array_map(function ($hit) {
-                // todo 格式化消息
-                return $hit['_source'];
-            }, $result['data']['hits']['hits'] ?? []);
+            $hits = $result['data']['hits']['hits'] ?? [];
+
+            // 收集所有的用户信息
+            $dialogUserids = [];
+            foreach ($hits as $hit) {
+                $source = $hit['_source'];
+                $dialogUserids[] = $source['dialog_userid'];
+            }
+            $userInfos = self::searchUser(array_unique($dialogUserids));
+
+            // 组合返回结果，将用户信息合并到消息中
+            $msgs = [];
+            foreach ($hits as $hit) {
+                $msgInfo = $hit['_source'];
+                $userInfo = $userInfos[$msgInfo['dialog_userid']] ?? [];
+                if ($userInfo) {
+                    $msgs[] = [
+                        'id' => $msgInfo['dialog_id'],
+                        'search_msg_id' => $msgInfo['id'],
+                        'user_at' =>  Carbon::parse($msgInfo['updated_at'])->format('Y-m-d H:i:s'),
+
+                        'mark_unread' => $userInfo['mark_unread'],
+                        'silence' => $userInfo['silence'],
+                        'hide' => $userInfo['hide'],
+                        'color' => $userInfo['color'],
+                        'top_at' => Carbon::parse($userInfo['top_at'])->format('Y-m-d H:i:s'),
+                        'last_at' =>  Carbon::parse($userInfo['last_at'])->format('Y-m-d H:i:s'),
+                    ];
+                }
+            }
+            return $msgs;
         } catch (\Exception $e) {
-            Log::error('搜索对话消息失败: ' . $e->getMessage());
-            return [
-                'success' => false,
-                'error' => $e->getMessage(),
-                'hits' => ['total' => ['value' => 0], 'hits' => []]
+            Log::error('search: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * 根据对话用户ID搜索用户信息
+     * @param array $dialogUserids
+     * @return array
+     */
+    private static function searchUser(array $dialogUserids): array
+    {
+        if (empty($dialogUserids)) {
+            return [];
+        }
+
+        $userInfos = [];
+
+        // 构建用户查询条件
+        $userSearchParams = [
+            'query' => [
+                'bool' => [
+                    'should' => []
+                ]
+            ],
+            'size' => count($dialogUserids) // 确保取到所有符合条件的记录
+        ];
+
+        // 添加所有 dialog_userid 到查询条件
+        foreach ($dialogUserids as $dialogUserid) {
+            $userSearchParams['query']['bool']['should'][] = [
+                'term' => ['dialog_userid' => $dialogUserid]
             ];
         }
+
+        // 查询用户信息
+        $userResult = ZincSearchBase::elasticSearch(self::$indexNameUser, $userSearchParams);
+        $userHits = $userResult['data']['hits']['hits'] ?? [];
+
+        // 以 dialog_userid 为键保存用户信息
+        foreach ($userHits as $userHit) {
+            $userSource = $userHit['_source'];
+            $userInfos[$userSource['dialog_userid']] = $userSource;
+        }
+
+        return $userInfos;
     }
 
     // ==============================
@@ -164,16 +232,11 @@ class ZincSearchDialogUserMsg
     // ==============================
 
     /**
-     * 生成文档ID
+     * 生成 dialog_userid
      *
-     * @param WebSocketDialogMsg $dialogMsg
-     * @param int $userid
+     * @param WebSocketDialogUser $dialogUser
      * @return string
      */
-    private static function generateDocId(WebSocketDialogMsg $dialogMsg, int $userid): string
-    {
-        return "{$dialogMsg->id}_{$userid}";
-    }
     private static function generateDialogUserid(WebSocketDialogUser $dialogUser): string
     {
         return "{$dialogUser->dialog_id}_{$dialogUser->userid}";
@@ -189,8 +252,9 @@ class ZincSearchDialogUserMsg
     private static function generateMsgData(WebSocketDialogMsg $dialogMsg, WebSocketDialogUser $dialogUser): array
     {
         return [
-            '_id' => self::generateDocId($dialogMsg, $dialogUser->userid),
+            '_id' => self::$indexNameMsg . "_" . $dialogMsg->id . "_" . $dialogUser->userid,
             'dialog_userid' => self::generateDialogUserid($dialogUser),
+            'to_userid' => $dialogUser->userid,
 
             'id' => $dialogMsg->id,
             'dialog_id' => $dialogMsg->dialog_id,
@@ -206,7 +270,7 @@ class ZincSearchDialogUserMsg
     private static function generateUserData(WebSocketDialogUser $dialogUser): array
     {
         return [
-            '_id' => $dialogUser->id,
+            '_id' => self::$indexNameUser . "_" . $dialogUser->id,
             'dialog_userid' => self::generateDialogUserid($dialogUser),
 
             'id' => $dialogUser->id,
@@ -275,9 +339,9 @@ class ZincSearchDialogUserMsg
 
             return true;
         } catch (\Exception $e) {
-            Log::error('syncMsg: ' . $e->getMessage());
+            Log::error('sync: ' . $e->getMessage());
+            return false;
         }
-        return false;
     }
 
     /**
@@ -352,7 +416,7 @@ class ZincSearchDialogUserMsg
             }
 
         } catch (\Exception $e) {
-            Log::error('batchSyncMsgs: ' . $e->getMessage());
+            Log::error('batchSync: ' . $e->getMessage());
         }
 
         return $count;
@@ -369,14 +433,71 @@ class ZincSearchDialogUserMsg
             return false;
         }
         $data = self::generateUserData($dialogUser);
-        $result = ZincSearchBase::addDoc(self::$indexNameUser, $data);
-        return $result['success'] ?? false;
+
+        // 生成查询用户条件
+        $searchParams = [
+            'query' => [
+                'bool' => [
+                    'must' => [
+                        ['term' => ['dialog_userid' => $data['dialog_userid']]]
+                    ]
+                ]
+            ],
+            'size' => 1
+        ];
+
+        try {
+            // 查询用户是否存在
+            $result = ZincSearchBase::elasticSearch(self::$indexNameUser, $searchParams);
+            $hits = $result['data']['hits']['hits'] ?? [];
+
+            // 同步用户（存在更新、不存在添加）
+            $result = ZincSearchBase::addDoc(self::$indexNameUser, $data);
+            if (!isset($result['success'])) {
+                return false;
+            }
+
+            // 用户不存在，同步消息
+            if (empty($hits)) {
+                go(function () use ($dialogUser) {
+                    Coroutine::sleep(0.1);
+
+                    $lastId = 0;        // 上次同步的最后ID
+                    $batchSize = 500;   // 每批处理的消息数量
+
+                    // 分批同步消息
+                    do {
+                        // 获取一批
+                        $dialogMsgs = WebSocketDialogMsg::whereDialogId($dialogUser->dialog_id)
+                            ->where('id', '>', $lastId)
+                            ->orderBy('id')
+                            ->limit($batchSize)
+                            ->get();
+
+                        if ($dialogMsgs->isEmpty()) {
+                            break;
+                        }
+
+                        // 同步数据
+                        ZincSearchDialogMsg::batchSync($dialogMsgs);
+
+                        // 更新最后ID
+                        $lastId = $dialogMsgs->last()->id;
+                    } while (count($dialogMsgs) == $batchSize);
+                });
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('userSync: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
      * 删除
      *
-     * @param WebSocketDialogMsg|WebSocketDialogUser $data
+     * @param WebSocketDialogMsg|WebSocketDialogUser|int $data
      * @return int
      */
     public static function delete(mixed $data): int
@@ -397,7 +518,10 @@ class ZincSearchDialogUserMsg
                 'term' => self::generateDialogUserid($data),
             ];
         } else {
-            return 0;
+            $query = [
+                'field' => 'id',
+                'term' => (string) $data
+            ];
         }
 
         try {
@@ -433,7 +557,7 @@ class ZincSearchDialogUserMsg
                 $from += $batchSize;
             }
         } catch (\Exception $e) {
-            Log::error('deleteMsg: ' . $e->getMessage());
+            Log::error('delete: ' . $e->getMessage());
         }
 
         return $totalDeleted;

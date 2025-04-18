@@ -28,7 +28,7 @@ use App\Models\WebSocketDialogMsgTodo;
 use App\Models\WebSocketDialogMsgTranslate;
 use App\Models\WebSocketDialogSession;
 use App\Module\Table\OnlineData;
-use App\Module\ZincSearch\ZincSearchDialogUserMsg;
+use App\Module\ZincSearch\ZincSearchDialogMsg;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
@@ -174,7 +174,7 @@ class DialogController extends AbstractController
         }
         // 搜索消息会话
         if (count($list) < 20) {
-            $searchResults = ZincSearchDialogUserMsg::searchByKeyword($user->userid, $key, 0, 20 - count($list));
+            $searchResults = ZincSearchDialogMsg::search($user->userid, $key, 0, 20 - count($list));
             if ($searchResults) {
                 foreach ($searchResults as $item) {
                     if ($dialog = WebSocketDialog::find($item['id'])) {
@@ -728,7 +728,7 @@ class DialogController extends AbstractController
         $key = trim(Request::input('key'));
         $list = [];
         //
-        $searchResults = ZincSearchDialogUserMsg::searchByKeyword($user->userid, $key, 0, Base::getPaginate(50, 20));
+        $searchResults = ZincSearchDialogMsg::search($user->userid, $key, 0, Base::getPaginate(50, 20));
         if ($searchResults) {
             foreach ($searchResults as $item) {
                 if ($dialog = WebSocketDialog::find($item['id'])) {
