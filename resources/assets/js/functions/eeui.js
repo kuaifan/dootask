@@ -22,7 +22,7 @@
         eeuiModulePromise(name = 'eeui') {
             return new Promise((resolve, reject) => {
                 try {
-                    const eeui = this.eeuiModule(name);
+                    const eeui = $A.eeuiModule(name);
                     if (!eeui) {
                         return reject({msg: "module not found"});
                     }
@@ -35,33 +35,33 @@
 
         // 获取eeui版本号
         eeuiAppVersion() {
-            return this.eeuiModule()?.getVersion();
+            return $A.eeuiModule()?.getVersion();
         },
 
         // 获取本地软件版本号
         eeuiAppLocalVersion() {
-            return this.eeuiModule()?.getLocalVersion();
+            return $A.eeuiModule()?.getLocalVersion();
         },
 
         // Alert
         eeuiAppAlert(object, callback) {
             if (typeof callback !== "function") callback = _ => {};
-            this.eeuiModule()?.alert(object, callback);
+            $A.eeuiModule()?.alert(object, callback);
         },
 
         // Toast
         eeuiAppToast(object) {
-            this.eeuiModule()?.toast(object);
+            $A.eeuiModule()?.toast(object);
         },
 
         // 相对地址基于当前地址补全
         eeuiAppRewriteUrl(val) {
-            return this.eeuiModule()?.rewriteUrl(val);
+            return $A.eeuiModule()?.rewriteUrl(val);
         },
 
         // 获取页面信息
         eeuiAppGetPageInfo(pageName) {
-            return this.eeuiModule()?.getPageInfo(pageName || "");
+            return $A.eeuiModule()?.getPageInfo(pageName || "");
         },
 
         // 打开app新页面
@@ -73,55 +73,55 @@
                 callback = object.callback;
                 delete object.callback
             }
-            this.eeuiModule()?.openPage(Object.assign({
+            $A.eeuiModule()?.openPage(Object.assign({
                 softInputMode: "resize",
             }, object), callback);
         },
 
         // 使用系统浏览器打开网页
         eeuiAppOpenWeb(url) {
-            this.eeuiModule()?.openWeb(url)
+            $A.eeuiModule()?.openWeb(url)
         },
 
         // 拦截返回按键事件（仅支持android、iOS无效）
         eeuiAppSetPageBackPressed(object, callback) {
             if (typeof callback !== "function") callback = _ => {};
-            this.eeuiModule()?.setPageBackPressed(object, callback);
+            $A.eeuiModule()?.setPageBackPressed(object, callback);
         },
 
         // 返回手机桌面
         eeuiAppGoDesktop() {
-            this.eeuiModule()?.goDesktop();
+            $A.eeuiModule()?.goDesktop();
         },
 
         // 打开屏幕常亮
         eeuiAppKeepScreenOn() {
-            this.eeuiModule()?.keepScreenOn();
+            $A.eeuiModule()?.keepScreenOn();
         },
 
         // 关闭屏幕常亮
         eeuiAppKeepScreenOff() {
-            this.eeuiModule()?.keepScreenOff();
+            $A.eeuiModule()?.keepScreenOff();
         },
 
         // 隐藏软键盘
         eeuiAppKeyboardHide() {
-            this.eeuiModule()?.keyboardHide();
+            $A.eeuiModule()?.keyboardHide();
         },
 
         // 给app发送消息
         eeuiAppSendMessage(object) {
-            this.eeuiModule("webview")?.sendMessage(object);
+            $A.eeuiModule("webview")?.sendMessage(object);
         },
 
         // 设置浏览器地址
         eeuiAppSetUrl(url) {
-            this.eeuiModule("webview")?.setUrl(url);
+            $A.eeuiModule("webview")?.setUrl(url);
         },
 
         // 扫码
         eeuiAppScan(callback) {
-            this.eeuiModule()?.openScaner({}, (res) => {
+            $A.eeuiModule()?.openScaner({}, (res) => {
                 switch (res.status) {
                     case "success":
                         callback(res.text);
@@ -132,55 +132,55 @@
 
         // 检查更新
         eeuiAppCheckUpdate() {
-            this.eeuiModule()?.checkUpdate();
+            $A.eeuiModule()?.checkUpdate();
         },
 
         // 获取主题名称 light|dark
         eeuiAppGetThemeName() {
-            return this.eeuiModule()?.getThemeName();
+            return $A.eeuiModule()?.getThemeName();
         },
 
         // 判断软键盘是否可见
         eeuiAppKeyboardStatus() {
-            return this.eeuiModule()?.keyboardStatus();
+            return $A.eeuiModule()?.keyboardStatus();
         },
 
         // 设置全局变量
         eeuiAppSetVariate(key, value) {
-            this.eeuiModule()?.setVariate(key, value);
+            $A.eeuiModule()?.setVariate(key, value);
         },
 
         // 获取全局变量
         eeuiAppGetVariate(key, defaultVal = "") {
-            return this.eeuiModule()?.getVariate(key, defaultVal);
+            return $A.eeuiModule()?.getVariate(key, defaultVal);
         },
 
         // 设置缓存数据
         eeuiAppSetCachesString(key, value, expired = 0) {
-            this.eeuiModule()?.setCachesString(key, value, expired);
+            $A.eeuiModule()?.setCachesString(key, value, expired);
         },
 
         // 获取缓存数据
         eeuiAppGetCachesString(key, defaultVal = "") {
-            return this.eeuiModule()?.getCachesString(key, defaultVal);
+            return $A.eeuiModule()?.getCachesString(key, defaultVal);
         },
 
         // 是否长按内容震动（仅支持android、iOS无效）
         eeuiAppSetHapticBackEnabled(val) {
-            this.eeuiModule("webview").setHapticBackEnabled(val);
+            $A.eeuiModule("webview").setHapticBackEnabled(val);
         },
 
         // 禁止长按选择（仅支持android、iOS无效）
         eeuiAppSetDisabledUserLongClickSelect(val) {
-            const webview = this.eeuiModule("webview");
-            this.__disabledUserLongClickSelectTimer && clearTimeout(this.__disabledUserLongClickSelectTimer);
+            const webview = $A.eeuiModule("webview");
+            $A.__disabledUserLongClickSelectTimer && clearTimeout($A.__disabledUserLongClickSelectTimer);
             if (!/^\d+$/.test(val)) {
                 webview.setDisabledUserLongClickSelect(val);
                 return;
             }
             webview.setDisabledUserLongClickSelect(true);
-            this.__disabledUserLongClickSelectTimer = setTimeout(() => {
-                this.__disabledUserLongClickSelectTimer = null;
+            $A.__disabledUserLongClickSelectTimer = setTimeout(() => {
+                $A.__disabledUserLongClickSelectTimer = null;
                 webview.setDisabledUserLongClickSelect(false);
             }, val);
         },
@@ -188,26 +188,26 @@
 
         // 复制文本
         eeuiAppCopyText(text) {
-            this.eeuiModule()?.copyText(text)
+            $A.eeuiModule()?.copyText(text)
         },
 
         // 设置是否禁止滚动
         eeuiAppSetScrollDisabled(disabled) {
             if (disabled) {
-                this.__setScrollDisabledNum++
+                $A.__setScrollDisabledNum++
             } else {
-                this.__setScrollDisabledNum--
+                $A.__setScrollDisabledNum--
             }
-            this.eeuiModule("webview")?.setScrollEnabled(this.__setScrollDisabledNum <= 0);
+            $A.eeuiModule("webview")?.setScrollEnabled($A.__setScrollDisabledNum <= 0);
         },
         __setScrollDisabledNum: 0,
 
         // 设置应用程序级别的摇动撤销（仅支持iOS、android无效）
         eeuiAppShakeToEditEnabled(enabled) {
             if (enabled) {
-                this.eeuiModule()?.shakeToEditOn();
+                $A.eeuiModule()?.shakeToEditOn();
             } else {
-                this.eeuiModule()?.shakeToEditOff();
+                $A.eeuiModule()?.shakeToEditOff();
             }
         },
 
@@ -215,7 +215,7 @@
         eeuiAppGetLatestPhoto(expiration = 60, timeout = 10) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const eeui = await this.eeuiModule();
+                    const eeui = await $A.eeuiModule();
 
                     const timer = timeout > 0 ? setTimeout(() => {
                         reject({msg: "timeout"});
@@ -233,10 +233,10 @@
                         if (expiration > 0 && (result.created + expiration) < $A.dayjs().unix()) {
                             return reject({msg: "photo expired"});
                         }
-                        if (this.__latestPhotoCreated && this.__latestPhotoCreated === result.created) {
+                        if ($A.__latestPhotoCreated && $A.__latestPhotoCreated === result.created) {
                             return reject({msg: "photo expired"});
                         }
-                        this.__latestPhotoCreated = result.created;
+                        $A.__latestPhotoCreated = result.created;
                         resolve(result);
                     });
                 } catch (e) {
@@ -250,7 +250,7 @@
         eeuiAppUploadPhoto(params, timeout = 30) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const eeui = await this.eeuiModulePromise();
+                    const eeui = await $A.eeuiModulePromise();
 
                     const timer = timeout > 0 ? setTimeout(() => {
                         reject({msg: "timeout"});
@@ -291,7 +291,7 @@
         eeuiAppCancelUploadPhoto(id) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const eeui = await this.eeuiModulePromise();
+                    const eeui = await $A.eeuiModulePromise();
                     eeui.cancelUploadPhoto(id, result => {
                         if (result.status !== 'success') {
                             return reject({msg: result.error || "cancel failed"});
@@ -308,7 +308,7 @@
         eeuiAppGetSafeAreaInsets() {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const eeui = await this.eeuiModulePromise();
+                    const eeui = await $A.eeuiModulePromise();
                     eeui.getSafeAreaInsets(result => {
                         if (result.status !== 'success') {
                             return reject({msg: result.error || "get failed"});

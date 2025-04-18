@@ -2249,16 +2249,16 @@ const timezone = require("dayjs/plugin/timezone");
         timezoneDifference: 0,
 
         /**
-         *  对象中有Date格式的转成指定格式
-         * @param value
-         * @param format  默认格式：YYYY-MM-DD HH:mm:ss
+         * 对象中有Date格式的转成指定格式
+         * @param value     支持类型：dayjs、Date、string
+         * @param format    默认格式：YYYY-MM-DD HH:mm:ss
          * @returns {*}
          */
         newDateString(value, format = "YYYY-MM-DD HH:mm:ss") {
             if (value === null) {
                 return value;
             }
-            if (value instanceof dayjs || value instanceof Date) {
+            if (value instanceof dayjs || value instanceof Date || $A.isDateString(value)) {
                 value = $A.dayjs(value).format(format);
             } else if ($A.isJson(value)) {
                 value = Object.assign({}, value)
@@ -2308,7 +2308,7 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {boolean}
          */
         isDateString(value) {
-            return typeof value === "string" && /^\d{4}-\d{2}-\d{2}( \d{2}(:\d{2}(:\d{2})?)?)?$/i.test(value);
+            return typeof value === "string" && /^\d{4}[/-]\d{2}[/-]\d{2}(\s+\d{2}(:\d{2}(:\d{2})?)?)?$/i.test(value);
         },
 
         /**

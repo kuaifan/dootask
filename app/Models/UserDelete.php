@@ -37,11 +37,6 @@ use App\Module\Base;
  */
 class UserDelete extends AbstractModel
 {
-    /**
-     * 昵称
-     * @param $value
-     * @return string
-     */
     public function getCacheAttribute($value)
     {
         if (!is_array($value)) {
@@ -65,13 +60,25 @@ class UserDelete extends AbstractModel
      */
     public static function userid2basic($userid)
     {
-        $row = self::whereUserid($userid)->first();
-        if (empty($row) || empty($row->cache)) {
-            return null;
-        }
-        $cache = $row->cache;
-        $cache = array_intersect_key($cache, array_flip(array_merge(User::$basicField, ['department_name'])));
-        $cache['delete_at'] = $row->created_at->toDateTimeString();
-        return $cache;
+        return \Cache::remember("UserDelete:{$userid}", now()->addDays(3), function () use ($userid) {
+            $row = self::whereUserid($userid)->first();
+            if (empty($row) || empty($row->cache)) {
+                return null;
+            }
+            $cache = $row->cache;
+            $cache = array_intersect_key($cache, array_flip(array_merge(User::$basicField, ['department_name'])));
+            $cache['delete_at'] = $row->created_at->toDateTimeString();
+            return $cache;
+        });
+    }
+
+    /**
+     * userid 获取 昵称
+     * @param $userid
+     * @return string
+     */
+    public static function userid2nickname($userid)
+    {
+        return self::userid2basic($userid)['nickname'] ?? '';
     }
 }

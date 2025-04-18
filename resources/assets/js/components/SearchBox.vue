@@ -50,7 +50,7 @@
             <div v-else class="search-list">
                 <ul v-for="data in list" :key="data.type">
                     <li v-if="!action" class="item-label">{{$L(data.name)}}</li>
-                    <li v-for="item in data.items" :key="item.id" @click="onClick(item)">
+                    <li v-for="item in data.items" @click="onClick(item)">
                         <div class="item-icon">
                             <div v-if="item.icons[0]==='file'" :class="`no-dark-content file-icon ${item.icons[1]}`"></div>
                             <i v-else-if="item.icons[0]==='department'" class="taskfont icon-avatar department">&#xe75c;</i>
@@ -317,9 +317,11 @@ export default {
             return false
         },
 
-        echoSearch(items) {
+        echoSearch(items, key = 'id') {
             items.forEach(item => {
-                const index = this.searchResults.findIndex(({id, type}) => id === item.id && type === item.type)
+                const index = this.searchResults.findIndex(result => {
+                    return result[key] === item[key] && result.type === item.type
+                })
                 if (index > -1) {
                     this.searchResults.splice(index, 1, item)
                 } else {
@@ -432,10 +434,10 @@ export default {
         searchMessage(key) {
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'dialog/msg/esearch',
+                url: 'dialog/msg/search',
                 data: {
                     key,
-                    pagesize: this.action ? 50 : 10,
+                    take: this.action ? 50 : 10,
                 },
             }).then(({data}) => {
                 const items = data.data.map(item => {
@@ -469,10 +471,11 @@ export default {
                         desc: $A.getMsgSimpleDesc(item.last_msg),
                         activity: item.last_at,
 
+                        searchMsgId: item.search_msg_id,
                         rawData: item,
                     };
                 })
-                this.echoSearch(items)
+                this.echoSearch(items, 'searchMsgId')
             }).finally(_ => {
                 this.loadIng--;
             })

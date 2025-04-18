@@ -298,7 +298,8 @@ class WebSocketDialog extends AbstractModel
                     $data['is_disable'] = $basic->isDisable(true);
                     $data['quick_msgs'] = UserBot::quickMsgs($basic->email);
                 } else {
-                    $data['name'] = 'non-existent';
+                    $data['name'] = UserDelete::userid2nickname($dialog_user->userid) ?: '[Delete]';
+                    $data['is_disable'] = 1;
                     $data['dialog_delete'] = 1;
                 }
                 $data['dialog_user'] = $dialog_user;

@@ -29,17 +29,17 @@
                         </li>
                         <li>
                             <span>{{$L('最后在线')}}: </span>
-                            {{userData.line_at ? $A.dayjs(userData.line_at).format("YYYY-MM-DD HH:mm") : '-'}}
+                            {{$A.newDateString(userData.line_at, 'YYYY-MM-DD HH:mm') || '-'}}
                         </li>
                         <li v-if="userData.delete_at">
-                            <strong><span>{{$L('删除时间')}}: </span>{{userData.delete_at}}</strong>
+                            <strong><span>{{$L('删除时间')}}: </span>{{$A.newDateString(userData.delete_at, 'YYYY-MM-DD HH:mm')}}</strong>
                         </li>
                         <li v-else-if="userData.disable_at">
-                            <strong><span>{{$L('离职时间')}}: </span>{{userData.disable_at}}</strong>
+                            <strong><span>{{$L('离职时间')}}: </span>{{$A.newDateString(userData.disable_at, 'YYYY-MM-DD HH:mm')}}</strong>
                         </li>
                     </template>
                 </ul>
-                <Button icon="md-chatbubbles" :disabled="userData.delete_at" @click="onOpenDialog">{{ $L('开始聊天') }}</Button>
+                <Button icon="md-chatbubbles" :disabled="!!userData.delete_at" @click="onOpenDialog">{{ $L('开始聊天') }}</Button>
             </div>
     </ModalAlive>
 </template>
