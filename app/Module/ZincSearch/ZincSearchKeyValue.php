@@ -2,28 +2,26 @@
 
 namespace App\Module\ZincSearch;
 
-use App\Module\Base;
-
 /**
  * ZincSearch 键值存储类
  *
  * 使用方法:
  *
  * 1. 基础方法
- *     - 确保索引存在: ZincSearchKeyValue::ensureIndex();
- *     - 清空所有数据: ZincSearchKeyValue::clear();
+ *     - 确保索引存在: ensureIndex();
+ *     - 清空所有数据: clear();
  *
  * 2. 基本操作
- *    - 设置键值: ZincSearchKeyValue::set('site_name', '我的网站');
- *    - 设置复杂数据: ZincSearchKeyValue::set('site_config', ['logo' => 'logo.png', 'theme' => 'dark']);
- *    - 合并现有数据: ZincSearchKeyValue::set('site_config', ['footer' => '版权所有'], true);
- *    - 获取键值: $siteName = ZincSearchKeyValue::get('site_name');
- *    - 获取键值带默认值: $theme = ZincSearchKeyValue::get('theme', 'light');
- *    - 删除键值: ZincSearchKeyValue::delete('temporary_data');
+ *    - 设置键值: set('site_name', '我的网站');
+ *    - 设置复杂数据: set('site_config', ['logo' => 'logo.png', 'theme' => 'dark']);
+ *    - 合并现有数据: set('site_config', ['footer' => '版权所有'], true);
+ *    - 获取键值: $siteName = get('site_name');
+ *    - 获取键值带默认值: $theme = get('theme', 'light');
+ *    - 删除键值: delete('temporary_data');
  *
  * 3. 批量操作
- *    - 批量设置: ZincSearchKeyValue::batchSet(['user_count' => 100, 'active_users' => 50]);
- *    - 批量获取: $stats = ZincSearchKeyValue::batchGet(['user_count', 'active_users']);
+ *    - 批量设置: batchSet(['user_count' => 100, 'active_users' => 50]);
+ *    - 批量获取: $stats = batchGet(['user_count', 'active_users']);
  */
 class ZincSearchKeyValue
 {

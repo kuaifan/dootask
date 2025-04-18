@@ -12,21 +12,21 @@ use Illuminate\Support\Facades\Log;
  * 使用方法:
  *
  * 1. 基础方法
- *     - 确保索引存在: ZincSearchKeyValue::ensureIndex();
- *     - 清空所有数据: ZincSearchKeyValue::clear();
+ *     - 确保索引存在: ensureIndex();
+ *     - 清空所有数据: clear();
  *
  * 2. 搜索方法
- *    - 关键词搜索: ZincSearchUserMsg::searchByKeyword('用户ID', '关键词');
+ *    - 关键词搜索: searchByKeyword('用户ID', '关键词');
  *
  * 3. 基本方法
- *    - 单个同步: ZincSearchUserMsg::syncMsg($dialogMsg);
- *    - 批量同步: ZincSearchUserMsg::batchSyncMsgs($dialogMsgs);
- *    - 删除消息: ZincSearchUserMsg::deleteMsg($dialogMsg);
+ *    - 单个同步: syncMsg($dialogMsg);
+ *    - 批量同步: batchSyncMsgs($dialogMsgs);
+ *    - 删除消息: deleteMsg($dialogMsg);
  *
  * 4. 用户方法
- *    - 单个同步: ZincSearchUserMsg::syncUser($dialogUser);
- *    - 批量同步: ZincSearchUserMsg::batchSyncUsers($dialogUsers);
- *    - 删除消息: ZincSearchUserMsg::deleteUser($dialogUser);
+ *    - 单个同步: syncUser($dialogUser);
+ *    - 批量同步: batchSyncUsers($dialogUsers);
+ *    - 删除消息: deleteUser($dialogUser);
  */
 class ZincSearchUserMsg
 {
