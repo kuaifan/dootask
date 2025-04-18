@@ -23,11 +23,6 @@ class SyncUserMsgToZincSearch extends Command
     protected $description = '同步聊天会话用户和消息到 ZincSearch';
 
     /**
-     * 缓存锁实例
-     */
-    protected $lock;
-
-    /**
      * @return int
      */
     public function handle(): int
@@ -39,12 +34,15 @@ class SyncUserMsgToZincSearch extends Command
             pcntl_signal(SIGTERM, [$this, 'handleSignal']); // kill
         }
 
-        // 使用缓存锁确保一次只能运行一个实例
-        $this->lock = Cache::lock('zinc:sync-user-msg', 3600 * 6); // 锁定6小时
-        if (!$this->lock->get()) {
-            $this->error('命令已在运行中，请等待当前实例完成');
+        // 检查锁，如果已被占用则退出
+        $lockInfo = $this->getLock();
+        if ($lockInfo) {
+            $this->error("命令已在运行中，开始时间: {$lockInfo['started_at']}");
             return 1;
         }
+
+        // 设置锁
+        $this->setLock();
 
         // 清除索引
         if ($this->option('c')) {
@@ -52,7 +50,7 @@ class SyncUserMsgToZincSearch extends Command
             ZincSearchKeyValue::clear();
             ZincSearchDialogMsg::clear();
             $this->info("索引删除成功");
-            $this->lock?->release();
+            $this->releaseLock();
             return 0;
         }
 
@@ -63,8 +61,40 @@ class SyncUserMsgToZincSearch extends Command
 
         // 完成
         $this->info("\n同步完成");
-        $this->lock?->release();
+        $this->releaseLock();
         return 0;
+    }
+
+    /**
+     * 获取锁信息
+     *
+     * @return array|null 如果锁存在返回锁信息，否则返回null
+     */
+    private function getLock(): ?array
+    {
+        $lockKey = md5($this->signature);
+        return Cache::has($lockKey) ? Cache::get($lockKey) : null;
+    }
+
+    /**
+     * 设置锁
+     */
+    private function setLock(): void
+    {
+        $lockKey = md5($this->signature);
+        $lockInfo = [
+            'started_at' => date('Y-m-d H:i:s')
+        ];
+        Cache::put($lockKey, $lockInfo, 300); // 5分钟
+    }
+
+    /**
+     * 释放锁
+     */
+    private function releaseLock(): void
+    {
+        $lockKey = md5($this->signature);
+        Cache::forget($lockKey);
     }
 
     /**
@@ -76,9 +106,7 @@ class SyncUserMsgToZincSearch extends Command
     public function handleSignal(int $signal): void
     {
         // 释放锁
-        if ($this->lock) {
-            $this->lock->release();
-        }
+        $this->releaseLock();
         exit(0);
     }
 
@@ -123,6 +151,9 @@ class SyncUserMsgToZincSearch extends Command
                 $progress = number_format($progress, 2);
             }
             $this->info("{$num}/{$count} ({$progress}%) 正在同步消息ID {$dialogMsgs->first()->id} ~ {$dialogMsgs->last()->id} ({$total}|{$lastNum})");
+
+            // 刷新锁
+            $this->setLock();
 
             // 同步数据
             $lastNum = ZincSearchDialogMsg::batchSync($dialogMsgs);
