@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\WebSocketDialogMsg;
 use App\Module\ZincSearch\ZincSearchKeyValue;
-use App\Module\ZincSearch\ZincSearchUserMsg;
+use App\Module\ZincSearch\ZincSearchDialogUserMsg;
 use Illuminate\Console\Command;
 
 class SyncUserMsgToSearch extends Command
@@ -30,7 +30,7 @@ class SyncUserMsgToSearch extends Command
         if ($this->option('c')) {
             $this->info('清除索引...');
             ZincSearchKeyValue::clear();
-            ZincSearchUserMsg::clear();
+            ZincSearchDialogUserMsg::clear();
             $this->info("索引删除成功");
             return 0;
         }
@@ -55,7 +55,7 @@ class SyncUserMsgToSearch extends Command
         $this->info("\n同步消息数据...");
 
         // 获取上次同步的最后ID
-        $lastKey = "sync:userMsgLastId";
+        $lastKey = "sync:dialogUserMsgLastId";
         $lastId = $this->option('i') ? intval(ZincSearchKeyValue::get($lastKey, 0)) : 0;
 
         $num = 0;
@@ -63,7 +63,7 @@ class SyncUserMsgToSearch extends Command
         $batchSize = $this->option('batch');
 
         do {
-            // 获取一批消息
+            // 获取一批
             $dialogMsgs = WebSocketDialogMsg::where('id', '>', $lastId)
                 ->orderBy('id')
                 ->limit($batchSize)
@@ -77,8 +77,8 @@ class SyncUserMsgToSearch extends Command
             $progress = round($num / $count * 100, 2);
             $this->info("{$num}/{$count} ({$progress}%) 正在同步消息ID {$lastId} ~ {$dialogMsgs->last()->id}");
 
-            // 批量索引数据
-            ZincSearchUserMsg::batchSyncMsgs($dialogMsgs);
+            // 同步数据
+            ZincSearchDialogUserMsg::batchSync($dialogMsgs);
 
             // 更新最后ID
             $lastId = $dialogMsgs->last()->id;
