@@ -3989,49 +3989,6 @@ export default {
     },
 
     /**
-     * 预览图片缓存 base64
-     * @param state
-     * @param imgElement
-     */
-    previewCacheBase64({state}, imgElement) {
-        try {
-            const src = $A.thumbRestore(imgElement.currentSrc || imgElement.src);
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            // 计算缩放比例，保持原有比例，确保最长边不超过 200
-            const MAX_SIZE = 200;
-            const originalWidth = imgElement.naturalWidth;
-            const originalHeight = imgElement.naturalHeight;
-            let width = originalWidth;
-            let height = originalHeight;
-            if (originalWidth > originalHeight && originalWidth > MAX_SIZE) {
-                width = MAX_SIZE;
-                height = Math.floor(originalHeight * (MAX_SIZE / originalWidth));
-            } else if (originalHeight > MAX_SIZE) {
-                height = MAX_SIZE;
-                width = Math.floor(originalWidth * (MAX_SIZE / originalHeight));
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(imgElement, 0, 0);
-            const base64 = canvas.toDataURL('image/jpeg', 0.8);
-            state.previewImageBase64.set(src, base64);
-            //
-            if (state.previewImageBase64.size >= 10) {
-                const keys = Array.from(state.previewImageBase64.keys());
-                const removeCount = keys.length - 10;
-                for (let i = 0; i < removeCount; i++) {
-                    state.previewImageBase64.delete(keys[i]);
-                }
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    },
-
-    /**
      * 播放音频
      * @param state
      * @param dispatch
