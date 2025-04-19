@@ -19,14 +19,14 @@
                         @click="toggleRoute(item.path)">
                         <template v-if="item.path === 'device'">
                             <AutoTip>{{$L(item.name)}}</AutoTip>
-                            <span v-if="deviceNum > 0" class="op-8">{{deviceNum}}</span>
+                            <span v-if="deviceCount > 0" class="op-8">{{deviceCount}}</span>
                         </template>
                         <template v-else-if="item.path === 'version'">
                             <AutoTip disabled>{{$L(item.name)}}</AutoTip>
                             <Badge v-if="!!clientNewVersion" :text="clientNewVersion"/>
                         </template>
                         <template v-else-if="item.path === 'version-show'">
-                            <AutoTip>{{$L(item.name)}}: {{version}}</AutoTip>
+                            <AutoTip>{{$L(item.name)}}: {{clientVersion}}</AutoTip>
                         </template>
                         <span v-else>{{$L(item.name)}}</span>
                     </li>
@@ -55,19 +55,20 @@ export default {
     components: {MobileNavTitle},
     data() {
         return {
-            deviceNum: 0,
-            version: window.systemInfo.version
+            deviceCount: 0,
+            serverVersion: null,
+            clientVersion: window.systemInfo.version,
         }
     },
 
     mounted() {
         if (this.$isEEUiApp) {
-            this.version = `${window.systemInfo.version} (${$A.eeuiAppLocalVersion()})`
+            this.clientVersion = `${window.systemInfo.version} (${$A.eeuiAppLocalVersion()})`
         }
     },
 
     activated() {
-        this.getDeviceNum();
+        this.getVersion();
     },
 
     computed: {
@@ -221,15 +222,12 @@ export default {
             const array = [
                 `${this.$L('服务器')}: ${$A.getDomain($A.mainUrl())}`
             ]
-            await this.$store.dispatch("showSpinner", 600)
-            try {
-                const version = await this.getServerVersion()
-                array.push(`${this.$L('服务器版本')}: v${version}`)
-            } catch (e) {
+            if (this.serverVersion) {
+                array.push(`${this.$L('服务器版本')}: v${this.serverVersion}`)
+            } else {
                 array.push(`${this.$L('服务器版本')}: ` + this.$L('获取失败'))
             }
-            await this.$store.dispatch("hiddenSpinner")
-            array.push(`${this.$L('客户端版本')}: v${this.version}`)
+            array.push(`${this.$L('客户端版本')}: v${this.clientVersion}`)
             //
             $A.modalInfo({
                 language: false,
@@ -238,33 +236,23 @@ export default {
             })
         },
 
-        getDeviceNum() {
-            this.$store.dispatch("call", {
-                url: 'users/device/count',
-            }).then(({data}) => {
-                this.updateDeviceNum(data.count)
-            }).catch(() => {
-                this.updateDeviceNum(0)
-            })
+        getVersion() {
+            this.versionTimer && clearTimeout(this.versionTimer)
+            this.versionTimer = setTimeout(() => {
+                this.$store.dispatch("call", {
+                    url: 'system/version',
+                }).then(({data}) => {
+                    this.serverVersion = data.version
+                    this.deviceCount = data.device_count
+                }).catch(() => {
+                    // console.log('获取版本失败')
+                })
+            }, this.versionTimer ? 1000 : 0)
         },
 
-        updateDeviceNum(num) {
-            this.deviceNum = num
+        updateDeviceCount(num) {
+            this.deviceCount = num
         },
-
-        getServerVersion() {
-            return new Promise((resolve, reject) => {
-                if (/^\d+\.\d+\.\d+$/.test(this.systemConfig.server_version)) {
-                    resolve(this.systemConfig.server_version)
-                    return;
-                }
-                axios.get($A.apiUrl('system/version')).then(({status, data}) => {
-                    if (status === 200) {
-                        resolve(data.version)
-                    }
-                }).catch(reject)
-            })
-        }
     }
 }
 </script>

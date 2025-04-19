@@ -165,7 +165,7 @@ export default {
                     }
                 }
             }).catch(_ => {
-
+                // console.log('获取版本失败')
             })
             //
             this.__checkVersion && clearTimeout(this.__checkVersion)

@@ -12,7 +12,7 @@
                     </div>
                     <div class="time">
                         <EPopover placement="bottom-start" trigger="click">
-                            <div class="time-popover">
+                            <div class="setting-device-popover">
                                 <p>{{$L('登录时间')}}: {{device.created_at}}</p>
                                 <p>{{$L('更新时间')}}: {{device.updated_at}}</p>
                                 <p>{{$L('过期时间')}}: {{device.expired_at}}</p>
@@ -29,107 +29,6 @@
         </ul>
     </div>
 </template>
-
-<style lang="scss" scoped>
-.setting-device {
-    > ul {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-
-        > li {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            padding: 24px;
-            border-radius: 12px;
-            background: rgba(79, 89, 102, .04);
-
-            .icon {
-                align-self: flex-start;
-                display: flex;
-                flex-direction: row;
-                justify-content: center;
-                align-items: center;
-                height: 24px;
-
-                > span {
-                    width: 20px;
-                    height: 20px;
-                }
-            }
-
-            .info {
-                flex: 1 1 auto;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
-                gap: 6px;
-
-                .title {
-                    width: 100%;
-                    font-size: 16px;
-                    line-height: 24px;
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    gap: 2px;
-                    justify-content: flex-start;
-                    color: #262626;
-
-                    .name {
-                        font-weight: 500;
-                    }
-
-                    .device {
-                        &:before {
-                            content: "（";
-                        }
-
-                        &:after {
-                            content: "）";
-                        }
-                    }
-                }
-
-                .time {
-                    width: 100%;
-                    font-size: 14px;
-                    line-height: 22px;
-                    color: #8a939d;
-                    cursor: pointer;
-                }
-            }
-
-            .current {
-                color: #595959;
-            }
-
-            .ivu-btn {
-                background: #d9d9dd;
-                border-color: #d9d9dd;
-                color: #262626;
-                box-shadow: none;
-                height: 36px;
-                padding: 0 12px;
-                border-radius: 12px;
-                &:hover {
-                    background: rgba(217, 217, 221, 0.8);
-                    border-color: rgba(217, 217, 221, 0.8);
-                }
-            }
-        }
-    }
-}
-.time-popover {
-    > p {
-        line-height: 26px;
-    }
-}
-</style>
 
 <script>
 export default {
@@ -152,8 +51,8 @@ export default {
                 url: 'users/device/list',
             }).then(({data}) => {
                 this.devices = data.list
-                if (typeof this.$parent.updateDeviceNum === "function") {
-                    this.$parent.updateDeviceNum(this.devices.length);
+                if (typeof this.$parent.updateDeviceCount === "function") {
+                    this.$parent.updateDeviceCount(this.devices.length);
                 }
             }).catch(() => {
                 this.devices = []

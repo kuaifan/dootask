@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\UserDevice;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use Request;
@@ -1445,23 +1446,29 @@ class SystemController extends AbstractController
      *
      * @apiSuccessExample {json} Success-Response:
     {
-        "version": "0.0.1",
+        "device_count": 3,  // 设备数量
+        "version": "0.0.1", // 服务端版本号
         "publish": {
             "provider": "generic",
             "url": ""
         }
     }
+    // 如果header请求中存在version字段，则返回数据包裹在 {ret:1,data:{},msg:"success"} 中
      */
     public function version()
     {
-        $url = url('');
         $package = Base::getPackage();
         $array = [
+            'device_count' => 0,
             'version' => Base::getVersion(),
             'publish' => [],
         ];
+        if (Doo::userId()) {
+            $array['device_count'] = UserDevice::whereUserid(Doo::userId())->count();
+        }
         if (is_array($package['app'])) {
             $i = 0;
+            $url = url('');
             foreach ($package['app'] as $item) {
                 $urls = $item['urls'] && is_array($item['urls']) ? $item['urls'] : $item['url'];
                 if (is_array($item['publish']) && ($i === 0 || Base::hostContrast($url, $urls))) {
@@ -1469,6 +1476,9 @@ class SystemController extends AbstractController
                 }
                 $i++;
             }
+        }
+        if (Request::hasHeader('version')) {
+            return Base::retSuccess('success', $array);
         }
         return $array;
     }
