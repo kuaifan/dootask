@@ -267,9 +267,20 @@ class UsersController extends AbstractController
         return Base::retSuccess('请求成功', $captcha);
     }
 
+    /**
+     * @api {get} api/users/logout          06. 退出登录
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName logout
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     */
     public function logout()
     {
-        $user = User::auth();
+        UserDevice::forget();
+        return Base::retSuccess('退出成功');
     }
 
     /**
@@ -2504,6 +2515,6 @@ class UsersController extends AbstractController
         }
         UserDevice::forget($userDevice->id);
         //
-        return Base::retSuccess('删除成功');
+        return Base::retSuccess('操作成功');
     }
 }

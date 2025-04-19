@@ -838,7 +838,7 @@ export default {
                 case 'logout':
                     $A.modalConfirm({
                         title: '退出登录',
-                        content: '你确定要登出系统？',
+                        content: '你确定要登出系统吗？',
                         onOk: () => {
                             this.$store.dispatch("logout", false)
                         }

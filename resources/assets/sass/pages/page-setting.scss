@@ -82,6 +82,14 @@
                     align-items: center;
                 }
 
+                .common-auto-tip {
+                    flex: 1;
+                }
+
+                .op-8 {
+                    opacity: 0.8;
+                }
+
                 .ivu-badge {
                     transform: scale(0.8);
                     transform-origin: right center;
@@ -330,6 +338,28 @@
         }
         .setting-button {
             margin-left: 8px;
+        }
+    }
+}
+
+.setting-device {
+    .icon {
+        > span {
+            &.android {
+                background-image: url("../images/device/android.svg");
+            }
+            &.apple {
+                background-image: url("../images/device/apple.svg");
+            }
+            &.macos {
+                background-image: url("../images/device/macos.svg");
+            }
+            &.window {
+                background-image: url("../images/device/window.svg");
+            }
+            &.web {
+                background-image: url("../images/device/web.svg");
+            }
         }
     }
 }

@@ -985,6 +985,11 @@ export default {
      * @param appendFrom
      */
     logout({state, dispatch}, appendFrom = true) {
+        try {
+            dispatch("call", "users/logout")
+        } catch (e) {
+            console.log(e);
+        }
         dispatch("handleClearCache", {}).then(() => {
             let from = ["/", "/login"].includes(window.location.pathname) ? "" : encodeURIComponent(window.location.href);
             if (appendFrom === false) {

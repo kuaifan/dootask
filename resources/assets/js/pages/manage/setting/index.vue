@@ -17,7 +17,11 @@
                         :key="key"
                         :class="classNameRoute(item.path, item.divided)"
                         @click="toggleRoute(item.path)">
-                        <template v-if="item.path === 'version'">
+                        <template v-if="item.path === 'device'">
+                            <AutoTip>{{$L(item.name)}}</AutoTip>
+                            <span v-if="deviceNum > 0" class="op-8">{{deviceNum}}</span>
+                        </template>
+                        <template v-else-if="item.path === 'version'">
                             <AutoTip disabled>{{$L(item.name)}}</AutoTip>
                             <Badge v-if="!!clientNewVersion" :text="clientNewVersion"/>
                         </template>
@@ -51,6 +55,7 @@ export default {
     components: {MobileNavTitle},
     data() {
         return {
+            deviceNum: 0,
             version: window.systemInfo.version
         }
     },
@@ -59,6 +64,10 @@ export default {
         if (this.$isEEUiApp) {
             this.version = `${window.systemInfo.version} (${$A.eeuiAppLocalVersion()})`
         }
+    },
+
+    activated() {
+        this.getDeviceNum();
     },
 
     computed: {
@@ -97,7 +106,8 @@ export default {
             menu.push(...[
                 {path: 'version', name: '更新日志', divided: true},
                 {path: 'version-show', name: '版本'},
-                {path: 'clearCache', name: '清除缓存', divided: true},
+                {path: 'device', name: '登录设备', divided: true},
+                {path: 'clearCache', name: '清除缓存'},
                 {path: 'logout', name: '退出登录'},
             ])
             return menu;
@@ -222,6 +232,20 @@ export default {
                 title: this.$L('版本信息'),
                 content: array.join('<br/>')
             })
+        },
+
+        getDeviceNum() {
+            this.$store.dispatch("call", {
+                url: 'users/device/count',
+            }).then(({data}) => {
+                this.updateDeviceNum(data.count)
+            }).catch(() => {
+                this.updateDeviceNum(0)
+            })
+        },
+
+        updateDeviceNum(num) {
+            this.deviceNum = num
         },
 
         getServerVersion() {
