@@ -163,8 +163,12 @@ export default {
                     $A.modalConfirm({
                         title: '退出登录',
                         content: '你确定要登出系统吗？',
+                        loading: true,
                         onOk: () => {
-                            this.$store.dispatch("logout", false)
+                            return new Promise(async resolve => {
+                                await this.$store.dispatch("logout", false)
+                                resolve()
+                            })
                         }
                     });
                     break;

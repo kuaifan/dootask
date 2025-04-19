@@ -24504,18 +24504,6 @@
         "ru": "Ошибка перевода"
     },
     {
-        "key": "你确定要登出系统？",
-        "zh": "",
-        "zh-CHT": "你確定要登出系統？",
-        "en": "Are you sure you want to log out of the system?",
-        "ko": "시스템에서 로그아웃하시겠습니까?",
-        "ja": "システムからログアウトしてもよろしいですか？",
-        "de": "Sind Sie sicher, dass Sie sich vom System abmelden möchten?",
-        "fr": "Êtes-vous sûr de vouloir vous déconnecter du système ?",
-        "id": "Apakah Anda yakin ingin keluar dari sistem?",
-        "ru": "Вы уверены, что хотите выйти из системы?"
-    },
-    {
         "key": "翻译",
         "zh": "",
         "zh-CHT": "翻譯",

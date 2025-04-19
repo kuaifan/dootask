@@ -983,20 +983,24 @@ export default {
      * @param state
      * @param dispatch
      * @param appendFrom
+     * @returns {Promise<unknown>}
      */
     logout({state, dispatch}, appendFrom = true) {
-        try {
-            dispatch("call", "users/logout")
-        } catch (e) {
-            console.log(e);
-        }
-        dispatch("handleClearCache", {}).then(() => {
-            let from = ["/", "/login"].includes(window.location.pathname) ? "" : encodeURIComponent(window.location.href);
-            if (appendFrom === false) {
-                from = null;
+        return new Promise(async resolve => {
+            try {
+                await dispatch("call", "users/logout")
+            } catch (e) {
+                console.log(e);
             }
-            $A.goForward({name: 'login', query: from ? {from: from} : {}}, true);
-        });
+            dispatch("handleClearCache", {}).then(() => {
+                let from = ["/", "/login"].includes(window.location.pathname) ? "" : encodeURIComponent(window.location.href);
+                if (appendFrom === false) {
+                    from = null;
+                }
+                $A.goForward({name: 'login', query: from ? {from: from} : {}}, true);
+                resolve();
+            });
+        })
     },
 
     /**
