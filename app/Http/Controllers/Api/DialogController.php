@@ -120,34 +120,11 @@ class DialogController extends AbstractController
             return Base::retError('请输入搜索关键词');
         }
         // 搜索会话
-        $list = DB::table('web_socket_dialog_users as u')
-            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
-            ->where('u.userid', $user->userid)
-            ->where('d.name', 'LIKE', "%{$key}%")
-            ->whereNull('d.deleted_at')
-            ->orderByDesc('u.top_at')
-            ->orderByDesc('u.last_at')
-            ->take(20)
-            ->get()
-            ->map(function($item) use ($user) {
-                return WebSocketDialog::synthesizeData($item, $user->userid);
-            })
-            ->all();
+        $take = 20;
+        $list = WebSocketDialog::searchDialog($user->userid, $key, $take);
         // 搜索联系人
-        if (count($list) < 20 && Base::judgeClientVersion("0.21.60")) {
-            $users = User::select(User::$basicField)
-                ->where(function ($query) use ($key) {
-                    if (str_contains($key, "@")) {
-                        $query->where("email", "like", "%{$key}%");
-                    } else {
-                        $query->where("nickname", "like", "%{$key}%")
-                            ->orWhere("pinyin", "like", "%{$key}%")
-                            ->orWhere("profession", "like", "%{$key}%");
-                    }
-                })->orderBy('userid')
-                ->take(20 - count($list))
-                ->get();
+        if (count($list) < $take && Base::judgeClientVersion("0.21.60")) {
+            $users = User::searchUser($key, $take - count($list));
             $users->transform(function (User $item) use ($user) {
                 $id = 'u:' . $item->userid;
                 $lastAt = null;
@@ -173,8 +150,8 @@ class DialogController extends AbstractController
             $list = array_merge($list, $users->toArray());
         }
         // 搜索消息会话
-        if (count($list) < 20) {
-            $searchResults = ZincSearchDialogMsg::search($user->userid, $key, 0, 20 - count($list));
+        if (count($list) < $take) {
+            $searchResults = ZincSearchDialogMsg::search($user->userid, $key, 0, $take - count($list));
             if ($searchResults) {
                 foreach ($searchResults as $item) {
                     if ($dialog = WebSocketDialog::find($item['id'])) {

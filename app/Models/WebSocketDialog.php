@@ -97,6 +97,32 @@ class WebSocketDialog extends AbstractModel
             ->whereNull('users.disable_at');
     }
 
+    /**
+     * 搜索对话
+     * @param $userid
+     * @param $key
+     * @param $take
+     * @return array
+     */
+    public static function searchDialog($userid, $key, $take = 20)
+    {
+        return DB::table('web_socket_dialog_users as u')
+            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
+            ->where('u.userid', $userid)
+            ->where(function ($query) use ($key) {
+                $query->where('d.name', 'like', '%' . $key . '%');
+            })
+            ->whereNull('d.deleted_at')
+            ->orderByDesc('u.top_at')
+            ->orderByDesc('u.last_at')
+            ->take($take)
+            ->get()
+            ->map(function($item) use ($userid) {
+                return WebSocketDialog::synthesizeData($item, $userid);
+            })
+            ->all();
+    }
 
     /**
      * 获取对话列表

@@ -2197,6 +2197,7 @@ class UsersController extends AbstractController
      * @apiName share__list
      *
      * @apiParam {String} [type]            分享类型：file-文件，text-列表 默认file
+     * @apiParam {String} [key]             搜索关键词（用于搜索会话）
      * @apiParam {Number} [pid]             父级文件id，用于获取子目录和上传到指定目录的id
      * @apiParam {Number} [upload_file_id]  上传文件id
      *
@@ -2208,6 +2209,7 @@ class UsersController extends AbstractController
     {
         $user = User::auth();
         $type = Request::input('type', 'file');
+        $key = Request::input('key');
         $pid = intval(Request::input('pid', -1));
         $uploadFileId = intval(Request::input('upload_file_id', -1));
         // 上传文件
@@ -2240,10 +2242,14 @@ class UsersController extends AbstractController
                     'icon' => url("images/file/light/folder.png"),
                     'extend' => ['upload_file_id' => 0],
                     'name' => Doo::translate('文件'),
+                    'sort' => Carbon::parse("9999")->timestamp,
                 ];
             }
-            $dialogList = WebSocketDialog::getDialogList($user->userid);
-            foreach ($dialogList['data'] as $dialog) {
+            $dialogTake = 50;
+            $dialogList = WebSocketDialog::searchDialog($user->userid, $key, $dialogTake);
+            $dialogIds = [];
+            $itemUrl = $type == "file" ? Base::fillUrl("api/dialog/msg/sendfiles") : Base::fillUrl("api/dialog/msg/sendtext");
+            foreach ($dialogList as $dialog) {
                 if ($dialog['avatar']) {
                     $avatar = url($dialog['avatar']);
                 } else if ($dialog['type'] == 'user') {
@@ -2260,7 +2266,8 @@ class UsersController extends AbstractController
                     'type' => 'item',
                     'name' => $dialog['name'],
                     'icon' => $avatar,
-                    'url' => $type == "file" ? Base::fillUrl("api/dialog/msg/sendfiles") : Base::fillUrl("api/dialog/msg/sendtext"),
+                    'url' => $itemUrl,
+                    'sort' => Carbon::parse($dialog['last_at'])->timestamp,
                     'extend' => [
                         'dialog_ids' => $dialog['id'],
                         'text_type' => 'text',
@@ -2268,6 +2275,33 @@ class UsersController extends AbstractController
                         'silence' => 'no'
                     ]
                 ];
+                $dialogIds[] = $dialog['id'];
+            }
+            if ($key && count($dialogList) < $dialogTake) {
+                $dialogUsers = User::searchUser($key, $dialogTake - count($dialogList));
+                foreach ($dialogUsers as $item) {
+                    $dialog = WebSocketDialog::getUserDialog($user->userid, $item->userid, now()->addDay());
+                    if ($dialog && !in_array($dialog->id, $dialogIds)) {
+                        $lists[] = [
+                            'type' => 'item',
+                            'name' => $item->nickname,
+                            'icon' => $item->userimg,
+                            'url' => $itemUrl,
+                            'sort' => Carbon::parse($item->line_at)->timestamp,
+                            'extend' => [
+                                'dialog_ids' => $dialog->id,
+                                'text_type' => 'text',
+                                'reply_id' => 0,
+                                'silence' => 'no'
+                            ]
+                        ];
+                        $dialogIds[] = $dialog->id;
+                    }
+                }
+                // 根据 $lists sort 从大到小排序
+                usort($lists, function ($a, $b) {
+                    return $b['sort'] <=> $a['sort'];
+                });
             }
         }
         // 返回

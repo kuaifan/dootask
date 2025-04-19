@@ -749,4 +749,26 @@ class User extends AbstractModel
         }
         return (bool)User::find($userid)?->bot;
     }
+
+    /**
+     * 搜索用户
+     * @param $key
+     * @param $take
+     * @return User[]|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
+     */
+    public static function searchUser($key, $take = 20)
+    {
+        return User::select(User::$basicField)
+            ->where(function ($query) use ($key) {
+                if (str_contains($key, "@")) {
+                    $query->where("email", "like", "%{$key}%");
+                } else {
+                    $query->where("nickname", "like", "%{$key}%")
+                        ->orWhere("pinyin", "like", "%{$key}%")
+                        ->orWhere("profession", "like", "%{$key}%");
+                }
+            })->orderBy('userid')
+            ->take($take)
+            ->get();
+    }
 }
