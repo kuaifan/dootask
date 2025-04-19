@@ -5,6 +5,7 @@ namespace App\Tasks;
 use App\Models\File;
 use App\Models\TaskWorker;
 use App\Models\Tmp;
+use App\Models\UserDevice;
 use App\Models\WebSocketTmpMsg;
 use App\Module\Base;
 use Carbon\Carbon;
@@ -33,88 +34,74 @@ class DeleteTmpTask extends AbstractTask
     public function start()
     {
         switch ($this->data) {
-            /**
-             * 表pre_tmp_msgs
-             */
-            case 'wg_tmp_msgs':
-                {
-                    WebSocketTmpMsg::where('created_at', '<', Carbon::now()->subHours($this->hours))
-                        ->orderBy('id')
-                        ->chunk(500, function ($msgs) {
-                            /** @var WebSocketTmpMsg $msg */
-                            foreach ($msgs as $msg) {
-                                $msg->delete();
-                            }
-                        });
-                }
-                break;
-
-            /**
-             * 表pre_tmp
-             */
-            case 'tmp':
-                {
-                    Tmp::where('created_at', '<', Carbon::now()->subHours($this->hours))
-                        ->orderBy('id')
-                        ->chunk(500, function ($tmps) {
-                            /** @var Tmp $tmp */
-                            foreach ($tmps as $tmp) {
-                                $tmp->delete();
-                            }
-                        });
-                }
-                break;
-
-            /**
-             * 表pre_task_worker
-             */
-            case 'task_worker':
-                {
-                    TaskWorker::onlyTrashed()
-                        ->where('deleted_at', '<', Carbon::now()->subHours($this->hours))
-                        ->orderBy('id')
-                        ->forceDelete();
-                }
-                break;
-
-            /**
-             * 表pre_file
-             */
-            case 'file':
-                {
-                    $day = intval(env("AUTO_EMPTY_FILE_RECYCLE", 365));
-                    if ($day <= 0) {
-                        return;
-                    }
-                    File::onlyTrashed()
-                        ->where('deleted_at', '<', Carbon::now()->subHours($day))
-                        ->orderBy('id')
-                        ->chunk(500, function ($files) {
-                            /** @var File $file */
-                            foreach ($files as $file) {
-                                $file->forceDeleteFile();
-                            }
-                        });
-                }
-                break;
-
-            /**
-             * tmp_file 删除临时文件
-             */
-            case 'tmp_file':
-                {
-                    $day = intval(env("AUTO_EMPTY_TEMP_FILE", 30));
-                    if ($day <= 0) {
-                        return;
-                    }
-                    $files = Base::recursiveFiles(public_path('uploads/tmp'));
-                    foreach ($files as $file) {
-                        $time = @filemtime($file);
-                        if ($time && $time < time() - 3600 * 24 * $day) {
-                            unlink($file);
+            case 'tmp_msgs':
+                WebSocketTmpMsg::where('created_at', '<', Carbon::now()->subHours($this->hours))
+                    ->orderBy('id')
+                    ->chunk(500, function ($msgs) {
+                        /** @var WebSocketTmpMsg $msg */
+                        foreach ($msgs as $msg) {
+                            $msg->delete();
                         }
+                    });
+                break;
+
+            case 'tmp':
+                Tmp::where('created_at', '<', Carbon::now()->subHours($this->hours))
+                    ->orderBy('id')
+                    ->chunk(500, function ($tmps) {
+                        /** @var Tmp $tmp */
+                        foreach ($tmps as $tmp) {
+                            $tmp->delete();
+                        }
+                    });
+                break;
+
+            case 'task_worker':
+                TaskWorker::onlyTrashed()
+                    ->where('deleted_at', '<', Carbon::now()->subHours($this->hours))
+                    ->orderBy('id')
+                    ->forceDelete();
+                break;
+
+            case 'file':
+                $day = intval(env("AUTO_EMPTY_FILE_RECYCLE", 365));
+                if ($day <= 0) {
+                    return;
+                }
+                File::onlyTrashed()
+                    ->where('deleted_at', '<', Carbon::now()->subHours($day))
+                    ->orderBy('id')
+                    ->chunk(500, function ($files) {
+                        /** @var File $file */
+                        foreach ($files as $file) {
+                            $file->forceDeleteFile();
+                        }
+                    });
+                break;
+
+            case 'tmp_file':
+                $day = intval(env("AUTO_EMPTY_TEMP_FILE", 30));
+                if ($day <= 0) {
+                    return;
+                }
+                $files = Base::recursiveFiles(public_path('uploads/tmp'));
+                foreach ($files as $file) {
+                    $time = @filemtime($file);
+                    if ($time && $time < time() - 3600 * 24 * $day) {
+                        unlink($file);
                     }
                 }
+                break;
+
+            case 'user_device':
+                UserDevice::where('expired_at', '<', Carbon::now()->subHours($this->hours))
+                    ->orderBy('id')
+                    ->chunk(500, function ($devices) {
+                        /** @var UserDevice $device */
+                        foreach ($devices as $device) {
+                            UserDevice::forget($device);
+                        }
+                    });
                 break;
         }
     }

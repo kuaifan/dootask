@@ -237,27 +237,35 @@ class UserDevice extends AbstractModel
 
     /**
      * 忘记设备（删除）
-     * @param string|int|null $token
-     * - null 表示当前登录的设备
+     * @param UserDevice|string|int|null $token
+     * - UserDevice 表示指定的设备对象
      * - string 表示指定的 token
      * - int 表示指定的数据ID
+     * - null 表示当前登录的设备
      * @return void
      */
-    public static function forget(string|int $token = null): void
+    public static function forget(UserDevice|string|int $token = null): void
     {
-        if ($token === null) {
-            $token = Doo::userToken();
-        }
-        if (Base::isNumber($token)) {
+        if ($token instanceof UserDevice) {
+            $hash = $token->hash;
+            $token->delete();
+        } elseif (Base::isNumber($token)) {
             $row = self::find(intval($token));
             if ($row) {
-                Cache::forget(self::ck($row->hash));
+                $hash = $row->hash;
                 $row->delete();
             }
-        } elseif ($token) {
-            $hash = md5($token);
+        } else {
+            if ($token === null) {
+                $token = Doo::userToken();
+            }
+            if ($token) {
+                $hash = md5($token);
+                self::whereHash($hash)->delete();
+            }
+        }
+        if (isset($hash)) {
             Cache::forget(self::ck($hash));
-            self::whereHash($hash)->delete();
         }
     }
 }
