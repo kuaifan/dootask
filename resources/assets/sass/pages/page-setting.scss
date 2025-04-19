@@ -343,6 +343,13 @@
 }
 
 .setting-device {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+
     > ul {
         display: flex;
         flex-direction: column;
@@ -357,6 +364,15 @@
             padding: 24px;
             border-radius: 12px;
             background: rgba(79, 89, 102, .04);
+
+            &.loading {
+                background: transparent;
+
+                .common-loading {
+                    width: 24px;
+                    height: 24px;
+                }
+            }
 
             .icon {
                 align-self: flex-start;

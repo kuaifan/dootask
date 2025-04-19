@@ -1,31 +1,36 @@
 <template>
     <div class="setting-device">
         <ul>
-            <li v-for="device in devices" :key="device.id">
-                <div class="icon">
-                    <span :class="getIcon(device.detail)"></span>
-                </div>
-                <div class="info">
-                    <div class="title">
-                        <span class="name">{{ getName(device.detail) }}</span>
-                        <span class="device">{{ device.detail.os }}</span>
-                    </div>
-                    <div class="time">
-                        <EPopover placement="bottom-start" trigger="click">
-                            <div class="setting-device-popover">
-                                <p>{{$L('登录时间')}}: {{device.created_at}}</p>
-                                <p>{{$L('更新时间')}}: {{device.updated_at}}</p>
-                                <p>{{$L('过期时间')}}: {{device.expired_at}}</p>
-                            </div>
-                            <span slot="reference">{{ device.updated_at }}</span>
-                        </EPopover>
-                    </div>
-                </div>
-                <div>
-                    <span v-if="device.is_current" class="current">{{$L('当前设备')}}</span>
-                    <Button v-else @click="onLogout(device)">{{$L('退出登录')}}</Button>
-                </div>
+            <li v-if="loadIng > 0 && devices.length === 0" class="loading">
+                <Loading/>
             </li>
+            <template v-else>
+                <li v-for="device in devices" :key="device.id">
+                    <div class="icon">
+                        <span :class="getIcon(device.detail)"></span>
+                    </div>
+                    <div class="info">
+                        <div class="title">
+                            <span class="name">{{ getName(device.detail) }}</span>
+                            <span class="device">{{ device.detail.os }}</span>
+                        </div>
+                        <div class="time">
+                            <EPopover placement="bottom-start" trigger="click">
+                                <div class="setting-device-popover">
+                                    <p>{{$L('登录时间')}}: {{device.created_at}}</p>
+                                    <p>{{$L('更新时间')}}: {{device.updated_at}}</p>
+                                    <p>{{$L('过期时间')}}: {{device.expired_at}}</p>
+                                </div>
+                                <span slot="reference">{{ device.updated_at }}</span>
+                            </EPopover>
+                        </div>
+                    </div>
+                    <div>
+                        <span v-if="device.is_current" class="current">{{$L('当前设备')}}</span>
+                        <Button v-else @click="onLogout(device)">{{$L('退出登录')}}</Button>
+                    </div>
+                </li>
+            </template>
         </ul>
     </div>
 </template>
@@ -54,7 +59,8 @@ export default {
                 if (typeof this.$parent.updateDeviceCount === "function") {
                     this.$parent.updateDeviceCount(this.devices.length);
                 }
-            }).catch(() => {
+            }).catch(({msg}) => {
+                $A.modalError(msg);
                 this.devices = []
             }).finally(() => {
                 this.loadIng--;
