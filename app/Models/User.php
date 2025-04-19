@@ -445,6 +445,7 @@ class User extends AbstractModel
         $user = self::authInfo();
         if (!$user) {
             if (Base::token()) {
+                UserDevice::forget();
                 throw new ApiException('身份已失效,请重新登录', [], -1);
             } else {
                 throw new ApiException('请登录后继续...', [], -1);
@@ -466,31 +467,46 @@ class User extends AbstractModel
     private static function authInfo()
     {
         if (RequestContext::has('auth')) {
+            // 缓存
             return RequestContext::get('auth');
         }
-        if (Doo::userId() > 0
-            && !Doo::userExpired()
-            && $user = self::whereUserid(Doo::userId())->whereEmail(Doo::userEmail())->whereEncrypt(Doo::userEncrypt())->first()) {
-            $upArray = [];
-            if (Base::getIp() && $user->line_ip != Base::getIp()) {
-                $upArray['line_ip'] = Base::getIp();
-            }
-            if (Carbon::parse($user->line_at)->addSeconds(30)->lt(Carbon::now())) {
-                $upArray['line_at'] = Carbon::now();
-            }
-            $headerLanguage = RequestContext::get('header_language');
-            if (empty($user->lang) || $headerLanguage) {
-                if (Doo::checkLanguage($headerLanguage) && $user->lang != $headerLanguage) {
-                    $upArray['lang'] = $headerLanguage;
-                }
-            }
-            if ($upArray) {
-                $user->updateInstance($upArray);
-                $user->save();
-            }
-            return RequestContext::save('auth', $user);
+        if (Doo::userId() <= 0) {
+            // 没有登录
+            return RequestContext::save('auth', false);
         }
-        return RequestContext::save('auth', false);
+        if (Doo::userExpired()) {
+            // 登录过期
+            return RequestContext::save('auth', false);
+        }
+        if (!UserDevice::check()) {
+            // token 不存在
+            return RequestContext::save('auth', false);
+        }
+        $user = self::whereUserid(Doo::userId())->whereEmail(Doo::userEmail())->whereEncrypt(Doo::userEncrypt())->first();
+        if (!$user) {
+            // 登录信息不匹配
+            return RequestContext::save('auth', false);
+        }
+
+        // 更新登录信息
+        $upArray = [];
+        if (Base::getIp() && $user->line_ip != Base::getIp()) {
+            $upArray['line_ip'] = Base::getIp();
+        }
+        if (Carbon::parse($user->line_at)->addSeconds(30)->lt(Carbon::now())) {
+            $upArray['line_at'] = Carbon::now();
+        }
+        $headerLanguage = RequestContext::get('header_language');
+        if (empty($user->lang) || $headerLanguage) {
+            if (Doo::checkLanguage($headerLanguage) && $user->lang != $headerLanguage) {
+                $upArray['lang'] = $headerLanguage;
+            }
+        }
+        if ($upArray) {
+            $user->updateInstance($upArray);
+            $user->save();
+        }
+        return RequestContext::save('auth', $user);
     }
 
     /**
@@ -514,6 +530,7 @@ class User extends AbstractModel
         } else {
             $token = Doo::userToken();
         }
+        UserDevice::record($token);
         unset($userinfo->encrypt);
         unset($userinfo->password);
         return $userinfo->token = $token;

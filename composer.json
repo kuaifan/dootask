@@ -33,6 +33,7 @@
         "league/html-to-markdown": "^5.1",
         "maatwebsite/excel": "^3.1.31",
         "madnest/madzipper": "^v1.1.0",
+        "matomo/device-detector": "^6.4",
         "mews/captcha": "^3.2.6",
         "orangehill/iseed": "^3.0.1",
         "overtrue/pinyin": "^4.0",

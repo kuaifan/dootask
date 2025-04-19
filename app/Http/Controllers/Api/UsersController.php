@@ -19,6 +19,7 @@ use App\Models\UserBot;
 use App\Models\WebSocket;
 use App\Models\UmengAlias;
 use App\Models\UserDelete;
+use App\Models\UserDevice;
 use App\Models\UserTransfer;
 use App\Models\AbstractModel;
 use App\Models\UserCheckinFace;
@@ -264,6 +265,11 @@ class UsersController extends AbstractController
     {
         $captcha = Captcha::create('default', true);
         return Base::retSuccess('请求成功', $captcha);
+    }
+
+    public function logout()
+    {
+        $user = User::auth();
     }
 
     /**
@@ -2424,5 +2430,80 @@ class UsersController extends AbstractController
         ];
         //
         return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/users/device/count          38. 获取设备数量
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName device__count
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function device__count()
+    {
+        $user = User::auth();
+        //
+        return Base::retSuccess('success', [
+            'count' => UserDevice::whereUserid($user->userid)->count()
+        ]);
+    }
+
+    /**
+     * @api {get} api/users/device/list          39. 获取设备列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName device__list
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function device__list()
+    {
+        $user = User::auth();
+        //
+        $list = UserDevice::whereUserid($user->userid)->orderByDesc('id')->take(100)->get();
+        //
+        return Base::retSuccess('success', [
+            'list' => $list
+        ]);
+    }
+
+    /**
+     * @api {get} api/users/device/logout          40. 登出设备（删除设备）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName device__logout
+     *
+     * @apiParam {Number} id             设备id
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function device__logout()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        if (empty($id)) {
+            return Base::retError('参数错误');
+        }
+        $userDevice = UserDevice::whereUserid($user->userid)->whereId($id)->first();
+        if (empty($userDevice)) {
+            return Base::retError('设备不存在或已被删除');
+        }
+        UserDevice::forget($userDevice->id);
+        //
+        return Base::retSuccess('删除成功');
     }
 }
