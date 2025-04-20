@@ -6,38 +6,31 @@ export const ctrlPressed = {
     },
 
     created() {
-        this.handleKeyDown = this.handleKeyDown.bind(this);
-        this.handleKeyUp = this.handleKeyUp.bind(this);
-        this.handleBlur = this.handleBlur.bind(this);
+        this.handlePointerdown = this.handlePointerdown.bind(this);
+        this.handlePointerup = this.handlePointerup.bind(this);
     },
 
     mounted() {
-        document.addEventListener('keydown', this.handleKeyDown);
-        document.addEventListener('keyup', this.handleKeyUp);
-        window.addEventListener('blur', this.handleBlur);
+        document.addEventListener('pointerdown', this.handlePointerdown);
+        document.addEventListener('pointerup', this.handlePointerup);
     },
 
     beforeDestroy() {
-        document.removeEventListener('keydown', this.handleKeyDown);
-        document.removeEventListener('keyup', this.handleKeyUp);
-        window.removeEventListener('blur', this.handleBlur);
+        document.removeEventListener('pointerdown', this.handlePointerdown);
+        document.removeEventListener('pointerup', this.handlePointerup);
     },
 
     methods: {
-        handleKeyDown(event) {
+        handlePointerdown(event) {
             if (event.ctrlKey || event.metaKey) {
                 this.isCtrlCommandPressed = true;
             }
         },
 
-        handleKeyUp(event) {
+        handlePointerup(event) {
             if (!event.ctrlKey && !event.metaKey) {
                 this.isCtrlCommandPressed = false;
             }
-        },
-
-        handleBlur() {
-            this.isCtrlCommandPressed = false;
         }
     }
 };

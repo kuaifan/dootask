@@ -588,6 +588,8 @@
                 text-align: center;
                 display: inline-block;
                 cursor: pointer;
+                user-select: none;
+
                 > img {
                     max-width: 100%;
                     max-height: 100%;
