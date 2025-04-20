@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.46.74]
+
+### Features
+
+- 新增系统分享搜索功能
+
+### Performance
+
+- 优化通用菜单
+- 优化视频压缩
+- 优化全文搜索
+- 优化长按菜单
+
 ## [0.46.16]
 
 ### Bug Fixes
