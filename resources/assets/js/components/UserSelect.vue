@@ -60,7 +60,13 @@
                         <Icon v-else type="ios-search" />
                     </div>
                     <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
-                        <Input type="search" v-model="searchKey" :placeholder="localPlaceholder" clearable/>
+                        <Input
+                            type="search"
+                            v-model="searchKey"
+                            :placeholder="localPlaceholder"
+                            @on-keydown="onKeydown"
+                            @on-keyup="onKeyup"
+                            clearable/>
                     </Form>
                 </div>
             </div>
@@ -284,9 +290,10 @@ export default {
             ],
             switchActive: 'recent',
 
-            loadIng: 0,     // 搜索框等待效果
-            waitIng: 0,     // 页面等待效果
-            submittIng: 0,  // 提交按钮等待效果
+            loadIng: 0,             // 搜索框等待效果
+            waitIng: 0,             // 页面等待效果
+            submittIng: 0,          // 提交按钮等待效果
+            backspaceDelete: false, // 是否按删除键删除
 
             values: [],
             selects: [],
@@ -725,7 +732,7 @@ export default {
                 this.selects.push(userid)
                 // 滚动到选中的位置
                 this.$nextTick(() => {
-                    $A.scrollIntoViewIfNeeded(this.$refs.selected.querySelector(`li[data-id="${userid}"]`))
+                    $A.scrollIntoViewIfNeeded(this.$refs.selected.querySelector(`li[data-id="${userid}"]`), true)
                 })
             }
         },
@@ -804,6 +811,24 @@ export default {
                 })
             } else {
                 this.hide()
+            }
+        },
+
+        onKeydown(event) {
+            // 按下删除键时，判断是否符合删除条件
+            this.backspaceDelete = event.key === 'Backspace' && !this.searchKey && this.selects.length > 0;
+        },
+
+        onKeyup(event) {
+            if (event.key === 'Backspace' && this.backspaceDelete) {
+                // 从最后一个元素开始向前遍历，找到第一个不是不可取消的元素
+                for (let i = this.selects.length - 1; i >= 0; i--) {
+                    const userid = this.selects[i];
+                    if (!this.isUncancelable(userid)) {
+                        this.onRemoveItem(userid);
+                        break; // 找到并移除后立即退出循环
+                    }
+                }
             }
         },
 

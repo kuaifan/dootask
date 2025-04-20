@@ -405,8 +405,8 @@ export default {
                             .replace(/^\//, '');
                         const meetingPath = $A.urlAddParams("/" + meetingLink, {
                             type: 'direct',
-                            nickname: encodeURIComponent(data.nickname),
-                            avatar: encodeURIComponent(data.userimg),
+                            nickname: data.nickname,
+                            avatar: data.userimg,
                             audio: this.addData.tracks.includes("audio") ? 1 : 0,
                             video: this.addData.tracks.includes("video") ? 1 : 0,
                             token: this.userToken,

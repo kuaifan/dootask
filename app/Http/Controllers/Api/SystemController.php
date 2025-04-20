@@ -1543,6 +1543,16 @@ class SystemController extends AbstractController
                     return !str_starts_with($item, 'office/{path}/');
                 });
             }
+            // 添加OKR资源
+            $okrContent = @file_get_contents("http://nginx/apps/okr/");
+            preg_match_all('/<script[^>]*src=["\']([^"\']+)["\'][^>]*>/i', $okrContent, $scriptMatches);
+            foreach ($scriptMatches[1] as $src) {
+                $array[] = $src;
+            }
+            preg_match_all('/<link[^>]*rel=["\']stylesheet["\'][^>]*href=["\']([^"\']+)["\'][^>]*>/i', $okrContent, $linkMatches);
+            foreach ($linkMatches[1] as $href) {
+                $array[] = $href;
+            }
         }
 
         return array_map(function($item) use ($version) {

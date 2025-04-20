@@ -662,13 +662,13 @@ const timezone = require("dayjs/plugin/timezone");
                 if (url) {
                     url = this.removeURLParameter(url, Object.keys(params))
                 }
-                url+= "";
-                url+= url.indexOf("?") === -1 ? '?' : '';
+                url += "";
+                url += url.indexOf("?") === -1 ? '?' : '';
                 for (let key in params) {
                     if (!params.hasOwnProperty(key)) {
                         continue;
                     }
-                    url+= '&' + key + '=' + params[key];
+                    url += '&' + key + '=' + encodeURIComponent(params[key]);
                 }
                 return this.rightDelete(url.replace("?&", "?"), '?');
             }
@@ -1133,15 +1133,23 @@ const timezone = require("dayjs/plugin/timezone");
         /**
          * 按需滚动到View
          * @param element
+         * @param smooth
          */
-        scrollIntoViewIfNeeded(element) {
+        scrollIntoViewIfNeeded(element = null, smooth = false) {
             if (!element) {
                 return;
             }
-            if (typeof element.scrollIntoViewIfNeeded === "function") {
+            if (!smooth && typeof element.scrollIntoViewIfNeeded === "function") {
                 element.scrollIntoViewIfNeeded()
             } else {
-                $A.scrollToView(element, {block: "nearest", inline: "nearest"})
+                const options = {
+                    block: "nearest",
+                    inline: "nearest"
+                }
+                if (smooth) {
+                    options.behavior = 'smooth'
+                }
+                $A.scrollToView(element, options)
             }
         },
 

@@ -8,7 +8,7 @@
                     <source :src="msg.path" type="video/mp4">
                 </video>
                 <div class="file-play">
-                    <div class="play-icon">
+                    <div class="play-icon no-dark-content">
                         <i class="taskfont">&#xe745;</i>
                     </div>
                 </div>

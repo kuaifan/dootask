@@ -1247,11 +1247,11 @@ export default {
             const title = $A.L("定位签到")
             const channel = $A.randomString(6)
             const params = {
-                title: encodeURIComponent(title),
-                label: encodeURIComponent($A.L("选择附近地点")),
-                placeholder: encodeURIComponent($A.L("搜索地点")),
-                noresult: encodeURIComponent($A.L("附近没有找到地点")),
-                errtip: encodeURIComponent($A.L("定位失败")),
+                title,
+                label: $A.L("选择附近地点"),
+                placeholder: $A.L("搜索地点"),
+                noresult: $A.L("附近没有找到地点"),
+                errtip: $A.L("定位失败"),
                 selectclose: "true",
                 channel,
             }
