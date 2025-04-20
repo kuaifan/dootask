@@ -577,6 +577,7 @@ export default {
                 this.autoTheme()
                 $A.updateTimezone()
                 $A.IDBTest()
+                this.$store.dispatch("safeAreaInsets")
                 const nowYmd = $A.daytz().format('YYYY-MM-DD')
                 if (this.lastCheckUpgradeYmd != nowYmd) {
                     this.lastCheckUpgradeYmd = nowYmd

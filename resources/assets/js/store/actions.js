@@ -157,6 +157,31 @@ export default {
     },
 
     /**
+     * 获取安全区域
+     * @param state
+     * @returns {Promise<unknown>}
+     */
+    safeAreaInsets({state}) {
+        return new Promise(resolve => {
+            if (!state.isFirstPage) {
+                return resolve(null)
+            }
+            $A.eeuiAppGetSafeAreaInsets().then(data => {
+                const proportion = data.height / window.outerHeight
+                state.safeAreaSize = {
+                    top: Math.round(data.top / proportion * 100) / 100,
+                    bottom: Math.round(data.bottom / proportion * 100) / 100,
+                    data
+                }
+                resolve(state.safeAreaSize)
+            }).catch(e => {
+                console.warn(e)
+                resolve(null)
+            })
+        })
+    },
+
+    /**
      * 访问接口
      * @param state
      * @param dispatch

@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\UserDevice;
-use App\Models\WebSocketDialog;
-use App\Models\WebSocketDialogMsg;
 use Request;
 use Session;
 use Response;
