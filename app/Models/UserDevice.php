@@ -8,6 +8,7 @@ use Cache;
 use Carbon\Carbon;
 use DeviceDetector\DeviceDetector;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Request;
 
 /**
  * App\Models\UserDevice
@@ -219,15 +220,21 @@ class UserDevice extends AbstractModel
             $userid = $info['userid'] ?? 0;
             $expiredAt = $info['expired_at'] ?? null;
         }
+        $deviceData = [
+            'detail' => Base::array2json(self::getDeviceInfo($_SERVER['HTTP_USER_AGENT'] ?? '')),
+            'expired_at' => $expiredAt,
+        ];
 
         $hash = md5($token);
         $row = self::updateInsert([
             'userid' => $userid,
             'hash' => $hash,
-        ], [
-            'detail' => Base::array2json(self::getDeviceInfo($_SERVER['HTTP_USER_AGENT'] ?? '')),
-            'expired_at' => $expiredAt,
-        ]);
+        ], function() use ($deviceData) {
+            if (!Request::hasHeader('version')) {
+                unset($deviceData['detail']);
+            }
+            return $deviceData;
+        }, $deviceData);
         if ($row) {
             Cache::put(self::ck($hash), $row->userid, now()->addHour());
             return $row;
