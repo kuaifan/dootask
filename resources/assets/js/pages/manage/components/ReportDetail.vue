@@ -40,7 +40,7 @@
                     </div>
                 </li>
             </ul>
-            <div class="report-content user-select-auto" v-html="data.content"></div>
+            <div ref="reportContent" @click="onClick" class="report-content user-select-auto" v-html="data.content"></div>
         </div>
     </div>
 </template>
@@ -92,6 +92,12 @@ export default {
                 this.loadIng--;
             });
         },
+        onClick({target}) {
+            if (target.nodeName === "IMG") {
+                const list = $A.getTextImagesInfo(this.$refs.reportContent?.outerHTML);
+                this.$store.dispatch("previewImage", {index: target.currentSrc, list})
+            }
+        }
     }
 }
 </script>

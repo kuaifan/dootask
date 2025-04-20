@@ -221,7 +221,6 @@ class ReportController extends AbstractController
                 $report->updateInstance([
                     "title" => $input["title"],
                     "type" => $input["type"],
-                    "content" => htmlspecialchars($input["content"]),
                 ]);
             } else {
                 // 生成唯一标识
@@ -235,9 +234,23 @@ class ReportController extends AbstractController
                     "title" => $input["title"],
                     "type" => $input["type"],
                     "userid" => $user->userid,
-                    "content" => htmlspecialchars($input["content"]),
                 ]);
             }
+            $report->save();
+
+            // 保存内容
+            $content = $input["content"];
+            preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|webp);base64,(.*?)\"/s", $content, $matchs);
+            foreach ($matchs[2] as $key => $text) {
+                $tmpPath = "uploads/report/" . Carbon::parse($report->created_at)->format("Ym") . "/" . $report->id . "/attached/";
+                Base::makeDir(public_path($tmpPath));
+                $tmpPath .= md5($text) . "." . $matchs[1][$key];
+                if (Base::saveContentImage(public_path($tmpPath), base64_decode($text))) {
+                    $paramet = getimagesize(public_path($tmpPath));
+                    $content = str_replace($matchs[0][$key], '<img src="' . Base::fillUrl($tmpPath) . '" original-width="' . $paramet[0] . '" original-height="' . $paramet[1] . '"', $content);
+                }
+            }
+            $report->content = htmlspecialchars($content);
             $report->save();
 
             // 删除关联
