@@ -1,6 +1,8 @@
 /**
  * EEUI App 专用
  */
+import {getLanguage} from "../language";
+
 (function (window) {
     const $ = window.$A;
 
@@ -319,6 +321,16 @@
                     reject(e);
                 }
             })
+        },
+
+        // 获取当前语言
+        eeuiAppConvertLanguage() {
+            const lang = getLanguage();
+            const specialMappings = {
+                "zh": "zh-Hans",
+                "zh-CHT": "zh-Hant"
+            };
+            return specialMappings[lang] || lang;
         }
     });
 

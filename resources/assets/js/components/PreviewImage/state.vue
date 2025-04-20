@@ -76,6 +76,7 @@ export default {
         videoPreview(path) {
             if ($A.isEEUiApp) {
                 $A.eeuiAppSendMessage({
+                    language: $A.eeuiAppConvertLanguage(),
                     action: 'videoPreview',
                     path
                 });
@@ -90,6 +91,7 @@ export default {
         imagePreview(index, paths) {
             if ($A.isEEUiApp) {
                 $A.eeuiAppSendMessage({
+                    language: $A.eeuiAppConvertLanguage(),
                     action: 'picturePreview',
                     position: index,
                     paths

@@ -717,12 +717,11 @@ export default {
             //
             $A.eeuiAppSendMessage({
                 action: 'userChatList',
-                token: state.userToken,
+                language: $A.eeuiAppConvertLanguage(),
                 url: $A.mainUrl('api/users/share/list') + `?token=${state.userToken}`
             });
             $A.eeuiAppSendMessage({
                 action:"userUploadUrl",
-                token: state.userToken,
                 dirUrl: $A.mainUrl('api/file/content/upload') + `?token=${state.userToken}`,
                 chatUrl: $A.mainUrl('api/dialog/msg/sendfiles') + `?token=${state.userToken}`,
             });
