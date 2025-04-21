@@ -23,9 +23,18 @@
                     <div class="search-content">
                         <Select v-model="keys.status" :placeholder="$L('全部')">
                             <Option value="">{{$L('全部')}}</Option>
-                            <Option v-for="flow in flows" :key="flow.id" :value="flow.id" :label="flow.name">
-                                <div class="tag-dot" :class="flow.status">{{flow.name}}</div>
-                            </Option>
+                            <template v-if="flows.type==='group'">
+                                <OptionGroup v-for="group in flows.groups" :label="group.label">
+                                    <Option v-for="item in group.items" :value="item.id" :label="item.name">
+                                        <div class="tag-dot" :class="item.status">{{item.name}}</div>
+                                    </Option>
+                                </OptionGroup>
+                            </template>
+                            <template v-else>
+                                <Option v-for="item in flows.items" :value="item.id" :label="item.name">
+                                    <div class="tag-dot" :class="item.status">{{item.name}}</div>
+                                </Option>
+                            </template>
                         </Select>
                     </div>
                 </li>
@@ -323,7 +332,18 @@ export default {
         ...mapState(['cacheTasks']),
 
         flows({flowList}) {
-            const list = [
+            const flowItems = [];
+            flowList.forEach(item1 => {
+                item1.project_flow_item.forEach(item2 => {
+                    const label = flowList.length > 1 ? item1.name + ' - ' + item2.name : item2.name;
+                    flowItems.push({
+                        ...item2,
+                        id: 'flow-' + item2.id,
+                        label,
+                    })
+                })
+            });
+            const stateItem = [
                 {
                     id: 'completed',
                     name: this.$L('已完成'),
@@ -337,17 +357,24 @@ export default {
                     label: this.$L('未完成'),
                 }
             ];
-            flowList.forEach(item1 => {
-                item1.project_flow_item.forEach(item2 => {
-                    const label = flowList.length > 1 ? item1.name + ' - ' + item2.name : item2.name;
-                    list.push({
-                        ...item2,
-                        id: 'flow-' + item2.id,
-                        label,
-                    })
-                })
-            });
-            return list;
+            if (flowItems.length > 0) {
+                return {
+                    type: 'group',
+                    groups: [
+                        {
+                            label: this.$L('按工作流'),
+                            items: flowItems
+                        }, {
+                            label: this.$L('按状态'),
+                            items: stateItem
+                        }
+                    ],
+                }
+            }
+            return {
+                type: 'normal',
+                items: stateItem
+            };
         }
     },
     watch: {
