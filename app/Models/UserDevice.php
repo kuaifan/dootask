@@ -21,6 +21,7 @@ use Request;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read int $is_current
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
@@ -173,36 +174,35 @@ class UserDevice extends AbstractModel
 
     /**
      * 检查用户是否存在
-     * @return bool
+     * @return string|null
      */
-    public static function check(): bool
+    public static function check(): ?string
     {
         $token = Doo::userToken();
         $userid = Doo::userId();
 
         $hash = md5($token);
         if (Cache::has(self::ck($hash))) {
-            return true;
+            return $hash;
         }
 
         $row = self::whereHash($hash)->first();
         if ($row) {
             // 判断是否过期
             if (Carbon::parse($row->expired_at)->isPast()) {
-                Cache::forget(self::ck($hash));
-                $row->delete();
-                return false;
+                self::forget($row);
+                return null;
             }
             // 更新缓存
             self::record();
-            return true;
+            return $hash;
         }
         // 没有记录，尝试创建一个（防止升级后所有登录都失效，保证留一个可以保持登录） // todo 后期删除
-        return AbstractModel::transaction(function () use ($userid) {
+        return AbstractModel::transaction(function () use ($hash, $userid) {
             if (self::whereUserid($userid)->withoutTrashed()->lockForUpdate()->exists()) {
-                return false;
+                return null;
             }
-            return (bool)self::record();
+            return self::record() ? $hash : null;
         });
     }
 
@@ -285,6 +285,7 @@ class UserDevice extends AbstractModel
         }
         if (isset($hash)) {
             Cache::forget(self::ck($hash));
+            UmengAlias::whereDeviceHash($hash)->delete();
         }
     }
 }

@@ -231,8 +231,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1G
+          cpus: '2'
+          memory: 4G
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.15"
