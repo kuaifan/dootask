@@ -2493,7 +2493,7 @@ class UsersController extends AbstractController
     {
         $user = User::auth();
         //
-        $list = UserDevice::whereUserid($user->userid)->orderByDesc('id')->take(100)->get();
+        $list = UserDevice::whereUserid($user->userid)->orderByDesc('id')->take(UserDevice::$deviceLimit)->get();
         //
         return Base::retSuccess('success', [
             'list' => $list

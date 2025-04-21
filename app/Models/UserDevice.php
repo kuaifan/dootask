@@ -49,6 +49,8 @@ class UserDevice extends AbstractModel
 
     protected $table = 'user_devices';
 
+    public static int $deviceLimit = 200; // 每个用户设备限制数量
+
     protected $appends = [
         'is_current',
     ];
@@ -234,7 +236,17 @@ class UserDevice extends AbstractModel
                 unset($deviceData['detail']);
             }
             return $deviceData;
-        }, $deviceData);
+        }, $deviceData, $isInsert);
+        if ($isInsert) {
+            $currentDeviceCount = self::whereUserid($userid)->count();
+            if ($currentDeviceCount > self::$deviceLimit) {
+                // 删除多余的设备记录
+                $rows = self::whereUserid($userid)->orderBy('id')->take($currentDeviceCount - self::$deviceLimit)->get();
+                foreach ($rows as $row) {
+                    UserDevice::forget($row);
+                }
+            }
+        }
         if ($row) {
             Cache::put(self::ck($hash), $row->userid, now()->addHour());
             return $row;
