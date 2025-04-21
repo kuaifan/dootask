@@ -8,6 +8,7 @@ services:
         soft: 0
         hard: 0
     volumes:
+      - shared_data:/usr/share/dootask
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
       - ./docker/php/php.conf:/etc/supervisor/conf.d/php.conf
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
@@ -48,6 +49,8 @@ services:
   redis:
     container_name: "dootask-redis-${APP_ID}"
     image: "redis:alpine"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -220,7 +223,7 @@ services:
     container_name: "dootask-search-${APP_ID}"
     image: "public.ecr.aws/zinclabs/zincsearch:0.4.10"
     volumes:
-      - ./docker/search/zincsearch:/data
+      - search_data:/data
     environment:
       ZINC_DATA_PATH: "/data"
       ZINC_FIRST_ADMIN_USER: "${DB_USERNAME}"
@@ -242,3 +245,11 @@ networks:
       config:
         - subnet: "${APP_IPPR}.0/24"
           gateway: "${APP_IPPR}.1"
+
+volumes:
+  shared_data:
+    name: "dootask-shared-data-${APP_ID}"
+  redis_data:
+    name: "dootask-redis-data-${APP_ID}"
+  search_data:
+    name: "dootask-search-data-${APP_ID}"
