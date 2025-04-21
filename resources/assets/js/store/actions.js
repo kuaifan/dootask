@@ -1012,7 +1012,10 @@ export default {
     logout({state, dispatch}, appendFrom = true) {
         return new Promise(async resolve => {
             try {
-                await dispatch("call", "users/logout")
+                await dispatch("call", {
+                    url: "users/logout",
+                    timeout: 6000
+                })
             } catch (e) {
                 console.log(e);
             }
