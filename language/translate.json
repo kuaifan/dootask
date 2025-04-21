@@ -29686,5 +29686,41 @@
         "fr": "L'appareil n'existe pas ou a été supprimé",
         "id": "Perangkat tidak ada atau telah dihapus",
         "ru": "Устройство не существует или было удалено"
+    },
+    {
+        "key": "按工作流",
+        "zh": "",
+        "zh-CHT": "按工作流",
+        "en": "By workflow",
+        "ko": "작업 흐름에 따라",
+        "ja": "ワークフローによる",
+        "de": "Nach Arbeitsablauf",
+        "fr": "Par flux de travail",
+        "id": "Menurut alur kerja",
+        "ru": "По рабочему процессу"
+    },
+    {
+        "key": "按状态",
+        "zh": "",
+        "zh-CHT": "按狀態",
+        "en": "By status",
+        "ko": "상태별로",
+        "ja": "ステータスによる",
+        "de": "Nach Status",
+        "fr": "Par statut",
+        "id": "Menurut status",
+        "ru": "По статусу"
+    },
+    {
+        "key": "删除附件：(%T1)",
+        "zh": "",
+        "zh-CHT": "刪除附件：(%T1)",
+        "en": "Delete attachment: (%T1)",
+        "ko": "첨부 파일 삭제: (%T1)",
+        "ja": "添付ファイルを削除: (%T1)",
+        "de": "Anhang löschen: (%T1)",
+        "fr": "Supprimer la pièce jointe : (%T1)",
+        "id": "Hapus lampiran: (%T1)",
+        "ru": "Удалить вложение: (%T1)"
     }
 ]

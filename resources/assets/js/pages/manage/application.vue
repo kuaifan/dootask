@@ -59,9 +59,9 @@
                             </div>
                             <div class="modal-item-info">
                                 <div class="modal-item-name">
-                                    <h4>{{ item.name }}</h4>
+                                    <h4 class="user-select-auto">{{ item.name }}</h4>
                                 </div>
-                                <div class="modal-item-mybot">
+                                <div class="modal-item-mybot user-select-auto">
                                     <p><span>ID:</span>{{item.id}}</p>
                                     <p><span>{{$L('清理时间')}}:</span>{{item.clear_day}}</p>
                                     <p><span>Webhook:</span>{{item.webhook_url || '-'}}</p>
