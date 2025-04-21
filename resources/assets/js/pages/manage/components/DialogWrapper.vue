@@ -1313,19 +1313,23 @@ export default {
         },
 
         dialogMsgTransfer: {
-            handler({time, msgFile, msgRecord, msgText, dialogId}) {
-                if (time > $A.dayjs().unix() && dialogId == this.dialogId) {
-                    this.$store.state.dialogMsgTransfer.time = 0;
-                    this.$nextTick(() => {
-                        if ($A.isArray(msgFile) && msgFile.length > 0) {
-                            this.sendFileMsg(msgFile);
-                        } else if ($A.isJson(msgRecord) && msgRecord.duration > 0) {
-                            this.sendRecord(msgRecord);
-                        } else if (msgText) {
-                            this.sendMsg(msgText);
-                        }
-                    });
+            handler({time, msgFile, msgRecord, msgText, sendType, dialogId}) {
+                if (time < $A.dayjs().unix()) {
+                    return
                 }
+                if (dialogId != this.dialogId) {
+                    return;
+                }
+                this.$store.state.dialogMsgTransfer.time = 0;
+                this.$nextTick(() => {
+                    if ($A.isArray(msgFile) && msgFile.length > 0) {
+                        this.sendFileMsg(msgFile);
+                    } else if ($A.isJson(msgRecord) && msgRecord.duration > 0) {
+                        this.sendRecord(msgRecord);
+                    } else if (msgText) {
+                        this.sendMsg(msgText, sendType);
+                    }
+                });
             },
             immediate: true
         },
@@ -1537,11 +1541,10 @@ export default {
             if (typeof text === "string" && text) {
                 textBody = text;
             } else {
-                textBody = this.msgText;
+                textBody = type === "md" ? this.$refs.input.getText() : this.msgText;
                 emptied = true;
             }
             if (type === "md") {
-                textBody = this.$refs.input.getText()
                 textType = "md"
             } else if (type === "silence") {
                 silence = "yes"
@@ -2256,10 +2259,6 @@ export default {
                 }, 150);
             } else {
                 if (e.dataTransfer.effectAllowed === 'move') {
-                    return;
-                }
-                const postFiles = Array.prototype.slice.call(e.dataTransfer.files);
-                if (postFiles.length === 0) {
                     return;
                 }
                 this.dialogDrag = true;

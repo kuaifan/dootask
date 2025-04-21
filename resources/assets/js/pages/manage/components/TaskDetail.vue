@@ -427,7 +427,7 @@
                         </div>
                     </div>
                     <div class="menu">
-                        <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onSend('open')">
+                        <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onOpen">
                             <div v-if="openLoad > 0" class="menu-load"><Loading/></div>
                             {{$L('任务聊天')}}
                             <em>({{taskDetail.msg_num > 999 ? '999+' : taskDetail.msg_num}})</em>
@@ -455,7 +455,6 @@
                             :loading="sendLoad > 0"
                             :maxlength="200000"
                             :placeholder="$L('输入消息...')"
-                            :send-menu="false"
                             @on-focus="onFocus"
                             @on-more="onEventMore"
                             @on-file="onSelectFile"
@@ -1617,17 +1616,17 @@ export default {
             this.$refs.upload.handleClick()
         },
 
-        msgDialog(msgText = null, onlyOpen = false) {
+        msgDialog(sendType = null) {
             if (this.sendLoad > 0 || this.openLoad > 0) {
                 return;
             }
             //
             if (this.taskDetail.dialog_id) {
-                this.openDialogBefore(this.taskDetail.dialog_id, msgText, onlyOpen)
+                this.openDialogBefore(this.taskDetail.dialog_id, sendType)
                 return;
             }
             //
-            if (onlyOpen === true) {
+            if (sendType === true) {
                 this.openLoad++;
             } else {
                 this.sendLoad++;
@@ -1641,11 +1640,11 @@ export default {
             }).then(async ({data}) => {
                 await this.$store.dispatch("saveTask", {id: data.id, dialog_id: data.dialog_id});
                 await this.$store.dispatch("saveDialog", data.dialog_data);
-                await this.openDialogBefore(data.dialog_id, msgText, onlyOpen)
+                this.openDialogBefore(data.dialog_id, sendType)
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
-                if (onlyOpen === true) {
+                if (sendType === true) {
                     this.openLoad--;
                 } else {
                     this.sendLoad--;
@@ -1653,62 +1652,34 @@ export default {
             });
         },
 
-        async openDialogBefore(dialogId, msgText, onlyOpen) {
+        openDialogBefore(dialogId, sendType) {
+            if (sendType !== true) {
+                const transferData = {
+                    time: $A.dayjs().unix() + 10,
+                    msgRecord: this.msgRecord,
+                    msgFile: this.msgFile,
+                    msgText: sendType === 'md' ? this.$refs.chatInput?.getText() : this.msgText,
+                    sendType,
+                    dialogId,
+                };
+                this.msgRecord = {};
+                this.msgFile = [];
+                this.msgText = "";
+                this.$store.state.dialogMsgTransfer = transferData
+                this.$store.dispatch("saveDialogDraft", {id: `t_${this.taskId}`, content: ""})
+            }
+
             if ($A.isSubElectron) {
-                await this.resizeDialog()
-                this.sendDialogMsg(msgText);
+                this.resizeDialog()
                 return
             }
-            this.$nextTick(() => {
-                if (this.windowPortrait) {
-                    const openSuccess = () => {
-                        const transferData = {
-                            time: $A.dayjs().unix() + 10,
-                            msgRecord: this.msgRecord,
-                            msgFile: this.msgFile,
-                            msgText: typeof msgText === 'string' && msgText ? msgText : this.msgText,
-                            dialogId,
-                        };
-                        this.msgRecord = {};
-                        this.msgFile = [];
-                        this.msgText = "";
-                        this.$store.state.dialogMsgTransfer = transferData
-                    }
-                    this.$store.dispatch('openDialog', dialogId).then(_ => {
-                        !onlyOpen && openSuccess()
-                    }).catch(({msg}) => {
-                        $A.modalError(msg);
-                    })
-                    $A.eeuiAppKeyboardHide();
-                } else {
-                    this.sendDialogMsg(msgText);
-                }
-            });
-        },
 
-        sendDialogMsg(msgText = null) {
-            if (typeof msgText === 'string' && msgText) {
-                this.autoSaveTextDraft();
-                this.$refs.dialog.sendMsg(msgText);
-            } else if (this.msgFile.length > 0) {
-                this.autoSaveTextDraft();
-                this.$refs.dialog.sendFileMsg(this.msgFile.map(file => Object.assign(file, {
-                    ajaxExtraData: {
-                        image_attachment: this.imageAttachment ? 1 : 0
-                    }
-                })));
-            } else if (this.msgText) {
-                this.$refs.dialog.sendMsg(this.msgText);
+            if (this.windowPortrait) {
+                this.$store.dispatch('openDialog', dialogId).catch(({msg}) => {
+                    $A.modalError(msg);
+                })
+                $A.eeuiAppKeyboardHide();
             }
-            this.msgFile = [];
-            this.msgText = "";
-        },
-
-        autoSaveTextDraft() {
-            if (!this.msgText) {
-                return;
-            }
-            this.$store.dispatch("saveDialogDraft", {id: this.taskDetail.dialog_id, content: this.msgText})
         },
 
         taskPasteDrag(e, type) {
@@ -1752,13 +1723,17 @@ export default {
             this.msgDialog()
         },
 
-        onSend(msgText) {
+        onOpen() {
             this.$refs.chatInput?.hidePopover();
-            if (msgText === 'open') {
-                this.msgDialog(null, true);
-            } else {
-                this.msgDialog(msgText);
+            this.msgDialog(true);
+        },
+
+        onSend(text, type) {
+            this.$refs.chatInput?.hidePopover();
+            if (typeof text === "string" && text) {
+                this.msgText = text;
             }
+            this.msgDialog(type);
         },
 
         deleteFile(file) {
