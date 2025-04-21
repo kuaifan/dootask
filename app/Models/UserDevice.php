@@ -129,11 +129,35 @@ class UserDevice extends AbstractModel
 
         if (preg_match("/android_kuaifan_eeui/i", $ua)) {
             // Android 客户端
-            $result['app_type'] = 'Android';
+            if ($dd->getBrandName() && $dd->getModel()) {
+                // 厂商+型号
+                $result['app_type'] = $dd->getBrandName() . ' ' . $dd->getModel();
+            } elseif ($dd->getBrandName()) {
+                // 仅厂商
+                $result['app_type'] = $dd->getBrandName();
+            } elseif ($dd->isTablet()) {
+                // 平板
+                $result['app_type'] = 'Tablet';
+            } elseif ($dd->isPhablet()) {
+                // 平板
+                $result['app_type'] = 'Phablet';
+            } else {
+                // 未确定的 Android 设备
+                $result['app_type'] = 'Android';
+            }
             $result['app_version'] = self::getAfterVersion($ua, 'kuaifan_eeui/');
         } elseif (preg_match("/ios_kuaifan_eeui/i", $ua)) {
             // iOS 客户端
-            $result['app_type'] = 'iOS';
+            if (preg_match("/(macintosh|ipad)/i", $ua)) {
+                // iPad
+                $result['app_type'] = 'iPad';
+            } elseif (preg_match("/iphone/i", $ua)) {
+                // iPhone
+                $result['app_type'] = 'iPhone';
+            } else {
+                // 未确定的 iOS 设备
+                $result['app_type'] = 'iOS';
+            }
             $result['app_version'] = self::getAfterVersion($ua, 'kuaifan_eeui/');
         } elseif (preg_match("/dootask/i", $ua)) {
             // DooTask 客户端
