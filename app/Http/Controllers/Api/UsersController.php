@@ -1202,27 +1202,32 @@ class UsersController extends AbstractController
         }
         //
         $user = User::auth();
-        $version = $data['appVersion'] ? ($data['appVersionName'] . " ({$data['appVersion']})") : '';
-        $isNotified = trim($data['isNotified']) === 'true' || $data['isNotified'] === true ? 1 : intval($data['isNotified']);
         $inArray = [
             'userid' => $user->userid,
             'alias' => $data['alias'],
             'platform' => Base::platform(),
         ];
-        $upArray = [
+        $version = $data['appVersion'] ? ($data['appVersionName'] . " ({$data['appVersion']})") : '';
+        $isNotified = trim($data['isNotified']) === 'true' || $data['isNotified'] === true ? 1 : intval($data['isNotified']);
+        $row = UmengAlias::where($inArray);
+        if ($row->exists()) {
+            $row->update([
+                'ua' => $data['userAgent'],
+                'device' => $data['deviceModel'],
+                'device_hash' => UserDevice::check(),
+                'version' => $version,
+                'is_notified' => $isNotified,
+                'updated_at' => Carbon::now()
+            ]);
+            return Base::retSuccess('别名已存在');
+        }
+        $row = UmengAlias::createInstance(array_merge($inArray, [
             'ua' => $data['userAgent'],
             'device' => $data['deviceModel'],
             'device_hash' => UserDevice::check(),
             'version' => $version,
             'is_notified' => $isNotified,
-        ];
-        $row = UmengAlias::where($inArray);
-        if ($row->exists()) {
-            $upArray['updated_at'] = Carbon::now();
-            $row->update($upArray);
-            return Base::retSuccess('别名已存在');
-        }
-        $row = UmengAlias::createInstance(array_merge($inArray, $upArray));
+        ]));
         if ($row->save()) {
             return Base::retSuccess('添加成功');
         } else {

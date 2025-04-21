@@ -16,7 +16,6 @@ use Hedeqiang\UMeng\IOS;
  * @property string|null $platform 平台类型
  * @property string|null $device 设备类型
  * @property string|null $device_hash 设备哈希值，用于关联UserDevice表
- * @property string|null $user_lang 用户语言
  * @property string|null $version 应用版本号
  * @property string|null $ua userAgent
  * @property int|null $is_notified 通知权限
@@ -40,7 +39,6 @@ use Hedeqiang\UMeng\IOS;
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias wherePlatform($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereUa($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereUserLang($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereVersion($value)
  * @mixin \Eloquent
