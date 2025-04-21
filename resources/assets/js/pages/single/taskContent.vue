@@ -1,5 +1,5 @@
 <template>
-    <div class="file-preview">
+    <div class="single-task-content">
         <PageTitle :title="pageName"/>
         <Loading v-if="loadIng > 0"/>
         <div v-else-if="info" class="file-preview">
@@ -20,8 +20,10 @@
 </template>
 
 <style lang="scss" scoped>
-.file-preview {
-    border-radius: 0;
+.single-task-content {
+    .file-preview {
+        border-radius: 0;
+    }
 }
 </style>
 <script>
