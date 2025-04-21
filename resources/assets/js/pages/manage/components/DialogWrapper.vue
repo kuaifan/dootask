@@ -307,7 +307,7 @@
                 transferClassName="dialog-wrapper-operate"
                 transfer>
                 <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
-                <DropdownMenu slot="list">
+                <DropdownMenu slot="list" v-resize-observer="handleOperateResize">
                     <template v-if="!operateItem.created_at">
                         <DropdownItem name="action">
                             <ul class="operate-action cancel">
@@ -661,6 +661,7 @@ import DialogComplaint from "./DialogComplaint";
 import touchclick from "../../../directives/touchclick";
 import longpress from "../../../directives/longpress";
 import TransferDom from "../../../directives/transfer-dom";
+import resizeObserver from "../../../directives/resize-observer";
 import {languageList} from "../../../language";
 import {isLocalResourcePath} from "../../../components/Replace/utils";
 import emitter from "../../../store/events";
@@ -686,7 +687,7 @@ export default {
         DialogGroupVote,
         DialogComplaint,
     },
-    directives: {touchclick, longpress, TransferDom},
+    directives: {touchclick, longpress, TransferDom, resizeObserver},
 
     props: {
         dialogId: {
@@ -3184,11 +3185,17 @@ export default {
                 y: this.operateItem.clientY
             };
             if (this.operateVisible) {
+                this.handleOperateResize()
+            } else {
+                this.operateVisible = true;
+            }
+        },
+
+        handleOperateResize() {
+            if (this.operateVisible) {
                 try {
                     this.$refs.operate.$refs.drop.popper.update()
                 } catch (e) {}
-            } else {
-                this.operateVisible = true;
             }
         },
 
