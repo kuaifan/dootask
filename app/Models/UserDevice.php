@@ -210,7 +210,7 @@ class UserDevice extends AbstractModel
         $row = self::whereHash($hash)->first();
         if ($row) {
             // 判断是否过期
-            if (Carbon::parse($row->expired_at)->isPast()) {
+            if ($row->expired_at && Carbon::parse($row->expired_at)->isPast()) {
                 self::forget($row);
                 return null;
             }
@@ -237,11 +237,11 @@ class UserDevice extends AbstractModel
         if (empty($token)) {
             $token = Doo::userToken();
             $userid = Doo::userId();
-            $expiredAt = Doo::userExpiredAt() ?: null;
+            $expiredAt = Doo::userExpiredAt();
         } else {
             $info = Doo::tokenDecode($token);
             $userid = $info['userid'] ?? 0;
-            $expiredAt = $info['expired_at'] ?? null;
+            $expiredAt = $info['expired_at'];
         }
         $deviceData = [
             'detail' => Base::array2json(self::getDeviceInfo($_SERVER['HTTP_USER_AGENT'] ?? '')),

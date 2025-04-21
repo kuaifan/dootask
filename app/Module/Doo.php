@@ -181,12 +181,12 @@ class Doo
 
     /**
      * token过期时间（来自请求的token）
-     * @return string
+     * @return string|null
      */
-    public static function userExpiredAt(): string
+    public static function userExpiredAt(): ?string
     {
         $expiredAt = self::string(self::doo()->userExpiredAt());
-        return $expiredAt === 'forever' ? '' : $expiredAt;
+        return $expiredAt === 'forever' ? null : $expiredAt;
     }
 
     /**
@@ -263,7 +263,9 @@ class Doo
      */
     public static function tokenDecode($token): array
     {
-        return Base::json2array(self::string(self::doo()->tokenDecode($token)));
+        $array = Base::json2array(self::string(self::doo()->tokenDecode($token)));
+        $array['expired_at'] = $array['expired_at'] === 'forever' ? null : $array['expired_at'];
+        return $array;
     }
 
     /**
