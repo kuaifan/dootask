@@ -83,11 +83,11 @@ export default {
             return 'web';
         },
 
-        getName({app_type, browser}) {
+        getName({app_type, app_name, browser}) {
             if (/web/i.test(app_type)) {
                 return browser + " " + this.$L("浏览器")
             }
-            return app_type + " " + this.$L("客户端")
+            return (app_name || app_type) + " " + this.$L("客户端")
         },
 
         onLogout(device) {
