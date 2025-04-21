@@ -1783,6 +1783,13 @@ class ProjectController extends AbstractController
         //
         ProjectPermission::userTaskPermission(Project::userProject($task->project_id), ProjectPermission::TASK_REMOVE, $task);
         //
+        $task->addLog('删除附件：' . $file->name, [
+            'file_id' => $file->id,
+            'name' => $file->name,
+            'size' => $file->size,
+            'path' => $file->getRawOriginal('path'),
+            'thumb' => $file->getRawOriginal('thumb'),
+        ]);
         $task->pushMsg('filedelete', $file);
         $file->delete();
         //
