@@ -379,7 +379,6 @@ class WebSocketDialogMsg extends AbstractModel
             'dialog_id' => $this->dialog_id,
         ];
         $dialog = WebSocketDialog::find($this->dialog_id);
-        $dialog->pushMsg('update', $upData);
         //
         $retData = [
             'add' => [],
@@ -426,6 +425,7 @@ class WebSocketDialogMsg extends AbstractModel
             }
         }
         //
+        $dialog->pushMsg('update', $upData);
         return Base::retSuccess($this->todo ? '设置成功' : '取消成功', $retData);
     }
 
