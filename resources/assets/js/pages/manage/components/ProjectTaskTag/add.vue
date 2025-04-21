@@ -51,7 +51,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import {getLanguage} from "../../../../language";
+import {languageName} from "../../../../language";
 import {systemTags} from "./utils";
 import Tags from "./tags.vue";
 
@@ -160,8 +160,7 @@ export default {
         },
 
         onSystemTag() {
-            const lang = getLanguage()
-            this.systemTagData = typeof systemTags[lang] === "undefined" ? systemTags['en'] : systemTags[lang]
+            this.systemTagData = typeof systemTags[languageName] === "undefined" ? systemTags['en'] : systemTags[languageName]
             this.systemTagShow = true
         },
 

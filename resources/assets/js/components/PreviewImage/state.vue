@@ -5,7 +5,7 @@
 <script>
 import {mapState} from "vuex";
 import PreviewImage from "./index";
-import {getLanguage} from "../../language";
+import {languageName} from "../../language";
 
 export default {
     name: 'PreviewImageState',
@@ -83,7 +83,7 @@ export default {
             } else if ($A.isElectron) {
                 this.$Electron.sendMessage('openMediaViewer', {
                     type: 'video',
-                    lang: getLanguage(),
+                    lang: languageName,
                     video: path,
                 })
             }
@@ -99,7 +99,7 @@ export default {
             } else if ($A.isElectron) {
                 this.$Electron.sendMessage('openMediaViewer', {
                     type: 'image',
-                    lang: getLanguage(),
+                    lang: languageName,
                     currentIndex: index,
                     images: paths,
                 })

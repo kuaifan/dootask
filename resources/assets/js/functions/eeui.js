@@ -1,7 +1,7 @@
 /**
  * EEUI App 专用
  */
-import {getLanguage} from "../language";
+import {languageName} from "../language";
 
 (function (window) {
     const $ = window.$A;
@@ -325,12 +325,11 @@ import {getLanguage} from "../language";
 
         // 获取当前语言
         eeuiAppConvertLanguage() {
-            const lang = getLanguage();
             const specialMappings = {
                 "zh": "zh-Hans",
                 "zh-CHT": "zh-Hant"
             };
-            return specialMappings[lang] || lang;
+            return specialMappings[languageName] || languageName;
         }
     });
 

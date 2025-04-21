@@ -97,6 +97,7 @@ import {mapState} from "vuex";
 import emitter from "./store/events";
 import SearchBox from "./components/SearchBox.vue";
 import UserDetail from "./pages/manage/components/UserDetail.vue";
+import {languageName} from "./language";
 
 export default {
     mixins: [ctrlPressed],
@@ -212,6 +213,7 @@ export default {
                             apiUrl: $A.apiUrl(''),
                             userid: this.userId,
                             token: this.userToken,
+                            language: languageName,
                             userAgent: window.navigator.userAgent,
                         });
                         this.umengAliasTimer = setTimeout(_ => {

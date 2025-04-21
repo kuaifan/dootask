@@ -104,7 +104,7 @@
 import {mapState} from 'vuex'
 import VMPreviewNostyle from "../../../../components/VMEditor/nostyle.vue";
 import AllTaskTemplates from "./templates";
-import {getLanguage} from "../../../../language";
+import {languageName} from "../../../../language";
 
 export default {
     name: 'ProjectTaskTemplate',
@@ -285,8 +285,7 @@ export default {
         },
 
         onSystemTemplate() {
-            const lang = getLanguage()
-            this.systemTemplateData = typeof AllTaskTemplates[lang] === "undefined" ? AllTaskTemplates['en'] : AllTaskTemplates[lang]
+            this.systemTemplateData = typeof AllTaskTemplates[languageName] === "undefined" ? AllTaskTemplates['en'] : AllTaskTemplates[languageName]
             this.systemTemplateShow = true
         },
 

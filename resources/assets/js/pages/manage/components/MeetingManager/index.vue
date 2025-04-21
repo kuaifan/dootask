@@ -128,7 +128,7 @@ import DragBallComponent from "../../../../components/DragBallComponent";
 import UserSelect from "../../../../components/UserSelect.vue";
 import emitter from "../../../../store/events";
 import {getErrorMessage} from "./utils";
-import {getLanguage} from "../../../../language";
+import {languageName} from "../../../../language";
 
 export default {
     name: "MeetingManager",
@@ -620,7 +620,7 @@ export default {
                     console.error(error)
                     $A.modalError({
                         language: false,
-                        content: getErrorMessage(error.code, getLanguage()) || this.$L("会议组件加载失败！"),
+                        content: getErrorMessage(error.code, languageName) || this.$L("会议组件加载失败！"),
                         onOk: this.onBeforeClose
                     });
                 }
@@ -660,7 +660,7 @@ export default {
             } catch (e) {
                 $A.modalError({
                     language: false,
-                    content: getErrorMessage(e.code, getLanguage()) || this.$L("开启麦克风失败！"),
+                    content: getErrorMessage(e.code, languageName) || this.$L("开启麦克风失败！"),
                 });
             } finally {
                 this.audioLoad = false;
@@ -686,7 +686,7 @@ export default {
             } catch (e) {
                 $A.modalError({
                     language: false,
-                    content: getErrorMessage(e.code, getLanguage()) || this.$L("开启摄像头失败！"),
+                    content: getErrorMessage(e.code, languageName) || this.$L("开启摄像头失败！"),
                 });
             } finally {
                 this.videoLoad = false;
