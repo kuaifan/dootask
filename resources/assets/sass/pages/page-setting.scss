@@ -386,6 +386,14 @@
                     width: 20px;
                     height: 20px;
 
+                    &.phone {
+                        background-image: url("../images/device/phone.svg");
+                    }
+
+                    &.tablet {
+                        background-image: url("../images/device/tablet.svg");
+                    }
+
                     &.android {
                         background-image: url("../images/device/android.svg");
                     }

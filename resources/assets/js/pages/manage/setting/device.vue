@@ -67,11 +67,20 @@ export default {
             })
         },
 
-        getIcon({app_type}) {
+        getIcon({app_type, app_name}) {
             if (/ios/i.test(app_type)) {
+                if (/ipad/i.test(app_name)) {
+                    return 'tablet';
+                }
+                if (/iphone/i.test(app_name)) {
+                    return 'phone';
+                }
                 return 'apple';
             }
             else if (/android/i.test(app_type)) {
+                if (/(tablet|phablet)/i.test(app_name)) {
+                    return 'tablet';
+                }
                 return 'android';
             }
             else if (/mac/i.test(app_type)) {
