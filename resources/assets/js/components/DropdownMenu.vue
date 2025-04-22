@@ -58,9 +58,7 @@ export default {
     },
 
     beforeDestroy() {
-        if (this.scrollTarget) {
-            this.scrollTarget.removeEventListener('scroll', this.handlerEventListeners);
-        }
+        this.removeEventListeners()
     },
 
     computed: {
@@ -117,6 +115,12 @@ export default {
             };
             this.updatePopper();
         },
+
+        visible(v) {
+            if (!v) {
+                this.removeEventListeners()
+            }
+        }
     },
 
     methods: {
@@ -159,6 +163,13 @@ export default {
             }
             this.scrollTarget = target;
             this.scrollTarget.addEventListener('scroll', this.handlerEventListeners);
+        },
+
+        removeEventListeners() {
+            if (this.scrollTarget) {
+                this.scrollTarget.removeEventListener('scroll', this.handlerEventListeners);
+                this.scrollTarget = null;
+            }
         },
 
         handlerEventListeners(e) {

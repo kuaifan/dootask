@@ -146,6 +146,9 @@ export default {
         },
 
         onBack() {
+            // 通用菜单
+            this.$store.commit('menu/operation', {})
+
             // 微应用通知
             let microAppIsAccept = false;
             microApp.setGlobalData({
@@ -161,10 +164,13 @@ export default {
             if (microAppIsAccept) {
                 return;
             }
-            //
+
+            // 移除模态框
             if (this.$Modal.removeLast()) {
                 return;
             }
+
+            // 文件浏览器
             if (this.routeName === 'manage-file') {
                 if (this.fileFolderId > 0) {
                     const file = this.fileLists.find(({id, permission}) => id == this.fileFolderId && permission > -1)
@@ -181,6 +187,8 @@ export default {
                 this.goForward({name: 'manage-application'}, true);
                 return;
             }
+
+            // 消息页搜索
             if (this.routeName === 'manage-messenger') {
                 if (this.$route.params.dialogAction === 'contacts') {
                     if (this.messengerSearchKey.contacts) {

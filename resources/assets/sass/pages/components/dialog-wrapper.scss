@@ -374,7 +374,7 @@
                 left: 0;
                 right: 0;
                 bottom: 1px;
-                z-index: 2;
+                z-index: 3;
                 background-color: #ffffff;
                 display: flex;
                 align-items: center;
@@ -757,6 +757,10 @@
                         display: flex;
                         align-items: flex-start;
                         position: relative;
+
+                        p {
+                            word-break: break-all;
+                        }
 
                         a,
                         img {

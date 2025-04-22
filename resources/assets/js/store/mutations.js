@@ -296,6 +296,6 @@ export default {
 
     // 通用菜单
     'menu/operation': function(state, data) {
-        state.menuOperation = data
+        state.menuOperation = data || {}
     },
 }
