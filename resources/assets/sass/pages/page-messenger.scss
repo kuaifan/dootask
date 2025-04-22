@@ -14,15 +14,6 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            &:after {
-                content: "";
-                position: absolute;
-                top: 0;
-                right: 0;
-                height: 100%;
-                width: 1px;
-                background-color: #f4f5f5;
-            }
             .messenger-search {
                 display: flex;
                 align-items: center;
@@ -562,6 +553,16 @@
             height: 100%;
             display: flex;
             position: relative;
+            &:before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 1px;
+                background-color: #f4f5f5;
+                z-index: 2;
+            }
             .msg-dialog-bg {
                 position: absolute;
                 top: 0;
@@ -660,9 +661,6 @@ body.window-portrait {
                 max-width: none;
                 background-color: #ffffff;
                 z-index: 48;
-                &:after {
-                    display: none;
-                }
                 .messenger-search {
                     background-color: #f8f8f8;
                     .search-wrapper {

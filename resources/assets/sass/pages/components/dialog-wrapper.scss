@@ -759,7 +759,8 @@
                         position: relative;
 
                         p {
-                            word-break: break-all;
+                            word-break: keep-all;
+                            overflow-wrap: break-word;
                         }
 
                         a,
