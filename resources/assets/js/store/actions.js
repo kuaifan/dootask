@@ -3823,12 +3823,12 @@ export default {
     },
 
     /**
-     * 消息流
+     * 消息流订阅
      * @param state
      * @param dispatch
      * @param streamUrl
      */
-    streamDialogMsg({state, dispatch}, streamUrl) {
+    streamMsgSubscribe({state, dispatch}, streamUrl) {
         if (!/^https?:\/\//i.test(streamUrl)) {
             streamUrl = $A.mainUrl(streamUrl.substring(1))
         }
@@ -3841,11 +3841,11 @@ export default {
                 case 'append':
                 case 'replace':
                     const data = $A.jsonParse(e.data);
-                    emitter.emit('dialogMsgChange', {
+                    dispatch("streamMsgData", {
                         type,
                         id: e.lastEventId,
                         text: data.content
-                    });
+                    })
                     break;
 
                 case 'done':
@@ -3861,6 +3861,16 @@ export default {
         if (state.dialogSseList.length > 10) {
             state.dialogSseList.shift().sse.close()
         }
+    },
+
+    /**
+     * 消息流数据
+     * @param state
+     * @param data
+     */
+    streamMsgData({state}, data) {
+        $A.syncDispatch("streamMsgData", data)
+        emitter.emit('streamMsgData', data);
     },
 
     /**
@@ -4155,7 +4165,10 @@ export default {
                     break
 
                 case "msgStream":
-                    dispatch("streamDialogMsg", msgDetail.stream_url);
+                    if ($A.isSubElectron) {
+                        return
+                    }
+                    dispatch("streamMsgSubscribe", msgDetail.stream_url);
                     break
 
                 default:

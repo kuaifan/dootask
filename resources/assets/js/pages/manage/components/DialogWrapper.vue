@@ -842,7 +842,7 @@ export default {
 
     mounted() {
         emitter.on('websocketMsg', this.onWebsocketMsg);
-        emitter.on('dialogMsgChange', this.onMsgChange);
+        emitter.on('streamMsgData', this.onMsgChange);
         this.keepInterval = setInterval(this.keepIntoInput, 1000)
         this.windowTouch && document.addEventListener('selectionchange', this.onSelectionchange);
     },
@@ -850,7 +850,7 @@ export default {
     beforeDestroy() {
         this.windowTouch && document.removeEventListener('selectionchange', this.onSelectionchange);
         clearInterval(this.keepInterval);
-        emitter.off('dialogMsgChange', this.onMsgChange);
+        emitter.off('streamMsgData', this.onMsgChange);
         emitter.off('websocketMsg', this.onWebsocketMsg);
         this.generateUnreadData(this.dialogId)
         //
