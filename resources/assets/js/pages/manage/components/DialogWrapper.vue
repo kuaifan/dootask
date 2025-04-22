@@ -2005,21 +2005,32 @@ export default {
             this.msgChangeCache[load] = true
 
             try {
-                const data = arr.shift()
-                if (!data) {
+                if (arr.length === 0) {
                     this.msgChangeCache[load] = false
                     return
                 }
 
-                const {type, text} = data
                 const {tail} = this.scrollInfo()
-                if (type === 'append') {
-                    msg.text += text
-                } else if (type === 'replace') {
-                    msg.text = text
-                }
 
-                const curText = msg.text
+                const getBatchSize = (length) => {
+                    if (length <= 5) return 1;       // 少量消息时逐个处理
+                    else if (length <= 20) return 2; // 适中数量时一次处理2个
+                    else if (length <= 50) return 5; // 较多消息时一次处理5个
+                    else return 10;                  // 大量消息时一次处理10个
+                }
+                const batch = arr.splice(0, getBatchSize(arr.length));
+
+                let finalText = msg.text;
+                for (const data of batch) {
+                    const {type, text} = data;
+                    if (type === 'append') {
+                        finalText += text;
+                    } else if (type === 'replace') {
+                        finalText = text;
+                    }
+                }
+                msg.text = finalText;
+
                 this.$nextTick(_ => {
                     if (tail <= 10 && tail != this.scrollInfo().tail) {
                         this.operatePreventScroll++
@@ -2033,7 +2044,7 @@ export default {
                     }
                     setTimeout(_ => {
                         this.msgChangeCache[load] = false
-                        curText === msg.text && this.onMsgOutput(id, msg)
+                        finalText === msg.text && this.onMsgOutput(id, msg)
                     }, 5)
                 })
             } catch (e) {
