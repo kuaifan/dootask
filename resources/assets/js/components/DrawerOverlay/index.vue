@@ -9,7 +9,7 @@
         :transition-names="[$A.isAndroid() ? '' : `drawer-slide-${transitionName}`, '']"
         :beforeClose="beforeClose"
         fullscreen
-        :class-name="modalClass">
+        :class-name="className">
         <div v-if="isFullscreen" class="overlay-body">
             <slot/>
         </div>
@@ -61,7 +61,10 @@ export default {
             type: Boolean,
             default: true
         },
-        className: {
+        drawerClass: {
+            type: String
+        },
+        modalClass: {
             type: String
         },
         beforeClose: Function
@@ -87,16 +90,22 @@ export default {
         transitionName(){
             return this.isFullscreen ? 'bottom' : this.placement
         },
-        modalClass() {
+        className() {
+            const array = []
             if (this.isFullscreen) {
-                return "common-drawer-modal"
-            }
-            if (this.className) {
-                return `common-drawer-overlay ${this.className} ${this.transitionName}`
+                array.push("common-drawer-modal")
+                if (this.modalClass) {
+                    array.push(this.modalClass)
+                }
             } else {
-                return `common-drawer-overlay ${this.transitionName}`
+                array.push("common-drawer-overlay")
+                if (this.drawerClass) {
+                    array.push(this.drawerClass)
+                }
+                array.push(this.transitionName)
             }
-        }
+            return array.join(" ");
+        },
     },
     mounted() {
         this.isFullscreen = this.windowWidth < 500  && this.placement != 'bottom'

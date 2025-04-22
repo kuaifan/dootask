@@ -2467,9 +2467,10 @@ body:not(.window-touch) {
     }
 }
 
-.dialog-wrapper-drawer-list {
-    position: absolute !important;
-    overflow: hidden !important;
+.dialog-wrapper-modal-list {
+    .ivu-modal-fullscreen {
+        background-color: #f8f8f8;
+    }
 }
 
 @keyframes head-box-loading-animation {

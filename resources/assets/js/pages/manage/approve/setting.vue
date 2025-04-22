@@ -21,7 +21,7 @@
         </Row>
 
         <!--查看所有项目-->
-        <DrawerOverlay v-model="approvalSettingShow"  placement="right" :size="1200">
+        <DrawerOverlay v-model="approvalSettingShow" placement="right" :size="1200">
             <iframe :src="iframeSrc"></iframe>
         </DrawerOverlay>
 

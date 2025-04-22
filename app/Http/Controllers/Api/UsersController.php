@@ -2555,7 +2555,7 @@ class UsersController extends AbstractController
     {
         User::auth();
         //
-        $detail = Base::json2array(Request::input('detail'));
+        $detail = Request::input();
         $detail = array_intersect_key($detail, array_flip([ 'device_name', 'app_brand', 'app_model','app_os']));
         if (empty($detail)) {
             return Base::retError('参数错误');

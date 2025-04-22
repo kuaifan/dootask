@@ -566,7 +566,7 @@
         <DrawerOverlay
             v-model="replyListShow"
             placement="right"
-            class-name="dialog-wrapper-drawer-list"
+            modal-class="dialog-wrapper-modal-list"
             :size="500">
             <DialogWrapper
                 v-if="replyListShow"
@@ -602,7 +602,7 @@
         <DrawerOverlay
             v-model="todoViewShow"
             placement="right"
-            class-name="dialog-wrapper-drawer-list"
+            modal-class="dialog-wrapper-modal-list"
             :size="500">
             <div class="dialog-wrapper inde-list">
                 <div class="dialog-nav">
