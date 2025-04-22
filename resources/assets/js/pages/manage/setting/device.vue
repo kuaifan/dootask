@@ -92,10 +92,12 @@ export default {
             return 'web';
         },
 
-        getName({app_brand, app_model, app_type, app_name, browser}) {
+        getName({app_brand, app_model, device_name, app_type, app_name, browser}) {
             const array = [];
             if (/web/i.test(app_type)) {
                 array.push(...[browser, this.$L("浏览器")]);
+            } else if (device_name) {
+                return device_name
             } else if (app_brand) {
                 array.push(...[app_brand, app_model])
             } else {

@@ -208,6 +208,7 @@ export default {
                 if (this.$isEEUiApp) {
                     this.umengAliasTimer && clearTimeout(this.umengAliasTimer)
                     if (this.userId > 0) {
+                        // 给 APP 发送初始化消息
                         $A.eeuiAppSendMessage({
                             action: 'initApp',
                             apiUrl: $A.apiUrl(''),
@@ -216,6 +217,29 @@ export default {
                             language: languageName,
                             userAgent: window.navigator.userAgent,
                         });
+
+                        // 更新设备信息
+                        $A.eeuiAppGetDeviceInfo().then(async info => {
+                            let deviceName = info.deviceName || info.modelName
+                            if (info.systemName === 'Android') {
+                                if ($A.strExists(info.modelName, info.brand)) {
+                                    deviceName = info.modelName
+                                } else {
+                                    deviceName = info.brand + ' ' + info.model
+                                }
+                            }
+                            await this.$store.dispatch("call", {
+                                url: "users/device/edit",
+                                data: {
+                                    device_name: deviceName,
+                                    app_brand: info.brand,
+                                    app_model: info.model,
+                                    app_os: info.systemName + ' ' + info.systemVersion,
+                                }
+                            })
+                        }).catch(console.log)
+
+                        // 设置友盟别名
                         this.umengAliasTimer = setTimeout(_ => {
                             this.umengAliasTimer = null;
                             $A.eeuiAppSendMessage({
@@ -224,6 +248,7 @@ export default {
                             });
                         }, 6000)
                     } else {
+                        // 删除友盟别名
                         $A.eeuiAppSendMessage({
                             action: 'delUmengAlias',
                             url: $A.apiUrl('users/umeng/alias')

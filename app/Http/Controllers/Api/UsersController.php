@@ -2541,10 +2541,11 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName device__edit
      *
-     * @apiParam {Object} detail             设备信息
-     * @apiParam {String} detail.app_brand   设备品牌
-     * @apiParam {String} detail.app_model   设备型号
-     * @apiParam {String} detail.app_os      设备操作系统
+     * @apiParam {Object} detail                    设备信息
+     * @apiParam {String} detail.device_name        设备名称
+     * @apiParam {String} detail.app_brand          设备品牌
+     * @apiParam {String} detail.app_model          设备型号
+     * @apiParam {String} detail.app_os             设备操作系统
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -2555,7 +2556,7 @@ class UsersController extends AbstractController
         User::auth();
         //
         $detail = Base::json2array(Request::input('detail'));
-        $detail = array_intersect_key($detail, array_flip(['app_brand', 'app_model', 'app_os']));
+        $detail = array_intersect_key($detail, array_flip([ 'device_name', 'app_brand', 'app_model','app_os']));
         if (empty($detail)) {
             return Base::retError('参数错误');
         }

@@ -330,6 +330,23 @@ import {languageName} from "../language";
                 "zh-CHT": "zh-Hant"
             };
             return specialMappings[languageName] || languageName;
+        },
+
+        // 获取设备信息
+        eeuiAppGetDeviceInfo() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const eeui = await $A.eeuiModulePromise();
+                    eeui.getDeviceInfo(result => {
+                        if (result.status !== 'success') {
+                            return reject({msg: result.error || "get failed"});
+                        }
+                        resolve(result);
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            })
         }
     });
 
