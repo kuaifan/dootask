@@ -2532,4 +2532,42 @@ class UsersController extends AbstractController
         //
         return Base::retSuccess('操作成功');
     }
+
+    /**
+     * @api {get} api/users/device/edit          41. 编辑设备
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName device__edit
+     *
+     * @apiParam {Object} detail             设备信息
+     * @apiParam {String} detail.app_brand   设备品牌
+     * @apiParam {String} detail.app_model   设备型号
+     * @apiParam {String} detail.app_os      设备操作系统
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function device__edit()
+    {
+        User::auth();
+        //
+        $detail = Base::json2array(Request::input('detail'));
+        $detail = array_intersect_key($detail, array_flip(['app_brand', 'app_model', 'app_os']));
+        if (empty($detail)) {
+            return Base::retError('参数错误');
+        }
+        //
+        $row = UserDevice::record();
+        if (empty($row)) {
+            return Base::retError('设备不存在或已被删除');
+        }
+        $deviceInfo = array_merge(Base::json2array($row->detail), $detail);
+        $row->detail = Base::array2json($deviceInfo);
+        $row->save();
+        //
+        return Base::retSuccess('保存成功');
+    }
 }

@@ -234,45 +234,47 @@ class UserDevice extends AbstractModel
      */
     public static function record(string $token = null): ?self
     {
-        if (empty($token)) {
-            $token = Doo::userToken();
-            $userid = Doo::userId();
-            $expiredAt = Doo::userExpiredAt();
-        } else {
-            $info = Doo::tokenDecode($token);
-            $userid = $info['userid'] ?? 0;
-            $expiredAt = $info['expired_at'];
-        }
-        $deviceData = [
-            'detail' => Base::array2json(self::getDeviceInfo($_SERVER['HTTP_USER_AGENT'] ?? '')),
-            'expired_at' => $expiredAt,
-        ];
-
-        $hash = md5($token);
-        $row = self::updateInsert([
-            'userid' => $userid,
-            'hash' => $hash,
-        ], function() use ($deviceData) {
-            if (!Request::hasHeader('version')) {
-                unset($deviceData['detail']);
+        return AbstractModel::transaction(function () use ($token) {
+            if (empty($token)) {
+                $token = Doo::userToken();
+                $userid = Doo::userId();
+                $expiredAt = Doo::userExpiredAt();
+            } else {
+                $info = Doo::tokenDecode($token);
+                $userid = $info['userid'] ?? 0;
+                $expiredAt = $info['expired_at'];
             }
-            return $deviceData;
-        }, $deviceData, $isInsert);
-        if ($isInsert) {
-            $currentDeviceCount = self::whereUserid($userid)->count();
-            if ($currentDeviceCount > self::$deviceLimit) {
+
+            $hash = md5($token);
+            $row = self::whereHash($hash)->lockForUpdate()->first();
+            if (empty($row)) {
+                // 生成一个新的设备记录
+                $row = self::createInstance([
+                    'userid' => $userid,
+                    'hash' => $hash,
+                ]);
+                if (!$row->save()) {
+                    return null;
+                }
                 // 删除多余的设备记录
-                $rows = self::whereUserid($userid)->orderBy('id')->take($currentDeviceCount - self::$deviceLimit)->get();
-                foreach ($rows as $row) {
-                    UserDevice::forget($row);
+                $currentDeviceCount = self::whereUserid($userid)->count();
+                if ($currentDeviceCount > self::$deviceLimit) {
+                    $rows = self::whereUserid($userid)->orderBy('id')->take($currentDeviceCount - self::$deviceLimit)->get();
+                    foreach ($rows as $row) {
+                        UserDevice::forget($row);
+                    }
                 }
             }
-        }
-        if ($row) {
+            $row->expired_at = $expiredAt;
+            if (Request::hasHeader('version')) {
+                $deviceInfo = array_merge(Base::json2array($row->detail), self::getDeviceInfo($_SERVER['HTTP_USER_AGENT'] ?? ''));
+                $row->detail = Base::array2json($deviceInfo);
+            }
+            $row->save();
+
             Cache::put(self::ck($hash), $row->userid, now()->addHour());
             return $row;
-        }
-        return null;
+        });
     }
 
     /**

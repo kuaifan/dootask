@@ -12,7 +12,7 @@
                     <div class="info">
                         <div class="title">
                             <span class="name">{{ getName(device.detail) }}</span>
-                            <span class="device">{{ device.detail.os }}</span>
+                            <span class="device">{{ getOs(device.detail) }}</span>
                         </div>
                         <div class="time">
                             <EPopover placement="bottom-start" trigger="click">
@@ -92,11 +92,20 @@ export default {
             return 'web';
         },
 
-        getName({app_type, app_name, browser}) {
+        getName({app_brand, app_model, app_type, app_name, browser}) {
+            const array = [];
             if (/web/i.test(app_type)) {
-                return browser + " " + this.$L("浏览器")
+                array.push(...[browser, this.$L("浏览器")]);
+            } else if (app_brand) {
+                array.push(...[app_brand, app_model])
+            } else {
+                array.push(...[app_name || app_type, this.$L("客户端")])
             }
-            return (app_name || app_type) + " " + this.$L("客户端")
+            return array.join(' ');
+        },
+
+        getOs({app_os, os}) {
+            return app_os || os;
         },
 
         onLogout(device) {
