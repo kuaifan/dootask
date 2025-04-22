@@ -28,7 +28,7 @@
                 <div class="header-user">
                     <ul>
                         <li v-for="(userid, index) in editUser" :key="index" v-if="index <= 10">
-                            <UserAvatar :userid="userid" :size="28" :border-witdh="2"/>
+                            <UserAvatar :userid="userid" :size="28" :border-width="2"/>
                         </li>
                         <li v-if="editUser.length > 10" class="more" :title="editUser.length">{{editUser.length > 999 ? '...' : editUser.length}}</li>
                     </ul>

@@ -21,7 +21,7 @@
                 :showName="showName"
                 :showStateDot="showStateDot"
                 :nameText="nameText"
-                :borderWitdh="borderWitdh"
+                :borderWidth="borderWidth"
                 :borderColor="borderColor"
                 :clickOpenDetail="clickOpenDetail"
                 :userResult="onUserResult"/>

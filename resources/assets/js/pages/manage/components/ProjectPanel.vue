@@ -13,7 +13,7 @@
                 <li class="project-avatar" :class="{'cursor-default': projectData.owner_userid !== userId}" @click="projectDropdown('user')">
                     <ul>
                         <li>
-                            <UserAvatarTip :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
+                            <UserAvatarTip :userid="projectData.owner_userid" :size="36" :borderWidth="2" :openDelay="0">
                                 <p>{{$L('项目负责人')}}</p>
                             </UserAvatarTip>
                             <Badge v-if="(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" type="normal" :overflow-count="999" :count="projectData.project_user.length"/>
@@ -25,7 +25,7 @@
                                 </ETooltip>
                             </li>
                             <li v-else>
-                                <UserAvatarTip :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
+                                <UserAvatarTip :userid="item.userid" :size="36" :borderWidth="2" :openDelay="0"/>
                             </li>
                         </template>
                     </ul>
@@ -198,7 +198,7 @@
                                         <div class="task-users">
                                             <ul>
                                                 <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu">
-                                                    <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
+                                                    <UserAvatar :userid="user.userid" size="32" :borderWidth="2" :borderColor="item.color"/>
                                                 </li>
                                                 <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
                                                     <Button type="primary" size="small" ghost @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>

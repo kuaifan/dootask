@@ -60,17 +60,17 @@ export default {
 
         boxStyle() {
             const style = {};
-            const {borderWitdh, borderColor} = this
-            if (borderWitdh > 0) {
-                style.border = borderWitdh + "px solid " + (borderColor || "#ffffff");
+            const {borderWidth, borderColor} = this
+            if (borderWidth > 0) {
+                style.border = borderWidth + "px solid " + (borderColor || "#ffffff");
             }
             return style;
         },
 
         spotStyle() {
-            let {borderWitdh, size} = this
+            let {borderWidth, size} = this
             if (size === 'default') size = 32;
-            if (borderWitdh > 0) size-= borderWitdh;
+            if (borderWidth > 0) size-= borderWidth;
             if (size == 32) {
                 return {}
             }
@@ -93,10 +93,10 @@ export default {
         },
 
         avatarSize() {
-            let {borderWitdh, size} = this
+            let {borderWidth, size} = this
             if (size === 'default') size = 32;
-            if (borderWitdh > 0) {
-                return size - borderWitdh * 2;
+            if (borderWidth > 0) {
+                return size - borderWidth * 2;
             } else {
                 return size;
             }

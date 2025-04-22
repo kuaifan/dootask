@@ -24,7 +24,7 @@ export default {
             type: String,
             default: ''   // showName = true 时有效，留空就显示会员昵称
         },
-        borderWitdh: {
+        borderWidth: {
             type: Number,
             default: 0
         },

@@ -8,7 +8,7 @@
                 {{username}}
             </div>
             <div class="meeting-avatar">
-                <UserAvatar v-if="userid" :userid="userid" :size="36" :borderWitdh="2"/>
+                <UserAvatar v-if="userid" :userid="userid" :size="36" :borderWidth="2"/>
                 <div v-else-if="tourist.userimg" class="common-avatar avatar-wrapper">
                     <div class="avatar-box online">
                         <em></em>
