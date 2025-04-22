@@ -86,7 +86,7 @@ export default {
                 min_height: 200,
                 max_height: 380,
                 contextmenu: 'checklist | bold italic underline forecolor backcolor | link | uploadImages imagePreview | history screenload',
-                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code,ol[class],ul[class],li[class]',
+                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|width],pre[class],code,ol[class],ul[class],li[class]',
                 extended_valid_elements: 'a[href|title|target=_blank]',
                 toolbar: false
             },
@@ -94,7 +94,7 @@ export default {
                 menubar: 'file edit view',
                 removed_menuitems: 'preview,print',
                 contextmenu: 'checklist | bold italic underline forecolor backcolor | link | uploadImages imagePreview | screenload',
-                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code,ol[class],ul[class],li[class]',
+                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|width],pre[class],code,ol[class],ul[class],li[class]',
                 extended_valid_elements: 'a[href|title|target=_blank]',
                 toolbar: 'uploadImages | checklist | bold italic underline | forecolor backcolor',
                 mobile: {
