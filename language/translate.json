@@ -29686,5 +29686,53 @@
         "fr": "Supprimer la pièce jointe : (%T1)",
         "id": "Hapus lampiran: (%T1)",
         "ru": "Удалить вложение: (%T1)"
+    },
+    {
+        "key": "讨论",
+        "zh": "",
+        "zh-CHT": "討論",
+        "en": "Discussion",
+        "ko": "토론",
+        "ja": "ディスカッション",
+        "de": "Diskussion",
+        "fr": "Discussion",
+        "id": "Diskusi",
+        "ru": "Обсуждение"
+    },
+    {
+        "key": "任务讨论",
+        "zh": "",
+        "zh-CHT": "任務討論",
+        "en": "Task Discussion",
+        "ko": "작업 토론",
+        "ja": "タスクディスカッション",
+        "de": "Aufgabendiskussion",
+        "fr": "Discussion de la tâche",
+        "id": "Diskusi Tugas",
+        "ru": "Обсуждение задачи"
+    },
+    {
+        "key": "项目讨论",
+        "zh": "",
+        "zh-CHT": "項目討論",
+        "en": "Project Discussion",
+        "ko": "프로젝트 토론",
+        "ja": "プロジェクトディスカッション",
+        "de": "Projektdiskussion",
+        "fr": "Discussion de projet",
+        "id": "Diskusi Proyek",
+        "ru": "Обсуждение проекта"
+    },
+    {
+        "key": "部门交流群",
+        "zh": "",
+        "zh-CHT": "部門交流群",
+        "en": "Department Group Chat",
+        "ko": "부서 그룹 채팅",
+        "ja": "部門グループチャット",
+        "de": "Abteilungsgruppenchat",
+        "fr": "Chat de groupe du département",
+        "id": "Obrolan Grup Departemen",
+        "ru": "Групповой чат отдела"
     }
 ]
