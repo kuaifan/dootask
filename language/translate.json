@@ -3996,18 +3996,6 @@
         "ru": "Задача выполнена"
     },
     {
-        "key": "任务聊天室",
-        "zh": "",
-        "zh-CHT": "任務聊天室",
-        "en": "Task chat room",
-        "ko": "작업 채팅방",
-        "ja": "タスクチャットルーム",
-        "de": "Aufgaben-Chatroom",
-        "fr": "Salle de discussion de tâche",
-        "id": "Ruang obrolan tugas",
-        "ru": "Чат-комната задачи"
-    },
-    {
         "key": "任务负责人",
         "zh": "",
         "zh-CHT": "任務負責人",
@@ -11470,18 +11458,6 @@
         "fr": "Pas dans la plage horaire valide, l'heure valide est : (%T1)",
         "id": "Tidak dalam waktu yang valid, waktu yang valid adalah: (%T1)",
         "ru": "Не в пределах допустимого времени, допустимое время: (%T1)"
-    },
-    {
-        "key": "任务聊天",
-        "zh": "",
-        "zh-CHT": "任務聊天",
-        "en": "Task Chat",
-        "ko": "작업 채팅",
-        "ja": "タスクチャット",
-        "de": "Aufgaben-Chat",
-        "fr": "Chat de tâche",
-        "id": "Obrolan Tugas",
-        "ru": "Чат задачи"
     },
     {
         "key": "项目描述",
@@ -28366,18 +28342,6 @@
         "fr": "Tâche en retard et incomplète",
         "id": "Tugas terlambat dan belum selesai",
         "ru": "Задача просрочена и не завершена"
-    },
-    {
-        "key": "打开部门群",
-        "zh": "",
-        "zh-CHT": "打開部門群",
-        "en": "Open department group",
-        "ko": "부서 그룹 열기",
-        "ja": "部門グループを開く",
-        "de": "Abteilungsgruppe öffnen",
-        "fr": "Ouvrir le groupe de département",
-        "id": "Buka grup departemen",
-        "ru": "Открыть группу отдела"
     },
     {
         "key": "群组 ID",

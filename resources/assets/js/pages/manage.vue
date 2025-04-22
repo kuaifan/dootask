@@ -172,6 +172,9 @@
                         <DropdownItem @click.native="handleTopClick">
                             {{ $L(operateItem.top_at ? '取消置顶' : '置顶该项目') }}
                         </DropdownItem>
+                        <DropdownItem @click.native="handleChatClick">
+                            {{ $L('项目讨论') }}
+                        </DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
             </div>
@@ -1192,6 +1195,12 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });
+        },
+
+        handleChatClick() {
+            this.$store.dispatch("openDialog", this.operateItem.dialog_id).catch(({msg}) => {
+                $A.modalError(msg || this.$L('打开会话失败'))
+            })
         },
 
         onTabbarClick(act) {

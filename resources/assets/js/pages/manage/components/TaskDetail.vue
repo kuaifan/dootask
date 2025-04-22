@@ -363,7 +363,7 @@
                         <Icon class="icon" type="ios-chatbubbles-outline" />
                         <div class="nav">
                             <div class="nav-item nav-chat" :class="{active:navActive=='dialog'}" @click="navActive='dialog'">
-                                {{$L('聊天')}}
+                                {{$L('讨论')}}
                                 <span v-if="msgTypes.length > 1" class="msg-type" @click.stop="openTypeClick">
                                     <i class="taskfont">&#xe740;</i>
                                     <em v-if="msgType">{{getTypeLabel(msgType)}}</em>
@@ -383,7 +383,7 @@
                 <div class="head">
                     <Icon class="icon" type="ios-chatbubbles-outline" />
                     <div class="nav">
-                        <div class="nav-item" :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</div>
+                        <div class="nav-item" :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('讨论')}}</div>
                         <div class="nav-item" :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</div>
                         <div v-if="navActive=='log'" class="refresh">
                             <Loading v-if="logLoadIng"/>
@@ -393,7 +393,7 @@
                     <div class="menu">
                         <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onOpen">
                             <div v-if="openLoad > 0" class="menu-load"><Loading/></div>
-                            {{$L('任务聊天')}}
+                            {{$L('任务讨论')}}
                             <em>({{taskDetail.msg_num > 999 ? '999+' : taskDetail.msg_num}})</em>
                             <i class="taskfont">&#xe703;</i>
                         </div>

@@ -48,7 +48,7 @@
                                     <div>{{$L('添加子部门')}}</div>
                                 </EDropdownItem>
                                 <EDropdownItem v-if="item.dialog_id" :command="`dialog_${item.dialog_id}`">
-                                    <div>{{$L('打开部门群')}}</div>
+                                    <div>{{$L('部门交流群')}}</div>
                                 </EDropdownItem>
                                 <EDropdownItem :command="`edit_${item.id}`">
                                     <div>{{$L('编辑')}}</div>
