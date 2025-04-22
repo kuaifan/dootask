@@ -309,6 +309,8 @@ import {languageList, languageName} from "../../../../language";
 import {isMarkdownFormat} from "../../../../utils/markdown";
 import emitter from "../../../../store/events";
 
+const globalRangeIndexs = {};
+
 export default {
     name: 'ChatInput',
     components: {ChatEmoji},
@@ -737,6 +739,7 @@ export default {
 
         // Reset lists
         dialogId() {
+            this.selectRange = null;
             this.userList = null;
             this.userCache = null;
             this.taskList = null;
@@ -745,6 +748,7 @@ export default {
             this.loadInputDraft()
         },
         taskId() {
+            this.selectRange = null;
             this.userList = null;
             this.userCache = null;
             this.taskList = null;
@@ -914,6 +918,12 @@ export default {
             if (!val && this.isFocus) {
                 this.isFocus = false
                 this.quill?.blur()
+            }
+        },
+
+        selectRange(range) {
+            if (range?.index) {
+                globalRangeIndexs[this.draftId] = range.index
             }
         },
     },
@@ -1311,7 +1321,10 @@ export default {
             this.$nextTick(() => {
                 const quill = this.getEditor();
                 if (quill) {
-                    quill.setSelection(quill.getLength())
+                    if (!this.selectRange?.index) {
+                        const length = quill.getLength();
+                        quill.setSelection(Math.min(globalRangeIndexs[this.draftId] || length, length));
+                    }
                     quill.focus()
                 }
             })
