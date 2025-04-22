@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.47.7]
+
+### Bug Fixes
+
+- 修复任务详情查看历史空白的情况
+- 修复我的机器人不回复的情况
+- 修复设待办后数据不立即显示的问题
+
+### Features
+
+- 添加删除附件日志记录
+
+### Performance
+
+- 优化从任务页面发送消息
+- 优化已归档/已删除任务列表支持按状态检索
+- 优化长按消息菜单位置
+- 优化登录设备名称
+
 ## [0.46.74]
 
 ### Features

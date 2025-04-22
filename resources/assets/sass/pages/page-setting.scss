@@ -593,6 +593,10 @@ body.window-portrait {
                 border-bottom: 1px solid #eeeeee;
                 border-radius: 0;
 
+                &:last-child {
+                    border-bottom: 0;
+                }
+
                 &:hover {
                     box-shadow: none;
                 }
