@@ -174,22 +174,7 @@
                         </div>
                         <ul class="item-content priority">
                             <li>
-                                <EDropdown
-                                    ref="priority"
-                                    trigger="click"
-                                    placement="bottom"
-                                    @command="updateData('priority', $event)">
-                                    <TaskPriority :backgroundColor="taskDetail.p_color">{{taskDetail.p_name}}</TaskPriority>
-                                    <EDropdownMenu slot="dropdown">
-                                        <EDropdownItem v-for="(item, key) in taskPriority" :key="key" :command="item">
-                                            <i
-                                                class="taskfont"
-                                                :style="{color:item.color}"
-                                                v-html="taskDetail.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"></i>
-                                            {{item.name}}
-                                        </EDropdownItem>
-                                    </EDropdownMenu>
-                                </EDropdown>
+                                <TaskPriority :backgroundColor="taskDetail.p_color"><span ref="priorityText" @click="onPriority">{{taskDetail.p_name}}</span></TaskPriority>
                             </li>
                         </ul>
                     </FormItem>
@@ -279,22 +264,11 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe93f;</i>{{$L('重复周期')}}
                         </div>
-                        <ul class="item-content">
+                        <ul class="item-content loop">
                             <li>
-                                <EDropdown
-                                    ref="loop"
-                                    trigger="click"
-                                    placement="bottom"
-                                    @command="updateData('loop', $event)">
-                                    <ETooltip :disabled="$isEEUiApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
-                                        <span>{{$L(loopLabel(taskDetail.loop))}}</span>
-                                    </ETooltip>
-                                    <EDropdownMenu slot="dropdown" class="task-detail-loop">
-                                        <EDropdownItem v-for="item in loops" :key="item.key" :command="item.key">
-                                            {{$L(item.label)}}
-                                        </EDropdownItem>
-                                    </EDropdownMenu>
-                                </EDropdown>
+                                <ETooltip :disabled="$isEEUiApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
+                                    <span ref="loopText" @click="onLoop">{{$L(loopLabel(taskDetail.loop))}}</span>
+                                </ETooltip>
                             </li>
                         </ul>
                     </FormItem>
@@ -356,23 +330,13 @@
                     </FormItem>
                 </Form>
                 <div v-if="menuList.length > 0" class="add">
-                    <EDropdown
-                        trigger="click"
-                        placement="bottom"
-                        @command="dropAdd">
-                        <div class="add-button">
+                    <div class="add-wrap">
+                        <div class="add-button" @click="onAddItem">
                             <i class="taskfont">&#xe6f2;</i>
                             <span>{{$L('添加')}}</span>
                             <em>{{menuText}}</em>
                         </div>
-                        <EDropdownMenu slot="dropdown">
-                            <EDropdownItem v-for="(item, key) in menuList" :key="key" :command="item.command">
-                                <div class="item">
-                                    <i class="taskfont" v-html="item.icon"></i>{{$L(item.name)}}
-                                </div>
-                            </EDropdownItem>
-                        </EDropdownMenu>
-                    </EDropdown>
+                    </div>
                 </div>
             </Scrollbar>
             <TaskUpload ref="upload" class="upload" @on-select-file="onSelectFile"/>
@@ -1542,7 +1506,61 @@ export default {
             this.logLoadIng = load
         },
 
-        dropAdd(command) {
+        onPriority(event) {
+            const list = this.taskPriority.map(item => {
+                return {
+                    label: item.name,
+                    value: item,
+                    prefix: `<i class="taskfont" style="color:${item.color};font-size:18px">${this.taskDetail.p_name == item.name ? '&#xe61d;' : '&#xe61c;'}</i>`,
+                }
+            });
+            this.$store.commit('menu/operation', {
+                event,
+                list,
+                size: 'large',
+                language: false,
+                onUpdate: (value) => {
+                    this.updateData('priority', value)
+                }
+            })
+        },
+
+        onLoop(event) {
+            const list = this.loops.map(item => {
+                return {
+                    label: item.label,
+                    value: item.key,
+                }
+            });
+            this.$store.commit('menu/operation', {
+                event,
+                list,
+                size: 'large',
+                onUpdate: (value) => {
+                    this.updateData('loop', value)
+                }
+            })
+        },
+
+        onAddItem(event) {
+            const list = this.menuList.map(item => {
+                return {
+                    label: item.name,
+                    value: item.command,
+                    prefix: `<i class="taskfont">${item.icon}</i>`,
+                }
+            });
+            this.$store.commit('menu/operation', {
+                event,
+                list,
+                size: 'large',
+                onUpdate: (value) => {
+                    this.dropAddItem(value)
+                }
+            })
+        },
+
+        dropAddItem(command) {
             switch (command) {
                 case 'tag':
                     this.tagForce = true;
@@ -1554,7 +1572,7 @@ export default {
                 case 'priority':
                     this.$set(this.taskDetail, 'p_name', this.$L('未设置'));
                     this.$nextTick(() => {
-                        this.$refs.priority.show();
+                        this.onPriority({target: this.$refs.priorityText})
                     })
                     break;
 
@@ -1584,7 +1602,7 @@ export default {
                 case 'loop':
                     this.loopForce = true;
                     this.$nextTick(() => {
-                        this.$refs.loop.show();
+                        this.onLoop({target: this.$refs.loopText})
                     })
                     break;
 
@@ -1868,22 +1886,6 @@ export default {
                     this.$store.dispatch('downUrl', $A.apiUrl(`project/task/filedown?file_id=${file.id}`))
                 }
             });
-        },
-
-        showDropdown(ref, eRect){
-            const boxRect = this.$refs.scroller.$el.getBoundingClientRect()
-            const refEl = ref.$el
-            refEl.style.top = (eRect.top - boxRect.top) + 'px'
-            refEl.style.left = (eRect.left - boxRect.left) + 'px'
-            refEl.style.width = eRect.width + 'px'
-            refEl.style.height = eRect.height + 'px'
-            //
-            if (ref.visible) {
-                ref.hide()
-            }
-            setTimeout(() => {
-                ref.show()
-            }, 0)
         },
 
         showCisibleDropdown(event){

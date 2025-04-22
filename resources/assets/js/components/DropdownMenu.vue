@@ -19,7 +19,10 @@
                         :divided="!!item.divided"
                         :disabled="(active === item.value && !activeClick) || !!item.disabled">
                         <div class="item-box" :style="item.style" :class="item.className">
-                            <div class="item">{{language ? $L(item.label) : item.label}}</div>
+                            <div class="item">
+                                <div v-if="item.prefix" class="item-prefix" v-html="item.prefix"></div>
+                                <div class="item-label">{{language ? $L(item.label) : item.label}}</div>
+                            </div>
                             <div v-if="tickShow" class="tick">
                                 <i v-if="active === item.value && !item.disabled" class="taskfont">&#xe684;</i>
                             </div>
@@ -46,17 +49,17 @@ export default {
             scrollHide: true,   // 滚动立即隐藏
             tickShow: true,     // 是否显示打勾（默认为：true，如果 active === undefined 默认为：false）
             maxHeight: 0,       // 滚动区域最大高度
-            language: true,     // 是否国际化 item.label
+            language: true,     // 是否国际化 item.label（默认：true）
 
-            element: null,
-            target: null,
+            scrollTarget: null,
+            menuTarget: null,
             styles: {},
         }
     },
 
     beforeDestroy() {
-        if (this.target) {
-            this.target.removeEventListener('scroll', this.handlerEventListeners);
+        if (this.scrollTarget) {
+            this.scrollTarget.removeEventListener('scroll', this.handlerEventListeners);
         }
     },
 
@@ -71,7 +74,7 @@ export default {
     watch: {
         menuOperation(data) {
             if (data.event && data.list) {
-                if (this.$refs.dropdown.visible && this.element === data.event.target) {
+                if (this.$refs.dropdown.visible && this.menuTarget === data.event.target) {
                     this.hide();
                     return;
                 }
@@ -99,7 +102,21 @@ export default {
             } else {
                 this.hide()
             }
-        }
+        },
+
+        windowScrollY() {
+            if (!this.visible || !this.menuTarget) {
+                return
+            }
+            const eventRect = this.menuTarget.getBoundingClientRect();
+            this.styles = {
+                left: `${eventRect.left}px`,
+                top: `${eventRect.top}px`,
+                width: `${eventRect.width}px`,
+                height: `${eventRect.height}px`,
+            };
+            this.updatePopper();
+        },
     },
 
     methods: {
@@ -129,23 +146,23 @@ export default {
         },
 
         setupEventListeners(event) {
-            this.element = event.target;
-            let target = this.getScrollParent(this.element);
+            this.menuTarget = event.target;
+            let target = this.getScrollParent(this.menuTarget);
             if (target === window.document.body || target === window.document.documentElement) {
                 target = window;
             }
-            if (this.target) {
-                if (this.target === target) {
+            if (this.scrollTarget) {
+                if (this.scrollTarget === target) {
                     return;
                 }
-                this.target.removeEventListener('scroll', this.handlerEventListeners);
+                this.scrollTarget.removeEventListener('scroll', this.handlerEventListeners);
             }
-            this.target = target;
-            this.target.addEventListener('scroll', this.handlerEventListeners);
+            this.scrollTarget = target;
+            this.scrollTarget.addEventListener('scroll', this.handlerEventListeners);
         },
 
         handlerEventListeners(e) {
-            if (!this.visible || !this.element) {
+            if (!this.visible || !this.menuTarget) {
                 return
             }
             if (this.scrollHide) {
@@ -153,7 +170,7 @@ export default {
                 return;
             }
             const scrollRect = e.target.getBoundingClientRect();
-            const eventRect = this.element.getBoundingClientRect();
+            const eventRect = this.menuTarget.getBoundingClientRect();
             if (eventRect.top < scrollRect.top || eventRect.top > scrollRect.top + scrollRect.height) {
                 this.hide();
                 return;

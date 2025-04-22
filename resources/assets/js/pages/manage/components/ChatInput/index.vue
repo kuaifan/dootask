@@ -652,16 +652,7 @@ export default {
         },
 
         sendContent() {
-            const {sendTip} = this.$refs
-            if (sendTip && sendTip.$refs.popper) {
-                sendTip.$refs.popper.style.visibility = 'hidden'
-                sendTip.showPopper = false
-                setTimeout(_ => {
-                    if (sendTip.$refs.popper) {
-                        sendTip.$refs.popper.style.visibility = 'visible'
-                    }
-                }, 300)
-            }
+            this.tempHiddenSendTip();
             return this.sendClass === 'recorder' ? '长按录音' : '发送'
         },
 
@@ -1370,6 +1361,10 @@ export default {
                     break;
 
                 case 'click':
+                    if (this.showMenu) {
+                        this.tempHiddenSendTip()
+                        this.showMenu = false;
+                    }
                     if (this.touchFocus) {
                         this.quill.blur();
                         this.quill.focus();
@@ -2316,6 +2311,19 @@ export default {
             const mention = this.quill?.getModule("mention")
             if (mention.isOpen) {
                 mention.setMentionContainerPosition()
+            }
+        },
+
+        tempHiddenSendTip() {
+            const {sendTip} = this.$refs
+            if (sendTip && sendTip.$refs.popper) {
+                sendTip.$refs.popper.style.visibility = 'hidden'
+                sendTip.showPopper = false
+                setTimeout(_ => {
+                    if (sendTip.$refs.popper) {
+                        sendTip.$refs.popper.style.visibility = 'visible'
+                    }
+                }, 300)
             }
         },
     }

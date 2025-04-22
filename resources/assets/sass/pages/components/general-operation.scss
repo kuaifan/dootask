@@ -61,6 +61,12 @@
                         text-overflow: ellipsis;
                         white-space: nowrap;
 
+                        .item-prefix,
+                        .item-label {
+                            display: flex;
+                            align-items: center;
+                        }
+
                         > i {
                             flex-shrink: 0;
                             width: 18px;

@@ -44,6 +44,10 @@
                         .task-info {
                             .scroller {
                                 margin-bottom: 4px;
+
+                                .scrollbar-content {
+                                    overflow: visible;
+                                }
                             }
                         }
 
@@ -523,7 +527,17 @@
                             }
                         }
                     }
-
+                    &.priority {
+                        .task-priority {
+                            cursor: pointer;
+                        }
+                    }
+                    &.loop {
+                        margin-top: 6px;
+                        .el-tooltip {
+                            cursor: pointer;
+                        }
+                    }
                     &.subtask-add {
                         margin-top: 2px;
                         > li {
@@ -552,7 +566,8 @@
             .add {
                 margin-top: 12px;
                 margin-bottom: 10px;
-                .el-dropdown {
+                .add-wrap {
+                    display: inline-block;
                     max-width: 100%;
                     .add-button {
                         > em {
