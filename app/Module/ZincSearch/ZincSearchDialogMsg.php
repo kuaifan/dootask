@@ -228,7 +228,7 @@ class ZincSearchDialogMsg
     }
 
     // ==============================
-    // 基本方法
+    // 生成内容
     // ==============================
 
     /**
@@ -287,8 +287,12 @@ class ZincSearchDialogMsg
         ];
     }
 
+    // ==============================
+    // 基本方法
+    // ==============================
+
     /**
-     * 同步消息
+     * 同步消息（建议在异步进程中使用）
      *
      * @param WebSocketDialogMsg $dialogMsg
      * @return bool
@@ -345,7 +349,7 @@ class ZincSearchDialogMsg
     }
 
     /**
-     * 批量同步消息
+     * 批量同步消息（建议在异步进程中使用）
      *
      * @param WebSocketDialogMsg[] $dialogMsgs
      * @return int 成功同步的消息数
@@ -423,11 +427,12 @@ class ZincSearchDialogMsg
     }
 
     /**
-     * 同步用户
+     * 同步用户（建议在异步进程中使用）
      * @param WebSocketDialogUser $dialogUser
+     * @param bool $full    跳过判断是否已经存在（全量更新）
      * @return bool
      */
-    public static function userSync(WebSocketDialogUser $dialogUser): bool
+    public static function userSync(WebSocketDialogUser $dialogUser, bool $full = false): bool
     {
         if (!self::ensureIndex()) {
             return false;
@@ -448,8 +453,13 @@ class ZincSearchDialogMsg
 
         try {
             // 查询用户是否存在
-            $result = ZincSearchBase::elasticSearch(self::$indexNameUser, $searchParams);
-            $hits = $result['data']['hits']['hits'] ?? [];
+            if ($full) {
+                $hits = null;
+            } else {
+                $result = ZincSearchBase::elasticSearch(self::$indexNameUser, $searchParams);
+                $hits = $result['data']['hits']['hits'] ?? [];
+            }
+
 
             // 同步用户（存在更新、不存在添加）
             $result = ZincSearchBase::addDoc(self::$indexNameUser, $data);
@@ -457,7 +467,7 @@ class ZincSearchDialogMsg
                 return false;
             }
 
-            // 用户不存在，同步消息 todo 应该使用异步进程
+            // 用户不存在，同步消息
             if (empty($hits)) {
                 $lastId = 0;        // 上次同步的最后ID
                 $batchSize = 500;   // 每批处理的消息数量
@@ -491,7 +501,7 @@ class ZincSearchDialogMsg
     }
 
     /**
-     * 删除
+     * 删除（建议在异步进程中使用）
      *
      * @param WebSocketDialogMsg|WebSocketDialogUser|int $data
      * @return int

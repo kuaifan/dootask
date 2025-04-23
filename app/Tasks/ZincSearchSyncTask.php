@@ -2,6 +2,7 @@
 
 namespace App\Tasks;
 
+use App\Module\ZincSearch\ZincSearchDialogMsg;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -10,12 +11,48 @@ use Illuminate\Support\Facades\Cache;
  */
 class ZincSearchSyncTask extends AbstractTask
 {
-    public function __construct()
+    private $action;
+
+    private $data;
+
+    public function __construct($action = null, $data = null)
     {
-        parent::__construct();
+        parent::__construct(...func_get_args());
+        $this->action = $action;
+        $this->data = $data;
     }
 
     public function start()
+    {
+        switch ($this->action) {
+            case 'sync':
+                // 同步聊天数据
+                ZincSearchDialogMsg::sync($this->data);
+                break;
+
+            case 'userCreated':
+            case 'userSync':
+                // 同步用户数据
+                ZincSearchDialogMsg::userSync($this->data, $this->action === 'userCreated');
+                break;
+
+            case 'delete':
+                // 删除用户数据
+                ZincSearchDialogMsg::delete($this->data);
+                break;
+
+            default:
+                // 增量更新
+                $this->incrementalUpdate();
+                break;
+        }
+    }
+
+    /**
+     * 增量更新
+     * @return void
+     */
+    private function incrementalUpdate()
     {
         // 120分钟执行一次
         $time = intval(Cache::get("ZincSearchSyncTask:Time"));

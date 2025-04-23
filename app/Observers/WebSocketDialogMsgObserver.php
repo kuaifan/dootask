@@ -3,7 +3,8 @@
 namespace App\Observers;
 
 use App\Models\WebSocketDialogMsg;
-use App\Module\ZincSearch\ZincSearchDialogMsg;
+use App\Tasks\ZincSearchSyncTask;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 class WebSocketDialogMsgObserver
 {
@@ -15,7 +16,7 @@ class WebSocketDialogMsgObserver
      */
     public function created(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        ZincSearchDialogMsg::sync($webSocketDialogMsg);
+        Task::deliver(new ZincSearchSyncTask('sync', $webSocketDialogMsg));
     }
 
     /**
@@ -26,7 +27,7 @@ class WebSocketDialogMsgObserver
      */
     public function updated(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        ZincSearchDialogMsg::sync($webSocketDialogMsg);
+        Task::deliver(new ZincSearchSyncTask('sync', $webSocketDialogMsg));
     }
 
     /**
@@ -37,7 +38,7 @@ class WebSocketDialogMsgObserver
      */
     public function deleted(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        ZincSearchDialogMsg::delete($webSocketDialogMsg);
+        Task::deliver(new ZincSearchSyncTask('delete', $webSocketDialogMsg));
     }
 
     /**
