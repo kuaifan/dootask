@@ -457,34 +457,30 @@ class ZincSearchDialogMsg
                 return false;
             }
 
-            // 用户不存在，同步消息
+            // 用户不存在，同步消息 todo 应该使用异步进程
             if (empty($hits)) {
-                go(function () use ($dialogUser) {
-                    Coroutine::sleep(0.1);
+                $lastId = 0;        // 上次同步的最后ID
+                $batchSize = 500;   // 每批处理的消息数量
 
-                    $lastId = 0;        // 上次同步的最后ID
-                    $batchSize = 500;   // 每批处理的消息数量
+                // 分批同步消息
+                do {
+                    // 获取一批
+                    $dialogMsgs = WebSocketDialogMsg::whereDialogId($dialogUser->dialog_id)
+                        ->where('id', '>', $lastId)
+                        ->orderBy('id')
+                        ->limit($batchSize)
+                        ->get();
 
-                    // 分批同步消息
-                    do {
-                        // 获取一批
-                        $dialogMsgs = WebSocketDialogMsg::whereDialogId($dialogUser->dialog_id)
-                            ->where('id', '>', $lastId)
-                            ->orderBy('id')
-                            ->limit($batchSize)
-                            ->get();
+                    if ($dialogMsgs->isEmpty()) {
+                        break;
+                    }
 
-                        if ($dialogMsgs->isEmpty()) {
-                            break;
-                        }
+                    // 同步数据
+                    ZincSearchDialogMsg::batchSync($dialogMsgs);
 
-                        // 同步数据
-                        ZincSearchDialogMsg::batchSync($dialogMsgs);
-
-                        // 更新最后ID
-                        $lastId = $dialogMsgs->last()->id;
-                    } while (count($dialogMsgs) == $batchSize);
-                });
+                    // 更新最后ID
+                    $lastId = $dialogMsgs->last()->id;
+                } while (count($dialogMsgs) == $batchSize);
             }
 
             return true;

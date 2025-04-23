@@ -525,9 +525,9 @@ if [ $# -gt 0 ]; then
         success "卸载完成"
     elif [[ "$1" == "reinstall" ]]; then
         shift 1
-        ./cmd uninstall $@
+        ./cmd uninstall "$@"
         sleep 3
-        ./cmd install $@
+        ./cmd install "$@"
     elif [[ "$1" == "port" ]]; then
         shift 1
         env_set APP_PORT "$1"
@@ -557,10 +557,10 @@ if [ $# -gt 0 ]; then
         run_compile prod
     elif [[ "$1" == "appbuild" ]] || [[ "$1" == "buildapp" ]]; then
         shift 1
-        run_electron app $@
+        run_electron app "$@"
     elif [[ "$1" == "electron" ]]; then
         shift 1
-        run_electron $@
+        run_electron "$@"
     elif [[ "$1" == "eeui" ]]; then
         shift 1
         cli="$@"
@@ -573,9 +573,9 @@ if [ $# -gt 0 ]; then
         docker run -it --rm -v ${cur_path}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
     elif [[ "$1" == "npm" ]]; then
         shift 1
-        npm $@
+        npm "$@"
         pushd electron || exit
-        npm $@
+        npm "$@"
         popd || exit
         docker run --rm -it -v ${cur_path}/resources/mobile:/work -w /work --entrypoint=/bin/bash node:16 -c "npm $@"
     elif [[ "$1" == "doc" ]]; then
@@ -648,10 +648,27 @@ if [ $# -gt 0 ]; then
         shift 1
         $COMPOSE stop "$@"
         $COMPOSE start "$@"
-    else
-        if [[ "$1" == "down" ]]; then
-            run_mysql rm-port
+    elif [[ "$1" == "reup" ]]; then
+        shift 1
+        run_mysql rm-port
+        $COMPOSE down --remove-orphans
+        $COMPOSE up -d --remove-orphans
+    elif [[ "$1" == "down" ]]; then
+        shift 1
+        run_mysql rm-port
+        if [[ $# -eq 0 ]]; then
+            $COMPOSE down --remove-orphans
+        else
+            $COMPOSE down "$@"
         fi
+    elif [[ "$1" == "up" ]]; then
+        shift 1
+        if [[ $# -eq 0 ]]; then
+            $COMPOSE up -d --remove-orphans
+        else
+            $COMPOSE up "$@"
+        fi
+    else
         $COMPOSE "$@"
     fi
 else

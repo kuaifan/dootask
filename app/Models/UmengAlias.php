@@ -47,6 +47,54 @@ class UmengAlias extends AbstractModel
 {
     protected $table = 'umeng_alias';
 
+    private static $waitSend = [];
+
+
+    /**
+     * 推送消息
+     * @param $push
+     * @return void
+     */
+    private static function sendTask($push = null)
+    {
+        if ($push) {
+            self::$waitSend[] = $push;
+        }
+
+        if (!self::$waitSend) {
+            return;
+        }
+
+        $first = array_shift(self::$waitSend);
+        if (empty($first)) {
+            return;
+        }
+
+        try {
+            switch ($first['platform']) {
+                case 'ios':
+                    $instance = new IOS($first['config']);
+                    break;
+                case 'android':
+                    $instance = new Android($first['config']);
+                    break;
+                default:
+                    return;
+            }
+            $instance->send($first['data']);
+        } catch (\Exception $e) {
+            $first['retry'] = intval($first['retry'] ?? 0) + 1;
+            if ($first['retry'] > 3) {
+                info("[PushMsg] fail: " . $e->getMessage());
+            } else {
+                info("[PushMsg] retry ({$first['retry']}): " . $e->getMessage());
+                self::$waitSend[] = $first;
+            }
+        } finally {
+            self::sendTask();
+        }
+    }
+
     /**
      * 推送内容处理
      * @param $string
@@ -90,13 +138,13 @@ class UmengAlias extends AbstractModel
      * @param string $alias
      * @param string $platform
      * @param array $array [title, subtitle, body, description, extra, seconds, badge]
-     * @return array|false
+     * @return void
      */
-    public static function pushMsgToAlias($alias, $platform, $array)
+    private static function pushMsgToAlias($alias, $platform, $array)
     {
         $config = self::getPushConfig();
         if ($config === false) {
-            return false;
+            return;
         }
         //
         $title = self::specialCharacters($array['title'] ?: '');        // 标题
@@ -110,65 +158,70 @@ class UmengAlias extends AbstractModel
         switch ($platform) {
             case 'ios':
                 if (!isset($config['iOS'])) {
-                    return false;
+                    return;
                 }
-                $ios = new IOS($config);
-                return $ios->send([
-                    'description' => $description,
-                    'payload' => array_merge([
-                        'aps' => [
-                            'alert' => [
-                                'title' => $title,
-                                'subtitle' => $subtitle,
-                                'body' => $body,
+                self::sendTask([
+                    'platform' => $platform,
+                    'config' => $config,
+                    'data' => [
+                        'description' => $description,
+                        'payload' => array_merge([
+                            'aps' => [
+                                'alert' => [
+                                    'title' => $title,
+                                    'subtitle' => $subtitle,
+                                    'body' => $body,
+                                ],
+                                'sound' => 'default',
+                                'badge' => $badge,
                             ],
-                            'sound' => 'default',
-                            'badge' => $badge,
+                        ], $extra),
+                        'type' => 'customizedcast',
+                        'alias_type' => 'userid',
+                        'alias' => $alias,
+                        'policy' => [
+                            'expire_time' => Carbon::now()->addSeconds($seconds)->toDateTimeString(),
                         ],
-                    ], $extra),
-                    'type' => 'customizedcast',
-                    'alias_type' => 'userid',
-                    'alias' => $alias,
-                    'policy' => [
-                        'expire_time' => Carbon::now()->addSeconds($seconds)->toDateTimeString(),
-                    ],
+                    ]
                 ]);
+                break;
 
             case 'android':
                 if (!isset($config['Android'])) {
-                    return false;
+                    return;
                 }
-                $android = new Android($config);
-                return $android->send([
-                    'description' => $description,
-                    'payload' => array_merge([
-                        'display_type' => 'notification',
-                        'body' => [
-                            'ticker' => $title,
-                            'text' => $body,
-                            'title' => $title,
-                            'after_open' => 'go_app',
-                            'play_sound' => true,
+                self::sendTask([
+                    'platform' => $platform,
+                    'config' => $config,
+                    'data' => [
+                        'description' => $description,
+                        'payload' => array_merge([
+                            'display_type' => 'notification',
+                            'body' => [
+                                'ticker' => $title,
+                                'text' => $body,
+                                'title' => $title,
+                                'after_open' => 'go_app',
+                                'play_sound' => true,
+                            ],
+                        ], $extra),
+                        'type' => 'customizedcast',
+                        'alias_type' => 'userid',
+                        'alias' => $alias,
+                        'mipush' => true,
+                        'mi_activity' => 'app.eeui.umeng.activity.MfrMessageActivity',
+                        'policy' => [
+                            'expire_time' => Carbon::now()->addSeconds($seconds)->toDateTimeString(),
                         ],
-                    ], $extra),
-                    'type' => 'customizedcast',
-                    'alias_type' => 'userid',
-                    'alias' => $alias,
-                    'mipush' => true,
-                    'mi_activity' => 'app.eeui.umeng.activity.MfrMessageActivity',
-                    'policy' => [
-                        'expire_time' => Carbon::now()->addSeconds($seconds)->toDateTimeString(),
-                    ],
-                    'channel_properties' => [
-                        'vivo_category' => 'IM',
-                        'huawei_channel_importance' => 'NORMAL',
-                        'huawei_channel_category' => 'IM',
-                        'channel_fcm' => 0,
-                    ],
+                        'channel_properties' => [
+                            'vivo_category' => 'IM',
+                            'huawei_channel_importance' => 'NORMAL',
+                            'huawei_channel_category' => 'IM',
+                            'channel_fcm' => 0,
+                        ],
+                    ]
                 ]);
-
-            default:
-                return false;
+                break;
         }
     }
 

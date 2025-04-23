@@ -119,7 +119,7 @@ git pull
 ```
 
 * Please try again if the upgrade fails across a large version.
-* If 502 after the upgrade please run `./cmd restart` restart the service.
+* If 502 after the upgrade please run `./cmd reup` restart the service.
 
 ## Transfer
 
