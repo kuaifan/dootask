@@ -21,9 +21,6 @@ use Exception;
 use League\HTMLToMarkdown\HtmlConverter;
 use DB;
 
-@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
-
 /**
  * 推送会话消息
  * Class BotReceiveMsgTask

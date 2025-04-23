@@ -7,9 +7,6 @@ use App\Module\Extranet;
 use Cache;
 use Carbon\Carbon;
 
-@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
-
 /**
  * 获取笑话、心灵鸡汤
  *

@@ -8,9 +8,6 @@ use App\Models\ProjectTask;
 use App\Models\ProjectTaskUser;
 use Carbon\Carbon;
 
-@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
-
 /**
  * 任务重复周期
  */

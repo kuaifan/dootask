@@ -2,8 +2,6 @@
 
 namespace App\Tasks;
 
-@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
 use App\Models\UserBot;
 use App\Models\WebSocketDialogMsg;
 use Carbon\Carbon;

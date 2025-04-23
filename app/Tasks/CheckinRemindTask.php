@@ -13,8 +13,6 @@ use App\Module\Timer;
 use Cache;
 use Carbon\Carbon;
 
-@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
 class CheckinRemindTask extends AbstractTask
 {
     public function __construct()

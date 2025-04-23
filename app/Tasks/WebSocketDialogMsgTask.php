@@ -2,8 +2,6 @@
 
 namespace App\Tasks;
 
-@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
 use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;

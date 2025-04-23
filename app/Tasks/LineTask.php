@@ -4,9 +4,6 @@ namespace App\Tasks;
 
 use App\Models\WebSocket;
 
-@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
-
 /**
  * 上线、离线通知
  * Class LineTask

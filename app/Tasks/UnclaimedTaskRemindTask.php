@@ -10,8 +10,6 @@ use Carbon\Carbon;
 use App\Models\WebSocketDialogMsg;
 use Illuminate\Support\Facades\Cache;
 
-@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
 class UnclaimedTaskRemindTask extends AbstractTask
 {
     public function __construct()
