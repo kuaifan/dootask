@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Module\Base;
-use App\Module\Extranet;
-use Swoole\Coroutine;
+use App\Tasks\UpdateSessionTitleViaAiTask;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Cache;
 
 /**
@@ -82,18 +82,6 @@ class WebSocketDialogSession extends AbstractModel
         $session->title = $title;
         $session->save();
         Cache::forever($cacheKey, true);
-        // 通过AI接口更新对话标题
-        go(function () use ($session, $title, $originalTitle) {
-            Coroutine::sleep(0.1);
-            $res = Extranet::openAIGenerateTitle($originalTitle);
-            if (Base::isError($res)) {
-                return;
-            }
-            $newTitle = $res['data'];
-            if ($newTitle && $newTitle != $title) {
-                $session->title = Base::cutStr($newTitle, 100);
-                $session->save();
-            }
-        });
+        Task::deliver(new UpdateSessionTitleViaAiTask($session->id, $originalTitle));
     }
 }
