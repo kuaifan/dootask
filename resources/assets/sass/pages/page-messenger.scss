@@ -547,22 +547,18 @@
                 }
             }
         }
+        .messenger-line {
+            flex-shrink: 0;
+            width: 1px;
+            height: 100%;
+            background-color: #f4f5f5;
+        }
         .messenger-msg {
             flex: 1;
             width: 0;
             height: 100%;
             display: flex;
             position: relative;
-            &:before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                height: 100%;
-                width: 1px;
-                background-color: #f4f5f5;
-                z-index: 2;
-            }
             .msg-dialog-bg {
                 position: absolute;
                 top: 0;
@@ -727,6 +723,7 @@ body.window-portrait {
                     }
                 }
             }
+            .messenger-line,
             .messenger-msg {
                 display: none;
             }

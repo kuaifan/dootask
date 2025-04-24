@@ -262,13 +262,16 @@
                 </div>
             </div>
 
-            <div v-if="activeNum > 0 && routeName === 'manage-messenger'" class="messenger-msg">
-                <div class="msg-dialog-bg">
-                    <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
-                    <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
+            <template v-if="activeNum > 0 && routeName === 'manage-messenger'">
+                <div class="messenger-line"></div>
+                <div class="messenger-msg">
+                    <div class="msg-dialog-bg">
+                        <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
+                        <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
+                    </div>
+                    <DialogWrapper v-if="windowLandscape && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()" location="messenger"/>
                 </div>
-                <DialogWrapper v-if="windowLandscape && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()" location="messenger"/>
-            </div>
+            </template>
         </div>
     </div>
 </template>

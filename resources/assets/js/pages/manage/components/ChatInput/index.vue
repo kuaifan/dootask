@@ -1305,7 +1305,7 @@ export default {
         onClickEditor() {
             this.clearSearchKey()
             this.updateEmojiQuick(this.value)
-            this.focus()
+            !this.isFocus && this.focus()
             inputLoadAdd(this._uid)
         },
 

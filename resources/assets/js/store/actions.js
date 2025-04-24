@@ -4214,14 +4214,14 @@ export default {
                                         break;
                                     case 'add':
                                     case 'chat':
-                                        const isChat = mode === "chat" || $A.isSubElectron;
+                                        const isAdd = mode === "add";
                                         if (!state.dialogMsgs.find(({id}) => id == data.id)) {
                                             // 新增任务消息数量
                                             dispatch("increaseTaskMsgNum", {id: data.dialog_id});
                                             // 新增回复数量
                                             dispatch("increaseMsgReplyNum", {id: data.reply_id});
                                             //
-                                            if (!isChat) {
+                                            if (isAdd) {
                                                 if (data.userid !== state.userId) {
                                                     // 更新对话新增未读数
                                                     const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
@@ -4249,7 +4249,7 @@ export default {
                                                 // 更新消息列表
                                                 dispatch("saveDialogMsg", data)
                                                 // 更新最后消息
-                                                !isChat && dispatch("updateDialogLastMsg", data);
+                                                isAdd && dispatch("updateDialogLastMsg", data);
                                                 return;
                                             }
                                             setTimeout(() => saveMsg(data, count + 1), 50);
