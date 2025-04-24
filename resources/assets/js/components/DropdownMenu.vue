@@ -79,7 +79,7 @@ export default {
                 const eventRect = data.event.target.getBoundingClientRect();
                 this.styles = {
                     left: `${eventRect.left}px`,
-                    top: `${eventRect.top}px`,
+                    top: `${eventRect.top + this.windowScrollY}px`,
                     width: `${eventRect.width}px`,
                     height: `${eventRect.height}px`,
                 }
@@ -109,7 +109,7 @@ export default {
             const eventRect = this.menuTarget.getBoundingClientRect();
             this.styles = {
                 left: `${eventRect.left}px`,
-                top: `${eventRect.top}px`,
+                top: `${eventRect.top + this.windowScrollY}px`,
                 width: `${eventRect.width}px`,
                 height: `${eventRect.height}px`,
             };
@@ -188,7 +188,7 @@ export default {
             }
             this.styles = {
                 left: `${eventRect.left}px`,
-                top: `${eventRect.top}px`,
+                top: `${eventRect.top + this.windowScrollY}px`,
                 width: `${eventRect.width}px`,
                 height: `${eventRect.height}px`,
             };

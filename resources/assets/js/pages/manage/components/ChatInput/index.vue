@@ -24,7 +24,7 @@
             </EPopover>
         </div>
 
-        <div ref="inputWrapper" class="chat-input-wrapper" @click.stop="focus">
+        <div ref="inputWrapper" class="chat-input-wrapper">
             <!-- 回复、修改 -->
             <div v-if="quoteData" class="chat-quote">
                 <div v-if="quoteUpdate" class="quote-label">{{$L('编辑消息')}}</div>
@@ -78,7 +78,7 @@
                     </ETooltip>
                 </li>
 
-                <!-- 图片文件 -->
+                <!-- 加号更多 -->
                 <li>
                     <EPopover
                         ref="more"
@@ -1305,6 +1305,7 @@ export default {
         onClickEditor() {
             this.clearSearchKey()
             this.updateEmojiQuick(this.value)
+            this.focus()
             inputLoadAdd(this._uid)
         },
 

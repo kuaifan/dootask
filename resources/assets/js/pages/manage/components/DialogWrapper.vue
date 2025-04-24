@@ -235,15 +235,8 @@
         </div>
 
         <!--底部输入-->
-        <div ref="footer" class="dialog-footer" @click="onActive">
-            <div
-                v-if="scrollTail > 500 || (msgNew > 0 && allMsgs.length > 0)"
-                class="dialog-goto"
-                v-touchclick="onToBottom">
-                <Badge :overflow-count="999" :count="msgNew">
-                    <i class="taskfont">&#xe72b;</i>
-                </Badge>
-            </div>
+        <div ref="footer" class="dialog-footer" @click="onClickFooter">
+            <!--上传组件-->
             <DialogUpload
                 ref="chatUpload"
                 class="chat-upload"
@@ -252,6 +245,18 @@
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
+
+            <!--滚动到底部-->
+            <div
+                v-if="scrollTail > 500 || (msgNew > 0 && allMsgs.length > 0)"
+                class="dialog-goto"
+                v-touchclick="onToBottom">
+                <Badge :overflow-count="999" :count="msgNew">
+                    <i class="taskfont">&#xe72b;</i>
+                </Badge>
+            </div>
+
+            <!--待办-->
             <div v-if="todoShow" class="chat-bottom-menu">
                 <div class="bottom-menu-label">{{$L('待办')}}:</div>
                 <ul class="scrollbar-hidden">
@@ -260,6 +265,8 @@
                     </li>
                 </ul>
             </div>
+
+            <!--菜单-->
             <div v-else-if="quickShow" class="chat-bottom-menu">
                 <ul class="scrollbar-hidden">
                     <li v-for="item in quickMsgs" @click.stop="sendQuick(item, $event)">
@@ -267,6 +274,8 @@
                     </li>
                 </ul>
             </div>
+
+            <!--禁言、停用、输入-->
             <div v-if="isMute" class="chat-mute">
                 {{$L('禁言发言')}}
             </div>
@@ -2516,6 +2525,11 @@ export default {
 
         onActive() {
             this.$emit("on-active");
+        },
+
+        onClickFooter() {
+            this.$refs.input?.focus();
+            this.onActive();
         },
 
         onToBottom() {
