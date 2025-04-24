@@ -406,35 +406,29 @@ export default {
         initList() {
             let applyList = [
                 { value: "approve", label: "审批中心", sort: 30 },
-                { value: "report", label: "工作报告", sort: 50 },
                 { value: "okr", label: "OKR 管理", sort: 40 },
+                { value: "report", label: "工作报告", sort: 50 },
                 { value: "mybot", label: "我的机器人", sort: 55 },
-                { value: "robot", label: "AI 机器人", sort: 60 },
+                { value: "robot", label: "AI 机器人", sort: 60, show: this.systemConfig.server_closeai !== 'close' },
                 { value: "signin", label: "签到打卡", sort: 70 },
                 { value: "meeting", label: "在线会议", sort: 80 },
+                { value: "createGroup", label: "创建群组", sort: 85 },
                 { value: "word-chain", label: "群接龙", sort: 90 },
                 { value: "vote", label: "群投票", sort: 100 },
+                { value: "addProject", label: "创建项目", sort: 110 },
+                { value: "addTask", label: "添加任务", sort: 120 },
+                { value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUiApp },
+                { value: "setting", label: "设置", sort: 140 },
             ];
-            if (this.systemConfig.server_closeai === 'close') {
-                applyList = applyList.filter(h => h.value !== 'robot');
-            }
-            // wap模式
-            if (this.windowOrientation == 'landscape') {
-                // 横屏模式
-                applyList.push({ value: "scan", label: "扫一扫", show: $A.isEEUiApp, sort: 130 })
-            } else {
-                // 竖屏模式
+            // 竖屏模式
+            if (this.windowPortrait) {
                 applyList.push(...[
                     { value: "calendar", label: "日历", sort: 10 },
                     { value: "file", label: "文件", sort: 20 },
-                    { value: "addProject", label: "创建项目", sort: 110 },
-                    { value: "addTask", label: "添加任务", sort: 120 },
-                    { value: "scan", label: "扫一扫", show: $A.isEEUiApp, sort: 130 },
-                    { value: "setting", label: "设置", sort: 140 }
                 ])
             }
             // 管理员
-            let adminApplyList = [];
+            const adminApplyList = [];
             if (!this.userIsAdmin) {
                 if (this.userInfo.department_owner) {
                     adminApplyList.push({ value: "okrAnalyze", label: "OKR 结果", sort: 150 })
@@ -449,10 +443,9 @@ export default {
                     { value: "allUser", label: "团队管理", sort: 200 },
                 ])
             }
-            adminApplyList = adminApplyList.map((h) => {
-                h.type = 'admin';
-                return h;
-            });
+            adminApplyList.map(item => {
+                item.type = 'admin'
+            })
             //
             this.applyList = [...applyList, ...adminApplyList].sort((a, b) => a.sort - b.sort);
         },

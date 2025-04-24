@@ -1205,6 +1205,9 @@ export default {
 
         onTabbarClick(act) {
             switch (act) {
+                case 'createGroup':
+                    this.onAddMenu('group')
+                    break;
                 case 'addTask':
                     this.onAddTask(0)
                     break;
