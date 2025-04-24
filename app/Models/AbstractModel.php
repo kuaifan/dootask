@@ -152,6 +152,25 @@ class AbstractModel extends Model
     }
 
     /**
+     * 通过模型创建实例
+     * @param array $param
+     * @param bool $force
+     * @return static
+     */
+    public static function fillInstance(array $param = [], bool $force = true)
+    {
+        $instance = new static;
+        if ($param) {
+            if ($force) {
+                $instance->forceFill($param);
+            } else {
+                $instance->fill($param);
+            }
+        }
+        return $instance;
+    }
+
+    /**
      * 创建/更新数据
      * @param array $param
      * @param null $id
@@ -209,15 +228,23 @@ class AbstractModel extends Model
 
     /**
      * 数据库更新或插入
-     * @param $where
-     * @param array|\Closure $update 存在时更新的内容
-     * @param array|\Closure $insert 不存在时插入的内容，如果没有则插入更新内容
-     * @param bool $isInsert 是否是插入数据
+     * @param array $where              查询条件
+     * @param array|\Closure $update    存在时更新的内容
+     * @param array|\Closure $insert    不存在时插入的内容，如果没有则插入更新内容
+     * @param bool $isInsert            是否是插入数据
+     * @param bool|null $lockForUpdate  是否加锁（true:加锁，false:不加锁，null:在事务中会自动加锁）
      * @return AbstractModel|\Illuminate\Database\Eloquent\Builder|Model|object|static|null
      */
-    public static function updateInsert($where, $update = [], $insert = [], &$isInsert = true)
+    public static function updateInsert($where, $update = [], $insert = [], &$isInsert = true, $lockForUpdate = null)
     {
-        $row = static::where($where)->first();
+        $query = static::where($where);
+        if ($lockForUpdate === null) {
+            $lockForUpdate = \DB::transactionLevel() > 0;
+        }
+        if ($lockForUpdate) {
+            $query->lockForUpdate();
+        }
+        $row = $query->first();
         if (empty($row)) {
             $row = new static;
             if ($insert instanceof \Closure) {

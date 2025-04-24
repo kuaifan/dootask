@@ -16,7 +16,7 @@ class WebSocketDialogMsgObserver
      */
     public function created(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        Task::deliver(new ZincSearchSyncTask('sync', $webSocketDialogMsg));
+        Task::deliver(new ZincSearchSyncTask('sync', $webSocketDialogMsg->toArray()));
     }
 
     /**
@@ -27,7 +27,7 @@ class WebSocketDialogMsgObserver
      */
     public function updated(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        Task::deliver(new ZincSearchSyncTask('sync', $webSocketDialogMsg));
+        Task::deliver(new ZincSearchSyncTask('sync', $webSocketDialogMsg->toArray()));
     }
 
     /**
@@ -38,7 +38,7 @@ class WebSocketDialogMsgObserver
      */
     public function deleted(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        Task::deliver(new ZincSearchSyncTask('delete', $webSocketDialogMsg));
+        Task::deliver(new ZincSearchSyncTask('delete', $webSocketDialogMsg->toArray()));
     }
 
     /**

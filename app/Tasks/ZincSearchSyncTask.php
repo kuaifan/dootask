@@ -2,6 +2,8 @@
 
 namespace App\Tasks;
 
+use App\Models\WebSocketDialogMsg;
+use App\Models\WebSocketDialogUser;
 use App\Module\ZincSearch\ZincSearchDialogMsg;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -26,19 +28,23 @@ class ZincSearchSyncTask extends AbstractTask
     {
         switch ($this->action) {
             case 'sync':
-                // 同步聊天数据
-                ZincSearchDialogMsg::sync($this->data);
-                break;
-
-            case 'userCreated':
-            case 'userSync':
-                // 同步用户数据
-                ZincSearchDialogMsg::userSync($this->data, $this->action === 'userCreated');
+                // 同步消息数据
+                ZincSearchDialogMsg::sync(WebSocketDialogMsg::fillInstance($this->data));
                 break;
 
             case 'delete':
+                // 删除消息数据
+                ZincSearchDialogMsg::delete(WebSocketDialogMsg::fillInstance($this->data));
+                break;
+
+            case 'userSync':
+                // 同步用户数据
+                ZincSearchDialogMsg::userSync(WebSocketDialogUser::fillInstance($this->data));
+                break;
+
+            case 'deleteUser':
                 // 删除用户数据
-                ZincSearchDialogMsg::delete($this->data);
+                ZincSearchDialogMsg::delete(WebSocketDialogUser::fillInstance($this->data));
                 break;
 
             default:

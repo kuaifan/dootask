@@ -429,10 +429,9 @@ class ZincSearchDialogMsg
     /**
      * 同步用户（建议在异步进程中使用）
      * @param WebSocketDialogUser $dialogUser
-     * @param bool $full    跳过判断是否已经存在（全量更新）
      * @return bool
      */
-    public static function userSync(WebSocketDialogUser $dialogUser, bool $full = false): bool
+    public static function userSync(WebSocketDialogUser $dialogUser): bool
     {
         if (!self::ensureIndex()) {
             return false;
@@ -453,13 +452,8 @@ class ZincSearchDialogMsg
 
         try {
             // 查询用户是否存在
-            if ($full) {
-                $hits = null;
-            } else {
-                $result = ZincSearchBase::elasticSearch(self::$indexNameUser, $searchParams);
-                $hits = $result['data']['hits']['hits'] ?? [];
-            }
-
+            $result = ZincSearchBase::elasticSearch(self::$indexNameUser, $searchParams);
+            $hits = $result['data']['hits']['hits'] ?? [];
 
             // 同步用户（存在更新、不存在添加）
             $result = ZincSearchBase::addDoc(self::$indexNameUser, $data);

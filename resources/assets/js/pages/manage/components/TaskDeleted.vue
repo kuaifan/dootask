@@ -24,14 +24,14 @@
                         <Select v-model="keys.status" :placeholder="$L('全部')">
                             <Option value="">{{$L('全部')}}</Option>
                             <template v-if="flows.type==='group'">
-                                <OptionGroup v-for="group in flows.groups" :label="group.label">
-                                    <Option v-for="item in group.items" :value="item.id" :label="item.name">
+                                <OptionGroup v-for="(group, index) in flows.groups" :key="index" :label="group.label">
+                                    <Option v-for="(item, key) in group.items" :key="key" :value="item.id" :label="item.name">
                                         <div class="tag-dot" :class="item.status">{{item.name}}</div>
                                     </Option>
                                 </OptionGroup>
                             </template>
                             <template v-else>
-                                <Option v-for="item in flows.items" :value="item.id" :label="item.name">
+                                <Option v-for="(item, key) in flows.items" :key="key" :value="item.id" :label="item.name">
                                     <div class="tag-dot" :class="item.status">{{item.name}}</div>
                                 </Option>
                             </template>

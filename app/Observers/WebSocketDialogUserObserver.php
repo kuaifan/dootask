@@ -31,7 +31,7 @@ class WebSocketDialogUserObserver
             }
         }
         Deleted::forget('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
-        Task::deliver(new ZincSearchSyncTask('userCreated', $webSocketDialogUser));
+        Task::deliver(new ZincSearchSyncTask('userSync', $webSocketDialogUser->toArray()));
     }
 
     /**
@@ -42,7 +42,7 @@ class WebSocketDialogUserObserver
      */
     public function updated(WebSocketDialogUser $webSocketDialogUser)
     {
-        Task::deliver(new ZincSearchSyncTask('userSync', $webSocketDialogUser));
+        Task::deliver(new ZincSearchSyncTask('userSync', $webSocketDialogUser->toArray()));
     }
 
     /**
@@ -54,7 +54,7 @@ class WebSocketDialogUserObserver
     public function deleted(WebSocketDialogUser $webSocketDialogUser)
     {
         Deleted::record('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
-        Task::deliver(new ZincSearchSyncTask('delete', $webSocketDialogUser));
+        Task::deliver(new ZincSearchSyncTask('deleteUser', $webSocketDialogUser->toArray()));
     }
 
     /**
