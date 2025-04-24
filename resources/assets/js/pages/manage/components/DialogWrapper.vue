@@ -185,7 +185,7 @@
         <div
             ref="msgs"
             class="dialog-msgs"
-            v-longpress="{callback: handleLongpress, delay: 300}">
+            v-longpress="{callback: handleLongpress, preventEndEvent: true, delay: 300}">
             <!--定位提示-->
             <div v-if="positionShow && positionMsg" class="dialog-position">
                 <div class="position-label" @click="onPositionMark(positionMsg.msg_id)">

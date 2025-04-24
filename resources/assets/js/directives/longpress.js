@@ -6,13 +6,15 @@ const longpress = {
         let mode = 'default',
             isCall = false,
             pressTimer = null,
-            delay = 500,        // 延迟时间，长按多久触发（毫秒）
-            touchend = null,        // 触摸结束回调
-            callback = binding.value;   // 回调函数：第一个参数是事件对象（点到的对象），第二个参数是元素对象（注册绑定的对象）
+            delay = 500, // 延迟时间，长按多久触发（毫秒）
+            touchend = null, // 触摸结束回调
+            callback = binding.value, // 回调函数：第一个参数是事件对象（点到的对象），第二个参数是元素对象（注册绑定的对象）
+            preventEndEvent = false; // 是否触摸结束阻止（如果触发了callback）
         if ($A.isJson(binding.value)) {
             delay = binding.value.delay || 500;
             touchend = typeof binding.value.touchend === 'function' ? binding.value.touchend : touchend;
             callback = typeof binding.value.callback === 'function' ? binding.value.callback : callback;
+            preventEndEvent = binding.value.preventEndEvent || false;
         }
         if (typeof callback !== 'function') {
             throw 'callback must be a function'
@@ -62,7 +64,11 @@ const longpress = {
         // 触摸结束
         el.__longpressEnd__ = (e) => {
             if (typeof touchend === 'function') {
-                touchend(e, el)
+                touchend(e, isCall)
+            }
+            if (isCall && preventEndEvent) {
+                e.preventDefault()
+                e.stopPropagation()
             }
             el.__longpressCancel__(e)
         }
