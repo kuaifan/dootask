@@ -827,12 +827,19 @@ class Base
             }
             return $str;
         }
-        try {
-            $find = url('');
-        } catch (\Throwable) {
-            $find = self::getSchemeAndHost();
+        if (empty($str)) {
+            return $str;
         }
-        return Base::leftDelete($str, $find . '/');
+        $parsedUrl = parse_url($str);
+        if (isset($parsedUrl['scheme']) && isset($parsedUrl['host'])) {
+            $relativePath = $parsedUrl['path'] ?? '';
+            $relativePath = ltrim($relativePath, '/');
+            $absolutePath = public_path($relativePath);
+            if (file_exists($absolutePath) || file_exists(Base::thumbRestore($absolutePath))) {
+                return $relativePath;
+            }
+        }
+        return $str;
     }
 
     /**

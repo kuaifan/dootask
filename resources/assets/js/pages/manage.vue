@@ -341,7 +341,7 @@
 
         <!--移动端选项卡-->
         <transition name="mobile-slide">
-            <MobileTabbar v-if="mobileTabbar && keyboardShow" @on-click="onTabbarClick"/>
+            <MobileTabbar v-if="mobileTabbar" @on-click="onTabbarClick"/>
         </transition>
 
         <!-- okr明细 -->
@@ -521,7 +521,6 @@ export default {
             'okrWindow',
             'formOptions',
             'mobileTabbar',
-            'keyboardShow',
             'longpressData',
         ]),
 
