@@ -32,7 +32,7 @@
                 <!--文件-->
                 <FileMsg v-else-if="msgData.type === 'file'" :msg="msgData.msg" @viewFile="viewFile" @downFile="downFile"/>
                 <!--录音-->
-                <RecordMsg v-else-if="msgData.type === 'record'" :msgId="msgData.id" :msg="msgData.msg" @playRecord="playRecord"/>
+                <RecordMsg v-else-if="msgData.type === 'record'" :msgId="msgData.id" :msg="msgData.msg" @viewText="viewText" @playRecord="playRecord"/>
                 <!--位置-->
                 <LocationMsg v-else-if="msgData.type === 'location'" :msg="msgData.msg"/>
                 <!--会议-->
