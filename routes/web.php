@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\TestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
+use App\Http\Controllers\Api\AppsController;
+use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\DialogController;
@@ -56,6 +57,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 投诉
     Route::any('complaint/{method}',                ComplaintController::class);
     Route::any('complaint/{method}/{action}',       ComplaintController::class);
+    // 应用
+    Route::any('apps/{method}',                     AppsController::class);
+    Route::any('apps/{method}/{action}',            AppsController::class);
     // 测试
     Route::any('test/{method}',                     TestController::class);
     Route::any('test/{method}/{action}',            TestController::class);
