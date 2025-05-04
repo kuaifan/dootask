@@ -12,15 +12,15 @@ class Apps
      *
      * @param string $filePath docker-compose.yml文件路径
      * @param string|null $savePath 保存文件路径，为空则覆盖原文件
-     * @param array $params 可选参数，可包含ports、volumes、container_name和config配置
+     * @param array $params 可选参数，替换docker-compose.yml中的${XXX}变量
      * @return bool 是否生成成功
      */
     public static function generateDockerComposeYml(string $filePath, ?string $savePath = null, array $params = []): bool
     {
         // 应用名称
         $appName = basename(dirname($filePath));
-        $appName = preg_replace('/(?<!^)([A-Z])/', '-$1', $appName);
-        $appName = 'dootask-app-' . strtolower($appName);
+        $serviceName = preg_replace('/(?<!^)([A-Z])/', '-$1', $appName);
+        $serviceName = 'dootask-app-' . strtolower($serviceName);
 
         // 网络名称
         $networkName = 'dootask-networks-' . env('APP_ID');
@@ -35,7 +35,7 @@ class Apps
             }
 
             // 设置服务名称
-            $content['name'] = $appName;
+            $content['name'] = $serviceName;
 
             // 删除所有现有网络配置
             unset($content['networks']);
@@ -43,45 +43,19 @@ class Apps
             // 添加网络配置
             $content['networks'][$networkName] = ['external' => true];
 
-            // 查找要修改的服务
-            $mainService = null;
-            $firstService = null;
-
-            foreach ($content['services'] as $name => $service) {
-                // 记录第一个服务
-                if ($firstService === null) {
-                    $firstService = $name;
-                }
-
-                // 检查是否有labels.main=true的服务
-                if (isset($service['labels']['main']) && $service['labels']['main'] === true) {
-                    $mainService = $name;
-                    break;
-                }
-            }
-
-            // 确定要修改的服务名称
-            $targetService = $mainService ?? $firstService;
-
-            if ($targetService !== null) {
-                $service = &$content['services'][$targetService];
-
-                // 更新网络配置
+            foreach ($content['services'] as &$service) {
+                // 确保所有服务都有网络配置
                 $service['networks'] = [$networkName];
 
-                // 处理ports参数
-                if (isset($params['ports'])) {
-                    $service['ports'] = $params['ports'];
-                }
-
-                // 处理volumes参数
-                if (isset($params['volumes'])) {
-                    $service['volumes'] = $params['volumes'];
-                }
-
-                // 处理container_name参数
-                if (isset($params['container_name'])) {
-                    $service['container_name'] = $params['container_name'];
+                // 处理现有的volumes配置
+                if (isset($service['volumes'])) {
+                    $service['volumes'] = array_map(function($volume) use ($appName) {
+                        if (str_starts_with($volume, './') || str_starts_with($volume, '../')) {
+                            // 替换相对路径为绝对路径
+                            return '${HOST_PWD}/docker/apps/' . $appName . '/' . ltrim($volume, './');
+                        }
+                        return $volume;
+                    }, $service['volumes']);
                 }
             }
 
@@ -90,8 +64,7 @@ class Apps
 
             // 替换${XXX}格式变量
             $yamlContent = preg_replace_callback('/\$\{(.*?)\}/', function($matches) use ($params) {
-                $varName = $matches[1];
-                return $params['config'][$varName] ?? $varName;
+                return $params[$matches[1]] ?? $matches[0];
             }, $yamlContent);
 
             // 写回文件
