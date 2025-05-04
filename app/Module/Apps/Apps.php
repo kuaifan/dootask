@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Module;
+namespace App\Module\Apps;
 
+use App\Module\Base;
+use App\Module\Ihttp;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
@@ -49,13 +51,7 @@ class Apps
 
                 // 处理现有的volumes配置
                 if (isset($service['volumes'])) {
-                    $service['volumes'] = array_map(function($volume) use ($appName) {
-                        if (str_starts_with($volume, './') || str_starts_with($volume, '../')) {
-                            // 替换相对路径为绝对路径
-                            return '${HOST_PWD}/docker/apps/' . $appName . '/' . ltrim($volume, './');
-                        }
-                        return $volume;
-                    }, $service['volumes']);
+                    $service['volumes'] = Volumes::processVolumeConfigurations($service['volumes'], $appName);
                 }
             }
 
@@ -63,7 +59,7 @@ class Apps
             $yamlContent = Yaml::dump($content, 4, 2);
 
             // 替换${XXX}格式变量
-            $yamlContent = preg_replace_callback('/\$\{(.*?)\}/', function($matches) use ($params) {
+            $yamlContent = preg_replace_callback('/\$\{(.*?)\}/', function ($matches) use ($params) {
                 return $params[$matches[1]] ?? $matches[0];
             }, $yamlContent);
 

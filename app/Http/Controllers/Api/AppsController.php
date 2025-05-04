@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 
-use App\Module\Apps;
+use App\Module\Apps\Apps;
 use App\Module\Base;
 
 /**
