@@ -237,6 +237,18 @@ services:
         ipv4_address: "${APP_IPPR}.15"
     restart: unless-stopped
 
+  apps:
+    container_name: "dootask-apps-${APP_ID}"
+    privileged: true
+    build:
+      context: ../dooso
+      dockerfile: Dockerfile-cli
+    volumes:
+      - ./:/var/www
+      - /var/run/docker.sock:/var/run/docker.sock
+    network_mode: host
+    restart: unless-stopped
+
 networks:
   extnetwork:
     name: "dootask-networks-${APP_ID}"

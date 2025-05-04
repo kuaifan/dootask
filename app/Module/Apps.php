@@ -5,7 +5,7 @@ namespace App\Module;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-class Docker
+class Apps
 {
     /**
      * 生成docker-compose.yml文件配置
@@ -15,7 +15,7 @@ class Docker
      * @param array $params 可选参数，可包含ports、volumes、container_name和config配置
      * @return bool 是否生成成功
      */
-    public static function generateComposeYml(string $filePath, ?string $savePath = null, array $params = []): bool
+    public static function generateDockerComposeYml(string $filePath, ?string $savePath = null, array $params = []): bool
     {
         // 应用名称
         $appName = basename(dirname($filePath));
@@ -88,13 +88,11 @@ class Docker
             // 生成YAML内容
             $yamlContent = Yaml::dump($content, 4, 2);
 
-            // 替换${xxx}格式变量
-            if (isset($params['config'])) {
-                $yamlContent = preg_replace_callback('/\$\{(.*?)\}/', function($matches) use ($params) {
-                    $varName = $matches[1];
-                    return $params['config'][$varName] ?? $matches[0];
-                }, $yamlContent);
-            }
+            // 替换${XXX}格式变量
+            $yamlContent = preg_replace_callback('/\$\{(.*?)\}/', function($matches) use ($params) {
+                $varName = $matches[1];
+                return $params['config'][$varName] ?? $varName;
+            }, $yamlContent);
 
             // 写回文件
             file_put_contents($savePath ?? $filePath, $yamlContent);
@@ -107,5 +105,29 @@ class Docker
             // 其他错误
             return false;
         }
+    }
+
+    /**
+     * 执行docker-compose up|down命令
+     * @param string $appName
+     * @param string $command
+     * @return array
+     */
+    public static function dockerComposeUp(string $appName, string $command = 'up'): array
+    {
+        $url = "http://host.docker.internal:" . env("APPS_PORT") . "/apps/{$command}/{$appName}";
+        $extra = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . env('APP_KEY'),
+        ];
+        $res = Ihttp::ihttp_request($url, [], $extra);
+        if (Base::isError($res)) {
+            return Base::retError("请求错误", $res);
+        }
+        $resData = Base::json2array($res['data']);
+        if ($resData['code'] != 200) {
+            return Base::retError("请求失败", $resData);
+        }
+        return Base::retSuccess("success", $resData['data']);
     }
 }
