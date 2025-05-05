@@ -4670,9 +4670,9 @@ export default {
         if (/^\d+$/.test(path)) {
             // 打开详情页
             emitter.emit('openAppDetail', {
-                mode: 'window',
+                mode: 'page',
                 show: false,
-                name: 'okr-detail',
+                name: 'okr-details',
                 url: import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr"),
                 data: {
                     show: true,

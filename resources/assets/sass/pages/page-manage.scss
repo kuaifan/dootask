@@ -414,6 +414,12 @@
     }
 }
 
+.page-manage-app-drawer {
+    .overlay-content {
+        overflow: hidden;
+    }
+}
+
 @media (max-height: 640px) {
     .page-manage {
         .manage-box-menu {

@@ -359,7 +359,7 @@
 
         <!--应用详情-->
         <MicroApps
-            v-if="appDetailData.mode=='window'"
+            v-if="appDetailData.mode=='page'"
             v-show="appDetailData.show"
             :name="appDetailData.name"
             :url="appDetailData.url"
@@ -369,6 +369,7 @@
             v-else-if="appDetailData.mode=='drawer'"
             v-model="appDetailData.show"
             placement="right"
+            drawer-class="page-manage-app-drawer"
             :size="1200">
             <MicroApps
                 v-if="appDetailData.show"
