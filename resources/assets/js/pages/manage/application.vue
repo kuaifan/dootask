@@ -388,7 +388,7 @@ export default {
                 { value: "addTask", label: "添加任务", sort: 120 },
                 { value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUiApp },
                 { value: "setting", label: "设置", sort: 140 },
-                { value: "apps", label: "应用商店", sort: 999 },
+                { value: "appstore", label: "应用商店", sort: 999 },
             ];
             // 竖屏模式
             if (this.windowPortrait) {
@@ -403,7 +403,6 @@ export default {
             ];
             if (this.userIsAdmin) {
                 adminApplyList.push(...[
-                    { value: "okrAnalyze", label: "OKR 结果", sort: 150 },
                     { value: "ldap", label: "LDAP", sort: 160 },
                     { value: "mail", label: "邮件通知", sort: 170 },
                     { value: "appPush", label: "APP 推送", sort: 180 },
@@ -444,9 +443,7 @@ export default {
                     break;
                 case 'okr':
                 case 'okrAnalyze':
-                    this.goForward({
-                        path: '/manage/apps/okr/' + (item.value == 'okr' ? 'list' : 'analysis'),
-                    });
+                    this.$store.dispatch("openOkr", '/manage/apps/okr/' + (item.value == 'okr' ? 'list' : 'analysis'));
                     break;
                 case 'report':
                     emitter.emit('openReport', area == 'badge' ? 'receive' : 'my');

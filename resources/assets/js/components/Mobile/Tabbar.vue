@@ -126,7 +126,7 @@ export default {
         },
 
         activeName() {
-            if (['manage-calendar', 'manage-file', 'manage-setting', 'manage-application', 'manage-approve', 'manage-apps'].includes(this.routeName)) {
+            if (['manage-calendar', 'manage-file', 'manage-setting', 'manage-application', 'manage-approve'].includes(this.routeName)) {
                 return 'application';
             }
 

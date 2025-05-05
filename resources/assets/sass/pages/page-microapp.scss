@@ -1,16 +1,8 @@
 .page-microapp {
-    .microapp-load{
+    .microapp-load {
         align-items: center;
         display: flex;
         justify-content: center;
-        height: 90%;
+        height: 100vh;
     }
 }
-.electron-single-micro-apps {
-    .page-microapp {
-        .microapp-load{
-            margin-top: 25%;
-        }
-    }
-}
-

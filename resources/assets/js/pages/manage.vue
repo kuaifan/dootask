@@ -344,9 +344,6 @@
             <MobileTabbar v-if="mobileTabbar" @on-click="onTabbarClick"/>
         </transition>
 
-        <!-- okr明细 -->
-        <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :datas="okrWindow"/>
-
         <!--审批详情-->
         <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
             <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" @onBack="approveDetailsShow=false"/>
@@ -354,10 +351,31 @@
 
         <!--应用商店-->
         <DrawerOverlay
-            v-model="appsShow"
+            v-model="appStoreShow"
             placement="right"
             :size="1200">
+            <AppStore v-if="appStoreShow"/>
+        </DrawerOverlay>
 
+        <!--应用详情-->
+        <MicroApps
+            v-if="appDetailData.mode=='window'"
+            v-show="appDetailData.show"
+            :name="appDetailData.name"
+            :url="appDetailData.url"
+            :path="appDetailData.path"
+            :datas="appDetailData.data"/>
+        <DrawerOverlay
+            v-else-if="appDetailData.mode=='drawer'"
+            v-model="appDetailData.show"
+            placement="right"
+            :size="1200">
+            <MicroApps
+                v-if="appDetailData.show"
+                :name="appDetailData.name"
+                :url="appDetailData.url"
+                :path="appDetailData.path"
+                :datas="appDetailData.data"/>
         </DrawerOverlay>
     </div>
 </template>
@@ -383,6 +401,7 @@ import MicroApps from "../components/MicroApps.vue";
 import UserSelect from "../components/UserSelect.vue";
 import ImgUpload from "../components/ImgUpload.vue";
 import ApproveDetails from "./manage/approve/details.vue";
+import AppStore from "./manage/appstore/store.vue";
 import notificationKoro from "notification-koro1";
 import emitter from "../store/events";
 import SearchBox from "../components/SearchBox.vue";
@@ -391,6 +410,7 @@ export default {
     components: {
         SearchBox,
         ApproveDetails,
+        AppStore,
         ImgUpload,
         UserSelect,
         TaskExport,
@@ -466,7 +486,8 @@ export default {
             approveDetails: {id: 0},
             approveDetailsShow: false,
 
-            appsShow: false,
+            appStoreShow: false,
+            appDetailData: {mode:''},
         }
     },
 
@@ -478,6 +499,7 @@ export default {
         emitter.on('dialogMsgPush', this.addDialogMsg);
         emitter.on('approveDetails', this.openApproveDetails);
         emitter.on('openReport', this.openReport);
+        emitter.on('openAppDetail', this.openAppDetail);
         //
         document.addEventListener('keydown', this.shortcutEvent);
     },
@@ -501,6 +523,7 @@ export default {
         emitter.off('dialogMsgPush', this.addDialogMsg);
         emitter.off('approveDetails', this.openApproveDetails);
         emitter.off('openReport', this.openReport);
+        emitter.off('openAppDetail', this.openAppDetail);
         //
         document.removeEventListener('keydown', this.shortcutEvent);
     },
@@ -528,7 +551,6 @@ export default {
             'approveUnreadNumber',
 
             'dialogIns',
-            'okrWindow',
             'formOptions',
             'mobileTabbar',
             'longpressData',
@@ -547,14 +569,6 @@ export default {
                 'show-tabbar': mobileTabbar,
                 'not-logged': userId <= 0
             }
-        },
-
-        /**
-         * okr路由
-         * @returns {any|string}
-         */
-        okrUrl() {
-            return import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr")
         },
 
         /**
@@ -839,12 +853,6 @@ export default {
                         this.goForward({name: 'manage-approve'});
                     }
                     return;
-                case 'okrManage':
-                case 'okrAnalyze':
-                    this.goForward({
-                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis'),
-                    });
-                    return;
                 case 'complaint':
                     this.complaintShow = true;
                     return;
@@ -895,7 +903,7 @@ export default {
 
         classNameRoute(path) {
             let name = this.routeName
-            if (name == 'manage-approve' || name == 'manage-apps') {
+            if (name == 'manage-approve') {
                 name = `manage-application`
             }
             return {
@@ -1154,6 +1162,17 @@ export default {
             this.workReportShow = true;
         },
 
+        openAppDetail(data) {
+            this.appDetailData = Object.assign({
+                mode: 'drawer',
+                show: false,
+                name: '',
+                url: '',
+                path: '',
+                data: {}
+            }, data);
+        },
+
         handleLongpress(event) {
             const {type, data, element} = this.longpressData;
             this.$store.commit("longpress/clear")
@@ -1229,8 +1248,8 @@ export default {
                 case 'workReport':
                     this.settingRoute(act)
                     break;
-                case 'apps':
-                    this.appsShow = true
+                case 'appstore':
+                    this.appStoreShow = true
                     break;
             }
         },

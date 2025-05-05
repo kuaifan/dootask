@@ -4657,33 +4657,39 @@ export default {
     },
 
     /** *****************************************************************************************/
-    /** *************************************** okr *********************************************/
+    /** *************************************** OKR *********************************************/
     /** *****************************************************************************************/
 
     /**
-     * 打开Okr详情页
+     * 打开OKR
      * @param state
      * @param dispatch
-     * @param link_id
+     * @param path
      */
-    openOkr({state}, link_id) {
-        if (link_id > 0) {
-            if (window.innerWidth < 910) {
-                $A.goForward({
-                    path:'/manage/apps/okr/okrDetails?data=' + link_id,
-                });
-            }else{
-                state.okrWindow = {
+    openOkr({state}, path) {
+        if (/^\d+$/.test(path)) {
+            // 打开详情页
+            emitter.emit('openAppDetail', {
+                mode: 'window',
+                show: false,
+                name: 'okr-detail',
+                url: import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr"),
+                data: {
+                    show: true,
                     type: 'open',
                     model: 'details',
-                    show: true,
-                    id: link_id
-                };
-                setTimeout(()=>{
-                    state.okrWindow.show = false;
-                    state.okrWindow.id = 0;
-                },10)
-            }
+                    id: path
+                }
+            });
+        } else {
+            // 打开列表、统计
+            emitter.emit('openAppDetail', {
+                mode: 'drawer',
+                show: true,
+                name: 'okr-app',
+                url: import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr"),
+                path
+            });
         }
     },
 }

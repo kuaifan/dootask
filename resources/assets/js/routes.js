@@ -40,11 +40,6 @@ export default [
                 component: () => import('./pages/manage/approve/index.vue'),
             },
             {
-                name: 'manage-apps',
-                path: 'apps/*',
-                component: () => import('./pages/manage/apps.vue')
-            },
-            {
                 name: 'manage-setting',
                 path: 'setting',
                 component: () => import('./pages/manage/setting/index.vue'),

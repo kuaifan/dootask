@@ -54,6 +54,7 @@ export default {
             }
         }
     },
+
     data() {
         return {
             showSpin: false,
@@ -61,28 +62,33 @@ export default {
             appData: {},
         }
     },
+
     mounted() {
         this.showSpin = true;
         this.appData = this.getAppData
     },
+
     watch: {
         loading(val) {
             if (val) {
                 this.showSpin = true;
             }
         },
+
         path(val) {
             this.appData = {path: val}
         },
+
         datas: {
             handler(info) {
                 this.appData = info
             },
             deep: true,
         },
+
         '$route': {
             handler(to) {
-                if (to.name == 'manage-apps' || to.name == 'single-apps') {
+                if (to.name == 'single-apps') {
                     this.appData = {
                         path: to.hash || to.fullPath
                     }
@@ -90,6 +96,7 @@ export default {
             },
             immediate: true,
         },
+
         userToken(val) {
             this.appData = this.getAppData;
             if (!val) {
@@ -100,11 +107,13 @@ export default {
             }
         },
     },
+
     computed: {
         ...mapState([
             'userInfo',
             'themeName',
         ]),
+
         getAppData() {
             return {
                 type: 'init',
@@ -131,9 +140,11 @@ export default {
                 openAppChildPage: (objects) => {
                     this.$store.dispatch('openAppChildPage', objects);
                 },
+
                 openChildWindow: (params) => {
                     this.$store.dispatch('openChildWindow', params);
                 },
+
                 openWebTabWindow: (url) => {
                     this.$store.dispatch('openWebTabWindow', url);
                 },
@@ -141,17 +152,20 @@ export default {
         }
     },
     methods: {
+        // 创建前
         handleCreate(e) {
-            // 创建前
             window.eventCenterForAppNameVite = new EventCenterForMicroApp(e.detail.name)
             this.appData = this.getAppData
             this.showSpin = !window["eventCenterForAppNameViteLoad-" + e.detail.name]
         },
+
+        // 创建完成
         handleBeforeMount(e) {
             window["eventCenterForAppNameViteLoad-" + e.detail.name] = 1;
         },
+
+        // 加载完成
         handleMount(e) {
-            // 加载完成
             if (this.datas) {
                 this.appData = this.datas;
             }
@@ -160,12 +174,21 @@ export default {
             }
             this.showSpin = false;
         },
+
+        // 卸载
         handleUnmount(e) {
-            // 卸载
             window.dispatchEvent(new Event('apps-unmount'));
         },
-        handleError(e) { },
-        handleDataChange(e) { }
+
+        // 加载失败
+        handleError(e) {
+            //
+        },
+
+        // 数据变化
+        handleDataChange(e) {
+            //
+        }
     }
 }
 </script>

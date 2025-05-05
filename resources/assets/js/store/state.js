@@ -248,14 +248,6 @@ export default {
     },
     appMeetingShow: false,
 
-    // okr窗口
-    okrWindow: {
-        type: 'open',
-        model: 'details',
-        id: 0,
-        show: false
-    },
-
     // 翻译
     cacheTranslationLanguage: '',
     cacheTranslations: [],
