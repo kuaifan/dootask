@@ -351,6 +351,14 @@
         <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
             <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" @onBack="approveDetailsShow=false"/>
         </DrawerOverlay>
+
+        <!--应用商店-->
+        <DrawerOverlay
+            v-model="appsShow"
+            placement="right"
+            :size="1200">
+
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -457,6 +465,8 @@ export default {
 
             approveDetails: {id: 0},
             approveDetailsShow: false,
+
+            appsShow: false,
         }
     },
 
@@ -1218,6 +1228,9 @@ export default {
                 case 'complaint':
                 case 'workReport':
                     this.settingRoute(act)
+                    break;
+                case 'apps':
+                    this.appsShow = true
                     break;
             }
         },

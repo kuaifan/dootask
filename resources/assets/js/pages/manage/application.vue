@@ -195,36 +195,7 @@
                     <p @click="meetingSettingShow = true" v-if="userIsAdmin">{{ $L('会议设置') }}</p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body full-body">
-                    <ul class="ivu-modal-wrap-ul">
-                        <li>
-                            <div class="modal-item-img">
-                                <div class="apply-icon no-dark-content meeting"></div>
-                            </div>
-                            <div class="modal-item-info">
-                                <div class="modal-item-name">
-                                    <h4>{{ $L('新会议') }}</h4>
-                                </div>
-                                <p class="modal-item-desc" @click="openDetail(meetingDescs.add)"> {{ meetingDescs.add }} </p>
-                                <div class="modal-item-btns">
-                                    <Button @click="onMeeting('createMeeting')">{{ $L('新建会议') }}</Button>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="modal-item-img">
-                                <div class="apply-icon no-dark-content meeting-join"></div>
-                            </div>
-                            <div class="modal-item-info">
-                                <div class="modal-item-name">
-                                    <h4>{{ $L('加入会议') }}</h4>
-                                </div>
-                                <p class="modal-item-desc" @click="openDetail(meetingDescs.join)">{{ meetingDescs.join }}</p>
-                                <div class="modal-item-btns">
-                                    <Button @click="onMeeting('joinMeeting')">{{ $L('加入会议') }}</Button>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+                    <SystemMeetingNav @openDetail="openDetail" @onMeeting="onMeeting"/>
                 </div>
             </div>
         </DrawerOverlay>
@@ -266,7 +237,7 @@
             </div>
         </DrawerOverlay>
 
-        <!--app推送-->
+        <!--App 推送-->
         <DrawerOverlay v-model="appPushShow" placement="right" :size="700">
             <div v-if="appPushShow" class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
@@ -278,7 +249,7 @@
             </div>
         </DrawerOverlay>
 
-        <!-- 扫码登录 -->
+        <!--扫码登录-->
         <Modal
             v-model="scanLoginShow"
             :title="$L('扫码登录')"
@@ -293,7 +264,7 @@
             </div>
         </Modal>
 
-        <!-- 发起群投票、接龙 -->
+        <!--发起群投票、接龙-->
         <UserSelect
             ref="wordChainAndVoteRef"
             v-model="sendData"
@@ -316,6 +287,7 @@ import SystemAibot from "./setting/components/SystemAibot";
 import SystemCheckin from "./setting/components/SystemCheckin";
 import Checkin from "./setting/checkin";
 import SystemMeeting from "./setting/components/SystemMeeting";
+import SystemMeetingNav from "./setting/components/SystemMeetingNav.vue";
 import SystemThirdAccess from "./setting/components/SystemThirdAccess";
 import SystemEmailSetting from "./setting/components/SystemEmailSetting";
 import SystemAppPush from "./setting/components/SystemAppPush";
@@ -332,6 +304,7 @@ export default {
         SystemCheckin,
         Checkin,
         SystemMeeting,
+        SystemMeetingNav,
         SystemThirdAccess,
         SystemEmailSetting,
         SystemAppPush
@@ -359,10 +332,6 @@ export default {
             //
             meetingShow: false,
             meetingSettingShow: false,
-            meetingDescs: {
-                add: this.$L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。') + this.$L('通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。'),
-                join: this.$L('加入视频会议，参与已经创建的会议，在会议过程中与其他参会人员进行远程实时视听交流和协作。'),
-            },
             //
             ldapShow: false,
             //
@@ -404,7 +373,7 @@ export default {
     },
     methods: {
         initList() {
-            let applyList = [
+            const applyList = [
                 { value: "approve", label: "审批中心", sort: 30 },
                 { value: "okr", label: "OKR 管理", sort: 40 },
                 { value: "report", label: "工作报告", sort: 50 },
@@ -419,6 +388,7 @@ export default {
                 { value: "addTask", label: "添加任务", sort: 120 },
                 { value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUiApp },
                 { value: "setting", label: "设置", sort: 140 },
+                { value: "apps", label: "应用商店", sort: 999 },
             ];
             // 竖屏模式
             if (this.windowPortrait) {
@@ -428,12 +398,10 @@ export default {
                 ])
             }
             // 管理员
-            const adminApplyList = [];
-            if (!this.userIsAdmin) {
-                if (this.userInfo.department_owner) {
-                    adminApplyList.push({ value: "okrAnalyze", label: "OKR 结果", sort: 150 })
-                }
-            } else {
+            const adminApplyList = [
+                { value: "okrAnalyze", label: "OKR 结果", sort: 150, show: this.userIsAdmin || this.userInfo.department_owner }
+            ];
+            if (this.userIsAdmin) {
                 adminApplyList.push(...[
                     { value: "okrAnalyze", label: "OKR 结果", sort: 150 },
                     { value: "ldap", label: "LDAP", sort: 160 },
@@ -521,13 +489,14 @@ export default {
                     break;
                 case 'scan':
                     $A.eeuiAppScan(this.scanResult);
-                    return;
+                    break;
                 case 'word-chain':
                 case 'vote':
                     this.sendData = [];
                     this.sendType = item.value;
                     this.$refs.wordChainAndVoteRef.onSelection()
-                    return;
+                    break;
+
             }
             this.$emit("on-click", item.value)
         },
