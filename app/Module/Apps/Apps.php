@@ -10,6 +10,64 @@ use Symfony\Component\Yaml\Exception\ParseException;
 class Apps
 {
     /**
+     * 执行docker-compose up|down命令
+     * @param string $appName
+     * @param string $command
+     * @param string $version
+     * @return array
+     */
+    public static function dockerComposeUp(string $appName, string $command = 'up', string $version = 'latest'): array
+    {
+        // 获取版本信息
+        $versions = self::getAvailableVersions($appName);
+        if (empty($versions)) {
+            return Base::retError("没有可用的版本");
+        }
+        if (strtolower($version) !== 'latest') {
+            $versions = array_filter($versions, function ($item) use ($version) {
+                return $item['version'] === ltrim($version, 'v');
+            });
+        }
+        $versionInfo = array_shift($versions);
+        if (empty($versionInfo)) {
+            return Base::retError("没有找到版本 {$version}");
+        }
+
+        // 保存版本信息
+        file_put_contents($versionInfo['base_dir'] . '/latest', $versionInfo['version']);
+
+        // 生成docker-compose.yml文件
+        $filePath = $versionInfo['compose_file'];
+        $savePath = $versionInfo['path'] . '/docker-compose.doo.yml';
+        $result = self::generateDockerComposeYml($filePath, $savePath, [
+            'PROXY_PORT' => '33062',    // todo 参数自定义
+        ]);
+        if (!$result) {
+            return Base::retError('生成docker-compose.yml失败');
+        }
+
+        // 执行docker-compose命令
+        $url = "http://host.docker.internal:" . env("APPS_PORT") . "/apps/{$command}/{$appName}";
+        $extra = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . env('APP_KEY'),
+        ];
+        $res = Ihttp::ihttp_request($url, [], $extra);
+        if (Base::isError($res)) {
+            return Base::retError("请求错误", $res);
+        }
+
+        // 解析响应
+        $resData = Base::json2array($res['data']);
+        if ($resData['code'] != 200) {
+            return Base::retError("请求失败", $resData);
+        }
+
+        // 返回结果
+        return Base::retSuccess("success", $resData['data']);
+    }
+
+    /**
      * 生成docker-compose.yml文件配置
      *
      * @param string $filePath docker-compose.yml文件路径
@@ -17,7 +75,7 @@ class Apps
      * @param array $params 可选参数，替换docker-compose.yml中的${XXX}变量
      * @return bool 是否生成成功
      */
-    public static function generateDockerComposeYml(string $filePath, ?string $savePath = null, array $params = []): bool
+    private static function generateDockerComposeYml(string $filePath, ?string $savePath = null, array $params = []): bool
     {
         // 应用名称
         $appName = basename(dirname($filePath));
@@ -77,26 +135,82 @@ class Apps
     }
 
     /**
-     * 执行docker-compose up|down命令
-     * @param string $appName
-     * @param string $command
-     * @return array
+     * 获取应用的可用版本列表
+     *
+     * @param string $appName 应用名称
+     * @return array 按语义化版本排序（从新到旧）的版本号数组
      */
-    public static function dockerComposeUp(string $appName, string $command = 'up'): array
+    private static function getAvailableVersions(string $appName): array
     {
-        $url = "http://host.docker.internal:" . env("APPS_PORT") . "/apps/{$command}/{$appName}";
-        $extra = [
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . env('APP_KEY'),
-        ];
-        $res = Ihttp::ihttp_request($url, [], $extra);
-        if (Base::isError($res)) {
-            return Base::retError("请求错误", $res);
+        $baseDir = base_path('docker/apps/' . $appName);
+        $versions = [];
+
+        // 检查应用目录是否存在
+        if (!is_dir($baseDir)) {
+            return $versions;
         }
-        $resData = Base::json2array($res['data']);
-        if ($resData['code'] != 200) {
-            return Base::retError("请求失败", $resData);
+
+        // 遍历应用目录
+        $dirs = scandir($baseDir);
+        foreach ($dirs as $dir) {
+            // 跳过当前目录、父目录和隐藏文件
+            if ($dir === '.' || $dir === '..' || str_starts_with($dir, '.')) {
+                continue;
+            }
+
+            $fullPath = $baseDir . '/' . $dir;
+
+            // 检查是否为目录
+            if (!is_dir($fullPath)) {
+                continue;
+            }
+
+            // 检查是否存在docker-compose.yml文件
+            $dockerComposeFile = $fullPath . '/docker-compose.yml';
+            if (!file_exists($dockerComposeFile)) {
+                continue;
+            }
+
+            // 检查目录名是否符合版本号格式 (如: 1.0.0, v1.0.0, 1.0, v1.0, 等)
+            // 支持的格式: x.y.z, vx.y.z, x.y, vx.y
+            if (preg_match('/^v?\d+(\.\d+){1,2}$/', $dir)) {
+                $versions[] = [
+                    'version' => ltrim($dir, 'v'),  // 去掉前缀v
+                    'path' => $fullPath,    // 目录路径
+                    'base_dir' => $baseDir, // 基础目录
+                    'compose_file' => $dockerComposeFile    // docker-compose.yml文件路径
+                ];
+            }
         }
-        return Base::retSuccess("success", $resData['data']);
+
+        // 按版本号排序（从新到旧）
+        usort($versions, function ($a, $b) {
+            // 将版本号拆分为数组
+            $partsA = explode('.', $a['version']);
+            $partsB = explode('.', $b['version']);
+
+            // 比较主版本号
+            if ($partsA[0] != $partsB[0]) {
+                return $partsB[0] <=> $partsA[0]; // 降序排列
+            }
+
+            // 比较次版本号（如果存在）
+            if (isset($partsA[1]) && isset($partsB[1]) && $partsA[1] != $partsB[1]) {
+                return $partsB[1] <=> $partsA[1];
+            }
+
+            // 比较修订版本号（如果存在）
+            if (isset($partsA[2]) && isset($partsB[2])) {
+                return $partsB[2] <=> $partsA[2];
+            } elseif (isset($partsA[2])) {
+                return -1; // A有修订版本号，B没有
+            } elseif (isset($partsB[2])) {
+                return 1;  // B有修订版本号，A没有
+            }
+
+            return 0; // 版本号相同
+        });
+
+        return $versions;
     }
 }
