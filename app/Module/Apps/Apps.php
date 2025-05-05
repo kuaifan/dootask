@@ -10,13 +10,13 @@ use Symfony\Component\Yaml\Exception\ParseException;
 class Apps
 {
     /**
-     * 执行docker-compose up|down命令
+     * 执行docker-compose up命令
      * @param string $appName
-     * @param string $command
      * @param string $version
+     * @param string $command
      * @return array
      */
-    public static function dockerComposeUp(string $appName, string $command = 'up', string $version = 'latest'): array
+    public static function dockerComposeUp(string $appName, string $version = 'latest', string $command = 'up'): array
     {
         // 获取版本信息
         $versions = self::getAvailableVersions($appName);
@@ -37,9 +37,7 @@ class Apps
         file_put_contents($versionInfo['base_dir'] . '/latest', $versionInfo['version']);
 
         // 生成docker-compose.yml文件
-        $filePath = $versionInfo['compose_file'];
-        $savePath = $versionInfo['path'] . '/docker-compose.doo.yml';
-        $result = self::generateDockerComposeYml($filePath, $savePath, [
+        $result = self::generateDockerComposeYml($versionInfo['compose_file'], [
             'PROXY_PORT' => '33062',    // todo 参数自定义
         ]);
         if (!$result) {
@@ -68,22 +66,39 @@ class Apps
     }
 
     /**
+     * 执行docker-compose down命令
+     * @param string $appName
+     * @param string $version
+     * @return array
+     */
+    public static function dockerComposeDown(string $appName, string $version = 'latest'): array
+    {
+        return self::dockerComposeUp($appName, $version, 'down');
+    }
+
+    /**
      * 生成docker-compose.yml文件配置
      *
      * @param string $filePath docker-compose.yml文件路径
-     * @param string|null $savePath 保存文件路径，为空则覆盖原文件
      * @param array $params 可选参数，替换docker-compose.yml中的${XXX}变量
      * @return bool 是否生成成功
      */
-    private static function generateDockerComposeYml(string $filePath, ?string $savePath = null, array $params = []): bool
+    private static function generateDockerComposeYml(string $filePath, array $params = []): bool
     {
         // 应用名称
-        $appName = basename(dirname($filePath));
-        $serviceName = preg_replace('/(?<!^)([A-Z])/', '-$1', $appName);
-        $serviceName = 'dootask-app-' . strtolower($serviceName);
+        $appName = basename(dirname($filePath, 2));
+
+        // 服务名称
+        $serviceName = 'dootask-app-' . strtolower(preg_replace('/(?<!^)([A-Z])/', '-$1', $appName));
 
         // 网络名称
         $networkName = 'dootask-networks-' . env('APP_ID');
+
+        // 主机路径
+        $hostPwd = '${HOST_PWD}/docker/apps/' . $appName . '/' . basename(dirname($filePath));
+
+        // 保存路径
+        $savePath = dirname($filePath) . '/docker-compose.doo.yml';
 
         try {
             // 解析YAML文件
@@ -109,7 +124,7 @@ class Apps
 
                 // 处理现有的volumes配置
                 if (isset($service['volumes'])) {
-                    $service['volumes'] = Volumes::processVolumeConfigurations($service['volumes'], $appName);
+                    $service['volumes'] = Volumes::processVolumeConfigurations($service['volumes'], $hostPwd);
                 }
             }
 
@@ -121,8 +136,8 @@ class Apps
                 return $params[$matches[1]] ?? $matches[0];
             }, $yamlContent);
 
-            // 写回文件
-            file_put_contents($savePath ?? $filePath, $yamlContent);
+            // 保存文件
+            file_put_contents($savePath, $yamlContent);
 
             return true;
         } catch (ParseException) {

@@ -22,6 +22,6 @@ class AppsController extends AbstractController
     public function down()
     {
         $appName = 'MysqlExposePort';
-        return Apps::dockerComposeUp($appName, 'down');
+        return Apps::dockerComposeDown($appName);
     }
 }
