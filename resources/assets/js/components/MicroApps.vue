@@ -1,9 +1,9 @@
 <template>
     <micro-app
-        v-if="appMode=='page'"
-        v-show="appShow"
-        :name="appName"
-        :url="appUrl"
+        v-if="details.mode=='page'"
+        v-show="details.show"
+        :name="details.name"
+        :url="details.url"
         :data="appData"
         @created="created"
         @beforemount="beforemount"
@@ -11,17 +11,17 @@
         @unmount="unmount"
         @error="error"/>
     <DrawerOverlay
-        v-else-if="appMode=='drawer'"
-        v-model="appShow"
+        v-else-if="details.mode=='drawer'"
+        v-model="details.show"
         ref="drawer"
         placement="right"
         modal-class="micro-apps-modal"
         drawer-class="micro-apps-drawer"
         :size="1200">
-        <div v-if="appShow" class="page-microapp">
+        <div v-if="details.show" class="page-microapp">
             <micro-app
-                :name="appName"
-                :url="appUrl"
+                :name="details.name"
+                :url="details.url"
                 :data="appData"
                 @created="created"
                 @beforemount="beforemount"
@@ -60,6 +60,8 @@ import {DatePicker} from 'view-design-hi';
 import DrawerOverlay from "./DrawerOverlay/index.vue";
 import emitter from "../store/events";
 
+const mountApps = new Map();
+
 export default {
     name: "MicroApps",
     components: {DrawerOverlay},
@@ -67,13 +69,7 @@ export default {
     data() {
         return {
             loadIng: 0,
-
-            appMode: '',
-            appShow: false,
-
-            appName: "micro-app",
-            appUrl: "",
-            appParams: {},
+            details: {},
         }
     },
 
@@ -110,26 +106,33 @@ export default {
                         DatePicker
                     }
                 },
-                theme: this.themeName,
-                languages: {
-                    languageList,
-                    languageName,
-                    languageType: languageName,
+
+                datas: {
+                    ...this.details.params,
+
+                    // theme: this.themeName,
+                    themeName: this.themeName,
+                    languages: {
+                        languageList,
+                        languageName,
+                        // languageType: languageName,
+                    },
+
+                    userInfo: this.userInfo,
+                    userToken: this.userToken,
+
+                    electron: this.$Electron,
                 },
-                userInfo: this.userInfo,
-                userToken: this.userToken,
-                electron: this.$Electron,
-                params: this.appParams,
+
+                onClose: () => {
+                    this.$refs.drawer?.onClose();
+                },
 
                 nextZIndex: () => {
                     if (typeof window.modalTransferIndex === 'number') {
                         return window.modalTransferIndex++;
                     }
                     return 1000;
-                },
-
-                onClose: () => {
-                    this.$refs.drawer?.onClose();
                 },
 
                 openAppChildPage: (objects) => {
@@ -147,31 +150,45 @@ export default {
         }
     },
     methods: {
-        created() {
-            console.log('元素被创建')
-            this.loadIng++
+        // 元素被创建
+        created(e) {
+            if (!mountApps.has(e.detail.name)) {
+                this.loadIng++
+            }
         },
-        beforemount() {
-            console.log('即将渲染')
-            this.loadIng--
+
+        // 即将渲染
+        beforemount(e) {
+            if (!mountApps.has(e.detail.name)) {
+                mountApps.set(e.detail.name, e.detail.name);
+                this.loadIng--
+            }
         },
+
+        // 已经渲染完成
         mounted() {
-            console.log('已经渲染完成')
         },
+
+        // 已经卸载
         unmount() {
-            console.log('已经卸载')
         },
+
+        // 加载出错
         error() {
-            console.log('加载出错')
         },
 
+        /**
+         * 打开微应用
+         * @param data
+         */
         openMicroApp(data) {
-            this.appName    = data.name ?? 'micro-app';
-            this.appUrl     = data.url ?? null;
-            this.appParams  = data.params ?? {};
-
-            this.appShow    = data.show ?? true;
-            this.appMode    = data.mode ?? 'drawer';
+            this.details = Object.assign({
+                mode: 'drawer',     // page, drawer
+                name: 'drawer-app', // 微应用名称
+                show: true,         // 是否显示
+                url: null,          // 微应用地址
+                params: {},         // 传递给微应用的数据
+            }, data)
         }
     }
 }

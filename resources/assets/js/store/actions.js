@@ -4675,14 +4675,16 @@ export default {
                 name: 'app-okr-details',
 
                 url: $A.mainUrl(`apps/okr/okrDetails?data=${path}`),
-                params: {},
+                params: {
+                    model: 'details',
+                },
             });
         } else {
             // 打开列表、统计
             emitter.emit('openMicroApp', {
                 mode: 'drawer',
                 show: true,
-                name: `app-okr`,
+                name: `app-okr-${path}`,
 
                 url: $A.mainUrl(`apps/okr/${path}`),
                 params: {},
