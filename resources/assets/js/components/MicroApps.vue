@@ -1,109 +1,94 @@
 <template>
-    <div class="page-microapp">
-        <transition name="microapp-load" v-if="showSpin">
-            <div class="microapp-load">
+    <micro-app
+        v-if="appMode=='page'"
+        v-show="appShow"
+        :name="appName"
+        :url="appUrl"
+        :data="appData"
+        @created="created"
+        @beforemount="beforemount"
+        @mounted="mounted"
+        @unmount="unmount"
+        @error="error"/>
+    <DrawerOverlay
+        v-else-if="appMode=='drawer'"
+        v-model="appShow"
+        ref="drawer"
+        placement="right"
+        modal-class="micro-apps-modal"
+        drawer-class="micro-apps-drawer"
+        :size="1200">
+        <div v-if="appShow" class="page-microapp">
+            <micro-app
+                :name="appName"
+                :url="appUrl"
+                :data="appData"
+                @created="created"
+                @beforemount="beforemount"
+                @mounted="mounted"
+                @unmount="unmount"
+                @error="error"/>
+            <div v-if="loadIng > 0" class="microapp-load">
                 <Loading/>
             </div>
-        </transition>
-        <micro-app
-            v-if="url && !loading"
-            :name='name'
-            :url='url'
-            inline
-            keep-alive
-            disableSandbox
-            :data='appData'
-            @created='handleCreate'
-            @beforemount='handleBeforeMount'
-            @mounted='handleMount'
-            @unmount='handleUnmount'
-            @error='handleError'
-            @datachange='handleDataChange'
-        />
-    </div>
+        </div>
+    </DrawerOverlay>
 </template>
+
+<style lang="scss">
+.micro-apps-modal {
+    .ivu-modal-close {
+        display: none;
+    }
+}
+.micro-apps-drawer {
+    .overlay-content {
+        overflow: hidden;
+    }
+}
+</style>
 
 <script>
 import Vue from 'vue'
 import store from '../store/index'
 import {mapState} from "vuex";
-import {EventCenterForMicroApp, unmountAllApps} from '@micro-zoe/micro-app'
+import {unmountAllApps} from '@micro-zoe/micro-app'
 import DialogWrapper from '../pages/manage/components/DialogWrapper.vue'
 import UserSelect from "./UserSelect.vue";
 import {languageList, languageName} from "../language";
 import {DatePicker} from 'view-design-hi';
+import DrawerOverlay from "./DrawerOverlay/index.vue";
+import emitter from "../store/events";
 
 export default {
     name: "MicroApps",
-    props: {
-        name: {
-            type: String,
-            default: "micro-app"
-        },
-        url: {
-            type: String,
-            default: ""
-        },
-        path: {
-            type: String,
-            default: ""
-        },
-        datas: {
-            type: Object,
-            default: () => {
-            }
-        }
-    },
+    components: {DrawerOverlay},
 
     data() {
         return {
-            showSpin: false,
-            loading: false,
-            appData: {},
+            loadIng: 0,
+
+            appMode: '',
+            appShow: false,
+
+            appName: "micro-app",
+            appUrl: "",
+            appParams: {},
         }
     },
 
     mounted() {
-        this.showSpin = true;
-        this.appData = this.getAppData
+        emitter.on('openMicroApp', this.openMicroApp);
+    },
+
+    beforeDestroy() {
+        emitter.off('openMicroApp', this.openMicroApp);
     },
 
     watch: {
-        loading(val) {
-            if (val) {
-                this.showSpin = true;
-            }
-        },
-
-        path(val) {
-            this.appData = {path: val}
-        },
-
-        datas: {
-            handler(info) {
-                this.appData = info
-            },
-            deep: true,
-        },
-
-        '$route': {
-            handler(to) {
-                if (to.name == 'single-apps') {
-                    this.appData = {
-                        path: to.hash || to.fullPath
-                    }
-                }
-            },
-            immediate: true,
-        },
-
         userToken(val) {
-            this.appData = this.getAppData;
             if (!val) {
                 unmountAllApps({destroy: true})
-                this.loading = true;
-            } else {
-                this.loading = false;
             }
         },
     },
@@ -114,10 +99,8 @@ export default {
             'themeName',
         ]),
 
-        getAppData() {
+        appData() {
             return {
-                type: 'init',
-                url: this.url,
                 vues: {
                     Vue,
                     store,
@@ -134,8 +117,20 @@ export default {
                     languageType: languageName,
                 },
                 userInfo: this.userInfo,
-                path: this.path,
+                userToken: this.userToken,
                 electron: this.$Electron,
+                params: this.appParams,
+
+                nextZIndex: () => {
+                    if (typeof window.modalTransferIndex === 'number') {
+                        return window.modalTransferIndex++;
+                    }
+                    return 1000;
+                },
+
+                onClose: () => {
+                    this.$refs.drawer?.onClose();
+                },
 
                 openAppChildPage: (objects) => {
                     this.$store.dispatch('openAppChildPage', objects);
@@ -152,42 +147,31 @@ export default {
         }
     },
     methods: {
-        // 创建前
-        handleCreate(e) {
-            window.eventCenterForAppNameVite = new EventCenterForMicroApp(e.detail.name)
-            this.appData = this.getAppData
-            this.showSpin = !window["eventCenterForAppNameViteLoad-" + e.detail.name]
+        created() {
+            console.log('元素被创建')
+            this.loadIng++
+        },
+        beforemount() {
+            console.log('即将渲染')
+            this.loadIng--
+        },
+        mounted() {
+            console.log('已经渲染完成')
+        },
+        unmount() {
+            console.log('已经卸载')
+        },
+        error() {
+            console.log('加载出错')
         },
 
-        // 创建完成
-        handleBeforeMount(e) {
-            window["eventCenterForAppNameViteLoad-" + e.detail.name] = 1;
-        },
+        openMicroApp(data) {
+            this.appName    = data.name ?? 'micro-app';
+            this.appUrl     = data.url ?? null;
+            this.appParams  = data.params ?? {};
 
-        // 加载完成
-        handleMount(e) {
-            if (this.datas) {
-                this.appData = this.datas;
-            }
-            if (this.path) {
-                this.appData.path = this.path
-            }
-            this.showSpin = false;
-        },
-
-        // 卸载
-        handleUnmount(e) {
-            window.dispatchEvent(new Event('apps-unmount'));
-        },
-
-        // 加载失败
-        handleError(e) {
-            //
-        },
-
-        // 数据变化
-        handleDataChange(e) {
-            //
+            this.appShow    = data.show ?? true;
+            this.appMode    = data.mode ?? 'drawer';
         }
     }
 }

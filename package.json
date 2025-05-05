@@ -21,7 +21,7 @@
     "devDependencies": {
         "@chenfengyuan/vue-qrcode": "^1.0.2",
         "@kangc/v-md-editor": "^1.7.12",
-        "@micro-zoe/micro-app": "^0.8.11",
+        "@micro-zoe/micro-app": "^1.0.0-rc.24",
         "@traptitech/markdown-it-katex": "^3.6.0",
         "autoprefixer": "^10.4.13",
         "axios": "^1.8.4",

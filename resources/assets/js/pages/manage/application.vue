@@ -443,7 +443,7 @@ export default {
                     break;
                 case 'okr':
                 case 'okrAnalyze':
-                    this.$store.dispatch("openOkr", '/manage/apps/okr/' + (item.value == 'okr' ? 'list' : 'analysis'));
+                    this.$store.dispatch("openOkr", item.value == 'okr' ? 'list' : 'analysis');
                     break;
                 case 'report':
                     emitter.emit('openReport', area == 'badge' ? 'receive' : 'my');

@@ -4669,26 +4669,23 @@ export default {
     openOkr({state}, path) {
         if (/^\d+$/.test(path)) {
             // 打开详情页
-            emitter.emit('openAppDetail', {
+            emitter.emit('openMicroApp', {
                 mode: 'page',
                 show: false,
-                name: 'okr-details',
-                url: import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr"),
-                data: {
-                    show: true,
-                    type: 'open',
-                    model: 'details',
-                    id: path
-                }
+                name: 'app-okr-details',
+
+                url: $A.mainUrl(`apps/okr/okrDetails?data=${path}`),
+                params: {},
             });
         } else {
             // 打开列表、统计
-            emitter.emit('openAppDetail', {
+            emitter.emit('openMicroApp', {
                 mode: 'drawer',
                 show: true,
-                name: 'okr-app',
-                url: import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr"),
-                path
+                name: `app-okr`,
+
+                url: $A.mainUrl(`apps/okr/${path}`),
+                params: {},
             });
         }
     },

@@ -358,26 +358,7 @@
         </DrawerOverlay>
 
         <!--应用详情-->
-        <MicroApps
-            v-if="appDetailData.mode=='page'"
-            v-show="appDetailData.show"
-            :name="appDetailData.name"
-            :url="appDetailData.url"
-            :path="appDetailData.path"
-            :datas="appDetailData.data"/>
-        <DrawerOverlay
-            v-else-if="appDetailData.mode=='drawer'"
-            v-model="appDetailData.show"
-            placement="right"
-            drawer-class="page-manage-app-drawer"
-            :size="1200">
-            <MicroApps
-                v-if="appDetailData.show"
-                :name="appDetailData.name"
-                :url="appDetailData.url"
-                :path="appDetailData.path"
-                :datas="appDetailData.data"/>
-        </DrawerOverlay>
+        <MicroApps/>
     </div>
 </template>
 
@@ -488,7 +469,6 @@ export default {
             approveDetailsShow: false,
 
             appStoreShow: false,
-            appDetailData: {mode:''},
         }
     },
 
@@ -500,7 +480,6 @@ export default {
         emitter.on('dialogMsgPush', this.addDialogMsg);
         emitter.on('approveDetails', this.openApproveDetails);
         emitter.on('openReport', this.openReport);
-        emitter.on('openAppDetail', this.openAppDetail);
         //
         document.addEventListener('keydown', this.shortcutEvent);
     },
@@ -524,7 +503,6 @@ export default {
         emitter.off('dialogMsgPush', this.addDialogMsg);
         emitter.off('approveDetails', this.openApproveDetails);
         emitter.off('openReport', this.openReport);
-        emitter.off('openAppDetail', this.openAppDetail);
         //
         document.removeEventListener('keydown', this.shortcutEvent);
     },
@@ -1161,17 +1139,6 @@ export default {
         openReport(tab) {
             this.workReportTab = tab;
             this.workReportShow = true;
-        },
-
-        openAppDetail(data) {
-            this.appDetailData = Object.assign({
-                mode: 'drawer',
-                show: false,
-                name: '',
-                url: '',
-                path: '',
-                data: {}
-            }, data);
         },
 
         handleLongpress(event) {
