@@ -6,7 +6,6 @@
 
 <script>
 import {mapState} from "vuex";
-import microApp from '@micro-zoe/micro-app'
 
 export default {
     name: "MobileBack",
@@ -128,42 +127,12 @@ export default {
                     }
                 }
             }
-            // 微应用
-            let microAppIsVisible = false;
-            microApp.setGlobalData({
-                type: 'modalVisible',
-                callback: (appName, isVisible) => {
-                    if (isVisible) {
-                        microAppIsVisible = true;
-                    }
-                }
-            })
-            if (microAppIsVisible) {
-                return true;
-            }
-            //
             return false;
         },
 
         onBack() {
             // 通用菜单
             this.$store.commit('menu/operation', {})
-
-            // 微应用通知
-            let microAppIsAccept = false;
-            microApp.setGlobalData({
-                type: 'route',
-                action: 'back',
-                route: this.$route,
-                callback: (appName, isAccept) => {
-                    if (isAccept) {
-                        microAppIsAccept = true;
-                    }
-                }
-            })
-            if (microAppIsAccept) {
-                return;
-            }
 
             // 移除模态框
             if (this.$Modal.removeLast()) {

@@ -103,39 +103,47 @@ export default {
         ]),
 
         appData() {
+            const {initialData} = this.appConfig;
+
             return {
-                vues: {
+                instance: {
                     Vue,
                     store,
                     components: {
                         DialogWrapper,
                         UserSelect,
-                        DatePicker
+                        DatePicker,
+                    },
+                    options: {
+                        shortcuts: $A.timeOptionShortcuts(),
                     }
                 },
 
-                datas: {
-                    ...this.appConfig.initialData,
+                initialData: {
+                    ...initialData,
 
-                    // theme: this.themeName,
+                    systemInfo: window.systemInfo,
+
+                    isEEUiApp: $A.isEEUiApp,
+                    isElectron: $A.isElectron,
+                    isMainElectron: $A.isMainElectron,
+                    isSubElectron: $A.isSubElectron,
+
                     themeName: this.themeName,
                     languages: {
                         languageList,
                         languageName,
-                        // languageType: languageName,
                     },
 
                     userInfo: this.userInfo,
                     userToken: this.userToken,
-
-                    electron: this.$Electron,
                 },
 
-                onClose: () => {
+                handleClose: () => {
                     this.$refs.drawer?.onClose();
                 },
 
-                nextZIndex: () => {
+                nextModalIndex: () => {
                     if (typeof window.modalTransferIndex === 'number') {
                         return window.modalTransferIndex++;
                     }

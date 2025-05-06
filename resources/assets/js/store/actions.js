@@ -4674,9 +4674,11 @@ export default {
                 displayMode: 'page',
                 isVisible: false,
 
-                appUrl: $A.mainUrl(`apps/okr/okrDetails?data=${value}`),
+                appUrl: $A.mainUrl(`apps/okr/`),
                 initialData: {
-                    model: 'details',
+                    empty: true,
+                    type: 'details',
+                    id: value,
                 },
             });
         } else {
@@ -4686,8 +4688,11 @@ export default {
                 displayMode: 'drawer',
                 isVisible: true,
 
-                appUrl: $A.mainUrl(`apps/okr/${value}`),
-                initialData: {},
+                appUrl: `http://127.0.0.1:5567/apps/okr/${value}`,
+                // appUrl: $A.mainUrl(`apps/okr/${value}`),
+                initialData: {
+                    url: $A.mainUrl()
+                },
             });
         }
     },
