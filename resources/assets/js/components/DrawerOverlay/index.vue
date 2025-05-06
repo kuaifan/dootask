@@ -6,7 +6,7 @@
         :mask="!isFullscreen"
         :mask-closable="maskClosable"
         :footer-hide="true"
-        :transition-names="[$A.isAndroid() ? '' : `drawer-slide-${transitionName}`, '']"
+        :transition-names="transitionNames"
         :beforeClose="beforeClose"
         :class-name="className"
         fullscreen>
@@ -15,7 +15,7 @@
         </div>
         <DrawerOverlayView
             v-else
-            :placement="transitionName"
+            :placement="placementName"
             :size="size"
             :minSize="minSize"
             :resize="resize"
@@ -54,6 +54,10 @@ export default {
             type: Boolean,
             default: false
         },
+        transitions: {
+            type: Array,
+            default: () => []
+        },
         size: {
             type: [Number, String],
             default: "100%"
@@ -91,8 +95,14 @@ export default {
         isFullscreen() {
             return this.forceFullscreen || (this.windowWidth < 500 && this.placement != 'bottom')
         },
-        transitionName() {
+        placementName() {
             return this.isFullscreen ? 'bottom' : this.placement
+        },
+        transitionNames() {
+            if (this.transitions.length > 0) {
+                return this.transitions
+            }
+            return [$A.isAndroid() ? '' : `drawer-slide-${this.placementName}`, '']
         },
         className() {
             const array = []
@@ -106,7 +116,7 @@ export default {
                 if (this.drawerClass) {
                     array.push(this.drawerClass)
                 }
-                array.push(this.transitionName)
+                array.push(this.placementName)
             }
             return array.join(" ");
         },

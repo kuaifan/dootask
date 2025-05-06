@@ -5,6 +5,7 @@
         placement="right"
         modal-class="micro-app-modal"
         drawer-class="micro-app-drawer"
+        :transitions="transitions"
         :force-fullscreen="appConfig.forceFullscreen"
         :size="1200">
         <div v-if="appConfig.isOpen" class="micro-app-wrapper">
@@ -103,6 +104,10 @@ export default {
             'userInfo',
             'themeName',
         ]),
+
+        transitions() {
+            return this.appConfig.forceFullscreen ? ['', ''] : []
+        },
 
         appData() {
             const {initialData, appName} = this.appConfig;
