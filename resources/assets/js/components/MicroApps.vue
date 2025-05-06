@@ -124,7 +124,7 @@ export default {
 
                     systemInfo: window.systemInfo,
 
-                    isEEUiApp: $A.isEEUiApp,
+                    isEEUIApp: $A.isEEUIApp,
                     isElectron: $A.isElectron,
                     isMainElectron: $A.isMainElectron,
                     isSubElectron: $A.isSubElectron,

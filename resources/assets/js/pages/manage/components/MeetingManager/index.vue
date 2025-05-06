@@ -298,7 +298,7 @@ export default {
         async onOpen(isDirect = false) {
             // 判断是否在会议中
             let isMeeting = false;
-            if ($A.isEEUiApp) {
+            if ($A.isEEUIApp) {
                 isMeeting = this.appMeetingShow;
             } else if ($A.Electron) {
                 const meetingWindow = await $A.Electron.sendAsync("getChildWindow", 'meeting-window')
@@ -349,7 +349,7 @@ export default {
                 delete data.name;
                 delete data.msgs;
                 // App 直接使用新窗口打开会议
-                if ($A.isEEUiApp) {
+                if ($A.isEEUIApp) {
                     loader(true);
                     this.loadNum = 0
                     this.loadTimer && clearInterval(this.loadTimer)

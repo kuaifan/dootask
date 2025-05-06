@@ -1156,7 +1156,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
 
             autoDarkMode() {
                 let darkScheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-                if ($A.isEEUiApp) {
+                if ($A.isEEUIApp) {
                     darkScheme = $A.eeuiAppGetThemeName() === "dark"
                 }
                 if (darkScheme) {

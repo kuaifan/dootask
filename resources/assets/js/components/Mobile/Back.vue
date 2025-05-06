@@ -175,7 +175,7 @@ export default {
         },
 
         appAndroidEvents() {
-            if (this.$isEEUiApp && $A.isAndroid()) {
+            if (this.$isEEUIApp && $A.isAndroid()) {
                 $A.eeuiAppSetPageBackPressed({
                     pageName: 'firstPage',
                 }, _ => {

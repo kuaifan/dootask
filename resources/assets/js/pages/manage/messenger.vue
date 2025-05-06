@@ -60,7 +60,7 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="$isEEUiApp && !appNotificationPermission" class="messenger-notify-permission" @click="onOpenAppSetting">
+                <div v-if="$isEEUIApp && !appNotificationPermission" class="messenger-notify-permission" @click="onOpenAppSetting">
                     {{$L('未开启通知权限')}}<i class="taskfont">&#xe733;</i>
                 </div>
                 <Scrollbar
@@ -358,7 +358,7 @@ export default {
         //
         this.$nextTick(_ => this.activeNum++)
         //
-        if ($A.isEEUiApp) {
+        if ($A.isEEUIApp) {
             $A.eeuiAppSendMessage({action: 'getNotificationPermission'});
         }
     },

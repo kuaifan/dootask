@@ -386,7 +386,7 @@ export default {
                 { value: "vote", label: "群投票", sort: 100 },
                 { value: "addProject", label: "创建项目", sort: 110 },
                 { value: "addTask", label: "添加任务", sort: 120 },
-                { value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUiApp },
+                { value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUIApp },
                 { value: "setting", label: "设置", sort: 140 },
                 { value: "appstore", label: "应用商店", sort: 999 },
             ];

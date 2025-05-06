@@ -1113,7 +1113,7 @@ export default {
                 return;
             }
             // 客户端打开独立窗口
-            if (this.$Electron || this.$isEEUiApp) {
+            if (this.$Electron || this.$isEEUIApp) {
                 this.openFileSingle(item);
                 return;
             }
@@ -1138,7 +1138,7 @@ export default {
                         height: Math.min(window.screen.availHeight, 900),
                     },
                 });
-            } else if (this.$isEEUiApp) {
+            } else if (this.$isEEUIApp) {
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: $A.getFileName(item),

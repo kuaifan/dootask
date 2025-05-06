@@ -20,7 +20,7 @@
                         </li>
                         <template v-if="!(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" v-for="item in projectUser">
                             <li v-if="item.userid === -1" class="more">
-                                <ETooltip :disabled="$isEEUiApp || windowTouch" :content="$L('共' + (projectData.project_user.length) + '个成员')">
+                                <ETooltip :disabled="$isEEUIApp || windowTouch" :content="$L('共' + (projectData.project_user.length) + '个成员')">
                                     <Icon type="ios-more"/>
                                 </ETooltip>
                             </li>
@@ -31,7 +31,7 @@
                     </ul>
                 </li>
                 <li class="project-icon" @click="addTaskOpen(0)">
-                    <ETooltip :disabled="$isEEUiApp || windowTouch" :content="$L('添加任务')">
+                    <ETooltip :disabled="$isEEUIApp || windowTouch" :content="$L('添加任务')">
                         <Icon class="menu-icon" type="md-add" />
                     </ETooltip>
                 </li>
@@ -104,7 +104,7 @@
             <Draggable
                 :list="columnList"
                 :animation="150"
-                :disabled="sortDisabled || $isEEUiApp || windowTouch"
+                :disabled="sortDisabled || $isEEUIApp || windowTouch"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
@@ -167,7 +167,7 @@
                         <Draggable
                             :list="column.tasks"
                             :animation="150"
-                            :disabled="sortDisabled || $isEEUiApp || windowTouch"
+                            :disabled="sortDisabled || $isEEUIApp || windowTouch"
                             class="task-list"
                             draggable=".task-draggable"
                             filter=".complete"
@@ -213,7 +213,7 @@
                                             <ETooltip
                                                 v-if="item.end_at"
                                                 :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                                :disabled="$isEEUiApp || windowTouch"
+                                                :disabled="$isEEUIApp || windowTouch"
                                                 :open-delay="600"
                                                 :content="item.end_at">
                                                 <div v-if="!item.complete_at"><i class="taskfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>

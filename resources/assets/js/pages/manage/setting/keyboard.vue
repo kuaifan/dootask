@@ -28,7 +28,7 @@
                     </div>
                 </FormItem>
             </template>
-            <FormItem v-if="$isEEUiApp" :label="$L('发送按钮')">
+            <FormItem v-if="$isEEUIApp" :label="$L('发送按钮')">
                 <RadioGroup v-model="formData.send_button_app">
                     <Radio label="button">{{$L('开启')}}</Radio>
                     <Radio label="enter">{{$L('关闭')}}</Radio>

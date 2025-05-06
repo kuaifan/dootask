@@ -56,24 +56,24 @@
                         :visibleArrow="false"
                         placement="top"
                         popperClass="chat-input-emoji-popover">
-                        <ETooltip slot="reference" ref="emojiTip" :disabled="$isEEUiApp || windowTouch || showEmoji" placement="top" :enterable="false" :content="$L('表情')">
+                        <ETooltip slot="reference" ref="emojiTip" :disabled="$isEEUIApp || windowTouch || showEmoji" placement="top" :enterable="false" :content="$L('表情')">
                             <i class="taskfont">&#xe7ad;</i>
                         </ETooltip>
                         <ChatEmoji v-if="showEmoji" @on-select="onSelectEmoji" :searchKey="emojiQuickKey"/>
                     </EPopover>
-                    <ETooltip v-else ref="emojiTip" :disabled="$isEEUiApp || windowTouch || showEmoji" placement="top" :enterable="false" :content="$L('表情')">
+                    <ETooltip v-else ref="emojiTip" :disabled="$isEEUIApp || windowTouch || showEmoji" placement="top" :enterable="false" :content="$L('表情')">
                         <i class="taskfont" @click="showEmoji=!showEmoji">&#xe7ad;</i>
                     </ETooltip>
                 </li>
 
                 <!-- @ # -->
                 <li>
-                    <ETooltip placement="top" :disabled="$isEEUiApp || windowTouch" :enterable="false" :content="$L('选择成员')">
+                    <ETooltip placement="top" :disabled="$isEEUIApp || windowTouch" :enterable="false" :content="$L('选择成员')">
                         <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
                     </ETooltip>
                 </li>
                 <li>
-                    <ETooltip placement="top" :disabled="$isEEUiApp || windowTouch" :enterable="false" :content="$L('选择任务')">
+                    <ETooltip placement="top" :disabled="$isEEUIApp || windowTouch" :enterable="false" :content="$L('选择任务')">
                         <i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i>
                     </ETooltip>
                 </li>
@@ -86,7 +86,7 @@
                         :visibleArrow="false"
                         placement="top"
                         popperClass="chat-input-more-popover">
-                        <ETooltip slot="reference" ref="moreTip" :disabled="$isEEUiApp || windowTouch || showMore" placement="top" :enterable="false" :content="$L('展开')">
+                        <ETooltip slot="reference" ref="moreTip" :disabled="$isEEUIApp || windowTouch || showMore" placement="top" :enterable="false" :content="$L('展开')">
                             <i class="taskfont">&#xe790;</i>
                         </ETooltip>
                         <template v-if="!isAiBot">
@@ -150,7 +150,7 @@
                         trigger="manual"
                         placement="top"
                         popperClass="chat-input-more-popover">
-                        <ETooltip slot="reference" ref="sendTip" placement="top" :disabled="$isEEUiApp || windowTouch || showMenu" :enterable="false" :content="$L(sendContent)">
+                        <ETooltip slot="reference" ref="sendTip" placement="top" :disabled="$isEEUIApp || windowTouch || showMenu" :enterable="false" :content="$L(sendContent)">
                             <div v-if="loading">
                                 <div class="chat-load">
                                     <Loading/>
@@ -515,7 +515,7 @@ export default {
             }
         }, 1000)
         //
-        if (this.$isEEUiApp) {
+        if (this.$isEEUIApp) {
             window.__onPermissionRequest = (type, result) => {
                 if (type === 'recordAudio' && result === false) {
                     // Android 录音权限被拒绝了
@@ -563,7 +563,7 @@ export default {
         ...mapGetters(['getDialogDraft', 'getDialogQuote']),
 
         isEnterSend({cacheKeyboard}) {
-            if (this.$isEEUiApp) {
+            if (this.$isEEUIApp) {
                 return cacheKeyboard.send_button_app === 'enter';
             } else {
                 return cacheKeyboard.send_button_desktop === 'enter';
@@ -578,7 +578,7 @@ export default {
         },
 
         canCall() {
-            return this.dialogData.type === 'user' && !this.dialogData.bot && this.$isEEUiApp
+            return this.dialogData.type === 'user' && !this.dialogData.bot && this.$isEEUIApp
         },
 
         canAnon() {
@@ -937,7 +937,7 @@ export default {
                 readOnly: false,
                 placeholder: this.placeholder,
                 modules: {
-                    toolbar: this.$isEEUiApp || this.windowTouch ? false : this.toolbar,
+                    toolbar: this.$isEEUIApp || this.windowTouch ? false : this.toolbar,
                     keyboard: this.simpleMode ? {} : {
                         bindings: {
                             'short enter': {
@@ -1089,7 +1089,7 @@ export default {
 
             // Set enterkeyhint
             this.$nextTick(_ => {
-                if (this.$isEEUiApp && this.cacheKeyboard.send_button_app === 'enter') {
+                if (this.$isEEUIApp && this.cacheKeyboard.send_button_app === 'enter') {
                     this.quill.root.setAttribute('enterkeyhint', 'send')
                 }
             })

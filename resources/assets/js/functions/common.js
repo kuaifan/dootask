@@ -724,7 +724,7 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {string}
          */
         reloadUrl() {
-            if ($A.isEEUiApp && $A.isAndroid()) {
+            if ($A.isEEUIApp && $A.isAndroid()) {
                 let url = window.location.href;
                 let key = '_='
                 let reg = new RegExp(key + '\\d+');

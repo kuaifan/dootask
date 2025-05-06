@@ -35,7 +35,7 @@ export default {
         return {
             loadIng: 0,
             info: null,
-            showHeader: !$A.isEEUiApp,
+            showHeader: !$A.isEEUIApp,
         }
     },
     mounted() {

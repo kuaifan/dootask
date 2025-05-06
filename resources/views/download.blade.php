@@ -78,8 +78,8 @@
         document.body.classList.add("dark");
     }
     //
-    const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
-    if (isEEUiApp) {
+    const isEEUIApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
+    if (isEEUIApp) {
         document.querySelector(".link").addEventListener('click', function (e) {
             e.preventDefault();
             window.top.postMessage({

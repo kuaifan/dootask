@@ -97,11 +97,11 @@ export default {
         },
 
         showDown() {
-            return !this.$isEEUiApp && !this.windowTouch && ['login', 'index', 'manage-dashboard'].includes(this.routeName)
+            return !this.$isEEUIApp && !this.windowTouch && ['login', 'index', 'manage-dashboard'].includes(this.routeName)
         },
 
         showPrivacy() {
-            return $A.isDooServer() && this.$isEEUiApp && ['login'].includes(this.routeName)
+            return $A.isDooServer() && this.$isEEUIApp && ['login'].includes(this.routeName)
         }
     },
 

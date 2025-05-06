@@ -81,7 +81,7 @@
                     <p v-if="taskDetail.id"><span>{{taskDetail.id}}</span></p>
                 </div>
                 <div class="function">
-                    <ETooltip v-if="$Electron" :disabled="$isEEUiApp || windowTouch" :content="$L('独立窗口显示')">
+                    <ETooltip v-if="$Electron" :disabled="$isEEUIApp || windowTouch" :content="$L('独立窗口显示')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
                     <div class="menu">
@@ -266,7 +266,7 @@
                         </div>
                         <ul class="item-content loop">
                             <li>
-                                <ETooltip :disabled="$isEEUiApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
+                                <ETooltip :disabled="$isEEUIApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
                                     <span ref="loopText" @click="onLoop">{{$L(loopLabel(taskDetail.loop))}}</span>
                                 </ETooltip>
                             </li>
@@ -1861,7 +1861,7 @@ export default {
                         height: Math.min(window.screen.availHeight, 900),
                     },
                 });
-            } else if (this.$isEEUiApp) {
+            } else if (this.$isEEUIApp) {
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: `${file.name} (${$A.bytesToSize(file.size)})`,
@@ -2104,7 +2104,7 @@ export default {
         },
 
         autoScrollInto() {
-            return this.$isEEUiApp
+            return this.$isEEUIApp
                 && this.windowPortrait
                 && this.$refs.chatInput?.isFocus
         },

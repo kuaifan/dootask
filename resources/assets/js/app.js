@@ -1,6 +1,6 @@
 const isElectron = !!(window && window.process && window.process.type && window.electron);
-const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
-const isSoftware = isElectron || isEEUiApp;
+const isEEUIApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
+const isSoftware = isElectron || isEEUIApp;
 
 import {languageName, switchLanguage as $L} from "./language";
 
@@ -184,7 +184,7 @@ Vue.prototype.copyText = function (obj) {
             error: "复制失败"
         }
     }
-    if ($A.isEEUiApp) {
+    if ($A.isEEUIApp) {
         $A.eeuiAppCopyText(obj.text)
         obj.success && $A.messageSuccess(obj.success)
         return
@@ -203,7 +203,7 @@ $A.Electron = null;
 $A.Platform = "web";
 $A.isMainElectron = false;
 $A.isSubElectron = false;
-$A.isEEUiApp = isEEUiApp;
+$A.isEEUIApp = isEEUIApp;
 $A.isElectron = isElectron;
 $A.isSoftware = isSoftware;
 $A.openLog = false;
@@ -212,7 +212,7 @@ if (isElectron) {
     $A.Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
     $A.isMainElectron = /\s+MainTaskWindow\//.test(window.navigator.userAgent);
     $A.isSubElectron = /\s+SubTaskWindow\//.test(window.navigator.userAgent);
-} else if (isEEUiApp) {
+} else if (isEEUIApp) {
     $A.Platform = /(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent) ? "ios" : "android";
 }
 
@@ -283,7 +283,7 @@ Vue.prototype.$Electron = $A.Electron;
 Vue.prototype.$Platform = $A.Platform;
 Vue.prototype.$isMainElectron = $A.isMainElectron;
 Vue.prototype.$isSubElectron = $A.isSubElectron;
-Vue.prototype.$isEEUiApp = $A.isEEUiApp;
+Vue.prototype.$isEEUIApp = $A.isEEUIApp;
 Vue.prototype.$isSoftware = $A.isSoftware;
 
 Vue.config.productionTip = false;
@@ -317,7 +317,7 @@ const $init = async () => {
 }
 
 const $preload = async () => {
-    if ($A.isEEUiApp) {
+    if ($A.isEEUIApp) {
         const requireTime = new Date().getTime();
         while (typeof requireModuleJs !== "function") {
             await new Promise(resolve => setTimeout(resolve, 200));

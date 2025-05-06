@@ -1065,7 +1065,7 @@ export default {
         },
 
         addDialogMsg(data) {
-            if (!this.natificationReady && !this.$isEEUiApp) {
+            if (!this.natificationReady && !this.$isEEUIApp) {
                 return; // 通知未准备好不通知
             }
             if (this.windowActive && data.dialog_id === $A.last(this.dialogIns)?.dialog_id) {
@@ -1089,7 +1089,7 @@ export default {
             const notificationFuncB = (title, userimg) => {
                 if (this.__notificationId === id) {
                     this.__notificationId = null
-                    if (this.$isEEUiApp) {
+                    if (this.$isEEUIApp) {
                         emitter.emit('openMobileNotification', {
                             userid: userid,
                             title,

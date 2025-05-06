@@ -3856,7 +3856,7 @@ export default {
                         height: Math.min(window.screen.availHeight, 900),
                     },
                 });
-            } else if (this.$isEEUiApp) {
+            } else if (this.$isEEUIApp) {
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: title,
@@ -4420,7 +4420,7 @@ export default {
 
         autoScrollInto() {
             return this.location === "modal"
-                && this.$isEEUiApp
+                && this.$isEEUIApp
                 && this.windowPortrait
                 && this.$refs.input?.isFocus
         },

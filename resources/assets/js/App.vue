@@ -205,7 +205,7 @@ export default {
             handler() {
                 this.$store.dispatch("websocketConnection");
                 //
-                if (this.$isEEUiApp) {
+                if (this.$isEEUIApp) {
                     this.umengAliasTimer && clearTimeout(this.umengAliasTimer)
                     if (this.userId > 0) {
                         // 给 APP 发送初始化消息
@@ -373,7 +373,7 @@ export default {
         },
 
         onRouterViewMounted() {
-            document.documentElement.setAttribute("data-platform", $A.isElectron ? "desktop" : $A.isEEUiApp ? "app" : "web")
+            document.documentElement.setAttribute("data-platform", $A.isElectron ? "desktop" : $A.isEEUIApp ? "app" : "web")
         },
 
         /**
@@ -596,7 +596,7 @@ export default {
         },
 
         eeuiEvents() {
-            if (!this.$isEEUiApp) {
+            if (!this.$isEEUIApp) {
                 return;
             }
             // APP进入前台

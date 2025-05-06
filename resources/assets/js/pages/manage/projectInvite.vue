@@ -128,7 +128,7 @@ export default {
          * 唤醒APP
          */
         wakeApp() {
-            if (!$A.Electron && !$A.isEEUiApp && navigator.userAgent.indexOf("MicroMessenger") === -1) {
+            if (!$A.Electron && !$A.isEEUIApp && navigator.userAgent.indexOf("MicroMessenger") === -1) {
                 if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
                     try {
                         if (/Android/i.test(navigator.userAgent)) {

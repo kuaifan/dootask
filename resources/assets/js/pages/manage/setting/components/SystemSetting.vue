@@ -86,7 +86,7 @@
                             <Radio label="close">{{$L('关闭')}}</Radio>
                         </RadioGroup>
                         <div class="form-tip">{{$L('任务完成后自动归档。')}}</div>
-                        <ETooltip v-if="formDatum.auto_archived=='open'" placement="right" :disabled="$isEEUiApp || windowTouch">
+                        <ETooltip v-if="formDatum.auto_archived=='open'" placement="right" :disabled="$isEEUIApp || windowTouch">
                             <div class="setting-auto-day">
                                 <Input v-model="formDatum.archived_day" type="number">
                                     <span slot="append">{{$L('天')}}</span>

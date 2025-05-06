@@ -43,7 +43,7 @@
                 <Button @click="advanced=!advanced">{{$L('高级选项')}}</Button>
                 <ul class="advanced-priority">
                     <li v-for="(item, key) in taskPriority" :key="key">
-                        <ETooltip :disabled="$isEEUiApp || windowTouch" :content="taskPriorityContent(item)">
+                        <ETooltip :disabled="$isEEUIApp || windowTouch" :content="taskPriorityContent(item)">
                             <i
                                 class="taskfont"
                                 :style="{color:item.color}"

@@ -181,7 +181,7 @@ export default {
                                 height: Math.min(window.screen.availHeight, 900),
                             },
                         });
-                    } else if (this.$isEEUiApp) {
+                    } else if (this.$isEEUIApp) {
                         this.$store.dispatch('openAppChildPage', {
                             pageType: 'app',
                             pageTitle: title,

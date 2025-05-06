@@ -479,7 +479,7 @@ export default {
             }, () => {
                 // 失败
             });
-        } else if ($A.isEEUiApp) {
+        } else if ($A.isEEUIApp) {
             $A.eeuiAppOpenWeb(url);
         } else {
             window.open(url)
@@ -553,7 +553,7 @@ export default {
                 return;
             }
             if (!$A.dark.utils.supportMode()) {
-                if ($A.isEEUiApp) {
+                if ($A.isEEUIApp) {
                     $A.modalWarning("仅Android设置支持主题功能");
                 } else {
                     $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
@@ -593,7 +593,7 @@ export default {
         state.themeName = $A.dark.isDarkEnabled() ? 'dark' : 'light'
         window.localStorage.setItem("__system:themeConf__", state.themeConf)
         //
-        if ($A.isEEUiApp) {
+        if ($A.isEEUIApp) {
             $A.eeuiAppSendMessage({
                 action: 'updateTheme',
                 themeName: state.themeName,
@@ -734,7 +734,7 @@ export default {
             state.userId = userInfo.userid;
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
-            if ($A.isSubElectron || ($A.isEEUiApp && !state.isFirstPage)) {
+            if ($A.isSubElectron || ($A.isEEUIApp && !state.isFirstPage)) {
                 // 子窗口（Electron）、不是第一个页面（App） 不保存
             } else {
                 await $A.IDBSet("userInfo", state.userInfo);

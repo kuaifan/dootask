@@ -3,7 +3,7 @@
         <PageTitle :title="pageName"/>
         <Loading v-if="loadIng > 0"/>
         <template v-else-if="fileInfo">
-            <FilePreview v-if="isPreview" :code="code" :file="fileInfo" :historyId="historyId" :headerShow="!$isEEUiApp"/>
+            <FilePreview v-if="isPreview" :code="code" :file="fileInfo" :historyId="historyId" :headerShow="!$isEEUIApp"/>
             <FileContent v-else v-model="fileShow" :file="fileInfo"/>
         </template>
     </div>

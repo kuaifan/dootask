@@ -1,7 +1,7 @@
 <template>
     <ETooltip
         :open-delay="openDelay"
-        :disabled="$isEEUiApp || windowTouch || tooltipDisabled || isBot"
+        :disabled="$isEEUIApp || windowTouch || tooltipDisabled || isBot"
         :placement="tooltipPlacement">
         <div v-if="user" slot="content" class="common-avatar-transfer">
             <slot/>
