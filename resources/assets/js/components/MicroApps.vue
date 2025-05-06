@@ -41,6 +41,7 @@
         display: none;
     }
 }
+
 .micro-apps-drawer {
     .overlay-content {
         overflow: hidden;
@@ -52,7 +53,7 @@
 import Vue from 'vue'
 import store from '../store/index'
 import {mapState} from "vuex";
-import {unmountApp, unmountAllApps} from '@micro-zoe/micro-app'
+import microApp from '@micro-zoe/micro-app'
 import DialogWrapper from '../pages/manage/components/DialogWrapper.vue'
 import UserSelect from "./UserSelect.vue";
 import {languageList, languageName} from "../language";
@@ -60,7 +61,7 @@ import {DatePicker} from 'view-design-hi';
 import DrawerOverlay from "./DrawerOverlay/index.vue";
 import emitter from "../store/events";
 
-const microApps = new Map();
+const appMaps = new Map();
 
 export default {
     name: "MicroApps",
@@ -74,6 +75,12 @@ export default {
     },
 
     mounted() {
+        microApp.start({
+            'iframe': true,
+            'keep-alive': true,         // 全局开启保活模式
+            'router-mode': 'state',     // 路由设置为state模式
+        })
+
         emitter.on('openMicroApp', this.openMicroApp);
     },
 
@@ -84,7 +91,7 @@ export default {
     watch: {
         userToken(val) {
             if (!val) {
-                unmountAllApps({destroy: true})
+                microApp.unmountAllApps({destroy: true})
             }
         },
     },
@@ -152,7 +159,7 @@ export default {
     methods: {
         // 元素被创建
         created(e) {
-            const item = microApps.get(e.detail.name)
+            const item = appMaps.get(e.detail.name)
             if (item?.isLoading) {
                 this.loadIng++
             }
@@ -160,7 +167,7 @@ export default {
 
         // 即将渲染
         beforemount(e) {
-            const item = microApps.get(e.detail.name)
+            const item = appMaps.get(e.detail.name)
             if (item?.isLoading) {
                 this.loadIng--
             }
@@ -194,17 +201,17 @@ export default {
             }, config);
 
             // 判断卸载上一次
-            const item = microApps.get(config.appName)
+            const item = appMaps.get(config.appName)
             if (item) {
                 if (item.displayMode != config.displayMode || item.appUrl != config.appUrl) {
-                    unmountApp(config.appName, {destroy: true})
+                    microApp.unmountApp(config.appName, {destroy: true})
                 } else {
                     config.isLoading = false;
                 }
             }
 
             // 更新数据
-            microApps.set(config.appName, this.appConfig = config);
+            appMaps.set(config.appName, this.appConfig = config);
         }
     }
 }

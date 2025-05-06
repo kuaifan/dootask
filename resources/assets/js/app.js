@@ -2,7 +2,6 @@ const isElectron = !!(window && window.process && window.process.type && window.
 const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 const isSoftware = isElectron || isEEUiApp;
 
-import microappInit from "./microapp"
 import {languageName, switchLanguage as $L} from "./language";
 
 import './functions/common'
@@ -293,8 +292,6 @@ Vue.mixin(state)
 let app;
 const $init = async () => {
     const action = await store.dispatch("init");
-
-    microappInit();
 
     app = new Vue({
         router,
