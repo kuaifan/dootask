@@ -4678,6 +4678,7 @@ export default {
                     id: value,
                 },
                 forceFullscreen: true,
+                transparent: true,
             });
         } else {
             // 打开列表、统计

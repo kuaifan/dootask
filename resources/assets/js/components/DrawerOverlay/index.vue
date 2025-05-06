@@ -102,7 +102,7 @@ export default {
             if (this.transitions.length > 0) {
                 return this.transitions
             }
-            return [$A.isAndroid() ? '' : `drawer-slide-${this.placementName}`, '']
+            return [`drawer-slide-${this.placementName}`, '']
         },
         className() {
             const array = []

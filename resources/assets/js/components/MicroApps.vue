@@ -3,8 +3,8 @@
         ref="drawer"
         v-model="appConfig.isOpen"
         placement="right"
-        modal-class="micro-app-modal"
-        drawer-class="micro-app-drawer"
+        :modal-class="modalClass"
+        :drawer-class="drawerClass"
         :transitions="transitions"
         :force-fullscreen="appConfig.forceFullscreen"
         :size="1200">
@@ -36,6 +36,18 @@
 .micro-app-drawer {
     .overlay-content {
         overflow: hidden;
+    }
+}
+
+.micro-app-transparent {
+    .ivu-modal,
+    .ivu-modal-content {
+        background: transparent;
+    }
+    .overlay-body {
+        .overlay-content {
+            background: transparent;
+        }
     }
 }
 
@@ -81,7 +93,7 @@ export default {
     mounted() {
         microApp.start({
             'iframe': true,
-            'router-mode': 'state',     // 路由设置为state模式
+            'router-mode': 'state',
         })
 
         emitter.on('openMicroApp', this.openMicroApp);
@@ -105,8 +117,16 @@ export default {
             'themeName',
         ]),
 
+        modalClass() {
+            return this.appConfig.transparent ? 'micro-app-modal micro-app-transparent' : 'micro-app-modal'
+        },
+
+        drawerClass() {
+            return this.appConfig.transparent ? 'micro-app-drawer micro-app-transparent' : 'micro-app-drawer'
+        },
+
         transitions() {
-            return this.appConfig.forceFullscreen ? ['', ''] : []
+            return this.appConfig.transparent ? ['', ''] : []
         },
 
         appData() {
@@ -216,7 +236,9 @@ export default {
                 appName: 'micro-app',       // 微应用唯一标识名称
                 appUrl: null,               // 微应用的入口URL地址
                 initialData: {},            // 初始化时传递给微应用的数据对象
+
                 forceFullscreen: false,     // 是否强制全屏(true/false)，默认自动适应
+                transparent: false,         // 是否透明(true/false)，默认不透明
                 keepAlive: true,            // 是否开启微应用保活(true/false)，默认开启
 
                 isLoading: true,            // 私有参数，是否显示加载状态(true/false)
