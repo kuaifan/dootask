@@ -4664,30 +4664,30 @@ export default {
      * 打开OKR
      * @param state
      * @param dispatch
-     * @param path
+     * @param value
      */
-    openOkr({state}, path) {
-        if (/^\d+$/.test(path)) {
+    openOkr({state}, value) {
+        if (/^\d+$/.test(value)) {
             // 打开详情页
             emitter.emit('openMicroApp', {
-                mode: 'page',
-                show: false,
-                name: 'app-okr-details',
+                appName: 'okr-details',
+                displayMode: 'page',
+                isVisible: false,
 
-                url: $A.mainUrl(`apps/okr/okrDetails?data=${path}`),
-                params: {
+                appUrl: $A.mainUrl(`apps/okr/okrDetails?data=${value}`),
+                initialData: {
                     model: 'details',
                 },
             });
         } else {
             // 打开列表、统计
             emitter.emit('openMicroApp', {
-                mode: 'drawer',
-                show: true,
-                name: `app-okr-${path}`,
+                appName: `okr-${value}`,
+                displayMode: 'drawer',
+                isVisible: true,
 
-                url: $A.mainUrl(`apps/okr/${path}`),
-                params: {},
+                appUrl: $A.mainUrl(`apps/okr/${value}`),
+                initialData: {},
             });
         }
     },

@@ -1,9 +1,9 @@
 <template>
     <micro-app
-        v-if="details.mode=='page'"
-        v-show="details.show"
-        :name="details.name"
-        :url="details.url"
+        v-if="appConfig.displayMode=='page'"
+        v-show="appConfig.isVisible"
+        :name="appConfig.appName"
+        :url="appConfig.appUrl"
         :data="appData"
         @created="created"
         @beforemount="beforemount"
@@ -11,17 +11,17 @@
         @unmount="unmount"
         @error="error"/>
     <DrawerOverlay
-        v-else-if="details.mode=='drawer'"
-        v-model="details.show"
+        v-else-if="appConfig.displayMode=='drawer'"
+        v-model="appConfig.isVisible"
         ref="drawer"
         placement="right"
         modal-class="micro-apps-modal"
         drawer-class="micro-apps-drawer"
         :size="1200">
-        <div v-if="details.show" class="page-microapp">
+        <div v-if="appConfig.isVisible" class="page-microapp">
             <micro-app
-                :name="details.name"
-                :url="details.url"
+                :name="appConfig.appName"
+                :url="appConfig.appUrl"
                 :data="appData"
                 @created="created"
                 @beforemount="beforemount"
@@ -52,7 +52,7 @@
 import Vue from 'vue'
 import store from '../store/index'
 import {mapState} from "vuex";
-import {unmountAllApps} from '@micro-zoe/micro-app'
+import {unmountApp, unmountAllApps} from '@micro-zoe/micro-app'
 import DialogWrapper from '../pages/manage/components/DialogWrapper.vue'
 import UserSelect from "./UserSelect.vue";
 import {languageList, languageName} from "../language";
@@ -60,7 +60,7 @@ import {DatePicker} from 'view-design-hi';
 import DrawerOverlay from "./DrawerOverlay/index.vue";
 import emitter from "../store/events";
 
-const mountApps = new Map();
+const microApps = new Map();
 
 export default {
     name: "MicroApps",
@@ -69,7 +69,7 @@ export default {
     data() {
         return {
             loadIng: 0,
-            details: {},
+            appConfig: {},
         }
     },
 
@@ -108,7 +108,7 @@ export default {
                 },
 
                 datas: {
-                    ...this.details.params,
+                    ...this.appConfig.initialData,
 
                     // theme: this.themeName,
                     themeName: this.themeName,
@@ -152,15 +152,16 @@ export default {
     methods: {
         // 元素被创建
         created(e) {
-            if (!mountApps.has(e.detail.name)) {
+            const item = microApps.get(e.detail.name)
+            if (item?.isLoading) {
                 this.loadIng++
             }
         },
 
         // 即将渲染
         beforemount(e) {
-            if (!mountApps.has(e.detail.name)) {
-                mountApps.set(e.detail.name, e.detail.name);
+            const item = microApps.get(e.detail.name)
+            if (item?.isLoading) {
                 this.loadIng--
             }
         },
@@ -179,16 +180,31 @@ export default {
 
         /**
          * 打开微应用
-         * @param data
+         * @param config
          */
-        openMicroApp(data) {
-            this.details = Object.assign({
-                mode: 'drawer',     // page, drawer
-                name: 'drawer-app', // 微应用名称
-                show: true,         // 是否显示
-                url: null,          // 微应用地址
-                params: {},         // 传递给微应用的数据
-            }, data)
+        openMicroApp(config) {
+            // 处理数据
+            config = Object.assign({
+                appName: 'micro-app',       // 微应用唯一标识名称
+                displayMode: 'drawer',      // 显示模式: 'page'-全屏模式, 'drawer'-抽屉模式
+                isVisible: true,            // 是否显示微应用(true/false)
+                appUrl: null,               // 微应用的入口URL地址
+                initialData: {},            // 初始化时传递给微应用的数据对象
+                isLoading: true,            // 私有参数，是否显示加载状态(true/false)
+            }, config);
+
+            // 判断卸载上一次
+            const item = microApps.get(config.appName)
+            if (item) {
+                if (item.displayMode != config.displayMode || item.appUrl != config.appUrl) {
+                    unmountApp(config.appName, {destroy: true})
+                } else {
+                    config.isLoading = false;
+                }
+            }
+
+            // 更新数据
+            microApps.set(config.appName, this.appConfig = config);
         }
     }
 }
