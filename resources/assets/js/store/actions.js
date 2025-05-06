@@ -4671,28 +4671,20 @@ export default {
             // 打开详情页
             emitter.emit('openMicroApp', {
                 appName: 'okr-details',
-                displayMode: 'page',
-                isVisible: false,
-
-                appUrl: $A.mainUrl(`apps/okr/`),
+                appUrl: `http://127.0.0.1:5567/apps/okr/`,
+                // appUrl: $A.mainUrl('apps/okr/'),
                 initialData: {
-                    empty: true,
                     type: 'details',
                     id: value,
                 },
+                forceFullscreen: true,
             });
         } else {
             // 打开列表、统计
             emitter.emit('openMicroApp', {
                 appName: `okr-${value}`,
-                displayMode: 'drawer',
-                isVisible: true,
-
                 appUrl: `http://127.0.0.1:5567/apps/okr/${value}`,
                 // appUrl: $A.mainUrl(`apps/okr/${value}`),
-                initialData: {
-                    url: $A.mainUrl()
-                },
             });
         }
     },

@@ -8,12 +8,13 @@
         :footer-hide="true"
         :transition-names="[$A.isAndroid() ? '' : `drawer-slide-${transitionName}`, '']"
         :beforeClose="beforeClose"
-        fullscreen
-        :class-name="className">
+        :class-name="className"
+        fullscreen>
         <div v-if="isFullscreen" class="overlay-body">
             <slot/>
         </div>
-        <DrawerOverlayView v-else
+        <DrawerOverlayView
+            v-else
             :placement="transitionName"
             :size="size"
             :minSize="minSize"
@@ -44,10 +45,14 @@ export default {
             default: true
         },
         placement: {
-            validator (value) {
+            validator(value) {
                 return ['right', 'bottom'].includes(value)
             },
             default: 'bottom'
+        },
+        forceFullscreen: {
+            type: Boolean,
+            default: false
         },
         size: {
             type: [Number, String],
@@ -72,7 +77,6 @@ export default {
     data() {
         return {
             show: this.value,
-            isFullscreen: false
         }
     },
     watch: {
@@ -82,12 +86,12 @@ export default {
         show(v) {
             this.value !== v && this.$emit("input", v)
         },
-        windowWidth(val){
-            this.isFullscreen = val < 500 && this.placement != 'bottom'
-        }
     },
     computed: {
-        transitionName(){
+        isFullscreen() {
+            return this.forceFullscreen || (this.windowWidth < 500 && this.placement != 'bottom')
+        },
+        transitionName() {
             return this.isFullscreen ? 'bottom' : this.placement
         },
         className() {
@@ -106,9 +110,6 @@ export default {
             }
             return array.join(" ");
         },
-    },
-    mounted() {
-        this.isFullscreen = this.windowWidth < 500  && this.placement != 'bottom'
     },
     methods: {
         onClose() {

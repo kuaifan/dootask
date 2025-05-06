@@ -1,34 +1,24 @@
 <template>
-    <micro-app
-        v-if="appConfig.displayMode=='page'"
-        v-show="appConfig.isVisible"
-        :name="appConfig.appName"
-        :url="appConfig.appUrl"
-        :data="appData"
-        @created="created"
-        @beforemount="beforemount"
-        @mounted="mounted"
-        @unmount="unmount"
-        @error="error"/>
     <DrawerOverlay
-        v-else-if="appConfig.displayMode=='drawer'"
-        v-model="appConfig.isVisible"
         ref="drawer"
+        v-model="appConfig.isOpen"
         placement="right"
-        modal-class="micro-apps-modal"
-        drawer-class="micro-apps-drawer"
+        modal-class="micro-app-modal"
+        drawer-class="micro-app-drawer"
+        :force-fullscreen="appConfig.forceFullscreen"
         :size="1200">
-        <div v-if="appConfig.isVisible" class="page-microapp">
+        <div v-if="appConfig.isOpen" class="micro-app-wrapper">
             <micro-app
                 :name="appConfig.appName"
                 :url="appConfig.appUrl"
+                :keep-alive="appConfig.keepAlive"
                 :data="appData"
                 @created="created"
                 @beforemount="beforemount"
                 @mounted="mounted"
                 @unmount="unmount"
                 @error="error"/>
-            <div v-if="loadIng > 0" class="microapp-load">
+            <div v-if="loadIng > 0" class="micro-app-load">
                 <Loading/>
             </div>
         </div>
@@ -36,15 +26,28 @@
 </template>
 
 <style lang="scss">
-.micro-apps-modal {
+.micro-app-modal {
     .ivu-modal-close {
         display: none;
     }
 }
 
-.micro-apps-drawer {
+.micro-app-drawer {
     .overlay-content {
         overflow: hidden;
+    }
+}
+
+.micro-app-wrapper {
+    .micro-app-load {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        align-items: center;
+        display: flex;
+        justify-content: center;
     }
 }
 </style>
@@ -77,7 +80,6 @@ export default {
     mounted() {
         microApp.start({
             'iframe': true,
-            'keep-alive': true,         // 全局开启保活模式
             'router-mode': 'state',     // 路由设置为state模式
         })
 
@@ -103,7 +105,7 @@ export default {
         ]),
 
         appData() {
-            const {initialData} = this.appConfig;
+            const {initialData, appName} = this.appConfig;
 
             return {
                 instance: {
@@ -123,24 +125,30 @@ export default {
                     ...initialData,
 
                     systemInfo: window.systemInfo,
+                    baseUrl: $A.mainUrl(),
 
                     isEEUIApp: $A.isEEUIApp,
                     isElectron: $A.isElectron,
                     isMainElectron: $A.isMainElectron,
                     isSubElectron: $A.isSubElectron,
 
-                    themeName: this.themeName,
                     languages: {
                         languageList,
                         languageName,
                     },
+                    themeName: this.themeName,
 
                     userInfo: this.userInfo,
                     userToken: this.userToken,
                 },
 
-                handleClose: () => {
-                    this.$refs.drawer?.onClose();
+                handleClose: (destroy = false) => {
+                    this.$refs.drawer.onClose();
+                    if (destroy) {
+                        setTimeout(_ => {
+                            microApp.unmountApp(appName, {destroy: true})
+                        }, 301)
+                    }
                 },
 
                 nextModalIndex: () => {
@@ -201,17 +209,19 @@ export default {
             // 处理数据
             config = Object.assign({
                 appName: 'micro-app',       // 微应用唯一标识名称
-                displayMode: 'drawer',      // 显示模式: 'page'-全屏模式, 'drawer'-抽屉模式
-                isVisible: true,            // 是否显示微应用(true/false)
                 appUrl: null,               // 微应用的入口URL地址
                 initialData: {},            // 初始化时传递给微应用的数据对象
+                forceFullscreen: false,     // 是否强制全屏(true/false)，默认自动适应
+                keepAlive: true,            // 是否开启微应用保活(true/false)，默认开启
+
                 isLoading: true,            // 私有参数，是否显示加载状态(true/false)
+                isOpen: false,              // 私有参数，是否打开微应用(true/false)
             }, config);
 
-            // 判断卸载上一次
-            const item = appMaps.get(config.appName)
-            if (item) {
-                if (item.displayMode != config.displayMode || item.appUrl != config.appUrl) {
+            // 判断卸载上次
+            const lastApp = appMaps.get(config.appName)
+            if (lastApp) {
+                if (lastApp.displayMode != config.displayMode || lastApp.appUrl != config.appUrl) {
                     microApp.unmountApp(config.appName, {destroy: true})
                 } else {
                     config.isLoading = false;
@@ -220,6 +230,11 @@ export default {
 
             // 更新数据
             appMaps.set(config.appName, this.appConfig = config);
+
+            // 打开微应用
+            this.$nextTick(_ => {
+                this.appConfig.isOpen = true
+            })
         }
     }
 }
