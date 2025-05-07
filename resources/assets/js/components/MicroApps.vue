@@ -1,45 +1,52 @@
 <template>
-    <div
-        v-if="appConfig.transparent"
-        v-transfer-dom
-        :data-transfer="true">
-        <micro-app
-            v-if="appConfig.isOpen"
-            :name="appConfig.appName"
-            :url="appConfig.appUrl"
-            :keep-alive="appConfig.keepAlive"
-            :data="appData"
-            @created="created"
-            @beforemount="beforemount"
-            @mounted="mounted"
-            @unmount="unmount"
-            @error="error"/>
-    </div>
-    <DrawerOverlay
-        v-else
-        v-model="appConfig.isOpen"
-        modal-class="micro-app-modal"
-        drawer-class="micro-app-drawer"
-        placement="right"
-        :beforeClose="onBeforeClose"
-        :size="1200">
-        <template>
-            <micro-app
-                v-if="appConfig.isOpen"
-                :name="appConfig.appName"
-                :url="appConfig.appUrl"
-                :keep-alive="appConfig.keepAlive"
-                :data="appData"
-                @created="created"
-                @beforemount="beforemount"
-                @mounted="mounted"
-                @unmount="unmount"
-                @error="error"/>
-            <div v-if="loadIng > 0" class="micro-app-loading">
-                <Loading/>
+    <div class="micro-app-wrapper">
+        <template v-for="app in apps">
+            <div
+                v-if="app.transparent"
+                v-transfer-dom
+                :data-transfer="true">
+                <micro-app
+                    v-if="app.isOpen"
+                    :name="app.appName"
+                    :url="app.appUrl"
+                    :keep-alive="app.keepAlive"
+                    :data="appData(app.appName)"
+                    @created="created"
+                    @beforemount="beforemount"
+                    @mounted="mounted"
+                    @unmount="unmount"
+                    @error="error"/>
+                <div v-if="app.isLoading" class="micro-app-loader spinner">
+                    <Loading/>
+                </div>
             </div>
+            <DrawerOverlay
+                v-else
+                v-model="app.isOpen"
+                modal-class="micro-app-modal"
+                drawer-class="micro-app-drawer"
+                placement="right"
+                :beforeClose="async () => { await onBeforeClose(app.appName) }"
+                :size="1200">
+                <template>
+                    <micro-app
+                        v-if="app.isOpen"
+                        :name="app.appName"
+                        :url="app.appUrl"
+                        :keep-alive="app.keepAlive"
+                        :data="appData(app.appName)"
+                        @created="created"
+                        @beforemount="beforemount"
+                        @mounted="mounted"
+                        @unmount="unmount"
+                        @error="error"/>
+                    <div v-if="app.isLoading" class="micro-app-loader">
+                        <Loading/>
+                    </div>
+                </template>
+            </DrawerOverlay>
         </template>
-    </DrawerOverlay>
+    </div>
 </template>
 
 <style lang="scss">
@@ -55,15 +62,21 @@
     }
 }
 
-.micro-app-loading {
+.micro-app-loader {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    align-items: center;
     display: flex;
+    align-items: center;
     justify-content: center;
+
+    &.spinner {
+        position: fixed;
+        z-index: 9999;
+        background-color: rgba(255, 255, 255, 0.6);
+    }
 }
 </style>
 
@@ -80,8 +93,6 @@ import DrawerOverlay from "./DrawerOverlay/index.vue";
 import emitter from "../store/events";
 import TransferDom from "../directives/transfer-dom";
 
-const appMaps = new Map();
-
 export default {
     name: "MicroApps",
     directives: {TransferDom},
@@ -89,8 +100,7 @@ export default {
 
     data() {
         return {
-            loadIng: 0,
-            appConfig: {},
+            apps: [],
         }
     },
 
@@ -109,7 +119,11 @@ export default {
 
     watch: {
         userToken(token) {
-            !token && microApp.unmountAllApps({destroy: true})
+            if (token) {
+                return
+            }
+            this.apps = [];
+            microApp.unmountAllApps({destroy: true})
         },
     },
 
@@ -118,9 +132,61 @@ export default {
             'userInfo',
             'themeName',
         ]),
+    },
 
-        appData() {
+    methods: {
+        // 元素被创建
+        created() {
+        },
+
+        // 即将渲染
+        beforemount() {
+        },
+
+        // 已经渲染完成
+        mounted(e) {
+            this.finish(e)
+        },
+
+        // 已经卸载
+        unmount() {
+        },
+
+        // 加载出错
+        error(e) {
+            this.finish(e)
+            $A.modalError({
+                language: false,
+                title: this.$L('应用加载失败'),
+                content: e.detail.error,
+                onOk: () => {
+                    this.closeMicroApp(e.detail.name, true)
+                },
+            });
+        },
+
+        // 加载结束
+        finish(e) {
+            const app = this.apps.find(({appName}) => appName == e.detail.name);
+            if (app) {
+                app.isLoading = false
+            }
+        },
+
+        /**
+         * 应用数据
+         * @param name
+         * @returns {*}
+         */
+        appData(name) {
+            const app = this.apps.find(({appName}) => appName == name);
+            if (!app) {
+                return {};
+            }
+
             return {
+                type: 'init',
+
                 instance: {
                     Vue,
                     store,
@@ -135,7 +201,7 @@ export default {
                 },
 
                 initialData: {
-                    ...this.appConfig.initialData,
+                    ...app.initialData,
 
                     systemInfo: window.systemInfo,
                     baseUrl: $A.mainUrl(),
@@ -156,7 +222,7 @@ export default {
                 },
 
                 handleClose: (destroy = false) => {
-                    this.closeMicroApp(destroy)
+                    this.closeMicroApp(name, destroy)
                 },
 
                 nextModalIndex: () => {
@@ -178,115 +244,79 @@ export default {
                     this.$store.dispatch('openWebTabWindow', url);
                 },
             }
-        }
-    },
-    methods: {
-        // 元素被创建
-        created(e) {
-            this.stateChange(e)
-        },
-
-        // 即将渲染
-        beforemount() {
-        },
-
-        // 已经渲染完成
-        mounted(e) {
-            this.stateChange(e, true)
-        },
-
-        // 已经卸载
-        unmount() {
-        },
-
-        // 加载出错
-        error(e) {
-            this.stateChange(e, true)
-            $A.modalError({
-                language: false,
-                title: this.$L('应用加载失败'),
-                content: e.detail.error,
-                onOk: () => {
-                    this.closeMicroApp(true)
-                },
-            });
-        },
-
-        // 加载状态变化
-        stateChange(e, end = false) {
-            const appConfig = appMaps.get(e.detail.name)
-            if (appConfig?.isLoading) {
-                if (end) {
-                    if (appConfig.transparent) {
-                        this.$store.dispatch('hiddenSpinner');
-                    } else {
-                        this.loadIng--;
-                    }
-                } else {
-                    if (appConfig.transparent) {
-                        this.$store.dispatch('showSpinner');
-                    } else {
-                        this.loadIng++;
-                    }
-                }
-            }
         },
 
         /**
          * 打开微应用
-         * @param appConfig
+         * @param config
+         *  - appName 微应用名称
+         *  - appUrl 微应用地址
+         *  - initialData 初始化数据
+         *  - transparent 是否透明模式 (true/false)，默认 false
+         *  - keepAlive 是否开启微应用保活 (true/false)，默认 true
          */
-        openMicroApp(appConfig) {
+        openMicroApp(config) {
             // 处理数据
-            appConfig = Object.assign({
-                appName: 'micro-app',       // 微应用唯一标识名称
-                appUrl: null,               // 微应用的入口URL地址
-                initialData: {},            // 初始化时传递给微应用的数据对象
-
-                transparent: false,         // 是否透明模式(true/false)，默认不透明
-                keepAlive: true,            // 是否开启微应用保活(true/false)，默认开启
-
-                isLoading: true,            // 私有参数，是否显示加载状态(true/false)
-                isOpen: false,              // 私有参数，是否打开微应用(true/false)
-            }, appConfig);
+            config.appName = config.appName || 'micro-app'
+            config.appUrl = config.appUrl || null
+            config.initialData = $A.isJson(config.initialData) ? config.initialData : {}
+            config.transparent = typeof config.transparent == 'boolean' ? config.transparent : false
+            config.keepAlive = typeof config.keepAlive == 'boolean' ? config.keepAlive : true
 
             // 判断处理
-            const lastConfig = appMaps.get(appConfig.appName)
-            if (lastConfig) {
-                if (lastConfig.displayMode != appConfig.displayMode || lastConfig.appUrl != appConfig.appUrl) {
-                    microApp.unmountApp(appConfig.appName, {destroy: true})
-                } else {
-                    appConfig.isLoading = false;
+            const app = this.apps.find(({appName}) => appName == config.appName);
+            if (app) {
+                // 更新微应用
+                if (app.appUrl != config.appUrl) {
+                    microApp.unmountApp(app.appName, {destroy: true})
+                    app.isLoading = true
                 }
+                for (let key in config) {
+                    app[key] = config[key]
+                }
+                this.$nextTick(_ => {
+                    app.isOpen = true
+                })
+            } else {
+                // 新建微应用
+                config.isLoading = true
+                config.isOpen = false
+                this.apps.push(config)
+                this.$nextTick(_ => {
+                    config.isOpen = true
+                })
             }
-
-            // 更新数据
-            appMaps.set(appConfig.appName, this.appConfig = appConfig);
-
-            // 打开微应用
-            this.$nextTick(_ => {
-                this.appConfig.isOpen = true
-            })
         },
 
         /**
          * 关闭微应用
+         * @param name
          * @param destroy
          */
-        closeMicroApp(destroy) {
-            this.appConfig.isOpen = false
+        closeMicroApp(name, destroy) {
+            const app = this.apps.find(({appName}) => appName == name);
+            if (!app) {
+                return;
+            }
+
+            app.isOpen = false
             if (destroy) {
-                microApp.unmountApp(this.appConfig.appName, {destroy: true})
+                microApp.unmountApp(app.appName, {destroy: true})
             }
         },
 
         /**
          * 关闭之前判断
+         * @param name
          * @returns {Promise<unknown>}
          */
-        onBeforeClose() {
+        onBeforeClose(name) {
             return new Promise(resolve => {
-                resolve()
+                microApp.forceSetData(name, {type: 'beforeClose'}, array => {
+                    if (!array?.find(item => item === true)) {
+                        resolve()
+                    }
+                })
             })
         },
     }

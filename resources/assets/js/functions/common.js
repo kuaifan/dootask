@@ -1723,7 +1723,7 @@ const timezone = require("dayjs/plugin/timezone");
                 keyName = '__state:' + key + '__';
             }
             if (typeof value === 'undefined') {
-                return this.__loadFromlSession(key, '', keyName);
+                return this.__loadFromSession(key, '', keyName);
             } else {
                 this.__savaToSession(key, value, keyName);
             }
@@ -1744,7 +1744,7 @@ const timezone = require("dayjs/plugin/timezone");
             }
         },
 
-        __loadFromlSession(key, def, keyName) {
+        __loadFromSession(key, def, keyName) {
             try {
                 if (typeof keyName === 'undefined') keyName = '__seller__';
                 let seller = window.sessionStorage.getItem(keyName);
