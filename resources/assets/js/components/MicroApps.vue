@@ -1,25 +1,32 @@
 <template>
     <div class="micro-app-wrapper">
         <template v-for="app in apps">
-            <div
+            <Modal
                 v-if="app.transparent"
-                v-transfer-dom
-                :data-transfer="true">
-                <micro-app
-                    v-if="app.isOpen"
-                    :name="app.appName"
-                    :url="app.appUrl"
-                    :keep-alive="app.keepAlive"
-                    :data="appData(app.appName)"
-                    @created="created"
-                    @beforemount="beforemount"
-                    @mounted="mounted"
-                    @unmount="unmount"
-                    @error="error"/>
-                <div v-if="app.isLoading" class="micro-app-loader spinner">
-                    <Loading/>
-                </div>
-            </div>
+                v-model="app.isOpen"
+                :mask="false"
+                :footer-hide="true"
+                :transition-names="[]"
+                :beforeClose="async () => { await onBeforeClose(app.appName) }"
+                class-name="micro-app-trans"
+                fullscreen>
+                <template>
+                    <micro-app
+                        v-if="app.isOpen"
+                        :name="app.appName"
+                        :url="app.appUrl"
+                        :keep-alive="app.keepAlive"
+                        :data="appData(app.appName)"
+                        @created="created"
+                        @beforemount="beforemount"
+                        @mounted="mounted"
+                        @unmount="unmount"
+                        @error="error"/>
+                    <div v-if="app.isLoading" class="micro-app-loader">
+                        <Loading/>
+                    </div>
+                </template>
+            </Modal>
             <DrawerOverlay
                 v-else
                 v-model="app.isOpen"
@@ -50,6 +57,18 @@
 </template>
 
 <style lang="scss">
+.micro-app-trans {
+    .ivu-modal-close {
+        display: none;
+    }
+    .ivu-modal-content {
+        background: transparent;
+    }
+    .micro-app-loader {
+        background-color: rgba(255, 255, 255, 0.6);
+    }
+}
+
 .micro-app-modal {
     .ivu-modal-close {
         display: none;
@@ -71,12 +90,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-
-    &.spinner {
-        position: fixed;
-        z-index: 9999;
-        background-color: rgba(255, 255, 255, 0.6);
-    }
 }
 </style>
 
@@ -104,12 +117,14 @@ export default {
         }
     },
 
-    mounted() {
+    created() {
         microApp.start({
             'iframe': true,
             'router-mode': 'state',
         })
+    },
 
+    mounted() {
         emitter.on('openMicroApp', this.openMicroApp);
     },
 
