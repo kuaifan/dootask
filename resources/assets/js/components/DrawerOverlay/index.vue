@@ -19,7 +19,7 @@
             :size="size"
             :minSize="minSize"
             :resize="resize"
-            @on-close="onClose">
+            @on-close="close">
             <slot/>
         </DrawerOverlayView>
     </Modal>
@@ -122,7 +122,7 @@ export default {
         },
     },
     methods: {
-        onClose() {
+        close() {
             this.$refs.modal.close();
         }
     }

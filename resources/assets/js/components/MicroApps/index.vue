@@ -4,6 +4,7 @@
             <Modal
                 v-if="app.transparent"
                 v-model="app.isOpen"
+                :ref="`ref-${app.appName}`"
                 :mask="false"
                 :footer-hide="true"
                 :transition-names="[]"
@@ -26,6 +27,7 @@
             <DrawerOverlay
                 v-else
                 v-model="app.isOpen"
+                :ref="`ref-${app.appName}`"
                 modal-class="micro-app-modal"
                 drawer-class="micro-app-drawer"
                 placement="right"
@@ -231,6 +233,14 @@ export default {
 
                 handleClose: (destroy = false) => {
                     this.closeMicroApp(name, destroy)
+                },
+
+                handleBack: async () => {
+                    try {
+                        this.$refs[`ref-${name}`][0].close()
+                    } catch (e) {
+                        this.closeMicroApp(name)
+                    }
                 },
 
                 nextModalIndex: () => {
