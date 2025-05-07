@@ -4677,7 +4677,6 @@ export default {
                     type: 'details',
                     id: value,
                 },
-                forceFullscreen: true,
                 transparent: true,
             });
         } else {

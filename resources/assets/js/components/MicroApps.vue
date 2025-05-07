@@ -1,28 +1,38 @@
 <template>
+    <div
+        v-if="appConfig.transparent"
+        v-transfer-dom
+        :data-transfer="true">
+        <micro-app
+            v-if="appConfig.isOpen"
+            :name="appConfig.appName"
+            :url="appConfig.appUrl"
+            :keep-alive="appConfig.keepAlive"
+            :data="appData"
+            @created="created"
+            @beforemount="beforemount"
+            @mounted="mounted"
+            @unmount="unmount"
+            @error="error"/>
+    </div>
     <DrawerOverlay
-        ref="drawer"
+        v-else
         v-model="appConfig.isOpen"
+        modal-class="micro-app-modal"
+        drawer-class="micro-app-drawer"
         placement="right"
-        :modal-class="modalClass"
-        :drawer-class="drawerClass"
-        :transitions="transitions"
-        :force-fullscreen="appConfig.forceFullscreen"
         :size="1200">
-        <div v-if="appConfig.isOpen" class="micro-app-wrapper">
-            <micro-app
-                :name="appConfig.appName"
-                :url="appConfig.appUrl"
-                :keep-alive="appConfig.keepAlive"
-                :data="appData"
-                @created="created"
-                @beforemount="beforemount"
-                @mounted="mounted"
-                @unmount="unmount"
-                @error="error"/>
-            <div v-if="loadIng > 0" class="micro-app-load">
-                <Loading/>
-            </div>
-        </div>
+        <micro-app
+            v-if="appConfig.isOpen"
+            :name="appConfig.appName"
+            :url="appConfig.appUrl"
+            :keep-alive="appConfig.keepAlive"
+            :data="appData"
+            @created="created"
+            @beforemount="beforemount"
+            @mounted="mounted"
+            @unmount="unmount"
+            @error="error"/>
     </DrawerOverlay>
 </template>
 
@@ -38,31 +48,6 @@
         overflow: hidden;
     }
 }
-
-.micro-app-transparent {
-    .ivu-modal,
-    .ivu-modal-content {
-        background: transparent;
-    }
-    .overlay-body {
-        .overlay-content {
-            background: transparent;
-        }
-    }
-}
-
-.micro-app-wrapper {
-    .micro-app-load {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        align-items: center;
-        display: flex;
-        justify-content: center;
-    }
-}
 </style>
 
 <script>
@@ -76,16 +61,17 @@ import {languageList, languageName} from "../language";
 import {DatePicker} from 'view-design-hi';
 import DrawerOverlay from "./DrawerOverlay/index.vue";
 import emitter from "../store/events";
+import TransferDom from "../directives/transfer-dom";
 
 const appMaps = new Map();
 
 export default {
     name: "MicroApps",
+    directives: {TransferDom},
     components: {DrawerOverlay},
 
     data() {
         return {
-            loadIng: 0,
             appConfig: {},
         }
     },
@@ -116,18 +102,6 @@ export default {
             'userInfo',
             'themeName',
         ]),
-
-        modalClass() {
-            return this.appConfig.transparent ? 'micro-app-modal micro-app-transparent' : 'micro-app-modal'
-        },
-
-        drawerClass() {
-            return this.appConfig.transparent ? 'micro-app-drawer micro-app-transparent' : 'micro-app-drawer'
-        },
-
-        transitions() {
-            return this.appConfig.transparent ? ['', ''] : []
-        },
 
         appData() {
             const {initialData, appName} = this.appConfig;
@@ -168,11 +142,9 @@ export default {
                 },
 
                 handleClose: (destroy = false) => {
-                    this.$refs.drawer.onClose();
+                    this.appConfig.appName === appName && (this.appConfig.isOpen = false);
                     if (destroy) {
-                        setTimeout(_ => {
-                            microApp.unmountApp(appName, {destroy: true})
-                        }, 301)
+                        microApp.unmountApp(appName, {destroy: true})
                     }
                 },
 
@@ -202,7 +174,7 @@ export default {
         created(e) {
             const item = appMaps.get(e.detail.name)
             if (item?.isLoading) {
-                this.loadIng++
+                this.$store.dispatch('showSpinner');
             }
         },
 
@@ -210,7 +182,7 @@ export default {
         beforemount(e) {
             const item = appMaps.get(e.detail.name)
             if (item?.isLoading) {
-                this.loadIng--
+                this.$store.dispatch('hiddenSpinner');
             }
         },
 
@@ -237,8 +209,7 @@ export default {
                 appUrl: null,               // 微应用的入口URL地址
                 initialData: {},            // 初始化时传递给微应用的数据对象
 
-                forceFullscreen: false,     // 是否强制全屏(true/false)，默认自动适应
-                transparent: false,         // 是否透明(true/false)，默认不透明
+                transparent: false,         // 是否透明模式(true/false)，默认不透明
                 keepAlive: true,            // 是否开启微应用保活(true/false)，默认开启
 
                 isLoading: true,            // 私有参数，是否显示加载状态(true/false)
