@@ -379,7 +379,7 @@ import CheckinExport from "./manage/components/CheckinExport";
 import TaskExport from "./manage/components/TaskExport";
 import ApproveExport from "./manage/components/ApproveExport";
 import ComplaintManagement from "./manage/components/ComplaintManagement";
-import MicroApps from "../components/MicroApps.vue";
+import MicroApps from "../components/MicroApps";
 import UserSelect from "../components/UserSelect.vue";
 import ImgUpload from "../components/ImgUpload.vue";
 import ApproveDetails from "./manage/approve/details.vue";

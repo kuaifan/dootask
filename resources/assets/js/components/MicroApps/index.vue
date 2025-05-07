@@ -10,22 +10,18 @@
                 :beforeClose="async () => { await onBeforeClose(app.appName) }"
                 class-name="micro-app-trans"
                 fullscreen>
-                <template>
-                    <micro-app
-                        v-if="app.isOpen"
-                        :name="app.appName"
-                        :url="app.appUrl"
-                        :keep-alive="app.keepAlive"
-                        :data="appData(app.appName)"
-                        @created="created"
-                        @beforemount="beforemount"
-                        @mounted="mounted"
-                        @unmount="unmount"
-                        @error="error"/>
-                    <div v-if="app.isLoading" class="micro-app-loader">
-                        <Loading/>
-                    </div>
-                </template>
+                <MicroContent
+                    :is-open="app.isOpen"
+                    :app-name="app.appName"
+                    :app-url="app.appUrl"
+                    :keep-alive="app.keepAlive"
+                    :is-loading="app.isLoading"
+                    :app-data="appData(app.appName)"
+                    @created="created"
+                    @beforemount="beforemount"
+                    @mounted="mounted"
+                    @unmount="unmount"
+                    @error="error"/>
             </Modal>
             <DrawerOverlay
                 v-else
@@ -35,22 +31,18 @@
                 placement="right"
                 :beforeClose="async () => { await onBeforeClose(app.appName) }"
                 :size="1200">
-                <template>
-                    <micro-app
-                        v-if="app.isOpen"
-                        :name="app.appName"
-                        :url="app.appUrl"
-                        :keep-alive="app.keepAlive"
-                        :data="appData(app.appName)"
-                        @created="created"
-                        @beforemount="beforemount"
-                        @mounted="mounted"
-                        @unmount="unmount"
-                        @error="error"/>
-                    <div v-if="app.isLoading" class="micro-app-loader">
-                        <Loading/>
-                    </div>
-                </template>
+                <MicroContent
+                    :is-open="app.isOpen"
+                    :app-name="app.appName"
+                    :app-url="app.appUrl"
+                    :keep-alive="app.keepAlive"
+                    :is-loading="app.isLoading"
+                    :app-data="appData(app.appName)"
+                    @created="created"
+                    @beforemount="beforemount"
+                    @mounted="mounted"
+                    @unmount="unmount"
+                    @error="error"/>
             </DrawerOverlay>
         </template>
     </div>
@@ -95,21 +87,22 @@
 
 <script>
 import Vue from 'vue'
-import store from '../store/index'
 import {mapState} from "vuex";
-import microApp from '@micro-zoe/micro-app'
-import DialogWrapper from '../pages/manage/components/DialogWrapper.vue'
-import UserSelect from "./UserSelect.vue";
-import {languageList, languageName} from "../language";
 import {DatePicker} from 'view-design-hi';
-import DrawerOverlay from "./DrawerOverlay/index.vue";
-import emitter from "../store/events";
-import TransferDom from "../directives/transfer-dom";
+import microApp from '@micro-zoe/micro-app'
+import store from '../../store/index'
+import DialogWrapper from '../../pages/manage/components/DialogWrapper.vue'
+import UserSelect from "../UserSelect.vue";
+import {languageList, languageName} from "../../language";
+import DrawerOverlay from "../DrawerOverlay/index.vue";
+import emitter from "../../store/events";
+import TransferDom from "../../directives/transfer-dom";
+import MicroContent from "./content.vue";
 
 export default {
     name: "MicroApps",
     directives: {TransferDom},
-    components: {DrawerOverlay},
+    components: {MicroContent, DrawerOverlay},
 
     data() {
         return {

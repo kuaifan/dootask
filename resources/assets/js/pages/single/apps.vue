@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import MicroApps from "../../components/MicroApps.vue";
+import MicroApps from "../../components/MicroApps";
 
 export default {
     components: { MicroApps },
