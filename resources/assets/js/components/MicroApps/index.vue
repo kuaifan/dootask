@@ -4,20 +4,20 @@
             <Modal
                 v-if="app.transparent"
                 v-model="app.isOpen"
-                :ref="`ref-${app.appName}`"
+                :ref="`ref-${app.name}`"
                 :mask="false"
                 :footer-hide="true"
                 :transition-names="[]"
-                :beforeClose="async () => { await onBeforeClose(app.appName) }"
+                :beforeClose="async () => { await onBeforeClose(app.name) }"
                 class-name="micro-app-trans"
                 fullscreen>
                 <MicroContent
                     :is-open="app.isOpen"
-                    :app-name="app.appName"
-                    :app-url="app.appUrl"
+                    :app-name="app.name"
+                    :app-url="app.url"
                     :keep-alive="app.keepAlive"
                     :is-loading="app.isLoading"
-                    :app-data="appData(app.appName)"
+                    :app-data="appData(app.name)"
                     @created="created"
                     @beforemount="beforemount"
                     @mounted="mounted"
@@ -27,19 +27,19 @@
             <DrawerOverlay
                 v-else
                 v-model="app.isOpen"
-                :ref="`ref-${app.appName}`"
+                :ref="`ref-${app.name}`"
                 modal-class="micro-app-modal"
                 drawer-class="micro-app-drawer"
                 placement="right"
-                :beforeClose="async () => { await onBeforeClose(app.appName) }"
+                :beforeClose="async () => { await onBeforeClose(app.name) }"
                 :size="1200">
                 <MicroContent
                     :is-open="app.isOpen"
-                    :app-name="app.appName"
-                    :app-url="app.appUrl"
+                    :app-name="app.name"
+                    :app-url="app.url"
                     :keep-alive="app.keepAlive"
                     :is-loading="app.isLoading"
-                    :app-data="appData(app.appName)"
+                    :app-data="appData(app.name)"
                     @created="created"
                     @beforemount="beforemount"
                     @mounted="mounted"
@@ -92,7 +92,6 @@ import Vue from 'vue'
 import {mapState} from "vuex";
 import {DatePicker} from 'view-design-hi';
 import microApp from '@micro-zoe/micro-app'
-import store from '../../store/index'
 import DialogWrapper from '../../pages/manage/components/DialogWrapper.vue'
 import UserSelect from "../UserSelect.vue";
 import {languageList, languageName} from "../../language";
@@ -100,6 +99,7 @@ import DrawerOverlay from "../DrawerOverlay/index.vue";
 import emitter from "../../store/events";
 import TransferDom from "../../directives/transfer-dom";
 import MicroContent from "./content.vue";
+import store from "../../store";
 
 export default {
     name: "MicroApps",
@@ -177,7 +177,7 @@ export default {
 
         // 加载结束
         finish(e) {
-            const app = this.apps.find(({appName}) => appName == e.detail.name);
+            const app = this.apps.find(({name}) => name == e.detail.name);
             if (app) {
                 app.isLoading = false
             }
@@ -189,7 +189,7 @@ export default {
          * @returns {*}
          */
         appData(name) {
-            const app = this.apps.find(({appName}) => appName == name);
+            const app = this.apps.find(item => item.name == name);
             if (!app) {
                 return {};
             }
@@ -205,61 +205,82 @@ export default {
                         UserSelect,
                         DatePicker,
                     },
-                    options: {
-                        shortcuts: $A.timeOptionShortcuts(),
-                    }
                 },
 
-                initialData: {
-                    ...app.initialData,
+                props: {
+                    ...app.props,
 
-                    systemInfo: window.systemInfo,
+                    userId: this.userId,
+                    userToken: this.userToken,
+                    userInfo: this.userInfo,
+
                     baseUrl: $A.mainUrl(),
+                    systemInfo: window.systemInfo,
 
                     isEEUIApp: $A.isEEUIApp,
                     isElectron: $A.isElectron,
                     isMainElectron: $A.isMainElectron,
                     isSubElectron: $A.isSubElectron,
 
-                    languages: {
-                        languageList,
-                        languageName,
-                    },
+                    languageList,
+                    languageName,
                     themeName: this.themeName,
-
-                    userInfo: this.userInfo,
-                    userToken: this.userToken,
                 },
 
-                handleClose: (destroy = false) => {
-                    this.closeMicroApp(name, destroy)
-                },
-
-                handleBack: async () => {
-                    try {
-                        this.$refs[`ref-${name}`][0].close()
-                    } catch (e) {
-                        this.closeMicroApp(name)
-                    }
-                },
-
-                nextModalIndex: () => {
-                    if (typeof window.modalTransferIndex === 'number') {
-                        return window.modalTransferIndex++;
-                    }
-                    return 1000;
-                },
-
-                openAppChildPage: (objects) => {
-                    this.$store.dispatch('openAppChildPage', objects);
-                },
-
-                openChildWindow: (params) => {
-                    this.$store.dispatch('openChildWindow', params);
-                },
-
-                openWebTabWindow: (url) => {
-                    this.$store.dispatch('openWebTabWindow', url);
+                methods: {
+                    close: (destroy = false) => {
+                        this.closeMicroApp(name, destroy)
+                    },
+                    back: () => {
+                        try {
+                            this.$refs[`ref-${name}`][0].close()
+                        } catch (e) {
+                            this.closeMicroApp(name)
+                        }
+                    },
+                    nextZIndex: () => {
+                        if (typeof window.modalTransferIndex === 'number') {
+                            return window.modalTransferIndex++;
+                        }
+                        return 1000;
+                    },
+                    openWindow: (params) => {
+                        if (!$A.isJson(params)) {
+                            params = {path: params}
+                        }
+                        if (params.url) {
+                            params.path = params.url
+                            delete params.url
+                        }
+                        this.$store.dispatch('openChildWindow', params);
+                    },
+                    openTabWindow: (url) => {
+                        this.$store.dispatch('openWebTabWindow', url);
+                    },
+                    openAppPage: (params) => {
+                        if (!$A.isJson(params)) {
+                            params = {url: params}
+                        }
+                        this.$store.dispatch('openAppChildPage', {
+                            pageType: 'app',
+                            pageTitle: params.title || " ",
+                            url: 'web.js',
+                            params: {
+                                url: params.url,
+                                titleFixed: typeof params.titleFixed === 'boolean' ? params.titleFixed : false,
+                            },
+                        });
+                    },
+                    extraCallA: (...args) => {
+                        if (args.length > 0 && typeof args[0] === 'string') {
+                            const methodName = args[0];
+                            const methodParams = args.slice(1);
+                            if (typeof $A[methodName] === 'function') {
+                                return $A[methodName](...methodParams);
+                            }
+                        }
+                        return null;
+                    },
                 },
             }
         },
@@ -267,26 +288,26 @@ export default {
         /**
          * 打开微应用
          * @param config
-         *  - appName 微应用名称
-         *  - appUrl 微应用地址
-         *  - initialData 初始化数据
-         *  - transparent 是否透明模式 (true/false)，默认 false
-         *  - keepAlive 是否开启微应用保活 (true/false)，默认 true
+         *  - name          应用名称
+         *  - url           应用地址
+         *  - props         传递参数
+         *  - transparent   是否透明模式 (true/false)，默认 false
+         *  - keepAlive     是否开启微应用保活 (true/false)，默认 true
          */
         openMicroApp(config) {
             // 处理数据
-            config.appName = config.appName || 'micro-app'
-            config.appUrl = config.appUrl || null
-            config.initialData = $A.isJson(config.initialData) ? config.initialData : {}
+            config.name = config.name || 'micro-app'
+            config.url = config.url || null
+            config.props = $A.isJson(config.props) ? config.props : {}
             config.transparent = typeof config.transparent == 'boolean' ? config.transparent : false
             config.keepAlive = typeof config.keepAlive == 'boolean' ? config.keepAlive : true
 
             // 判断处理
-            const app = this.apps.find(({appName}) => appName == config.appName);
+            const app = this.apps.find(({name}) => name == config.name);
             if (app) {
                 // 更新微应用
-                if (app.appUrl != config.appUrl) {
-                    microApp.unmountApp(app.appName, {destroy: true})
+                if (app.url != config.url) {
+                    microApp.unmountApp(app.name, {destroy: true})
                     app.isLoading = true
                 }
                 for (let key in config) {
@@ -312,14 +333,14 @@ export default {
          * @param destroy
          */
         closeMicroApp(name, destroy) {
-            const app = this.apps.find(({appName}) => appName == name);
+            const app = this.apps.find(item => item.name == name);
             if (!app) {
                 return;
             }
 
             app.isOpen = false
             if (destroy) {
-                microApp.unmountApp(app.appName, {destroy: true})
+                microApp.unmountApp(app.name, {destroy: true})
             }
         },
 
