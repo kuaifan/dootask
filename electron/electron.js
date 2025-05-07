@@ -313,7 +313,8 @@ function preCreateChildWindow() {
 
 /**
  * 创建子窗口
- * @param args {path, hash, title, titleFixed, force, userAgent, config, webPreferences}
+ * @param args {name, path, hash, force, userAgent, config, webPreferences}
+ * - config: {title, titleFixed, ...BrowserWindowConstructorOptions}
  */
 function createChildWindow(args) {
     if (!args) {
@@ -378,7 +379,7 @@ function createChildWindow(args) {
         }
 
         browser.on('page-title-updated', (event, title) => {
-            if (title == "index.html" || config.titleFixed === true) {
+            if (title == "index.html" || options.titleFixed === true) {
                 event.preventDefault()
             }
         })

@@ -1,7 +1,5 @@
 <template>
-    <div class="electron-single-micro-apps">
-        <MicroApps :url="appUrl" :path="path" v-if="!loading && $route.name == 'single-apps'" />
-    </div>
+    <MicroApps ref="app"/>
 </template>
 
 <script>
@@ -9,34 +7,21 @@ import MicroApps from "../../components/MicroApps";
 
 export default {
     components: { MicroApps },
-    data() {
-        return {
-            loading: false,
-            appUrl: '',
-            path: '',
-        }
-    },
 
-    deactivated() {
-        this.loading = true;
-    },
-
-    watch: {
-        '$route': {
-            handler(to) {
-                this.loading = true;
-                if (to.name == 'single-apps') {
-                    this.$nextTick(() => {
-                        this.loading = false;
-                        this.appUrl = import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr")
-                        this.path = this.$route.query.path || '';
-                    })
-                }else{
-                    this.appUrl = '';
-                }
-            },
-            immediate: true
+    async mounted() {
+        const name = this.$route.params.appName;
+        if (!name) {
+            $A.modalError("应用不存在");
+            return
         }
+
+        const app = (await $A.IDBArray("cacheMicroApps")).reverse().find(item => item.name === name);
+        if (!app) {
+            $A.modalError("应用不存在");
+            return
+        }
+
+        this.$refs.app.openMicroApp(app)
     }
 }
 </script>

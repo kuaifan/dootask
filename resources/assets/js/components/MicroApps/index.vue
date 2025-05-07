@@ -244,6 +244,37 @@ export default {
                         }
                         return 1000;
                     },
+                    popoutWindow: async (config) => {
+                        let appConfig = {}
+                        if (config.url) {
+                            appConfig = {
+                                name: `url-${await $A.getSHA256Hash(config.url)}`,
+                                url: config.url,
+                            }
+                            delete config.url
+                        } else {
+                            const app = this.apps.find(item => item.name == name);
+                            if (!app) {
+                                $A.modalError("应用不存在");
+                                return
+                            }
+                            appConfig = Object.assign({}, app)
+                        }
+                        appConfig.transparent = true
+                        appConfig.keepAlive = false
+
+                        const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != appConfig.name);
+                        apps.length > 50 && apps.splice(0, 10)
+                        apps.push(appConfig)
+                        await $A.IDBSet("cacheMicroApps", apps);
+
+                        await this.$store.dispatch('openChildWindow', {
+                            name: `single-apps-${$A.randomString(6)}`,
+                            path: `/single/apps/${appConfig.name}`,
+                            force: false,
+                            config
+                        });
+                    },
                     openWindow: (params) => {
                         if (!$A.isJson(params)) {
                             params = {path: params}
@@ -353,7 +384,11 @@ export default {
             return new Promise(resolve => {
                 microApp.forceSetData(name, {type: 'beforeClose'}, array => {
                     if (!array?.find(item => item === true)) {
-                        resolve()
+                        if ($A.isSubElectron) {
+                            $A.Electron.sendMessage('windowDestroy');
+                        } else {
+                            resolve()
+                        }
                     }
                 })
             })

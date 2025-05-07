@@ -1508,6 +1508,19 @@ const timezone = require("dayjs/plugin/timezone");
                 img.src = url;
             })
         },
+
+        /**
+         * 获取SHA256哈希值
+         * @param str
+         * @returns {Promise<string>}
+         */
+        async getSHA256Hash(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        },
     });
 
     /**
