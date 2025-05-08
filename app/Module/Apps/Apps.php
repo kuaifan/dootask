@@ -141,12 +141,34 @@ class Apps
         $info = [
             'name' => $appName,
             'description' => '',
+            'icon' => '',
             'author' => '',
             'website' => '',
             'github' => '',
             'document' => '',
             'fields' => [],
         ];
+
+        // 处理应用图标
+        $iconFiles = ['logo.svg', 'logo.png', 'icon.svg', 'icon.png'];
+        foreach ($iconFiles as $iconFile) {
+            $iconPath = $baseDir . '/' . $iconFile;
+            if (file_exists($iconPath)) {
+                // 创建目标目录、路径
+                $targetDir = public_path('uploads/file/apps/' . $appName);
+                $targetFile = $targetDir . '/' . $iconFile;
+
+                // 判断目标文件是否存在，或源文件是否比目标文件新
+                if (!file_exists($targetFile) || filemtime($iconPath) > filemtime($targetFile)) {
+                    Base::makeDir($targetDir);
+                    copy($iconPath, $targetFile);
+                }
+
+                // 设置图标URL
+                $info['icon'] = Base::fillUrl('uploads/file/apps/' . $appName . '/' . $iconFile);
+                break;
+            }
+        }
 
         if (file_exists($baseDir . '/config.yml')) {
             $configData = Yaml::parseFile($baseDir . '/config.yml');
@@ -169,7 +191,7 @@ class Apps
                     if (!isset($field['name'])) {
                         continue;
                     }
-                    
+
                     // 验证字段名格式，必须以字母或下划线开头，只允许大小写字母、数字和下划线
                     if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $field['name'])) {
                         continue;
