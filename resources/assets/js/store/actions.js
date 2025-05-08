@@ -4671,8 +4671,7 @@ export default {
             // 打开详情页
             emitter.emit('openMicroApp', {
                 name: 'okr-details',
-                url: `http://127.0.0.1:5567/apps/okr/`,
-                // url: $A.mainUrl('apps/okr/'),
+                url: $A.mainUrl('apps/okr/'),
                 props: {
                     type: 'details',
                     id: value,
@@ -4683,8 +4682,7 @@ export default {
             // 打开列表、统计
             emitter.emit('openMicroApp', {
                 name: `okr-${value}`,
-                url: `http://127.0.0.1:5567/apps/okr/${value}`,
-                // url: $A.mainUrl(`apps/okr/${value}`),
+                url: $A.mainUrl(`apps/okr/${value}`),
             });
         }
     },

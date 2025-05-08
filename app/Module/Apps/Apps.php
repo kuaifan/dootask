@@ -22,7 +22,6 @@ class Apps
         'minder',
         'approve',
         'ai',
-        'okr',
         'face',
         'search',
     ];
