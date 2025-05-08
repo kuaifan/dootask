@@ -12,7 +12,7 @@ services:
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
       - ./docker/php/php.conf:/etc/supervisor/conf.d/php.conf
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
-      - ./docker/log/supervisor:/var/log/supervisor
+      - ./docker/logs/supervisor:/var/log/supervisor
       - ./:/var/www
     environment:
       LANG: "C.UTF-8"
@@ -88,7 +88,7 @@ services:
     container_name: "dootask-office-${APP_ID}"
     image: "onlyoffice/documentserver:8.2.2.1"
     volumes:
-      - ./docker/office/logs:/var/log/onlyoffice
+      - ./docker/logs/onlyoffice:/var/log/onlyoffice
       - ./docker/office/data:/var/www/onlyoffice/Data
       - ./docker/office/etc/documentserver/default.json:/etc/onlyoffice/documentserver/default.json
       - ./docker/office/resources/require.js:/var/www/onlyoffice/documentserver/web-apps/vendor/requirejs/require.js

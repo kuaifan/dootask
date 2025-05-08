@@ -471,7 +471,7 @@ if [ $# -gt 0 ]; then
         $COMPOSE down --remove-orphans
         env_set APP_DEBUG "false"
         rm -rf "./docker/mysql/data"
-        rm -rf "./docker/log/supervisor"
+        rm -rf "./docker/logs/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf
         success "卸载完成"
     elif [[ "$1" == "reinstall" ]]; then
