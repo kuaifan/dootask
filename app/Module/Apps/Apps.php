@@ -73,7 +73,8 @@ class Apps
      */
     public static function dockerComposeUp(string $appName, string $version = 'latest', string $command = 'up'): array
     {
-        $result = [];
+        // 结果集合
+        $RESULTS = [];
 
         // 获取版本信息
         $versions = self::getAvailableVersions($appName);
@@ -90,35 +91,35 @@ class Apps
             return Base::retError("没有找到版本 {$version}");
         }
 
+        // 获取本地安装信息
+        $localInfo = self::getAppLocalInfo($appName);
+
         // 保存版本信息到.applocal文件
-        $localData = [
+        $localUpdate = [
             'status' => $command === 'up' ? 'installing' : 'not_installed',
+            'installed_num' => $localInfo['installed_num'] + 1,
             'installed_version' => $versionInfo['version'],
         ];
-        if ($command === 'up') {
-            $localData['installed_at'] = date('Y-m-d H:i:s');
-        } else {
-            $localData['uninstalled_at'] = date('Y-m-d H:i:s');
-        }
-        self::saveAppLocalInfo($appName, $localData);
-        $params = self::getAppLocalInfo($appName)['params'] ?? [];
+        $localUpdate[$command === 'up' ? 'installed_at' : 'uninstalled_at'] = date('Y-m-d H:i:s');
+        self::saveAppLocalInfo($appName, $localUpdate);
 
         // 生成docker-compose.yml文件
-        $res = self::generateDockerComposeYml($versionInfo['compose_file'], $params);
+        $res = self::generateDockerComposeYml($versionInfo['compose_file'], $localInfo['params']);
         if (Base::isError($res)) {
             return $res;
         }
-        $result['generate'] = $res['data'];
+        $RESULTS['generate'] = $res['data'];
 
         // 执行docker-compose命令
-        $res = self::curl("apps/{$command}/{$appName}?callback_url=" . urlencode('http://nginx/api/apps/update/status'));
+        $callbackUrl = "http://host.docker.internal:" . env("APP_PORT") . "/api/apps/update/status?installed_num=" . $localUpdate['installed_num'];
+        $res = self::curl("apps/{$command}/{$appName}?callback_url=" . urlencode($callbackUrl));
         if (Base::isError($res)) {
             return $res;
         }
-        $result['compose'] = $res['data'];
+        $RESULTS['compose'] = $res['data'];
 
         // 返回结果
-        return Base::retSuccess("success", $result);
+        return Base::retSuccess("success", $RESULTS);
     }
 
     /**
@@ -293,9 +294,9 @@ class Apps
         $appLocalFile = $baseDir . '/.applocal';
 
         $defaultInfo = [
-            'created_at' => '', // 应用首次添加到系统的时间
-            'installed_at' => '', // 最近一次安装/更新的时间
-            'installed_version' => '', // 最近一次安装/更新的版本
+            'installed_at' => '', // 安装/更新的时间
+            'installed_num' => 0, // 安装/更新的次数
+            'installed_version' => '', // 安装/更新的版本
             'status' => 'not_installed', // 应用状态: installing, installed, not_installed, error
             'params' => [], // 用户自定义参数值
             'resources' => [
