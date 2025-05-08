@@ -297,6 +297,7 @@ export default {
 
             values: [],
             selects: [],
+            callback: null,
 
             recents: [],
             contacts: [],
@@ -683,12 +684,13 @@ export default {
             }, this.searchCache.length > 0 ? 300 : 0)
         },
 
-        onSelection() {
+        onSelection(callback = null) {
             if (this.disabled) {
                 return
             }
             this.$nextTick(_ => {
                 this.selects = $A.cloneJSON(this.values)
+                this.callback = typeof callback === 'function' ? callback : null
                 this.showModal = true
             })
         },
@@ -794,11 +796,12 @@ export default {
             this.$emit('input', this.values)
             this.$emit('on-submit', this.values)
 
-            if (!this.beforeSubmit) {
+            const beforeSubmit = this.callback || this.beforeSubmit;
+            if (!beforeSubmit) {
                 this.hide()
                 return
             }
-            const before = this.beforeSubmit();
+            const before = beforeSubmit(this.values);
             if (before && before.then) {
                 this.submittIng++
                 before.then(() => {

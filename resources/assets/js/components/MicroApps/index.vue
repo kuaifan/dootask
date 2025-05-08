@@ -47,6 +47,13 @@
                     @error="error"/>
             </DrawerOverlay>
         </template>
+
+        <!--选择用户-->
+        <UserSelect
+            ref="userSelect"
+            v-model="userSelectOptions.value"
+            v-bind="userSelectOptions.config"
+            module/>
     </div>
 </template>
 
@@ -104,11 +111,13 @@ import store from "../../store";
 export default {
     name: "MicroApps",
     directives: {TransferDom},
-    components: {MicroContent, DrawerOverlay},
+    components: {UserSelect, MicroContent, DrawerOverlay},
 
     data() {
         return {
             apps: [],
+
+            userSelectOptions: {value: [], config: {}},
         }
     },
 
@@ -243,6 +252,22 @@ export default {
                             return window.modalTransferIndex++;
                         }
                         return 1000;
+                    },
+                    selectUsers: async (params) => {
+                        if (!$A.isJson(params)) {
+                            params = {value: params}
+                        }
+                        if ($A.isArray(params.value)) {
+                            params.value = params.value ? [params.value] : []
+                        }
+                        this.userSelectOptions.value = params.value
+                        delete params.value
+                        this.userSelectOptions.config = params
+                        return await new Promise(resolve => {
+                            this.$refs.userSelect.onSelection((res) => {
+                                return resolve(res)
+                            })
+                        })
                     },
                     popoutWindow: async (config) => {
                         let appConfig = {}
