@@ -51,6 +51,20 @@ class Apps
     }
 
     /**
+     * 获取应用信息
+     * @param string $appName 应用名称
+     * @return array
+     */
+    public static function appInfo(string $appName): array
+    {
+        return Base::retSuccess("success", [
+            'info' => self::getAppInfo($appName),
+            'local' => self::getAppLocalInfo($appName),
+            'versions' => self::getAvailableVersions($appName),
+        ]);
+    }
+
+    /**
      * 执行docker-compose up命令
      * @param string $appName
      * @param string $version
