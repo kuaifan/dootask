@@ -9,6 +9,24 @@ use Symfony\Component\Yaml\Exception\ParseException;
 
 class Apps
 {
+    // 受保护的服务名称列表
+    protected static array $protectedServiceNames = [
+        'php',
+        'nginx',
+        'redis',
+        'mariadb',
+        'office',
+        'fileview',
+        'drawio-webapp',
+        'drawio-expont',
+        'minder',
+        'approve',
+        'ai',
+        'okr',
+        'face',
+        'search',
+    ];
+
     /**
      * 执行docker-compose up命令
      * @param string $appName
@@ -18,6 +36,8 @@ class Apps
      */
     public static function dockerComposeUp(string $appName, string $version = 'latest', string $command = 'up'): array
     {
+        $result = [];
+
         // 获取版本信息
         $versions = self::getAvailableVersions($appName);
         if (empty($versions)) {
@@ -37,32 +57,41 @@ class Apps
         file_put_contents($versionInfo['base_dir'] . '/latest', $versionInfo['version']);
 
         // 生成docker-compose.yml文件
-        $result = self::generateDockerComposeYml($versionInfo['compose_file'], [
+        $res = self::generateDockerComposeYml($versionInfo['compose_file'], [
             'PROXY_PORT' => '33062',    // todo 参数自定义
         ]);
-        if (!$result) {
-            return Base::retError('生成docker-compose.yml失败');
+        if (Base::isError($res)) {
+            return $res;
         }
+        $result['generate'] = $res['data'];
 
         // 执行docker-compose命令
-        $url = "http://host.docker.internal:" . env("APPS_PORT") . "/apps/{$command}/{$appName}";
-        $extra = [
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . env('APP_KEY'),
-        ];
-        $res = Ihttp::ihttp_request($url, [], $extra);
+        $res = self::curl("apps/{$command}/{$appName}");
         if (Base::isError($res)) {
-            return Base::retError("请求错误", $res);
+            return $res;
         }
+        $result['compose'] = $res['data'];
 
-        // 解析响应
-        $resData = Base::json2array($res['data']);
-        if ($resData['code'] != 200) {
-            return Base::retError("请求失败", $resData);
+        // nginx配置文件处理
+        $nginxFile = $versionInfo['path'] . '/nginx.conf';
+        $nginxTarget = base_path('docker/nginx/apps/' . $appName . '.conf');
+        if (file_exists($nginxTarget)) {
+            unlink($nginxTarget);
+        }
+        if (file_exists($nginxFile)) {
+            if ($command === 'up') {
+                copy($nginxFile, $nginxTarget);
+            }
+            // 重启nginx
+            $res = self::curl("nginx/reload");
+            if (Base::isError($res)) {
+                return $res;
+            }
+            $result['nginx'] = $res['data'];
         }
 
         // 返回结果
-        return Base::retSuccess("success", $resData['data']);
+        return Base::retSuccess("success", $result);
     }
 
     /**
@@ -78,18 +107,17 @@ class Apps
 
     /**
      * 生成docker-compose.yml文件配置
-     *
      * @param string $filePath docker-compose.yml文件路径
      * @param array $params 可选参数，替换docker-compose.yml中的${XXX}变量
-     * @return bool 是否生成成功
+     * @return array
      */
-    private static function generateDockerComposeYml(string $filePath, array $params = []): bool
+    private static function generateDockerComposeYml(string $filePath, array $params = []): array
     {
         // 应用名称
         $appName = basename(dirname($filePath, 2));
 
         // 服务名称
-        $serviceName = 'dootask-app-' . strtolower(preg_replace('/(?<!^)([A-Z])/', '-$1', $appName));
+        $serviceName = 'dootask-app-' . $appName;
 
         // 网络名称
         $networkName = 'dootask-networks-' . env('APP_ID');
@@ -106,7 +134,7 @@ class Apps
 
             // 确保services部分存在
             if (!isset($content['services'])) {
-                return false;
+                return Base::retError('Docker compose文件缺少services配置');
             }
 
             // 设置服务名称
@@ -117,6 +145,13 @@ class Apps
 
             // 添加网络配置
             $content['networks'][$networkName] = ['external' => true];
+
+            // 检查服务名称是否被保护
+            foreach ($content['services'] as $name => $service) {
+                if (in_array($name, self::$protectedServiceNames)) {
+                    return Base::retError('服务名称 "' . $name . '" 被保护，不能使用');
+                }
+            }
 
             foreach ($content['services'] as &$service) {
                 // 确保所有服务都有网络配置
@@ -137,15 +172,17 @@ class Apps
             }, $yamlContent);
 
             // 保存文件
-            file_put_contents($savePath, $yamlContent);
+            if (file_put_contents($savePath, $yamlContent) === false) {
+                return Base::retError('无法写入配置文件');
+            }
 
-            return true;
-        } catch (ParseException) {
+            // 返回成功
+            return Base::retSuccess('success', [
+                'file' => $savePath,
+            ]);
+        } catch (ParseException $e) {
             // YAML解析错误
-            return false;
-        } catch (\Exception) {
-            // 其他错误
-            return false;
+            return Base::retError('YAML parsing error:' . $e->getMessage());
         }
     }
 
@@ -227,5 +264,34 @@ class Apps
         });
 
         return $versions;
+    }
+
+    /**
+     * 执行curl请求
+     * @param $path
+     * @return array
+     */
+    private static function curl($path): array
+    {
+        $url = "http://host.docker.internal:" . env("APPS_PORT") . "/{$path}";
+        $extra = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . env('APP_KEY'),
+        ];
+
+        // 执行请求
+        $res = Ihttp::ihttp_request($url, [], $extra);
+        if (Base::isError($res)) {
+            return Base::retError("请求错误", $res);
+        }
+
+        // 解析响应
+        $resData = Base::json2array($res['data']);
+        if ($resData['code'] != 200) {
+            return Base::retError("请求失败", $resData);
+        }
+
+        // 返回结果
+        return Base::retSuccess("success", $resData['data']);
     }
 }
