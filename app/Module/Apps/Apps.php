@@ -91,10 +91,16 @@ class Apps
         }
 
         // 保存版本信息到.applocal文件
-        self::saveAppLocalInfo($appName, [
+        $localData = [
+            'status' => $command === 'up' ? 'installing' : 'not_installed',
             'installed_version' => $versionInfo['version'],
-            'installed_at' => date('Y-m-d H:i:s')
-        ]);
+        ];
+        if ($command === 'up') {
+            $localData['installed_at'] = date('Y-m-d H:i:s');
+        } else {
+            $localData['uninstalled_at'] = date('Y-m-d H:i:s');
+        }
+        self::saveAppLocalInfo($appName, $localData);
         $params = self::getAppLocalInfo($appName)['params'] ?? [];
 
         // 生成docker-compose.yml文件
@@ -111,7 +117,7 @@ class Apps
         }
         $result['compose'] = $res['data'];
 
-        // nginx配置文件处理
+        // nginx配置文件处理 // todo 要单独处理
         $nginxFile = $versionInfo['path'] . '/nginx.conf';
         $nginxTarget = base_path('docker/nginx/apps/' . $appName . '.conf');
         if (file_exists($nginxTarget)) {
@@ -268,7 +274,7 @@ class Apps
             'created_at' => '', // 应用首次添加到系统的时间
             'installed_at' => '', // 最近一次安装/更新的时间
             'installed_version' => '', // 最近一次安装/更新的版本
-            'status' => 'not_installed', // 应用状态: installed, not_installed, error
+            'status' => 'not_installed', // 应用状态: installing, installed, not_installed, error
             'params' => [], // 用户自定义参数值
             'resources' => [
                 'cpu_limit' => '', // CPU限制，例如 '0.5' 或 '2'
