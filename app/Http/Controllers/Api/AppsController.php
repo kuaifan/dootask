@@ -154,6 +154,7 @@ class AppsController extends AbstractController
             return Base::retError('应用名称不能为空');
         }
 
+        // 处理状态
         $status = str_replace(['successful', 'failed'], ['installed', 'error'], $status);
         if (!in_array($status, ['installed', 'error'])) {
             return Base::retError('状态无效');
@@ -167,20 +168,19 @@ class AppsController extends AbstractController
             return Base::retError('当前应用不在安装中，不能更新状态');
         }
 
-        // 更新状态
-        $updateData = [
-            'status' => $status
-        ];
-
-        // 更新nginx配置
-        Apps::nginxUpdate($appName);
-
         // 保存配置
-        if (Apps::saveAppLocalInfo($appName, $updateData)) {
-            return Base::retSuccess('更新状态成功');
-        } else {
+        if (!Apps::saveAppLocalInfo($appName, ['status' => $status])) {
             return Base::retError('更新状态失败');
         }
+
+        // 更新nginx配置
+        $res = Apps::nginxUpdate($appName);
+        if (Base::isError($res)) {
+            return Base::retError('更新nginx配置失败：' . $res['msg'], $res['data']);
+        }
+
+        // 返回成功
+        return Base::retSuccess('更新状态成功');
     }
 
     /**
