@@ -107,6 +107,37 @@ class AppsController extends AbstractController
     }
 
     /**
+     * 更新应用状态（用于安装结束之后回调）
+     *
+     * @apiParam {String} app_name      应用名称
+     * @apiParam {String} status       新状态，可选值: installed, error
+     *
+     * @return string
+     */
+    public function install__callback()
+    {
+        $appName = Request::input('app_name');
+        $status = Request::input('status');
+
+        if (empty($appName)) {
+            return 'app name is empty';
+        }
+
+        // 处理状态
+        $status = str_replace(['successful', 'failed'], ['installed', 'error'], $status);
+        if (!in_array($status, ['installed', 'error'])) {
+            return 'status is invalid';
+        }
+
+        // 最后一步处理
+        $res = Apps::dockerComposeFinalize($appName, $status);
+        if (Base::isError($res)) {
+            return 'response error (' . $res['msg'] . ')';
+        }
+        return 'ok';
+    }
+
+    /**
      * @api {post} api/apps/uninstall      04. 卸载应用
      *
      * @apiVersion 1.0.0
@@ -129,58 +160,6 @@ class AppsController extends AbstractController
 
         // 执行卸载
         return Apps::dockerComposeDown($appName);
-    }
-
-    /**
-     * @api {post} api/apps/update/status    04. 更新应用状态
-     *
-     * @apiVersion 1.0.0
-     * @apiGroup apps
-     * @apiName updateStatus
-     *
-     * @apiParam {String} app_name      应用名称
-     * @apiParam {String} status       新状态，可选值: installed, error
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    更新结果
-     */
-    public function update__status()
-    {
-        $appName = Request::input('app_name');
-        $status = Request::input('status');
-
-        if (empty($appName)) {
-            return Base::retError('应用名称不能为空');
-        }
-
-        // 处理状态
-        $status = str_replace(['successful', 'failed'], ['installed', 'error'], $status);
-        if (!in_array($status, ['installed', 'error'])) {
-            return Base::retError('状态无效');
-        }
-
-        // 获取当前应用信息
-        $appInfo = Apps::getAppLocalInfo($appName);
-
-        // 只有在安装中的状态才能更新
-        if ($appInfo['status'] !== 'installing') {
-            return Base::retError('当前应用不在安装中，不能更新状态');
-        }
-
-        // 保存配置
-        if (!Apps::saveAppLocalInfo($appName, ['status' => $status])) {
-            return Base::retError('更新状态失败');
-        }
-
-        // 更新nginx配置
-        $res = Apps::nginxUpdate($appName);
-        if (Base::isError($res)) {
-            return Base::retError('更新nginx配置失败：' . $res['msg'], $res['data']);
-        }
-
-        // 返回成功
-        return Base::retSuccess('更新状态成功');
     }
 
     /**

@@ -93,7 +93,6 @@ class Apps
 
         // 获取本地安装信息
         $localInfo = self::getAppLocalInfo($appName);
-        $localInfo['installed_num']++;
 
         // 生成docker-compose.yml文件
         $res = self::generateDockerComposeYml($versionInfo['compose_file'], $localInfo['params']);
@@ -102,19 +101,22 @@ class Apps
         }
         $RESULTS['generate'] = $res['data'];
 
-        // 保存版本信息到.applocal文件
-        $localUpdate = [
-            'status' => $command === 'up' ? 'installing' : 'uninstalling',
-            'installed_num' => $localInfo['installed_num'],
-            'installed_version' => $versionInfo['version'],
-            $command === 'up' ? 'installed_at' : 'uninstalled_at' => date('Y-m-d H:i:s'),
-        ];
+        // 保存信息到.applocal文件
+        $prefix = $command === 'up' ? 'install' : 'uninstall';
+        $localUpdate = ['status' => $prefix . 'ing'];
+        $localUpdate[$prefix . '_num'] = intval($localInfo[$prefix . '_num']) + 1;
+        $localUpdate[$prefix . '_version'] = $versionInfo['version'];
+        $localUpdate[$prefix . '_at'] = date('Y-m-d H:i:s');
         self::saveAppLocalInfo($appName, $localUpdate);
 
         // 执行docker-compose命令
-        $callbackUrl = "http://host.docker.internal:" . env("APP_PORT") . "/api/apps/update/status?installed_num=" . $localInfo['installed_num'];
-        $res = self::curl("apps/{$command}/{$appName}?callback_url=" . urlencode($callbackUrl));
+        $curlPath = "apps/{$command}/{$appName}";
+        if ($command === 'up') {
+            $curlPath .= "?callback_url=" . urlencode("http://host.docker.internal:" . env("APP_PORT") . "/api/apps/install/callback?installed_num=" . $localUpdate[$prefix . '_num']);
+        }
+        $res = self::curl($curlPath);
         if (Base::isError($res)) {
+            self::saveAppLocalInfo($appName, ['status' => 'error']);
             return $res;
         }
         $RESULTS['compose'] = $res['data'];
@@ -132,13 +134,54 @@ class Apps
     public static function dockerComposeDown(string $appName, string $version = 'latest'): array
     {
         $res = self::dockerComposeUp($appName, $version, 'down');
-        if (Base::isSuccess($res)) {
-            self::nginxUpdate($appName);
+        if (Base::isError($res)) {
+            return $res;
         }
-        self::saveAppLocalInfo($appName, [
-            'status' => Base::isSuccess($res) ? 'not_installed' : 'error',
-        ]);
-        return $res;
+
+        // 最后一步处理
+        return self::dockerComposeFinalize($appName, 'not_installed');
+    }
+
+    /**
+     * 更新docker-compose状态（安装或卸载之后最后一步处理）
+     * @param string $appName
+     * @param string $status
+     * @return array
+     */
+    public static function dockerComposeFinalize(string $appName, string $status): array
+    {
+        // 获取当前应用信息
+        $appInfo = self::getAppLocalInfo($appName);
+
+        // 只有在安装中的状态才能更新
+        if (!in_array($appInfo['status'], ['installing', 'uninstalling'])) {
+            return Base::retError('当前状态不允许更新');
+        }
+
+        // 保存配置
+        if (!self::saveAppLocalInfo($appName, ['status' => $status])) {
+            return Base::retError('更新状态失败');
+        }
+
+        // 更新nginx配置
+        $res = self::nginxUpdate($appName);
+        if (Base::isError($res)) {
+            self::saveAppLocalInfo($appName, ['status' => 'error']);
+            return $res;
+        }
+
+        // 处理安装成功或卸载成功后的操作
+        $message = '更新成功';
+        if ($status == 'installed') {
+            // 处理安装成功后的操作
+            $message = '安装成功';
+        } elseif ($status == 'not_installed') {
+            // 处理卸载成功后的操作
+            $message = '卸载成功';
+        }
+
+        // 返回结果
+        return Base::retSuccess($message);
     }
 
     /**
@@ -302,9 +345,9 @@ class Apps
         $appLocalFile = $baseDir . '/.applocal';
 
         $defaultInfo = [
-            'installed_at' => '', // 安装/更新的时间
-            'installed_num' => 0, // 安装/更新的次数
-            'installed_version' => '', // 安装/更新的版本
+            'installed_at' => '', // 最后一次安装的时间
+            'installed_num' => 0, // 安装的次数
+            'installed_version' => '', // 最后一次安装的版本
             'status' => 'not_installed', // 应用状态: installing, installed, uninstalling, not_installed, error
             'params' => [], // 用户自定义参数值
             'resources' => [
