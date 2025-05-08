@@ -27,6 +27,30 @@ class Apps
     ];
 
     /**
+     * 获取应用列表
+     * @return array
+     */
+    public static function appList(): array
+    {
+        $apps = [];
+        $baseDir = base_path('docker/apps');
+        $dirs = scandir($baseDir);
+        foreach ($dirs as $dir) {
+            // 跳过当前目录、父目录和隐藏文件
+            if ($dir === '.' || $dir === '..' || str_starts_with($dir, '.')) {
+                continue;
+            }
+            $apps[] = [
+                'name' => $dir,
+                'info' => self::getAppInfo($dir),
+                'local' => self::getAppLocalInfo($dir),
+                'versions' => self::getAvailableVersions($dir),
+            ];
+        }
+        return Base::retSuccess("success", $apps);
+    }
+
+    /**
      * 执行docker-compose up命令
      * @param string $appName
      * @param string $version
@@ -52,13 +76,15 @@ class Apps
             return Base::retError("没有找到版本 {$version}");
         }
 
-        // 保存版本信息
-        file_put_contents($versionInfo['base_dir'] . '/latest', $versionInfo['version']);
+        // 保存版本信息到.applocal文件
+        self::saveAppLocalInfo($appName, [
+            'installed_version' => $versionInfo['version'],
+            'installed_at' => date('Y-m-d H:i:s')
+        ]);
+        $params = self::getAppLocalInfo($appName)['params'] ?? [];
 
         // 生成docker-compose.yml文件
-        $res = self::generateDockerComposeYml($versionInfo['compose_file'], [
-            'PROXY_PORT' => '33062',    // todo 参数自定义
-        ]);
+        $res = self::generateDockerComposeYml($versionInfo['compose_file'], $params);
         if (Base::isError($res)) {
             return $res;
         }
@@ -105,6 +131,181 @@ class Apps
     }
 
     /**
+     * 获取应用信息
+     * @param string $appName 应用名称
+     * @return array
+     */
+    public static function getAppInfo(string $appName): array
+    {
+        $baseDir = base_path('docker/apps/' . $appName);
+        $info = [
+            'name' => $appName,
+            'description' => '',
+            'author' => '',
+            'website' => '',
+            'github' => '',
+            'document' => '',
+            'fields' => [],
+        ];
+
+        if (file_exists($baseDir . '/config.yml')) {
+            $configData = Yaml::parseFile($baseDir . '/config.yml');
+
+            // 处理基础字段
+            if (isset($configData['name'])) {
+                $info['name'] = $configData['name'];
+            }
+
+            // 处理描述（支持多语言）
+            if (isset($configData['description'])) {
+                $info['description'] = self::formatMultiLanguageField($configData['description']);
+            }
+
+            // 处理字段
+            if (isset($configData['fields']) && is_array($configData['fields'])) {
+                $fields = [];
+                foreach ($configData['fields'] as $field) {
+                    // 检查必需的name字段及其格式
+                    if (!isset($field['name'])) {
+                        continue;
+                    }
+                    
+                    // 验证字段名格式，必须以字母或下划线开头，只允许大小写字母、数字和下划线
+                    if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $field['name'])) {
+                        continue;
+                    }
+
+                    // 标准化字段结构
+                    $normalizedField = [
+                        'name' => $field['name'],
+                        'type' => $field['type'] ?? 'text',
+                        'default' => $field['default'] ?? '',
+                        'label' => [],
+                        'placeholder' => [],
+                    ];
+
+                    // 处理label（支持多语言）
+                    if (isset($field['label'])) {
+                        $normalizedField['label'] = self::formatMultiLanguageField($field['label']);
+                    }
+
+                    // 处理placeholder（支持多语言）
+                    if (isset($field['placeholder'])) {
+                        $normalizedField['placeholder'] = self::formatMultiLanguageField($field['placeholder']);
+                    }
+
+                    // 处理其他属性
+                    foreach ($field as $key => $value) {
+                        if (!in_array($key, ['name', 'type', 'default', 'label', 'placeholder'])) {
+                            $normalizedField[$key] = $value;
+                        }
+                    }
+
+                    $fields[] = $normalizedField;
+                }
+                $info['fields'] = $fields;
+            }
+
+            // 处理其他标准字段
+            foreach (['author', 'website', 'github', 'document'] as $field) {
+                if (isset($configData[$field])) {
+                    $info[$field] = $configData[$field];
+                }
+            }
+        }
+
+        return $info;
+    }
+
+    /**
+     * 获取应用的本地安装信息
+     *
+     * @param string $appName 应用名称
+     * @return array 应用的本地安装信息
+     */
+    public static function getAppLocalInfo(string $appName): array
+    {
+        $baseDir = base_path('docker/apps/' . $appName);
+        $appLocalFile = $baseDir . '/.applocal';
+
+        $defaultInfo = [
+            'created_at' => '', // 应用首次添加到系统的时间
+            'installed_at' => '', // 最近一次安装/更新的时间
+            'installed_version' => '', // 最近一次安装/更新的版本
+            'status' => 'not_installed', // 应用状态: installed, not_installed, error
+            'params' => [], // 用户自定义参数值
+            'resources' => [
+                'cpu_limit' => '', // CPU限制，例如 '0.5' 或 '2'
+                'memory_limit' => '' // 内存限制，例如 '512M' 或 '2G'
+            ],
+        ];
+
+        if (file_exists($appLocalFile)) {
+            $localInfo = json_decode(file_get_contents($appLocalFile), true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($localInfo)) {
+                $defaultInfo = array_merge($defaultInfo, $localInfo);
+            }
+        }
+
+        // 确保 params 是数组
+        if (!is_array($defaultInfo['params'])) {
+            $defaultInfo['params'] = [];
+        }
+
+        // 添加 DooTask 版本信息
+        $defaultInfo['params']['DOOTASK_VERSION'] = Base::getVersion();
+
+        return $defaultInfo;
+    }
+
+    /**
+     * 保存应用的本地配置信息
+     *
+     * @param string $appName 应用名称
+     * @param array $data 要更新的数据
+     * @param bool $merge 是否与现有配置合并，默认true
+     * @return bool 保存是否成功
+     */
+    public static function saveAppLocalInfo(string $appName, array $data, bool $merge = true): bool
+    {
+        $baseDir = base_path('docker/apps/' . $appName);
+        $appLocalFile = $baseDir . '/.applocal';
+
+        // 初始化数据
+        $localInfo = [];
+
+        // 如果需要合并，先读取现有配置
+        if ($merge && file_exists($appLocalFile)) {
+            $existingData = json_decode(file_get_contents($appLocalFile), true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($existingData)) {
+                $localInfo = $existingData;
+            }
+        }
+
+        // 更新数据
+        foreach ($data as $key => $value) {
+            if (is_array($value) && isset($localInfo[$key]) && is_array($localInfo[$key])) {
+                // 如果是嵌套数组，进行深度合并
+                $localInfo[$key] = array_replace_recursive($localInfo[$key], $value);
+            } else {
+                // 普通值直接覆盖
+                $localInfo[$key] = $value;
+            }
+        }
+
+        // 确保目录存在
+        if (!is_dir($baseDir)) {
+            mkdir($baseDir, 0755, true);
+        }
+
+        // 写入文件
+        return (bool)file_put_contents(
+            $appLocalFile,
+            json_encode($localInfo, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
+    }
+
+    /**
      * 生成docker-compose.yml文件配置
      * @param string $filePath docker-compose.yml文件路径
      * @param array $params 可选参数，替换docker-compose.yml中的${XXX}变量
@@ -125,7 +326,7 @@ class Apps
         $hostPwd = '${HOST_PWD}/docker/apps/' . $appName . '/' . basename(dirname($filePath));
 
         // 保存路径
-        $savePath = dirname($filePath) . '/docker-compose.doo.yml';
+        $savePath = dirname($filePath) . '/.docker-compose.local.yml';
 
         try {
             // 解析YAML文件
@@ -166,7 +367,7 @@ class Apps
             $yamlContent = Yaml::dump($content, 4, 2);
 
             // 替换${XXX}格式变量
-            $yamlContent = preg_replace_callback('/\$\{(.*?)\}/', function ($matches) use ($params) {
+            $yamlContent = preg_replace_callback('/\$\{(.*?)}/', function ($matches) use ($params) {
                 return $params[$matches[1]] ?? $matches[0];
             }, $yamlContent);
 
@@ -182,6 +383,26 @@ class Apps
         } catch (ParseException $e) {
             // YAML解析错误
             return Base::retError('YAML parsing error:' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 格式化多语言字段
+     *
+     * @param mixed $field 要处理的字段值
+     * @return array 格式化后的多语言数组
+     */
+    private static function formatMultiLanguageField(mixed $field): array
+    {
+        if (is_array($field)) {
+            // 多语言字段
+            $result = $field;
+            $firstLang = array_key_first($result);
+            $result['default'] = $result[$firstLang];
+            return $result;
+        } else {
+            // 单语言字段
+            return ['default' => $field];
         }
     }
 
