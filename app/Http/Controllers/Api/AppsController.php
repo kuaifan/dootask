@@ -155,7 +155,7 @@ class AppsController extends AbstractController
         }
 
         $status = str_replace(['successful', 'failed'], ['installed', 'error'], $status);
-        if (empty($status) || !in_array($status, ['installed', 'error'])) {
+        if (!in_array($status, ['installed', 'error'])) {
             return Base::retError('状态无效');
         }
 

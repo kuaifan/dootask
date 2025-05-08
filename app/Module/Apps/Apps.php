@@ -93,15 +93,7 @@ class Apps
 
         // 获取本地安装信息
         $localInfo = self::getAppLocalInfo($appName);
-
-        // 保存版本信息到.applocal文件
-        $localUpdate = [
-            'status' => $command === 'up' ? 'installing' : 'not_installed',
-            'installed_num' => $localInfo['installed_num'] + 1,
-            'installed_version' => $versionInfo['version'],
-        ];
-        $localUpdate[$command === 'up' ? 'installed_at' : 'uninstalled_at'] = date('Y-m-d H:i:s');
-        self::saveAppLocalInfo($appName, $localUpdate);
+        $localInfo['installed_num']++;
 
         // 生成docker-compose.yml文件
         $res = self::generateDockerComposeYml($versionInfo['compose_file'], $localInfo['params']);
@@ -110,8 +102,17 @@ class Apps
         }
         $RESULTS['generate'] = $res['data'];
 
+        // 保存版本信息到.applocal文件
+        $localUpdate = [
+            'status' => $command === 'up' ? 'installing' : 'uninstalling',
+            'installed_num' => $localInfo['installed_num'],
+            'installed_version' => $versionInfo['version'],
+            $command === 'up' ? 'installed_at' : 'uninstalled_at' => date('Y-m-d H:i:s'),
+        ];
+        self::saveAppLocalInfo($appName, $localUpdate);
+
         // 执行docker-compose命令
-        $callbackUrl = "http://host.docker.internal:" . env("APP_PORT") . "/api/apps/update/status?installed_num=" . $localUpdate['installed_num'];
+        $callbackUrl = "http://host.docker.internal:" . env("APP_PORT") . "/api/apps/update/status?installed_num=" . $localInfo['installed_num'];
         $res = self::curl("apps/{$command}/{$appName}?callback_url=" . urlencode($callbackUrl));
         if (Base::isError($res)) {
             return $res;
@@ -130,7 +131,14 @@ class Apps
      */
     public static function dockerComposeDown(string $appName, string $version = 'latest'): array
     {
-        return self::dockerComposeUp($appName, $version, 'down');
+        $res = self::dockerComposeUp($appName, $version, 'down');
+        if (Base::isSuccess($res)) {
+            self::nginxUpdate($appName);
+        }
+        self::saveAppLocalInfo($appName, [
+            'status' => Base::isSuccess($res) ? 'not_installed' : 'error',
+        ]);
+        return $res;
     }
 
     /**
@@ -223,7 +231,7 @@ class Apps
 
             // 处理描述（支持多语言）
             if (isset($configData['description'])) {
-                $info['description'] = self::formatMultiLanguageField($configData['description']);
+                $info['description'] = self::getMultiLanguageField($configData['description']);
             }
 
             // 处理字段
@@ -251,12 +259,12 @@ class Apps
 
                     // 处理label（支持多语言）
                     if (isset($field['label'])) {
-                        $normalizedField['label'] = self::formatMultiLanguageField($field['label']);
+                        $normalizedField['label'] = self::getMultiLanguageField($field['label']);
                     }
 
                     // 处理placeholder（支持多语言）
                     if (isset($field['placeholder'])) {
-                        $normalizedField['placeholder'] = self::formatMultiLanguageField($field['placeholder']);
+                        $normalizedField['placeholder'] = self::getMultiLanguageField($field['placeholder']);
                     }
 
                     // 处理其他属性
@@ -297,7 +305,7 @@ class Apps
             'installed_at' => '', // 安装/更新的时间
             'installed_num' => 0, // 安装/更新的次数
             'installed_version' => '', // 安装/更新的版本
-            'status' => 'not_installed', // 应用状态: installing, installed, not_installed, error
+            'status' => 'not_installed', // 应用状态: installing, installed, uninstalling, not_installed, error
             'params' => [], // 用户自定义参数值
             'resources' => [
                 'cpu_limit' => '', // CPU限制，例如 '0.5' 或 '2'
@@ -452,23 +460,27 @@ class Apps
     }
 
     /**
-     * 格式化多语言字段
+     * 获取多语言字段
      *
      * @param mixed $field 要处理的字段值
-     * @return array 格式化后的多语言数组
+     * @return mixed 处理后的字段值
      */
-    private static function formatMultiLanguageField(mixed $field): array
+    private static function getMultiLanguageField(mixed $field): mixed
     {
-        if (is_array($field)) {
-            // 多语言字段
-            $result = $field;
-            $firstLang = array_key_first($result);
-            $result['default'] = $result[$firstLang];
-            return $result;
-        } else {
-            // 单语言字段
-            return ['default' => $field];
+        // 判断单语言字段，直接返回
+        if (!is_array($field)) {
+            return $field;
         }
+
+        // 空数组检查
+        if (empty($field)) {
+            return null;
+        }
+
+        $lang = Base::headerOrInput('language');
+
+        // 使用null合并运算符简化
+        return $field[$lang] ?? $field[array_key_first($field)];
     }
 
     /**
