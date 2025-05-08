@@ -132,7 +132,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {post} api/apps/update_status    04. 更新应用状态
+     * @api {post} api/apps/update/status    04. 更新应用状态
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -145,7 +145,7 @@ class AppsController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    更新结果
      */
-    public function updateStatus()
+    public function update__status()
     {
         $appName = Request::input('app_name');
         $status = Request::input('status');
@@ -172,10 +172,8 @@ class AppsController extends AbstractController
             'status' => $status
         ];
 
-        // 如果状态是安装成功，记录完成时间
-        if ($status === 'installed') {
-            // todo 安装完成要更新nginx配置
-        }
+        // 更新nginx配置
+        Apps::nginxUpdate($appName);
 
         // 保存配置
         if (Apps::saveAppLocalInfo($appName, $updateData)) {
@@ -184,7 +182,7 @@ class AppsController extends AbstractController
             return Base::retError('更新状态失败');
         }
     }
-    
+
     /**
      * @api {get} api/apps/logs           05. 获取应用日志
      *
@@ -204,33 +202,33 @@ class AppsController extends AbstractController
     {
         $appName = Request::input('app_name');
         $lines = intval(Request::input('lines', 50));
-        
+
         if (empty($appName)) {
             return Base::retError('应用名称不能为空');
         }
-        
+
         // 限制获取行数
         if ($lines <= 0) {
             $lines = 50;
         } else if ($lines > 2000) {
             $lines = 2000;
         }
-        
+
         // 日志文件路径
         $logFile = base_path('docker/logs/apps/' . $appName . '.log');
-        
+
         if (!file_exists($logFile)) {
             return Base::retSuccess('日志返回成功', [
                 'log' => ''
             ]);
         }
-        
+
         // 读取日志文件最后几行
         $output = [];
         $cmd = 'tail -n ' . $lines . ' ' . escapeshellarg($logFile);
         exec($cmd, $output);
         $logContent = implode("\n", $output);
-        
+
         return Base::retSuccess('日志返回成功', [
             'log' => $logContent
         ]);

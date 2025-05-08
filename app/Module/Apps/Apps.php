@@ -111,29 +111,11 @@ class Apps
         $result['generate'] = $res['data'];
 
         // 执行docker-compose命令
-        $res = self::curl("apps/{$command}/{$appName}");
+        $res = self::curl("apps/{$command}/{$appName}?callback_url=" . urlencode('http://nginx/api/apps/update/status'));
         if (Base::isError($res)) {
             return $res;
         }
         $result['compose'] = $res['data'];
-
-        // nginx配置文件处理 // todo 要单独处理
-        $nginxFile = $versionInfo['path'] . '/nginx.conf';
-        $nginxTarget = base_path('docker/nginx/apps/' . $appName . '.conf');
-        if (file_exists($nginxTarget)) {
-            unlink($nginxTarget);
-        }
-        if (file_exists($nginxFile)) {
-            if ($command === 'up') {
-                copy($nginxFile, $nginxTarget);
-            }
-            // 重启nginx
-            $res = self::curl("nginx/reload");
-            if (Base::isError($res)) {
-                return $res;
-            }
-            $result['nginx'] = $res['data'];
-        }
 
         // 返回结果
         return Base::retSuccess("success", $result);
@@ -148,6 +130,46 @@ class Apps
     public static function dockerComposeDown(string $appName, string $version = 'latest'): array
     {
         return self::dockerComposeUp($appName, $version, 'down');
+    }
+
+    /**
+     * 更新nginx配置
+     * @param string $appName
+     * @return array
+     */
+    public static function nginxUpdate(string $appName): array
+    {
+        // 获取本地安装信息
+        $localInfo = self::getAppLocalInfo($appName);
+
+        // nginx配置文件处理
+        $nginxFile = base_path('docker/apps/' . $appName . '/' . $localInfo['installed_version'] . '/nginx.conf');
+        $nginxTarget = base_path('docker/nginx/apps/' . $appName . '.conf');
+        $needReload = false;
+        if (file_exists($nginxTarget)) {
+            unlink($nginxTarget);
+            $needReload = true;
+        }
+        if (file_exists($nginxFile) && $localInfo['status'] === 'installed') {
+            copy($nginxFile, $nginxTarget);
+            $res = self::curl("nginx/test");
+            if (Base::isError($res)) {
+                unlink($nginxTarget);
+                return $res;
+            }
+            $needReload = true;
+        }
+
+        // 重启nginx
+        if ($needReload) {
+            $res = self::curl("nginx/reload");
+            if (Base::isError($res)) {
+                return $res;
+            }
+        }
+
+        // 返回结果
+        return Base::retSuccess("success");
     }
 
     /**
