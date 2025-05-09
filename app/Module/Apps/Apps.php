@@ -246,7 +246,7 @@ class Apps
         $info = [
             'name' => $appName,
             'description' => '',
-            'icon' => '',
+            'icon' => self::processAppIcon($appName, ['logo.svg', 'logo.png', 'icon.svg', 'icon.png']),
             'author' => '',
             'website' => '',
             'github' => '',
@@ -254,27 +254,6 @@ class Apps
             'fields' => [],
             'require_uninstalls' => [],
         ];
-
-        // 处理应用图标
-        $iconFiles = ['logo.svg', 'logo.png', 'icon.svg', 'icon.png'];
-        foreach ($iconFiles as $iconFile) {
-            $iconPath = $baseDir . '/' . $iconFile;
-            if (file_exists($iconPath)) {
-                // 创建目标目录、路径
-                $targetDir = public_path('uploads/file/apps/' . $appName);
-                $targetFile = $targetDir . '/' . $iconFile;
-
-                // 判断目标文件是否存在，或源文件是否比目标文件新
-                if (!file_exists($targetFile) || filemtime($iconPath) > filemtime($targetFile)) {
-                    Base::makeDir($targetDir);
-                    copy($iconPath, $targetFile);
-                }
-
-                // 设置图标URL
-                $info['icon'] = Base::fillUrl('uploads/file/apps/' . $appName . '/' . $iconFile);
-                break;
-            }
-        }
 
         if (file_exists($baseDir . '/config.yml')) {
             $configData = Yaml::parseFile($baseDir . '/config.yml');
@@ -369,6 +348,62 @@ class Apps
         }
 
         return $info;
+    }
+
+    /**
+     * 获取应用的入口点配置
+     *
+     * @param string $appName 应用名称
+     * @return array
+     */
+    public static function getAppEntryPoints(string $appName): array
+    {
+        $baseDir = base_path('docker/apps/' . $appName);
+        $entryPoints = [];
+
+        if (!file_exists($baseDir . '/config.yml')) {
+            return Base::retSuccess("success", $entryPoints);
+        }
+
+        $configData = Yaml::parseFile($baseDir . '/config.yml');
+        if (isset($configData['entry_points']) && is_array($configData['entry_points'])) {
+            foreach ($configData['entry_points'] as $entry) {
+                // 检查必需的字段
+                if (!isset($entry['location']) || !isset($entry['url'])) {
+                    continue;
+                }
+
+                // 标准化入口点结构
+                $normalizedEntry = [
+                    'location' => $entry['location'],
+                    'url' => $entry['url'],
+                    'icon' => '',
+                ];
+
+                // 处理图标
+                if (isset($entry['icon'])) {
+                    $normalizedEntry['icon'] = self::processAppIcon($appName, [$entry['icon']]);
+                }
+
+                // 处理label（支持多语言）
+                if (isset($entry['label'])) {
+                    $normalizedEntry['label'] = self::getMultiLanguageField($entry['label']);
+                } else {
+                    $normalizedEntry['label'] = '';
+                }
+
+                // 处理可选的UI配置
+                foreach (['transparent', 'keepAlive'] as $option) {
+                    if (isset($entry[$option])) {
+                        $normalizedEntry[$option] = $entry[$option];
+                    }
+                }
+
+                $entryPoints[] = $normalizedEntry;
+            }
+        }
+
+        return Base::retSuccess("success", $entryPoints);
     }
 
     /**
@@ -562,6 +597,44 @@ class Apps
 
         // 使用null合并运算符简化
         return $field[$lang] ?? $field[array_key_first($field)];
+    }
+
+    /**
+     * 处理应用图标
+     *
+     * @param string $appName 应用名称
+     * @param array $iconFiles 待处理的图标文件名数组
+     * @return string 处理后的图标URL，如果没有可用图标则返回空字符串
+     */
+    private static function processAppIcon(string $appName, array $iconFiles): string
+    {
+        $baseDir = base_path('docker/apps/' . $appName);
+
+        foreach ($iconFiles as $iconFile) {
+            // 检查是否为URL方式（以http或https开头）
+            if (preg_match('/^https?:\/\//i', $iconFile)) {
+                return $iconFile;
+            }
+
+            $iconPath = $baseDir . '/' . $iconFile;
+            if (file_exists($iconPath)) {
+                // 创建目标目录、路径
+                $targetDir = public_path('uploads/file/apps/' . $appName);
+                $iconName = str_replace(['/', '\\'], '_', $iconFile);
+                $targetFile = $targetDir . '/' . $iconName;
+
+                // 判断目标文件是否存在，或源文件是否比目标文件新
+                if (!file_exists($targetFile) || filemtime($iconPath) > filemtime($targetFile)) {
+                    Base::makeDir($targetDir);
+                    copy($iconPath, $targetFile);
+                }
+
+                // 返回图标URL
+                return Base::fillUrl('uploads/file/apps/' . $appName . '/' . $iconName);
+            }
+        }
+
+        return '';
     }
 
     /**
