@@ -258,12 +258,12 @@ class Apps
         if (file_exists($baseDir . '/config.yml')) {
             $configData = Yaml::parseFile($baseDir . '/config.yml');
 
-            // 处理基础字段
+            // 处理名称
             if (isset($configData['name'])) {
-                $info['name'] = $configData['name'];
+                $info['name'] = self::getMultiLanguageField($configData['name']) ?: $appName;
             }
 
-            // 处理描述（支持多语言）
+            // 处理描述
             if (isset($configData['description'])) {
                 $info['description'] = self::getMultiLanguageField($configData['description']);
             }
@@ -287,19 +287,9 @@ class Apps
                         'name' => $field['name'],
                         'type' => $field['type'] ?? 'text',
                         'default' => $field['default'] ?? '',
-                        'label' => [],
-                        'placeholder' => [],
+                        'label' => self::getMultiLanguageField($field['label']),
+                        'placeholder' => self::getMultiLanguageField($field['placeholder']),
                     ];
-
-                    // 处理label（支持多语言）
-                    if (isset($field['label'])) {
-                        $normalizedField['label'] = self::getMultiLanguageField($field['label']);
-                    }
-
-                    // 处理placeholder（支持多语言）
-                    if (isset($field['placeholder'])) {
-                        $normalizedField['placeholder'] = self::getMultiLanguageField($field['placeholder']);
-                    }
 
                     // 处理其他属性
                     foreach ($field as $key => $value) {
@@ -324,7 +314,7 @@ class Apps
                             $requireUninstalls[] = [
                                 'version' => $matches[2],
                                 'operator' => $matches[1] ?: '=',
-                                'reason' => $item['reason'] ? self::getMultiLanguageField($item['reason']) : ''
+                                'reason' => self::getMultiLanguageField($item['reason'])
                             ];
                         }
                     } else {
@@ -377,20 +367,9 @@ class Apps
                 $normalizedEntry = [
                     'location' => $entry['location'],
                     'url' => $entry['url'],
-                    'icon' => '',
+                    'icon' => self::processAppIcon($appName, [$entry['icon']]),
+                    'label' => self::getMultiLanguageField($entry['label']),
                 ];
-
-                // 处理图标
-                if (isset($entry['icon'])) {
-                    $normalizedEntry['icon'] = self::processAppIcon($appName, [$entry['icon']]);
-                }
-
-                // 处理label（支持多语言）
-                if (isset($entry['label'])) {
-                    $normalizedEntry['label'] = self::getMultiLanguageField($entry['label']);
-                } else {
-                    $normalizedEntry['label'] = '';
-                }
 
                 // 处理可选的UI配置
                 foreach (['transparent', 'keepAlive'] as $option) {
@@ -590,7 +569,7 @@ class Apps
 
         // 空数组检查
         if (empty($field)) {
-            return null;
+            return "";
         }
 
         $lang = Base::headerOrInput('language');
@@ -609,28 +588,36 @@ class Apps
     private static function processAppIcon(string $appName, array $iconFiles): string
     {
         $baseDir = base_path('docker/apps/' . $appName);
+        $iconDir = public_path('uploads/file/apps/' . $appName);
 
         foreach ($iconFiles as $iconFile) {
+            // 如果图标为空，则跳过
+            if (empty($iconFile)) {
+                continue;
+            }
+
             // 检查是否为URL方式（以http或https开头）
             if (preg_match('/^https?:\/\//i', $iconFile)) {
                 return $iconFile;
             }
 
+            // 处理图标文件路径
+            $iconFile = preg_replace('/^\/|^(\.\.\/)+|\.\//i', '', $iconFile);
             $iconPath = $baseDir . '/' . $iconFile;
+
             if (file_exists($iconPath)) {
                 // 创建目标目录、路径
-                $targetDir = public_path('uploads/file/apps/' . $appName);
-                $iconName = str_replace(['/', '\\'], '_', $iconFile);
-                $targetFile = $targetDir . '/' . $iconName;
+                $targetName = str_replace(['/', '\\'], '_', $iconFile);
+                $targetFile = $iconDir . '/' . $targetName;
 
                 // 判断目标文件是否存在，或源文件是否比目标文件新
                 if (!file_exists($targetFile) || filemtime($iconPath) > filemtime($targetFile)) {
-                    Base::makeDir($targetDir);
+                    Base::makeDir($iconDir);
                     copy($iconPath, $targetFile);
                 }
 
                 // 返回图标URL
-                return Base::fillUrl('uploads/file/apps/' . $appName . '/' . $iconName);
+                return Base::fillUrl('uploads/file/apps/' . $appName . '/' . $targetName);
             }
         }
 
