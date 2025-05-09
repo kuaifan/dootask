@@ -5,6 +5,7 @@
             :name="appName"
             :url="appUrl"
             :keep-alive="keepAlive"
+            :disable-scopecss="disableScopecss"
             :data="appData"
             @created="$emit('created', $event)"
             @beforemount="$emit('beforemount', $event)"
@@ -36,6 +37,10 @@ export default {
         keepAlive: {
             type: Boolean,
             default: true
+        },
+        disableScopecss: {
+            type: Boolean,
+            default: false
         },
         isLoading: {
             type: Boolean,

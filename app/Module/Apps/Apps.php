@@ -246,6 +246,7 @@ class Apps
         $info = [
             'name' => $appName,
             'description' => '',
+            'tags' => [],
             'icon' => self::processAppIcon($appName, ['logo.svg', 'logo.png', 'icon.svg', 'icon.png']),
             'author' => '',
             'website' => '',
@@ -266,6 +267,15 @@ class Apps
             // 处理描述
             if (isset($configData['description'])) {
                 $info['description'] = self::getMultiLanguageField($configData['description']);
+            }
+
+            // 处理标签
+            if (isset($configData['tags']) && is_array($configData['tags'])) {
+                foreach ($configData['tags'] as $tag) {
+                    if (trim($tag)) {
+                        $info['tags'][] = trim($tag);
+                    }
+                }
             }
 
             // 处理字段

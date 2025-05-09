@@ -16,6 +16,7 @@
                     :app-name="app.name"
                     :app-url="app.url"
                     :keep-alive="app.keepAlive"
+                    :disable-scopecss="app.disableScopecss"
                     :is-loading="app.isLoading"
                     :app-data="appData(app.name)"
                     @created="created"
@@ -38,6 +39,7 @@
                     :app-name="app.name"
                     :app-url="app.url"
                     :keep-alive="app.keepAlive"
+                    :disable-scopecss="app.disableScopecss"
                     :is-loading="app.isLoading"
                     :app-data="appData(app.name)"
                     @created="created"
@@ -344,11 +346,12 @@ export default {
         /**
          * 打开微应用
          * @param config
-         *  - name          应用名称
-         *  - url           应用地址
-         *  - props         传递参数
-         *  - transparent   是否透明模式 (true/false)，默认 false
-         *  - keepAlive     是否开启微应用保活 (true/false)，默认 true
+         *  - name              应用名称
+         *  - url               应用地址
+         *  - props             传递参数
+         *  - transparent       是否透明模式 (true/false)，默认 false
+         *  - keepAlive         是否开启微应用保活 (true/false)，默认 true
+         *  - disableScopecss   是否禁用样式隔离 (true/false)，默认 false
          */
         openMicroApp(config) {
             // 处理数据
@@ -357,6 +360,7 @@ export default {
             config.props = $A.isJson(config.props) ? config.props : {}
             config.transparent = typeof config.transparent == 'boolean' ? config.transparent : false
             config.keepAlive = typeof config.keepAlive == 'boolean' ? config.keepAlive : true
+            config.disableScopecss = typeof config.disableScopecss == 'boolean' ? config.disableScopecss : false
 
             // 判断处理
             const app = this.apps.find(({name}) => name == config.name);
