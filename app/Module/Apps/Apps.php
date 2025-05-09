@@ -94,6 +94,17 @@ class Apps
         // 获取本地安装信息
         $localInfo = self::getAppLocalInfo($appName);
 
+        // 检查是否需要卸载旧版本
+        if ($command === 'up' && $localInfo['status'] === 'installed' && $localInfo['require_uninstalls']) {
+            foreach ($localInfo['require_uninstalls'] as $requireUninstall) {
+                if (version_compare($versionInfo['version'], $requireUninstall['version'], $requireUninstall['operator'])) {
+                    $op = $requireUninstall['operator'] ?: '=';
+                    $reason = !empty($requireUninstall['reason']) ? "（原因：{$requireUninstall['reason']}）" : '';
+                    return Base::retError("更新版本 {$versionInfo['version']}，需要先卸载已安装的版本{$reason}");
+                }
+            }
+        }
+
         // 生成docker-compose.yml文件
         $res = self::generateDockerComposeYml($versionInfo['compose_file'], $localInfo['params']);
         if (Base::isError($res)) {
@@ -241,6 +252,7 @@ class Apps
             'github' => '',
             'document' => '',
             'fields' => [],
+            'require_uninstalls' => [],
         ];
 
         // 处理应用图标
@@ -320,6 +332,32 @@ class Apps
                     $fields[] = $normalizedField;
                 }
                 $info['fields'] = $fields;
+            }
+
+            // 处理 require_uninstalls 配置
+            if (isset($configData['require_uninstalls']) && is_array($configData['require_uninstalls'])) {
+                $requireUninstalls = [];
+                foreach ($configData['require_uninstalls'] as $item) {
+                    // 处理不同格式的配置
+                    if (is_array($item)) {
+                        // 完整格式: {version: '2.0.0', reason: '原因'}
+                        if (isset($item['version']) && preg_match('/^\s*([<>=!]*)\s*(.+)$/', $item['version'], $matches)) {
+                            $requireUninstalls[] = [
+                                'version' => $matches[2],
+                                'operator' => $matches[1] ?: '=',
+                                'reason' => $item['reason'] ? self::getMultiLanguageField($item['reason']) : ''
+                            ];
+                        }
+                    } else {
+                        // 简化格式: 直接是版本号字符串
+                        $requireUninstalls[] = [
+                            'version' => $item,
+                            'operator' => '=',
+                            'reason' => ''
+                        ];
+                    }
+                }
+                $info['require_uninstalls'] = $requireUninstalls;
             }
 
             // 处理其他标准字段

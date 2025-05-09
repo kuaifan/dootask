@@ -197,7 +197,7 @@ class AppsController extends AbstractController
         $logFile = base_path('docker/logs/apps/' . $appName . '.log');
 
         if (!file_exists($logFile)) {
-            return Base::retSuccess('日志返回成功', [
+            return Base::retSuccess('success', [
                 'log' => ''
             ]);
         }
@@ -208,7 +208,7 @@ class AppsController extends AbstractController
         exec($cmd, $output);
         $logContent = implode("\n", $output);
 
-        return Base::retSuccess('日志返回成功', [
+        return Base::retSuccess('success', [
             'log' => $logContent
         ]);
     }
