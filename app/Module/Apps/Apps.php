@@ -125,7 +125,7 @@ class Apps
         // 执行docker-compose命令
         $curlPath = "apps/{$command}/{$appName}";
         if ($command === 'up') {
-            $curlPath .= "?callback_url=" . urlencode("http://host.docker.internal:" . env("APP_PORT") . "/api/apps/install/callback?installed_num=" . $localUpdate[$prefix . '_num']);
+            $curlPath .= "?callback_url=" . urlencode("http://host.docker.internal:" . env("APP_PORT") . "/api/apps/install/callback?install_num=" . $localUpdate[$prefix . '_num']);
         }
         $res = self::curl($curlPath);
         if (Base::isError($res)) {
@@ -208,7 +208,7 @@ class Apps
         $localInfo = self::getAppLocalInfo($appName);
 
         // nginx配置文件处理
-        $nginxFile = base_path('docker/apps/' . $appName . '/' . $localInfo['installed_version'] . '/nginx.conf');
+        $nginxFile = base_path('docker/apps/' . $appName . '/' . $localInfo['install_version'] . '/nginx.conf');
         $nginxTarget = base_path('docker/nginx/apps/' . $appName . '.conf');
         $needReload = false;
         if (file_exists($nginxTarget)) {
@@ -422,9 +422,9 @@ class Apps
         $appLocalFile = $baseDir . '/.applocal';
 
         $defaultInfo = [
-            'installed_at' => '', // 最后一次安装的时间
-            'installed_num' => 0, // 安装的次数
-            'installed_version' => '', // 最后一次安装的版本
+            'install_at' => '', // 最后一次安装的时间
+            'install_num' => 0, // 安装的次数
+            'install_version' => '', // 最后一次安装的版本
             'status' => 'not_installed', // 应用状态: installing, installed, uninstalling, not_installed, error
             'params' => [], // 用户自定义参数值
             'resources' => [
@@ -438,6 +438,14 @@ class Apps
             if (json_last_error() === JSON_ERROR_NONE && is_array($localInfo)) {
                 $defaultInfo = array_merge($defaultInfo, $localInfo);
             }
+        } else {
+            Base::makeDir($baseDir);
+            file_put_contents($appLocalFile, json_encode($defaultInfo, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }
+
+        // 确保 status 状态
+        if (!in_array($defaultInfo['status'], ['installing', 'installed', 'uninstalling', 'not_installed', 'error'])) {
+            $defaultInfo['status'] = 'not_installed';
         }
 
         // 确保 params 是数组
