@@ -58,6 +58,7 @@ class Apps
     public static function appInfo(string $appName): array
     {
         return Base::retSuccess("success", [
+            'name' => $appName,
             'info' => self::getAppInfo($appName),
             'local' => self::getAppLocalInfo($appName),
             'versions' => self::getAvailableVersions($appName),
@@ -298,13 +299,26 @@ class Apps
                         'name' => $field['name'],
                         'type' => $field['type'] ?? 'text',
                         'default' => $field['default'] ?? '',
-                        'label' => self::getMultiLanguageField($field['label']),
-                        'placeholder' => self::getMultiLanguageField($field['placeholder']),
+                        'label' => self::getMultiLanguageField($field['label'] ?? ''),
+                        'placeholder' => self::getMultiLanguageField($field['placeholder'] ?? ''),
+                        'required' => $field['required'] ?? false,
                     ];
+
+                    // 处理 select 类型的选项
+                    if ($normalizedField['type'] === 'select' && isset($field['options']) && is_array($field['options'])) {
+                        $selectOptions = [];
+                        foreach ($field['options'] as $option) {
+                            $selectOptions[] = [
+                                'label' => self::getMultiLanguageField($option['label'] ?? ''),
+                                'value' => $option['value'] ?? '',
+                            ];
+                        }
+                        $normalizedField['options'] = $selectOptions;
+                    }
 
                     // 处理其他属性
                     foreach ($field as $key => $value) {
-                        if (!in_array($key, ['name', 'type', 'default', 'label', 'placeholder'])) {
+                        if (!in_array($key, ['name', 'type', 'default', 'label', 'placeholder', 'required', 'options'])) {
                             $normalizedField[$key] = $value;
                         }
                     }

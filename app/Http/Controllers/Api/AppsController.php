@@ -209,7 +209,7 @@ class AppsController extends AbstractController
         $logContent = implode("\n", $output);
 
         return Base::retSuccess('success', [
-            'log' => $logContent
+            'log' => trim($logContent)
         ]);
     }
 }
