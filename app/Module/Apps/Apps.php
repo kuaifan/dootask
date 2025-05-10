@@ -61,6 +61,7 @@ class Apps
             'info' => self::getAppInfo($appName),
             'local' => self::getAppLocalInfo($appName),
             'versions' => self::getAvailableVersions($appName),
+            'document' => self::getAppDocument($appName),
         ]);
     }
 
@@ -481,6 +482,54 @@ class Apps
             $appLocalFile,
             json_encode($localInfo, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
+    }
+
+    /**
+     * 获取应用的文档（README）
+     *
+     * @param string $appName 应用名称
+     * @return string 文档内容，如果未找到则返回空字符串
+     */
+    private static function getAppDocument(string $appName): string {
+        $baseDir = base_path('docker/apps/' . $appName);
+        $lang = Base::headerOrInput('language');
+
+        // 使用 glob 遍历目录
+        $files = glob($baseDir . '/*');
+
+        // 正则模式，包括语言特定和通用的 README 文件
+        $readmePatterns = [
+            "/^README(_|-|\.)?{$lang}\.md$/i",  // README_zh.md, README-zh.md, README.zh.md
+            "/^README\.md$/i",                 // README.md
+            "/^readme\.md$/i",                 // readme.md
+        ];
+
+        foreach ($files as $filePath) {
+            $fileName = basename($filePath);
+
+            // 检查是否为文件且匹配 README 模式
+            if (is_file($filePath) && self::matchReadmePattern($fileName, $readmePatterns)) {
+                return file_get_contents($filePath);
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * 检查文件名是否匹配 README 模式
+     *
+     * @param string $fileName 文件名
+     * @param array $patterns 正则模式数组
+     * @return bool 是否匹配
+     */
+    private static function matchReadmePattern(string $fileName, array $patterns): bool {
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $fileName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
