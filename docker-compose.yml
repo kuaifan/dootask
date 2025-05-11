@@ -218,16 +218,15 @@ services:
         ipv4_address: "${APP_IPPR}.15"
     restart: unless-stopped
 
-  apps:
-    container_name: "dootask-apps-${APP_ID}"
+  appstore:
+    container_name: "dootask-appstore-${APP_ID}"
     privileged: true
-    build:
-      context: ../dooso
-      dockerfile: Dockerfile-cli
+    image: "kuaifan/dootask-appstore:0.0.1"
     volumes:
       - ./:/var/www
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
+      DOO_ENV: "/var/www"
       HOST_PWD: "${PWD}"
     network_mode: host
     restart: unless-stopped

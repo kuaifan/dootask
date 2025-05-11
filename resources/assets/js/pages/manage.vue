@@ -349,14 +349,6 @@
             <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" @onBack="approveDetailsShow=false"/>
         </DrawerOverlay>
 
-        <!--应用商店-->
-        <DrawerOverlay
-            v-model="appStoreShow"
-            placement="right"
-            :size="1200">
-            <AppStore v-if="appStoreShow"/>
-        </DrawerOverlay>
-
         <!--应用详情-->
         <MicroApps/>
     </div>
@@ -383,7 +375,6 @@ import MicroApps from "../components/MicroApps";
 import UserSelect from "../components/UserSelect.vue";
 import ImgUpload from "../components/ImgUpload.vue";
 import ApproveDetails from "./manage/approve/details.vue";
-import AppStore from "./manage/appstore/store.vue";
 import notificationKoro from "notification-koro1";
 import emitter from "../store/events";
 import SearchBox from "../components/SearchBox.vue";
@@ -392,7 +383,6 @@ export default {
     components: {
         SearchBox,
         ApproveDetails,
-        AppStore,
         ImgUpload,
         UserSelect,
         TaskExport,
@@ -467,8 +457,6 @@ export default {
 
             approveDetails: {id: 0},
             approveDetailsShow: false,
-
-            appStoreShow: false,
         }
     },
 
@@ -1217,7 +1205,7 @@ export default {
                     this.settingRoute(act)
                     break;
                 case 'appstore':
-                    this.appStoreShow = true
+                    emitter.emit('openMicroApp', {name: 'appstore', url: $A.mainUrl('appstore/web/'), disableScopecss: true});
                     break;
             }
         },

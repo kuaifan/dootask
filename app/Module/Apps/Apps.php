@@ -24,6 +24,7 @@ class Apps
         'ai',
         'face',
         'search',
+        'appstore',
     ];
 
     /**
@@ -583,8 +584,15 @@ class Apps
         $savePath = dirname($filePath) . '/.docker-compose.local.yml';
 
         try {
+            // 读取文件内容
+            $fileContent = file_get_contents($filePath);
+
+            // 处理特殊环境变量
+            $fileContent = str_replace('${HOST_PWD}', '', $fileContent);
+            $fileContent = str_replace('${PUBLIC_PATH}', '${HOST_PWD}/public', $fileContent);
+
             // 解析YAML文件
-            $content = Yaml::parseFile($filePath);
+            $content = Yaml::parse($fileContent);
 
             // 确保services部分存在
             if (!isset($content['services'])) {
@@ -797,7 +805,7 @@ class Apps
      */
     private static function curl($path): array
     {
-        $url = "http://host.docker.internal:" . env("APPS_PORT") . "/{$path}";
+        $url = "http://nginx/appstore/api/{$path}";
         $extra = [
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . env('APP_KEY'),
