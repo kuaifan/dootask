@@ -175,6 +175,8 @@ class AppsController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {String} data.name   应用名称
+     * @apiSuccess {Object} data.local  应用本地安装信息
      * @apiSuccess {String} data.log    日志内容
      */
     public function logs()
@@ -209,6 +211,8 @@ class AppsController extends AbstractController
         $logContent = implode("\n", $output);
 
         return Base::retSuccess('success', [
+            'name' => $appName,
+            'local' => Apps::getAppLocalInfo($appName),
             'log' => trim($logContent)
         ]);
     }

@@ -304,6 +304,11 @@ class Apps
                         'required' => $field['required'] ?? false,
                     ];
 
+                    // 处理默认值
+                    if ($normalizedField['type'] === 'number') {
+                        $normalizedField['default'] = intval($normalizedField['default']);
+                    }
+
                     // 处理 select 类型的选项
                     if ($normalizedField['type'] === 'select' && isset($field['options']) && is_array($field['options'])) {
                         $selectOptions = [];
