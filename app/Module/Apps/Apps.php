@@ -101,7 +101,6 @@ class Apps
         if ($command === 'up' && $appConfig['status'] === 'installed' && $appConfig['require_uninstalls']) {
             foreach ($appConfig['require_uninstalls'] as $requireUninstall) {
                 if (version_compare($versionInfo['version'], $requireUninstall['version'], $requireUninstall['operator'])) {
-                    $op = $requireUninstall['operator'] ?: '=';
                     $reason = !empty($requireUninstall['reason']) ? "（原因：{$requireUninstall['reason']}）" : '';
                     return Base::retError("更新版本 {$versionInfo['version']}，需要先卸载已安装的版本{$reason}");
                 }
@@ -109,11 +108,21 @@ class Apps
         }
 
         // 生成docker-compose.yml文件
-        $res = self::generateDockerComposeYml($versionInfo['compose_file'], $appConfig['params']);
+        $composeFile = base_path('docker/appstore/apps/' . $appName . '/' . $versionInfo['version'] . '/docker-compose.yml');
+        $res = self::generateDockerComposeYml($composeFile, $appConfig['params']);
         if (Base::isError($res)) {
             return $res;
         }
         $RESULTS['generate'] = $res['data'];
+
+        // 生成nginx文件
+        $nginxSourceFile = base_path('docker/appstore/apps/' . $appName . '/' . $versionInfo['version'] . '/nginx.conf');
+        $nginxTargetFile = base_path('docker/appstore/configs/' . $appName . '/nginx.conf');
+        $nginxContent = '';
+        if ($command === 'up' && file_exists($nginxSourceFile)) {
+            $nginxContent = file_get_contents($nginxSourceFile);
+        }
+        file_put_contents($nginxTargetFile, $nginxContent);
 
         // 保存信息到配置信息
         $prefix = $command === 'up' ? 'install' : 'uninstall';
@@ -744,10 +753,7 @@ class Apps
             // 支持的格式: x.y.z, vx.y.z, x.y, vx.y
             if (preg_match('/^v?\d+(\.\d+){1,2}$/', $dir)) {
                 $versions[] = [
-                    'version' => ltrim($dir, 'v'),  // 去掉前缀v
-                    'path' => $fullPath,    // 目录路径
-                    'base_dir' => $baseDir, // 基础目录
-                    'compose_file' => $dockerComposeFile    // docker-compose.yml文件路径
+                    'version' => $dir,
                 ];
             }
         }

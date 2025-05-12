@@ -10,6 +10,9 @@
     align-items: center;
     justify-content: center;
 }
+micro-app-body .app-view-loading {
+    position: absolute !important;
+}
 .app-view-loading > div {
     text-align: center;
 }
