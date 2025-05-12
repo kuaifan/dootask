@@ -12,9 +12,8 @@ Group No.: `546574618`
 ## Setup
 
 - `Docker v20.10+` & `Docker Compose v2.0+` must be installed
-- System: `Centos/Debian/Ubuntu/macOS/Windows`
+- System: `Centos/Debian/Ubuntu/macOS` and other linux/unix systems
 - Hardware suggestion: 2 cores and above 4G memory
-- Special note: Windows users please use `git bash` or `cmder` to run the command
 
 ### Deployment (Pro Edition)
 

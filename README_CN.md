@@ -12,9 +12,8 @@
 ## 安装程序
 
 - 必须安装：`Docker v20.10+` 和 `Docker Compose v2.0+`
-- 支持环境：`Centos/Debian/Ubuntu/macOS/Windows`
+- 支持环境：`Centos/Debian/Ubuntu/macOS` 等 linux/unix 系统
 - 硬件建议：2核4G以上
-- 特别说明：Windows 用户请使用 `git bash` 或者 `cmder` 运行命令
 
 ### 部署项目（Pro版）
 
