@@ -109,7 +109,7 @@ class Apps
 
         // 生成docker-compose.yml文件
         $composeFile = base_path('docker/appstore/apps/' . $appName . '/' . $versionInfo['version'] . '/docker-compose.yml');
-        $res = self::generateDockerComposeYml($composeFile, $appConfig['params']);
+        $res = self::generateDockerComposeYml($composeFile, $appConfig['params'], $appConfig['resources']);
         if (Base::isError($res)) {
             return $res;
         }
@@ -557,10 +557,11 @@ class Apps
     /**
      * 生成docker-compose.yml文件配置
      * @param string $filePath docker-compose.yml文件路径
-     * @param array $params 可选参数，替换docker-compose.yml中的${XXX}变量
+     * @param array $params 可选参数，替换docker-compose.yml中的${XXX}变量，示例：{'APP_ID' => '123'}
+     * @param array $resources 可选资源限制，示例：{'cpu_limit' => '0.5', 'memory_limit' => '512M'}
      * @return array
      */
-    private static function generateDockerComposeYml(string $filePath, array $params = []): array
+    private static function generateDockerComposeYml(string $filePath, array $params = [], array $resources = []): array
     {
         // 应用名称
         $appName = basename(dirname($filePath, 2));
@@ -616,6 +617,14 @@ class Apps
                 // 处理现有的volumes配置
                 if (isset($service['volumes'])) {
                     $service['volumes'] = Volumes::processVolumeConfigurations($service['volumes'], $hostPwd);
+                }
+
+                // 处理资源限制
+                if (isset($resources['cpu_limit']) && $resources['cpu_limit']) {
+                    $service['deploy']['resources']['limits']['cpus'] = $resources['cpu_limit'];
+                }
+                if (isset($resources['memory_limit']) && $resources['memory_limit']) {
+                    $service['deploy']['resources']['limits']['memory'] = $resources['memory_limit'];
                 }
             }
 
