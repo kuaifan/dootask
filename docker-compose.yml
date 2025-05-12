@@ -23,8 +23,7 @@ services:
       MYSQL_USERNAME: "${DB_USERNAME}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.2"
+      - extnetwork
     depends_on:
       mariadb:
         condition: service_healthy
@@ -42,8 +41,7 @@ services:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./:/var/www
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.3"
+      - extnetwork
     restart: unless-stopped
 
   redis:
@@ -57,8 +55,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.4"
+      - extnetwork
     restart: unless-stopped
 
   mariadb:
@@ -80,8 +77,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.5"
+      - extnetwork
     restart: unless-stopped
 
   office:
@@ -102,8 +98,7 @@ services:
     environment:
       JWT_SECRET: ${APP_KEY}
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.6"
+      - extnetwork
     restart: unless-stopped
 
   fileview:
@@ -114,8 +109,7 @@ services:
       KK_OFFICE_PREVIEW_SWITCH_DISABLED: true
       KK_MEDIA_CONVERT_DISABLE: true
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.7"
+      - extnetwork
     restart: unless-stopped
 
   drawio-webapp:
@@ -128,16 +122,14 @@ services:
       - ./docker/drawio/webapp/js/croppie/croppie.min.css:/usr/local/tomcat/webapps/draw/js/croppie/croppie.min.css
       - ./docker/drawio/webapp/js/diagramly/ElectronApp.js:/usr/local/tomcat/webapps/draw/js/diagramly/ElectronApp.js
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.8"
+      - extnetwork
     restart: unless-stopped
 
   drawio-export:
     container_name: "dootask-drawio-export-${APP_ID}"
     image: "kuaifan/export-server:0.0.1"
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.9"
+      - extnetwork
     volumes:
       - ./docker/drawio/export/fonts:/usr/share/fonts/drawio
     restart: unless-stopped
@@ -146,8 +138,7 @@ services:
     container_name: "dootask-minder-${APP_ID}"
     image: "kuaifan/minder:0.1.3"
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.10"
+      - extnetwork
     restart: unless-stopped
 
   approve:
@@ -164,8 +155,7 @@ services:
       DEMO_DATA: true
       KEY: ${APP_KEY}
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.11"
+      - extnetwork
     restart: unless-stopped
 
   ai:
@@ -176,8 +166,7 @@ services:
       REDIS_PORT: "${REDIS_PORT}"
       TIMEOUT: 600
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.12"
+      - extnetwork
     restart: unless-stopped
 
   face:
@@ -196,8 +185,7 @@ services:
       DB_PREFIX: "${DB_PREFIX}"
       REPORT_API: "http://nginx/api/public/checkin/report"
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.14"
+      - extnetwork
     restart: unless-stopped
 
   search:
@@ -214,8 +202,7 @@ services:
         limits:
           cpus: '2'
     networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.15"
+      - extnetwork
     restart: unless-stopped
 
   appstore:
@@ -234,10 +221,6 @@ services:
 networks:
   extnetwork:
     name: "dootask-networks-${APP_ID}"
-    ipam:
-      config:
-        - subnet: "${APP_IPPR}.0/24"
-          gateway: "${APP_IPPR}.1"
 
 volumes:
   shared_data:

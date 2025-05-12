@@ -820,7 +820,7 @@ class SystemController extends AbstractController
             if ($data['info']['sn'] != $data['doo_sn']) {
                 $data['error'][] = '终端SN与License不匹配';
             }
-            if ($data['info']['mac']) {
+            if ($data['info']['mac'] && $data['macs']) {
                 $approved = false;
                 foreach ($data['info']['mac'] as $mac) {
                     if (in_array($mac, $data['macs'])) {
