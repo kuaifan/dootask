@@ -426,6 +426,14 @@ class Apps
         // 添加 DooTask 版本信息
         $defaultInfo['params']['DOOTASK_VERSION'] = Base::getVersion();
 
+        // 确保 resources 完整
+        if (!is_array($defaultInfo['resources'])) {
+            $defaultInfo['resources'] = [];
+        }
+        $defaultInfo['resources']['cpu_limit'] = $defaultInfo['resources']['cpu_limit'] ?? '';
+        $defaultInfo['resources']['memory_limit'] = $defaultInfo['resources']['memory_limit'] ?? '';
+
+        // 返回应用配置信息
         return $defaultInfo;
     }
 
@@ -636,7 +644,7 @@ class Apps
             }
 
             // 生成YAML内容
-            $yamlContent = Yaml::dump($content, 4, 2);
+            $yamlContent = Yaml::dump($content, 8, 2);
 
             // 替换${XXX}格式变量
             $yamlContent = preg_replace_callback('/\$\{(.*?)}/', function ($matches) use ($params) {
