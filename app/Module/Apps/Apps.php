@@ -34,7 +34,7 @@ class Apps
     public static function appList(): array
     {
         $apps = [];
-        $baseDir = base_path('docker/apps');
+        $baseDir = base_path('docker/appstore/apps');
         $dirs = scandir($baseDir);
         foreach ($dirs as $dir) {
             // 跳过当前目录、父目录和隐藏文件
@@ -44,7 +44,7 @@ class Apps
             $apps[] = [
                 'name' => $dir,
                 'info' => self::getAppInfo($dir),
-                'local' => self::getAppLocalInfo($dir),
+                'config' => self::getAppConfig($dir),
                 'versions' => self::getAvailableVersions($dir),
             ];
         }
@@ -52,7 +52,7 @@ class Apps
     }
 
     /**
-     * 获取应用信息
+     * 获取应用信息（比列表多返回了 document）
      * @param string $appName 应用名称
      * @return array
      */
@@ -61,7 +61,7 @@ class Apps
         return Base::retSuccess("success", [
             'name' => $appName,
             'info' => self::getAppInfo($appName),
-            'local' => self::getAppLocalInfo($appName),
+            'config' => self::getAppConfig($appName),
             'versions' => self::getAvailableVersions($appName),
             'document' => self::getAppDocument($appName),
         ]);
@@ -94,12 +94,12 @@ class Apps
             return Base::retError("没有找到版本 {$version}");
         }
 
-        // 获取本地安装信息
-        $localInfo = self::getAppLocalInfo($appName);
+        // 获取安装配置信息
+        $appConfig = self::getAppConfig($appName);
 
         // 检查是否需要卸载旧版本
-        if ($command === 'up' && $localInfo['status'] === 'installed' && $localInfo['require_uninstalls']) {
-            foreach ($localInfo['require_uninstalls'] as $requireUninstall) {
+        if ($command === 'up' && $appConfig['status'] === 'installed' && $appConfig['require_uninstalls']) {
+            foreach ($appConfig['require_uninstalls'] as $requireUninstall) {
                 if (version_compare($versionInfo['version'], $requireUninstall['version'], $requireUninstall['operator'])) {
                     $op = $requireUninstall['operator'] ?: '=';
                     $reason = !empty($requireUninstall['reason']) ? "（原因：{$requireUninstall['reason']}）" : '';
@@ -109,28 +109,28 @@ class Apps
         }
 
         // 生成docker-compose.yml文件
-        $res = self::generateDockerComposeYml($versionInfo['compose_file'], $localInfo['params']);
+        $res = self::generateDockerComposeYml($versionInfo['compose_file'], $appConfig['params']);
         if (Base::isError($res)) {
             return $res;
         }
         $RESULTS['generate'] = $res['data'];
 
-        // 保存信息到.applocal文件
+        // 保存信息到配置信息
         $prefix = $command === 'up' ? 'install' : 'uninstall';
-        $localUpdate = ['status' => $prefix . 'ing'];
-        $localUpdate[$prefix . '_num'] = intval($localInfo[$prefix . '_num']) + 1;
-        $localUpdate[$prefix . '_version'] = $versionInfo['version'];
-        $localUpdate[$prefix . '_at'] = date('Y-m-d H:i:s');
-        self::saveAppLocalInfo($appName, $localUpdate);
+        $updateConfig = ['status' => $prefix . 'ing'];
+        $updateConfig[$prefix . '_num'] = intval($appConfig[$prefix . '_num']) + 1;
+        $updateConfig[$prefix . '_version'] = $versionInfo['version'];
+        $updateConfig[$prefix . '_at'] = date('Y-m-d H:i:s');
+        self::saveAppConfig($appName, $updateConfig);
 
         // 执行docker-compose命令
         $curlPath = "apps/{$command}/{$appName}";
         if ($command === 'up') {
-            $curlPath .= "?callback_url=" . urlencode("http://host.docker.internal:" . env("APP_PORT") . "/api/apps/install/callback?install_num=" . $localUpdate[$prefix . '_num']);
+            $curlPath .= "?callback_url=" . urlencode("http://host.docker.internal:" . env("APP_PORT") . "/api/apps/install/callback?install_num=" . $updateConfig[$prefix . '_num']);
         }
         $res = self::curl($curlPath);
         if (Base::isError($res)) {
-            self::saveAppLocalInfo($appName, ['status' => 'error']);
+            self::saveAppConfig($appName, ['status' => 'error']);
             return $res;
         }
         $RESULTS['compose'] = $res['data'];
@@ -165,7 +165,7 @@ class Apps
     public static function dockerComposeFinalize(string $appName, string $status): array
     {
         // 获取当前应用信息
-        $appInfo = self::getAppLocalInfo($appName);
+        $appInfo = self::getAppConfig($appName);
 
         // 只有在安装中的状态才能更新
         if (!in_array($appInfo['status'], ['installing', 'uninstalling'])) {
@@ -173,14 +173,13 @@ class Apps
         }
 
         // 保存配置
-        if (!self::saveAppLocalInfo($appName, ['status' => $status])) {
+        if (!self::saveAppConfig($appName, ['status' => $status])) {
             return Base::retError('更新状态失败');
         }
 
-        // 更新nginx配置
         $res = self::nginxUpdate($appName);
         if (Base::isError($res)) {
-            self::saveAppLocalInfo($appName, ['status' => 'error']);
+            self::saveAppConfig($appName, ['status' => 'error']);
             return $res;
         }
 
@@ -205,18 +204,18 @@ class Apps
      */
     public static function nginxUpdate(string $appName): array
     {
-        // 获取本地安装信息
-        $localInfo = self::getAppLocalInfo($appName);
+        // 获取安装配置信息
+        $appConfig = self::getAppConfig($appName);
 
         // nginx配置文件处理
-        $nginxFile = base_path('docker/apps/' . $appName . '/' . $localInfo['install_version'] . '/nginx.conf');
-        $nginxTarget = base_path('docker/nginx/apps/' . $appName . '.conf');
+        $nginxFile = base_path('docker/appstore/apps/' . $appName . '/' . $appConfig['install_version'] . '/nginx.conf');
+        $nginxTarget = base_path('docker/appstore/configs/' . $appName . '/nginx.conf');
         $needReload = false;
         if (file_exists($nginxTarget)) {
             unlink($nginxTarget);
             $needReload = true;
         }
-        if (file_exists($nginxFile) && $localInfo['status'] === 'installed') {
+        if (file_exists($nginxFile) && $appConfig['status'] === 'installed') {
             copy($nginxFile, $nginxTarget);
             $res = self::curl("nginx/test");
             if (Base::isError($res)) {
@@ -245,7 +244,7 @@ class Apps
      */
     public static function getAppInfo(string $appName): array
     {
-        $baseDir = base_path('docker/apps/' . $appName);
+        $baseDir = base_path('docker/appstore/apps/' . $appName);
         $info = [
             'name' => $appName,
             'description' => '',
@@ -379,7 +378,7 @@ class Apps
      */
     public static function getAppEntryPoints(string $appName): array
     {
-        $baseDir = base_path('docker/apps/' . $appName);
+        $baseDir = base_path('docker/appstore/apps/' . $appName);
         $entryPoints = [];
 
         if (!file_exists($baseDir . '/config.yml')) {
@@ -417,15 +416,15 @@ class Apps
     }
 
     /**
-     * 获取应用的本地安装信息
+     * 获取应用配置信息
      *
      * @param string $appName 应用名称
-     * @return array 应用的本地安装信息
+     * @return array 应用配置信息
      */
-    public static function getAppLocalInfo(string $appName): array
+    public static function getAppConfig(string $appName): array
     {
-        $baseDir = base_path('docker/apps/' . $appName);
-        $appLocalFile = $baseDir . '/.applocal';
+        $baseDir = base_path('docker/appstore/configs/' . $appName);
+        $configFile = $baseDir . '/config.json';
 
         $defaultInfo = [
             'install_at' => '', // 最后一次安装的时间
@@ -439,14 +438,14 @@ class Apps
             ],
         ];
 
-        if (file_exists($appLocalFile)) {
-            $localInfo = json_decode(file_get_contents($appLocalFile), true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($localInfo)) {
-                $defaultInfo = array_merge($defaultInfo, $localInfo);
+        if (file_exists($configFile)) {
+            $appConfig = json_decode(file_get_contents($configFile), true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($appConfig)) {
+                $defaultInfo = array_merge($defaultInfo, $appConfig);
             }
         } else {
             Base::makeDir($baseDir);
-            file_put_contents($appLocalFile, json_encode($defaultInfo, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            file_put_contents($configFile, json_encode($defaultInfo, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         }
 
         // 确保 status 状态
@@ -466,37 +465,37 @@ class Apps
     }
 
     /**
-     * 保存应用的本地配置信息
+     * 保存应用配置信息
      *
      * @param string $appName 应用名称
      * @param array $data 要更新的数据
      * @param bool $merge 是否与现有配置合并，默认true
      * @return bool 保存是否成功
      */
-    public static function saveAppLocalInfo(string $appName, array $data, bool $merge = true): bool
+    public static function saveAppConfig(string $appName, array $data, bool $merge = true): bool
     {
-        $baseDir = base_path('docker/apps/' . $appName);
-        $appLocalFile = $baseDir . '/.applocal';
+        $baseDir = base_path('docker/appstore/configs/' . $appName);
+        $configFile = $baseDir . '/config.json';
 
         // 初始化数据
-        $localInfo = [];
+        $appConfig = [];
 
         // 如果需要合并，先读取现有配置
-        if ($merge && file_exists($appLocalFile)) {
-            $existingData = json_decode(file_get_contents($appLocalFile), true);
+        if ($merge && file_exists($configFile)) {
+            $existingData = json_decode(file_get_contents($configFile), true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($existingData)) {
-                $localInfo = $existingData;
+                $appConfig = $existingData;
             }
         }
 
         // 更新数据
         foreach ($data as $key => $value) {
-            if (is_array($value) && isset($localInfo[$key]) && is_array($localInfo[$key])) {
+            if (is_array($value) && isset($appConfig[$key]) && is_array($appConfig[$key])) {
                 // 如果是嵌套数组，进行深度合并
-                $localInfo[$key] = array_replace_recursive($localInfo[$key], $value);
+                $appConfig[$key] = array_replace_recursive($appConfig[$key], $value);
             } else {
                 // 普通值直接覆盖
-                $localInfo[$key] = $value;
+                $appConfig[$key] = $value;
             }
         }
 
@@ -507,9 +506,41 @@ class Apps
 
         // 写入文件
         return (bool)file_put_contents(
-            $appLocalFile,
-            json_encode($localInfo, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            $configFile,
+            json_encode($appConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
+    }
+
+    /**
+     * 获取应用的日志
+     * @param string $appName
+     * @param int $lines 获取的行数，默认50行, 最大2000行
+     * @return array
+     */
+    public static function getAppLog(string $appName, int $lines = 50): array
+    {
+        // 日志文件路径
+        $logFile = base_path('docker/appstore/logs/' . $appName . '.log');
+
+        // 检查日志文件是否存在
+        if (!file_exists($logFile)) {
+            return [];
+        }
+
+        // 限制获取行数
+        if ($lines <= 0) {
+            $lines = 50;
+        } else if ($lines > 2000) {
+            $lines = 2000;
+        }
+
+        // 读取日志文件最后几行
+        $output = [];
+        $cmd = 'tail -n ' . $lines . ' ' . escapeshellarg($logFile);
+        exec($cmd, $output);
+
+        // 返回日志内容
+        return $output;
     }
 
     /**
@@ -519,7 +550,7 @@ class Apps
      * @return string 文档内容，如果未找到则返回空字符串
      */
     private static function getAppDocument(string $appName): string {
-        $baseDir = base_path('docker/apps/' . $appName);
+        $baseDir = base_path('docker/appstore/apps/' . $appName);
         $lang = Base::headerOrInput('language');
 
         // 使用 glob 遍历目录
@@ -578,10 +609,10 @@ class Apps
         $networkName = 'dootask-networks-' . env('APP_ID');
 
         // 主机路径
-        $hostPwd = '${HOST_PWD}/docker/apps/' . $appName . '/' . basename(dirname($filePath));
+        $hostPwd = '${HOST_PWD}/docker/appstore/apps/' . $appName . '/' . basename(dirname($filePath));
 
         // 保存路径
-        $savePath = dirname($filePath) . '/.docker-compose.local.yml';
+        $savePath = base_path('docker/appstore/configs/' . $appName . '/docker-compose.yml');
 
         try {
             // 读取文件内容
@@ -681,8 +712,8 @@ class Apps
      */
     private static function processAppIcon(string $appName, array $iconFiles): string
     {
-        $baseDir = base_path('docker/apps/' . $appName);
-        $iconDir = public_path('uploads/file/apps/' . $appName);
+        $baseDir = base_path('docker/appstore/apps/' . $appName);
+        $iconDir = public_path('uploads/file/appstore/' . $appName);
 
         foreach ($iconFiles as $iconFile) {
             // 如果图标为空，则跳过
@@ -711,7 +742,7 @@ class Apps
                 }
 
                 // 返回图标URL
-                return Base::fillUrl('uploads/file/apps/' . $appName . '/' . $targetName);
+                return Base::fillUrl('uploads/file/appstore/' . $appName . '/' . $targetName);
             }
         }
 
@@ -726,7 +757,7 @@ class Apps
      */
     private static function getAvailableVersions(string $appName): array
     {
-        $baseDir = base_path('docker/apps/' . $appName);
+        $baseDir = base_path('docker/appstore/apps/' . $appName);
         $versions = [];
 
         // 检查应用目录是否存在

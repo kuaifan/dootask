@@ -41,8 +41,8 @@ class AppsController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    应用详细信息
-     * @apiSuccess {Object} data.info    应用基本信息
-     * @apiSuccess {Object} data.local   应用本地安装信息
+     * @apiSuccess {Object} data.info     应用基本信息
+     * @apiSuccess {Object} data.config   应用配置信息
      * @apiSuccess {Array}  data.versions 可用版本列表
      */
     public function info()
@@ -85,21 +85,21 @@ class AppsController extends AbstractController
         }
 
         // 保存用户设置的参数
-        $localData = [];
+        $configData = [];
 
         // 设置参数
         if (!empty($params) && is_array($params)) {
-            $localData['params'] = $params;
+            $configData['params'] = $params;
         }
 
         // 设置资源限制
         if (!empty($resources) && is_array($resources)) {
-            $localData['resources'] = $resources;
+            $configData['resources'] = $resources;
         }
 
         // 保存配置
-        if (!empty($localData)) {
-            Apps::saveAppLocalInfo($appName, $localData);
+        if (!empty($configData)) {
+            Apps::saveAppConfig($appName, $configData);
         }
 
         // 执行安装
@@ -176,7 +176,7 @@ class AppsController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      * @apiSuccess {String} data.name   应用名称
-     * @apiSuccess {Object} data.local  应用本地安装信息
+     * @apiSuccess {Object} data.config 应用配置信息
      * @apiSuccess {String} data.log    日志内容
      */
     public function logs()
@@ -184,35 +184,11 @@ class AppsController extends AbstractController
         $appName = Request::input('app_name');
         $lines = intval(Request::input('lines', 50));
 
-        if (empty($appName)) {
-            return Base::retError('应用名称不能为空');
-        }
-
-        // 限制获取行数
-        if ($lines <= 0) {
-            $lines = 50;
-        } else if ($lines > 2000) {
-            $lines = 2000;
-        }
-
-        // 日志文件路径
-        $logFile = base_path('docker/logs/apps/' . $appName . '.log');
-
-        if (!file_exists($logFile)) {
-            return Base::retSuccess('success', [
-                'log' => ''
-            ]);
-        }
-
-        // 读取日志文件最后几行
-        $output = [];
-        $cmd = 'tail -n ' . $lines . ' ' . escapeshellarg($logFile);
-        exec($cmd, $output);
-        $logContent = implode("\n", $output);
+        $logContent = implode("\n", Apps::getAppLog($appName, $lines));
 
         return Base::retSuccess('success', [
             'name' => $appName,
-            'local' => Apps::getAppLocalInfo($appName),
+            'config' => Apps::getAppConfig($appName),
             'log' => trim($logContent)
         ]);
     }

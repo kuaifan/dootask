@@ -39,8 +39,7 @@ services:
       - "${APP_PORT}:80"
       - "${APP_SSL_PORT:-}:443"
     volumes:
-      - ./docker/nginx:/etc/nginx/conf.d
-      - ./public:/var/www/public
+      - ./:/var/www
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.3"
@@ -223,8 +222,8 @@ services:
     privileged: true
     image: "kuaifan/dootask-appstore:0.0.1"
     volumes:
-      - ./:/var/www
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/var/www
     environment:
       DOO_ENV: "/var/www"
       HOST_PWD: "${PWD}"

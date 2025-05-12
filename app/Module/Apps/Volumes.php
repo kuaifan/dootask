@@ -97,8 +97,7 @@ class Volumes
 
         // 处理./或../开头的显式相对路径
         if (str_starts_with($path, './') || str_starts_with($path, '../')) {
-            $cleanPath = ltrim($path, './');
-            return $hostPwd . '/' . $cleanPath;
+            return $hostPwd . '/' . ltrim($path, './');
         }
 
         // 处理不以/开头的路径，且要么包含/（明确是路径而非命名卷）
