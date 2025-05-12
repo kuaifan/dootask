@@ -533,20 +533,21 @@ class Apps
         $readmePatterns = [
             "/^README(_|-|\.)?{$lang}\.md$/i",  // README_zh.md, README-zh.md, README.zh.md
         ];
-        if ($lang == 'zh') {
+        if ($lang == 'ZH') {
             $readmePatterns[] = "/^README(_|-|\.)?CN\.md$/i"; // README_CN.md, README-cn.md, README.cn.md
         }
-        if ($lang == 'zh-CHT') {
+        if ($lang == 'ZH-CHT') {
             $readmePatterns[] = "/^README(_|-|\.)?TW\.md$/i"; // README_TW.md, README-tw.md, README.tw.md
         }
         $readmePatterns[] = "/^README\.md$/i"; // README.md
 
-        foreach ($files as $filePath) {
-            $fileName = basename($filePath);
-
-            // 检查是否为文件且匹配 README 模式
-            if (is_file($filePath) && self::matchReadmePattern($fileName, $readmePatterns)) {
-                return file_get_contents($filePath);
+        // 遍历所有 README 模式进行匹配
+        foreach ($readmePatterns as $pattern) {
+            foreach ($files as $filePath) {
+                $fileName = basename($filePath);
+                if (preg_match($pattern, $fileName)) {
+                    return file_get_contents($filePath);
+                }
             }
         }
 
@@ -823,7 +824,7 @@ class Apps
         $url = "http://nginx/appstore/api/{$path}";
         $extra = [
             'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . env('APP_KEY'),
+            'Authorization' => 'Bearer ' . md5(env('APP_KEY')),
         ];
 
         // 执行请求

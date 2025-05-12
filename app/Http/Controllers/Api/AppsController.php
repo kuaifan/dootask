@@ -123,6 +123,13 @@ class AppsController extends AbstractController
      */
     public function install__callback()
     {
+        // 用户权限验证
+        $authorization = Base::leftDelete(Request::header("Authorization"), "Bearer ");
+        if ($authorization != md5(env('APP_KEY'))) {
+            return 'Authorization error';
+        }
+
+        // 获取参数
         $appName = Request::input('app_name');
         $status = Request::input('status');
 

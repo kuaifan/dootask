@@ -229,12 +229,16 @@ run_mysql() {
     fi
 }
 
-down_by_network() {
+remove_by_network() {
     local app_id=$(env_get APP_ID)
     local network_name="dootask-networks-${app_id}"
     for container_id in $(docker ps -q --filter network="$network_name"); do
         docker rm -f "$container_id" 1>/dev/null
     done
+}
+
+uninstall_appstore() {
+    docker run -it --rm -v ${cur_path}/docker/appstore:/appstore alpine sh -c "find /appstore/configs -mindepth 1 -type d | sort -r | xargs rm -rf; rm -f /appstore/logs/*.log"
 }
 
 https_auto() {
@@ -467,7 +471,8 @@ if [ $# -gt 0 ]; then
             exit 2
             ;;
         esac
-        down_by_network
+        remove_by_network
+        uninstall_appstore
         $COMPOSE down --remove-orphans
         env_set APP_DEBUG "false"
         rm -rf "./docker/mysql/data"
@@ -597,12 +602,12 @@ if [ $# -gt 0 ]; then
         $COMPOSE start "$@"
     elif [[ "$1" == "reup" ]]; then
         shift 1
-        down_by_network
+        remove_by_network
         $COMPOSE down --remove-orphans
         $COMPOSE up -d
     elif [[ "$1" == "down" ]]; then
         shift 1
-        down_by_network
+        remove_by_network
         if [[ $# -eq 0 ]]; then
             $COMPOSE down --remove-orphans
         else
