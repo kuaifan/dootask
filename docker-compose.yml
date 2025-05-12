@@ -39,6 +39,7 @@ services:
       - "${APP_PORT}:80"
       - "${APP_SSL_PORT:-}:443"
     volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./:/var/www
     networks:
       extnetwork:

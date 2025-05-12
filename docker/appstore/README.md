@@ -3,6 +3,6 @@ Directory structure
 ```
 appstore/
 ├── apps/          # Application Directory
-├── config/        # Configuration file directory
+├── configs/       # Configuration file directory
 └── logs/          # Log file directory
 ```

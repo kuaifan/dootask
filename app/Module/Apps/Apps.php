@@ -124,7 +124,7 @@ class Apps
         self::saveAppConfig($appName, $updateConfig);
 
         // 执行docker-compose命令
-        $curlPath = "apps/{$command}/{$appName}";
+        $curlPath = "app/{$command}/{$appName}";
         if ($command === 'up') {
             $curlPath .= "?callback_url=" . urlencode("http://host.docker.internal:" . env("APP_PORT") . "/api/apps/install/callback?install_num=" . $updateConfig[$prefix . '_num']);
         }
@@ -177,12 +177,6 @@ class Apps
             return Base::retError('更新状态失败');
         }
 
-        $res = self::nginxUpdate($appName);
-        if (Base::isError($res)) {
-            self::saveAppConfig($appName, ['status' => 'error']);
-            return $res;
-        }
-
         // 处理安装成功或卸载成功后的操作
         $message = '更新成功';
         if ($status == 'installed') {
@@ -195,46 +189,6 @@ class Apps
 
         // 返回结果
         return Base::retSuccess($message);
-    }
-
-    /**
-     * 更新nginx配置
-     * @param string $appName
-     * @return array
-     */
-    public static function nginxUpdate(string $appName): array
-    {
-        // 获取安装配置信息
-        $appConfig = self::getAppConfig($appName);
-
-        // nginx配置文件处理
-        $nginxFile = base_path('docker/appstore/apps/' . $appName . '/' . $appConfig['install_version'] . '/nginx.conf');
-        $nginxTarget = base_path('docker/appstore/configs/' . $appName . '/nginx.conf');
-        $needReload = false;
-        if (file_exists($nginxTarget)) {
-            unlink($nginxTarget);
-            $needReload = true;
-        }
-        if (file_exists($nginxFile) && $appConfig['status'] === 'installed') {
-            copy($nginxFile, $nginxTarget);
-            $res = self::curl("nginx/test");
-            if (Base::isError($res)) {
-                unlink($nginxTarget);
-                return $res;
-            }
-            $needReload = true;
-        }
-
-        // 重启nginx
-        if ($needReload) {
-            $res = self::curl("nginx/reload");
-            if (Base::isError($res)) {
-                return $res;
-            }
-        }
-
-        // 返回结果
-        return Base::retSuccess("success");
     }
 
     /**
