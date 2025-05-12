@@ -245,6 +245,8 @@ class Apps
 
             // 处理字段
             if (isset($configData['fields']) && is_array($configData['fields'])) {
+                $appConfig = self::getAppConfig($appName);
+
                 $fields = [];
                 foreach ($configData['fields'] as $field) {
                     // 检查必需的name字段及其格式
@@ -261,7 +263,7 @@ class Apps
                     $normalizedField = [
                         'name' => $field['name'],
                         'type' => $field['type'] ?? 'text',
-                        'default' => $field['default'] ?? '',
+                        'default' => $appConfig['params'][$field['name']] ?? $field['default'] ?? '',
                         'label' => self::getMultiLanguageField($field['label'] ?? ''),
                         'placeholder' => self::getMultiLanguageField($field['placeholder'] ?? ''),
                         'required' => $field['required'] ?? false,
@@ -514,7 +516,7 @@ class Apps
      */
     private static function getAppDocument(string $appName): string {
         $baseDir = base_path('docker/appstore/apps/' . $appName);
-        $lang = Base::headerOrInput('language');
+        $lang = strtoupper(Base::headerOrInput('language'));
 
         // 使用 glob 遍历目录
         $files = glob($baseDir . '/*');
@@ -522,9 +524,14 @@ class Apps
         // 正则模式，包括语言特定和通用的 README 文件
         $readmePatterns = [
             "/^README(_|-|\.)?{$lang}\.md$/i",  // README_zh.md, README-zh.md, README.zh.md
-            "/^README\.md$/i",                 // README.md
-            "/^readme\.md$/i",                 // readme.md
         ];
+        if ($lang == 'zh') {
+            $readmePatterns[] = "/^README(_|-|\.)?CN\.md$/i"; // README_CN.md, README-cn.md, README.cn.md
+        }
+        if ($lang == 'zh-CHT') {
+            $readmePatterns[] = "/^README(_|-|\.)?TW\.md$/i"; // README_TW.md, README-tw.md, README.tw.md
+        }
+        $readmePatterns[] = "/^README\.md$/i"; // README.md
 
         foreach ($files as $filePath) {
             $fileName = basename($filePath);

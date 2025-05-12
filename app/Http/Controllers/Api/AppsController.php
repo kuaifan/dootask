@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
 use App\Module\Apps\Apps;
 use App\Module\Base;
 use Request;
@@ -26,6 +27,8 @@ class AppsController extends AbstractController
      */
     public function list()
     {
+        User::auth('admin');
+        //
         return Apps::appList();
     }
 
@@ -47,6 +50,8 @@ class AppsController extends AbstractController
      */
     public function info()
     {
+        User::auth('admin');
+        //
         $appName = Request::input('app_name');
         if (empty($appName)) {
             return Base::retError('应用名称不能为空');
@@ -75,6 +80,8 @@ class AppsController extends AbstractController
      */
     public function install()
     {
+        User::auth('admin');
+        //
         $appName = Request::input('app_name');
         $version = Request::input('version', 'latest');
         $params = Request::input('params', []);
@@ -152,6 +159,8 @@ class AppsController extends AbstractController
      */
     public function uninstall()
     {
+        User::auth('admin');
+        //
         $appName = Request::input('app_name');
 
         if (empty($appName)) {
@@ -181,6 +190,8 @@ class AppsController extends AbstractController
      */
     public function logs()
     {
+        User::auth('admin');
+        //
         $appName = Request::input('app_name');
         $lines = intval(Request::input('lines', 50));
 
