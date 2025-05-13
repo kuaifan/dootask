@@ -47,6 +47,7 @@ class Doo
                 char* md5s(char* text, char* password);
                 char* macs();
                 char* dooSN();
+                char* version();
                 char* pgpGenerateKeyPair(char* name, char* email, char* passphrase);
                 char* pgpEncrypt(char* plainText, char* publicKey);
                 char* pgpDecrypt(char* cipherText, char* privateKey, char* passphrase);
@@ -359,6 +360,15 @@ class Doo
     public static function dooSN(): string
     {
         return self::string(self::doo()->dooSN());
+    }
+
+    /**
+     * 获取当前版本
+     * @return string
+     */
+    public static function dooVersion(): string
+    {
+        return self::string(self::doo()->version());
     }
 
     /**
