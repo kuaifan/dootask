@@ -6,9 +6,8 @@ use App\Models\Deleted;
 use App\Models\WebSocketDialogUser;
 use App\Tasks\ZincSearchSyncTask;
 use Carbon\Carbon;
-use Hhxsv5\LaravelS\Swoole\Task\Task;
 
-class WebSocketDialogUserObserver
+class WebSocketDialogUserObserver extends AbstractObserver
 {
     /**
      * Handle the WebSocketDialogUser "created" event.
@@ -31,7 +30,7 @@ class WebSocketDialogUserObserver
             }
         }
         Deleted::forget('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
-        Task::deliver(new ZincSearchSyncTask('userSync', $webSocketDialogUser->toArray()));
+        self::taskDeliver(new ZincSearchSyncTask('userSync', $webSocketDialogUser->toArray()));
     }
 
     /**
@@ -42,7 +41,7 @@ class WebSocketDialogUserObserver
      */
     public function updated(WebSocketDialogUser $webSocketDialogUser)
     {
-        Task::deliver(new ZincSearchSyncTask('userSync', $webSocketDialogUser->toArray()));
+        self::taskDeliver(new ZincSearchSyncTask('userSync', $webSocketDialogUser->toArray()));
     }
 
     /**
@@ -54,7 +53,7 @@ class WebSocketDialogUserObserver
     public function deleted(WebSocketDialogUser $webSocketDialogUser)
     {
         Deleted::record('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
-        Task::deliver(new ZincSearchSyncTask('deleteUser', $webSocketDialogUser->toArray()));
+        self::taskDeliver(new ZincSearchSyncTask('deleteUser', $webSocketDialogUser->toArray()));
     }
 
     /**
