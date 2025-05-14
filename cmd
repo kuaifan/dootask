@@ -56,7 +56,7 @@ rand_string() {
     if [[ `uname` == 'Linux' ]]; then
         echo "$(date +%s%N | md5sum | cut -c 1-${lan})"
     else
-        echo "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-${lan}")"
+        echo "$(docker run -it --rm nginx:alpine sh -c "date +%s%N | md5sum | cut -c 1-${lan}")"
     fi
 }
 
@@ -238,7 +238,7 @@ remove_by_network() {
 }
 
 uninstall_appstore() {
-    docker run -it --rm -v ${cur_path}/docker/appstore:/appstore alpine sh -c "find /appstore/configs -mindepth 1 -type d | sort -r | xargs rm -rf; rm -f /appstore/logs/*.log"
+    docker run -it --rm -v ${cur_path}/docker/appstore:/appstore nginx:alpine sh -c "find /appstore/configs -mindepth 1 -type d | sort -r | xargs rm -rf; rm -f /appstore/logs/*.log"
 }
 
 https_auto() {
@@ -311,7 +311,7 @@ env_set() {
         if [[ `uname` == 'Linux' ]]; then
             sed -i "/^${key}=/c\\${key}=${val}" ${cur_path}/.env
         else
-            docker run -it --rm -v ${cur_path}:/www alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
+            docker run -it --rm -v ${cur_path}:/www nginx:alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
         fi
         if [ $? -ne  0 ]; then
             error "设置env参数失败！"

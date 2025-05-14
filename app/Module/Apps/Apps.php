@@ -135,7 +135,7 @@ class Apps
         // 执行docker-compose命令
         $curlPath = "app/{$command}/{$appName}";
         if ($command === 'up') {
-            $curlPath .= "?callback_url=" . urlencode("http://host.docker.internal:" . env("APP_PORT") . "/api/apps/install/callback?install_num=" . $updateConfig[$prefix . '_num']);
+            $curlPath .= "?callback_url=" . urlencode("http://nginx/api/apps/install/callback?install_num=" . $updateConfig[$prefix . '_num']);
         }
         $res = self::curl($curlPath);
         if (Base::isError($res)) {
@@ -821,7 +821,7 @@ class Apps
      */
     private static function curl($path): array
     {
-        $url = "http://nginx/appstore/api/{$path}";
+        $url = "http://appstore/api/{$path}";
         $extra = [
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . md5(env('APP_KEY')),

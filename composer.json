@@ -11,6 +11,7 @@
         "php": "^8.0",
         "ext-curl": "*",
         "ext-dom": "*",
+        "ext-ffi": "*",
         "ext-fileinfo": "*",
         "ext-gd": "*",
         "ext-imagick": "*",

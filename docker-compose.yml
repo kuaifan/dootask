@@ -1,7 +1,7 @@
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0.rc18"
+    image: "kuaifan/php:swoole-8.0.rc20"
     shm_size: 2G
     ulimits:
       core:
@@ -210,12 +210,14 @@ services:
     privileged: true
     image: "kuaifan/dootask-appstore:0.0.2"
     volumes:
+      - shared_data:/usr/share/dootask
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/var/www
     environment:
       DOO_ENV: "/var/www"
       HOST_PWD: "${PWD}"
-    network_mode: host
+    networks:
+      - extnetwork
     restart: unless-stopped
 
 networks:
