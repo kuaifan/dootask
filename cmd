@@ -1,5 +1,16 @@
 #!/bin/bash
 
+#cached execution
+if [ -z "$CACHED_EXECUTION" ]; then
+    cat "$0" > ._cmd
+    chmod +x ._cmd
+    export CACHED_EXECUTION=1
+    ./._cmd "$@"
+    EXIT_STATUS=$?
+    rm -f ._cmd
+    exit $EXIT_STATUS
+fi
+
 #fonts color
 Green="\033[32m"
 Yellow="\033[33m"
@@ -479,11 +490,6 @@ if [ $# -gt 0 ]; then
         rm -rf "./docker/logs/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf
         success "卸载完成"
-    elif [[ "$1" == "reinstall" ]]; then
-        shift 1
-        ./cmd uninstall "$@"
-        sleep 3
-        ./cmd install "$@"
     elif [[ "$1" == "port" ]]; then
         shift 1
         env_set APP_PORT "$1"
