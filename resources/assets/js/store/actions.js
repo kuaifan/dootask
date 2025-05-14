@@ -427,28 +427,6 @@ export default {
     },
 
     /**
-     * 是否启用首页
-     * @param dispatch
-     * @param state
-     * @returns {Promise<unknown>}
-     */
-    needHome({dispatch, state}) {
-        return new Promise((resolve, reject) => {
-            if ($A.isSoftware) {
-                reject()
-                return
-            }
-            dispatch("systemSetting").then(data => {
-                if (data.start_home === 'open') {
-                    resolve()
-                } else {
-                    reject()
-                }
-            }).catch(reject);
-        })
-    },
-
-    /**
      * 下载文件
      * @param state
      * @param data

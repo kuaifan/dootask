@@ -289,18 +289,6 @@
                     </FormItem>
                 </div>
             </div>
-            <div class="block-setting-box" v-if="$A.isDooServer()">
-                <h3>{{ $L('特殊设置') }}</h3>
-                <div class="form-box">
-                    <FormItem :label="$L('是否启动首页')" prop="startHome">
-                        <RadioGroup v-model="formDatum.start_home">
-                            <Radio label="open">{{$L('开启')}}</Radio>
-                            <Radio label="close">{{$L('关闭')}}</Radio>
-                        </RadioGroup>
-                        <div class="form-tip">{{$L('仅支持网页版。')}}</div>
-                    </FormItem>
-                </div>
-            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>

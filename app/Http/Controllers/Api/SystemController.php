@@ -40,7 +40,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'voice2text', 'translation', 'convert_video', 'compress_video', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'system_alias', 'system_welcome', 'image_compress', 'image_quality', 'image_save_local', 'start_home']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'voice2text', 'translation', 'convert_video', 'compress_video', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'system_alias', 'system_welcome', 'image_compress', 'image_quality', 'image_save_local']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -87,7 +87,6 @@ class SystemController extends AbstractController
                     'image_compress',
                     'image_quality',
                     'image_save_local',
-                    'start_home',
                     'file_upload_limit',
                     'unclaimed_task_reminder',
                     'unclaimed_task_reminder_time',
@@ -149,7 +148,6 @@ class SystemController extends AbstractController
         $setting['all_group_autoin'] = $setting['all_group_autoin'] ?: 'yes';
         $setting['user_private_chat_mute'] = $setting['user_private_chat_mute'] ?: 'open';
         $setting['user_group_chat_mute'] = $setting['user_group_chat_mute'] ?: 'open';
-        $setting['start_home'] = $setting['start_home'] ?: 'close';
         $setting['file_upload_limit'] = $setting['file_upload_limit'] ?: '';
         $setting['unclaimed_task_reminder'] = $setting['unclaimed_task_reminder'] ?: 'close';
         $setting['unclaimed_task_reminder_time'] = $setting['unclaimed_task_reminder_time'] ?: '';

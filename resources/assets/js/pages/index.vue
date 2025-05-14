@@ -37,30 +37,6 @@ export default {
 
     methods: {
         start() {
-            if (this.$isSoftware) {
-                this.goNext()
-                return;
-            }
-            //
-            this.$store.dispatch("showSpinner", 1000)
-            this.$store.dispatch("needHome").then(_ => {
-                this.goIndex();
-            }).catch(_ => {
-                this.goNext();
-            }).finally(_ => {
-                this.$store.dispatch("hiddenSpinner")
-            });
-        },
-
-        goIndex() {
-            if (languageName === "zh" || languageName === "zh-CHT") {
-                window.location.href = $A.mainUrl("site/zh/index.html")
-            } else {
-                window.location.href = $A.mainUrl("site/en/index.html")
-            }
-        },
-
-        goNext() {
             if (this.userId > 0) {
                 this.goForward({name: 'manage-dashboard'}, true);
             } else {

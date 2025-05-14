@@ -451,8 +451,6 @@ export default {
             operateVisible: false,
             operateItem: {},
 
-            needStartHome: false,
-
             complaintShow: false,
 
             approveDetails: {id: 0},
@@ -477,12 +475,6 @@ export default {
         this.$store.dispatch("getTaskPriority", 1000)
         this.$store.dispatch("getReportUnread", 1000)
         this.$store.dispatch("getApproveUnread", 1000)
-        //
-        this.$store.dispatch("needHome").then(_ => {
-            this.needStartHome = true
-        }).catch(_ => {
-            this.needStartHome = false
-        })
     },
 
     beforeDestroy() {
@@ -619,7 +611,7 @@ export default {
         },
 
         menu() {
-            const {userIsAdmin, needStartHome} = this;
+            const {userIsAdmin} = this;
             const array = [
                 {path: 'taskBrowse', name: '最近打开的任务'}
             ];
@@ -646,18 +638,10 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
                 ])
             }
-            if (needStartHome) {
-                array.push(...[
-                    {path: 'goHome', name: '打开首页', divided: true},
-                    {path: 'clearCache', name: '清除缓存'},
-                    {path: 'logout', name: '退出登录', style: {color: '#f40'}}
-                ])
-            } else {
-                array.push(...[
-                    {path: 'clearCache', name: '清除缓存', divided: true},
-                    {path: 'logout', name: '退出登录', style: {color: '#f40'}}
-                ])
-            }
+            array.push(...[
+                {path: 'clearCache', name: '清除缓存', divided: true},
+                {path: 'logout', name: '退出登录', style: {color: '#f40'}}
+            ])
             return array
         },
 
@@ -809,11 +793,6 @@ export default {
                     $A.IDBSet("clearCache", "handle").then(_ => {
                         $A.reloadUrl()
                     });
-                    return;
-                case 'goHome':
-                    if (this.needStartHome) {
-                        this.goForward('index');
-                    }
                     return;
                 case 'approve':
                     if (this.menu.findIndex((m) => m.path == path) > -1) {

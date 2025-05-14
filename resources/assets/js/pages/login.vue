@@ -2,7 +2,7 @@
     <div class="page-login">
         <PageTitle :title="$L('登录')"/>
         <div class="login-body">
-            <div class="login-logo no-dark-content" :class="{'can-click':needStartHome}" @click="goHome"></div>
+            <div class="login-logo no-dark-content"></div>
             <div class="login-box">
                 <div class="login-mode-switch">
                     <div class="login-mode-switch-box">
@@ -196,8 +196,6 @@ export default {
             code: '',
             invite: '',
 
-            needStartHome: false,
-
             needInvite: false,
 
             privacyShow: false,
@@ -228,7 +226,6 @@ export default {
         this.loginType = this.$route.query.type === 'reg' ? 'reg' : 'login'
         //
         this.getDemoAccount();
-        this.getNeedStartHome();
     },
 
     deactivated() {
@@ -302,12 +299,6 @@ export default {
     },
 
     methods: {
-        goHome() {
-            if (this.needStartHome) {
-                this.goForward('index');
-            }
-        },
-
         setTheme(mode) {
             this.$store.dispatch("setTheme", mode)
         },
@@ -326,17 +317,6 @@ export default {
             }).catch(_ => {
                 //
             });
-        },
-
-        getNeedStartHome() {
-            if (this.isNotServer()) {
-                return
-            }
-            this.$store.dispatch("needHome").then(_ => {
-                this.needStartHome = true
-            }).catch(_ => {
-                this.needStartHome = false
-            })
         },
 
         getNeedInvite() {

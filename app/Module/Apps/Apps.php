@@ -517,6 +517,17 @@ class Apps
     }
 
     /**
+     * 判断应用是否已安装
+     * @param string $appName 应用名称
+     * @return bool 如果应用已安装返回 true，否则返回 false
+     */
+    public static function isInstalled(string $appName): bool
+    {
+        $appConfig = self::getAppConfig($appName);
+        return $appConfig['status'] === 'installed';
+    }
+
+    /**
      * 获取应用的文档（README）
      *
      * @param string $appName 应用名称

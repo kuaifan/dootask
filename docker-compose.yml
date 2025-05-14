@@ -214,7 +214,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/var/www
     environment:
-      DOO_ENV: "/var/www"
       HOST_PWD: "${PWD}"
     networks:
       - extnetwork
