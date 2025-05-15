@@ -21,7 +21,7 @@ export default {
             return
         }
 
-        this.$refs.app.openMicroApp(app)
+        this.$refs.app.observeMicroApp(app)
     }
 }
 </script>

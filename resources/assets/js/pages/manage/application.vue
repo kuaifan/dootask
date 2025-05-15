@@ -22,7 +22,7 @@
                             :xl="{ span: 6 }"
                             :xxl="{ span: 3 }">
                             <div class="apply-col">
-                                <div @click="microClick(item)">
+                                <div @click="applyClick({value: 'microApp'}, item)">
                                     <div class="logo">
                                         <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${item.icon})`}"></div>
                                     </div>
@@ -449,13 +449,12 @@ export default {
             }
             return item.value == type && num > 0
         },
-        // 点击微应用
-        microClick(item) {
-            this.$store.dispatch("openMicroApp", item);
-        },
         // 点击应用
         applyClick(item, area = '') {
             switch (item.value) {
+                case 'microApp':
+                    this.$store.dispatch("openMicroApp", area);
+                    return
                 case 'approve':
                 case 'calendar':
                 case 'file':

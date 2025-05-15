@@ -131,11 +131,11 @@ export default {
     },
 
     mounted() {
-        emitter.on('openMicroApp', this.openMicroApp);
+        emitter.on('observeMicroApp', this.observeMicroApp);
     },
 
     beforeDestroy() {
-        emitter.off('openMicroApp', this.openMicroApp);
+        emitter.off('observeMicroApp', this.observeMicroApp);
     },
 
     watch: {
@@ -346,7 +346,7 @@ export default {
         },
 
         /**
-         * 打开微应用
+         * 观察打开微应用
          * @param config
          *  - name              应用名称
          *  - url               应用地址
@@ -355,7 +355,7 @@ export default {
          *  - keepAlive         是否开启微应用保活 (true/false)，默认 true
          *  - disableScopecss   是否禁用样式隔离 (true/false)，默认 false
          */
-        openMicroApp(config) {
+        observeMicroApp(config) {
             // 处理数据
             config.name = config.name || 'micro-app'
             config.url = config.url || null

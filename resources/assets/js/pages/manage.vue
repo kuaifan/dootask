@@ -1184,7 +1184,11 @@ export default {
                     this.settingRoute(act)
                     break;
                 case 'appstore':
-                    emitter.emit('openMicroApp', {name: 'appstore', url: $A.mainUrl('appstore/web/'), disableScopecss: true});
+                    this.$store.dispatch("openMicroApp", {
+                        name: 'appstore',
+                        url: $A.mainUrl('appstore/web/'),
+                        disableScopecss: true,
+                    });
                     break;
             }
         },

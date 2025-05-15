@@ -4666,14 +4666,17 @@ export default {
             return
         }
         const event = {
-            name: `${item.app_name}_${item.key}`,
+            name: item.app_name || item.name,
             url: $A.mainUrl(item.url),
+        }
+        if (item.key) {
+            event.name += `_${item.key}`
         }
         for (let key in item) {
             if (['props', 'transparent', 'keepAlive', 'disableScopecss'].includes(key)) {
                 event[key] = item[key]
             }
         }
-        emitter.emit('openMicroApp', event);
+        emitter.emit('observeMicroApp', event);
     },
 }
