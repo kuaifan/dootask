@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Module\Apps\Apps;
 use App\Module\Base;
 use App\Module\Timer;
+use Cache;
 use Request;
 
 /**
@@ -98,7 +99,16 @@ class AppsController extends AbstractController
         User::auth();
         //
         $appName = Request::input('app_name');
-        return Apps::getAppEntryPoints($appName);
+        //
+        $cacheKey = 'apps_entry:' . $appName;
+        $cacheData = Cache::remember($cacheKey, now()->addHour(), function () use ($appName) {
+            return Apps::getAppEntryPoints($appName);
+        });
+        if (Base::isError($cacheData)) {
+            Cache::forget($cacheKey);
+        }
+        //
+        return $cacheData;
     }
 
     /**
