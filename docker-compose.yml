@@ -91,25 +91,6 @@ services:
       - extnetwork
     restart: unless-stopped
 
-  face:
-    container_name: "dootask-face-${APP_ID}"
-    image: "hitosea2020/dooface:0.0.1"
-    ports:
-      - "7788:7788"
-    environment:
-      TZ: "${TIMEZONE:-PRC}"
-      STORAGE: mysql
-      MYSQL_HOST: "${DB_HOST}"
-      MYSQL_PORT: "${DB_PORT}"
-      MYSQL_USERNAME: "${DB_USERNAME}"
-      MYSQL_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_DB_NAME: "${DB_DATABASE}"
-      DB_PREFIX: "${DB_PREFIX}"
-      REPORT_API: "http://nginx/api/public/checkin/report"
-    networks:
-      - extnetwork
-    restart: unless-stopped
-
   search:
     container_name: "dootask-search-${APP_ID}"
     image: "public.ecr.aws/zinclabs/zincsearch:0.4.10"
