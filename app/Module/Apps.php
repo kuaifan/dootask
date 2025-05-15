@@ -14,8 +14,6 @@ class Apps
         'nginx',
         'redis',
         'mariadb',
-        'office',
-        'fileview',
         'drawio-webapp',
         'drawio-expont',
         'minder',

@@ -15,7 +15,7 @@
                         {{ t == 'base' ? $L('常用') : $L('管理员') }}
                     </div>
                     <Row :gutter="16">
-                        <Col v-for="(item, key) in (t == 'base' ? filterMicroAppsMenus : filterMicroAppsMenusAdmin)" :key="key"
+                        <Col v-for="(item, key) in (t == 'base' ? filterMicroAppsMenus : filterMicroAppsMenusAdmin)" :key="`micro_` + key"
                             :xs="{ span: 6 }"
                             :sm="{ span: 6 }"
                             :lg="{ span: 6 }"
