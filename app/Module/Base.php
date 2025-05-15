@@ -351,7 +351,7 @@ class Base
     /**
      * 删除文件夹及文件夹下所有的文件
      * @param $dirName
-     * @param bool $undeleteDir 不删除文件夹（只删除文件）
+     * @param bool $undeleteDir 不删除文件夹本身（只删除文件夹里面的内容）
      */
     public static function deleteDirAndFile($dirName, $undeleteDir = false)
     {
@@ -2581,20 +2581,35 @@ class Base
     /**
      * 中文转拼音
      * @param $str
+     * @param $delim
      * @return string
      */
-    public static function cn2pinyin($str)
+    public static function cn2pinyin($str, $delim = '')
     {
         if (empty($str)) {
             return '';
         }
         if (!preg_match("/^[a-zA-Z0-9_.]+$/", $str)) {
-            $str = Cache::rememberForever("cn2pinyin:" . md5($str), function() use ($str) {
+            $str = Cache::rememberForever("cn2pinyin:" . md5($str . '_' . $delim), function () use ($delim, $str) {
                 $pinyin = new Pinyin();
-                return $pinyin->permalink($str, '');
+                return $pinyin->permalink($str, $delim);
             });
         }
         return $str;
+    }
+
+    /**
+     * 驼峰转下划线
+     * @param $str
+     * @return string
+     */
+    public static function camel2snake($str)
+    {
+        if (empty($str)) {
+            return '';
+        }
+        $str = preg_replace('/([a-z])([A-Z])/', '$1_$2', $str);
+        return strtolower($str);
     }
 
     /**

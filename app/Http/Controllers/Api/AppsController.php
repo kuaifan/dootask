@@ -34,7 +34,25 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {get} api/apps/info           02. 获取应用详情（限管理员）
+     * @api {get} api/apps/list/update           02. 更新应用列表（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup apps
+     * @apiName list_update
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Array}  data    应用列表数据
+     */
+    public function list__update()
+    {
+        User::auth('admin');
+        //
+        return Apps::appListUpdate();
+    }
+
+    /**
+     * @api {get} api/apps/info           03. 获取应用详情（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -62,7 +80,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {post} api/apps/install        03. 安装应用（限管理员）
+     * @api {post} api/apps/install        04. 安装应用（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -123,6 +141,38 @@ class AppsController extends AbstractController
     }
 
     /**
+     * @api {get} api/apps/install/url        05. 通过url安装应用（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup apps
+     * @apiName install_url
+     *
+     * @apiParam {String} url         应用url
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    安装结果信息
+     */
+    public function install__url()
+    {
+        User::auth('admin');
+        //
+        $url = Request::input('url');
+        if (empty($url)) {
+            return Base::retError('应用url不能为空');
+        }
+
+        // 下载应用
+        $res = Apps::downloadApp($url);
+        if (Base::isError($res)) {
+            return $res;
+        }
+
+        // 安装应用
+        return Apps::dockerComposeUp($res['app_name']);
+    }
+
+    /**
      * 更新应用状态（用于安装结束之后回调）
      *
      * @apiParam {String} app_name      应用名称
@@ -161,7 +211,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {post} api/apps/uninstall      04. 卸载应用（限管理员）
+     * @api {post} api/apps/uninstall      06. 卸载应用（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -204,7 +254,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {get} api/apps/logs           05. 获取应用日志（限管理员）
+     * @api {get} api/apps/logs           07. 获取应用日志（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps

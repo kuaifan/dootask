@@ -4,6 +4,7 @@ namespace App\Module\Apps;
 
 use App\Module\Base;
 use App\Module\Ihttp;
+use Cache;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
@@ -26,6 +27,9 @@ class Apps
         'search',
         'appstore',
     ];
+
+    // 软件源列表URL
+    protected static string $sourcesUrl = 'https://appstore.dootask.com/sources.list';
 
     /**
      * 获取应用列表
@@ -528,6 +532,260 @@ class Apps
     }
 
     /**
+     * 更新应用列表
+     * @return array
+     */
+    public static function appListUpdate(): array
+    {
+        // 检查是否正在更新
+        $cacheKey = 'appstore_update_running';
+        if (Cache::has($cacheKey)) {
+            return Base::retError('应用列表正在更新中，请稍后再试');
+        }
+        $onFailure = function (string $message) use ($cacheKey) {
+            Cache::forget($cacheKey);
+            return Base::retError($message);
+        };
+        $onSuccess = function (string $message, array $data = []) use ($cacheKey) {
+            Cache::forget($cacheKey);
+            return Base::retSuccess($message, $data);
+        };
+
+        // 设置更新状态
+        Cache::put($cacheKey, true, 180); // 3分钟有效期
+
+        // 临时目录
+        $tempDir = base_path('docker/appstore/temp/sources');
+        $zipFile = $tempDir . '/sources.zip';
+
+        // 清空临时目录
+        if (is_dir($tempDir)) {
+            Base::deleteDirAndFile($tempDir, true);
+        } else {
+            Base::makeDir($tempDir);
+        }
+
+        try {
+            // 下载源列表
+            $res = Ihttp::ihttp_request(self::$sourcesUrl);
+            if (Base::isError($res)) {
+                return $onFailure('下载源列表失败');
+            }
+            file_put_contents($zipFile, $res['data']);
+
+            // 解压文件
+            $zip = new \ZipArchive();
+            if ($zip->open($zipFile) !== true) {
+                return $onFailure('文件打开失败');
+            }
+            $zip->extractTo($tempDir);
+            $zip->close();
+            unlink($zipFile);
+
+            // 遍历目录
+            $dirs = scandir($tempDir);
+            $results = [
+                'success' => [],
+                'failed' => []
+            ];
+
+            foreach ($dirs as $appName) {
+                // 跳过当前目录、父目录和隐藏文件
+                if ($appName === '.' || $appName === '..' || str_starts_with($appName, '.')) {
+                    continue;
+                }
+
+                $sourceDir = $tempDir . '/' . $appName;
+                if (!is_dir($sourceDir)) {
+                    continue;
+                }
+
+                // 检查config.yml文件
+                $configFile = $sourceDir . '/config.yml';
+                if (!file_exists($configFile)) {
+                    $results['failed'][] = [
+                        'app_name' => $appName,
+                        'reason' => '未找到config.yml配置文件'
+                    ];
+                    continue;
+                }
+
+                // 解析配置文件
+                try {
+                    $configData = Yaml::parseFile($configFile);
+                } catch (ParseException $e) {
+                    $results['failed'][] = [
+                        'app_name' => $appName,
+                        'reason' => 'YAML解析失败：' . $e->getMessage()
+                    ];
+                    continue;
+                }
+
+                // 检查name字段
+                if (empty($configData['name'])) {
+                    $results['failed'][] = [
+                        'app_name' => $appName,
+                        'reason' => '配置文件不正确'
+                    ];
+                    continue;
+                }
+
+                // 使用目录名作为应用名称
+                $targetDir = base_path('docker/appstore/apps/' . $appName);
+
+                // 复制目录
+                if (!self::copyDirAndFile($sourceDir, $targetDir, true)) {
+                    $results['failed'][] = [
+                        'app_name' => $appName,
+                        'reason' => '复制文件失败'
+                    ];
+                    continue;
+                }
+
+                $results['success'][] = [
+                    'app_name' => $appName
+                ];
+            }
+
+            // 清理临时目录
+            Base::deleteDirAndFile($tempDir, true);
+            return $onSuccess('更新成功', $results);
+        } catch (\Exception $e) {
+            // 清理临时目录
+            Base::deleteDirAndFile($tempDir, true);
+            return $onFailure('更新失败：' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 下载应用
+     * @param string $url 应用url
+     * @return array 下载结果
+     */
+    public static function downloadApp(string $url): array
+    {
+        // 检查是否正在下载
+        $cacheKey = 'appstore_download_running';
+        if (Cache::has($cacheKey)) {
+            return Base::retError('应用正在下载中，请稍后再试');
+        }
+        $onFailure = function (string $message) use ($cacheKey) {
+            Cache::forget($cacheKey);
+            return Base::retError($message);
+        };
+        $onSuccess = function (string $message, array $data = []) use ($cacheKey) {
+            Cache::forget($cacheKey);
+            return Base::retSuccess($message, $data);
+        };
+
+        // 设置下载状态
+        Cache::put($cacheKey, true, 180); // 3分钟有效期
+
+        // 验证URL格式
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return $onFailure('URL格式不正确');
+        }
+
+        // 验证URL协议
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if (!in_array($scheme, ['http', 'https', 'git'])) {
+            return $onFailure('不支持的URL协议，仅支持http、https和git协议');
+        }
+
+        // 临时目录
+        $tempDir = base_path('docker/appstore/temp/' . md5($url));
+
+        // 清空临时目录
+        if (is_dir($tempDir)) {
+            Base::deleteDirAndFile($tempDir, true);
+        } else {
+            Base::makeDir($tempDir);
+        }
+
+        // 判断URL类型
+        $isGit = str_ends_with($url, '.git') || str_contains($url, 'github.com') || str_contains($url, 'gitlab.com');
+
+        try {
+            if ($isGit) {
+                // 克隆Git仓库
+                $cmd = sprintf('cd %s && git clone --depth=1 %s .', escapeshellarg($tempDir), escapeshellarg($url));
+                exec($cmd, $output, $returnVar);
+                if ($returnVar !== 0) {
+                    return $onFailure('Git克隆失败');
+                }
+            } else {
+                // 下载ZIP文件
+                $zipFile = $tempDir . '/app.zip';
+                $res = Ihttp::ihttp_request($url);
+                if (Base::isError($res)) {
+                    return $onFailure('下载失败');
+                }
+                file_put_contents($zipFile, $res['data']);
+
+                // 解压ZIP文件
+                $zip = new \ZipArchive();
+                if ($zip->open($zipFile) !== true) {
+                    return $onFailure('文件打开失败');
+                }
+                $zip->extractTo($tempDir);
+                $zip->close();
+                unlink($zipFile);
+            }
+
+            // 检查config.yml文件
+            $configFile = $tempDir . '/config.yml';
+            if (!file_exists($configFile)) {
+                return $onFailure('未找到config.yml配置文件');
+            }
+
+            // 解析配置文件
+            try {
+                $configData = Yaml::parseFile($configFile);
+            } catch (ParseException $e) {
+                return $onFailure('YAML解析失败：' . $e->getMessage());
+            }
+
+            // 检查name字段
+            if (empty($configData['name'])) {
+                return $onFailure('配置文件不正确');
+            }
+
+            // 处理应用名称
+            $appName = Base::camel2snake(Base::cn2pinyin($configData['name'], '_'));
+            $targetDir = base_path('docker/appstore/apps/' . $appName);
+            $targetConfigFile = $targetDir . '/config.json';
+
+            // 检查目标是否存在
+            if (file_exists($targetConfigFile)) {
+                $targetConfigData = json_decode(file_get_contents($targetConfigFile), true);
+                if (is_array($targetConfigData)) {
+                    $status = $targetConfigData['status'];
+                    $errorMessages = [
+                        'installed' => '应用已存在，请先卸载后再安装',
+                        'installing' => '应用正在安装中，请稍后再试',
+                        'uninstalling' => '应用正在卸载中，请稍后再试'
+                    ];
+                    if (isset($errorMessages[$status])) {
+                        return $onFailure($errorMessages[$status]);
+                    }
+                }
+                Base::deleteDirAndFile($targetDir);
+            }
+
+            // 移动文件到目标目录
+            if (!rename($tempDir, $targetDir)) {
+                return $onFailure('移动文件失败');
+            }
+
+            return $onSuccess('下载成功', [ 'app_name' => $appName ]);
+        } catch (\Exception $e) {
+            // 清理临时目录
+            Base::deleteDirAndFile($tempDir, true);
+            return $onFailure('下载失败：' . $e->getMessage());
+        }
+    }
+
+    /**
      * 获取应用的文档（README）
      *
      * @param string $appName 应用名称
@@ -823,6 +1081,65 @@ class Apps
         });
 
         return $versions;
+    }
+
+    /**
+     * 复制目录和文件
+     * @param string $sourceDir 源目录
+     * @param string $targetDir 目标目录
+     * @param bool $recursive 是否递归复制
+     * @return bool
+     */
+    private static function copyDirAndFile(string $sourceDir, string $targetDir, bool $recursive = false): bool
+    {
+        if (!is_dir($sourceDir)) {
+            return false;
+        }
+
+        // 创建目标目录
+        if (!is_dir($targetDir)) {
+            if (!mkdir($targetDir, 0755, true)) {
+                return false;
+            }
+        }
+
+        // 打开源目录
+        $dir = opendir($sourceDir);
+        if (!$dir) {
+            return false;
+        }
+
+        // 遍历源目录
+        while (($file = readdir($dir)) !== false) {
+            // 跳过当前目录和父目录
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+
+            $sourceFile = $sourceDir . '/' . $file;
+            $targetFile = $targetDir . '/' . $file;
+
+            if (is_dir($sourceFile)) {
+                // 如果是目录且需要递归复制
+                if ($recursive) {
+                    if (!self::copyDirAndFile($sourceFile, $targetFile, true)) {
+                        closedir($dir);
+                        return false;
+                    }
+                }
+            } else {
+                // 复制文件
+                if (!copy($sourceFile, $targetFile)) {
+                    closedir($dir);
+                    return false;
+                }
+                // 保持文件权限
+                chmod($targetFile, fileperms($sourceFile));
+            }
+        }
+
+        closedir($dir);
+        return true;
     }
 
     /**

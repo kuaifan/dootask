@@ -143,8 +143,10 @@ export default {
             if (token) {
                 return
             }
-            this.apps = [];
-            microApp.unmountAllApps({destroy: true})
+            this.closeAllMicroApp()
+        },
+        themeName() {
+            this.closeAllMicroApp()
         },
     },
 
@@ -402,6 +404,14 @@ export default {
             if (destroy) {
                 microApp.unmountApp(app.name, {destroy: true})
             }
+        },
+
+        /**
+         * 关闭所有微应用
+         */
+        closeAllMicroApp() {
+            this.apps = [];
+            microApp.unmountAllApps({destroy: true})
         },
 
         /**
