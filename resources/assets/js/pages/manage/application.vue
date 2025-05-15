@@ -15,6 +15,21 @@
                         {{ t == 'base' ? $L('常用') : $L('管理员') }}
                     </div>
                     <Row :gutter="16">
+                        <Col v-for="item in (t == 'base' ? filterMicroAppsEntries : filterMicroAppsEntriesAdmin)" :key="item.key"
+                            :xs="{ span: 6 }"
+                            :sm="{ span: 6 }"
+                            :lg="{ span: 6 }"
+                            :xl="{ span: 6 }"
+                            :xxl="{ span: 3 }">
+                            <div class="apply-col">
+                                <div @click="microClick(item)">
+                                    <div class="logo">
+                                        <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${item.icon})`}"></div>
+                                    </div>
+                                    <p>{{ $L(item.label) }}</p>
+                                </div>
+                            </div>
+                        </Col>
                         <Col v-for="(item, key) in applyList" :key="key"
                             v-if="((t=='base' && !item.type) || item.type == t) && item.show !== false"
                             :xs="{ span: 6 }"
@@ -280,7 +295,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import { mapGetters, mapState } from "vuex";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import UserSelect from "../../components/UserSelect";
 import SystemAibot from "./setting/components/SystemAibot";
@@ -349,6 +364,7 @@ export default {
     },
     activated() {
         this.initList()
+        this.$store.dispatch("updateMicroAppsEntries");
     },
     computed: {
         ...mapState([
@@ -361,6 +377,10 @@ export default {
             'windowOrientation',
             'formOptions',
             'routeLoading',
+        ]),
+        ...mapGetters([
+            'filterMicroAppsEntries',
+            'filterMicroAppsEntriesAdmin',
         ]),
         isExistAdminList() {
             return this.applyList.map(h => h.type).indexOf('admin') !== -1;
@@ -375,7 +395,6 @@ export default {
         initList() {
             const applyList = [
                 { value: "approve", label: "审批中心", sort: 30 },
-                { value: "okr", label: "OKR 管理", sort: 40 },
                 { value: "report", label: "工作报告", sort: 50 },
                 { value: "mybot", label: "我的机器人", sort: 55 },
                 { value: "robot", label: "AI 机器人", sort: 60, show: this.systemConfig.server_closeai !== 'close' },
@@ -398,9 +417,7 @@ export default {
                 ])
             }
             // 管理员
-            const adminApplyList = [
-                { value: "okrAnalyze", label: "OKR 结果", sort: 150, show: this.userIsAdmin || this.userInfo.department_owner }
-            ];
+            const adminApplyList = [];
             if (this.userIsAdmin) {
                 adminApplyList.push(...[
                     { value: "ldap", label: "LDAP", sort: 160 },
@@ -432,6 +449,10 @@ export default {
             }
             return item.value == type && num > 0
         },
+        // 点击微应用
+        microClick(item) {
+            this.$store.dispatch("openMicroApp", item);
+        },
         // 点击应用
         applyClick(item, area = '') {
             switch (item.value) {
@@ -440,10 +461,6 @@ export default {
                 case 'file':
                 case 'setting':
                     this.goForward({ name: 'manage-' + item.value });
-                    break;
-                case 'okr':
-                case 'okrAnalyze':
-                    this.$store.dispatch("openOkr", item.value == 'okr' ? 'list' : 'analysis');
                     break;
                 case 'report':
                     emitter.emit('openReport', area == 'badge' ? 'receive' : 'my');

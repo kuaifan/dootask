@@ -2619,11 +2619,19 @@ export default {
             });
         },
 
-        openOkr() {
-            if (!this.dialogData.link_id) {
+        openOkr(id) {
+            if (!id) {
                 return;
             }
-            this.$store.dispatch("openOkr", this.dialogData.link_id);
+            this.$store.dispatch("openMicroApp", {
+                name: 'okr-details',
+                url: $A.mainUrl('apps/okr/'),
+                props: {
+                    type: 'details',
+                    id,
+                },
+                transparent: true,
+            });
         },
 
         onSessionSubmit() {
@@ -3144,7 +3152,7 @@ export default {
                     break;
 
                 case 'okr':
-                    this.openOkr()
+                    this.openOkr(this.dialogData.link_id)
                     break;
 
                 default:
@@ -3752,7 +3760,7 @@ export default {
                         this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
                     }
                     if (target.classList.contains('mention') && target.classList.contains('okr')) {
-                        this.$store.dispatch("openOkr", $A.runNum(target.getAttribute("data-id")));
+                        this.openOkr($A.runNum(target.getAttribute("data-id")));
                     }
                     break;
 

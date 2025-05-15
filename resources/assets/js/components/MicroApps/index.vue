@@ -423,6 +423,9 @@ export default {
             return new Promise(resolve => {
                 microApp.forceSetData(name, {type: 'beforeClose'}, array => {
                     if (!array?.find(item => item === true)) {
+                        if (name === 'appstore') {
+                            this.$store.dispatch("updateMicroAppsEntries");
+                        }
                         if ($A.isSubElectron) {
                             $A.Electron.sendMessage('windowDestroy');
                         } else {

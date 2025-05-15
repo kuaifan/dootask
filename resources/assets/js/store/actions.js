@@ -623,6 +623,7 @@ export default {
         dispatch("getProjectByQueue");
         dispatch("getTaskForDashboard");
         dispatch("dialogMsgRead");
+        dispatch("updateMicroAppsEntries");
         //
         const allIds = Object.values(state.userAvatar).map(({userid}) => userid);
         [...new Set(allIds)].some(userid => dispatch("getUserBasic", {userid}))
@@ -4635,33 +4636,44 @@ export default {
     },
 
     /** *****************************************************************************************/
-    /** *************************************** OKR *********************************************/
+    /** ************************************ App Store ******************************************/
     /** *****************************************************************************************/
 
     /**
-     * 打开OKR
+     * 更新微应用菜单入口
      * @param state
      * @param dispatch
-     * @param value
+     * @param appName
      */
-    openOkr({state}, value) {
-        if (/^\d+$/.test(value)) {
-            // 打开详情页
-            emitter.emit('openMicroApp', {
-                name: 'okr-details',
-                url: $A.mainUrl('apps/okr/'),
-                props: {
-                    type: 'details',
-                    id: value,
-                },
-                transparent: true,
-            });
-        } else {
-            // 打开列表、统计
-            emitter.emit('openMicroApp', {
-                name: `okr-${value}`,
-                url: $A.mainUrl(`apps/okr/${value}`),
-            });
+    updateMicroAppsEntries({state, dispatch}, appName) {
+        dispatch("call", {
+            url: 'apps/entry',
+            data: {
+                app_name: appName || null,
+            },
+        }).then(({data}) => {
+            state.microAppsEntries = data
+        })
+    },
+
+    /**
+     * 打开微应用
+     * @param state
+     * @param item
+     */
+    openMicroApp({state}, item) {
+        if (!item || !$A.isJson(item)) {
+            return
         }
+        const event = {
+            name: `${item.app_name}_${item.key}`,
+            url: $A.mainUrl(item.url),
+        }
+        for (let key in item) {
+            if (['props', 'transparent', 'keepAlive', 'disableScopecss'].includes(key)) {
+                event[key] = item[key]
+            }
+        }
+        emitter.emit('openMicroApp', event);
     },
 }

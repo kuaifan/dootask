@@ -260,4 +260,7 @@ export default {
 
     // 长按数据
     longpressData: {type: '', data: null, element: null},
+
+    // 微应用菜单入口
+    microAppsEntries: [],
 };

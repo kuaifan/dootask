@@ -276,5 +276,38 @@ export default {
     getDialogQuote: (state) => (id) => {
         const quote = state.dialogQuotes.find(item => item.id === id)
         return quote || null
+    },
+
+    /**
+     * 获取应用菜单入口
+     * 过滤出location为application的菜单项
+     *
+     * @param {Object} state
+     * @returns {Array} 
+     */
+    filterMicroAppsEntries: (state) => {
+        return state.microAppsEntries.filter(item => item.location === 'application')
+    },
+
+    /**
+     * 获取应用管理菜单入口
+     * 过滤出location为application/admin的菜单项
+     *
+     * @param {Object} state
+     * @returns {Array} 
+     */
+    filterMicroAppsEntriesAdmin: (state) => {
+        return state.microAppsEntries.filter(item => item.location === 'application/admin')
+    },
+
+    /**
+     * 获取主导航菜单入口
+     * 过滤出location为main/menu的菜单项
+     *
+     * @param {Object} state
+     * @returns {Array} 
+     */
+    filterMicroAppsEntriesMain: (state) => {
+        return state.microAppsEntries.filter(item => item.location === 'main/menu')
     }
 }
