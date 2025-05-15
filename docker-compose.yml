@@ -80,23 +80,6 @@ services:
       - extnetwork
     restart: unless-stopped
 
-  approve:
-    container_name: "dootask-approve-${APP_ID}"
-    image: "kuaifan/dooapprove:0.1.5"
-    environment:
-      TZ: "${TIMEZONE:-PRC}"
-      MYSQL_HOST: "${DB_HOST}"
-      MYSQL_PORT: "${DB_PORT}"
-      MYSQL_DBNAME: "${DB_DATABASE}"
-      MYSQL_USERNAME: "${DB_USERNAME}"
-      MYSQL_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_Prefix: "${DB_PREFIX}approve_"
-      DEMO_DATA: true
-      KEY: ${APP_KEY}
-    networks:
-      - extnetwork
-    restart: unless-stopped
-
   ai:
     container_name: "dootask-ai-${APP_ID}"
     image: "kuaifan/dootask-ai:0.3.5"
