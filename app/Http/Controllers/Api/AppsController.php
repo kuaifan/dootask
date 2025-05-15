@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Module\Apps\Apps;
 use App\Module\Base;
+use App\Module\Timer;
 use Request;
 
 /**
@@ -15,7 +16,7 @@ use Request;
 class AppsController extends AbstractController
 {
     /**
-     * @api {get} api/apps/list           01. 获取应用列表
+     * @api {get} api/apps/list           01. 获取应用列表（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -33,7 +34,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {get} api/apps/info           02. 获取应用详情
+     * @api {get} api/apps/info           02. 获取应用详情（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -61,7 +62,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {post} api/apps/install        03. 安装应用
+     * @api {post} api/apps/install        03. 安装应用（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -80,7 +81,7 @@ class AppsController extends AbstractController
      */
     public function install()
     {
-        User::auth('admin');
+        $user = User::auth('admin');
         //
         $appName = Request::input('app_name');
         $version = Request::input('version', 'latest');
@@ -91,23 +92,31 @@ class AppsController extends AbstractController
             return Base::retError('应用名称不能为空');
         }
 
+        // 获取应用配置
+        $appConfig = Apps::getAppConfig($appName);
+
         // 保存用户设置的参数
-        $configData = [];
+        $updateConfig = [];
+
+        // 记录安装用户
+        $updateConfig['installer'] = is_array($appConfig['installer']) ? $appConfig['installer'] : [];
+        $updateConfig['installer'][] = ['userid' => $user->userid, 'time' => Timer::time()];
+        if (count($updateConfig['installer']) > 5) {
+            $updateConfig['installer'] = array_slice($updateConfig['installer'], -5);
+        }
 
         // 设置参数
         if (!empty($params) && is_array($params)) {
-            $configData['params'] = $params;
+            $updateConfig['params'] = $params;
         }
 
         // 设置资源限制
         if (!empty($resources) && is_array($resources)) {
-            $configData['resources'] = $resources;
+            $updateConfig['resources'] = $resources;
         }
 
         // 保存配置
-        if (!empty($configData)) {
-            Apps::saveAppConfig($appName, $configData);
-        }
+        Apps::saveAppConfig($appName, $updateConfig);
 
         // 执行安装
         return Apps::dockerComposeUp($appName, $version);
@@ -152,7 +161,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {post} api/apps/uninstall      04. 卸载应用
+     * @api {post} api/apps/uninstall      04. 卸载应用（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -166,7 +175,7 @@ class AppsController extends AbstractController
      */
     public function uninstall()
     {
-        User::auth('admin');
+        $user = User::auth('admin');
         //
         $appName = Request::input('app_name');
 
@@ -174,12 +183,28 @@ class AppsController extends AbstractController
             return Base::retError('应用名称不能为空');
         }
 
+        // 获取应用配置
+        $appConfig = Apps::getAppConfig($appName);
+
+        // 保存用户设置的参数
+        $updateConfig = [];
+
+        // 记录安装用户
+        $updateConfig['uninstaller'] = is_array($appConfig['uninstaller']) ? $appConfig['uninstaller'] : [];
+        $updateConfig['uninstaller'][] = ['userid' => $user->userid, 'time' => Timer::time()];
+        if (count($updateConfig['uninstaller']) > 5) {
+            $updateConfig['uninstaller'] = array_slice($updateConfig['uninstaller'], -5);
+        }
+
+        // 保存配置
+        Apps::saveAppConfig($appName, $updateConfig);
+
         // 执行卸载
         return Apps::dockerComposeDown($appName);
     }
 
     /**
-     * @api {get} api/apps/logs           05. 获取应用日志
+     * @api {get} api/apps/logs           05. 获取应用日志（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
