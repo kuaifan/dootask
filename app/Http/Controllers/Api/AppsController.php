@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\Timer;
-use Cache;
 use Request;
 
 /**
@@ -31,7 +30,7 @@ class AppsController extends AbstractController
     {
         User::auth('admin');
         //
-        return Apps::appList();
+        return Apps::appList(false);
     }
 
     /**
