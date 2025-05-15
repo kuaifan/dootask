@@ -344,41 +344,41 @@ class Apps
     }
 
     /**
-     * 获取应用的入口点配置
+     * 获取应用的菜单配置
      *
-     * @param string|null $appName 应用名称，为null时获取所有已安装应用的入口点
+     * @param string|null $appName 应用名称，为null时获取所有已安装应用的菜单
      * @return array
      */
-    public static function getAppEntryPoints(?string $appName = null): array
+    public static function getAppMenuItems(?string $appName = null): array
     {
         if ($appName !== null) {
-            return self::entryGetSingle($appName);
+            return self::menuGetSingle($appName);
         }
-        return self::entryGetAll();
+        return self::menuGetAll();
     }
 
     /**
-     * 获取单个应用的入口点配置
+     * 获取单个应用的菜单配置
      *
      * @param string $appName 应用名称
      * @return array
      */
-    private static function entryGetSingle(string $appName): array
+    private static function menuGetSingle(string $appName): array
     {
         $baseDir = base_path('docker/appstore/apps/' . $appName);
-        $entryPoints = [];
+        $menuItems = [];
 
         if (!file_exists($baseDir . '/config.yml')) {
-            return Base::retSuccess("success", $entryPoints);
+            return Base::retSuccess("success", $menuItems);
         }
 
         try {
             $configData = Yaml::parseFile($baseDir . '/config.yml');
-            if (isset($configData['entry_points']) && is_array($configData['entry_points'])) {
-                foreach ($configData['entry_points'] as $entry) {
-                    $normalizedEntry = self::entryNormalize($entry, $appName);
-                    if ($normalizedEntry) {
-                        $entryPoints[] = $normalizedEntry;
+            if (isset($configData['menu_items']) && is_array($configData['menu_items'])) {
+                foreach ($configData['menu_items'] as $menu) {
+                    $normalizedMenu = self::menuNormalize($menu, $appName);
+                    if ($normalizedMenu) {
+                        $menuItems[] = $normalizedMenu;
                     }
                 }
             }
@@ -386,21 +386,21 @@ class Apps
             return Base::retError('配置文件解析失败：' . $e->getMessage());
         }
 
-        return Base::retSuccess("success", $entryPoints);
+        return Base::retSuccess("success", $menuItems);
     }
 
     /**
-     * 获取所有已安装应用的入口点配置
+     * 获取所有已安装应用的菜单配置
      *
      * @return array
      */
-    private static function entryGetAll(): array
+    private static function menuGetAll(): array
     {
-        $allEntryPoints = [];
+        $allMenuItems = [];
         $baseDir = base_path('docker/appstore/apps');
 
         if (!is_dir($baseDir)) {
-            return Base::retSuccess("success", $allEntryPoints);
+            return Base::retSuccess("success", $allMenuItems);
         }
 
         $dirs = scandir($baseDir);
@@ -413,48 +413,48 @@ class Apps
                 continue;
             }
 
-            $appEntryPoints = self::entryGetSingle($dir);
-            if (Base::isSuccess($appEntryPoints)) {
-                $allEntryPoints = array_merge($allEntryPoints, $appEntryPoints['data']);
+            $appMenuItems = self::menuGetSingle($dir);
+            if (Base::isSuccess($appMenuItems)) {
+                $allMenuItems = array_merge($allMenuItems, $appMenuItems['data']);
             }
         }
 
-        return Base::retSuccess("success", $allEntryPoints);
+        return Base::retSuccess("success", $allMenuItems);
     }
 
     /**
-     * 标准化入口点配置
+     * 标准化菜单配置
      *
-     * @param array $entry 原始入口点配置
+     * @param array $menu 原始菜单配置
      * @param string $appName 应用名称
-     * @return array|null 标准化后的入口点配置，配置无效时返回null
+     * @return array|null 标准化后的菜单配置，配置无效时返回null
      */
-    private static function entryNormalize(array $entry, string $appName): ?array
+    private static function menuNormalize(array $menu, string $appName): ?array
     {
         // 检查必需的字段
-        if (!isset($entry['location']) || !isset($entry['url'])) {
+        if (!isset($menu['location']) || !isset($menu['url'])) {
             return null;
         }
 
         // 基础配置
-        $normalizedEntry = [
+        $normalizedMenu = [
             'app_name' => $appName,
-            'location' => $entry['location'],
-            'url' => $entry['url'],
-            'key' => $entry['key'] ?? substr(md5($entry['url']), 0, 16),
-            'icon' => self::processAppIcon($appName, [$entry['icon'] ?? '']),
-            'label' => self::getMultiLanguageField($entry['label'] ?? ''),
+            'location' => $menu['location'],
+            'url' => $menu['url'],
+            'key' => $menu['key'] ?? substr(md5($menu['url']), 0, 16),
+            'icon' => self::processAppIcon($appName, [$menu['icon'] ?? '']),
+            'label' => self::getMultiLanguageField($menu['label'] ?? ''),
         ];
 
         // 处理可选的UI配置
         $optionalConfigs = ['transparent', 'keepAlive'];
         foreach ($optionalConfigs as $config) {
-            if (isset($entry[$config])) {
-                $normalizedEntry[$config] = $entry[$config];
+            if (isset($menu[$config])) {
+                $normalizedMenu[$config] = $menu[$config];
             }
         }
 
-        return $normalizedEntry;
+        return $normalizedMenu;
     }
 
     /**
@@ -830,7 +830,7 @@ class Apps
             // 处理应用名称
             $appName = Base::camel2snake(Base::cn2pinyin($configData['name'], '_'));
             if (in_array($appName, self::$protectedServiceNames)) {
-                return Base::retError('服务名称 "' . $name . '" 被保护，不能使用');
+                return Base::retError('服务名称 "' . $appName . '" 被保护，不能使用');
             }
             $targetDir = base_path('docker/appstore/apps/' . $appName);
             $targetConfigFile = $targetDir . '/config.json';

@@ -120,6 +120,10 @@
                             <div class="menu-title">{{$L('应用')}}</div>
                             <Badge class="menu-badge" :overflow-count="999" :text="String((reportUnreadNumber + approveUnreadNumber) || '')"/>
                         </li>
+                        <li v-for="(item, key) in filterMicroAppsMenusMain" :key="key" @click="onTabbarClick('microApp', item)">
+                            <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${item.icon})`}"></div>
+                            <div class="menu-title">{{item.label}}</div>
+                        </li>
                     </ul>
                 </div>
                 <div ref="menuProject" class="menu-project">
@@ -515,7 +519,7 @@ export default {
             'longpressData',
         ]),
 
-        ...mapGetters(['dashboardTask']),
+        ...mapGetters(['dashboardTask', "filterMicroAppsMenusMain"]),
 
         /**
          * page className
@@ -1167,7 +1171,7 @@ export default {
             })
         },
 
-        onTabbarClick(act) {
+        onTabbarClick(act, params = '') {
             switch (act) {
                 case 'createGroup':
                     this.onAddMenu('group')
@@ -1182,6 +1186,9 @@ export default {
                 case 'complaint':
                 case 'workReport':
                     this.settingRoute(act)
+                    break;
+                case 'microApp':
+                    this.$store.dispatch("openMicroApp", params);
                     break;
                 case 'appstore':
                     this.$store.dispatch("openMicroApp", {

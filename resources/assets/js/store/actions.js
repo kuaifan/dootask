@@ -623,7 +623,7 @@ export default {
         dispatch("getProjectByQueue");
         dispatch("getTaskForDashboard");
         dispatch("dialogMsgRead");
-        dispatch("updateMicroAppsStats");
+        dispatch("updateMicroAppsStatus");
         //
         const allIds = Object.values(state.userAvatar).map(({userid}) => userid);
         [...new Set(allIds)].some(userid => dispatch("getUserBasic", {userid}))
@@ -1116,6 +1116,8 @@ export default {
                     'callAt',
                     'cacheEmojis',
                     'cacheDialogs',
+                    'microAppsInstalled',
+                    'microAppsMenus',
                 ],
                 json: [
                     'userInfo'
@@ -4640,17 +4642,16 @@ export default {
     /** *****************************************************************************************/
 
     /**
-     * 更新微应用状况（已安装、入口菜单）
-     * @param state
+     * 更新微应用状态（已安装应用、菜单项）
+     * @param commit
      * @param dispatch
-     * @param appName
      */
-    updateMicroAppsStats({state, dispatch}) {
+    updateMicroAppsStatus({commit, dispatch}) {
         dispatch("call", {
-            url: 'apps/stats',
+            url: 'apps/status',
         }).then(({data}) => {
-            state.microAppsInstalled = data.installed
-            state.microAppsEntries = data.entries
+            commit("microApps/installed", data.installed)
+            commit("microApps/menu", data.menus)
         })
     },
 

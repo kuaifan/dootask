@@ -15,7 +15,7 @@
                         {{ t == 'base' ? $L('常用') : $L('管理员') }}
                     </div>
                     <Row :gutter="16">
-                        <Col v-for="item in (t == 'base' ? filterMicroAppsEntries : filterMicroAppsEntriesAdmin)" :key="item.key"
+                        <Col v-for="(item, key) in (t == 'base' ? filterMicroAppsMenus : filterMicroAppsMenusAdmin)" :key="key"
                             :xs="{ span: 6 }"
                             :sm="{ span: 6 }"
                             :lg="{ span: 6 }"
@@ -26,7 +26,7 @@
                                     <div class="logo">
                                         <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${item.icon})`}"></div>
                                     </div>
-                                    <p>{{ $L(item.label) }}</p>
+                                    <p>{{ item.label }}</p>
                                 </div>
                             </div>
                         </Col>
@@ -364,6 +364,7 @@ export default {
     },
     activated() {
         this.initList()
+        this.$store.dispatch("updateMicroAppsStatus")
     },
     computed: {
         ...mapState([
@@ -378,8 +379,8 @@ export default {
             'routeLoading',
         ]),
         ...mapGetters([
-            'filterMicroAppsEntries',
-            'filterMicroAppsEntriesAdmin',
+            'filterMicroAppsMenus',
+            'filterMicroAppsMenusAdmin',
         ]),
         isExistAdminList() {
             return this.applyList.map(h => h.type).indexOf('admin') !== -1;
@@ -449,11 +450,8 @@ export default {
             return item.value == type && num > 0
         },
         // 点击应用
-        applyClick(item, area = '') {
+        applyClick(item, params = '') {
             switch (item.value) {
-                case 'microApp':
-                    this.$store.dispatch("openMicroApp", area);
-                    return
                 case 'approve':
                 case 'calendar':
                 case 'file':
@@ -461,27 +459,27 @@ export default {
                     this.goForward({ name: 'manage-' + item.value });
                     break;
                 case 'report':
-                    emitter.emit('openReport', area == 'badge' ? 'receive' : 'my');
+                    emitter.emit('openReport', params == 'badge' ? 'receive' : 'my');
                     break;
                 case 'mybot':
                     this.getMybot();
                     this.mybotShow = true;
                     break;
                 case 'mybot-chat':
-                    this.chatMybot(area.id);
+                    this.chatMybot(params.id);
                     break;
                 case 'mybot-add':
-                    this.addMybot(area);
+                    this.addMybot(params);
                     break;
                 case 'mybot-del':
-                    this.delMybot(area);
+                    this.delMybot(params);
                     break;
                 case 'robot':
                     this.getAITags();
                     this.aibotShow = true;
                     break;
                 case 'robot-setting':
-                    this.aibotTabAction = area;
+                    this.aibotTabAction = params;
                     this.aibotSettingShow = true;
                     break;
                 case 'signin':
@@ -510,7 +508,7 @@ export default {
                     break;
 
             }
-            this.$emit("on-click", item.value)
+            this.$emit("on-click", item.value, params);
         },
         // 获取我的机器人
         getMybot() {

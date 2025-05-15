@@ -81,43 +81,46 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {get} api/apps/stats           04. 获取应用状况
+     * @api {get} api/apps/status           04. 获取应用状态
      *
-     * @apiDescription 获取应用状况，包括已安装的应用和应用入口点
+     * @apiDescription 获取应用状态，包括已安装的应用和应用菜单
      * @apiVersion 1.0.0
      * @apiGroup apps
-     * @apiName stats
+     * @apiName status
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    应用入口点信息
+     * @apiSuccess {Object} data    应用和菜单信息
+     * @apiSuccess {Array}  data.installed  已安装应用列表
+     * @apiSuccess {Array}  data.menus      应用菜单列表
      */
-    public function stats()
+    public function status()
     {
         User::auth();
 
         // 获取已安装应用列表
-        $res = Apps::appList();
-        if (Base::isError($res)) {
-            return $res;
-        }
         $installedName = ['appstore'];
-        foreach ($res['data'] as $app) {
-            if ($app['config']['status'] == 'installed') {
-                $installedName[] = $app['name'];
-            }
+        $appList = Apps::appList();
+        if (Base::isSuccess($appList)) {
+            $installedName = array_merge(
+                $installedName,
+                array_column(
+                    array_filter($appList['data'], fn($app) => $app['config']['status'] === 'installed'),
+                    'name'
+                )
+            );
         }
 
-        // 获取应用入口点
-        $res = Apps::getAppEntryPoints();
-        if (Base::isError($res)) {
-            return $res;
+        // 获取应用菜单
+        $menusData = [];
+        $res = Apps::getAppMenuItems();
+        if (Base::isSuccess($res)) {
+            $menusData = $res['data'];
         }
-        $entriesData = $res['data'];
 
         return Base::retSuccess('success', [
             'installed' => $installedName,
-            'entries' => $entriesData,
+            'menus' => $menusData,
         ]);
     }
 

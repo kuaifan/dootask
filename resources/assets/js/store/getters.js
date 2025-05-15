@@ -279,35 +279,35 @@ export default {
     },
 
     /**
-     * 获取应用菜单入口
+     * 获取应用菜单
      * 过滤出location为application的菜单项
      *
      * @param {Object} state
-     * @returns {Array} 
+     * @returns {Array}
      */
-    filterMicroAppsEntries: (state) => {
-        return state.microAppsEntries.filter(item => item.location === 'application')
+    filterMicroAppsMenus: (state) => {
+        return state.microAppsMenus.filter(item => item.location === 'application')
     },
 
     /**
-     * 获取应用管理菜单入口
+     * 获取应用管理菜单
      * 过滤出location为application/admin的菜单项
      *
      * @param {Object} state
-     * @returns {Array} 
+     * @returns {Array}
      */
-    filterMicroAppsEntriesAdmin: (state) => {
-        return state.microAppsEntries.filter(item => item.location === 'application/admin')
+    filterMicroAppsMenusAdmin: (state) => {
+        return state.microAppsMenus.filter(item => item.location === 'application/admin')
     },
 
     /**
-     * 获取主导航菜单入口
+     * 获取主导航菜单
      * 过滤出location为main/menu的菜单项
      *
      * @param {Object} state
-     * @returns {Array} 
+     * @returns {Array}
      */
-    filterMicroAppsEntriesMain: (state) => {
-        return state.microAppsEntries.filter(item => item.location === 'main/menu')
+    filterMicroAppsMenusMain: (state) => {
+        return state.microAppsMenus.filter(item => item.location === 'main/menu')
     }
 }

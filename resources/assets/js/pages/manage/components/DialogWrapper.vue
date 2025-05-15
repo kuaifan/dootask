@@ -2619,7 +2619,7 @@ export default {
             });
         },
 
-        openOkr(id) {
+        openOkrDetails(id) {
             if (!id) {
                 return;
             }
@@ -3150,7 +3150,7 @@ export default {
                     break;
 
                 case 'okr':
-                    this.openOkr(this.dialogData.link_id)
+                    this.openOkrDetails(this.dialogData.link_id)
                     break;
 
                 default:
@@ -3758,7 +3758,7 @@ export default {
                         this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
                     }
                     if (target.classList.contains('mention') && target.classList.contains('okr')) {
-                        this.openOkr($A.runNum(target.getAttribute("data-id")));
+                        this.openOkrDetails($A.runNum(target.getAttribute("data-id")));
                     }
                     break;
 
