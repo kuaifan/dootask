@@ -29,28 +29,41 @@ class Apps
     // 软件源列表URL
     protected static string $sourcesUrl = 'https://appstore.dootask.com/sources.list';
 
+    // 缓存键集合
+    protected static array $cacheKeys = [
+        'app_list' => 'appstore_app_list',
+        'menu_items' => 'appstore_menu_items',
+    ];
+
     /**
      * 获取应用列表
      *
+     * @param bool $cache 是否使用缓存，默认true
      * @return array
      */
-    public static function appList(): array
+    public static function appList(bool $cache = true): array
     {
-        $apps = [];
-        $baseDir = base_path('docker/appstore/apps');
-        $dirs = scandir($baseDir);
-        foreach ($dirs as $dir) {
-            // 跳过当前目录、父目录和隐藏文件
-            if ($dir === '.' || $dir === '..' || str_starts_with($dir, '.')) {
-                continue;
-            }
-            $apps[] = [
-                'name' => $dir,
-                'info' => self::getAppInfo($dir),
-                'config' => self::getAppConfig($dir),
-                'versions' => self::getAvailableVersions($dir),
-            ];
+        if ($cache === false) {
+            Cache::forget(self::$cacheKeys['app_list']);
         }
+        $apps = Cache::remember(self::$cacheKeys['app_list'], now()->addHour(), function () {
+            $apps = [];
+            $baseDir = base_path('docker/appstore/apps');
+            $dirs = scandir($baseDir);
+            foreach ($dirs as $dir) {
+                // 跳过当前目录、父目录和隐藏文件
+                if ($dir === '.' || $dir === '..' || str_starts_with($dir, '.')) {
+                    continue;
+                }
+                $apps[] = [
+                    'name' => $dir,
+                    'info' => self::getAppInfo($dir),
+                    'config' => self::getAppConfig($dir),
+                    'versions' => self::getAvailableVersions($dir),
+                ];
+            }
+            return $apps;
+        });
         return Base::retSuccess("success", $apps);
     }
 
@@ -180,6 +193,11 @@ class Apps
      */
     public static function dockerComposeFinalize(string $appName, string $status): array
     {
+        // 清理缓存
+        foreach (self::$cacheKeys as $key) {
+            Cache::forget($key);
+        }
+
         // 获取当前应用信息
         $appInfo = self::getAppConfig($appName);
 
@@ -346,15 +364,21 @@ class Apps
     /**
      * 获取应用的菜单配置
      *
-     * @param string|null $appName 应用名称，为null时获取所有已安装应用的菜单
+     * @param bool $cache 是否使用缓存，默认true
      * @return array
      */
-    public static function getAppMenuItems(?string $appName = null): array
+    public static function getAppMenuItems(bool $cache = true): array
     {
-        if ($appName !== null) {
-            return self::menuGetSingle($appName);
+        if ($cache === false) {
+            Cache::forget(self::$cacheKeys['menu_items']);
         }
-        return self::menuGetAll();
+        $res = Cache::remember(self::$cacheKeys['menu_items'], now()->addHour(), function () {
+            return self::menuGetAll();
+        });
+        if (Base::isError($res)) {
+            Cache::forget(self::$cacheKeys['menu_items']);
+        }
+        return $res;
     }
 
     /**
@@ -443,7 +467,7 @@ class Apps
             'url' => $menu['url'],
             'key' => $menu['key'] ?? substr(md5($menu['url']), 0, 16),
             'icon' => self::processAppIcon($appName, [$menu['icon'] ?? '']),
-            'label' => self::getMultiLanguageField($menu['label'] ?? ''),
+            'label' => $menu['label'] ?? '',
         ];
 
         // 处理可选的UI配置
@@ -1130,7 +1154,7 @@ class Apps
      * @param mixed $field 要处理的字段值
      * @return mixed 处理后的字段值
      */
-    private static function getMultiLanguageField(mixed $field): mixed
+    public static function getMultiLanguageField(mixed $field): mixed
     {
         // 判断单语言字段，直接返回
         if (!is_array($field)) {

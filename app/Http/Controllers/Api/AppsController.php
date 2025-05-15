@@ -116,6 +116,9 @@ class AppsController extends AbstractController
         $res = Apps::getAppMenuItems();
         if (Base::isSuccess($res)) {
             $menusData = $res['data'];
+            foreach ($menusData as &$menu) {
+                $menu['label'] = Apps::getMultiLanguageField($menu['label']);
+            }
         }
 
         return Base::retSuccess('success', [
