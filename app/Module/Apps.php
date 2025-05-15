@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Module\Apps;
+namespace App\Module;
 
-use App\Module\Base;
-use App\Module\Ihttp;
 use Cache;
-use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 class Apps
 {
@@ -835,6 +833,9 @@ class Apps
 
             // 处理应用名称
             $appName = Base::camel2snake(Base::cn2pinyin($configData['name'], '_'));
+            if (in_array($appName, self::$protectedServiceNames)) {
+                return Base::retError('服务名称 "' . $name . '" 被保护，不能使用');
+            }
             $targetDir = base_path('docker/appstore/apps/' . $appName);
             $targetConfigFile = $targetDir . '/config.json';
 
