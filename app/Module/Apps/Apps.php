@@ -342,10 +342,24 @@ class Apps
     /**
      * 获取应用的入口点配置
      *
+     * @param string|null $appName 应用名称，如果为null则获取所有已安装应用的入口点
+     * @return array
+     */
+    public static function getAppEntryPoints(?string $appName = null): array
+    {
+        if ($appName !== null) {
+            return self::getSingleAppEntryPoints($appName);
+        }
+        return self::getAllInstalledAppsEntryPoints();
+    }
+
+    /**
+     * 获取单个应用的入口点配置
+     *
      * @param string $appName 应用名称
      * @return array
      */
-    public static function getAppEntryPoints(string $appName): array
+    private static function getSingleAppEntryPoints(string $appName): array
     {
         $baseDir = base_path('docker/appstore/apps/' . $appName);
         $entryPoints = [];
@@ -354,34 +368,89 @@ class Apps
             return Base::retSuccess("success", $entryPoints);
         }
 
-        $configData = Yaml::parseFile($baseDir . '/config.yml');
-        if (isset($configData['entry_points']) && is_array($configData['entry_points'])) {
-            foreach ($configData['entry_points'] as $entry) {
-                // 检查必需的字段
-                if (!isset($entry['location']) || !isset($entry['url'])) {
-                    continue;
-                }
-
-                // 标准化入口点结构
-                $normalizedEntry = [
-                    'location' => $entry['location'],
-                    'url' => $entry['url'],
-                    'icon' => self::processAppIcon($appName, [$entry['icon']]),
-                    'label' => self::getMultiLanguageField($entry['label']),
-                ];
-
-                // 处理可选的UI配置
-                foreach (['transparent', 'keepAlive'] as $option) {
-                    if (isset($entry[$option])) {
-                        $normalizedEntry[$option] = $entry[$option];
+        try {
+            $configData = Yaml::parseFile($baseDir . '/config.yml');
+            if (isset($configData['entry_points']) && is_array($configData['entry_points'])) {
+                foreach ($configData['entry_points'] as $entry) {
+                    $normalizedEntry = self::normalizeEntryPoint($entry, $appName);
+                    if ($normalizedEntry) {
+                        $entryPoints[] = $normalizedEntry;
                     }
                 }
-
-                $entryPoints[] = $normalizedEntry;
             }
+        } catch (ParseException $e) {
+            return Base::retError('配置文件解析失败：' . $e->getMessage());
         }
 
         return Base::retSuccess("success", $entryPoints);
+    }
+
+    /**
+     * 获取所有已安装应用的入口点配置
+     *
+     * @return array
+     */
+    private static function getAllInstalledAppsEntryPoints(): array
+    {
+        $allEntryPoints = [];
+        $baseDir = base_path('docker/appstore/apps');
+        
+        if (!is_dir($baseDir)) {
+            return Base::retSuccess("success", $allEntryPoints);
+        }
+
+        $dirs = scandir($baseDir);
+        foreach ($dirs as $dir) {
+            if ($dir === '.' || $dir === '..' || str_starts_with($dir, '.')) {
+                continue;
+            }
+
+            if (!self::isInstalled($dir)) {
+                continue;
+            }
+
+            $appEntryPoints = self::getSingleAppEntryPoints($dir);
+            if (Base::isSuccess($appEntryPoints)) {
+                $allEntryPoints = array_merge($allEntryPoints, $appEntryPoints['data']);
+            }
+        }
+
+        return Base::retSuccess("success", $allEntryPoints);
+    }
+
+    /**
+     * 标准化入口点配置
+     *
+     * @param array $entry 入口点配置
+     * @param string $appName 应用名称
+     * @return array|null 标准化后的入口点配置，如果配置无效则返回null
+     */
+    private static function normalizeEntryPoint(array $entry, string $appName): ?array
+    {
+        // 检查必需的字段
+        if (!isset($entry['location']) || !isset($entry['url'])) {
+            return null;
+        }
+
+        // 基础配置
+        $normalizedEntry = [
+            'app_name' => $appName,
+            'location' => $entry['location'],
+            'url' => $entry['url'],
+            'key' => $entry['key'] ?? substr(md5($entry['url']), 0, 16),
+            'icon' => self::processAppIcon($appName, [$entry['icon'] ?? '']),
+            'label' => self::getMultiLanguageField($entry['label'] ?? ''),
+        ];
+
+        // 处理可选的UI配置
+        $optionalConfigs = ['transparent', 'keepAlive'];
+        foreach ($optionalConfigs as $config) {
+            if (isset($entry[$config])) {
+                $normalizedEntry[$config] = $entry[$config];
+            }
+        }
+
+        return $normalizedEntry;
     }
 
     /**

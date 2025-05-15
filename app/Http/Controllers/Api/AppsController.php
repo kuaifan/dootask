@@ -80,6 +80,28 @@ class AppsController extends AbstractController
     }
 
     /**
+     * @api {get} api/apps/entry           04. 获取应用入口点（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup apps
+     * @apiName entry
+     *
+     * @apiParam {String} [app_name]      应用名称
+     * - 不指定则获取所有已安装的应用入口点
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    应用入口点信息
+     */
+    public function entry()
+    {
+        User::auth();
+        //
+        $appName = Request::input('app_name');
+        return Apps::getAppEntryPoints($appName);
+    }
+
+    /**
      * @api {post} api/apps/install        04. 安装应用（限管理员）
      *
      * @apiVersion 1.0.0
@@ -158,9 +180,6 @@ class AppsController extends AbstractController
         User::auth('admin');
         //
         $url = Request::input('url');
-        if (empty($url)) {
-            return Base::retError('应用url不能为空');
-        }
 
         // 下载应用
         $res = Apps::downloadApp($url);
