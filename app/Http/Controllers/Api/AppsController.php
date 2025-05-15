@@ -81,7 +81,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {get} api/apps/entry           04. 获取应用入口点（限管理员）
+     * @api {get} api/apps/entry           04. 获取应用入口点
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -112,7 +112,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {post} api/apps/install        04. 安装应用（限管理员）
+     * @api {post} api/apps/install        05. 安装应用（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -173,7 +173,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {get} api/apps/install/url        05. 通过url安装应用（限管理员）
+     * @api {get} api/apps/install/url        06. 通过url安装应用（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -240,7 +240,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {post} api/apps/uninstall      06. 卸载应用（限管理员）
+     * @api {post} api/apps/uninstall      07. 卸载应用（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps
@@ -283,7 +283,7 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {get} api/apps/logs           07. 获取应用日志（限管理员）
+     * @api {get} api/apps/logs           08. 获取应用日志（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup apps

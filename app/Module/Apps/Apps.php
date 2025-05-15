@@ -33,6 +33,7 @@ class Apps
 
     /**
      * 获取应用列表
+     *
      * @return array
      */
     public static function appList(): array
@@ -57,6 +58,7 @@ class Apps
 
     /**
      * 获取应用信息（比列表多返回了 document）
+     *
      * @param string $appName 应用名称
      * @return array
      */
@@ -73,6 +75,7 @@ class Apps
 
     /**
      * 执行docker-compose up命令
+     *
      * @param string $appName
      * @param string $version
      * @param string $command
@@ -154,6 +157,7 @@ class Apps
 
     /**
      * 执行docker-compose down命令
+     *
      * @param string $appName
      * @param string $version
      * @return array
@@ -171,6 +175,7 @@ class Apps
 
     /**
      * 更新docker-compose状态（安装或卸载之后最后一步处理）
+     *
      * @param string $appName
      * @param string $status
      * @return array
@@ -210,6 +215,7 @@ class Apps
 
     /**
      * 获取应用信息
+     *
      * @param string $appName 应用名称
      * @return array
      */
@@ -346,15 +352,15 @@ class Apps
     /**
      * 获取应用的入口点配置
      *
-     * @param string|null $appName 应用名称，如果为null则获取所有已安装应用的入口点
+     * @param string|null $appName 应用名称，为null时获取所有已安装应用的入口点
      * @return array
      */
     public static function getAppEntryPoints(?string $appName = null): array
     {
         if ($appName !== null) {
-            return self::getSingleAppEntryPoints($appName);
+            return self::entryGetSingle($appName);
         }
-        return self::getAllInstalledAppsEntryPoints();
+        return self::entryGetAll();
     }
 
     /**
@@ -363,7 +369,7 @@ class Apps
      * @param string $appName 应用名称
      * @return array
      */
-    private static function getSingleAppEntryPoints(string $appName): array
+    private static function entryGetSingle(string $appName): array
     {
         $baseDir = base_path('docker/appstore/apps/' . $appName);
         $entryPoints = [];
@@ -376,7 +382,7 @@ class Apps
             $configData = Yaml::parseFile($baseDir . '/config.yml');
             if (isset($configData['entry_points']) && is_array($configData['entry_points'])) {
                 foreach ($configData['entry_points'] as $entry) {
-                    $normalizedEntry = self::normalizeEntryPoint($entry, $appName);
+                    $normalizedEntry = self::entryNormalize($entry, $appName);
                     if ($normalizedEntry) {
                         $entryPoints[] = $normalizedEntry;
                     }
@@ -394,7 +400,7 @@ class Apps
      *
      * @return array
      */
-    private static function getAllInstalledAppsEntryPoints(): array
+    private static function entryGetAll(): array
     {
         $allEntryPoints = [];
         $baseDir = base_path('docker/appstore/apps');
@@ -413,7 +419,7 @@ class Apps
                 continue;
             }
 
-            $appEntryPoints = self::getSingleAppEntryPoints($dir);
+            $appEntryPoints = self::entryGetSingle($dir);
             if (Base::isSuccess($appEntryPoints)) {
                 $allEntryPoints = array_merge($allEntryPoints, $appEntryPoints['data']);
             }
@@ -425,11 +431,11 @@ class Apps
     /**
      * 标准化入口点配置
      *
-     * @param array $entry 入口点配置
+     * @param array $entry 原始入口点配置
      * @param string $appName 应用名称
-     * @return array|null 标准化后的入口点配置，如果配置无效则返回null
+     * @return array|null 标准化后的入口点配置，配置无效时返回null
      */
-    private static function normalizeEntryPoint(array $entry, string $appName): ?array
+    private static function entryNormalize(array $entry, string $appName): ?array
     {
         // 检查必需的字段
         if (!isset($entry['location']) || !isset($entry['url'])) {
@@ -563,6 +569,7 @@ class Apps
 
     /**
      * 获取应用的日志
+     *
      * @param string $appName
      * @param int $lines 获取的行数，默认50行, 最大2000行
      * @return array
@@ -595,6 +602,7 @@ class Apps
 
     /**
      * 判断应用是否已安装
+     *
      * @param string $appName 应用名称
      * @return bool 如果应用已安装返回 true，否则返回 false
      */
@@ -606,6 +614,7 @@ class Apps
 
     /**
      * 更新应用列表
+     *
      * @return array
      */
     public static function appListUpdate(): array
@@ -732,6 +741,7 @@ class Apps
 
     /**
      * 下载应用
+     *
      * @param string $url 应用url
      * @return array 下载结果
      */
@@ -850,7 +860,7 @@ class Apps
                 return $onFailure('移动文件失败');
             }
 
-            return $onSuccess('下载成功', [ 'app_name' => $appName ]);
+            return $onSuccess('下载成功', ['app_name' => $appName]);
         } catch (\Exception $e) {
             // 清理临时目录
             Base::deleteDirAndFile($tempDir, true);
@@ -864,7 +874,8 @@ class Apps
      * @param string $appName 应用名称
      * @return string 文档内容，如果未找到则返回空字符串
      */
-    private static function getAppDocument(string $appName): string {
+    private static function getAppDocument(string $appName): string
+    {
         $baseDir = base_path('docker/appstore/apps/' . $appName);
         $lang = strtoupper(Base::headerOrInput('language'));
 
@@ -903,7 +914,8 @@ class Apps
      * @param array $patterns 正则模式数组
      * @return bool 是否匹配
      */
-    private static function matchReadmePattern(string $fileName, array $patterns): bool {
+    private static function matchReadmePattern(string $fileName, array $patterns): bool
+    {
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $fileName)) {
                 return true;
@@ -914,6 +926,7 @@ class Apps
 
     /**
      * 生成docker-compose.yml文件配置
+     *
      * @param string $filePath docker-compose.yml文件路径
      * @param array $params 可选参数，替换docker-compose.yml中的${XXX}变量，示例：{'APP_ID' => '123'}
      * @param array $resources 可选资源限制，示例：{'cpu_limit' => '0.5', 'memory_limit' => '512M'}
@@ -974,7 +987,7 @@ class Apps
 
                 // 处理现有的volumes配置
                 if (isset($service['volumes'])) {
-                    $service['volumes'] = Volumes::processVolumeConfigurations($service['volumes'], $hostPwd);
+                    $service['volumes'] = self::volumeProcessConfigurations($service['volumes'], $hostPwd);
                 }
 
                 // 处理资源限制
@@ -1007,6 +1020,111 @@ class Apps
             // YAML解析错误
             return Base::retError('YAML parsing error:' . $e->getMessage());
         }
+    }
+
+    /**
+     * 处理卷挂载配置
+     *
+     * @param array $volumes 原始卷挂载配置数组
+     * @param string $hostPwd 主机工作目录路径
+     * @return array 处理后的卷挂载配置数组
+     */
+    public static function volumeProcessConfigurations(array $volumes, string $hostPwd): array
+    {
+        return array_map(function ($volume) use ($hostPwd) {
+            // 短语法格式：字符串形式如 "./src:/app"
+            if (is_string($volume)) {
+                return self::volumeProcessShortSyntax($volume, $hostPwd);
+            } // 长语法格式：数组形式包含 source 键
+            elseif (is_array($volume) && isset($volume['source'])) {
+                return self::volumeProcessLongSyntax($volume, $hostPwd);
+            }
+            // 其他格式保持不变
+            return $volume;
+        }, $volumes);
+    }
+
+    /**
+     * 处理短语法格式的卷挂载
+     *
+     * @param string $volume 原始卷配置字符串
+     * @param string $hostPwd 主机工作目录路径
+     * @return string 处理后的卷配置字符串
+     */
+    private static function volumeProcessShortSyntax(string $volume, string $hostPwd): string
+    {
+        $parts = explode(':', $volume, 3);
+        $sourcePath = $parts[0];
+
+        $newSourcePath = self::volumeConvertPath($sourcePath, $hostPwd);
+
+        // 如果路径已更改，重建挂载配置
+        if ($newSourcePath !== $sourcePath) {
+            $parts[0] = $newSourcePath;
+            return implode(':', $parts);
+        }
+
+        return $volume;
+    }
+
+    /**
+     * 处理长语法格式的卷挂载
+     *
+     * @param array $volume 原始卷配置数组
+     * @param string $hostPwd 主机工作目录路径
+     * @return array 处理后的卷配置数组
+     */
+    private static function volumeProcessLongSyntax(array $volume, string $hostPwd): array
+    {
+        $newSourcePath = self::volumeConvertPath($volume['source'], $hostPwd);
+
+        // 如果路径已更改，更新source
+        if ($newSourcePath !== $volume['source']) {
+            $volume['source'] = $newSourcePath;
+        }
+
+        return $volume;
+    }
+
+    /**
+     * 将相对路径转换为绝对路径
+     *
+     * @param string $path 原始路径
+     * @param string $hostPwd 主机工作目录路径
+     * @return string 处理后的绝对路径
+     */
+    private static function volumeConvertPath(string $path, string $hostPwd): string
+    {
+        // 判断是否为相对路径，Docker卷挂载有以下几种情况：
+        // 1. 环境变量路径：包含${PWD}的路径，如 "${PWD}/data:/app/data"
+        //    这也是一种相对路径表示方式，需要标准化处理
+        // 2. 显式相对路径：以./或../开头的路径，如 "./data:/app/data" 或 "../logs:/var/log"
+        // 3. 隐式相对路径：不以/开头，但中间包含/的路径，如 "data/logs:/app/logs"
+        //    (纯名称如"data"没有/，通常是命名卷而非相对路径)
+        // 4. 绝对路径：以/开头的路径，如 "/var/run/docker.sock:/var/run/docker.sock"
+        //    绝对路径已经是完整路径，不需要转换
+        //
+        // 注：Docker Compose在解析路径时，相对路径是相对于docker-compose.yml文件所在目录的
+        // 我们需要将这些相对路径转换为绝对路径，以确保在不同环境中能正确挂载目录
+
+        // 处理${PWD}路径
+        if (str_contains($path, '${PWD}')) {
+            // 将${PWD}替换为我们的标准路径格式
+            return str_replace('${PWD}', $hostPwd, $path);
+        }
+
+        // 处理./或../开头的显式相对路径
+        if (str_starts_with($path, './') || str_starts_with($path, '../')) {
+            return $hostPwd . '/' . ltrim($path, './');
+        }
+
+        // 处理不以/开头的路径，且要么包含/（明确是路径而非命名卷）
+        if (!str_starts_with($path, '/') && str_contains($path, '/')) {
+            return $hostPwd . '/' . $path;
+        }
+
+        // 命名卷或绝对路径，保持不变
+        return $path;
     }
 
     /**
@@ -1158,6 +1276,7 @@ class Apps
 
     /**
      * 复制目录和文件
+     *
      * @param string $sourceDir 源目录
      * @param string $targetDir 目标目录
      * @param bool $recursive 是否递归复制
@@ -1217,6 +1336,7 @@ class Apps
 
     /**
      * 执行curl请求
+     *
      * @param $path
      * @return array
      */
