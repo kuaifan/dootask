@@ -1,0 +1,5 @@
+apps/*
+configs/*
+logs/*
+temp/*
+!.gitkeep
