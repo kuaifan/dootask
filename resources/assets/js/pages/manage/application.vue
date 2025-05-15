@@ -364,7 +364,6 @@ export default {
     },
     activated() {
         this.initList()
-        this.$store.dispatch("updateMicroAppsEntries");
     },
     computed: {
         ...mapState([

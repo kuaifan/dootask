@@ -81,34 +81,44 @@ class AppsController extends AbstractController
     }
 
     /**
-     * @api {get} api/apps/entry           04. 获取应用入口点
+     * @api {get} api/apps/stats           04. 获取应用状况
      *
+     * @apiDescription 获取应用状况，包括已安装的应用和应用入口点
      * @apiVersion 1.0.0
      * @apiGroup apps
-     * @apiName entry
-     *
-     * @apiParam {String} [app_name]      应用名称
-     * - 不指定则获取所有已安装的应用入口点
+     * @apiName stats
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    应用入口点信息
      */
-    public function entry()
+    public function stats()
     {
         User::auth();
-        //
-        $appName = Request::input('app_name');
-        //
-        $cacheKey = 'apps_entry:' . $appName;
-        $cacheData = Cache::remember($cacheKey, now()->addHour(), function () use ($appName) {
-            return Apps::getAppEntryPoints($appName);
-        });
-        if (Base::isError($cacheData)) {
-            Cache::forget($cacheKey);
+
+        // 获取已安装应用列表
+        $res = Apps::appList();
+        if (Base::isError($res)) {
+            return $res;
         }
-        //
-        return $cacheData;
+        $installedName = ['appstore'];
+        foreach ($res['data'] as $app) {
+            if ($app['config']['status'] == 'installed') {
+                $installedName[] = $app['name'];
+            }
+        }
+
+        // 获取应用入口点
+        $res = Apps::getAppEntryPoints();
+        if (Base::isError($res)) {
+            return $res;
+        }
+        $entriesData = $res['data'];
+
+        return Base::retSuccess('success', [
+            'installed' => $installedName,
+            'entries' => $entriesData,
+        ]);
     }
 
     /**

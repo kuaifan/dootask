@@ -1186,7 +1186,7 @@ export default {
                 case 'appstore':
                     this.$store.dispatch("openMicroApp", {
                         name: 'appstore',
-                        url: $A.mainUrl('appstore/web/'),
+                        url: 'appstore/web/',
                         disableScopecss: true,
                     });
                     break;

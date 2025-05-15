@@ -262,5 +262,6 @@ export default {
     longpressData: {type: '', data: null, element: null},
 
     // 微应用菜单入口
+    microAppsInstalled: [],
     microAppsEntries: [],
 };

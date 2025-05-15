@@ -180,10 +180,6 @@ class Apps
      */
     public static function dockerComposeFinalize(string $appName, string $status): array
     {
-        // 清理入口缓存
-        Cache::forget('apps_entry:' . $appName);
-        Cache::forget('apps_entry:');
-
         // 获取当前应用信息
         $appInfo = self::getAppConfig($appName);
 

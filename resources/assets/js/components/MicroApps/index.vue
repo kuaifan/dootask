@@ -424,7 +424,7 @@ export default {
                 microApp.forceSetData(name, {type: 'beforeClose'}, array => {
                     if (!array?.find(item => item === true)) {
                         if (name === 'appstore') {
-                            this.$store.dispatch("updateMicroAppsEntries");
+                            this.$store.dispatch("updateMicroAppsStats");
                         }
                         if ($A.isSubElectron) {
                             $A.Electron.sendMessage('windowDestroy');

@@ -623,7 +623,7 @@ export default {
         dispatch("getProjectByQueue");
         dispatch("getTaskForDashboard");
         dispatch("dialogMsgRead");
-        dispatch("updateMicroAppsEntries");
+        dispatch("updateMicroAppsStats");
         //
         const allIds = Object.values(state.userAvatar).map(({userid}) => userid);
         [...new Set(allIds)].some(userid => dispatch("getUserBasic", {userid}))
@@ -4640,43 +4640,61 @@ export default {
     /** *****************************************************************************************/
 
     /**
-     * 更新微应用菜单入口
+     * 更新微应用状况（已安装、入口菜单）
      * @param state
      * @param dispatch
      * @param appName
      */
-    updateMicroAppsEntries({state, dispatch}, appName) {
+    updateMicroAppsStats({state, dispatch}) {
         dispatch("call", {
-            url: 'apps/entry',
-            data: {
-                app_name: appName || null,
-            },
+            url: 'apps/stats',
         }).then(({data}) => {
-            state.microAppsEntries = data
+            state.microAppsInstalled = data.installed
+            state.microAppsEntries = data.entries
         })
     },
 
     /**
      * 打开微应用
      * @param state
-     * @param item
+     * @param menuItem
      */
-    openMicroApp({state}, item) {
-        if (!item || !$A.isJson(item)) {
+    openMicroApp({state}, menuItem) {
+        if (!menuItem || !$A.isJson(menuItem)) {
             return
         }
         const event = {
-            name: item.app_name || item.name,
-            url: $A.mainUrl(item.url),
+            name: menuItem.app_name || menuItem.name,
+            url: $A.mainUrl(menuItem.url),
         }
-        if (item.key) {
-            event.name += `_${item.key}`
+        if (!state.microAppsInstalled.includes(event.name)) {
+            $A.modalWarning("应用未安装");
+            return;
         }
-        for (let key in item) {
+        if (menuItem.key) {
+            event.name += `_${menuItem.key}`
+        }
+        for (let key in menuItem) {
             if (['props', 'transparent', 'keepAlive', 'disableScopecss'].includes(key)) {
-                event[key] = item[key]
+                event[key] = menuItem[key]
             }
         }
         emitter.emit('observeMicroApp', event);
     },
+
+    /**
+     * 微应用是否已安装
+     * @param state
+     * @param appName
+     * @returns {Promise<unknown>}
+     */
+    isMicroAppInstalled({state}, appName) {
+        return new Promise(resolve => {
+            if (!appName) {
+                resolve(false)
+                return
+            }
+            resolve(!!state.microAppsInstalled.includes(appName))
+        })
+    }
 }
