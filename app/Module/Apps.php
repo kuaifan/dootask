@@ -14,12 +14,6 @@ class Apps
         'nginx',
         'redis',
         'mariadb',
-        'drawio-webapp',
-        'drawio-expont',
-        'minder',
-        'approve',
-        'ai',
-        'face',
         'search',
         'appstore',
     ];

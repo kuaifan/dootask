@@ -80,17 +80,6 @@ services:
       - extnetwork
     restart: unless-stopped
 
-  ai:
-    container_name: "dootask-ai-${APP_ID}"
-    image: "kuaifan/dootask-ai:0.3.5"
-    environment:
-      REDIS_HOST: "${REDIS_HOST}"
-      REDIS_PORT: "${REDIS_PORT}"
-      TIMEOUT: 600
-    networks:
-      - extnetwork
-    restart: unless-stopped
-
   search:
     container_name: "dootask-search-${APP_ID}"
     image: "public.ecr.aws/zinclabs/zincsearch:0.4.10"
