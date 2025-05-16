@@ -1193,7 +1193,7 @@ export default {
                 case 'appstore':
                     this.$store.dispatch("openMicroApp", {
                         name: 'appstore',
-                        url: 'appstore/web/',
+                        url: 'http://localhost:5173/',
                         disableScopecss: true,
                     });
                     break;

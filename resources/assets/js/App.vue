@@ -98,6 +98,7 @@ import emitter from "./store/events";
 import SearchBox from "./components/SearchBox.vue";
 import UserDetail from "./pages/manage/components/UserDetail.vue";
 import {languageName} from "./language";
+import {closeLastMicroAggregate} from "./components/MicroApps/queue";
 
 export default {
     mixins: [ctrlPressed],
@@ -550,6 +551,9 @@ export default {
             }
             window.__onBeforeUnload = () => {
                 this.$store.dispatch("onBeforeUnload");
+                if (closeLastMicroAggregate()) {
+                    return;
+                }
                 if (this.$Modal.removeLast()) {
                     return true;
                 }

@@ -1,54 +1,29 @@
 <template>
-    <div class="micro-app-wrapper">
-        <template v-for="app in apps">
-            <Modal
-                v-if="app.transparent"
-                v-model="app.isOpen"
-                :ref="`ref-${app.name}`"
-                :mask="false"
-                :footer-hide="true"
-                :transition-names="[]"
-                :beforeClose="async () => { await onBeforeClose(app.name) }"
-                class-name="micro-app-trans"
-                fullscreen>
-                <MicroContent
-                    :is-open="app.isOpen"
-                    :app-name="app.name"
-                    :app-url="app.url"
-                    :keep-alive="app.keepAlive"
-                    :disable-scopecss="app.disableScopecss"
-                    :is-loading="app.isLoading"
-                    :app-data="appData(app.name)"
-                    @created="created"
-                    @beforemount="beforemount"
-                    @mounted="mounted"
-                    @unmount="unmount"
-                    @error="error"/>
-            </Modal>
-            <DrawerOverlay
-                v-else
-                v-model="app.isOpen"
-                :ref="`ref-${app.name}`"
-                modal-class="micro-app-modal"
-                drawer-class="micro-app-drawer"
-                placement="right"
-                :beforeClose="async () => { await onBeforeClose(app.name) }"
-                :size="1200">
-                <MicroContent
-                    :is-open="app.isOpen"
-                    :app-name="app.name"
-                    :app-url="app.url"
-                    :keep-alive="app.keepAlive"
-                    :disable-scopecss="app.disableScopecss"
-                    :is-loading="app.isLoading"
-                    :app-data="appData(app.name)"
-                    @created="created"
-                    @beforemount="beforemount"
-                    @mounted="mounted"
-                    @unmount="unmount"
-                    @error="error"/>
-            </DrawerOverlay>
-        </template>
+    <div>
+        <MicroModal
+            v-for="(app, key) in apps"
+            :key="key"
+            v-model="app.isOpen"
+            :ref="`ref-${app.name}`"
+            :size="1200"
+            :transparent="app.transparent"
+            :beforeClose="async () => { await onBeforeClose(app.name) }">
+            <micro-app
+                v-if="app.isOpen"
+                :name="app.name"
+                :url="app.url"
+                :keep-alive="app.keepAlive"
+                :disable-scopecss="app.disableScopecss"
+                :data="appData(app.name)"
+                @created="created"
+                @beforemount="beforemount"
+                @mounted="mounted"
+                @unmount="unmount"
+                @error="error"/>
+            <div v-if="app.isLoading" class="micro-app-loader">
+                <Loading/>
+            </div>
+        </MicroModal>
 
         <!--选择用户-->
         <UserSelect
@@ -60,30 +35,6 @@
 </template>
 
 <style lang="scss">
-.micro-app-trans {
-    .ivu-modal-close {
-        display: none;
-    }
-    .ivu-modal-content {
-        background: transparent;
-    }
-    .micro-app-loader {
-        background-color: rgba(255, 255, 255, 0.6);
-    }
-}
-
-.micro-app-modal {
-    .ivu-modal-close {
-        display: none;
-    }
-}
-
-.micro-app-drawer {
-    .overlay-content {
-        overflow: hidden;
-    }
-}
-
 .micro-app-loader {
     position: absolute;
     top: 0;
@@ -93,6 +44,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.transparent-mode {
+    .micro-app-loader {
+        background-color: rgba(255, 255, 255, 0.6);
+    }
 }
 </style>
 
@@ -104,16 +61,16 @@ import microApp from '@micro-zoe/micro-app'
 import DialogWrapper from '../../pages/manage/components/DialogWrapper.vue'
 import UserSelect from "../UserSelect.vue";
 import {languageList, languageName} from "../../language";
-import DrawerOverlay from "../DrawerOverlay/index.vue";
 import emitter from "../../store/events";
 import TransferDom from "../../directives/transfer-dom";
-import MicroContent from "./content.vue";
 import store from "../../store";
+import MicroModal from "./modal.vue";
+import {setMicroAggregate} from "./queue";
 
 export default {
     name: "MicroApps",
     directives: {TransferDom},
-    components: {UserSelect, MicroContent, DrawerOverlay},
+    components: {MicroModal, UserSelect},
 
     data() {
         return {
@@ -131,11 +88,15 @@ export default {
     },
 
     mounted() {
-        emitter.on('observeMicroApp', this.observeMicroApp);
+        emitter.on('observeMicroApp:open', this.observeMicroApp);
+        emitter.on('observeMicroApp:close', this.closeByName);
+        document.addEventListener('keydown', this.escClose);
     },
 
     beforeDestroy() {
-        emitter.off('observeMicroApp', this.observeMicroApp);
+        emitter.off('observeMicroApp:open', this.observeMicroApp);
+        emitter.off('observeMicroApp:close', this.closeByName);
+        document.removeEventListener('keydown', this.escClose);
     },
 
     watch: {
@@ -148,6 +109,12 @@ export default {
         themeName() {
             this.closeAllMicroApp()
         },
+        apps: {
+            handler(apps) {
+                setMicroAggregate(apps.filter(item => item.isOpen).map(item => item.name))
+            },
+            deep: true,
+        }
     },
 
     computed: {
@@ -245,11 +212,7 @@ export default {
                         this.closeMicroApp(name, destroy)
                     },
                     back: () => {
-                        try {
-                            this.$refs[`ref-${name}`][0].close()
-                        } catch (e) {
-                            this.closeMicroApp(name)
-                        }
+                        this.closeByName(name)
                     },
                     nextZIndex: () => {
                         if (typeof window.modalTransferIndex === 'number') {
@@ -386,6 +349,33 @@ export default {
                 this.$nextTick(_ => {
                     config.isOpen = true
                 })
+            }
+        },
+
+        /**
+         * ESC 关闭微应用
+         * @param e
+         */
+        escClose(e) {
+            if (e.keyCode !== 27) {
+                return;
+            }
+            const app = this.apps.findLast(item => item.isOpen);
+            if (!app) {
+                return;
+            }
+            this.closeByName(app.name)
+        },
+
+        /**
+         * 通过名称关闭微应用
+         * @param name
+         */
+        closeByName(name) {
+            try {
+                this.$refs[`ref-${name}`][0].onClose()
+            } catch (e) {
+                this.closeMicroApp(name)
             }
         },
 

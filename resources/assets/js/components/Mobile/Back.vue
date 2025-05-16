@@ -6,6 +6,7 @@
 
 <script>
 import {mapState} from "vuex";
+import {closeLastMicroAggregate, hasMicroAggregate} from "../MicroApps/queue";
 
 export default {
     name: "MobileBack",
@@ -110,6 +111,9 @@ export default {
             if (!this.mobileTabbar) {
                 return true;
             }
+            if (hasMicroAggregate()) {
+                return true;
+            }
             if (this.$Modal.visibleList().length > 0) {
                 return true;
             }
@@ -133,6 +137,11 @@ export default {
         onBack() {
             // 通用菜单
             this.$store.commit('menu/operation', {})
+
+            // 关闭微应用
+            if (closeLastMicroAggregate()) {
+                return;
+            }
 
             // 移除模态框
             if (this.$Modal.removeLast()) {
