@@ -36,7 +36,7 @@ services:
     image: "nginx:alpine"
     ports:
       - "${APP_PORT}:80"
-      - "${APP_SSL_PORT:-}:443"
+      - "${APP_SSL_PORT:-0}:443"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./:/var/www
@@ -100,7 +100,7 @@ services:
   appstore:
     container_name: "dootask-appstore-${APP_ID}"
     privileged: true
-    image: "kuaifan/dootask-appstore:0.0.2"
+    image: "kuaifan/dootask-appstore:0.0.3"
     volumes:
       - shared_data:/usr/share/dootask
       - /var/run/docker.sock:/var/run/docker.sock

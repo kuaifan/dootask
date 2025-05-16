@@ -304,15 +304,18 @@ class AppsController extends AbstractController
      * @apiGroup apps
      * @apiName logs
      *
-     * @apiParam {String} app_name      应用名称
-     * @apiParam {Number} [lines=50]    获取日志行数，默认50行
+     * @apiParam {String} app_name          应用名称
+     * @apiParam {Number} [lines=50]        获取日志行数，默认50行
+     * @apiParam {Boolean} [simple=false]   是否只返回日志，默认false
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
-     * @apiSuccess {String} data.name   应用名称
-     * @apiSuccess {Object} data.config 应用配置信息
-     * @apiSuccess {String} data.log    日志内容
+     * @apiSuccess {String} data.name           应用名称
+     * @apiSuccess {Object} data.config         应用配置信息
+     * @apiSuccess {Object} data.versions       可用版本列表
+     * @apiSuccess {Boolean} data.upgradeable   是否可升级
+     * @apiSuccess {String} data.log            日志内容
      */
     public function logs()
     {
@@ -320,13 +323,22 @@ class AppsController extends AbstractController
         //
         $appName = Request::input('app_name');
         $lines = intval(Request::input('lines', 50));
+        $simple = Request::input('simple', false);
 
         $logContent = implode("\n", Apps::getAppLog($appName, $lines));
 
-        return Base::retSuccess('success', [
+        $data = [
             'name' => $appName,
-            'config' => Apps::getAppConfig($appName),
             'log' => trim($logContent)
-        ]);
+        ];
+        if (!$simple) {
+            $config = Apps::getAppConfig($appName);
+            $versions = Apps::getAvailableVersions($appName);
+            $data['config'] = $config;
+            $data['versions'] = $versions;
+            $data['upgradeable'] = Apps::isUpgradeable($config, $versions);
+        }
+
+        return Base::retSuccess('success', $data);
     }
 }

@@ -8,8 +8,11 @@ use Symfony\Component\Yaml\Yaml;
 
 class Apps
 {
+    // 软件源列表URL
+    const SOURCES_URL = 'https://appstore.dootask.com/';
+
     // 受保护的服务名称列表
-    protected static array $protectedServiceNames = [
+    const PROTECTED_NAMES = [
         'php',
         'nginx',
         'redis',
@@ -18,13 +21,11 @@ class Apps
         'appstore',
     ];
 
-    // 软件源列表URL
-    protected static string $sourcesUrl = 'https://appstore.dootask.com/sources.list';
-
     // 缓存键集合
-    protected static array $cacheKeys = [
-        'app_list' => 'appstore_app_list',
-        'menu_items' => 'appstore_menu_items',
+    const CACHE_KEYS = [
+        'list' => 'appstore_app_list',          // 应用列表缓存
+        'menu' => 'appstore_menu_items',        // 应用菜单缓存
+        'installed' => 'appstore_installed',    // 已安装应用缓存
     ];
 
     /**
@@ -36,22 +37,25 @@ class Apps
     public static function appList(bool $cache = true): array
     {
         if ($cache === false) {
-            Cache::forget(self::$cacheKeys['app_list']);
+            Cache::forget(self::CACHE_KEYS['list']);
         }
-        $apps = Cache::remember(self::$cacheKeys['app_list'], now()->addHour(), function () {
+        $apps = Cache::remember(self::CACHE_KEYS['list'], now()->addHour(), function () {
             $apps = [];
             $baseDir = base_path('docker/appstore/apps');
             $dirs = scandir($baseDir);
-            foreach ($dirs as $dir) {
-                // 跳过当前目录、父目录和隐藏文件
-                if ($dir === '.' || $dir === '..' || str_starts_with($dir, '.')) {
+            foreach ($dirs as $appName) {
+                if ($appName === '.' || $appName === '..' || str_starts_with($appName, '.')) {
                     continue;
                 }
+                $info = self::getAppInfo($appName);
+                $config = self::getAppConfig($appName);
+                $versions = self::getAvailableVersions($appName);
                 $apps[] = [
-                    'name' => $dir,
-                    'info' => self::getAppInfo($dir),
-                    'config' => self::getAppConfig($dir),
-                    'versions' => self::getAvailableVersions($dir),
+                    'name' => $appName,
+                    'info' => $info,
+                    'config' => $config,
+                    'versions' => $versions,
+                    'upgradeable' => self::isUpgradeable($config, $versions),
                 ];
             }
             return $apps;
@@ -67,11 +71,15 @@ class Apps
      */
     public static function appInfo(string $appName): array
     {
+        $info = self::getAppInfo($appName);
+        $config = self::getAppConfig($appName);
+        $versions = self::getAvailableVersions($appName);
         return Base::retSuccess("success", [
             'name' => $appName,
-            'info' => self::getAppInfo($appName),
-            'config' => self::getAppConfig($appName),
-            'versions' => self::getAvailableVersions($appName),
+            'info' => $info,
+            'config' => $config,
+            'versions' => $versions,
+            'upgradeable' => self::isUpgradeable($config, $versions),
             'document' => self::getAppDocument($appName),
         ]);
     }
@@ -185,11 +193,6 @@ class Apps
      */
     public static function dockerComposeFinalize(string $appName, string $status): array
     {
-        // 清理缓存
-        foreach (self::$cacheKeys as $key) {
-            Cache::forget($key);
-        }
-
         // 获取当前应用信息
         $appInfo = self::getAppConfig($appName);
 
@@ -362,13 +365,13 @@ class Apps
     public static function getAppMenuItems(bool $cache = true): array
     {
         if ($cache === false) {
-            Cache::forget(self::$cacheKeys['menu_items']);
+            Cache::forget(self::CACHE_KEYS['menu']);
         }
-        $res = Cache::remember(self::$cacheKeys['menu_items'], now()->addHour(), function () {
+        $res = Cache::remember(self::CACHE_KEYS['menu'], now()->addHour(), function () {
             return self::menuGetAll();
         });
         if (Base::isError($res)) {
-            Cache::forget(self::$cacheKeys['menu_items']);
+            Cache::forget(self::CACHE_KEYS['menu']);
         }
         return $res;
     }
@@ -419,17 +422,30 @@ class Apps
             return Base::retSuccess("success", $allMenuItems);
         }
 
+        // 获取所有已安装的应用配置
+        $installedApps = [];
         $dirs = scandir($baseDir);
-        foreach ($dirs as $dir) {
-            if ($dir === '.' || $dir === '..' || str_starts_with($dir, '.')) {
+        foreach ($dirs as $appName) {
+            if ($appName === '.' || $appName === '..' || str_starts_with($appName, '.')) {
                 continue;
             }
 
-            if (!self::isInstalled($dir)) {
+            $appConfig = self::getAppConfig($appName);
+            if ($appConfig['status'] !== 'installed') {
                 continue;
             }
 
-            $appMenuItems = self::menuGetSingle($dir);
+            $installedApps[$appName] = strtotime($appConfig['install_at'] ?? '');
+        }
+
+        // 按安装时间排序应用
+        uasort($installedApps, function ($timeA, $timeB) {
+            return $timeB <=> $timeA; // 降序排列
+        });
+
+        // 按排序后的顺序获取菜单
+        foreach ($installedApps as $appName => $installAt) {
+            $appMenuItems = self::menuGetSingle($appName);
             if (Base::isSuccess($appMenuItems)) {
                 $allMenuItems = array_merge($allMenuItems, $appMenuItems['data']);
             }
@@ -570,6 +586,9 @@ class Apps
             mkdir($baseDir, 0755, true);
         }
 
+        // 清理缓存
+        self::clearCache();
+
         // 写入文件
         return (bool)file_put_contents(
             $configFile,
@@ -618,8 +637,16 @@ class Apps
      */
     public static function isInstalled(string $appName): bool
     {
+        $array = Base::json2array(Cache::get(self::CACHE_KEYS['installed'], []));
+        if (isset($array[$appName])) {
+            return $array[$appName];
+        }
+
         $appConfig = self::getAppConfig($appName);
-        return $appConfig['status'] === 'installed';
+        $array[$appName] = $appConfig['status'] === 'installed';
+        Cache::put(self::CACHE_KEYS['installed'], Base::array2json($array));
+
+        return $array[$appName];
     }
 
     /**
@@ -630,21 +657,22 @@ class Apps
     public static function appListUpdate(): array
     {
         // 检查是否正在更新
-        $cacheKey = 'appstore_update_running';
-        if (Cache::has($cacheKey)) {
+        $cacheTmp = 'appstore_update_running';
+        if (Cache::has($cacheTmp)) {
             return Base::retError('应用列表正在更新中，请稍后再试');
         }
-        $onFailure = function (string $message) use ($cacheKey) {
-            Cache::forget($cacheKey);
+        $onFailure = function (string $message) use ($cacheTmp) {
+            Cache::forget($cacheTmp);
             return Base::retError($message);
         };
-        $onSuccess = function (string $message, array $data = []) use ($cacheKey) {
-            Cache::forget($cacheKey);
+        $onSuccess = function (string $message, array $data = []) use ($cacheTmp) {
+            self::clearCache();
+            Cache::forget($cacheTmp);
             return Base::retSuccess($message, $data);
         };
 
         // 设置更新状态
-        Cache::put($cacheKey, true, 180); // 3分钟有效期
+        Cache::put($cacheTmp, true, 180); // 3分钟有效期
 
         // 临时目录
         $tempDir = base_path('docker/appstore/temp/sources');
@@ -659,7 +687,7 @@ class Apps
 
         try {
             // 下载源列表
-            $res = Ihttp::ihttp_request(self::$sourcesUrl);
+            $res = Ihttp::ihttp_request(self::SOURCES_URL);
             if (Base::isError($res)) {
                 return $onFailure('下载源列表失败');
             }
@@ -758,21 +786,22 @@ class Apps
     public static function downloadApp(string $url): array
     {
         // 检查是否正在下载
-        $cacheKey = 'appstore_download_running';
-        if (Cache::has($cacheKey)) {
+        $cacheTmp = 'appstore_download_running';
+        if (Cache::has($cacheTmp)) {
             return Base::retError('应用正在下载中，请稍后再试');
         }
-        $onFailure = function (string $message) use ($cacheKey) {
-            Cache::forget($cacheKey);
+        $onFailure = function (string $message) use ($cacheTmp) {
+            Cache::forget($cacheTmp);
             return Base::retError($message);
         };
-        $onSuccess = function (string $message, array $data = []) use ($cacheKey) {
-            Cache::forget($cacheKey);
+        $onSuccess = function (string $message, array $data = []) use ($cacheTmp) {
+            self::clearCache();
+            Cache::forget($cacheTmp);
             return Base::retSuccess($message, $data);
         };
 
         // 设置下载状态
-        Cache::put($cacheKey, true, 180); // 3分钟有效期
+        Cache::put($cacheTmp, true, 180); // 3分钟有效期
 
         // 验证URL格式
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
@@ -845,7 +874,7 @@ class Apps
 
             // 处理应用名称
             $appName = Base::camel2snake(Base::cn2pinyin($configData['name'], '_'));
-            if (in_array($appName, self::$protectedServiceNames)) {
+            if (in_array($appName, self::PROTECTED_NAMES)) {
                 return Base::retError('服务名称 "' . $appName . '" 被保护，不能使用');
             }
             $targetDir = base_path('docker/appstore/apps/' . $appName);
@@ -921,23 +950,6 @@ class Apps
     }
 
     /**
-     * 检查文件名是否匹配 README 模式
-     *
-     * @param string $fileName 文件名
-     * @param array $patterns 正则模式数组
-     * @return bool 是否匹配
-     */
-    private static function matchReadmePattern(string $fileName, array $patterns): bool
-    {
-        foreach ($patterns as $pattern) {
-            if (preg_match($pattern, $fileName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * 生成docker-compose.yml文件配置
      *
      * @param string $filePath docker-compose.yml文件路径
@@ -989,7 +1001,7 @@ class Apps
 
             // 检查服务名称是否被保护
             foreach ($content['services'] as $name => $service) {
-                if (in_array($name, self::$protectedServiceNames)) {
+                if (in_array($name, self::PROTECTED_NAMES)) {
                     return Base::retError('服务名称 "' . $name . '" 被保护，不能使用');
                 }
             }
@@ -1165,6 +1177,27 @@ class Apps
     }
 
     /**
+     * 检查应用是否可升级
+     *
+     * @param array $config 应用配置
+     * @param array $versions 可用版本列表
+     * @return bool 如果可升级返回 true，否则返回 false
+     */
+    public static function isUpgradeable(array $config, array $versions): bool
+    {
+        $upgradeable = false;
+        if ($config['status'] === 'installed' && !empty($versions)) {
+            foreach ($versions as $version) {
+                if (version_compare($config['install_version'], $version['version'], '<')) {
+                    $upgradeable = true;
+                    break;
+                }
+            }
+        }
+        return $upgradeable;
+    }
+
+    /**
      * 处理应用图标
      *
      * @param string $appName 应用名称
@@ -1216,7 +1249,7 @@ class Apps
      * @param string $appName 应用名称
      * @return array 按语义化版本排序（从新到旧）的版本号数组
      */
-    private static function getAvailableVersions(string $appName): array
+    public static function getAvailableVersions(string $appName): array
     {
         $baseDir = base_path('docker/appstore/apps/' . $appName);
         $versions = [];
@@ -1345,6 +1378,18 @@ class Apps
 
         closedir($dir);
         return true;
+    }
+
+    /**
+     * 清除缓存
+     *
+     * @return void
+     */
+    private static function clearCache(): void
+    {
+        foreach (self::CACHE_KEYS as $key) {
+            Cache::forget($key);
+        }
     }
 
     /**
