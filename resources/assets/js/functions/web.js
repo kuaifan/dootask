@@ -996,8 +996,8 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 },
 
                 reverseFilter() {
-                    return '-webkit-filter: invert(100%) hue-rotate(180deg) contrast(110%) !important; ' +
-                        'filter: invert(100%) hue-rotate(180deg) contrast(110%) !important;';
+                    return '-webkit-filter: invert(100%) hue-rotate(180deg) contrast(100%) !important; ' +
+                        'filter: invert(100%) hue-rotate(180deg) contrast(100%) !important;';
                 },
 
                 noneFilter() {
@@ -1064,12 +1064,9 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     video,
                     iframe,
                     canvas,
-                    :not(object):not(body) > embed,
-                    object,
-                    svg image,
                     [style*="background:url"],
-                    [style*="background-image:url"],
                     [style*="background: url"],
+                    [style*="background-image:url"],
                     [style*="background-image: url"],
                     [background],
                     .no-dark-mode,
@@ -1079,20 +1076,42 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                         will-change: transform;
                     }
 
-                    input,
                     .no-dark-content img,
+                    .no-dark-content video,
+                    .no-dark-content iframe,
                     .no-dark-content canvas,
-                    .no-dark-content svg image,
                     .no-dark-content [style*="background:url"],
-                    .no-dark-content [style*="background-image:url"],
                     .no-dark-content [style*="background: url"],
+                    .no-dark-content [style*="background-image:url"],
                     .no-dark-content [style*="background-image: url"],
-                    .no-dark-content [background],
+                    .no-dark-content [background] {
+                        ${this.utils.noneFilter()}
+                    }
+
                     .fullscreen-mode img,
                     .fullscreen-mode video,
                     .fullscreen-mode iframe,
                     .fullscreen-mode canvas {
                         ${this.utils.noneFilter()}
+                    }
+
+                    /* Micro App */
+                    .micro-modal {
+                        ${this.utils.reverseFilter()}
+                        will-change: auto;
+                    }
+
+                    .micro-modal img,
+                    .micro-modal video,
+                    .micro-modal iframe,
+                    .micro-modal canvas,
+                    .micro-modal [style*="background:url"],
+                    .micro-modal [style*="background: url"],
+                    .micro-modal [style*="background-image:url"],
+                    .micro-modal [style*="background-image: url"],
+                    .micro-modal [background] {
+                        ${this.utils.noneFilter()}
+                        will-change: auto;
                     }
 
                     /* Text contrast */

@@ -1,5 +1,5 @@
 <template>
-    <div v-transfer-dom :data-transfer="true" :class="{'transparent-mode': transparent }">
+    <div v-transfer-dom :data-transfer="true" :class="{'micro-modal': value, 'transparent-mode': transparent }">
         <transition :name="transitions[0]">
             <div v-if="value" class="micro-modal-mask" @click="onClose" :style="maskStyle"></div>
         </transition>
@@ -134,6 +134,9 @@ export default {
 
 <style lang="scss" scoped>
 .micro-modal {
+    width: 100vw;
+    height: 100vh;
+
     &-mask {
         position: fixed;
         top: 0;

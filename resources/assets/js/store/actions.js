@@ -4680,7 +4680,7 @@ export default {
                 event[key] = menuItem[key]
             }
         }
-        emitter.emit('observeMicroApp', event);
+        emitter.emit('observeMicroApp:open', event);
     },
 
     /**
