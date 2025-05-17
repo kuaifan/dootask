@@ -10,7 +10,7 @@
                 </div>
             </div>
             <div class="apply-content">
-                <template v-for="t in applyListTypes">
+                <template v-for="t in applyTypes">
                     <div v-if="isExistAdminList" class="apply-row-title">
                         {{ t == 'base' ? $L('常用') : $L('管理员') }}
                     </div>
@@ -326,8 +326,7 @@ export default {
     },
     data() {
         return {
-            applyList: [],
-            applyListTypes: ['base', 'admin'],
+            applyTypes: ['base', 'admin'],
             //
             mybotShow: false,
             mybotList: [],
@@ -363,7 +362,6 @@ export default {
         }
     },
     activated() {
-        this.initList()
         this.$store.dispatch("updateMicroAppsStatus")
     },
     computed: {
@@ -377,27 +375,18 @@ export default {
             'windowOrientation',
             'formOptions',
             'routeLoading',
+            'microAppsInstalled'
         ]),
         ...mapGetters([
             'filterMicroAppsMenus',
             'filterMicroAppsMenusAdmin',
         ]),
-        isExistAdminList() {
-            return this.applyList.map(h => h.type).indexOf('admin') !== -1;
-        }
-    },
-    watch: {
-        windowOrientation() {
-            this.initList()
-        }
-    },
-    methods: {
-        initList() {
-            const applyList = [
-                { value: "approve", label: "审批中心", sort: 30 },
+        applyList() {
+            const list = [
+                { value: "approve", label: "审批中心", sort: 30, show: this.microAppsInstalled.includes('approve') },
                 { value: "report", label: "工作报告", sort: 50 },
                 { value: "mybot", label: "我的机器人", sort: 55 },
-                { value: "robot", label: "AI 机器人", sort: 60, show: this.systemConfig.server_closeai !== 'close' },
+                { value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsInstalled.includes('ai') },
                 { value: "signin", label: "签到打卡", sort: 70 },
                 { value: "meeting", label: "在线会议", sort: 80 },
                 { value: "createGroup", label: "创建群组", sort: 85 },
@@ -408,31 +397,32 @@ export default {
                 { value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUIApp },
                 { value: "setting", label: "设置", sort: 140 },
                 { value: "appstore", label: "应用商店", sort: 999 },
-            ];
+            ]
             // 竖屏模式
             if (this.windowPortrait) {
-                applyList.push(...[
+                list.push(...[
                     { value: "calendar", label: "日历", sort: 10 },
                     { value: "file", label: "文件", sort: 20 },
                 ])
             }
             // 管理员
-            const adminApplyList = [];
             if (this.userIsAdmin) {
-                adminApplyList.push(...[
-                    { value: "ldap", label: "LDAP", sort: 160 },
-                    { value: "mail", label: "邮件通知", sort: 170 },
-                    { value: "appPush", label: "APP 推送", sort: 180 },
-                    { value: "complaint", label: "举报管理", sort: 190 },
-                    { value: "allUser", label: "团队管理", sort: 200 },
+                list.push(...[
+                    { type: 'admin', value: "ldap", label: "LDAP", sort: 160 },
+                    { type: 'admin', value: "mail", label: "邮件通知", sort: 170 },
+                    { type: 'admin', value: "appPush", label: "APP 推送", sort: 180 },
+                    { type: 'admin', value: "complaint", label: "举报管理", sort: 190 },
+                    { type: 'admin', value: "allUser", label: "团队管理", sort: 200 },
                 ])
             }
-            adminApplyList.map(item => {
-                item.type = 'admin'
-            })
             //
-            this.applyList = [...applyList, ...adminApplyList].sort((a, b) => a.sort - b.sort);
+            return list.sort((a, b) => a.sort - b.sort);
         },
+        isExistAdminList() {
+            return this.filterMicroAppsMenusAdmin.length > 0 || this.applyList.map(h => h.type).indexOf('admin') !== -1;
+        }
+    },
+    methods: {
         getLogoClass(name) {
             name = name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
             return name
