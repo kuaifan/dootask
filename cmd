@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #cached execution
-if [ -z "$CACHED_EXECUTION" ]; then
+if [ -z "$CACHED_EXECUTION" ] && [ "$1" == "update" ]; then
     cat "$0" > ._cmd
     chmod +x ._cmd
     export CACHED_EXECUTION=1
