@@ -327,46 +327,23 @@ export default {
         /**
          * 观察打开微应用
          * @param config
-         *  - name              应用名称
-         *  - url               应用地址
-         *  - props             传递参数
-         *  - transparent       是否透明模式 (true/false)，默认 false
-         *  - autoDarkTheme     是否自动适配深色主题 (true/false)，默认 true
-         *  - keepAlive         是否开启微应用保活 (true/false)，默认 true
-         *  - disableScopecss   是否禁用样式隔离 (true/false)，默认 false
          */
-        observeMicroApp(config) {
-            // 处理数据
-            config.name = config.name || 'micro-app'
-            config.url = config.url || null
-            config.props = $A.isJson(config.props) ? config.props : {}
-            config.transparent = typeof config.transparent == 'boolean' ? config.transparent : false
-            config.autoDarkTheme = typeof config.autoDarkTheme == 'boolean' ? config.autoDarkTheme : true
-            config.keepAlive = typeof config.keepAlive == 'boolean' ? config.keepAlive : true
-            config.disableScopecss = typeof config.disableScopecss == 'boolean' ? config.disableScopecss : false
-
-            // 判断处理
+        async observeMicroApp(config) {
             const app = this.apps.find(({name}) => name == config.name);
             if (app) {
                 // 更新微应用
                 if (app.url != config.url) {
-                    microApp.unmountApp(app.name, {destroy: true})
+                    await microApp.unmountApp(app.name, {destroy: true})
                     app.isLoading = true
                 }
-                for (let key in config) {
-                    app[key] = config[key]
-                }
-                this.$nextTick(_ => {
-                    app.isOpen = true
-                })
+                Object.assign(app, config)
+                this.$nextTick(_ => app.isOpen = true)
             } else {
                 // 新建微应用
                 config.isLoading = true
                 config.isOpen = false
                 this.apps.push(config)
-                this.$nextTick(_ => {
-                    config.isOpen = true
-                })
+                this.$nextTick(_ => config.isOpen = true)
             }
         },
 

@@ -4642,45 +4642,44 @@ export default {
     /** *****************************************************************************************/
 
     /**
-     * 更新微应用状态（已安装应用、菜单项）
-     * @param commit
-     * @param dispatch
-     */
-    updateMicroAppsStatus({commit, dispatch}) {
-        dispatch("call", {
-            url: 'apps/status',
-        }).then(({data}) => {
-            commit("microApps/installed", data.installed)
-            commit("microApps/menu", data.menus)
-        })
-    },
-
-    /**
      * 打开微应用
      * @param state
-     * @param menuItem
+     * @param data
+     *  - name              应用名称
+     *  - url               应用地址
+     *  - props             传递参数
+     *  - transparent       是否透明模式 (true/false)，默认 false
+     *  - autoDarkTheme     是否自动适配深色主题 (true/false)，默认 true
+     *  - keepAlive         是否开启微应用保活 (true/false)，默认 true
+     *  - disableScopecss   是否禁用样式隔离 (true/false)，默认 false
      */
-    openMicroApp({state}, menuItem) {
-        if (!menuItem || !$A.isJson(menuItem)) {
+    openMicroApp({state}, data) {
+        if (!data || !$A.isJson(data)) {
             return
         }
-        const event = {
-            name: menuItem.app_name || menuItem.name,
-            url: $A.mainUrl(menuItem.url),
+        if (!data.url) {
+            return
         }
-        if (!state.microAppsInstalled.includes(event.name)) {
-            $A.modalWarning("应用未安装");
+        const config = {
+            name: data.app_name || data.name,
+            url: $A.mainUrl(data.url),
+            props: $A.isJson(data.props) ? data.props : {},
+            transparent: typeof data.transparent == 'boolean' ? data.transparent : false,
+            autoDarkTheme: typeof data.autoDarkTheme == 'boolean' ? data.autoDarkTheme : true,
+            keepAlive: typeof data.keepAlive == 'boolean' ? data.keepAlive : true,
+            disableScopecss: typeof data.disableScopecss == 'boolean' ? data.disableScopecss : false
+        }
+        if (!config.name) {
+            return
+        }
+        if (!state.microAppsInstalled.includes(config.name)) {
+            $A.modalWarning(`应用「${config.name}」未安装`);
             return;
         }
-        if (menuItem.key) {
-            event.name += `_${menuItem.key}`
+        if (data.key) {
+            config.name += `_${data.key}`
         }
-        for (let key in menuItem) {
-            if (['transparent', 'autoDarkTheme', 'keepAlive', 'disableScopecss'].includes(key)) {
-                event[key] = menuItem[key]
-            }
-        }
-        emitter.emit('observeMicroApp:open', event);
+        emitter.emit('observeMicroApp:open', config);
     },
 
     /**
@@ -4697,5 +4696,19 @@ export default {
             }
             resolve(!!state.microAppsInstalled.includes(appName))
         })
-    }
+    },
+
+    /**
+     * 更新微应用状态（已安装应用、菜单项）
+     * @param commit
+     * @param dispatch
+     */
+    updateMicroAppsStatus({commit, dispatch}) {
+        dispatch("call", {
+            url: 'apps/status',
+        }).then(({data}) => {
+            commit("microApps/installed", data.installed)
+            commit("microApps/menu", data.menus)
+        })
+    },
 }
