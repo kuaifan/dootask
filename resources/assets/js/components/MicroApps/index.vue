@@ -7,7 +7,7 @@
             :ref="`ref-${app.name}`"
             :size="1200"
             :transparent="app.transparent"
-            :inheritDarkMode="app.inheritDarkMode"
+            :autoDarkTheme="app.autoDarkTheme"
             :beforeClose="async () => { await onBeforeClose(app.name) }">
             <micro-app
                 v-if="app.isOpen"
@@ -331,9 +331,9 @@ export default {
          *  - url               应用地址
          *  - props             传递参数
          *  - transparent       是否透明模式 (true/false)，默认 false
+         *  - autoDarkTheme     是否自动适配深色主题 (true/false)，默认 true
          *  - keepAlive         是否开启微应用保活 (true/false)，默认 true
          *  - disableScopecss   是否禁用样式隔离 (true/false)，默认 false
-         *  - inheritDarkMode   是否继承暗黑模式 (true/false)，默认 false
          */
         observeMicroApp(config) {
             // 处理数据
@@ -341,9 +341,9 @@ export default {
             config.url = config.url || null
             config.props = $A.isJson(config.props) ? config.props : {}
             config.transparent = typeof config.transparent == 'boolean' ? config.transparent : false
+            config.autoDarkTheme = typeof config.autoDarkTheme == 'boolean' ? config.autoDarkTheme : true
             config.keepAlive = typeof config.keepAlive == 'boolean' ? config.keepAlive : true
             config.disableScopecss = typeof config.disableScopecss == 'boolean' ? config.disableScopecss : false
-            config.inheritDarkMode = typeof config.inheritDarkMode == 'boolean' ? config.inheritDarkMode : false
 
             // 判断处理
             const app = this.apps.find(({name}) => name == config.name);

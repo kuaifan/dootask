@@ -4676,7 +4676,7 @@ export default {
             event.name += `_${menuItem.key}`
         }
         for (let key in menuItem) {
-            if (['props', 'transparent', 'keepAlive', 'disableScopecss'].includes(key)) {
+            if (['transparent', 'autoDarkTheme', 'keepAlive', 'disableScopecss'].includes(key)) {
                 event[key] = menuItem[key]
             }
         }

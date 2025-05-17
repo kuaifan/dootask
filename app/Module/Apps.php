@@ -479,7 +479,7 @@ class Apps
         ];
 
         // 处理可选的UI配置
-        $optionalConfigs = ['transparent', 'keepAlive'];
+        $optionalConfigs = ['transparent', 'autoDarkTheme', 'keepAlive', 'disableScopecss'];
         foreach ($optionalConfigs as $config) {
             if (isset($menu[$config])) {
                 $normalizedMenu[$config] = $menu[$config];
