@@ -1095,25 +1095,6 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                         ${this.utils.noneFilter()}
                     }
 
-                    /* Micro App */
-                    .micro-modal {
-                        ${this.utils.reverseFilter()}
-                        will-change: auto;
-                    }
-
-                    .micro-modal img,
-                    .micro-modal video,
-                    .micro-modal iframe,
-                    .micro-modal canvas,
-                    .micro-modal [style*="background:url"],
-                    .micro-modal [style*="background: url"],
-                    .micro-modal [style*="background-image:url"],
-                    .micro-modal [style*="background-image: url"],
-                    .micro-modal [background] {
-                        ${this.utils.noneFilter()}
-                        will-change: auto;
-                    }
-
                     /* Text contrast */
                     html {
                         text-shadow: 0 0 0 !important;

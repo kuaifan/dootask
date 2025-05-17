@@ -7,6 +7,7 @@
             :ref="`ref-${app.name}`"
             :size="1200"
             :transparent="app.transparent"
+            :inheritDarkMode="app.inheritDarkMode"
             :beforeClose="async () => { await onBeforeClose(app.name) }">
             <micro-app
                 v-if="app.isOpen"
@@ -31,6 +32,17 @@
             v-model="userSelectOptions.value"
             v-bind="userSelectOptions.config"
             module/>
+
+        <!--窗口助理-->
+        <Modal
+            v-model="assistShow"
+            :closable="true"
+            :mask="false"
+            :mask-closable="false"
+            :footer-hide="true"
+            :transition-names="['', '']"
+            :beforeClose="onAssistClose"
+            class-name="micro-app-assist"/>
     </div>
 </template>
 
@@ -51,6 +63,15 @@
         background-color: rgba(255, 255, 255, 0.6);
     }
 }
+
+.micro-app-assist {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    display: none;
+    visibility: hidden;
+    pointer-events: none;
+}
 </style>
 
 <script>
@@ -65,7 +86,6 @@ import emitter from "../../store/events";
 import TransferDom from "../../directives/transfer-dom";
 import store from "../../store";
 import MicroModal from "./modal.vue";
-import {setMicroAggregate} from "./queue";
 
 export default {
     name: "MicroApps",
@@ -75,7 +95,7 @@ export default {
     data() {
         return {
             apps: [],
-
+            assistShow: false,
             userSelectOptions: {value: [], config: {}},
         }
     },
@@ -89,14 +109,10 @@ export default {
 
     mounted() {
         emitter.on('observeMicroApp:open', this.observeMicroApp);
-        emitter.on('observeMicroApp:close', this.closeByName);
-        document.addEventListener('keydown', this.escClose);
     },
 
     beforeDestroy() {
         emitter.off('observeMicroApp:open', this.observeMicroApp);
-        emitter.off('observeMicroApp:close', this.closeByName);
-        document.removeEventListener('keydown', this.escClose);
     },
 
     watch: {
@@ -111,7 +127,7 @@ export default {
         },
         apps: {
             handler(apps) {
-                setMicroAggregate(apps.filter(item => item.isOpen).map(item => item.name))
+                this.assistShow = !!apps.find(item => item.isOpen)
             },
             deep: true,
         }
@@ -317,6 +333,7 @@ export default {
          *  - transparent       是否透明模式 (true/false)，默认 false
          *  - keepAlive         是否开启微应用保活 (true/false)，默认 true
          *  - disableScopecss   是否禁用样式隔离 (true/false)，默认 false
+         *  - inheritDarkMode   是否继承暗黑模式 (true/false)，默认 false
          */
         observeMicroApp(config) {
             // 处理数据
@@ -326,6 +343,7 @@ export default {
             config.transparent = typeof config.transparent == 'boolean' ? config.transparent : false
             config.keepAlive = typeof config.keepAlive == 'boolean' ? config.keepAlive : true
             config.disableScopecss = typeof config.disableScopecss == 'boolean' ? config.disableScopecss : false
+            config.inheritDarkMode = typeof config.inheritDarkMode == 'boolean' ? config.inheritDarkMode : false
 
             // 判断处理
             const app = this.apps.find(({name}) => name == config.name);
@@ -350,21 +368,6 @@ export default {
                     config.isOpen = true
                 })
             }
-        },
-
-        /**
-         * ESC 关闭微应用
-         * @param e
-         */
-        escClose(e) {
-            if (e.keyCode !== 27) {
-                return;
-            }
-            const app = this.apps.findLast(item => item.isOpen);
-            if (!app) {
-                return;
-            }
-            this.closeByName(app.name)
         },
 
         /**
@@ -423,6 +426,21 @@ export default {
                         }
                     }
                 })
+            })
+        },
+
+        /**
+         * 关闭之前判断（助理）
+         * @returns {Promise<unknown>}
+         */
+        onAssistClose() {
+            return new Promise(resolve => {
+                const app = this.apps.findLast(item => item.isOpen)
+                if (app) {
+                    this.closeByName(app.name)
+                } else {
+                    resolve()
+                }
             })
         },
     }

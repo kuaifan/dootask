@@ -1,5 +1,5 @@
 <template>
-    <div v-transfer-dom :data-transfer="true" :class="{'micro-modal': value, 'transparent-mode': transparent }">
+    <div v-transfer-dom :data-transfer="true" :class="className">
         <transition :name="transitions[0]">
             <div v-if="value" class="micro-modal-mask" @click="onClose" :style="maskStyle"></div>
         </transition>
@@ -19,7 +19,7 @@
                     :reverse="true"
                     :beforeResize="beforeResize"
                     @on-change="onChangeResize"/>
-                <div class="micro-modal-body">
+                <div ref="body" class="micro-modal-body">
                     <slot></slot>
                 </div>
             </div>
@@ -52,6 +52,10 @@ export default {
             type: Boolean,
             default: false
         },
+        inheritDarkMode: {
+            type: Boolean,
+            default: false
+        },
         beforeClose: Function
     },
     data() {
@@ -61,18 +65,26 @@ export default {
         }
     },
     computed: {
-        maskStyle({zIndex}) {
-            return {zIndex}
-        },
-        contentStyle({dynamicSize, zIndex}) {
-            const width = dynamicSize <= 100 ? `${dynamicSize}%` : `${dynamicSize}px`
-            return {width, zIndex}
+        className({value, transparent, inheritDarkMode}) {
+            return {
+                'micro-modal': true,
+                'micro-hidden': !value,
+                'no-dark-content': !inheritDarkMode,
+                'transparent-mode': transparent
+            }
         },
         transitions({transparent}) {
             if (transparent) {
                 return ['', '']
             }
             return ['micro-modal-fade', 'micro-modal-slide']
+        },
+        maskStyle({zIndex}) {
+            return {zIndex}
+        },
+        contentStyle({dynamicSize, zIndex}) {
+            const width = dynamicSize <= 100 ? `${dynamicSize}%` : `${dynamicSize}px`
+            return {width, zIndex}
         },
     },
     watch: {
@@ -108,7 +120,9 @@ export default {
         },
 
         updateSize() {
-            this.dynamicSize = this.$refs.body.clientWidth;
+            if (this.$refs.body) {
+                this.dynamicSize = this.$refs.body.clientWidth;
+            }
         },
 
         onClose() {
@@ -132,10 +146,37 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .micro-modal {
     width: 100vw;
     height: 100vh;
+    will-change: auto;
+
+    --modal-mask-bg: rgba(0, 0, 0, .4);
+    --modal-close-color: #ffffff;
+
+    img,
+    video,
+    iframe,
+    canvas,
+    [style*="background:url"],
+    [style*="background: url"],
+    [style*="background-image:url"],
+    [style*="background-image: url"],
+    [background] {
+        will-change: auto;
+    }
+
+    &.micro-hidden {
+        animation: hidden 0s forwards;
+        animation-delay: 300ms;
+
+        @keyframes hidden {
+            to {
+                display: none;
+            }
+        }
+    }
 
     &-mask {
         position: fixed;
@@ -143,7 +184,7 @@ export default {
         bottom: 0;
         left: 0;
         right: 0;
-        background-color: rgba(55, 55, 55, .6);
+        background-color: var(--modal-mask-bg);
     }
 
     &-close {
@@ -157,7 +198,7 @@ export default {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fff;
+        color: var(--modal-close-color);
         cursor: pointer;
 
         > svg {
@@ -286,6 +327,16 @@ export default {
         &-body {
             border-radius: 0;
             background-color: transparent;
+        }
+    }
+}
+
+// 深色模式适配
+body.dark-mode-reverse {
+    .micro-modal {
+        &:not(.no-dark-content) {
+            --modal-mask-bg: rgba(230, 230, 230, 0.6);
+            --modal-close-color: #323232;
         }
     }
 }
