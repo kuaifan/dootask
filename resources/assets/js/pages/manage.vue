@@ -348,6 +348,11 @@
             <MobileTabbar v-if="mobileTabbar" @on-click="onTabbarClick"/>
         </transition>
 
+        <!--审批中心-->
+        <DrawerOverlay v-model="approveShow" placement="right" :size="1380">
+            <Approve v-if="approveShow" @on-close="approveShow=false"/>
+        </DrawerOverlay>
+
         <!--审批详情-->
         <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
             <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" @onBack="approveDetailsShow=false"/>
@@ -378,6 +383,7 @@ import ComplaintManagement from "./manage/components/ComplaintManagement";
 import MicroApps from "../components/MicroApps";
 import UserSelect from "../components/UserSelect.vue";
 import ImgUpload from "../components/ImgUpload.vue";
+import Approve from "./manage/approve/index.vue";
 import ApproveDetails from "./manage/approve/details.vue";
 import notificationKoro from "notification-koro1";
 import emitter from "../store/events";
@@ -385,6 +391,7 @@ import SearchBox from "../components/SearchBox.vue";
 
 export default {
     components: {
+        Approve,
         SearchBox,
         ApproveDetails,
         ImgUpload,
@@ -457,6 +464,7 @@ export default {
 
             complaintShow: false,
 
+            approveShow: false,
             approveDetails: {id: 0},
             approveDetailsShow: false,
         }
@@ -1173,6 +1181,9 @@ export default {
 
         onTabbarClick(act, params = '') {
             switch (act) {
+                case 'approve':
+                    this.approveShow = true
+                    break;
                 case 'createGroup':
                     this.onAddMenu('group')
                     break;

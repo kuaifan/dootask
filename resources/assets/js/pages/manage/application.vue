@@ -452,7 +452,6 @@ export default {
         // 点击应用
         applyClick(item, params = '') {
             switch (item.value) {
-                case 'approve':
                 case 'calendar':
                 case 'file':
                 case 'setting':
