@@ -68,7 +68,7 @@ export default {
         className({value, transparent, inheritDarkMode}) {
             return {
                 'micro-modal': true,
-                'micro-hidden': !value,
+                'micro-modal-hidden': !value,
                 'no-dark-content': !inheritDarkMode,
                 'transparent-mode': transparent
             }
@@ -146,32 +146,41 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .micro-modal {
     width: 100vw;
     height: 100vh;
     will-change: auto;
 
-    --modal-mask-bg: rgba(0, 0, 0, .4);
-    --modal-close-color: #ffffff;
-
-    img,
-    video,
-    iframe,
-    canvas,
-    [style*="background:url"],
-    [style*="background: url"],
-    [style*="background-image:url"],
-    [style*="background-image: url"],
-    [background] {
-        will-change: auto;
+    // 透明模式
+    &.transparent-mode {
+        --modal-mask-bg: transparent;
+        --modal-close-display: none;
+        --modal-resize-display: none;
+        --modal-content-left: 0;
+        --modal-content-min-width: 100%;
+        --modal-content-max-width: 100%;
+        --modal-body-border-radius: 0;
+        --modal-body-background-color: transparent;
     }
 
-    &.micro-hidden {
-        animation: hidden 0s forwards;
+    // 小屏幕适配
+    @media (max-width: 500px) {
+        --modal-mask-bg: transparent;
+        --modal-close-display: none;
+        --modal-resize-display: none;
+        --modal-content-left: 0;
+        --modal-content-min-width: 100%;
+        --modal-content-max-width: 100%;
+        --modal-body-border-radius: 0;
+        --modal-slide-transform: translate(0, 15%) scale(0.98);
+    }
+
+    &-hidden {
+        animation: hidden-animation 0s forwards;
         animation-delay: 300ms;
 
-        @keyframes hidden {
+        @keyframes hidden-animation {
             to {
                 display: none;
             }
@@ -184,7 +193,7 @@ export default {
         bottom: 0;
         left: 0;
         right: 0;
-        background-color: var(--modal-mask-bg);
+        background-color: var(--modal-mask-bg, rgba(0, 0, 0, .4));
     }
 
     &-close {
@@ -195,10 +204,10 @@ export default {
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        display: flex;
+        display: var(--modal-close-display, flex);
         align-items: center;
         justify-content: center;
-        color: var(--modal-close-color);
+        color: var(--modal-close-color, #ffffff);
         cursor: pointer;
 
         > svg {
@@ -215,6 +224,7 @@ export default {
     }
 
     &-resize {
+        display: var(--modal-resize-display, 'block');
         position: absolute;
         top: 0;
         bottom: 0;
@@ -228,18 +238,20 @@ export default {
         top: 0;
         right: 0;
         bottom: 0;
+        left: var(--modal-content-left, auto);
         display: flex;
         flex-direction: column;
         height: 100%;
-        max-width: calc(100% - 40px);
+        min-width: var(--modal-content-min-width, auto);
+        max-width: var(--modal-content-max-width, calc(100% - 40px));
     }
 
     &-body {
         flex: 1;
         height: 0;
         overflow: hidden;
-        border-radius: 18px 0 0 18px;
-        background-color: #fff;
+        border-radius: var(--modal-body-border-radius, 18px 0 0 18px);
+        background-color: var(--modal-body-background-color, #ffffff);
         position: relative;
     }
 
@@ -269,75 +281,19 @@ export default {
 
         &-enter,
         &-leave-to {
-            transform: translate(15%, 0) scale(0.98);
+            transform: var(--modal-slide-transform, translate(15%, 0) scale(0.98));
             opacity: 0;
         }
     }
 }
+</style>
 
-// 小屏幕适配
-@media (max-width: 500px) {
-    .micro-modal {
-        &-mask {
-            background-color: transparent;
-        }
-
-        &-close,
-        &-resize {
-            display: none;
-        }
-
-        &-content {
-            left: 0;
-            min-width: 100%;
-            max-width: 100%;
-        }
-
-        &-body {
-            border-radius: 0;
-        }
-
-        &-slide {
-            &-enter,
-            &-leave-to {
-                transform: translate(0, 15%) scale(0.98);
-            }
-        }
-    }
-}
-
-// 透明模式
-.transparent-mode {
-    .micro-modal {
-        &-mask {
-            background-color: transparent;
-        }
-
-        &-close,
-        &-resize {
-            display: none;
-        }
-
-        &-content {
-            left: 0;
-            min-width: 100%;
-            max-width: 100%;
-        }
-
-        &-body {
-            border-radius: 0;
-            background-color: transparent;
-        }
-    }
-}
-
+<style lang="scss">
 // 深色模式适配
 body.dark-mode-reverse {
-    .micro-modal {
-        &:not(.no-dark-content) {
-            --modal-mask-bg: rgba(230, 230, 230, 0.6);
-            --modal-close-color: #323232;
-        }
+    .micro-modal:not(.no-dark-content):not(.transparent-mode) {
+        --modal-mask-bg: rgba(230, 230, 230, 0.6);
+        --modal-close-color: #323232;
     }
 }
 </style>
