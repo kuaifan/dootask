@@ -157,7 +157,7 @@
                             <div class="modal-item-info">
                                 <div class="modal-item-name">
                                     <h4>{{ item.label }}</h4>
-                                    <div class="modal-item-tag" @click="applyClick({value: 'robot-setting'}, item.value)">
+                                    <div v-if="item.tag" class="modal-item-tag" @click="applyClick({value: 'robot-setting'}, item.value)">
                                         {{ item.tag }}
                                         <em v-if="item.tags.length > 1">+{{ item.tags.length - 1 }}</em>
                                     </div>
