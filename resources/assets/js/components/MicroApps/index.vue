@@ -337,13 +337,13 @@ export default {
                     app.isLoading = true
                 }
                 Object.assign(app, config)
-                this.$nextTick(_ => app.isOpen = true)
+                requestAnimationFrame(_ => app.isOpen = true)
             } else {
                 // 新建微应用
                 config.isLoading = true
                 config.isOpen = false
                 this.apps.push(config)
-                this.$nextTick(_ => config.isOpen = true)
+                requestAnimationFrame(_ => config.isOpen = true)
             }
         },
 
