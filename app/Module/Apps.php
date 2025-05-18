@@ -133,7 +133,7 @@ class Apps
         }
         $RESULTS['generate'] = $res['data'];
 
-        // 生成nginx文件
+        // 生成nginx配置文件
         $nginxSourceFile = base_path('docker/appstore/apps/' . $appName . '/' . $versionInfo['version'] . '/nginx.conf');
         $nginxTargetFile = base_path('docker/appstore/configs/' . $appName . '/nginx.conf');
         $nginxContent = '';
@@ -208,16 +208,40 @@ class Apps
 
         // 处理安装成功或卸载成功后的操作
         $message = '更新成功';
-        if ($status == 'installed') {
-            // 处理安装成功后的操作
-            $message = '安装成功';
-        } elseif ($status == 'not_installed') {
-            // 处理卸载成功后的操作
-            $message = '卸载成功';
+        switch ($status) {
+            case 'installed':
+                $message = '安装成功';
+                break;
+
+            case 'not_installed':
+                $message = '卸载成功';
+                break;
+
+            case 'error':
+                if ($appInfo['status'] === 'installing') {
+                    $message = '安装失败';
+                    self::removeNginxConfig($appName);
+                } else {
+                    $message = '卸载失败';
+                }
+                break;
         }
 
         // 返回结果
         return Base::retSuccess($message);
+    }
+
+    /**
+     * 删除nginx配置文件
+     * @param string $appName
+     * @return void
+     */
+    private static function removeNginxConfig(string $appName): void
+    {
+        $nginxFile = base_path('docker/appstore/configs/' . $appName . '/nginx.conf');
+        if (file_exists($nginxFile)) {
+            unlink($nginxFile);
+        }
     }
 
     /**
