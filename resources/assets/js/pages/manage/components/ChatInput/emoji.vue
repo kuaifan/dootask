@@ -1,5 +1,5 @@
 <template>
-    <div class="chat-emoji-wrapper">
+    <div class="chat-emoji-wrapper" @click.stop>
         <div class="chat-emoji-box">
             <div v-if="type === 'emosearch'" class="chat-emoji-emosearch">
                 <Input clearable v-model="emosearchKey" :placeholder="$L('搜索表情')">

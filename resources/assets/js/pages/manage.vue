@@ -349,7 +349,7 @@
         </transition>
 
         <!--审批中心-->
-        <DrawerOverlay v-model="approveShow" placement="right" :size="1380">
+        <DrawerOverlay v-model="approveShow" placement="right" :size="1380" class="approve-drawer">
             <Approve v-if="approveShow" @on-close="approveShow=false"/>
         </DrawerOverlay>
 

@@ -1,7 +1,7 @@
 <template>
     <div class="page-apply">
 
-        <PageTitle :title="$L('应用')" />
+        <PageTitle :title="$L('应用')"/>
 
         <div class="apply-wrapper">
             <div class="apply-head">
@@ -15,7 +15,25 @@
                         {{ t == 'base' ? $L('常用') : $L('管理员') }}
                     </div>
                     <Row :gutter="16">
-                        <Col v-for="(item, key) in (t == 'base' ? filterMicroAppsMenus : filterMicroAppsMenusAdmin)" :key="`micro_` + key"
+                        <Col
+                            v-if="t == 'base'"
+                            :xs="{ span: 6 }"
+                            :sm="{ span: 6 }"
+                            :lg="{ span: 6 }"
+                            :xl="{ span: 6 }"
+                            :xxl="{ span: 3 }">
+                            <div class="apply-col">
+                                <div @click="applyClick({value: 'appstore'})">
+                                    <div class="logo">
+                                        <div class="apply-icon no-dark-content" :class="getLogoClass('appstore')"></div>
+                                    </div>
+                                    <p>{{ $L('应用商店') }}</p>
+                                </div>
+                            </div>
+                        </Col>
+                        <Col
+                            v-for="(item, key) in (t == 'base' ? filterMicroAppsMenus : filterMicroAppsMenusAdmin)"
+                            :key="`micro_` + key"
                             :xs="{ span: 6 }"
                             :sm="{ span: 6 }"
                             :lg="{ span: 6 }"
@@ -30,7 +48,9 @@
                                 </div>
                             </div>
                         </Col>
-                        <Col v-for="(item, key) in applyList" :key="key"
+                        <Col
+                            v-for="(item, key) in applyList"
+                            :key="key"
                             v-if="((t=='base' && !item.type) || item.type == t) && item.show !== false"
                             :xs="{ span: 6 }"
                             :sm="{ span: 6 }"
@@ -42,8 +62,8 @@
                                     <div class="logo">
                                         <div class="apply-icon no-dark-content" :class="getLogoClass(item.value)"></div>
                                         <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
-                                            <Badge v-if="showBadge(item,'approve')" :overflow-count="999" :count="approveUnreadNumber" />
-                                            <Badge v-if="showBadge(item,'report')" :overflow-count="999" :count="reportUnreadNumber" />
+                                            <Badge v-if="showBadge(item,'approve')" :overflow-count="999" :count="approveUnreadNumber"/>
+                                            <Badge v-if="showBadge(item,'report')" :overflow-count="999" :count="reportUnreadNumber"/>
                                         </div>
                                     </div>
                                     <p>{{ $L(item.label) }}</p>
@@ -60,12 +80,12 @@
             <div v-if="mybotShow" class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
                     {{ $L('我的机器人') }}
-                    <p @click="applyClick({value: 'mybot-add'}, {id: 0})">{{$L('添加机器人')}}</p>
+                    <p @click="applyClick({value: 'mybot-add'}, {id: 0})">{{ $L('添加机器人') }}</p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body full-body">
                     <div v-if="mybotList.length === 0" class="empty-data">
                         <Loading v-if="mybotLoad"/>
-                        <span v-else>{{$L('您没有创建机器人')}}</span>
+                        <span v-else>{{ $L('您没有创建机器人') }}</span>
                     </div>
                     <ul v-else class="ivu-modal-wrap-ul">
                         <li v-for="(item, key) in mybotList" :key="key">
@@ -77,9 +97,9 @@
                                     <h4 class="user-select-auto">{{ item.name }}</h4>
                                 </div>
                                 <div class="modal-item-mybot user-select-auto">
-                                    <p><span>ID:</span>{{item.id}}</p>
-                                    <p><span>{{$L('清理时间')}}:</span>{{item.clear_day}}</p>
-                                    <p><span>Webhook:</span>{{item.webhook_url || '-'}}</p>
+                                    <p><span>ID:</span>{{ item.id }}</p>
+                                    <p><span>{{ $L('清理时间') }}:</span>{{ item.clear_day }}</p>
+                                    <p><span>Webhook:</span>{{ item.webhook_url || '-' }}</p>
                                 </div>
                                 <div class="modal-item-btns">
                                     <Button icon="md-chatbubbles" @click="applyClick({value: 'mybot-chat'}, item)">{{ $L('开始聊天') }}</Button>
@@ -99,7 +119,7 @@
             :title="$L(mybotModifyData.id > 0 ? '修改机器人' : '添加机器人')"
             :mask-closable="false">
             <Form :model="mybotModifyData" v-bind="formOptions" @submit.native.prevent>
-                <Alert v-if="mybotModifyData.system_name" type="error" style="margin-bottom:18px">{{$L(`正在修改系统机器人：${mybotModifyData.system_name}`)}}</Alert>
+                <Alert v-if="mybotModifyData.system_name" type="error" style="margin-bottom:18px">{{ $L(`正在修改系统机器人：${mybotModifyData.system_name}`) }}</Alert>
                 <FormItem prop="avatar" :label="$L('头像')">
                     <ImgUpload v-model="mybotModifyData.avatar" :num="1" :width="512" :height="512" whcut="cover"/>
                 </FormItem>
@@ -108,7 +128,7 @@
                 </FormItem>
                 <FormItem prop="clear_day" :label="$L('消息保留')">
                     <Input v-model="mybotModifyData.clear_day" :maxlength="3" type="number" :placeholder="$L('默认：90天')">
-                        <div slot="append">{{$L('天')}}</div>
+                        <div slot="append">{{ $L('天') }}</div>
                     </Input>
                 </FormItem>
                 <FormItem prop="webhook_url" label="Webhook">
@@ -116,8 +136,8 @@
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="mybotModifyShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="mybotModifyLoad > 0" @click="onMybotModify">{{$L('保存')}}</Button>
+                <Button type="default" @click="mybotModifyShow=false">{{ $L('取消') }}</Button>
+                <Button type="primary" :loading="mybotModifyLoad > 0" @click="onMybotModify">{{ $L('保存') }}</Button>
             </div>
         </Modal>
 
@@ -126,7 +146,7 @@
             <div v-if="aibotShow" class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
                     {{ $L('AI 列表') }}
-                    <p @click="applyClick({value: 'robot-setting'}, 'openai')" v-if="userIsAdmin">{{$L('机器人设置')}}</p>
+                    <p @click="applyClick({value: 'robot-setting'}, 'openai')" v-if="userIsAdmin">{{ $L('机器人设置') }}</p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body full-body">
                     <ul class="ivu-modal-wrap-ul">
@@ -138,8 +158,8 @@
                                 <div class="modal-item-name">
                                     <h4>{{ item.label }}</h4>
                                     <div class="modal-item-tag" @click="applyClick({value: 'robot-setting'}, item.value)">
-                                        {{item.tag}}
-                                        <em v-if="item.tags.length > 1">+{{item.tags.length - 1}}</em>
+                                        {{ item.tag }}
+                                        <em v-if="item.tags.length > 1">+{{ item.tags.length - 1 }}</em>
                                     </div>
                                 </div>
                                 <p class="modal-item-desc" @click="openDetail(item.desc)">{{ item.desc }}</p>
@@ -159,7 +179,7 @@
             <div v-if="aibotSettingShow" class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
                     {{ $L('AI 设置') }}
-                    <p @click="aibotSettingShow=false">{{$L('返回')}}</p>
+                    <p @click="aibotSettingShow=false">{{ $L('返回') }}</p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <Tabs v-model="aibotTabAction" :animated="false" class="ai-tabs">
@@ -168,7 +188,7 @@
                                 <SystemAibot
                                     v-if="aibotTabAction == item.value"
                                     :type="item.value"
-                                    @on-update-setting="handleAITags" />
+                                    @on-update-setting="handleAITags"/>
                             </div>
                         </TabPane>
                     </Tabs>
@@ -184,7 +204,7 @@
                     <p @click="signInSettingShow=true" v-if="userIsAdmin">{{ $L('签到设置') }}</p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
-                    <Checkin />
+                    <Checkin/>
                 </div>
             </div>
         </DrawerOverlay>
@@ -235,7 +255,7 @@
                     {{ $L('LDAP 设置') }}
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
-                    <SystemThirdAccess />
+                    <SystemThirdAccess/>
                 </div>
             </div>
         </DrawerOverlay>
@@ -247,7 +267,7 @@
                     {{ $L('邮件通知') }}
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
-                    <SystemEmailSetting />
+                    <SystemEmailSetting/>
                 </div>
             </div>
         </DrawerOverlay>
@@ -259,7 +279,7 @@
                     {{ $L('APP 推送') }}
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
-                    <SystemAppPush />
+                    <SystemAppPush/>
                 </div>
             </div>
         </DrawerOverlay>
@@ -270,12 +290,12 @@
             :title="$L('扫码登录')"
             :mask-closable="false">
             <div class="mobile-scan-login-box">
-                <div class="mobile-scan-login-title">{{$L(`你好，扫码确认登录`)}}</div>
-                <div class="mobile-scan-login-subtitle">「{{$L('为确保帐号安全，请确认是本人操作')}}」</div>
+                <div class="mobile-scan-login-title">{{ $L(`你好，扫码确认登录`) }}</div>
+                <div class="mobile-scan-login-subtitle">「{{ $L('为确保帐号安全，请确认是本人操作') }}」</div>
             </div>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="scanLoginShow=false">{{$L('取消登录')}}</Button>
-                <Button type="primary" :loading="scanLoginLoad" @click="scanLoginSubmit">{{$L('确认登录')}}</Button>
+                <Button type="default" @click="scanLoginShow=false">{{ $L('取消登录') }}</Button>
+                <Button type="primary" :loading="scanLoginLoad" @click="scanLoginSubmit">{{ $L('确认登录') }}</Button>
             </div>
         </Modal>
 
@@ -295,7 +315,7 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from "vuex";
+import {mapGetters, mapState} from "vuex";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import UserSelect from "../../components/UserSelect";
 import SystemAibot from "./setting/components/SystemAibot";
@@ -383,36 +403,35 @@ export default {
         ]),
         applyList() {
             const list = [
-                { value: "approve", label: "审批中心", sort: 30, show: this.microAppsInstalled.includes('approve') },
-                { value: "report", label: "工作报告", sort: 50 },
-                { value: "mybot", label: "我的机器人", sort: 55 },
-                { value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsInstalled.includes('ai') },
-                { value: "signin", label: "签到打卡", sort: 70 },
-                { value: "meeting", label: "在线会议", sort: 80 },
-                { value: "createGroup", label: "创建群组", sort: 85 },
-                { value: "word-chain", label: "群接龙", sort: 90 },
-                { value: "vote", label: "群投票", sort: 100 },
-                { value: "addProject", label: "创建项目", sort: 110 },
-                { value: "addTask", label: "添加任务", sort: 120 },
-                { value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUIApp },
-                { value: "setting", label: "设置", sort: 140 },
-                { value: "appstore", label: "应用商店", sort: 999 },
+                {value: "approve", label: "审批中心", sort: 30, show: this.microAppsInstalled.includes('approve')},
+                {value: "report", label: "工作报告", sort: 50},
+                {value: "mybot", label: "我的机器人", sort: 55},
+                {value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsInstalled.includes('ai')},
+                {value: "signin", label: "签到打卡", sort: 70},
+                {value: "meeting", label: "在线会议", sort: 80},
+                {value: "createGroup", label: "创建群组", sort: 85},
+                {value: "word-chain", label: "群接龙", sort: 90},
+                {value: "vote", label: "群投票", sort: 100},
+                {value: "addProject", label: "创建项目", sort: 110},
+                {value: "addTask", label: "添加任务", sort: 120},
+                {value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUIApp},
             ]
             // 竖屏模式
             if (this.windowPortrait) {
                 list.push(...[
-                    { value: "calendar", label: "日历", sort: 10 },
-                    { value: "file", label: "文件", sort: 20 },
+                    {value: "calendar", label: "日历", sort: 10},
+                    {value: "file", label: "文件", sort: 20},
+                    {value: "setting", label: "设置", sort: 140},
                 ])
             }
             // 管理员
             if (this.userIsAdmin) {
                 list.push(...[
-                    { type: 'admin', value: "ldap", label: "LDAP", sort: 160 },
-                    { type: 'admin', value: "mail", label: "邮件通知", sort: 170 },
-                    { type: 'admin', value: "appPush", label: "APP 推送", sort: 180 },
-                    { type: 'admin', value: "complaint", label: "举报管理", sort: 190 },
-                    { type: 'admin', value: "allUser", label: "团队管理", sort: 200 },
+                    {type: 'admin', value: "ldap", label: "LDAP", sort: 160},
+                    {type: 'admin', value: "mail", label: "邮件通知", sort: 170},
+                    {type: 'admin', value: "appPush", label: "APP 推送", sort: 180},
+                    {type: 'admin', value: "complaint", label: "举报管理", sort: 190},
+                    {type: 'admin', value: "allUser", label: "团队管理", sort: 200},
                 ])
             }
             //
@@ -427,7 +446,7 @@ export default {
             name = name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
             return name
         },
-        showBadge(item,type) {
+        showBadge(item, type) {
             let num = 0;
             switch (type) {
                 case 'approve':
@@ -445,7 +464,7 @@ export default {
                 case 'calendar':
                 case 'file':
                 case 'setting':
-                    this.goForward({ name: 'manage-' + item.value });
+                    this.goForward({name: 'manage-' + item.value});
                     break;
                 case 'report':
                     emitter.emit('openReport', params == 'badge' ? 'receive' : 'my');
@@ -621,7 +640,7 @@ export default {
                 url: 'users/search/ai',
                 data: {type},
             }).then(({data}) => {
-                this.$store.dispatch("openDialogUserid", data.userid).catch(({ msg }) => {
+                this.$store.dispatch("openDialogUserid", data.userid).catch(({msg}) => {
                     $A.modalError(msg)
                 }).finally(_ => {
                     this.aibotDialogSearchLoad = '';
@@ -702,7 +721,7 @@ export default {
             });
         },
         // 打开明细
-        openDetail(desc){
+        openDetail(desc) {
             $A.modalInfo({
                 content: desc,
             });

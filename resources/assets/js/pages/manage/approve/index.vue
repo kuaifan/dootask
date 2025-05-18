@@ -4,7 +4,7 @@
         <div class="approve-wrapper" ref="fileWrapper">
             <div class="approve-head">
                 <div class="approve-nav">
-                    <div class="common-nav-back" @click="goBack()"><i class="taskfont">&#xe676;</i></div>
+                    <div class="common-nav-back" @click="onBack"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
 
@@ -393,6 +393,14 @@ export default {
             this.addData.department_id = this.userInfo.department[0] || 0;
             this.addData.startTime = this.addData.endTime = $A.daytz().format('YYYY-MM-DD');
             this.isShowIcon = this.windowWidth < 515
+        },
+
+        onBack() {
+            if (this.$listeners['on-close']) {
+                this.$emit('on-close')
+            } else {
+                this.goBack()
+            }
         },
 
         // 收到websocket消息
