@@ -16,7 +16,7 @@
                     </div>
                     <Row :gutter="16">
                         <Col
-                            v-if="t == 'base'"
+                            v-if="t == 'admin'"
                             :xs="{ span: 6 }"
                             :sm="{ span: 6 }"
                             :lg="{ span: 6 }"

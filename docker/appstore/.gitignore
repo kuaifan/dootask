@@ -1,5 +1,5 @@
 apps/*
-configs/*
-logs/*
+config/*
+log/*
 temp/*
 !.gitkeep
