@@ -300,13 +300,13 @@ export default {
     },
 
     // 微应用管理
-    'microApps/menu': function(state, data) {
+    'microApps/menus': function(state, data) {
         state.microAppsMenus = data
         $A.IDBSave("microAppsMenus", state.microAppsMenus)
     },
 
-    'microApps/installed': function(state, data) {
-        state.microAppsInstalled = data
-        $A.IDBSave("microAppsInstalled", state.microAppsInstalled)
+    'microApps/names': function(state, data) {
+        state.microAppsNames = [...data, 'appstore']
+        $A.IDBSave("microAppsNames", state.microAppsNames)
     },
 }

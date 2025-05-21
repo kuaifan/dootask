@@ -107,6 +107,7 @@ services:
       - ./:/var/www
     environment:
       HOST_PWD: "${PWD}"
+      RUN_MODE: "strict"
     networks:
       - extnetwork
     restart: unless-stopped

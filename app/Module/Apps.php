@@ -15,6 +15,10 @@ class Apps
      */
     public static function isInstalled(string $appId): bool
     {
+        if ($appId === 'appstore') {
+            return true;
+        }
+
         $key = 'app_installed_' . $appId;
         if (RequestContext::has($key)) {
             return RequestContext::get($key);

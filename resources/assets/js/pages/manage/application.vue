@@ -395,7 +395,7 @@ export default {
             'windowOrientation',
             'formOptions',
             'routeLoading',
-            'microAppsInstalled'
+            'microAppsNames'
         ]),
         ...mapGetters([
             'filterMicroAppsMenus',
@@ -403,10 +403,10 @@ export default {
         ]),
         applyList() {
             const list = [
-                {value: "approve", label: "审批中心", sort: 30, show: this.microAppsInstalled.includes('approve')},
+                {value: "approve", label: "审批中心", sort: 30, show: this.microAppsNames.includes('approve')},
                 {value: "report", label: "工作报告", sort: 50},
                 {value: "mybot", label: "我的机器人", sort: 55},
-                {value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsInstalled.includes('ai')},
+                {value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsNames.includes('ai')},
                 {value: "signin", label: "签到打卡", sort: 70},
                 {value: "meeting", label: "在线会议", sort: 80},
                 {value: "createGroup", label: "创建群组", sort: 85},

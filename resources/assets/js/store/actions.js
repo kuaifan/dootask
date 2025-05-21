@@ -2,6 +2,7 @@ import * as openpgp from 'openpgp_hi/lightweight';
 import {initLanguage, languageList, languageName} from "../language";
 import {$callData, $urlSafe, SSEClient} from '../utils'
 import emitter from "./events";
+import axios from "axios";
 
 const dialogDraftState = { timer: {}, subTemp: null }
 
@@ -1116,8 +1117,8 @@ export default {
                     'callAt',
                     'cacheEmojis',
                     'cacheDialogs',
-                    'microAppsInstalled',
                     'microAppsMenus',
+                    'microAppsNames',
                 ],
                 json: [
                     'userInfo'
@@ -4672,7 +4673,7 @@ export default {
         if (!config.name) {
             return
         }
-        if (!state.microAppsInstalled.includes(config.name)) {
+        if (!state.microAppsNames.includes(config.name)) {
             $A.modalWarning(`应用「${config.name}」未安装`);
             return;
         }
@@ -4694,7 +4695,7 @@ export default {
                 resolve(false)
                 return
             }
-            resolve(!!state.microAppsInstalled.includes(appName))
+            resolve(!!state.microAppsNames.includes(appName))
         })
     },
 
@@ -4703,12 +4704,15 @@ export default {
      * @param commit
      * @param dispatch
      */
-    updateMicroAppsStatus({commit, dispatch}) {
-        dispatch("call", {
-            url: 'apps/status',
-        }).then(({data}) => {
-            commit("microApps/installed", data.installed)
-            commit("microApps/menu", data.menus)
+    async updateMicroAppsStatus({commit, state}) {
+        const {data: {code, data}} = await axios.get($A.mainUrl('appstore/api/v1/internal/installed'), {
+            headers: {
+                Token: state.userToken
+            }
         })
+        if (code === 200) {
+            commit("microApps/menus", data.menus || [])
+            commit("microApps/names", data.names || [])
+        }
     },
 }
