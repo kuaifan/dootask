@@ -116,6 +116,11 @@
         margin-top: 24px;
         width: 100%;
 
+        ul, ol, li {
+            margin: revert;
+            padding: revert;
+        }
+
         h2 {
             font-size: 20px;
             margin-bottom: 10px;
