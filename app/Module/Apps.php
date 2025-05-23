@@ -2,6 +2,7 @@
 
 namespace App\Module;
 
+use App\Exceptions\ApiException;
 use App\Services\RequestContext;
 use Symfony\Component\Yaml\Yaml;
 
@@ -32,5 +33,27 @@ class Apps
         }
 
         return RequestContext::save($key, $installed);
+    }
+
+    /**
+     * 判断应用是否已安装，如果未安装则抛出异常
+     * @param string $appId
+     * @return void
+     */
+    public static function isInstalledThrow(string $appId): void
+    {
+        if (!self::isInstalled($appId)) {
+            $name = match ($appId) {
+                'ai' => 'AI Robot',
+                'face' => 'Face check-in',
+                'appstore' => 'AppStore',
+                'approve' => 'Approval',
+                'office' => 'OnlyOffice',
+                'drawio' => 'Drawio',
+                'minder' => 'Minder',
+                default => $appId,
+            };
+            throw new ApiException("应用「{$name}」未安装");
+        }
     }
 }

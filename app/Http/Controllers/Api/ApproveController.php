@@ -35,9 +35,7 @@ class ApproveController extends AbstractController
 
     public function __construct()
     {
-        if (!Apps::isInstalled('approve')) {
-            throw new ApiException('应用「Approval」未安装');
-        }
+        Apps::isInstalledThrow('approve');
         $this->flow_url = env('FLOW_URL') ?: 'http://approve';
     }
 
@@ -77,7 +75,7 @@ class ApproveController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function procdef__all() 
+    public function procdef__all()
     {
         User::auth();
         $data['name'] = Request::input('name');

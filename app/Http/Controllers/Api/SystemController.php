@@ -302,9 +302,7 @@ class SystemController extends AbstractController
     {
         User::auth('admin');
         //
-        if (!Apps::isInstalled('ai')) {
-            return Base::retError('应用「AI Robot」未安装');
-        }
+        Apps::isInstalledThrow('ai');
         //
         $type = trim(Request::input('type'));
         $filter = trim(Request::input('filter'));
@@ -469,11 +467,9 @@ class SystemController extends AbstractController
                         }
                     }
                     // 人脸识别
-                    if (in_array('face', $all['modes'])){
-                        if (!Apps::isInstalled('face')) {
-                            return Base::retError('应用「Face check-in」未安装');
-                        }
-                    }   
+                    if (in_array('face', $all['modes'])) {
+                        Apps::isInstalledThrow('face');
+                    }
                 }
             }
             if ($all['modes']) {

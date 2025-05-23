@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Request;
+use App\Module\Apps;
 use App\Module\Base;
 use App\Tasks\PushTask;
 use App\Exceptions\ApiException;
@@ -977,5 +978,42 @@ class File extends AbstractModel
             'msg' => $msg
         ];
         Task::deliver(new PushTask($params));
+    }
+
+    /**
+     * 根据文件类型判断是否需要安装应用
+     * @param $type
+     * @return void
+     */
+    public static function isNeedInstallApp($type): void
+    {
+        // 文件类型与应用的映射配置
+        $fileTypeAppMapping = [
+            // Office 应用映射
+            [
+                'types' => ['word', 'excel', 'ppt', 'docx', 'xlsx', 'pptx'],
+                'app_id' => 'office',
+                'app_name' => 'OnlyOffice'
+            ],
+            // Drawio 应用映射
+            [
+                'types' => ['drawio'],
+                'app_id' => 'drawio',
+                'app_name' => 'Drawio'
+            ],
+            // Minder 应用映射
+            [
+                'types' => ['mind'],
+                'app_id' => 'minder',
+                'app_name' => 'Minder'
+            ]
+        ];
+
+        // 遍历配置检查是否需要安装应用
+        foreach ($fileTypeAppMapping as $config) {
+            if (in_array($type, $config['types'])) {
+                Apps::isInstalledThrow($config['app_id']);
+            }
+        }
     }
 }

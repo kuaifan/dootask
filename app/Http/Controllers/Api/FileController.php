@@ -11,7 +11,6 @@ use App\Models\FileContent;
 use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
-use App\Module\Apps;
 use App\Module\Base;
 use App\Module\Timer;
 use App\Module\Ihttp;
@@ -504,29 +503,16 @@ class FileController extends AbstractController
             return Base::retError('参数错误');
         }
         //
+        if ($down == 'no') {
+            File::isNeedInstallApp($file->type);
+        }
+        //
         if ($only_update_at == 'yes') {
             return Base::retSuccess('success', [
                 'id' => $file->id,
                 'update_at' => Carbon::parse($file->updated_at)->toDateTimeString()
             ]);
         }
-        //
-        if ($down != 'yes') {
-            // office
-            if (in_array($file->type, ['word', 'excel', 'ppt']) && !Apps::isInstalled('office')) {
-                return Base::retError('应用「OnlyOffice」未安装');
-            }
-            // drawio
-            if ($file->type == 'drawio' && !Apps::isInstalled('drawio')) {
-                return Base::retError('应用「Drawio」未安装');
-            }
-            // mind
-            if ($file->type == 'mind' && !Apps::isInstalled('minder')) {
-                return Base::retError('应用「Minder」未安装');
-            }
-        }
-        //
-
         //
         $builder = FileContent::whereFid($file->id);
         if ($history_id > 0) {
@@ -595,16 +581,12 @@ class FileController extends AbstractController
                 $contentArray = Base::json2array($content);
                 $contentString = $contentArray['xml'];
                 $file->ext = 'drawio';
-                if (!Apps::isInstalled('drawio')) {
-                    return Base::retError('应用「Drawio」未安装');
-                }
+                File::isNeedInstallApp($file->type);
                 break;
             case 'mind':
                 $contentString = $content;
                 $file->ext = 'mind';
-                if (!Apps::isInstalled('minder')) {
-                    return Base::retError('应用「Minder」未安装');
-                }
+                File::isNeedInstallApp($file->type);
                 break;
             case 'txt':
             case 'code':
@@ -656,9 +638,7 @@ class FileController extends AbstractController
     {
         User::auth();
         //
-        if (!Apps::isInstalled('office')) {
-            return Base::retError('应用「OnlyOffice」未安装');
-        }
+        File::isNeedInstallApp('office');
         //
         $config = Request::input('config');
         $token = \Firebase\JWT\JWT::encode($config, env('APP_KEY') ,'HS256');
@@ -685,9 +665,7 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         //
-        if (!Apps::isInstalled('office')) {
-            return Base::retError('应用「OnlyOffice」未安装');
-        }
+        File::isNeedInstallApp('office');
         //
         $id = intval(Request::input('id'));
         $status = intval(Request::input('status'));
@@ -808,19 +786,8 @@ class FileController extends AbstractController
         $history_id = intval(Request::input('history_id'));
         //
         $file = File::permissionFind($id, $user);
-        // office
-        if (in_array($file->type, ['word', 'excel', 'ppt']) && !Apps::isInstalled('office')) {
-            return Base::retError('应用「OnlyOffice」未安装');
-        }
-        // drawio
-        if ($file->type == 'drawio' && !Apps::isInstalled('drawio')) {
-            return Base::retError('应用「Drawio」未安装');
-        }
-        // mind
-        if ($file->type == 'mind' && !Apps::isInstalled('minder')) {
-            return Base::retError('应用「Minder」未安装');
-        }
-        
+        //
+        File::isNeedInstallApp($file->type);
         //
         $history = FileContent::whereFid($file->id)->whereId($history_id)->first();
         if (empty($history)) {
