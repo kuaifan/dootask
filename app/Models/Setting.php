@@ -124,50 +124,49 @@ class Setting extends AbstractModel
     {
         return match ($ai) {
             'openai' => [
-                'gpt-4 | GPT-4',
-                'gpt-4-turbo | GPT-4 Turbo',
+                'gpt-4.1 | GPT-4.1',
                 'gpt-4o | GPT-4o',
+                'gpt-4 | GPT-4',
                 'gpt-4o-mini | GPT-4o Mini',
+                'gpt-4-turbo | GPT-4 Turbo',
+                'o3 | GPT-o3',
                 'o1 | GPT-o1',
-                'o1-mini | GPT-o1 Mini',
+                'o4-mini | GPT-o4 Mini',
                 'o3-mini | GPT-o3 Mini',
+                'o1-mini | GPT-o1 Mini',
                 'gpt-3.5-turbo | GPT-3.5 Turbo',
                 'gpt-3.5-turbo-16k | GPT-3.5 Turbo 16K',
                 'gpt-3.5-turbo-0125 | GPT-3.5 Turbo 0125',
                 'gpt-3.5-turbo-1106 | GPT-3.5 Turbo 1106'
             ],
             'claude' => [
-                'claude-3-5-sonnet-latest | Claude 3.5 Sonnet',
-                'claude-3-5-sonnet-20241022 | Claude 3.5 Sonnet 20241022',
-                'claude-3-5-haiku-latest | Claude 3.5 Haiku',
-                'claude-3-5-haiku-20241022 | Claude 3.5 Haiku 20241022',
-                'claude-3-opus-latest | Claude 3 Opus',
-                'claude-3-opus-20240229 | Claude 3 Opus 20240229',
-                'claude-3-haiku-20240307 | Claude 3 Haiku 20240307',
-                'claude-2.1 | Claude 2.1',
-                'claude-2.0 | Claude 2.0'
+                'claude-opus-4-0 | Claude Opus 4',
+                'claude-sonnet-4-0 | Claude Sonnet 4',
+                'claude-3-7-sonnet-latest | Claude Sonnet 3.7',
+                'claude-3-5-sonnet-latest | Claude Sonnet 3.5',
+                'claude-3-5-haiku-latest | Claude Haiku 3.5',
+                'claude-3-opus-latest | Claude Opus 3'
             ],
             'deepseek' => [
                 'deepseek-chat | DeepSeek V3',
                 'deepseek-reasoner | DeepSeek R1'
             ],
             'gemini' => [
+                'gemini-2.5-pro-preview-05-06 | Gemini 2.5 Pro Preview',
                 'gemini-2.0-flash | Gemini 2.0 Flash',
-                'gemini-2.0-flash-lite-preview-02-05 | Gemini 2.0 Flash-Lite Preview',
+                'gemini-2.0-flash-lite | Gemini 2.0 Flash-Lite',
                 'gemini-1.5-flash | Gemini 1.5 Flash',
                 'gemini-1.5-flash-8b | Gemini 1.5 Flash 8B',
                 'gemini-1.5-pro | Gemini 1.5 Pro',
                 'gemini-1.0-pro | Gemini 1.0 Pro'
             ],
             'grok' => [
-                'grok-2-vision-1212 | Grok 2 Vision 1212',
-                'grok-2-vision | Grok 2 Vision',
-                'grok-2-vision-latest | Grok 2 Vision Latest',
-                'grok-2-1212 | Grok 2 1212',
-                'grok-2 | Grok 2',
-                'grok-2-latest | Grok 2 Latest',
-                'grok-vision-beta | Grok Vision Beta',
-                'grok-beta | Grok Beta',
+                'grok-3-latest | Grok 3',
+                'grok-3-fast-latest | Grok 3 Fast',
+                'grok-3-mini-latest | Grok 3 Mini',
+                'grok-3-mini-fast-latest | Grok 3 Mini Fast',
+                'grok-2-vision-latest | Grok 2 Vision',
+                'grok-2-latest | Grok 2',
             ],
             'zhipu' => [
                 'glm-4 | GLM-4',
