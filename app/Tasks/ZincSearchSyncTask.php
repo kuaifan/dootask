@@ -4,6 +4,7 @@ namespace App\Tasks;
 
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogUser;
+use App\Module\Apps;
 use App\Module\ZincSearch\ZincSearchDialogMsg;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -26,6 +27,11 @@ class ZincSearchSyncTask extends AbstractTask
 
     public function start()
     {
+        if (!Apps::isInstalled("search")) {
+            // 如果没有安装搜索模块，则不执行
+            return;
+        }
+
         switch ($this->action) {
             case 'sync':
                 // 同步消息数据

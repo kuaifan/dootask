@@ -4,9 +4,10 @@ namespace App\Module\ZincSearch;
 
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogUser;
+use App\Module\Apps;
 use Carbon\Carbon;
+use DB;
 use Illuminate\Support\Facades\Log;
-use Swoole\Coroutine;
 
 /**
  * ZincSearch 会话消息类
@@ -129,6 +130,11 @@ class ZincSearchDialogMsg
      */
     public static function search(string $userid, string $keyword, int $from = 0, int $size = 20): array
     {
+        if (!Apps::isInstalled("search")) {
+            // 如果搜索功能未安装，使用数据库查询
+            return self::searchByMysql($userid, $keyword, $from, $size);
+        }
+
         $searchParams = [
             'query' => [
                 'bool' => [
@@ -144,7 +150,6 @@ class ZincSearchDialogMsg
                 ['updated_at' => 'desc']
             ]
         ];
-
         try {
             $result = ZincSearchBase::elasticSearch(self::$indexNameMsg, $searchParams);
             $hits = $result['data']['hits']['hits'] ?? [];
@@ -182,6 +187,48 @@ class ZincSearchDialogMsg
             Log::error('search: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /**
+     * 根据用户ID和消息关键词搜索会话（MySQL 版本，主要用于未安装ZincSearch的情况）
+     *
+     * @param string $userid 用户ID
+     * @param string $keyword 消息关键词
+     * @param int $from 起始位置
+     * @param int $size 返回结果数量
+     * @return array
+     */
+    private static function searchByMysql(string $userid, string $keyword, int $from = 0, int $size = 20): array
+    {
+        $items = DB::table('web_socket_dialog_users as u')
+            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
+            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
+            ->join('web_socket_dialog_msgs as m', 'm.dialog_id', '=', 'd.id')
+            ->where('u.userid', $userid)
+            ->where('m.bot', 0)
+            ->whereNull('d.deleted_at')
+            ->where('m.key', 'like', "%{$keyword}%")
+            ->orderByDesc('m.id')
+            ->offset($from)
+            ->limit($size)
+            ->get()
+            ->all();
+        $msgs = [];
+        foreach ($items as $item) {
+            $msgs[] = [
+                'id' => $item->id,
+                'search_msg_id' => $item->search_msg_id,
+                'user_at' =>  Carbon::parse($item->user_at)->format('Y-m-d H:i:s'),
+
+                'mark_unread' => $item->mark_unread,
+                'silence' => $item->silence,
+                'hide' => $item->hide,
+                'color' => $item->color,
+                'top_at' => Carbon::parse($item->top_at)->format('Y-m-d H:i:s'),
+                'last_at' =>  Carbon::parse($item->last_at)->format('Y-m-d H:i:s'),
+            ];
+        }
+        return $msgs;
     }
 
     /**

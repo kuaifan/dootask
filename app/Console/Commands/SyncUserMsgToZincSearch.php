@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\WebSocketDialogMsg;
+use App\Module\Apps;
 use App\Module\ZincSearch\ZincSearchKeyValue;
 use App\Module\ZincSearch\ZincSearchDialogMsg;
 use Cache;
@@ -27,6 +28,11 @@ class SyncUserMsgToZincSearch extends Command
      */
     public function handle(): int
     {
+        if (!Apps::isInstalled("search")) {
+            $this->error("应用「ZincSearch」未安装");
+            return 1;
+        }
+
         // 注册信号处理器（仅在支持pcntl扩展的环境下）
         if (extension_loaded('pcntl')) {
             pcntl_async_signals(true); // 启用异步信号处理

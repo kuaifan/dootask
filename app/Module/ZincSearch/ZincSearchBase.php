@@ -2,6 +2,9 @@
 
 namespace App\Module\ZincSearch;
 
+use App\Module\Apps;
+use App\Module\Doo;
+
 /**
  * ZincSearch 公共类
  */
@@ -28,6 +31,13 @@ class ZincSearchBase
      */
     private function request($path, $body = null, $method = 'POST')
     {
+        if (!Apps::isInstalled("search")) {
+            return [
+                'success' => false,
+                'error' => Doo::translate("应用「ZincSearch」未安装")
+            ];
+        }
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "http://{$this->host}:{$this->port}{$path}");
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
@@ -38,7 +48,6 @@ class ZincSearchBase
         $headers = ['Content-Type: application/json'];
         if ($method === 'BULK') {
             $headers = ['Content-Type: text/plain'];
-            $method = 'POST';
         }
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);

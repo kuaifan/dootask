@@ -51,6 +51,7 @@ class Apps
                 'office' => 'OnlyOffice',
                 'drawio' => 'Drawio',
                 'minder' => 'Minder',
+                'search' => 'ZincSearch',
                 default => $appId,
             };
             throw new ApiException("应用「{$name}」未安装");

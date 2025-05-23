@@ -80,23 +80,6 @@ services:
       - extnetwork
     restart: unless-stopped
 
-  search:
-    container_name: "dootask-search-${APP_ID}"
-    image: "public.ecr.aws/zinclabs/zincsearch:0.4.10"
-    volumes:
-      - search_data:/data
-    environment:
-      ZINC_DATA_PATH: "/data"
-      ZINC_FIRST_ADMIN_USER: "${DB_USERNAME}"
-      ZINC_FIRST_ADMIN_PASSWORD: "${DB_PASSWORD}"
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-    networks:
-      - extnetwork
-    restart: unless-stopped
-
   appstore:
     container_name: "dootask-appstore-${APP_ID}"
     privileged: true
