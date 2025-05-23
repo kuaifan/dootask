@@ -304,7 +304,6 @@ export default {
         data.unshift({
             id: 'appstore',
             menu_items: [{
-                id: 'appstore',
                 location: "application/admin",
                 label: $A.L("应用商店"),
                 icon: $A.mainUrl("images/application/appstore.svg"),

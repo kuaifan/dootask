@@ -2626,7 +2626,7 @@ export default {
             this.$store.dispatch("openMicroApp", {
                 id: 'okr',
                 key: 'details',
-                url: 'apps/okr/',
+                url: 'apps/okr/#details',
                 props: {type: 'details', id},
                 transparent: true,
             });

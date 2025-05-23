@@ -155,7 +155,7 @@ export default [
     },
     {
         name: 'single-apps',
-        path: '/single/apps/:appId',
+        path: '/single/apps/:name',
         component: () => import('./pages/single/apps.vue')
     },
     {

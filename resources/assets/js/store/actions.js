@@ -4654,7 +4654,7 @@ export default {
      *  - keepAlive         是否开启微应用保活 (true/false)，默认 true
      *  - disableScopecss   是否禁用样式隔离 (true/false)，默认 false
      */
-    openMicroApp({state}, data) {
+    async openMicroApp({state}, data) {
         if (!data || !$A.isJson(data)) {
             return
         }
@@ -4677,9 +4677,7 @@ export default {
             $A.modalWarning(`应用「${config.id}」未安装`);
             return;
         }
-        if (data.key) {
-            config.id += `_${data.key}`
-        }
+        config.name = `${config.id}_${await $A.getSHA256Hash(config.url)}`
         emitter.emit('observeMicroApp:open', config);
     },
 

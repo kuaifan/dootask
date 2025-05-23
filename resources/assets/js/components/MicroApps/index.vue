@@ -4,18 +4,18 @@
             v-for="(app, key) in apps"
             :key="key"
             v-model="app.isOpen"
-            :ref="`ref-${app.id}`"
+            :ref="`ref-${app.name}`"
             :size="1200"
             :transparent="app.transparent"
             :autoDarkTheme="app.autoDarkTheme"
-            :beforeClose="async () => { await onBeforeClose(app.id) }">
+            :beforeClose="async () => { await onBeforeClose(app.name) }">
             <micro-app
                 v-if="app.isOpen && app.url"
-                :name="app.id"
+                :name="app.name"
                 :url="app.url"
                 :keep-alive="app.keepAlive"
                 :disable-scopecss="app.disableScopecss"
-                :data="appData(app.id)"
+                :data="appData(app.name)"
                 @created="created"
                 @beforemount="beforemount"
                 @mounted="mounted"
@@ -173,7 +173,7 @@ export default {
 
         // 加载结束
         finish(e) {
-            const app = this.apps.find(({id}) => id == e.detail.name);
+            const app = this.apps.find(({name}) => name == e.detail.name);
             if (app) {
                 app.isLoading = false
             }
@@ -181,11 +181,11 @@ export default {
 
         /**
          * 应用数据
-         * @param id
+         * @param name
          * @returns {*}
          */
-        appData(id) {
-            const app = this.apps.find(item => item.id == id);
+        appData(name) {
+            const app = this.apps.find(item => item.name == name);
             if (!app) {
                 return {};
             }
@@ -225,10 +225,10 @@ export default {
 
                 methods: {
                     close: (destroy = false) => {
-                        this.closeMicroApp(id, destroy)
+                        this.closeMicroApp(name, destroy)
                     },
                     back: () => {
-                        this.closeById(id)
+                        this.closeByName(name)
                     },
                     nextZIndex: () => {
                         if (typeof window.modalTransferIndex === 'number') {
@@ -256,12 +256,12 @@ export default {
                         let appConfig = {}
                         if (config.url) {
                             appConfig = {
-                                id: `url-${await $A.getSHA256Hash(config.url)}`,
+                                name: `url-${await $A.getSHA256Hash(config.url)}`,
                                 url: config.url,
                             }
                             delete config.url
                         } else {
-                            const app = this.apps.find(item => item.id == id);
+                            const app = this.apps.find(item => item.name == name);
                             if (!app) {
                                 $A.modalError("应用不存在");
                                 return
@@ -271,14 +271,14 @@ export default {
                         appConfig.transparent = true
                         appConfig.keepAlive = false
 
-                        const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.id != appConfig.id);
+                        const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != appConfig.name);
                         apps.length > 50 && apps.splice(0, 10)
                         apps.push(appConfig)
                         await $A.IDBSet("cacheMicroApps", apps);
 
                         await this.$store.dispatch('openChildWindow', {
                             name: `single-apps-${$A.randomString(6)}`,
-                            path: `/single/apps/${appConfig.id}`,
+                            path: `/single/apps/${appConfig.name}`,
                             force: false,
                             config
                         });
@@ -329,11 +329,11 @@ export default {
          * @param config
          */
         async observeMicroApp(config) {
-            const app = this.apps.find(({id}) => id == config.id);
+            const app = this.apps.find(({name}) => name == config.name);
             if (app) {
                 // 更新微应用
                 if (app.url != config.url) {
-                    await microApp.unmountApp(app.id, {destroy: true})
+                    await microApp.unmountApp(app.name, {destroy: true})
                     app.isLoading = true
                 }
                 Object.assign(app, config)
@@ -348,31 +348,31 @@ export default {
         },
 
         /**
-         * 通过ID关闭微应用
-         * @param id
+         * 通过名称关闭微应用
+         * @param name
          */
-        closeById(id) {
+        closeByName(name) {
             try {
-                this.$refs[`ref-${id}`][0].onClose()
+                this.$refs[`ref-${name}`][0].onClose()
             } catch (e) {
-                this.closeMicroApp(id)
+                this.closeMicroApp(name)
             }
         },
 
         /**
          * 关闭微应用
-         * @param id
+         * @param name
          * @param destroy
          */
-        closeMicroApp(id, destroy) {
-            const app = this.apps.find(item => item.id == id);
+        closeMicroApp(name, destroy) {
+            const app = this.apps.find(item => item.name == name);
             if (!app) {
                 return;
             }
 
             app.isOpen = false
             if (destroy) {
-                microApp.unmountApp(app.id, {destroy: true})
+                microApp.unmountApp(app.name, {destroy: true})
             }
         },
 
@@ -386,14 +386,14 @@ export default {
 
         /**
          * 关闭之前判断
-         * @param id
+         * @param name
          * @returns {Promise<unknown>}
          */
-        onBeforeClose(id) {
+        onBeforeClose(name) {
             return new Promise(resolve => {
-                microApp.forceSetData(id, {type: 'beforeClose'}, array => {
+                microApp.forceSetData(name, {type: 'beforeClose'}, array => {
                     if (!array?.find(item => item === true)) {
-                        if (id === 'appstore') {
+                        if (name === 'appstore') {
                             this.$store.dispatch("updateMicroAppsStatus");
                         }
                         if ($A.isSubElectron) {
@@ -414,7 +414,7 @@ export default {
             return new Promise(resolve => {
                 const app = this.apps.findLast(item => item.isOpen)
                 if (app) {
-                    this.closeById(app.id)
+                    this.closeByName(app.name)
                 } else {
                     resolve()
                 }
