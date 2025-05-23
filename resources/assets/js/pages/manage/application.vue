@@ -16,22 +16,6 @@
                     </div>
                     <Row :gutter="16">
                         <Col
-                            v-if="t == 'admin'"
-                            :xs="{ span: 6 }"
-                            :sm="{ span: 6 }"
-                            :lg="{ span: 6 }"
-                            :xl="{ span: 6 }"
-                            :xxl="{ span: 3 }">
-                            <div class="apply-col">
-                                <div @click="applyClick({value: 'appstore'})">
-                                    <div class="logo">
-                                        <div class="apply-icon no-dark-content" :class="getLogoClass('appstore')"></div>
-                                    </div>
-                                    <p>{{ $L('应用商店') }}</p>
-                                </div>
-                            </div>
-                        </Col>
-                        <Col
                             v-for="(item, key) in (t == 'base' ? filterMicroAppsMenus : filterMicroAppsMenusAdmin)"
                             :key="`micro_` + key"
                             :xs="{ span: 6 }"
@@ -395,7 +379,7 @@ export default {
             'windowOrientation',
             'formOptions',
             'routeLoading',
-            'microAppsNames'
+            'microAppsIds'
         ]),
         ...mapGetters([
             'filterMicroAppsMenus',
@@ -403,10 +387,10 @@ export default {
         ]),
         applyList() {
             const list = [
-                {value: "approve", label: "审批中心", sort: 30, show: this.microAppsNames.includes('approve')},
+                {value: "approve", label: "审批中心", sort: 30, show: this.microAppsIds.includes('approve')},
                 {value: "report", label: "工作报告", sort: 50},
                 {value: "mybot", label: "我的机器人", sort: 55},
-                {value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsNames.includes('ai')},
+                {value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsIds.includes('ai')},
                 {value: "signin", label: "签到打卡", sort: 70},
                 {value: "meeting", label: "在线会议", sort: 80},
                 {value: "createGroup", label: "创建群组", sort: 85},

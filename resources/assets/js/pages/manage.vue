@@ -1201,14 +1201,6 @@ export default {
                 case 'microApp':
                     this.$store.dispatch("openMicroApp", params);
                     break;
-                case 'appstore':
-                    this.$store.dispatch("openMicroApp", {
-                        name: 'appstore',
-                        url: 'appstore/internal',
-                        disableScopecss: true,
-                        autoDarkTheme: false,
-                    });
-                    break;
             }
         },
 

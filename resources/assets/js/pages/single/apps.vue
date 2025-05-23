@@ -9,19 +9,19 @@ export default {
     components: { MicroApps },
 
     async mounted() {
-        const name = this.$route.params.appName;
-        if (!name) {
+        const id = this.$route.params.appId;
+        if (!id) {
             $A.modalError("应用不存在");
             return
         }
 
-        const app = (await $A.IDBArray("cacheMicroApps")).reverse().find(item => item.name === name);
+        const app = (await $A.IDBArray("cacheMicroApps")).reverse().find(item => item.id === id);
         if (!app) {
             $A.modalError("应用不存在");
             return
         }
 
-        this.$refs.app.observeMicroApp(app)
+        await this.$refs.app.observeMicroApp(app)
     }
 }
 </script>

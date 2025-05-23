@@ -1117,8 +1117,8 @@ export default {
                     'callAt',
                     'cacheEmojis',
                     'cacheDialogs',
+                    'microAppsIds',
                     'microAppsMenus',
-                    'microAppsNames',
                 ],
                 json: [
                     'userInfo'
@@ -4646,7 +4646,7 @@ export default {
      * 打开微应用
      * @param state
      * @param data
-     *  - name              应用名称
+     *  - id                应用ID
      *  - url               应用地址
      *  - props             传递参数
      *  - transparent       是否透明模式 (true/false)，默认 false
@@ -4662,7 +4662,7 @@ export default {
             return
         }
         const config = {
-            name: data.app_name || data.name,
+            id: data.id,
             url: $A.mainUrl(data.url),
             props: $A.isJson(data.props) ? data.props : {},
             transparent: typeof data.transparent == 'boolean' ? data.transparent : false,
@@ -4670,15 +4670,15 @@ export default {
             keepAlive: typeof data.keepAlive == 'boolean' ? data.keepAlive : true,
             disableScopecss: typeof data.disableScopecss == 'boolean' ? data.disableScopecss : false
         }
-        if (!config.name) {
+        if (!config.id) {
             return
         }
-        if (!state.microAppsNames.includes(config.name)) {
-            $A.modalWarning(`应用「${config.name}」未安装`);
+        if (!state.microAppsIds.includes(config.id)) {
+            $A.modalWarning(`应用「${config.id}」未安装`);
             return;
         }
         if (data.key) {
-            config.name += `_${data.key}`
+            config.id += `_${data.key}`
         }
         emitter.emit('observeMicroApp:open', config);
     },
@@ -4695,7 +4695,7 @@ export default {
                 resolve(false)
                 return
             }
-            resolve(!!state.microAppsNames.includes(appName))
+            resolve(!!state.microAppsIds.includes(appName))
         })
     },
 
@@ -4711,8 +4711,7 @@ export default {
             }
         })
         if (code === 200) {
-            commit("microApps/menus", data.menus || [])
-            commit("microApps/names", data.names || [])
+            commit("microApps/data", data|| [])
         }
     },
 }

@@ -300,13 +300,28 @@ export default {
     },
 
     // 微应用管理
-    'microApps/menus': function(state, data) {
-        state.microAppsMenus = data
-        $A.IDBSave("microAppsMenus", state.microAppsMenus)
-    },
-
-    'microApps/names': function(state, data) {
-        state.microAppsNames = [...data, 'appstore']
-        $A.IDBSave("microAppsNames", state.microAppsNames)
+    'microApps/data': function(state, data) {
+        data.unshift({
+            id: 'appstore',
+            menu_items: [{
+                id: 'appstore',
+                location: "application/admin",
+                label: $A.L("应用商店"),
+                icon: $A.mainUrl("images/application/appstore.svg"),
+                url: 'appstore/internal',
+                disableScopecss: true,
+                autoDarkTheme: false,
+            }]
+        })
+        const ids = [];
+        const menus = [];
+        data.forEach((item) => {
+            ids.push(item.id);
+            if (item.menu_items) {
+                menus.push(...item.menu_items.map(m => Object.assign(m, {id: item.id})));
+            }
+        })
+        $A.IDBSave("microAppsIds", state.microAppsIds = ids);
+        $A.IDBSave("microAppsMenus", state.microAppsMenus = menus);
     },
 }
