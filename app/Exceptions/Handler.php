@@ -74,7 +74,7 @@ class Handler extends ExceptionHandler
     public function report(Throwable $e)
     {
         if ($e instanceof ApiException) {
-            if ($e->getCode() !== -1) {
+            if ($e->isWriteLog()) {
                 Log::error($e->getMessage(), [
                     'code' => $e->getCode(),
                     'data' => $e->getData(),

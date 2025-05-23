@@ -54,7 +54,7 @@ class Apps
                 'search' => 'ZincSearch',
                 default => $appId,
             };
-            throw new ApiException("应用「{$name}」未安装");
+            throw new ApiException("应用「{$name}」未安装", [], 0, false);
         }
     }
 }
