@@ -12,6 +12,7 @@ use App\Models\UserDepartment;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogConfig;
 use App\Models\WebSocketDialogMsg;
+use App\Module\Apps;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Ihttp;
@@ -452,7 +453,9 @@ class BotReceiveMsgTask extends AbstractTask
             if (in_array($this->client['platform'], ['win', 'mac', 'web']) && !Base::judgeClientVersion("0.41.11", $this->client['version'])) {
                 $errorContent = '当前客户端版本低（所需版本≥v0.41.11）。';
             }
-
+            if (!Apps::isInstalled('ai')) {
+                $errorContent = '应用「AI Robot」未安装';
+            }
             if ($msg->reply_id > 0) {
                 $replyCommand = $this->extractReplyCommand($msg->reply_id, $botUser);
                 if (Base::isError($replyCommand)) {

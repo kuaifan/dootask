@@ -41,6 +41,7 @@ use App\Models\ProjectTaskFlowChange;
 use App\Models\ProjectTaskVisibilityUser;
 use App\Models\ProjectTaskTemplate;
 use App\Models\ProjectTag;
+use App\Module\Apps;
 
 /**
  * @apiDefine project
@@ -1830,6 +1831,18 @@ class ProjectController extends AbstractController
                 'id' => $file->id,
                 'update_at' => Carbon::parse($file->updated_at)->toDateTimeString()
             ]);
+        }
+        // office
+        if (in_array($file->ext, ['docx', 'xlsx', 'pptx']) && !Apps::isInstalled('office')) {
+            return Base::retError('应用「OnlyOffice」未安装');
+        }
+        // drawio
+        if ($file->ext == 'drawio' && !Apps::isInstalled('drawio')) {
+            return Base::retError('应用「Drawio」未安装');
+        }
+        // mind
+        if ($file->ext == 'mind' && !Apps::isInstalled('minder')) {
+            return Base::retError('应用「Minder」未安装');
         }
         //
         $data = $file->toArray();

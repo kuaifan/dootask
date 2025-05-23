@@ -556,7 +556,7 @@ export default {
                 }
             }).then(({data}) => {
                 this.updateData('unread', data, type)
-            }).catch((msg) => {
+            }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.loadIng = false;

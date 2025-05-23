@@ -18,6 +18,7 @@ use LdapRecord\Container;
 use App\Module\BillExport;
 use Guanguans\Notify\Factory;
 use App\Models\UserCheckinRecord;
+use App\Module\Apps;
 use App\Module\BillMultipleExport;
 use LdapRecord\LdapRecordException;
 use Guanguans\Notify\Messages\EmailMessage;
@@ -301,6 +302,10 @@ class SystemController extends AbstractController
     {
         User::auth('admin');
         //
+        if (!Apps::isInstalled('ai')) {
+            return Base::retError('应用「AI Robot」未安装');
+        }
+        //
         $type = trim(Request::input('type'));
         $filter = trim(Request::input('filter'));
         $setting = Base::setting('aibotSetting');
@@ -450,17 +455,25 @@ class SystemController extends AbstractController
                 if (!$botUser) {
                     return Base::retError('创建签到机器人失败');
                 }
-                if (in_array('locat', $all['modes'])) {
-                    if (empty($all['locat_bd_lbs_key'])) {
-                        return Base::retError('请填写百度地图AK');
+                if (is_array($all['modes'])) {
+                    if (in_array('locat', $all['modes'])) {
+                        if (empty($all['locat_bd_lbs_key'])) {
+                            return Base::retError('请填写百度地图AK');
+                        }
+                        if (!is_array($all['locat_bd_lbs_point'])) {
+                            return Base::retError('请选择允许签到位置');
+                        }
+                        $all['locat_bd_lbs_point']['radius'] = intval($all['locat_bd_lbs_point']['radius']);
+                        if (empty($all['locat_bd_lbs_point']['lng']) || empty($all['locat_bd_lbs_point']['lat']) || empty($all['locat_bd_lbs_point']['radius'])) {
+                            return Base::retError('请选择有效的签到位置');
+                        }
                     }
-                    if (!is_array($all['locat_bd_lbs_point'])) {
-                        return Base::retError('请选择允许签到位置');
-                    }
-                    $all['locat_bd_lbs_point']['radius'] = intval($all['locat_bd_lbs_point']['radius']);
-                    if (empty($all['locat_bd_lbs_point']['lng']) || empty($all['locat_bd_lbs_point']['lat']) || empty($all['locat_bd_lbs_point']['radius'])) {
-                        return Base::retError('请选择有效的签到位置');
-                    }
+                    // 人脸识别
+                    if (in_array('face', $all['modes'])){
+                        if (!Apps::isInstalled('face')) {
+                            return Base::retError('应用「Face check-in」未安装');
+                        }
+                    }   
                 }
             }
             if ($all['modes']) {
