@@ -427,15 +427,28 @@ class BotReceiveMsgTask extends AbstractTask
             if ($msg->msg['model_name']) {
                 $extras['model_name'] = $msg->msg['model_name'];
             }
-            if (preg_match("/(.*?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/", $extras['model_name'], $match)) {
-                $extras['model_name'] = $match[1];
+            // 提取模型“思考”参数
+            $thinkPatterns = [
+                "/^(.+?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/",
+                "/^(.+?)\s*\(\s*(think|thinking|reasoning)\s*\)\s*$/"
+            ];
+            $thinkMatch = [];
+            foreach ($thinkPatterns as $pattern) {
+                if (preg_match($pattern, $extras['model_name'], $thinkMatch)) {
+                    break;
+                }
+            }
+            if ($thinkMatch && !empty($thinkMatch[1])) {
+                $extras['model_name'] = $thinkMatch[1];
                 $extras['max_tokens'] = 20000;
                 $extras['thinking'] = 4096;
                 $extras['temperature'] = 1.0;
             }
+            // 设定会话ID
             if ($dialog->session_id) {
                 $extras['context_key'] = 'session_' . $dialog->session_id;
             }
+            // 设置文心一言的API密钥
             if ($type === 'wenxin') {
                 $extras['api_key'] .= ':' . $setting['wenxin_secret'];
             }

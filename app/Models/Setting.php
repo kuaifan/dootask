@@ -129,7 +129,7 @@ class Setting extends AbstractModel
                 'gpt-4 | GPT-4',
                 'gpt-4o-mini | GPT-4o Mini',
                 'gpt-4-turbo | GPT-4 Turbo',
-                'o3 | GPT-o3',
+                'o3 (thinking) | GPT-o3',
                 'o1 | GPT-o1',
                 'o4-mini | GPT-o4 Mini',
                 'o3-mini | GPT-o3 Mini',
@@ -140,9 +140,9 @@ class Setting extends AbstractModel
                 'gpt-3.5-turbo-1106 | GPT-3.5 Turbo 1106'
             ],
             'claude' => [
-                'claude-opus-4-0 | Claude Opus 4',
-                'claude-sonnet-4-0 | Claude Sonnet 4',
-                'claude-3-7-sonnet-latest | Claude Sonnet 3.7',
+                'claude-opus-4-0 (thinking) | Claude Opus 4',
+                'claude-sonnet-4-0 (thinking) | Claude Sonnet 4',
+                'claude-3-7-sonnet-latest (thinking) | Claude Sonnet 3.7',
                 'claude-3-5-sonnet-latest | Claude Sonnet 3.5',
                 'claude-3-5-haiku-latest | Claude Haiku 3.5',
                 'claude-3-opus-latest | Claude Opus 3'
@@ -152,7 +152,7 @@ class Setting extends AbstractModel
                 'deepseek-reasoner | DeepSeek R1'
             ],
             'gemini' => [
-                'gemini-2.5-pro-preview-05-06 | Gemini 2.5 Pro Preview',
+                'gemini-2.5-pro-preview-05-06 (thinking) | Gemini 2.5 Pro Preview',
                 'gemini-2.0-flash | Gemini 2.0 Flash',
                 'gemini-2.0-flash-lite | Gemini 2.0 Flash-Lite',
                 'gemini-1.5-flash | Gemini 1.5 Flash',
