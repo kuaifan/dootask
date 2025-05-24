@@ -1,147 +1,139 @@
-# Install (Docker)
+# DooTask - Open Source Task Management System
 
 English | **[中文文档](./README_CN.md)**
 
-- [Screenshot preview](./README_PREVIEW.md)
-- [Demo site](http://www.dootask.com/)
+- [Screenshot Preview](./README_PREVIEW.md)
+- [Demo Site](http://www.dootask.com/)
 
 **QQ Group**
 
-Group No.: `546574618`
+- Group Number: `546574618`
 
-## Setup
+## Installation Requirements
 
-- `Docker v20.10+` & `Docker Compose v2.0+` must be installed
-- System: `Centos/Debian/Ubuntu/macOS` and other linux/unix systems
-- Hardware suggestion: 2 cores and above 4G memory
+- Required: `Docker v20.10+` and `Docker Compose v2.0+`
+- Supported Systems: `CentOS/Debian/Ubuntu/macOS` and other Linux/Unix systems
+- Hardware Recommendation: 2+ cores, 4GB+ memory
+- Special Note: Windows users can install Linux environment using WSL2 before installing DooTask.
 
-### Deployment (Pro Edition)
+### Deploy Project
 
 ```bash
-# 1、Clone the repository
+# 1、Clone the project to your local machine or server
 
-# Clone projects on github
-git clone -b pro --depth=1 https://github.com/kuaifan/dootask.git
-# Or you can use gitee
-git clone -b pro --depth=1 https://gitee.com/aipaw/dootask.git
+# Clone project from GitHub
+git clone --depth=1 https://github.com/kuaifan/dootask.git
+# Or you can use Gitee
+git clone --depth=1 https://gitee.com/aipaw/dootask.git
 
 # 2、Enter directory
 cd dootask
 
-# 3、Installation（Custom port installation, as: ./cmd install --port 80）
+# 3、One-click installation (Custom port installation: ./cmd install --port 80)
 ./cmd install
 ```
 
-### Reset password
+### Reset Password
 
 ```bash
-# Reset default account password
+# Reset default administrator password
 ./cmd repassword
 ```
 
-### Change port
+### Change Port
 
 ```bash
-# This method only replaces the HTTP port. To replace the HTTPS port, please read the SSL configuration below
+# This method only changes HTTP port. For HTTPS port, please read SSL configuration below
 ./cmd port 80
 ```
 
-### Stop server
+### Stop Service
 
 ```bash
-./cmd stop
-
-# P.S: Once application is set up, whenever you want to start the server (if it is stopped) run below command
-./cmd start
+./cmd down
 ```
 
-### Development compilation
-
-- `NodeJs 20+` must be installed
+### Start Service
 
 ```bash
-# Development
+./cmd up
+```
+
+### Development & Build
+
+Please ensure you have installed `NodeJs 20+`
+
+```bash
+# Development mode
 ./cmd dev
    
-# Production (This is web client. For App/PC/Mac clients, Please read README-CLIENT.md)
+# Build project (This is for web client. For desktop apps, refer to ".github/workflows/publish.yml")
 ./cmd prod  
 ```
 
-### Shortcuts for running command
+### SSL Configuration
 
-```bash
-# You can do this using the following command
-./cmd artisan "your command"          # To run a artisan command
-./cmd php "your command"              # To run a php command
-./cmd nginx "your command"            # To run a nginx command
-./cmd redis "your command"            # To run a redis command
-./cmd composer "your command"         # To run a composer command
-./cmd supervisorctl "your command"    # To run a supervisorctl command
-./cmd mysql "your command"            # To run a mysql command (backup: Backup database, recovery: Restore database, open: Open database external port access, close: Close database external port access)
-```
-
-### SSL configuration
-
-#### Method 1: Automatic configuration
+#### Method 1: Automatic Configuration
 
 ```bash 
-# Running commands in a project
+# Run command and follow the prompts
 ./cmd https
 ```
 
-#### Or Method 2: Nginx Agent Configuration
+#### Method 2: Nginx Proxy Configuration
 
 ```bash 
-# 1、Nginx config add
+# 1、Add Nginx proxy configuration
 proxy_set_header X-Forwarded-Host $http_host;
 proxy_set_header X-Forwarded-Proto $scheme;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-# 2、Running commands in a project (If you unconfigure the NGINX agent, run: ./cmd https close)
+# 2、Run command (To cancel Nginx proxy configuration: ./cmd https close)
 ./cmd https agent
 ```
 
-## Upgrade
+## Upgrade & Update
 
-**Note: Please back up your data before upgrading!**
+**Note: Please backup your data before upgrading!**
 
 ```bash
-# Method 1: Running commands in a project
 ./cmd update
-
-# Or method 2: use this method if method 1 fails
-git pull
-./cmd mysql backup
-./cmd uninstall
-./cmd install
-./cmd mysql recovery
 ```
 
-* Please try again if the upgrade fails across a large version.
-* If 502 after the upgrade please run `./cmd reup` restart the service.
+* Please retry if upgrade fails across major versions.
+* If you encounter 502 errors after upgrade, run `./cmd reup` to restart services.
 
-## Transfer
+## Project Migration
 
-Follow these steps to complete the project migration after the new project is installed:
+After installing the new project, follow these steps to complete migration:
 
-1. Backup original database
+1、Backup original database
 
 ```bash
-# Run command under old project
+# Run command in the old project
 ./cmd mysql backup
 ```
 
-2. Copy `database backup file` and `public/uploads` directory to the new project.
+2、Copy the following files and directories from old project to the same paths in new project
 
-3. Restore database to new project
+ - `Database backup file`
+ - `docker/appstore`
+ - `public/uploads`
+
+3、Restore database to new project
 ```bash
-# Run command under new project
+# Run command in the new project
 ./cmd mysql recovery
 ```
 
-## Uninstall
+## Uninstall Project
 
 ```bash
-# Running commands in a project
 ./cmd uninstall
+```
+
+### More Commands
+
+```bash
+./cmd help
 ```

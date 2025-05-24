@@ -1,4 +1,4 @@
-# Install (Docker)
+# DooTask - 开源任务管理系统
 
 **[English](./README.md)** | 中文文档
 
@@ -14,16 +14,17 @@
 - 必须安装：`Docker v20.10+` 和 `Docker Compose v2.0+`
 - 支持环境：`Centos/Debian/Ubuntu/macOS` 等 linux/unix 系统
 - 硬件建议：2核4G以上
+- 特别说明：Windows 可以使用 WSL2 安装 Linux 环境后再安装 DooTask。
 
-### 部署项目（Pro版）
+### 部署项目
 
 ```bash
 # 1、克隆项目到您的本地或服务器
 
 # 通过github克隆项目
-git clone -b pro --depth=1 https://github.com/kuaifan/dootask.git
+git clone --depth=1 https://github.com/kuaifan/dootask.git
 # 或者你也可以使用gitee
-git clone -b pro --depth=1 https://gitee.com/aipaw/dootask.git
+git clone --depth=1 https://gitee.com/aipaw/dootask.git
 
 # 2、进入目录
 cd dootask
@@ -49,36 +50,25 @@ cd dootask
 ### 停止服务
 
 ```bash
-./cmd stop
+./cmd down
+```
 
-# 一旦应用程序被设置，无论何时你想要启动服务器(如果它被停止)运行以下命令
-./cmd start
+### 启动服务
+
+```bash
+./cmd up
 ```
 
 ### 开发编译
 
-- 请确保你已经安装了 `NodeJs 20+`
+请确保你已经安装了 `NodeJs 20+`
 
 ```bash
 # 开发模式
 ./cmd dev
    
-# 编译项目（这是网页端的，App/Pc/Mac客户端请查看 README_CLIENT.md）
+# 编译项目（这是网页端的，客户端请参考“.github/workflows/publish.yml”文件）
 ./cmd prod  
-```
-
-
-### 运行命令的快捷方式
-
-```bash
-# 你可以使用以下命令来执行
-./cmd artisan "your command"          # 运行 artisan 命令
-./cmd php "your command"              # 运行 php 命令
-./cmd nginx "your command"            # 运行 nginx 命令
-./cmd redis "your command"            # 运行 redis 命令
-./cmd composer "your command"         # 运行 composer 命令
-./cmd supervisorctl "your command"    # 运行 supervisorctl 命令
-./cmd mysql "your command"            # 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库，open: 开启数据库外部端口访问，close: 关闭数据库外部端口访问)
 ```
 
 ### SSL 配置
@@ -86,11 +76,11 @@ cd dootask
 #### 方法1：自动配置
 
 ```bash 
-# 在项目下运行命令，根据提示执行即可
+# 执行指令，根据提示执行即可
 ./cmd https
 ```
 
-#### （或者）方法2：Nginx 代理配置
+#### 方法2：Nginx 代理配置
 
 ```bash 
 # 1、Nginx 代理配置添加
@@ -98,7 +88,7 @@ proxy_set_header X-Forwarded-Host $http_host;
 proxy_set_header X-Forwarded-Proto $scheme;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-# 2、在项目下运行命令（如果取消 Nginx 代理配置请运行：./cmd https close）
+# 2、执行指令（如果取消 Nginx 代理配置请运行：./cmd https close）
 ./cmd https agent
 ```
 
@@ -107,15 +97,7 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 **注意：在升级之前请备份好你的数据！**
 
 ```bash
-# 方法1：在项目下运行命令
 ./cmd update
-
-# （或者）方法2：如果方法1失败请使用此方法
-git pull
-./cmd mysql backup
-./cmd uninstall
-./cmd install
-./cmd mysql recovery
 ```
 
 * 跨越大版本升级失败时请重试执行一次。
@@ -128,21 +110,30 @@ git pull
 1、备份原数据库
 
 ```bash
-# 在旧的项目下运行命令
+# 在旧的项目下执行指令
 ./cmd mysql backup
 ```
 
-2、将 `数据库备份文件` 及 `public/uploads` 目录拷贝至新项目
+2、将旧项目以下文件和目录拷贝至新项目同路径位置
+
+ - `数据库备份文件`
+ - `docker/appstore`
+ - `public/uploads`
 
 3、还原数据库至新项目
 ```bash
-# 在新的项目下运行命令
+# 在新的项目下执行指令
 ./cmd mysql recovery
 ```
 
 ## 卸载项目
 
 ```bash
-# 在项目下运行命令
 ./cmd uninstall
+```
+
+### 更多指令
+
+```bash
+./cmd help
 ```
