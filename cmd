@@ -280,11 +280,6 @@ remove_by_network() {
     done
 }
 
-# 卸载appstore
-uninstall_appstore() {
-    docker run -it --rm -v ${cur_path}/docker/appstore:/appstore nginx:alpine sh -c "find /appstore/config -mindepth 1 -type d | sort -r | xargs rm -rf; rm -f /appstore/log/*.log"
-}
-
 # 自动配置https
 https_auto() {
     restart_nginx="n"
@@ -561,6 +556,36 @@ run_update() {
 
 # 卸载函数
 run_uninstall() {
+    # 确认卸载
+    read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(Y/n): " confirm_uninstall
+    [[ -z ${confirm_uninstall} ]] && confirm_uninstall="Y"
+    case $confirm_uninstall in
+    [yY][eE][sS] | [yY])
+        info "${RedBG}开始卸载...${Font}"
+        ;;
+    *)
+        info "${GreenBG}终止卸载。${Font}"
+        exit 1
+        ;;
+    esac
+    
+    # 清理网络相关容器
+    remove_by_network
+    
+    # 停止并删除容器
+    $COMPOSE down --remove-orphans
+    
+    # 重置调试模式
+    env_set APP_DEBUG "false"
+    
+    # 清理数据目录
+    find "./docker/mysql/data" -mindepth 1 -delete 2>/dev/null
+    find "./docker/logs/supervisor" -mindepth 1 -delete 2>/dev/null
+    find "./docker/appstore/config" -mindepth 1 -type d -exec rm -rf {} + 2>/dev/null
+    find "./docker/appstore/log" -name "*.log" -delete 2>/dev/null
+    find "./storage/logs" -name "*.log" -delete 2>/dev/null
+    
+    success "卸载完成"
 }
 
 ####################################################################################
@@ -581,25 +606,7 @@ if [ $# -gt 0 ]; then
         run_update
     elif [[ "$1" == "uninstall" ]]; then
         shift 1
-        read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(Y/n): " uninstall
-        [[ -z ${uninstall} ]] && uninstall="Y"
-        case $uninstall in
-        [yY][eE][sS] | [yY])
-            info "${RedBG}开始卸载...${Font}"
-            ;;
-        *)
-            info "${GreenBG}终止卸载。${Font}"
-            exit 2
-            ;;
-        esac
-        remove_by_network
-        uninstall_appstore
-        $COMPOSE down --remove-orphans
-        env_set APP_DEBUG "false"
-        rm -rf "./docker/mysql/data"
-        rm -rf "./docker/logs/supervisor"
-        find "./storage/logs" -name "*.log" | xargs rm -rf
-        success "卸载完成"
+        run_uninstall
     elif [[ "$1" == "port" ]]; then
         shift 1
         env_set APP_PORT "$1"
