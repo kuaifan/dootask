@@ -249,7 +249,7 @@ remove_by_network() {
 }
 
 uninstall_appstore() {
-    docker run -it --rm -v ${cur_path}/docker/appstore:/appstore nginx:alpine sh -c "find /appstore/configs -mindepth 1 -type d | sort -r | xargs rm -rf; rm -f /appstore/logs/*.log"
+    docker run -it --rm -v ${cur_path}/docker/appstore:/appstore nginx:alpine sh -c "find /appstore/config -mindepth 1 -type d | sort -r | xargs rm -rf; rm -f /appstore/log/*.log"
 }
 
 https_auto() {
@@ -406,6 +406,10 @@ if [ $# -gt 0 ]; then
             ((remaining=$remaining-1))
             writable="yes"
             docker run --rm ${cmda} nginx:alpine sh -c "${cmdb} touch /usr/share/docker/dootask.lock" &> /dev/null
+            if [ $? -ne  0 ]; then
+                error "目录权限检测失败！"
+                exit 1
+            fi
             for vol in "${volumes[@]}"; do
                 if [ ! -f "${vol}/dootask.lock" ]; then
                     if [ $remaining -lt 0 ]; then
