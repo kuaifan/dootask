@@ -393,7 +393,7 @@ export default {
             return new Promise(resolve => {
                 microApp.forceSetData(name, {type: 'beforeClose'}, array => {
                     if (!array?.find(item => item === true)) {
-                        if (name === 'appstore') {
+                        if ($A.leftExists(name, 'appstore')) {
                             this.$store.dispatch("updateMicroAppsStatus");
                         }
                         if ($A.isSubElectron) {
