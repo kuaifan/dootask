@@ -22,6 +22,11 @@ services:
       MYSQL_DB_NAME: "${DB_DATABASE}"
       MYSQL_USERNAME: "${DB_USERNAME}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${LARAVELS_LISTEN_PORT}/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - extnetwork
     depends_on:
@@ -40,6 +45,14 @@ services:
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./:/var/www
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      php:
+        condition: service_healthy
     networks:
       - extnetwork
     restart: unless-stopped
@@ -91,6 +104,11 @@ services:
     environment:
       HOST_PWD: "${PWD}"
       RUN_MODE: "strict"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - extnetwork
     restart: unless-stopped

@@ -85,6 +85,15 @@ class IndexController extends InvokeController
     }
 
     /**
+     * 健康检查
+     * @return string
+     */
+    public function health()
+    {
+        return "ok";
+    }
+
+    /**
      * 头像
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response|\Symfony\Component\HttpFoundation\BinaryFileResponse
      */
