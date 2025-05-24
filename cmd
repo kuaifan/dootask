@@ -222,7 +222,7 @@ run_exec() {
     local cmd=$@
     local name=$(docker_name "$container")
     if [ -z "$name" ]; then
-        error "没有找到 $container 容器!"
+        error "没有找到 ${container} 容器!"
         exit 1
     fi
     docker exec -it "$name" /bin/sh -c "$cmd"
@@ -237,9 +237,9 @@ run_mysql() {
         # 备份数据库
         mkdir -p ${WORK_DIR}/docker/mysql/backup
         filename="${WORK_DIR}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
-        run_exec mariadb "exec mysqldump --databases $database -u$username -p$password" | gzip > $filename
+        run_exec mariadb "exec mysqldump --databases $database -u${username} -p${password}" | gzip > $filename
         judge "备份数据库"
-        [ -f "$filename" ] && echo "备份文件：$filename"
+        [ -f "$filename" ] && echo "备份文件：${filename}"
     elif [ "$1" = "recovery" ]; then
         database=$(env_get DB_DATABASE)
         username=$(env_get DB_USERNAME)
@@ -263,8 +263,8 @@ run_mysql() {
             error "没有找到 mariadb 容器!"
             exit 1
         fi
-        docker cp $filename $container_name:/
-        run_exec mariadb "gunzip < /$inputname | mysql -u$username -p$password $database"
+        docker cp $filename ${container_name}:/
+        run_exec mariadb "gunzip < /${inputname} | mysql -u${username} -p${password} $database"
         run_exec php "php artisan migrate"
         judge "还原数据库"
     fi
@@ -553,16 +553,16 @@ run_update() {
         # 确定目标分支
         if [[ -n "$target_branch" ]]; then
             current_branch="$target_branch"
-            if ! git show-ref --verify --quiet refs/heads/$target_branch; then
-                exec_judge "git fetch origin $target_branch:$target_branch" "获取远程分支 $target_branch 失败"
+            if ! git show-ref --verify --quiet refs/heads/${target_branch}; then
+                exec_judge "git fetch origin ${target_branch}:${target_branch}" "获取远程分支 ${target_branch} 失败"
             fi
-            exec_judge "git checkout $target_branch" "切换分支到 $target_branch 失败"
+            exec_judge "git checkout ${target_branch}" "切换分支到 ${target_branch} 失败"
         else
             current_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
         fi
 
         # 检查数据库迁移变动
-        db_changes=$(git diff --name-only HEAD..origin/$current_branch 2>/dev/null | grep -E "^database/" || true)
+        db_changes=$(git diff --name-only HEAD..origin/${current_branch} 2>/dev/null | grep -E "^database/" || true)
         if [[ -n "$db_changes" ]]; then
             echo "数据库有迁移变动，执行数据库备份..."
             exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
@@ -588,9 +588,9 @@ run_update() {
 
         # 更新代码
         if [[ "$force_update" == "yes" ]]; then
-            exec_judge "git reset --hard origin/$current_branch" "强制更新代码失败"
+            exec_judge "git reset --hard origin/${current_branch}" "强制更新代码失败"
         else
-            exec_judge "git pull --ff-only origin $current_branch" "代码拉取失败，可能存在冲突，请使用 --force 参数"
+            exec_judge "git pull --ff-only origin ${current_branch}" "代码拉取失败，可能存在冲突，请使用 --force 参数"
         fi
 
         # 更新依赖
