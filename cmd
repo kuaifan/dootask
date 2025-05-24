@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#cached execution
+# 缓存执行
 if [ -z "$CACHED_EXECUTION" ] && [ "$1" == "update" ]; then
     cat "$0" > ._cmd
     chmod +x ._cmd
@@ -11,7 +11,7 @@ if [ -z "$CACHED_EXECUTION" ] && [ "$1" == "update" ]; then
     exit $EXIT_STATUS
 fi
 
-#fonts color
+# 颜色
 Green="\033[32m"
 Yellow="\033[33m"
 Red="\033[31m"
@@ -20,7 +20,7 @@ YellowBG="\033[43;37m"
 RedBG="\033[41;37m"
 Font="\033[0m"
 
-#notification information
+# 通知信息
 OK="${Green}[OK]${Font}"
 Warn="${Yellow}[警告]${Font}"
 Error="${Red}[错误]${Font}"
@@ -29,6 +29,7 @@ cur_path="$(pwd)"
 cur_arg=$@
 COMPOSE="docker-compose"
 
+# 判断是否成功
 judge() {
     if [[ 0 -eq $? ]]; then
         success "$1 完成"
@@ -39,22 +40,42 @@ judge() {
     fi
 }
 
+# 执行并判断是否成功
+exec_judge() {
+    local cmd="$1"
+    local error_desc="$2"
+    local success_desc="$3"
+    eval "$cmd"
+    if [[ 0 -ne $? ]]; then
+        error "$error_desc"
+        exit 1
+    fi
+    if [[ -n "$success_desc" ]]; then
+        success "$success_desc"
+    fi
+}
+
+# 成功
 success() {
     echo -e "${OK} ${GreenBG}$1${Font}"
 }
 
+# 警告
 warning() {
     echo -e "${Warn} ${YellowBG}$1${Font}"
 }
 
+# 错误
 error() {
     echo -e "${Error} ${RedBG}$1${Font}"
 }
 
+# 信息
 info() {
     echo -e "$1"
 }
 
+# 随机数
 rand() {
     local min=$1
     local max=$(($2-$min+1))
@@ -62,6 +83,7 @@ rand() {
     echo $(($num%$max+$min))
 }
 
+# 随机字符串
 rand_string() {
     local lan=$1
     if [[ `uname` == 'Linux' ]]; then
@@ -71,6 +93,7 @@ rand_string() {
     fi
 }
 
+# 重启php
 restart_php() {
     local RES=`run_exec php "supervisorctl update php"`
     if [ -z "$RES" ]; then
@@ -85,6 +108,7 @@ restart_php() {
     fi
 }
 
+# 切换调试模式
 switch_debug() {
     local debug="false"
     if [[ "$1" == "true" ]] || [[ "$1" == "dev" ]] || [[ "$1" == "open" ]]; then
@@ -96,6 +120,7 @@ switch_debug() {
     fi
 }
 
+# 检查docker、docker-compose
 check_docker() {
     docker --version &> /dev/null
     if [ $? -ne  0 ]; then
@@ -118,6 +143,7 @@ check_docker() {
     fi
 }
 
+# 检查node
 check_node() {
     npm --version &> /dev/null
     if [ $? -ne  0 ]; then
@@ -136,10 +162,12 @@ check_node() {
     fi
 }
 
+# 获取容器名称
 docker_name() {
     echo `$COMPOSE ps | awk '{print $1}' | grep "\-$1\-"`
 }
 
+# 编译前端
 run_compile() {
     local type=$1
     check_node
@@ -160,6 +188,7 @@ run_compile() {
     fi
 }
 
+# 运行electron
 run_electron() {
     local argv=$@
     check_node
@@ -187,6 +216,7 @@ run_electron() {
     env BUILD_FRONTEND=$BUILD_FRONTEND node ./electron/build.js $argv
 }
 
+# 执行容器命令
 run_exec() {
     local container=$1
     shift 1
@@ -199,6 +229,7 @@ run_exec() {
     docker exec -it "$name" /bin/sh -c "$cmd"
 }
 
+# 备份数据库、还原数据库
 run_mysql() {
     if [ "$1" = "backup" ]; then
         database=$(env_get DB_DATABASE)
@@ -240,6 +271,7 @@ run_mysql() {
     fi
 }
 
+# 根据网络名称删除所有容器
 remove_by_network() {
     local app_id=$(env_get APP_ID)
     local network_name="dootask-networks-${app_id}"
@@ -248,10 +280,12 @@ remove_by_network() {
     done
 }
 
+# 卸载appstore
 uninstall_appstore() {
     docker run -it --rm -v ${cur_path}/docker/appstore:/appstore nginx:alpine sh -c "find /appstore/config -mindepth 1 -type d | sort -r | xargs rm -rf; rm -f /appstore/log/*.log"
 }
 
+# 自动配置https
 https_auto() {
     restart_nginx="n"
     if [[ "$(env_get APP_PORT)" != "80" ]]; then
@@ -306,12 +340,14 @@ https_auto() {
     fi
 }
 
+# 获取env参数
 env_get() {
     local key=$1
     local value=`cat ${cur_path}/.env | grep "^$key=" | awk -F '=' '{print $2}' | tr -d '\r\n'`
     echo "$value"
 }
 
+# 设置env参数
 env_set() {
     local key=$1
     local val=$2
@@ -331,6 +367,7 @@ env_set() {
     fi
 }
 
+# 初始化env
 env_init() {
     if [ ! -f ".env" ]; then
         cp .env.docker .env
@@ -346,6 +383,7 @@ env_init() {
     fi
 }
 
+# 获取命令参数
 arg_get() {
     local find="n"
     local value=""
@@ -362,6 +400,75 @@ arg_get() {
         fi
     done
     echo $value
+}
+
+# 更新函数
+run_update() {
+    local target_branch=$(arg_get branch)
+    local is_local=$(arg_get local)
+    local force_update=$(arg_get force)
+    
+    if [[ -z "$is_local" ]]; then
+        # 远程更新模式
+        exec_judge "git fetch --all" "获取远程更新失败"
+        
+        # 确定目标分支
+        if [[ -n "$target_branch" ]]; then
+            current_branch="$target_branch"
+            exec_judge "git checkout $target_branch" "切换分支到 $target_branch 失败"
+        else
+            current_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+        fi
+        
+        # 检查数据库迁移变动
+        db_changes=$(git diff --name-only HEAD..origin/$current_branch | grep -E "^database/" || true)
+        if [[ -n "$db_changes" ]]; then
+            info "数据库有迁移变动，执行数据库备份..."
+            exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
+        fi
+        
+        # 检查本地修改
+        if ! git diff --quiet || ! git diff --cached --quiet; then
+            if [[ "$force_update" != "yes" ]]; then
+                warning "检测到本地修改，是否强制更新？[Y/n]"
+                read -r confirm_force
+                [[ -z ${confirm_force} ]] && confirm_force="Y"
+                case $confirm_force in
+                [yY][eE][sS] | [yY])
+                    force_update="yes"
+                    ;;
+                *)
+                    error "取消更新，请先处理本地修改"
+                    exit 1
+                    ;;
+                esac
+            fi
+        fi
+        
+        # 更新代码
+        if [[ "$force_update" == "yes" ]]; then
+            exec_judge "git reset --hard origin/$current_branch" "强制更新代码失败"
+        else
+            exec_judge "git pull --ff-only origin $current_branch" "代码拉取失败，可能存在冲突，请使用 --force 参数"
+        fi
+        
+        # 更新依赖
+        exec_judge "run_exec php 'composer install --no-dev --optimize-autoloader'" "更新PHP依赖失败"
+    else
+        # 本地更新模式
+        info "执行数据库备份..."
+        exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
+    fi
+    
+    # 数据库迁移
+    exec_judge "run_exec php 'php artisan migrate'" "数据库迁移失败"
+    
+    # 重启服务
+    exec_judge "run_exec nginx 'nginx -s reload'" "重载Nginx失败"
+    restart_php
+    $COMPOSE up -d --remove-orphans
+    
+    success "更新完成！"
 }
 
 ####################################################################################
@@ -454,25 +561,7 @@ if [ $# -gt 0 ]; then
         run_exec mariadb "sh /etc/mysql/repassword.sh"
     elif [[ "$1" == "update" ]]; then
         shift 1
-        if [[ -z "$(arg_get local)" ]]; then
-            git fetch --all
-            current_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-            db_changes=$(git diff --name-only HEAD..origin/$current_branch | grep -E "^database/")
-            if [[ -n "$db_changes" ]]; then
-                info "数据库有迁移变动，执行数据库备份..."
-                run_mysql backup
-            fi
-            git reset --hard origin/$current_branch
-            git pull
-            run_exec php "composer update"
-        else
-            info "执行数据库备份..."
-            run_mysql backup
-        fi
-        run_exec php "php artisan migrate"
-        run_exec nginx "nginx -s reload"
-        restart_php
-        $COMPOSE up -d --remove-orphans
+        run_update
     elif [[ "$1" == "uninstall" ]]; then
         shift 1
         read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(Y/n): " uninstall
