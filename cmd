@@ -94,9 +94,9 @@ rand_string() {
 
 # 重启php
 restart_php() {
-    local RES=`run_exec php "supervisorctl update php"`
+    local RES=`container_exec php "supervisorctl update php"`
     if [ -z "$RES" ]; then
-        RES=`run_exec php "supervisorctl restart php"`
+        RES=`container_exec php "supervisorctl restart php"`
     fi
     local IN=`echo $RES | grep "ERROR"`
     if [[ "$IN" != "" ]]; then
@@ -135,7 +135,7 @@ check_docker() {
         fi
         COMPOSE="docker compose"
     fi
-    if [[ -n `$COMPOSE version | grep -E "\sv1"` ]]; then
+    if [[ -n `$COMPOSE version | grep -E "\s+v1\."` ]]; then
         $COMPOSE version
         error "Docker-compose 版本过低，请升级至v2+！"
         exit 1
@@ -167,7 +167,7 @@ docker_name() {
 }
 
 # 编译前端
-run_compile() {
+web_build() {
     local type=$1
     check_node
     if [ ! -d "./node_modules" ]; then
@@ -188,7 +188,7 @@ run_compile() {
 }
 
 # 运行electron
-run_electron() {
+electron_operate() {
     local argv=$@
     check_node
     if [ ! -d "./node_modules" ]; then
@@ -216,7 +216,7 @@ run_electron() {
 }
 
 # 执行容器命令
-run_exec() {
+container_exec() {
     local container=$1
     shift 1
     local cmd=$@
@@ -229,7 +229,7 @@ run_exec() {
 }
 
 # 备份数据库、还原数据库
-run_mysql() {
+mysql_snapshot() {
     if [ "$1" = "backup" ]; then
         database=$(env_get DB_DATABASE)
         username=$(env_get DB_USERNAME)
@@ -237,7 +237,7 @@ run_mysql() {
         # 备份数据库
         mkdir -p ${WORK_DIR}/docker/mysql/backup
         filename="${WORK_DIR}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
-        run_exec mariadb "exec mysqldump --databases $database -u${username} -p${password}" | gzip > $filename
+        container_exec mariadb "exec mysqldump --databases $database -u${username} -p${password}" | gzip > $filename
         judge "备份数据库"
         [ -f "$filename" ] && echo "备份文件：${filename}"
     elif [ "$1" = "recovery" ]; then
@@ -264,8 +264,8 @@ run_mysql() {
             exit 1
         fi
         docker cp $filename ${container_name}:/
-        run_exec mariadb "gunzip < /${inputname} | mysql -u${username} -p${password} $database"
-        run_exec php "php artisan migrate"
+        container_exec mariadb "gunzip < /${inputname} | mysql -u${username} -p${password} $database"
+        container_exec php "php artisan migrate"
         judge "还原数据库"
     fi
 }
@@ -319,7 +319,7 @@ https_auto() {
     fi
     docker run -it --rm -v $(pwd):/work nginx:alpine sh /work/bin/https install
     if [[ 0 -eq $? ]]; then
-        run_exec nginx "nginx -s reload"
+        container_exec nginx "nginx -s reload"
     fi
     new_job="* 6 * * * docker run -it --rm -v $(pwd):/work nginx:alpine sh /work/bin/https renew"
     current_crontab=$(crontab -l 2>/dev/null)
@@ -453,7 +453,7 @@ EOF
 }
 
 # 安装函数
-run_install() {
+handle_install() {
     local relock=$(arg_get relock)
     local port=$(arg_get port)
 
@@ -515,7 +515,7 @@ run_install() {
     $COMPOSE up php -d
 
     # 安装PHP依赖
-    exec_judge "run_exec php 'composer install --optimize-autoloader'" "安装依赖失败"
+    exec_judge "container_exec php 'composer install --optimize-autoloader'" "安装依赖失败"
 
     # 最终检查
     if [ ! -f "${WORK_DIR}/vendor/autoload.php" ]; then
@@ -524,24 +524,24 @@ run_install() {
     fi
 
     # 生成应用密钥
-    [[ -z "$(env_get APP_KEY)" ]] && exec_judge "run_exec php 'php artisan key:generate'" "生成密钥失败"
+    [[ -z "$(env_get APP_KEY)" ]] && exec_judge "container_exec php 'php artisan key:generate'" "生成密钥失败"
 
     # 设置生产模式
     switch_debug "false"
 
     # 数据库迁移
-    exec_judge "run_exec php 'php artisan migrate --seed'" "数据库迁移失败"
+    exec_judge "container_exec php 'php artisan migrate --seed'" "数据库迁移失败"
 
     # 启动所有容器
     $COMPOSE up -d --remove-orphans
 
     success "安装完成"
     echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
-    run_exec mariadb "sh /etc/mysql/repassword.sh"
+    container_exec mariadb "sh /etc/mysql/repassword.sh"
 }
 
 # 更新函数
-run_update() {
+handle_update() {
     local target_branch=$(arg_get branch)
     local is_local=$(arg_get local)
     local force_update=$(arg_get force)
@@ -601,7 +601,7 @@ run_update() {
         db_changes=$(git diff --name-only HEAD..origin/${current_branch} 2>/dev/null | grep -E "^database/" || true)
         if [[ -n "$db_changes" ]]; then
             echo "数据库有迁移变动，执行数据库备份..."
-            exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
+            exec_judge "mysql_snapshot backup" "数据库备份失败" "数据库备份完成"
         fi
 
         # 更新代码
@@ -612,15 +612,15 @@ run_update() {
         fi
 
         # 更新依赖
-        exec_judge "run_exec php 'composer update --optimize-autoloader'" "更新PHP依赖失败"
+        exec_judge "container_exec php 'composer update --optimize-autoloader'" "更新PHP依赖失败"
     else
         # 本地更新模式
         echo "执行数据库备份..."
-        exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
+        exec_judge "mysql_snapshot backup" "数据库备份失败" "数据库备份完成"
     fi
 
     # 数据库迁移
-    exec_judge "run_exec php 'php artisan migrate'" "数据库迁移失败"
+    exec_judge "container_exec php 'php artisan migrate'" "数据库迁移失败"
 
     # 停止服务
     $COMPOSE stop php nginx &> /dev/null
@@ -637,7 +637,7 @@ run_update() {
 }
 
 # 卸载函数
-run_uninstall() {
+handle_uninstall() {
     # 确认卸载
     echo -e "${RedBG}警告：此操作将永久删除以下内容：${Font}"
     echo "- 数据库"
@@ -695,15 +695,15 @@ fi
 case "$1" in
     "install")
         shift 1
-        run_install
+        handle_install
         ;;
     "update")
         shift 1
-        run_update
+        handle_update
         ;;
     "uninstall")
         shift 1
-        run_uninstall
+        handle_uninstall
         ;;
     "port")
         shift 1
@@ -728,23 +728,23 @@ case "$1" in
         ;;
     "repassword")
         shift 1
-        run_exec mariadb "sh /etc/mysql/repassword.sh $@"
+        container_exec mariadb "sh /etc/mysql/repassword.sh $@"
         ;;
     "serve"|"dev")
         shift 1
-        run_compile dev
+        web_build dev
         ;;
     "build"|"prod")
         shift 1
-        run_compile prod
+        web_build prod
         ;;
     "appbuild"|"buildapp")
         shift 1
-        run_electron app "$@"
+        electron_operate app "$@"
         ;;
     "electron")
         shift 1
-        run_electron "$@"
+        electron_operate "$@"
         ;;
     "eeui")
         shift 1
@@ -767,7 +767,7 @@ case "$1" in
         ;;
     "doc")
         shift 1
-        run_exec php "php app/Http/Controllers/Api/apidoc.php"
+        container_exec php "php app/Http/Controllers/Api/apidoc.php"
         docker run -it --rm -v ${WORK_DIR}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
         ;;
     "debug")
@@ -788,54 +788,54 @@ case "$1" in
         ;;
     "artisan")
         shift 1
-        e="php artisan $@" && run_exec php "$e"
+        e="php artisan $@" && container_exec php "$e"
         ;;
     "php")
         shift 1
         if [[ "$1" == "restart" ]] || [[ "$1" == "reboot" ]]; then
             restart_php
         else
-            e="php $@" && run_exec php "$e"
+            e="php $@" && container_exec php "$e"
         fi
         ;;
     "nginx")
         shift 1
-        e="nginx $@" && run_exec nginx "$e"
+        e="nginx $@" && container_exec nginx "$e"
         ;;
     "redis")
         shift 1
-        e="redis $@" && run_exec redis "$e"
+        e="redis $@" && container_exec redis "$e"
         ;;
     "mysql")
         shift 1
         if [[ "$1" == "backup" ]] || [[ "$1" == "b" ]]; then
-            run_mysql backup
+            mysql_snapshot backup
         elif [[ "$1" == "recovery" ]] || [[ "$1" == "r" ]]; then
-            run_mysql recovery
+            mysql_snapshot recovery
         else
-            e="mysql $@" && run_exec mariadb "$e"
+            e="mysql $@" && container_exec mariadb "$e"
         fi
         ;;
     "composer")
         shift 1
-        e="composer $@" && run_exec php "$e"
+        e="composer $@" && container_exec php "$e"
         ;;
     "service")
         shift 1
-        e="service $@" && run_exec php "$e"
+        e="service $@" && container_exec php "$e"
         ;;
     "super"|"supervisorctl")
         shift 1
-        e="supervisorctl $@" && run_exec php "$e"
+        e="supervisorctl $@" && container_exec php "$e"
         ;;
     "models")
         shift 1
-        run_exec php "php app/Models/clearHelper.php"
-        run_exec php "php artisan ide-helper:models -W"
+        container_exec php "php app/Models/clearHelper.php"
+        container_exec php "php artisan ide-helper:models -W"
         ;;
     "translate")
         shift 1
-        run_exec php "cd /var/www/language && php translate.php"
+        container_exec php "cd /var/www/language && php translate.php"
         ;;
     "restart")
         shift 1
