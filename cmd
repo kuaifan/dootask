@@ -402,6 +402,94 @@ arg_get() {
     echo $value
 }
 
+# 安装函数
+run_install() {
+    local relock=$(arg_get relock)
+    local port=$(arg_get port)
+    
+    # 初始化文件
+    if [[ -n "$relock" ]]; then
+        rm -rf node_modules package-lock.json vendor composer.lock
+    fi
+    
+    # 目录权限设置
+    volumes=(
+        "bootstrap/cache"
+        "docker"
+        "public"
+        "storage"
+    )
+    cmda=""
+    cmdb=""
+    for vol in "${volumes[@]}"; do
+        tmp_path="${cur_path}/${vol}"
+        mkdir -p "${tmp_path}"
+        chmod -R 775 "${tmp_path}"
+        rm -f "${tmp_path}/dootask.lock"
+        cmda="${cmda} -v ${tmp_path}:/usr/share/${vol}"
+        cmdb="${cmdb} touch /usr/share/${vol}/dootask.lock &&"
+    done
+    
+    # 目录权限检测
+    remaining=10
+    while true; do
+        ((remaining=$remaining-1))
+        writable="yes"
+        docker run --rm ${cmda} nginx:alpine sh -c "${cmdb} touch /usr/share/docker/dootask.lock" &> /dev/null
+        if [ $? -ne 0 ]; then
+            error "目录权限检测失败！请检查目录权限设置"
+            exit 1
+        fi
+        for vol in "${volumes[@]}"; do
+            if [ ! -f "${vol}/dootask.lock" ]; then
+                if [ $remaining -lt 0 ]; then
+                    error "目录【${vol}】权限不足！"
+                    exit 1
+                else
+                    writable="no"
+                    break
+                fi
+            fi
+        done
+        if [ "$writable" == "yes" ]; then
+            break
+        else
+            sleep 3
+        fi
+    done
+    
+    # 设置端口
+    [[ "$port" -gt 0 ]] && env_set APP_PORT "$port"
+    
+    # 启动PHP容器
+    $COMPOSE up php -d
+    
+    # 安装PHP依赖
+    exec_judge "run_exec php 'composer install --no-dev --optimize-autoloader'" "安装依赖失败"
+    
+    # 最终检查
+    if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
+        error "安装依赖失败，请重试！"
+        exit 1
+    fi
+    
+    # 生成应用密钥
+    [[ -z "$(env_get APP_KEY)" ]] && exec_judge "run_exec php 'php artisan key:generate'" "生成密钥失败"
+    
+    # 设置生产模式
+    switch_debug "false"
+    
+    # 数据库迁移
+    exec_judge "run_exec php 'php artisan migrate --seed'" "数据库迁移失败"
+    
+    # 启动所有容器
+    $COMPOSE up -d --remove-orphans
+    
+    success "安装完成"
+    info "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+    run_exec mariadb "sh /etc/mysql/repassword.sh"
+}
+
 # 更新函数
 run_update() {
     local target_branch=$(arg_get branch)
@@ -471,6 +559,10 @@ run_update() {
     success "更新完成！"
 }
 
+# 卸载函数
+run_uninstall() {
+}
+
 ####################################################################################
 ####################################################################################
 ####################################################################################
@@ -483,82 +575,7 @@ fi
 if [ $# -gt 0 ]; then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
         shift 1
-        # 初始化文件
-        if [[ -n "$(arg_get relock)" ]]; then
-            rm -rf node_modules
-            rm -rf package-lock.json
-            rm -rf vendor
-            rm -rf composer.lock
-        fi
-        # 目录权限
-        volumes=(
-            "bootstrap/cache"
-            "docker"
-            "public"
-            "storage"
-        )
-        cmda=""
-        cmdb=""
-        for vol in "${volumes[@]}"; do
-            tmp_path="${cur_path}/${vol}"
-            mkdir -p "${tmp_path}"
-            chmod -R 775 "${tmp_path}"
-            rm -f "${tmp_path}/dootask.lock"
-            cmda="${cmda} -v ${tmp_path}:/usr/share/${vol}"
-            cmdb="${cmdb} touch /usr/share/${vol}/dootask.lock &&"
-        done
-        # 目录权限检测
-        remaining=10
-        while true; do
-            ((remaining=$remaining-1))
-            writable="yes"
-            docker run --rm ${cmda} nginx:alpine sh -c "${cmdb} touch /usr/share/docker/dootask.lock" &> /dev/null
-            if [ $? -ne  0 ]; then
-                error "目录权限检测失败！"
-                exit 1
-            fi
-            for vol in "${volumes[@]}"; do
-                if [ ! -f "${vol}/dootask.lock" ]; then
-                    if [ $remaining -lt 0 ]; then
-                        error "目录【${vol}】权限不足！"
-                        exit 1
-                    else
-                        writable="no"
-                        break
-                    fi
-                fi
-            done
-            if [ "$writable" == "yes" ]; then
-                break
-            else
-                sleep 3
-            fi
-        done
-        # 启动容器
-        [[ "$(arg_get port)" -gt 0 ]] && env_set APP_PORT "$(arg_get port)"
-        $COMPOSE up php -d
-        # 安装PHP依赖
-        run_exec php "composer install"
-        if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
-            run_exec php "composer config repo.packagist composer https://packagist.phpcomposer.com"
-            run_exec php "composer install"
-            run_exec php "composer config --unset repos.packagist"
-        fi
-        if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
-            error "composer install 失败，请重试！"
-            exit 1
-        fi
-        [[ -z "$(env_get APP_KEY)" ]] && run_exec php "php artisan key:generate"
-        # 设置生产模式
-        switch_debug "false"
-        # 数据库迁移
-        run_exec php "php artisan migrate --seed"
-        # 启动其他容器
-        $COMPOSE up -d --remove-orphans
-        success "安装完成"
-        info "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
-        # 设置初始化密码
-        run_exec mariadb "sh /etc/mysql/repassword.sh"
+        run_install
     elif [[ "$1" == "update" ]]; then
         shift 1
         run_update
