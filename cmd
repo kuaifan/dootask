@@ -163,7 +163,7 @@ check_node() {
 
 # 获取容器名称
 docker_name() {
-    echo `$COMPOSE ps | awk '{print $1}' | grep "\-$1\-"`
+    echo `$COMPOSE ps $1 --format '{{.Name}}' 2>/dev/null`
 }
 
 # 编译前端
@@ -552,10 +552,9 @@ run_update() {
         exit 1
     fi
 
-    # 检查php容器是否存在
+    # 尝试确定php容器启动
     if [ -z "$(docker_name php)" ]; then
-        error "没有找到 php 容器!"
-        exit 1
+        $COMPOSE start php
     fi
 
     if [[ -z "$is_local" ]]; then
