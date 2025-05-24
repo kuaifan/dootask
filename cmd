@@ -456,12 +456,12 @@ EOF
 run_install() {
     local relock=$(arg_get relock)
     local port=$(arg_get port)
-    
+
     # 初始化文件
     if [[ -n "$relock" ]]; then
         rm -rf node_modules package-lock.json vendor composer.lock
     fi
-    
+
     # 目录权限设置
     volumes=(
         "bootstrap/cache"
@@ -479,7 +479,7 @@ run_install() {
         cmda="${cmda} -v ${tmp_path}:/usr/share/${vol}"
         cmdb="${cmdb} touch /usr/share/${vol}/dootask.lock &&"
     done
-    
+
     # 目录权限检测
     remaining=10
     while true; do
@@ -507,34 +507,34 @@ run_install() {
             sleep 3
         fi
     done
-    
+
     # 设置端口
     [[ "$port" -gt 0 ]] && env_set APP_PORT "$port"
-    
+
     # 启动PHP容器
     $COMPOSE up php -d
-    
+
     # 安装PHP依赖
-    exec_judge "run_exec php 'composer install --no-dev --optimize-autoloader'" "安装依赖失败"
-    
+    exec_judge "run_exec php 'composer install --optimize-autoloader'" "安装依赖失败"
+
     # 最终检查
     if [ ! -f "${WORK_DIR}/vendor/autoload.php" ]; then
         error "安装依赖失败，请重试！"
         exit 1
     fi
-    
+
     # 生成应用密钥
     [[ -z "$(env_get APP_KEY)" ]] && exec_judge "run_exec php 'php artisan key:generate'" "生成密钥失败"
-    
+
     # 设置生产模式
     switch_debug "false"
-    
+
     # 数据库迁移
     exec_judge "run_exec php 'php artisan migrate --seed'" "数据库迁移失败"
-    
+
     # 启动所有容器
     $COMPOSE up -d --remove-orphans
-    
+
     success "安装完成"
     echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
     run_exec mariadb "sh /etc/mysql/repassword.sh"
@@ -545,26 +545,29 @@ run_update() {
     local target_branch=$(arg_get branch)
     local is_local=$(arg_get local)
     local force_update=$(arg_get force)
-    
+
     if [[ -z "$is_local" ]]; then
         # 远程更新模式
         exec_judge "git fetch --all" "获取远程更新失败"
-        
+
         # 确定目标分支
         if [[ -n "$target_branch" ]]; then
             current_branch="$target_branch"
+            if ! git show-ref --verify --quiet refs/heads/$target_branch; then
+                exec_judge "git fetch origin $target_branch:$target_branch" "获取远程分支 $target_branch 失败"
+            fi
             exec_judge "git checkout $target_branch" "切换分支到 $target_branch 失败"
         else
             current_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
         fi
-        
+
         # 检查数据库迁移变动
-        db_changes=$(git diff --name-only HEAD..origin/$current_branch | grep -E "^database/" || true)
+        db_changes=$(git diff --name-only HEAD..origin/$current_branch 2>/dev/null | grep -E "^database/" || true)
         if [[ -n "$db_changes" ]]; then
             echo "数据库有迁移变动，执行数据库备份..."
             exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
         fi
-        
+
         # 检查本地修改
         if ! git diff --quiet || ! git diff --cached --quiet; then
             if [[ "$force_update" != "yes" ]]; then
@@ -582,38 +585,44 @@ run_update() {
                 esac
             fi
         fi
-        
+
         # 更新代码
         if [[ "$force_update" == "yes" ]]; then
             exec_judge "git reset --hard origin/$current_branch" "强制更新代码失败"
         else
             exec_judge "git pull --ff-only origin $current_branch" "代码拉取失败，可能存在冲突，请使用 --force 参数"
         fi
-        
+
         # 更新依赖
-        exec_judge "run_exec php 'composer install --no-dev --optimize-autoloader'" "更新PHP依赖失败"
+        exec_judge "run_exec php 'composer update --optimize-autoloader'" "更新PHP依赖失败"
     else
         # 本地更新模式
         echo "执行数据库备份..."
         exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
     fi
-    
+
     # 数据库迁移
     exec_judge "run_exec php 'php artisan migrate'" "数据库迁移失败"
-    
+
     # 重启服务
     exec_judge "run_exec nginx 'nginx -s reload'" "重载Nginx失败"
     restart_php
     $COMPOSE up -d --remove-orphans
-    
+
     success "更新完成！"
 }
 
 # 卸载函数
 run_uninstall() {
     # 确认卸载
-    read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(Y/n): " confirm_uninstall
-    [[ -z ${confirm_uninstall} ]] && confirm_uninstall="Y"
+    echo ""
+    echo -e "${RedBG}警告：此操作将永久删除以下内容：${Font}"
+    echo "- 数据库"
+    echo "- 应用程序"
+    echo "- 日志文件"
+    echo ""
+    read -rp "确认要继续卸载吗？(y/N): " confirm_uninstall
+    [[ -z ${confirm_uninstall} ]] && confirm_uninstall="N"
     case $confirm_uninstall in
     [yY][eE][sS] | [yY])
         echo -e "${RedBG}开始卸载...${Font}"
@@ -623,23 +632,23 @@ run_uninstall() {
         exit 1
         ;;
     esac
-    
+
     # 清理网络相关容器
     remove_by_network
-    
+
     # 停止并删除容器
     $COMPOSE down --remove-orphans
-    
+
     # 重置调试模式
     env_set APP_DEBUG "false"
-    
+
     # 清理数据目录
     find "./docker/mysql/data" -mindepth 1 -delete 2>/dev/null
     find "./docker/logs/supervisor" -mindepth 1 -delete 2>/dev/null
     find "./docker/appstore/config" -mindepth 1 -type d -exec rm -rf {} + 2>/dev/null
     find "./docker/appstore/log" -name "*.log" -delete 2>/dev/null
     find "./storage/logs" -name "*.log" -delete 2>/dev/null
-    
+
     success "卸载完成"
 }
 
