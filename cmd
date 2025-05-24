@@ -397,6 +397,62 @@ arg_get() {
     echo $value
 }
 
+####################################################################################
+####################################################################################
+####################################################################################
+
+# 显示帮助信息
+show_help() {
+    cat << 'EOF'
+DooTask 管理脚本
+
+用法: ./cmd <命令> [参数]
+
+📦 核心操作:
+  install                     安装 DooTask (支持 --port <端口> --relock)
+  update                      更新 DooTask (支持 --branch <分支> --force --local)
+  uninstall                   卸载 DooTask
+
+⚙️  配置管理:
+  port <端口>                 修改服务端口
+  url <地址>                  修改访问地址
+  env <键> <值>               设置环境变量
+  debug [true|false]          切换调试模式
+  repassword [用户名]         重置数据库密码
+
+🚀 开发构建:
+  serve, dev                  启动开发模式
+  build, prod                 生产环境构建
+  electron                    构建桌面应用
+
+🔧 服务管理:
+  up [服务名]                 启动容器
+  down [服务名]               停止容器
+  restart [服务名]            重启容器
+  reup                        重新构建并启动
+
+💾 数据库操作:
+  mysql backup                备份数据库
+  mysql recovery              还原数据库
+
+🛠️  开发工具:
+  artisan <命令>              执行 Laravel Artisan 命令
+  composer <命令>             执行 Composer 命令
+  php <命令>                  执行 PHP 命令
+
+📚 其他:
+  doc                         生成 API 文档
+  https                       配置 HTTPS
+  --help, -h                  显示此帮助信息
+
+示例:
+  ./cmd install --port 8080   安装并指定端口 8080
+  ./cmd update --branch dev   切换到 dev 分支并更新
+  ./cmd mysql backup          备份数据库
+  ./cmd artisan migrate       执行数据库迁移
+EOF
+}
+
 # 安装函数
 run_install() {
     local relock=$(arg_get relock)
@@ -592,160 +648,161 @@ run_uninstall() {
 ####################################################################################
 ####################################################################################
 
+# 优先处理帮助命令
+if [[ "$1" == "help" ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]] || [[ $# -eq 0 ]]; then
+    show_help
+    exit 0
+fi
+
+# 非electron命令需要检查Docker环境
 if [[ "$1" != "electron" ]]; then
     check_docker
     env_init
 fi
 
-if [ $# -gt 0 ]; then
-    if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
-        shift 1
-        run_install
-    elif [[ "$1" == "update" ]]; then
-        shift 1
-        run_update
-    elif [[ "$1" == "uninstall" ]]; then
-        shift 1
-        run_uninstall
-    elif [[ "$1" == "port" ]]; then
-        shift 1
-        env_set APP_PORT "$1"
-        $COMPOSE up -d
-        success "修改成功"
-        info "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
-    elif [[ "$1" == "url" ]]; then
-        shift 1
-        env_set APP_URL "$1"
-        restart_php
-        success "修改成功"
-    elif [[ "$1" == "env" ]]; then
-        shift 1
-        if [ -n "$1" ]; then
-            env_set $1 "$2"
-        fi
-        restart_php
-        success "修改成功"
-    elif [[ "$1" == "repassword" ]]; then
-        shift 1
-        run_exec mariadb "sh /etc/mysql/repassword.sh $@"
-    elif [[ "$1" == "serve" ]] || [[ "$1" == "dev" ]] || [[ "$1" == "development" ]]; then
-        shift 1
-        run_compile dev
-    elif [[ "$1" == "build" ]] || [[ "$1" == "prod" ]] || [[ "$1" == "production" ]]; then
-        shift 1
-        run_compile prod
-    elif [[ "$1" == "appbuild" ]] || [[ "$1" == "buildapp" ]]; then
-        shift 1
-        run_electron app "$@"
-    elif [[ "$1" == "electron" ]]; then
-        shift 1
-        run_electron "$@"
-    elif [[ "$1" == "eeui" ]]; then
-        shift 1
-        cli="$@"
-        por=""
-        if [[ "$cli" == "build" ]]; then
-            cli="build --simple"
-        elif [[ "$cli" == "dev" ]]; then
-            por="-p 8880:8880"
-        fi
-        docker run -it --rm -v ${cur_path}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
-    elif [[ "$1" == "npm" ]]; then
-        shift 1
-        npm "$@"
-        pushd electron || exit
-        npm "$@"
-        popd || exit
-        docker run --rm -it -v ${cur_path}/resources/mobile:/work -w /work --entrypoint=/bin/bash node:16 -c "npm $@"
-    elif [[ "$1" == "doc" ]]; then
-        shift 1
-        run_exec php "php app/Http/Controllers/Api/apidoc.php"
-        docker run -it --rm -v ${cur_path}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
-    elif [[ "$1" == "debug" ]]; then
-        shift 1
-        switch_debug "$@"
-        info "success"
-    elif [[ "$1" == "https" ]]; then
-        shift 1
-        if [[ "$1" == "agent" ]] || [[ "$1" == "true" ]]; then
-            env_set APP_SCHEME "true"
-        elif [[ "$1" == "close" ]] || [[ "$1" == "auto" ]]; then
-            env_set APP_SCHEME "auto"
-        else
-            https_auto
-        fi
-        restart_php
-    elif [[ "$1" == "artisan" ]]; then
-        shift 1
-        e="php artisan $@" && run_exec php "$e"
-    elif [[ "$1" == "php" ]]; then
-        shift 1
-        if [[ "$1" == "restart" ]] || [[ "$1" == "reboot" ]]; then
-            restart_php
-        else
-            e="php $@" && run_exec php "$e"
-        fi
-    elif [[ "$1" == "nginx" ]]; then
-        shift 1
-        e="nginx $@" && run_exec nginx "$e"
-    elif [[ "$1" == "redis" ]]; then
-        shift 1
-        e="redis $@" && run_exec redis "$e"
-    elif [[ "$1" == "mysql" ]]; then
-        shift 1
-        if [[ "$1" == "backup" ]] || [[ "$1" == "b" ]]; then
-            run_mysql backup
-        elif [[ "$1" == "recovery" ]] || [[ "$1" == "r" ]]; then
-            run_mysql recovery
-        else
-            e="mysql $@" && run_exec mariadb "$e"
-        fi
-    elif [[ "$1" == "composer" ]]; then
-        shift 1
-        e="composer $@" && run_exec php "$e"
-    elif [[ "$1" == "service" ]]; then
-        shift 1
-        e="service $@" && run_exec php "$e"
-    elif [[ "$1" == "super" ]] || [[ "$1" == "supervisorctl" ]]; then
-        shift 1
-        e="supervisorctl $@" && run_exec php "$e"
-    elif [[ "$1" == "models" ]]; then
-        shift 1
-        run_exec php "php app/Models/clearHelper.php"
-        run_exec php "php artisan ide-helper:models -W"
-    elif [[ "$1" == "translate" ]]; then
-        shift 1
-        run_exec php "cd /var/www/language && php translate.php"
-    elif [[ "$1" == "test" ]]; then
-        shift 1
-        e="./vendor/bin/phpunit $@" && run_exec php "$e"
-    elif [[ "$1" == "restart" ]]; then
-        shift 1
-        $COMPOSE stop "$@"
-        $COMPOSE start "$@"
-    elif [[ "$1" == "reup" ]]; then
-        shift 1
-        remove_by_network
-        $COMPOSE down --remove-orphans
-        $COMPOSE up -d
-    elif [[ "$1" == "down" ]]; then
-        shift 1
-        remove_by_network
-        if [[ $# -eq 0 ]]; then
-            $COMPOSE down --remove-orphans
-        else
-            $COMPOSE down "$@"
-        fi
-    elif [[ "$1" == "up" ]]; then
-        shift 1
-        if [[ $# -eq 0 ]]; then
-            $COMPOSE up -d --remove-orphans
-        else
-            $COMPOSE up "$@"
-        fi
+# 执行命令
+if [[ "$1" == "install" ]]; then
+    shift 1
+    run_install
+elif [[ "$1" == "update" ]]; then
+    shift 1
+    run_update
+elif [[ "$1" == "uninstall" ]]; then
+    shift 1
+    run_uninstall
+elif [[ "$1" == "port" ]]; then
+    shift 1
+    env_set APP_PORT "$1"
+    $COMPOSE up -d
+    success "修改成功"
+    info "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+elif [[ "$1" == "url" ]]; then
+    shift 1
+    env_set APP_URL "$1"
+    restart_php
+    success "修改成功"
+elif [[ "$1" == "env" ]]; then
+    shift 1
+    if [ -n "$1" ]; then
+        env_set $1 "$2"
+    fi
+    restart_php
+    success "修改成功"
+elif [[ "$1" == "repassword" ]]; then
+    shift 1
+    run_exec mariadb "sh /etc/mysql/repassword.sh $@"
+elif [[ "$1" == "serve" ]] || [[ "$1" == "dev" ]]; then
+    shift 1
+    run_compile dev
+elif [[ "$1" == "build" ]] || [[ "$1" == "prod" ]]; then
+    shift 1
+    run_compile prod
+elif [[ "$1" == "appbuild" ]] || [[ "$1" == "buildapp" ]]; then
+    shift 1
+    run_electron app "$@"
+elif [[ "$1" == "electron" ]]; then
+    shift 1
+    run_electron "$@"
+elif [[ "$1" == "eeui" ]]; then
+    shift 1
+    cli="$@"
+    por=""
+    if [[ "$cli" == "build" ]]; then
+        cli="build --simple"
+    elif [[ "$cli" == "dev" ]]; then
+        por="-p 8880:8880"
+    fi
+    docker run -it --rm -v ${cur_path}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
+elif [[ "$1" == "npm" ]]; then
+    shift 1
+    npm "$@"
+    pushd electron || exit
+    npm "$@"
+    popd || exit
+    docker run --rm -it -v ${cur_path}/resources/mobile:/work -w /work --entrypoint=/bin/bash node:16 -c "npm $@"
+elif [[ "$1" == "doc" ]]; then
+    shift 1
+    run_exec php "php app/Http/Controllers/Api/apidoc.php"
+    docker run -it --rm -v ${cur_path}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
+elif [[ "$1" == "debug" ]]; then
+    shift 1
+    switch_debug "$@"
+    info "success"
+elif [[ "$1" == "https" ]]; then
+    shift 1
+    if [[ "$1" == "agent" ]] || [[ "$1" == "true" ]]; then
+        env_set APP_SCHEME "true"
+    elif [[ "$1" == "close" ]] || [[ "$1" == "auto" ]]; then
+        env_set APP_SCHEME "auto"
     else
-        $COMPOSE "$@"
+        https_auto
+    fi
+    restart_php
+elif [[ "$1" == "artisan" ]]; then
+    shift 1
+    e="php artisan $@" && run_exec php "$e"
+elif [[ "$1" == "php" ]]; then
+    shift 1
+    if [[ "$1" == "restart" ]] || [[ "$1" == "reboot" ]]; then
+        restart_php
+    else
+        e="php $@" && run_exec php "$e"
+    fi
+elif [[ "$1" == "nginx" ]]; then
+    shift 1
+    e="nginx $@" && run_exec nginx "$e"
+elif [[ "$1" == "redis" ]]; then
+    shift 1
+    e="redis $@" && run_exec redis "$e"
+elif [[ "$1" == "mysql" ]]; then
+    shift 1
+    if [[ "$1" == "backup" ]] || [[ "$1" == "b" ]]; then
+        run_mysql backup
+    elif [[ "$1" == "recovery" ]] || [[ "$1" == "r" ]]; then
+        run_mysql recovery
+    else
+        e="mysql $@" && run_exec mariadb "$e"
+    fi
+elif [[ "$1" == "composer" ]]; then
+    shift 1
+    e="composer $@" && run_exec php "$e"
+elif [[ "$1" == "service" ]]; then
+    shift 1
+    e="service $@" && run_exec php "$e"
+elif [[ "$1" == "super" ]] || [[ "$1" == "supervisorctl" ]]; then
+    shift 1
+    e="supervisorctl $@" && run_exec php "$e"
+elif [[ "$1" == "models" ]]; then
+    shift 1
+    run_exec php "php app/Models/clearHelper.php"
+    run_exec php "php artisan ide-helper:models -W"
+elif [[ "$1" == "translate" ]]; then
+    shift 1
+    run_exec php "cd /var/www/language && php translate.php"
+elif [[ "$1" == "restart" ]]; then
+    shift 1
+    $COMPOSE stop "$@"
+    $COMPOSE start "$@"
+elif [[ "$1" == "reup" ]]; then
+    shift 1
+    remove_by_network
+    $COMPOSE down --remove-orphans
+    $COMPOSE up -d
+elif [[ "$1" == "down" ]]; then
+    shift 1
+    remove_by_network
+    if [[ $# -eq 0 ]]; then
+        $COMPOSE down --remove-orphans
+    else
+        $COMPOSE down "$@"
+    fi
+elif [[ "$1" == "up" ]]; then
+    shift 1
+    if [[ $# -eq 0 ]]; then
+        $COMPOSE up -d --remove-orphans
+    else
+        $COMPOSE up "$@"
     fi
 else
-    $COMPOSE ps
+    $COMPOSE "$@"
 fi
