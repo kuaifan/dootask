@@ -546,28 +546,19 @@ run_update() {
     local is_local=$(arg_get local)
     local force_update=$(arg_get force)
 
+    # 检查是否已经安装
+    if [ ! -f "${WORK_DIR}/vendor/autoload.php" ]; then
+        error "请先执行安装命令"
+        exit 1
+    fi
+
+    # 检查php容器是否存在
+    if [ -z "$(docker_name php)" ]; then
+        error "没有找到 php 容器!"
+        exit 1
+    fi
+
     if [[ -z "$is_local" ]]; then
-        # 远程更新模式
-        exec_judge "git fetch --all" "获取远程更新失败"
-
-        # 确定目标分支
-        if [[ -n "$target_branch" ]]; then
-            current_branch="$target_branch"
-            if ! git show-ref --verify --quiet refs/heads/${target_branch}; then
-                exec_judge "git fetch origin ${target_branch}:${target_branch}" "获取远程分支 ${target_branch} 失败"
-            fi
-            exec_judge "git checkout ${target_branch}" "切换分支到 ${target_branch} 失败"
-        else
-            current_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-        fi
-
-        # 检查数据库迁移变动
-        db_changes=$(git diff --name-only HEAD..origin/${current_branch} 2>/dev/null | grep -E "^database/" || true)
-        if [[ -n "$db_changes" ]]; then
-            echo "数据库有迁移变动，执行数据库备份..."
-            exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
-        fi
-
         # 检查本地修改
         if ! git diff --quiet || ! git diff --cached --quiet; then
             if [[ "$force_update" != "yes" ]]; then
@@ -584,6 +575,34 @@ run_update() {
                     ;;
                 esac
             fi
+        fi
+
+        # 远程更新模式
+        exec_judge "git fetch --all" "获取远程更新失败"
+
+        # 确定目标分支
+        if [[ -n "$target_branch" ]]; then
+            current_branch="$target_branch"
+            if ! git config --get "branch.${current_branch}.remote" | grep -q "origin"; then
+                exec_judge "git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'" "设置远程Fetch配置失败"
+            fi
+            if ! git show-ref --verify --quiet refs/heads/${current_branch}; then
+                exec_judge "git fetch origin ${current_branch}:${current_branch}" "获取远程分支 ${current_branch} 失败"
+            fi
+            if [[ "$force_update" == "yes" ]]; then
+                exec_judge "git checkout -f ${current_branch}" "切换分支到 ${current_branch} 失败"
+            else
+                exec_judge "git checkout ${current_branch}" "切换分支到 ${current_branch} 失败"
+            fi
+        else
+            current_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+        fi
+
+        # 检查数据库迁移变动
+        db_changes=$(git diff --name-only HEAD..origin/${current_branch} 2>/dev/null | grep -E "^database/" || true)
+        if [[ -n "$db_changes" ]]; then
+            echo "数据库有迁移变动，执行数据库备份..."
+            exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
         fi
 
         # 更新代码
@@ -604,18 +623,23 @@ run_update() {
     # 数据库迁移
     exec_judge "run_exec php 'php artisan migrate'" "数据库迁移失败"
 
-    # 重启服务
-    exec_judge "run_exec nginx 'nginx -s reload'" "重载Nginx失败"
-    restart_php
-    $COMPOSE up -d --remove-orphans
+    # 停止服务
+    $COMPOSE stop php nginx &> /dev/null
+    $COMPOSE rm -f php nginx &> /dev/null
 
-    success "更新完成！"
+    # 启动服务
+    $COMPOSE up -d --remove-orphans
+    if [[ 0 -ne $? ]]; then
+        $COMPOSE down --remove-orphans
+        exec_judge "$COMPOSE up -d" "重启服务失败"
+    fi
+
+    success "更新完成"
 }
 
 # 卸载函数
 run_uninstall() {
     # 确认卸载
-    echo ""
     echo -e "${RedBG}警告：此操作将永久删除以下内容：${Font}"
     echo "- 数据库"
     echo "- 应用程序"
