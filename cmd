@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# 缓存执行
-if [ -z "$CACHED_EXECUTION" ] && [ "$1" == "update" ]; then
-    cat "$0" > ._cmd
-    chmod +x ._cmd
-    export CACHED_EXECUTION=1
-    ./._cmd "$@"
-    EXIT_STATUS=$?
-    rm -f ._cmd
-    exit $EXIT_STATUS
-fi
-
 # 颜色
 Green="\033[32m"
 Yellow="\033[33m"
@@ -25,9 +14,24 @@ OK="${Green}[OK]${Font}"
 Warn="${Yellow}[警告]${Font}"
 Error="${Red}[错误]${Font}"
 
+# 基本参数
 WORK_DIR="$(pwd)"
 INPUT_ARGS=$@
 COMPOSE="docker-compose"
+
+# 缓存执行
+if [ -z "$CACHED_EXECUTION" ] && [ "$1" == "update" ]; then
+    if ! cat "$0" > ._cmd 2>/dev/null; then
+        error "无法创建脚本副本"
+        exit 1
+    fi
+    chmod +x ._cmd
+    export CACHED_EXECUTION=1
+    ./._cmd "$@"
+    EXIT_STATUS=$?
+    rm -f ._cmd
+    exit $EXIT_STATUS
+fi
 
 # 判断是否成功
 judge() {
@@ -55,24 +59,19 @@ exec_judge() {
     fi
 }
 
-# 成功
+# 输出成功
 success() {
     echo -e "${OK} ${GreenBG}$1${Font}"
 }
 
-# 警告
+# 输出警告
 warning() {
     echo -e "${Warn} ${YellowBG}$1${Font}"
 }
 
-# 错误
+# 输出错误
 error() {
     echo -e "${Error} ${RedBG}$1${Font}"
-}
-
-# 信息
-info() {
-    echo -e "$1"
 }
 
 # 随机数
@@ -104,7 +103,7 @@ restart_php() {
         $COMPOSE stop php
         $COMPOSE start php
     else
-        info "$RES"
+        echo "$RES"
     fi
 }
 
@@ -240,7 +239,7 @@ run_mysql() {
         filename="${WORK_DIR}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
         run_exec mariadb "exec mysqldump --databases $database -u$username -p$password" | gzip > $filename
         judge "备份数据库"
-        [ -f "$filename" ] && info "备份文件：$filename"
+        [ -f "$filename" ] && echo "备份文件：$filename"
     elif [ "$1" = "recovery" ]; then
         database=$(env_get DB_DATABASE)
         username=$(env_get DB_USERNAME)
@@ -537,7 +536,7 @@ run_install() {
     $COMPOSE up -d --remove-orphans
     
     success "安装完成"
-    info "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+    echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
     run_exec mariadb "sh /etc/mysql/repassword.sh"
 }
 
@@ -562,7 +561,7 @@ run_update() {
         # 检查数据库迁移变动
         db_changes=$(git diff --name-only HEAD..origin/$current_branch | grep -E "^database/" || true)
         if [[ -n "$db_changes" ]]; then
-            info "数据库有迁移变动，执行数据库备份..."
+            echo "数据库有迁移变动，执行数据库备份..."
             exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
         fi
         
@@ -595,7 +594,7 @@ run_update() {
         exec_judge "run_exec php 'composer install --no-dev --optimize-autoloader'" "更新PHP依赖失败"
     else
         # 本地更新模式
-        info "执行数据库备份..."
+        echo "执行数据库备份..."
         exec_judge "run_mysql backup" "数据库备份失败" "数据库备份完成"
     fi
     
@@ -617,10 +616,10 @@ run_uninstall() {
     [[ -z ${confirm_uninstall} ]] && confirm_uninstall="Y"
     case $confirm_uninstall in
     [yY][eE][sS] | [yY])
-        info "${RedBG}开始卸载...${Font}"
+        echo -e "${RedBG}开始卸载...${Font}"
         ;;
     *)
-        info "${GreenBG}终止卸载。${Font}"
+        echo -e "${GreenBG}终止卸载。${Font}"
         exit 1
         ;;
     esac
@@ -679,7 +678,7 @@ case "$1" in
         env_set APP_PORT "$1"
         $COMPOSE up -d
         success "修改成功"
-        info "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+        echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
         ;;
     "url")
         shift 1
@@ -742,7 +741,7 @@ case "$1" in
     "debug")
         shift 1
         switch_debug "$@"
-        info "success"
+        echo "success"
         ;;
     "https")
         shift 1
