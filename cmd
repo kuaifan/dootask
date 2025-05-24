@@ -25,8 +25,8 @@ OK="${Green}[OK]${Font}"
 Warn="${Yellow}[警告]${Font}"
 Error="${Red}[错误]${Font}"
 
-cur_path="$(pwd)"
-cur_arg=$@
+WORK_DIR="$(pwd)"
+INPUT_ARGS=$@
 COMPOSE="docker-compose"
 
 # 判断是否成功
@@ -236,8 +236,8 @@ run_mysql() {
         username=$(env_get DB_USERNAME)
         password=$(env_get DB_PASSWORD)
         # 备份数据库
-        mkdir -p ${cur_path}/docker/mysql/backup
-        filename="${cur_path}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
+        mkdir -p ${WORK_DIR}/docker/mysql/backup
+        filename="${WORK_DIR}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
         run_exec mariadb "exec mysqldump --databases $database -u$username -p$password" | gzip > $filename
         judge "备份数据库"
         [ -f "$filename" ] && info "备份文件：$filename"
@@ -246,15 +246,15 @@ run_mysql() {
         username=$(env_get DB_USERNAME)
         password=$(env_get DB_PASSWORD)
         # 还原数据库
-        mkdir -p ${cur_path}/docker/mysql/backup
-        list=`ls -1 "${cur_path}/docker/mysql/backup" | grep ".sql.gz"`
+        mkdir -p ${WORK_DIR}/docker/mysql/backup
+        list=`ls -1 "${WORK_DIR}/docker/mysql/backup" | grep ".sql.gz"`
         if [ -z "$list" ]; then
             error "没有备份文件！"
             exit 1
         fi
         echo "$list"
         read -rp "请输入备份文件名称还原：" inputname
-        filename="${cur_path}/docker/mysql/backup/${inputname}"
+        filename="${WORK_DIR}/docker/mysql/backup/${inputname}"
         if [ ! -f "$filename" ]; then
             error "备份文件：${inputname} 不存在！"
             exit 1
@@ -338,7 +338,7 @@ https_auto() {
 # 获取env参数
 env_get() {
     local key=$1
-    local value=`cat ${cur_path}/.env | grep "^$key=" | awk -F '=' '{print $2}' | tr -d '\r\n'`
+    local value=`cat ${WORK_DIR}/.env | grep "^$key=" | awk -F '=' '{print $2}' | tr -d '\r\n'`
     echo "$value"
 }
 
@@ -346,14 +346,14 @@ env_get() {
 env_set() {
     local key=$1
     local val=$2
-    local exist=`cat ${cur_path}/.env | grep "^$key="`
+    local exist=`cat ${WORK_DIR}/.env | grep "^$key="`
     if [ -z "$exist" ]; then
-        echo "$key=$val" >> $cur_path/.env
+        echo "$key=$val" >> $WORK_DIR/.env
     else
         if [[ `uname` == 'Linux' ]]; then
-            sed -i "/^${key}=/c\\${key}=${val}" ${cur_path}/.env
+            sed -i "/^${key}=/c\\${key}=${val}" ${WORK_DIR}/.env
         else
-            docker run -it --rm -v ${cur_path}:/www nginx:alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
+            docker run -it --rm -v ${WORK_DIR}:/www nginx:alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
         fi
         if [ $? -ne  0 ]; then
             error "设置env参数失败！"
@@ -382,7 +382,7 @@ env_init() {
 arg_get() {
     local find="n"
     local value=""
-    for var in $cur_arg; do
+    for var in $INPUT_ARGS; do
         if [[ "$find" == "y" ]]; then
             if [[ ! $var =~ "--" ]]; then
                 value=$var
@@ -473,7 +473,7 @@ run_install() {
     cmda=""
     cmdb=""
     for vol in "${volumes[@]}"; do
-        tmp_path="${cur_path}/${vol}"
+        tmp_path="${WORK_DIR}/${vol}"
         mkdir -p "${tmp_path}"
         chmod -R 775 "${tmp_path}"
         rm -f "${tmp_path}/dootask.lock"
@@ -519,7 +519,7 @@ run_install() {
     exec_judge "run_exec php 'composer install --no-dev --optimize-autoloader'" "安装依赖失败"
     
     # 最终检查
-    if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
+    if [ ! -f "${WORK_DIR}/vendor/autoload.php" ]; then
         error "安装依赖失败，请重试！"
         exit 1
     fi
@@ -724,7 +724,7 @@ case "$1" in
         elif [[ "$cli" == "dev" ]]; then
             por="-p 8880:8880"
         fi
-        docker run -it --rm -v ${cur_path}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
+        docker run -it --rm -v ${WORK_DIR}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
         ;;
     "npm")
         shift 1
@@ -732,12 +732,12 @@ case "$1" in
         pushd electron || exit
         npm "$@"
         popd || exit
-        docker run --rm -it -v ${cur_path}/resources/mobile:/work -w /work --entrypoint=/bin/bash node:16 -c "npm $@"
+        docker run --rm -it -v ${WORK_DIR}/resources/mobile:/work -w /work --entrypoint=/bin/bash node:16 -c "npm $@"
         ;;
     "doc")
         shift 1
         run_exec php "php app/Http/Controllers/Api/apidoc.php"
-        docker run -it --rm -v ${cur_path}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
+        docker run -it --rm -v ${WORK_DIR}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
         ;;
     "debug")
         shift 1
