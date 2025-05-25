@@ -41,7 +41,7 @@
                                 <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
                                     <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
                                 </template>
-                                <h2 class="user-select-auto" @click="onViewDetail">{{dialogData.name}}</h2>
+                                <h2 class="user-select-auto" @click="onViewDetail" v-html="transformEmojiToHtml(dialogData.name)"></h2>
                                 <em v-if="peopleNum > 0" @click="onDialogMenu('groupInfo')">({{peopleNum}})</em>
                                 <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
                                 <Tag v-if="dialogData.type === 'user' && approvaUserStatus" class="after" color="red" :fade="false">{{$L(approvaUserStatus)}}</Tag>
@@ -676,6 +676,7 @@ import {isLocalResourcePath} from "../../../components/Replace/utils";
 import emitter from "../../../store/events";
 import Forwarder from "./Forwarder/index.vue";
 import {throttle} from "lodash";
+import transformEmojiToHtml from "../../../utils/emoji";
 
 export default {
     name: "DialogWrapper",
@@ -1452,6 +1453,7 @@ export default {
     },
 
     methods: {
+        transformEmojiToHtml,
         /**
          * 获取会话基本信息
          * @param dialog_id

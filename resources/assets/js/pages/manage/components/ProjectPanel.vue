@@ -6,7 +6,7 @@
                 <div class="project-back" @click="onBack">
                     <i class="taskfont">&#xe676;</i>
                 </div>
-                <h1 @click="showName" class="user-select-auto" v-html="transformEmojiToHtml(projectData.name, 'no-dark-content')"></h1>
+                <h1 @click="showName" class="user-select-auto" v-html="transformEmojiToHtml(projectData.name)"></h1>
                 <div v-if="loading" class="project-load"><Loading/></div>
             </div>
             <ul class="project-icons">
@@ -119,7 +119,7 @@
                         :class="['column-head', column.color ? 'custom-color' : '']"
                         :style="column.color ? {backgroundColor: column.color} : {}">
                         <div class="column-head-title">
-                            <AutoTip>{{column.name}}</AutoTip>
+                            <AutoTip v-html="transformEmojiToHtml(column.name)"></AutoTip>
                             <em>({{panelTask(column.tasks).length}})</em>
                         </div>
                         <div class="column-head-icon">
@@ -575,7 +575,7 @@ import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import VMPreviewNostyle from "../../../components/VMEditor/nostyle.vue";
 import emitter from "../../../store/events";
-import {transformEmojiToHtml} from "../../../directives/emoji-class";
+import transformEmojiToHtml from "../../../utils/emoji";
 
 export default {
     name: "ProjectPanel",

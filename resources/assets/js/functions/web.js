@@ -1069,7 +1069,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     [style*="background-image:url"],
                     [style*="background-image: url"],
                     [background],
-                    .no-dark-mode,
+                    .emoji-original,
                     .no-dark-content,
                     .no-dark-before:before {
                         ${this.utils.reverseFilter()}

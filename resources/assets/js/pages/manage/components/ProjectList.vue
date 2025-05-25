@@ -32,7 +32,7 @@
                 <div class="project-item">
                     <div class="item-left">
                         <div class="project-h1">
-                            <div class="project-name" v-html="transformEmojiToHtml(item.name, 'no-dark-content')"></div>
+                            <div class="project-name" v-html="transformEmojiToHtml(item.name)"></div>
                             <div v-if="item.top_at" class="icon-top"></div>
                             <div v-if="item.task_my_num - item.task_my_complete > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
                         </div>
@@ -86,7 +86,7 @@
 import {mapState} from "vuex";
 import longpress from "../../../directives/longpress";
 import TransferDom from "../../../directives/transfer-dom";
-import {transformEmojiToHtml} from "../../../directives/emoji-class";
+import transformEmojiToHtml from "../../../utils/emoji";
 
 export default {
     name: "ProjectList",

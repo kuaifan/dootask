@@ -71,10 +71,6 @@ Vue.component('EDropdown', Dropdown);
 Vue.component('EDropdownMenu', DropdownMenu);
 Vue.component('EDropdownItem', DropdownItem);
 
-import emojiClass from './directives/emoji-class'
-
-Vue.directive('emoji-class', emojiClass);
-
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {
     return originalPush.call(this, location).catch(err => err)

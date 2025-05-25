@@ -138,7 +138,7 @@
                             @click="toggleRoute('project', {projectId: item.id})">
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
-                                <div class="title" v-html="transformEmojiToHtml(item.name, 'no-dark-content')"></div>
+                                <div class="title" v-html="transformEmojiToHtml(item.name)"></div>
                                 <div v-if="item.top_at" class="icon-top"></div>
                                 <div v-if="item.task_my_num - item.task_my_complete > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
                             </div>
@@ -388,7 +388,7 @@ import ApproveDetails from "./manage/approve/details.vue";
 import notificationKoro from "notification-koro1";
 import emitter from "../store/events";
 import SearchBox from "../components/SearchBox.vue";
-import {transformEmojiToHtml} from "../directives/emoji-class";
+import transformEmojiToHtml from "../utils/emoji";
 
 export default {
     components: {

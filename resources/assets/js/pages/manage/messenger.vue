@@ -104,7 +104,7 @@
                                         <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
                                             <Tag :color="tag.color" :fade="false" @on-click="openDialog(dialog.id)">{{$L(tag.text)}}</Tag>
                                         </template>
-                                        <span>{{dialog.name}}</span>
+                                        <span v-html="transformEmojiToHtml(dialog.name)"></span>
                                         <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg) && dialog.dialog_user.userid != userId" :type="lastMsgReadDone(dialog.last_msg)"/>
                                         <em v-if="dialog.last_at">{{$A.timeFormat(dialog.last_at)}}</em>
                                     </div>
@@ -282,6 +282,7 @@ import DialogWrapper from "./components/DialogWrapper";
 import longpress from "../../directives/longpress";
 import TransferDom from "../../directives/transfer-dom";
 import emitter from "../../store/events";
+import transformEmojiToHtml from "../../utils/emoji";
 
 const navDatas = {
     menus: [
@@ -654,6 +655,7 @@ export default {
     },
 
     methods: {
+        transformEmojiToHtml,
         listTouch() {
             if (this.$refs.navMenu?.visible) {
                 this.$refs.navMenu.hide()

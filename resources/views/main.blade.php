@@ -37,7 +37,7 @@
 
 @extends('ie')
 <div id="app">
-    <div class="app-view-loading no-dark-mode">
+    <div class="app-view-loading no-dark-content">
         <div>
             <div>PAGE LOADING</div>
             <span></span>

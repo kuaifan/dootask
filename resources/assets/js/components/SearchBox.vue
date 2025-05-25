@@ -63,7 +63,7 @@
                         </div>
                         <div class="item-content">
                             <div class="item-title">
-                                <div class="title-text" v-emoji-class="`no-dark-content`">{{item.title}}</div>
+                                <div class="title-text" v-html="transformEmojiToHtml(item.title)"></div>
                                 <div
                                     v-if="item.activity"
                                     class="title-activity"
@@ -75,7 +75,7 @@
                                     v-if="item.tags"
                                     v-for="tag in item.tags"
                                     :style="tag.style">{{tag.name}}</span>
-                                <span class="desc-text" v-emoji-class="`no-dark-content`" v-html="item.desc"></span>
+                                <span class="desc-text" v-html="transformEmojiToHtml(item.desc)"></span>
                             </div>
                         </div>
                     </li>
@@ -89,6 +89,7 @@
 <script>
 import {mapState} from "vuex";
 import emitter from "../store/events";
+import transformEmojiToHtml from "../utils/emoji";
 
 export default {
     name: 'SearchBox',
@@ -187,6 +188,7 @@ export default {
     },
 
     methods: {
+        transformEmojiToHtml,
         activityFormat(date) {
             const local = $A.daytz(),
                 time = $A.dayjs(date);
