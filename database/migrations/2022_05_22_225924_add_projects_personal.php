@@ -22,7 +22,7 @@ class AddProjectsPersonal extends Migration
         });
         if ($isAdd) {
             // 更新数据
-            \App\Models\Project::whereName('个人项目')->chunkById(100, function ($lists) {
+            \App\Models\Project::where('name','like', '%个人项目%')->chunkById(100, function ($lists) {
                 /** @var \App\Models\Project $item */
                 foreach ($lists as $item) {
                     if ($item->desc == '注册时系统自动创建项目，你可以自由删除。') {

@@ -6,7 +6,7 @@
                 <div class="project-back" @click="onBack">
                     <i class="taskfont">&#xe676;</i>
                 </div>
-                <h1 @click="showName" class="user-select-auto">{{projectData.name}}</h1>
+                <h1 @click="showName" class="user-select-auto" v-html="transformEmojiToHtml(projectData.name, 'no-dark-content')"></h1>
                 <div v-if="loading" class="project-load"><Loading/></div>
             </div>
             <ul class="project-icons">
@@ -575,6 +575,7 @@ import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import VMPreviewNostyle from "../../../components/VMEditor/nostyle.vue";
 import emitter from "../../../store/events";
+import {transformEmojiToHtml} from "../../../directives/emoji-class";
 
 export default {
     name: "ProjectPanel",
@@ -1074,6 +1075,7 @@ export default {
     },
 
     methods: {
+        transformEmojiToHtml,
         showName() {
             if (this.windowLandscape) {
                 return;

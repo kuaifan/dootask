@@ -155,7 +155,7 @@ class UsersController extends AbstractController
         //
         if (!Project::withTrashed()->whereUserid($user->userid)->wherePersonal(1)->exists()) {
             Project::createProject([
-                'name' => Doo::translate('个人项目'),
+                'name' => "📝 " . Doo::translate('个人项目'),
                 'desc' => Doo::translate('注册时系统自动创建项目，你可以自由删除。'),
                 'personal' => 1,
             ], $user->userid);
