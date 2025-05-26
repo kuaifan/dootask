@@ -4679,7 +4679,6 @@ export default {
             $A.modalWarning(`应用「${config.id}」未安装`);
             return;
         }
-        config.name = `${config.id}_${await $A.getSHA256Hash(config.url)}`
         config.url = config.url.replace(/\{user_id}/g, state.userId)
             .replace(/\{user_nickname}/g, encodeURIComponent(state.userInfo.nickname))
             .replace(/\{user_email}/g, encodeURIComponent(state.userInfo.email))

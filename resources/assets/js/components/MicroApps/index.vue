@@ -302,10 +302,29 @@ export default {
         },
 
         /**
+         * 生成微应用名称
+         * @param config
+         * @returns {Promise<string>}
+         */
+        async generateAppName(config) {
+            let name = config.id || 'micro-app'
+            if (!this.apps.find(item => item.name == name)) {
+                return name
+            }
+            name = `${config.id}_${await $A.getSHA256Hash(config.url, 8)}`
+            if (!this.apps.find(item => item.name == name)) {
+                return name
+            }
+            return `${config.id}_${await $A.getSHA256Hash(config.url)}`
+        },
+
+        /**
          * 观察打开微应用
          * @param config
          */
         async observeMicroApp(config) {
+            config.name = await this.generateAppName(config)
+
             if (config.url_type === 'inline_blank') {
                 await this.inlineBlank(config)
                 return
@@ -314,6 +333,7 @@ export default {
                 await this.externalWindow(config)
                 return
             }
+
             const app = this.apps.find(({name}) => name == config.name);
             if (app) {
                 // 更新微应用
@@ -345,6 +365,10 @@ export default {
                 transparent: true,
                 keep_alive: false,
             };
+            if (windowConfig.url) {
+                appConfig.url = windowConfig.url;
+                delete windowConfig.url;
+            }
             //
             const path = `/single/apps/${appConfig.name}`
             const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != appConfig.name);
