@@ -163,7 +163,7 @@ check_node() {
 
 # 获取容器名称
 docker_name() {
-    echo `$COMPOSE ps $1 --format '{{.Name}}' 2>/dev/null`
+    echo `$COMPOSE ps | awk '{print $1}' | grep "\-$1\-"`
 }
 
 # 编译前端
