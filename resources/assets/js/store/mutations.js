@@ -320,6 +320,16 @@ export default {
                 menus.push(...item.menu_items.map(m => Object.assign(m, {id: item.id})));
             }
         })
+        menus.forEach(item => {
+            let name = item.id
+            if (menus.filter(m => m.id === item.id).length > 1) {
+                name += "_" + `${item.url}`.replace(/^https?:\/\/.*?\//, '').replace(/[^a-zA-Z0-9]/g, '_');
+            }
+            if (menus.find(m => m.name === name)) {
+                name += "_" + $A.randomString(8)
+            }
+            item.name = name;
+        })
         $A.IDBSave("microAppsIds", state.microAppsIds = ids);
         $A.IDBSave("microAppsMenus", state.microAppsMenus = menus);
     },

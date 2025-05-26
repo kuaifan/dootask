@@ -310,32 +310,10 @@ export default {
         },
 
         /**
-         * 生成微应用名称
-         * @param config
-         * @returns {Promise<string>}
-         */
-        async generateAppName(config) {
-            let name = config.id || 'micro-app'
-            if (!this.apps.find(item => item.name == name)) {
-                return name
-            }
-            const additional = `${config.url}`
-                .replace(/^https?:\/\//, '')
-                .replace(/[^a-zA-Z0-9]/g, '_')
-            name = `${config.id}_${additional.substring(0, 8)}`
-            if (!this.apps.find(item => item.name == name)) {
-                return name
-            }
-            return `${config.id}_${additional}`
-        },
-
-        /**
          * 观察打开微应用
          * @param config
          */
         async observeMicroApp(config) {
-            config.name = await this.generateAppName(config)
-
             if (config.url_type === 'inline_blank') {
                 await this.inlineBlank(config)
                 return

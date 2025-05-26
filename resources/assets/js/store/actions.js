@@ -4653,8 +4653,9 @@ export default {
      * 打开微应用
      * @param state
      * @param data
-     *  - id                应用ID
-     *  - url               应用地址
+     *  - id                应用ID（必须）
+     *  - name              应用名称（必须）
+     *  - url               应用地址（必须）
      *  - url_type          地址类型
      *  - transparent       是否透明模式 (true/false)，默认 false
      *  - disable_scope_css 是否禁用样式隔离 (true/false)，默认 false
@@ -4666,11 +4667,12 @@ export default {
         if (!data || !$A.isJson(data)) {
             return
         }
-        if (!data.url) {
+        if (!data.id || !data.name || !data.url) {
             return
         }
         const config = {
             id: data.id,
+            name: data.name,
             url: $A.mainUrl(data.url),
             url_type: data.url_type || 'inline',
             transparent: typeof data.transparent == 'boolean' ? data.transparent : false,
@@ -4678,9 +4680,6 @@ export default {
             auto_dark_theme: typeof data.auto_dark_theme == 'boolean' ? data.auto_dark_theme : true,
             keep_alive: typeof data.keep_alive == 'boolean' ? data.keep_alive : true,
             props: $A.isJson(data.props) ? data.props : {},
-        }
-        if (!config.id) {
-            return
         }
         if (!state.microAppsIds.includes(config.id)) {
             $A.modalWarning(`应用「${config.id}」未安装`);
