@@ -375,6 +375,11 @@ env_init() {
     if [ -z "$(env_get APP_IPPR)" ]; then
         env_set APP_IPPR "10.$(rand 50 100).$(rand 100 200)"
     fi
+    if [ -z "$(env_get UPDATE_TIME)" ]; then
+        env_set DB_HOST "mariadb"
+        env_set REDIS_HOST "redis"
+        docker run -it --rm -v ${WORK_DIR}:/www nginx:alpine sh -c "sed -i 's|/etc/nginx/conf.d/site/|/var/www/docker/nginx/site/|g' /www/docker/nginx/site/*.conf &> /dev/null"
+    fi
 }
 
 # 获取命令参数
@@ -633,6 +638,7 @@ handle_update() {
         exec_judge "$COMPOSE up -d" "重启服务失败"
     fi
 
+    env_set UPDATE_TIME "$(date +%s)"
     success "更新完成"
 }
 

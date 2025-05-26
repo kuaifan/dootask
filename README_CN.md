@@ -12,11 +12,8 @@
 ## 📍 0.x 迁移到 1.x
 
 - 升级时请务必备份好数据！
-- 将 `.env` 文件的 `DB_HOST="${APP_IPPR}.5"` 改为 `DB_HOST=mariadb`。
-- 将 `.env` 文件的 `REDIS_HOST="${APP_IPPR}.4"` 改为 `REDIS_HOST=redis`。
-- 如果你已经开启了ssl证书，将 `docker/nginx/site/{xxx}.conf` 文件内容 `/etc/nginx/conf.d/site/` 改成 `/var/www/docker/nginx/site/`。
 - 如果升级失败请尝试执行 `./cmd update` 重试几次。
-- 如果升级中出现 `没有找到 xxx 容器` 的提示，请运行 `./cmd up` 后再执行 `./cmd update`。
+- 如果升级中出现 `没有找到 xxx 容器` 的提示，请运行 `./cmd reup` 后再执行 `./cmd update`。
 - 如果升级后出现502错误请运行 `./cmd reup` 重启服务即可。
 - 如果升级后出现 `应用「xxx」未安装` 的提示，请使用管理员账号进入应用商店安装相关应用。
 
