@@ -52,6 +52,7 @@
         "fs-extra": "^11.2.0",
         "pdf-lib": "^1.17.1",
         "request": "^2.88.2",
+        "tar": "^7.4.3",
         "yauzl": "^3.2.0"
     },
     "trayIcon": {
@@ -83,7 +84,9 @@
             {
                 "from": "updater/${os}/${arch}",
                 "to": "Resources/updater",
-                "filter": ["**/*"]
+                "filter": [
+                    "**/*"
+                ]
             }
         ],
         "npmRebuild": false,

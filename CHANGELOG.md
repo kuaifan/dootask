@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0]
+
+### Bug Fixes
+
+- 修复录音文件转文字后无法切换翻译的问题
+
+### Features
+
+- 新增应用商店
+- 检查应用是否已安装
+
+### Performance
+
+- 更新AI默认模型列表
+
 ## [0.47.7]
 
 ### Bug Fixes

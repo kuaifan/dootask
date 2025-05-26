@@ -30094,5 +30094,17 @@
         "fr": "Groupe OKR",
         "id": "Grup OKR",
         "ru": "Группа OKR"
+    },
+    {
+        "key": "应用「*」未安装",
+        "zh": "",
+        "zh-CHT": "應用「*」未安裝",
+        "en": "The application '*' is not installed",
+        "ko": "'*' 응용 프로그램이 설치되지 않았습니다",
+        "ja": "アプリ「*」はインストールされていません",
+        "de": "Die Anwendung „*“ ist nicht installiert",
+        "fr": "L'application « * » n'est pas installée",
+        "id": "Aplikasi '*' tidak terpasang",
+        "ru": "Приложение «*» не установлено"
     }
 ]
