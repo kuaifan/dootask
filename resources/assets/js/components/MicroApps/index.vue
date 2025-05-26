@@ -252,38 +252,13 @@ export default {
                             })
                         })
                     },
-                    popoutWindow: async (config) => {
-                        let appConfig = {}
-                        if (config.url) {
-                            appConfig = {
-                                name: `url-${await $A.getSHA256Hash(config.url)}`,
-                                url: config.url,
-                            }
-                            delete config.url
-                        } else {
-                            const app = this.apps.find(item => item.name == name);
-                            if (!app) {
-                                $A.modalError("应用不存在");
-                                return
-                            }
-                            appConfig = Object.assign({}, app)
+                    popoutWindow: async (windowConfig = null) => {
+                        const app = this.apps.find(item => item.name == name);
+                        if (!app) {
+                            $A.modalError("应用不存在");
+                            return
                         }
-
-                        appConfig.url_type = 'inline';
-                        appConfig.transparent = true
-                        appConfig.keep_alive = false
-
-                        const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != appConfig.name);
-                        apps.length > 50 && apps.splice(0, 10)
-                        apps.push(appConfig)
-                        await $A.IDBSet("cacheMicroApps", apps);
-
-                        await this.$store.dispatch('openChildWindow', {
-                            name: `single-apps-${$A.randomString(6)}`,
-                            path: `/single/apps/${appConfig.name}`,
-                            force: false,
-                            config
-                        });
+                        await this.inlineBlank(app, windowConfig)
                     },
                     openWindow: (params) => {
                         if (!$A.isJson(params)) {
@@ -360,18 +335,21 @@ export default {
         /**
          * 内联链接，在新窗口打开
          * @param config
+         * @param windowConfig
          * @returns {Promise<void>}
          */
-        async inlineBlank(config) {
-            // 内联链接在新窗口打开固定参数
-            config.url_type = 'inline';
-            config.transparent = true
-            config.keep_alive = false
+        async inlineBlank(config, windowConfig = null) {
+            const appConfig = {
+                ...config,
+                url_type: 'inline',
+                transparent: true,
+                keep_alive: false,
+            };
             //
-            const path = `/single/apps/${config.name}`
-            const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != config.name);
+            const path = `/single/apps/${appConfig.name}`
+            const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != appConfig.name);
             apps.length > 50 && apps.splice(0, 10)
-            apps.push(config)
+            apps.push(appConfig)
             await $A.IDBSet("cacheMicroApps", apps);
 
             if (this.$Electron) {
@@ -379,12 +357,12 @@ export default {
                     name: `single-apps-${$A.randomString(6)}`,
                     path: path,
                     force: false,
-                    config: {
+                    config: Object.assign({
                         title: ' ',
                         parent: null,
                         width: Math.min(window.screen.availWidth, 1440),
                         height: Math.min(window.screen.availHeight, 900),
-                    },
+                    }, $A.isJson(windowConfig) ? windowConfig : {}),
                 });
             } else if (this.$isEEUIApp) {
                 await this.$store.dispatch('openAppChildPage', {
@@ -402,14 +380,14 @@ export default {
 
         /**
          * 外部链接，在新窗口打开
-         * @param url
+         * @param config
          * @returns {Promise<void>}
          */
-        async externalWindow({url}) {
+        async externalWindow(config) {
             if (this.$Electron) {
                 await this.$store.dispatch('openChildWindow', {
                     name: `external-apps-${$A.randomString(6)}`,
-                    path: url,
+                    path: config.url,
                     force: false,
                     config: {
                         title: ' ',
@@ -423,10 +401,12 @@ export default {
                     pageType: 'app',
                     pageTitle: ' ',
                     url: 'web.js',
-                    params: {url},
+                    params: {
+                        url: config.url
+                    },
                 });
             } else {
-                window.open(url)
+                window.open(config.url)
             }
         },
 
