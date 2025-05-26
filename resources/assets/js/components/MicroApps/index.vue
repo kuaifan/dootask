@@ -92,6 +92,13 @@ export default {
     directives: {TransferDom},
     components: {MicroModal, UserSelect},
 
+    props: {
+        windowType: {
+            type: String,
+            default: 'embed',
+        },
+    },
+
     data() {
         return {
             apps: [],
@@ -212,6 +219,7 @@ export default {
 
                     baseUrl: $A.mainUrl(),
                     systemInfo: window.systemInfo,
+                    windowType: this.windowType,
 
                     isEEUIApp: $A.isEEUIApp,
                     isElectron: $A.isElectron,
@@ -311,11 +319,14 @@ export default {
             if (!this.apps.find(item => item.name == name)) {
                 return name
             }
-            name = `${config.id}_${await $A.getSHA256Hash(config.url, 8)}`
+            const additional = `${config.url}`
+                .replace(/^https?:\/\//, '')
+                .replace(/[^a-zA-Z0-9]/g, '_')
+            name = `${config.id}_${additional.substring(0, 8)}`
             if (!this.apps.find(item => item.name == name)) {
                 return name
             }
-            return `${config.id}_${await $A.getSHA256Hash(config.url)}`
+            return `${config.id}_${additional}`
         },
 
         /**
@@ -365,7 +376,7 @@ export default {
                 transparent: true,
                 keep_alive: false,
             };
-            if (windowConfig.url) {
+            if (windowConfig?.url) {
                 appConfig.url = windowConfig.url;
                 delete windowConfig.url;
             }

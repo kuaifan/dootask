@@ -904,7 +904,11 @@ const timezone = require("dayjs/plugin/timezone");
                 } else {
                     script.src = url
                 }
-                document.body.appendChild(script)
+                if (document.head) {
+                    document.head.appendChild(script)
+                } else {
+                    document.body.appendChild(script)
+                }
             })
         },
         loadScriptS(urls) {
@@ -1507,22 +1511,7 @@ const timezone = require("dayjs/plugin/timezone");
                 };
                 img.src = url;
             })
-        },
-
-        /**
-         * 获取SHA256哈希值
-         * @param str
-         * @param length
-         * @returns {Promise<string>}
-         */
-        async getSHA256Hash(str, length = 0) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(str);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            return length > 0 ? hash.slice(0, length) : hash;
-        },
+        }
     });
 
     /**

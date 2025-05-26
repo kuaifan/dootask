@@ -145,12 +145,19 @@ export default {
             // 获取系统设置
             dispatch("systemSetting")
 
-            // 加载语言包
+            // 载入静态资源
             await $A.loadScriptS([
+                // 基础包
+                'js/jsencrypt.min.js',
+                'js/scroll-into-view.min.js',
+
+                // 加载语言包
                 `language/web/key.js`,
                 `language/web/${languageName}.js`,
                 `language/iview/${languageName}.js`,
             ])
+
+            // 初始化语言
             initLanguage()
 
             resolve(action)

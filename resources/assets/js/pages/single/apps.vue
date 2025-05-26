@@ -1,5 +1,5 @@
 <template>
-    <MicroApps ref="app"/>
+    <MicroApps ref="app" window-type="popout"/>
 </template>
 
 <script>
