@@ -52,7 +52,11 @@ export default {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
                     this.$store.dispatch("setTheme", this.formData.theme).then(res => {
-                        res && $A.messageSuccess('保存成功');
+                        if (!res) {
+                            return
+                        }
+                        $A.messageSuccess('保存成功');
+                        this.$Electron?.sendMessage('reloadPreloadWindow');
                     })
                 }
             })

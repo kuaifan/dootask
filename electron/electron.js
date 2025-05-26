@@ -1209,6 +1209,16 @@ ipcMain.on('childWindowDestroyAll', (event) => {
 })
 
 /**
+ * 刷新预加载窗口（用于更换语言和主题时触发）
+ */
+ipcMain.on('reloadPreloadWindow', (event) => {
+    if (preloadWindow) {
+        preloadWindow.webContents.reload()
+    }
+    event.returnValue = "ok"
+})
+
+/**
  * 设置窗口尺寸
  * @param args {width, height, autoZoom, minWidth, minHeight, maxWidth, maxHeight}
  */
