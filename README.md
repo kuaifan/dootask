@@ -9,6 +9,14 @@ English | **[中文文档](./README_CN.md)**
 
 - Group Number: `546574618`
 
+## 📍 Migration from 0.x to 1.x
+
+- Please ensure to back up your data before upgrading!
+- If the upgrade fails, try running `./cmd update` multiple times.
+- If you encounter "Container xxx not found" during upgrade, run `./cmd up` and then execute `./cmd update`.
+- If you see a 502 error after upgrading, run `./cmd reup` to restart the services.
+- If you encounter "Application 'xxx' not installed" after upgrading, log in with the admin account and install the relevant applications from the App Store.
+
 ## Installation Requirements
 
 - Required: `Docker v20.10+` and `Docker Compose v2.0+`
