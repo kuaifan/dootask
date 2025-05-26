@@ -4400,9 +4400,13 @@ export default {
             });
         },
 
-        getUserApproveStatus() {
+        async getUserApproveStatus() {
             this.approvaUserStatus = ''
             if (this.dialogData.type !== 'user' || this.dialogData.bot) {
+                return
+            }
+            const isInstalled = await  this.$store.dispatch("isMicroAppInstalled", 'approve');
+            if (!isInstalled) {
                 return
             }
             this.$store.dispatch("call", {
