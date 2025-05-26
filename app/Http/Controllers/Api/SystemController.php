@@ -1529,11 +1529,13 @@ class SystemController extends AbstractController
             }
             // 添加office资源
             $officePath = '';
-            $officeApi = 'http://office/web-apps/apps/api/documents/api.js';
-            $content = @file_get_contents($officeApi);
-            if ($content) {
-                if (preg_match("/const\s+ver\s*=\s*'\/*([^']+)'/", $content, $matches)) {
-                    $officePath = $matches[1];
+            if (Apps::isInstalled('office')) {
+                $officeApi = 'http://office/web-apps/apps/api/documents/api.js';
+                $content = @file_get_contents($officeApi);
+                if ($content) {
+                    if (preg_match("/const\s+ver\s*=\s*'\/*([^']+)'/", $content, $matches)) {
+                        $officePath = $matches[1];
+                    }
                 }
             }
             if ($officePath) {
@@ -1549,14 +1551,16 @@ class SystemController extends AbstractController
                 });
             }
             // 添加OKR资源
-            $okrContent = @file_get_contents("http://nginx/apps/okr/");
-            preg_match_all('/<script[^>]*src=["\']([^"\']+)["\'][^>]*>/i', $okrContent, $scriptMatches);
-            foreach ($scriptMatches[1] as $src) {
-                $array[] = $src;
-            }
-            preg_match_all('/<link[^>]*rel=["\']stylesheet["\'][^>]*href=["\']([^"\']+)["\'][^>]*>/i', $okrContent, $linkMatches);
-            foreach ($linkMatches[1] as $href) {
-                $array[] = $href;
+            if (Apps::isInstalled('okr')) {
+                $okrContent = @file_get_contents("http://nginx/apps/okr/");
+                preg_match_all('/<script[^>]*src=["\']([^"\']+)["\'][^>]*>/i', $okrContent, $scriptMatches);
+                foreach ($scriptMatches[1] as $src) {
+                    $array[] = $src;
+                }
+                preg_match_all('/<link[^>]*rel=["\']stylesheet["\'][^>]*href=["\']([^"\']+)["\'][^>]*>/i', $okrContent, $linkMatches);
+                foreach ($linkMatches[1] as $href) {
+                    $array[] = $href;
+                }
             }
         }
 

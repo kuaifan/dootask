@@ -942,8 +942,7 @@ class UsersController extends AbstractController
                 return UserCheckinMac::saveMac($userInfo->userid, $array);
 
             case 'checkin_face':
-                $faceimg = $data['checkin_face'] ? $data['checkin_face'] : '';
-
+                $faceimg = $data['checkin_face'] ?: '';
                 return UserCheckinFace::saveFace($userInfo->userid, $userInfo->nickname, $faceimg, "管理员上传");
 
             case 'department':

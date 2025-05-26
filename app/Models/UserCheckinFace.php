@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
+use App\Module\Apps;
 use App\Module\Base;
 use App\Module\Ihttp;
 
@@ -37,8 +38,9 @@ use App\Module\Ihttp;
 class UserCheckinFace extends AbstractModel
 {
 
-    public static function saveFace($userid, $nickname, $faceimg, $remark='')
+    public static function saveFace($userid, $nickname, $faceimg, $remark = '')
     {
+        Apps::isInstalledThrow('face');
         // 取上传图片的URL
         $faceimg = Base::unFillUrl($faceimg);
         $record = "";
@@ -59,14 +61,14 @@ class UserCheckinFace extends AbstractModel
         }
 
         $res = Ihttp::ihttp_post($url, json_encode($data), 15);
-        if($res['data'] && $data = json_decode($res['data'])){
-            if($data->ret != 1 && $data->msg){
+        if ($res['data'] && $data = json_decode($res['data'])) {
+            if ($data->ret != 1 && $data->msg) {
                 throw new ApiException($data->msg);
             }
         }
 
 
-        return AbstractModel::transaction(function() use ($userid, $faceimg, $remark) {
+        return AbstractModel::transaction(function () use ($userid, $faceimg, $remark) {
             $checkinFace = self::query()->whereUserid($userid)->first();
             if ($checkinFace) {
                 self::updateData(['id' => $checkinFace->id], [
@@ -82,16 +84,14 @@ class UserCheckinFace extends AbstractModel
                 $checkinFace->save();
             }
             if ($faceimg == '') {
-                $res = UserCheckinFace::deleteDeviceUser($userid);
-                if ($res) {
-                    return $res;
-                }
+                UserCheckinFace::deleteDeviceUser($userid);
             }
             return Base::retSuccess('设置成功');
         });
     }
 
-    public static function deleteDeviceUser($userid) {
+    private static function deleteDeviceUser($userid)
+    {
         $url = "http://face:7788/user/delete";
         $data = [
             'enrollid' => $userid,
@@ -99,10 +99,9 @@ class UserCheckinFace extends AbstractModel
         ];
 
         $res = Ihttp::ihttp_post($url, json_encode($data));
-        if($res['data'] && $data = json_decode($res['data'])){
-            if($data->ret != 1 && $data->msg){
+        if ($res['data'] && $data = json_decode($res['data'])) {
+            if ($data->ret != 1 && $data->msg) {
                 throw new ApiException($data->msg);
-                // return Base::retError($data->msg);
             }
         }
     }
