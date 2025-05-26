@@ -7,14 +7,14 @@
             :ref="`ref-${app.name}`"
             :size="1200"
             :transparent="app.transparent"
-            :autoDarkTheme="app.autoDarkTheme"
+            :autoDarkTheme="app.auto_dark_theme"
             :beforeClose="async () => { await onBeforeClose(app.name) }">
             <micro-app
                 v-if="app.isOpen && app.url"
                 :name="app.name"
                 :url="app.url"
-                :keep-alive="app.keepAlive"
-                :disable-scopecss="app.disableScopecss"
+                :keep-alive="app.keep_alive"
+                :disable-scopecss="app.disable_scope_css"
                 :data="appData(app.name)"
                 @created="created"
                 @beforemount="beforemount"
@@ -268,8 +268,10 @@ export default {
                             }
                             appConfig = Object.assign({}, app)
                         }
+
+                        appConfig.url_type = 'inline';
                         appConfig.transparent = true
-                        appConfig.keepAlive = false
+                        appConfig.keep_alive = false
 
                         const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != appConfig.name);
                         apps.length > 50 && apps.splice(0, 10)
@@ -329,6 +331,14 @@ export default {
          * @param config
          */
         async observeMicroApp(config) {
+            if (config.url_type === 'inline_blank') {
+                await this.inlineBlank(config)
+                return
+            }
+            if (config.url_type === 'external') {
+                await this.externalWindow(config)
+                return
+            }
             const app = this.apps.find(({name}) => name == config.name);
             if (app) {
                 // 更新微应用
@@ -344,6 +354,79 @@ export default {
                 config.isOpen = false
                 this.apps.push(config)
                 requestAnimationFrame(_ => config.isOpen = true)
+            }
+        },
+
+        /**
+         * 内联链接，在新窗口打开
+         * @param config
+         * @returns {Promise<void>}
+         */
+        async inlineBlank(config) {
+            // 内联链接在新窗口打开固定参数
+            config.url_type = 'inline';
+            config.transparent = true
+            config.keep_alive = false
+            //
+            const path = `/single/apps/${config.name}`
+            const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != config.name);
+            apps.length > 50 && apps.splice(0, 10)
+            apps.push(config)
+            await $A.IDBSet("cacheMicroApps", apps);
+
+            if (this.$Electron) {
+                await this.$store.dispatch('openChildWindow', {
+                    name: `single-apps-${$A.randomString(6)}`,
+                    path: path,
+                    force: false,
+                    config: {
+                        title: ' ',
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    },
+                });
+            } else if (this.$isEEUIApp) {
+                await this.$store.dispatch('openAppChildPage', {
+                    pageType: 'app',
+                    pageTitle: ' ',
+                    url: 'web.js',
+                    params: {
+                        url: $A.urlReplaceHash(path)
+                    },
+                })
+            } else {
+                window.open($A.mainUrl(path.substring(1)))
+            }
+        },
+
+        /**
+         * 外部链接，在新窗口打开
+         * @param url
+         * @returns {Promise<void>}
+         */
+        async externalWindow({url}) {
+            if (this.$Electron) {
+                await this.$store.dispatch('openChildWindow', {
+                    name: `external-apps-${$A.randomString(6)}`,
+                    path: url,
+                    force: false,
+                    config: {
+                        title: ' ',
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    },
+                });
+            } else if (this.$isEEUIApp) {
+                await this.$store.dispatch('openAppChildPage', {
+                    pageType: 'app',
+                    pageTitle: ' ',
+                    url: 'web.js',
+                    params: {url},
+                });
+            } else {
+                window.open(url)
             }
         },
 

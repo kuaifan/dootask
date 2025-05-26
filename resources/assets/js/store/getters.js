@@ -286,7 +286,12 @@ export default {
      * @returns {Array}
      */
     filterMicroAppsMenus: (state) => {
-        return state.microAppsMenus.filter(item => item.location === 'application')
+        return state.microAppsMenus.filter(item => {
+            if (item.only_admin === true && !state.userIsAdmin) {
+                return false
+            }
+            return item.location === 'application'
+        })
     },
 
     /**
@@ -297,7 +302,12 @@ export default {
      * @returns {Array}
      */
     filterMicroAppsMenusAdmin: (state) => {
-        return state.microAppsMenus.filter(item => item.location === 'application/admin')
+        return state.microAppsMenus.filter(item => {
+            if (item.only_admin === true && !state.userIsAdmin) {
+                return false
+            }
+            return item.location === 'application/admin'
+        })
     },
 
     /**
@@ -308,6 +318,11 @@ export default {
      * @returns {Array}
      */
     filterMicroAppsMenusMain: (state) => {
-        return state.microAppsMenus.filter(item => item.location === 'main/menu')
+        return state.microAppsMenus.filter(item => {
+            if (item.only_admin === true && !state.userIsAdmin) {
+                return false
+            }
+            return item.location === 'main/menu'
+        })
     }
 }

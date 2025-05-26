@@ -308,8 +308,8 @@ export default {
                 label: $A.L("应用商店"),
                 icon: $A.mainUrl("images/application/appstore.svg"),
                 url: 'appstore/internal',
-                disableScopecss: true,
-                autoDarkTheme: false,
+                disable_scope_css: true,
+                auto_dark_theme: false,
             }]
         })
         const ids = [];

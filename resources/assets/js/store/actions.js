@@ -4648,11 +4648,12 @@ export default {
      * @param data
      *  - id                应用ID
      *  - url               应用地址
-     *  - props             传递参数
+     *  - url_type          地址类型
      *  - transparent       是否透明模式 (true/false)，默认 false
-     *  - autoDarkTheme     是否自动适配深色主题 (true/false)，默认 true
-     *  - keepAlive         是否开启微应用保活 (true/false)，默认 true
-     *  - disableScopecss   是否禁用样式隔离 (true/false)，默认 false
+     *  - disable_scope_css 是否禁用样式隔离 (true/false)，默认 false
+     *  - auto_dark_theme   是否自动适配深色主题 (true/false)，默认 true
+     *  - keep_alive        是否开启微应用保活 (true/false)，默认 true
+     *  - props             传递参数
      */
     async openMicroApp({state}, data) {
         if (!data || !$A.isJson(data)) {
@@ -4664,11 +4665,12 @@ export default {
         const config = {
             id: data.id,
             url: $A.mainUrl(data.url),
-            props: $A.isJson(data.props) ? data.props : {},
+            url_type: data.url_type || 'inline',
             transparent: typeof data.transparent == 'boolean' ? data.transparent : false,
-            autoDarkTheme: typeof data.autoDarkTheme == 'boolean' ? data.autoDarkTheme : true,
-            keepAlive: typeof data.keepAlive == 'boolean' ? data.keepAlive : true,
-            disableScopecss: typeof data.disableScopecss == 'boolean' ? data.disableScopecss : false
+            disable_scope_css: typeof data.disable_scope_css == 'boolean' ? data.disable_scope_css : false,
+            auto_dark_theme: typeof data.auto_dark_theme == 'boolean' ? data.auto_dark_theme : true,
+            keep_alive: typeof data.keep_alive == 'boolean' ? data.keep_alive : true,
+            props: $A.isJson(data.props) ? data.props : {},
         }
         if (!config.id) {
             return
@@ -4678,6 +4680,14 @@ export default {
             return;
         }
         config.name = `${config.id}_${await $A.getSHA256Hash(config.url)}`
+        config.url = config.url.replace(/\{user_id}/g, state.userId)
+            .replace(/\{user_nickname}/g, encodeURIComponent(state.userInfo.nickname))
+            .replace(/\{user_email}/g, encodeURIComponent(state.userInfo.email))
+            .replace(/\{user_avatar}/g, encodeURIComponent(state.userInfo.userimg))
+            .replace(/\{user_token}/g, encodeURIComponent(state.userToken))
+            .replace(/\{system_theme}/g, state.systemConfig.themeName)
+            .replace(/\{system_lang}/g, languageName)
+            .replace(/\{system_base_url}/g, $A.mainUrl('').replace(/\/$/, ''));
         emitter.emit('observeMicroApp:open', config);
     },
 
