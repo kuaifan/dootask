@@ -155,8 +155,8 @@ install() {
     cat >${sitePath}/ssl.conf <<EOF
 server_name ${domain};
 listen 443 ssl;
-ssl_certificate /etc/nginx/conf.d/site/ssl/${domain}.crt;
-ssl_certificate_key /etc/nginx/conf.d/site/ssl/${domain}.key;
+ssl_certificate /var/www/docker/nginx/site/ssl/${domain}.crt;
+ssl_certificate_key /var/www/docker/nginx/site/ssl/${domain}.key;
 ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;
 ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;
 ssl_prefer_server_ciphers on;

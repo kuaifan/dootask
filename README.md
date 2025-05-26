@@ -12,6 +12,9 @@ English | **[中文文档](./README_CN.md)**
 ## 📍 Migration from 0.x to 1.x
 
 - Please ensure to back up your data before upgrading!
+- Change `DB_HOST="${APP_IPPR}.5"` to `DB_HOST=mariadb` in the `.env` file.
+- Change `REDIS_HOST="${APP_IPPR}.4"` to `REDIS_HOST=redis` in the `.env` file.
+- If you have enabled SSL certificates, change `/etc/nginx/conf.d/site/` to `/var/www/docker/nginx/site/` in the `docker/nginx/site/{xxx}.conf` file.
 - If the upgrade fails, try running `./cmd update` multiple times.
 - If you encounter "Container xxx not found" during upgrade, run `./cmd up` and then execute `./cmd update`.
 - If you see a 502 error after upgrading, run `./cmd reup` to restart the services.
