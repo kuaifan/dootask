@@ -185,8 +185,10 @@ export default {
 
         @keyframes fade-hide-zindex {
             to {
+                width: 0;
+                height: 0;
+                overflow: hidden;
                 visibility: hidden;
-                z-index: -1;
             }
         }
     }
