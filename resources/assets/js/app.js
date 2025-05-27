@@ -77,7 +77,7 @@ VueRouter.prototype.push = function push(location) {
 }
 
 // 路由方式
-const routeMode = isSoftware && !/https?:/i.test(window.location.protocol) ? 'hash' : 'history';
+const routeMode = (window && window.systemInfo && window.systemInfo.routeMode === 'hash') ? 'hash' : 'history';
 const router = new VueRouter({mode: routeMode, routes});
 
 // 进度条配置

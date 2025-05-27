@@ -188,44 +188,44 @@ async function detectAndDownloadUpdater() {
 async function downloadAndExtractDrawio(drawioDestDir) {
     const tempDir = path.resolve(__dirname, ".temp");
     const tarFilePath = path.join(tempDir, "drawio-latest.tar.gz");
-    
+
     try {
         // 创建临时目录
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
         }
-        
+
         const spinner = ora('下载最新的Drawio文件...').start();
-        
+
         // 1. 下载tar.gz文件
         const response = await axios({
             url: 'https://appstore.dootask.com/api/v1/download/drawio/latest',
             method: 'GET',
             responseType: 'stream'
         });
-        
+
         const writer = fs.createWriteStream(tarFilePath);
         response.data.pipe(writer);
-        
+
         await new Promise((resolve, reject) => {
             writer.on('finish', resolve);
             writer.on('error', reject);
         });
-        
+
         spinner.text = '解压Drawio文件...';
-        
+
         // 2. 解压tar.gz文件到临时目录
         const extractDir = path.join(tempDir, "extracted");
         if (fs.existsSync(extractDir)) {
             fse.removeSync(extractDir);
         }
         fs.mkdirSync(extractDir, { recursive: true });
-        
+
         await tar.x({
             file: tarFilePath,
             cwd: extractDir
         });
-        
+
         // 3. 查找符合版本号格式的文件夹
         const files = fs.readdirSync(extractDir);
         const versionRegex = /^v?\d+(\.\d+){1,2}$/;
@@ -233,27 +233,27 @@ async function downloadAndExtractDrawio(drawioDestDir) {
             const filePath = path.join(extractDir, file);
             return fs.lstatSync(filePath).isDirectory() && versionRegex.test(file);
         });
-        
+
         if (!versionDir) {
             throw new Error('未找到符合版本号格式的文件夹');
         }
-        
+
         // 4. 查找webapp文件夹
         const versionPath = path.join(extractDir, versionDir);
         const webappPath = path.join(versionPath, 'webapp');
-        
+
         if (!fs.existsSync(webappPath)) {
             throw new Error('未找到webapp文件夹');
         }
-        
+
         // 5. 复制webapp文件夹内容到目标目录
         fse.copySync(webappPath, drawioDestDir);
-        
+
         spinner.succeed('Drawio文件下载并解压完成');
-        
+
         // 清理临时文件
         fse.removeSync(tempDir);
-        
+
     } catch (error) {
         console.warn('下载Drawio失败，使用默认版本:', error.message);
         // 清理临时文件
@@ -559,6 +559,7 @@ async function startBuild(data) {
         origin: "./",
         homeUrl:  utils.formatUrl(data.url),
         apiUrl:  utils.formatUrl(data.url) + "api/",
+        routeMode: "hash",
     }
     // information
     if (data.id === 'app') {
