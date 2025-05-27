@@ -179,12 +179,14 @@ export default {
     }
 
     &-hidden {
-        animation: fade-hide 0s forwards;
+        pointer-events: none;
+        animation: fade-hide-zindex 0s forwards;
         animation-delay: 300ms;
 
-        @keyframes fade-hide {
+        @keyframes fade-hide-zindex {
             to {
-                display: none;
+                visibility: hidden;
+                z-index: -1;
             }
         }
     }
