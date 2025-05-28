@@ -236,16 +236,6 @@
 
         <!--底部输入-->
         <div ref="footer" class="dialog-footer" @click="onClickFooter">
-            <!--上传组件-->
-            <DialogUpload
-                ref="chatUpload"
-                class="chat-upload"
-                :dialog-id="dialogId"
-                :maxSize="maxSize"
-                @on-progress="chatFile('progress', $event)"
-                @on-success="chatFile('success', $event)"
-                @on-error="chatFile('error', $event)"/>
-
             <!--滚动到底部-->
             <div
                 v-if="scrollTail > 500 || (msgNew > 0 && allMsgs.length > 0)"
@@ -299,6 +289,16 @@
                 @on-record="sendRecord"
                 @on-record-state="onRecordState"/>
         </div>
+
+        <!--上传组件-->
+        <DialogUpload
+            ref="chatUpload"
+            class="dialog-upload"
+            :dialog-id="dialogId"
+            :maxSize="maxSize"
+            @on-progress="chatFile('progress', $event)"
+            @on-success="chatFile('success', $event)"
+            @on-error="chatFile('error', $event)"/>
 
         <!--长按、右键-->
         <div

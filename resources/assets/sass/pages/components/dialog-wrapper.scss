@@ -1975,13 +1975,6 @@
             }
         }
 
-        .chat-upload {
-            display: none;
-            width: 0;
-            height: 0;
-            overflow: hidden;
-        }
-
         .chat-bottom-menu {
             display: flex;
             align-items: center;
@@ -2047,6 +2040,13 @@
                 }
             }
         }
+    }
+
+    .dialog-upload {
+        display: none;
+        width: 0;
+        height: 0;
+        overflow: hidden;
     }
 
     .drag-over {
