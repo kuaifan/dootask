@@ -454,10 +454,15 @@ export default {
 
         /**
          * 关闭所有微应用
+         * @param destroy
          */
-        closeAllMicroApp() {
-            this.apps = [];
-            microApp.unmountAllApps({destroy: true})
+        closeAllMicroApp(destroy = true) {
+            this.apps.forEach(app => {
+                app.isOpen = false
+                if (destroy) {
+                    microApp.unmountApp(app.name, {destroy: true})
+                }
+            });
         },
 
         /**
