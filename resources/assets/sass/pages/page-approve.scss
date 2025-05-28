@@ -90,7 +90,7 @@
         .approve-mains {
             display: flex;
             flex: 1 1 auto;
-            height: calc(100vh - 190px);
+            height: calc(100vh - 190px - var(--status-bar-height) - var(--navigation-bar-height));
             position: relative;
 
             .approve-main-left {
