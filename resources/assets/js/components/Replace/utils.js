@@ -19,10 +19,7 @@ const convertLocalResourcePath = (() => {
 
         // 设置应用前缀URL
         if ($A.isEEUIApp) {
-            appPreUrl = $A.eeuiAppRewriteUrl('../public/')
-            if ($A.isAndroid()) {
-                appPreUrl = appPreUrl.replace(/^file:\/\/assets\//, 'file:///android_asset/')
-            }
+            appPreUrl = "http://localhost:22223/"
         } else if ($A.Electron) {
             appPreUrl = "local-asset://public/"
         }

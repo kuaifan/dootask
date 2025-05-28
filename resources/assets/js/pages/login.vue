@@ -394,7 +394,7 @@ export default {
             }
             let value = $A.rightDelete(this.cacheServerUrl, "/api/");
             value = $A.leftDelete(value, "http://");
-            if (!value && /^https?:/.test(window.location.protocol)) {
+            if (!value && /^https?:/.test(window.location.protocol) && !/^localhost/.test(window.location.host)) {
                 value = window.location.host
             }
             $A.modalInput({
