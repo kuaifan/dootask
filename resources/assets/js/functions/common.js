@@ -2054,9 +2054,16 @@ const timezone = require("dayjs/plugin/timezone");
                     const requestDuration = Date.now() - requestStartTime;
 
                     // 获取响应标头时间信息
-                    const serverDate = xhr.getResponseHeader('Date');
-                    const lastModified = xhr.getResponseHeader('Last-Modified');
-                    const age = xhr.getResponseHeader('Age');
+                    const getResponseHeader = (header) => {
+                        try {
+                            return xhr.getResponseHeader(header);
+                        } catch (e) {
+                            return null;
+                        }
+                    }
+                    const serverDate = getResponseHeader('Date');
+                    const lastModified = getResponseHeader('Last-Modified');
+                    const age = getResponseHeader('Age');
 
                     // 将时间信息添加到响应对象中
                     xhr.timeData = {
