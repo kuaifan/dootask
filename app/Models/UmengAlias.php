@@ -215,7 +215,6 @@ class UmengAlias extends AbstractModel
                         ],
                         'channel_properties' => [
                             'oppo_channel_id' => 'dootask',
-                            'oppo_category' => 'IM',
                             'vivo_category' => 'IM',
                             'huawei_channel_importance' => 'NORMAL',
                             'huawei_channel_category' => 'IM',
