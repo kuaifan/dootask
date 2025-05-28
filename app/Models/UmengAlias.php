@@ -214,6 +214,8 @@ class UmengAlias extends AbstractModel
                             'expire_time' => Carbon::now()->addSeconds($seconds)->toDateTimeString(),
                         ],
                         'channel_properties' => [
+                            'oppo_channel_id' => 'dootask',
+                            'oppo_category' => 'IM',
                             'vivo_category' => 'IM',
                             'huawei_channel_importance' => 'NORMAL',
                             'huawei_channel_category' => 'IM',
