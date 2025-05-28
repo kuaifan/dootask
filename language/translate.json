@@ -21768,18 +21768,6 @@
         "ru": "Количество помощников по задаче не может превышать (%T1)"
     },
     {
-        "key": "子任务禁止复制",
-        "zh": "",
-        "zh-CHT": "子任務禁止複製",
-        "en": "Subtasks cannot be copied",
-        "ko": "하위 작업은 복사할 수 없습니다",
-        "ja": "サブタスクはコピーできません",
-        "de": "Unteraufgaben dürfen nicht kopiert werden",
-        "fr": "Les sous-tâches ne peuvent pas être copiées",
-        "id": "Sub-tugas tidak dapat disalin",
-        "ru": "Подзадачи нельзя копировать"
-    },
-    {
         "key": "请先领取任务",
         "zh": "",
         "zh-CHT": "請先領取任務",

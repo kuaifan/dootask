@@ -1540,7 +1540,7 @@ export default {
                     if (this.subList.length > 0) {
                         $A.modalConfirm({
                             language: false,
-                            content: this.$L('重复周期生成的子任务时间将会被清除，是否确认继续？'),
+                            content: this.$L('周期任务的子任务时间将被重置，是否继续？'),
                             onOk: () => {
                                 this.updateData('loop', value)
                             }

@@ -26,6 +26,10 @@ class LoopTask extends AbstractTask
         ])->chunkById(100, function ($list) {
             /** @var ProjectTask $item */
             foreach ($list as $item) {
+                if ($item->parent_id > 0) {
+                    // 如果是子任务则不处理
+                    continue;
+                }
                 try {
                     $task = $item->copyTask();
                     // 工作流
@@ -71,7 +75,7 @@ class LoopTask extends AbstractTask
                             $newSubTask->save();
                         }
                     }
-                    // 
+                    //
                     $task->refreshLoop(true);
                     $task->addLog("创建任务来自周期任务ID：{$item->id}", [], $task->userid);
                     // 清空旧周期
