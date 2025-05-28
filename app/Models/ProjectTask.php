@@ -1144,9 +1144,6 @@ class ProjectTask extends AbstractModel
      */
     public function copyTask()
     {
-        if ($this->parent_id > 0) {
-            throw new ApiException('子任务禁止复制');
-        }
         return AbstractModel::transaction(function() {
             // 复制任务
             $task = $this->replicate();

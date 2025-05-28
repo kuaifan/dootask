@@ -60,6 +60,18 @@ class LoopTask extends AbstractTask
                         $task->start_at = Carbon::parse($task->loop_at);
                         $task->end_at = $task->start_at->clone()->addSeconds($diffSecond);
                     }
+                    // 处理子任务
+                    $subTasks = ProjectTask::whereParentId($item->id)->get();
+                    if (!$subTasks->isEmpty()) {
+                        foreach ($subTasks as $subTask) {
+                            $newSubTask = $subTask->copyTask();
+                            $newSubTask->parent_id = $task->id;
+                            $newSubTask->start_at = $task->start_at;
+                            $newSubTask->end_at = $task->end_at;
+                            $newSubTask->save();
+                        }
+                    }
+                    // 
                     $task->refreshLoop(true);
                     $task->addLog("创建任务来自周期任务ID：{$item->id}", [], $task->userid);
                     // 清空旧周期
