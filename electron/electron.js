@@ -1,6 +1,7 @@
 const fs = require('fs')
 const os = require("os");
 const path = require('path')
+const express = require('express')
 const {
     app,
     ipcMain,
@@ -47,7 +48,10 @@ let mainWindow = null,
     isReady = false,
     willQuitApp = false,
     devloadUrl = "",
-    devloadCachePath = path.resolve(__dirname, ".devload");
+    devloadCachePath = path.resolve(__dirname, ".devload"),
+    isDevelopMode = false,
+    serverPort = 22223,
+    serverPublicDir = path.join(__dirname, 'public');
 
 let screenshotObj = null,
     screenshotKey = null;
@@ -75,6 +79,11 @@ let showState = {},
 
 if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
+    if (devloadUrl.startsWith('http')) {
+        isDevelopMode = true;
+    } else {
+        devloadUrl = "";
+    }
 }
 
 if (!fs.existsSync(cacheDir)) {
@@ -123,6 +132,70 @@ function createProtocol() {
             return new Response('Internal Error', { status: 500 })
         }
     })
+}
+
+/**
+ * 启动web服务
+ */
+async function startWebServer() {
+    if (devloadUrl) {
+        return Promise.resolve();
+    }
+    
+    return new Promise((resolve, reject) => {
+        // 创建Express应用
+        const app = express();
+        
+        // 使用express.static中间件提供静态文件服务
+        // Express内置了全面的MIME类型支持，无需手动配置
+        app.use(express.static(serverPublicDir, {
+            // 设置默认文件
+            index: ['index.html', 'index.htm'],
+            // 启用etag缓存
+            etag: true,
+            // 设置缓存时间（开发环境可以设置较短）
+            maxAge: '1h',
+            // 启用压缩
+            dotfiles: 'ignore',
+            // 自定义头部
+            setHeaders: (res, path, stat) => {
+                // 对HTML文件禁用缓存，方便开发调试
+                if (path.endsWith('.html')) {
+                    res.set('Cache-Control', 'no-cache');
+                }
+            }
+        }));
+        
+        // 404处理中间件
+        app.use((req, res) => {
+            res.status(404).send('File not found');
+        });
+        
+        // 错误处理中间件
+        app.use((err, req, res, next) => {
+            console.error('Server error:', err);
+            res.status(500).send('Internal Server Error');
+        });
+        
+        // 启动服务器
+        const server = app.listen(serverPort, 'localhost', () => {
+            console.log(`Express static file server running at http://localhost:${serverPort}/`);
+            console.log(`Serving files from: ${serverPublicDir}`);
+            
+            // 如果没有设置devloadUrl，则设置为本地服务器地址
+            if (!devloadUrl) {
+                devloadUrl = `http://localhost:${serverPort}/`;
+            }
+            
+            resolve(server);
+        });
+        
+        // 错误处理
+        server.on('error', (err) => {
+            console.error('Server error:', err);
+            reject(err);
+        });
+    });
 }
 
 /**
@@ -930,9 +1003,17 @@ if (!getTheLock) {
     app.on('second-instance', () => {
         utils.setShowWindow(mainWindow)
     })
-    app.on('ready', () => {
+    app.on('ready', async () => {
         isReady = true
         isWin && app.setAppUserModelId(config.appId)
+        // 启动web服务
+        try {
+            await startWebServer()
+        } catch (error) {
+            dialog.showErrorBox('启动失败', `服务器启动失败：${error.message}`);
+            app.quit();
+            return;
+        }
         // SameSite
         utils.useCookie()
         // 创建协议
@@ -945,7 +1026,7 @@ if (!getTheLock) {
         monitorThemeChanges()
         // 创建托盘
         if (['darwin', 'win32'].includes(process.platform) && utils.isJson(config.trayIcon)) {
-            mainTray = new Tray(path.join(__dirname, config.trayIcon[devloadUrl ? 'dev' : 'prod'][process.platform === 'darwin' ? 'mac' : 'win']));
+            mainTray = new Tray(path.join(__dirname, config.trayIcon[isDevelopMode ? 'dev' : 'prod'][process.platform === 'darwin' ? 'mac' : 'win']));
             mainTray.on('click', () => {
                 utils.setShowWindow(mainWindow)
             })

@@ -49,6 +49,7 @@
         "electron-squirrel-startup": "^1.0.1",
         "electron-store": "^8.2.0",
         "electron-updater": "^6.3.9",
+        "express": "^5.1.0",
         "fs-extra": "^11.2.0",
         "pdf-lib": "^1.17.1",
         "request": "^2.88.2",
