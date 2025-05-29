@@ -97,7 +97,15 @@ export default {
         },
 
         showDown() {
-            return !this.$isEEUIApp && !this.windowTouch && ['login', 'index', 'manage-dashboard'].includes(this.routeName)
+            if (this.$isEEUIApp || this.windowTouch) {
+                // app或者触摸屏不显示下载链接
+                return false;
+            }
+            if (this.routeName == 'manage-dashboard' && this.windowPortrait) {
+                // 在仪表盘页面且竖屏不显示下载链接
+                return false;
+            }
+            return ['login', 'index', 'manage-dashboard'].includes(this.routeName)
         },
 
         showPrivacy() {

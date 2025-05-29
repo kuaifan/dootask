@@ -1536,17 +1536,19 @@ export default {
                 event,
                 list,
                 size: 'large',
-                onUpdate: (value) => {
-                    if (this.subList.length > 0) {
+                onUpdate: (newLoop) => {
+                    const currentLoop = this.taskDetail.loop || 'never';
+                    const loopTip = currentLoop == 'never' && newLoop != 'never' && this.subList.length > 0
+                    if (loopTip) {
                         $A.modalConfirm({
                             language: false,
                             content: this.$L('周期任务的子任务时间将被重置，是否继续？'),
                             onOk: () => {
-                                this.updateData('loop', value)
+                                this.updateData('loop', newLoop)
                             }
                         });
                     } else {
-                        this.updateData('loop', value)
+                        this.updateData('loop', newLoop)
                     }
                 }
             })
