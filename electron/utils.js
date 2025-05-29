@@ -658,15 +658,15 @@ const utils = {
     /**
      * 加载URL或文件
      * @param browser
-     * @param url
+     * @param serverUrl
      * @param hash
      */
-    loadUrlOrFile(browser, url, hash = null) {
-        if (url) {
+    loadUrl(browser, serverUrl, hash = null) {
+        if (serverUrl) {
             if (hash) {
-                url = `${url}#${hash}`.replace(/\/*#\/*/g, '/')
+                serverUrl = `${serverUrl}#${hash}`.replace(/\/*#\/*/g, '/')
             }
-            browser.loadURL(url).then(_ => { }).catch(_ => { })
+            browser.loadURL(serverUrl).then(_ => { }).catch(_ => { })
         } else {
             const options = {}
             if (hash) {

@@ -47,11 +47,11 @@ let mainWindow = null,
     mainTray = null,
     isReady = false,
     willQuitApp = false,
-    devloadUrl = "",
-    devloadCachePath = path.resolve(__dirname, ".devload"),
+    devloadPath = path.resolve(__dirname, ".devload"),
     isDevelopMode = false,
     serverPort = 22223,
-    serverPublicDir = path.join(__dirname, 'public');
+    serverPublicDir = path.join(__dirname, 'public'),
+    serverUrl = "";
 
 let screenshotObj = null,
     screenshotKey = null;
@@ -77,12 +77,11 @@ let showState = {},
         }
     }
 
-if (fs.existsSync(devloadCachePath)) {
-    devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
-    if (devloadUrl.startsWith('http')) {
+if (fs.existsSync(devloadPath)) {
+    let devloadContent = fs.readFileSync(devloadPath, 'utf8')
+    if (devloadContent.startsWith('http')) {
+        serverUrl = devloadContent;
         isDevelopMode = true;
-    } else {
-        devloadUrl = "";
     }
 }
 
@@ -138,7 +137,7 @@ function createProtocol() {
  * 启动web服务
  */
 async function startWebServer() {
-    if (devloadUrl) {
+    if (serverUrl) {
         return Promise.resolve();
     }
     
@@ -181,12 +180,7 @@ async function startWebServer() {
         const server = app.listen(serverPort, 'localhost', () => {
             console.log(`Express static file server running at http://localhost:${serverPort}/`);
             console.log(`Serving files from: ${serverPublicDir}`);
-            
-            // 如果没有设置devloadUrl，则设置为本地服务器地址
-            if (!devloadUrl) {
-                devloadUrl = `http://localhost:${serverPort}/`;
-            }
-            
+            serverUrl = `http://localhost:${serverPort}/`;
             resolve(server);
         });
         
@@ -272,7 +266,7 @@ function createMainWindow() {
     electronMenu.webContentsMenu(mainWindow.webContents)
 
     // 加载地址
-    utils.loadUrlOrFile(mainWindow, devloadUrl)
+    utils.loadUrl(mainWindow, serverUrl)
 }
 
 /**
@@ -379,7 +373,7 @@ function preCreateChildWindow() {
     const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
     browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
 
-    utils.loadUrlOrFile(browser, devloadUrl, 'preload')
+    utils.loadUrl(browser, serverUrl, 'preload')
 
     preloadWindow = browser;
 }
@@ -524,10 +518,10 @@ function createChildWindow(args) {
             .webContents
             .executeJavaScript(`if(typeof window.__initializeApp === 'function'){window.__initializeApp('${hash}')}else{throw new Error('no function')}`, true)
             .catch(() => {
-                utils.loadUrlOrFile(browser, devloadUrl, hash)
+                utils.loadUrl(browser, serverUrl, hash)
             });
     } else {
-        utils.loadUrlOrFile(browser, devloadUrl, hash)
+        utils.loadUrl(browser, serverUrl, hash)
     }
 
     // 预创建下一个窗口
@@ -550,7 +544,7 @@ function updateChildWindow(browser, args) {
 
     const hash = args.hash || args.path;
     if (hash) {
-        utils.loadUrlOrFile(browser, devloadUrl, hash)
+        utils.loadUrl(browser, serverUrl, hash)
     }
     if (args.name) {
         const er = childWindow.find(item => item.browser == browser);
@@ -1870,8 +1864,8 @@ function exportDiagram(event, args, directFinalize) {
             transparent: args.format == 'png' && (args.bg == null || args.bg == 'none'),
         });
 
-        if (devloadUrl) {
-            browser.loadURL(devloadUrl + 'drawio/webapp/export3.html').then(_ => { }).catch(_ => { })
+        if (serverUrl) {
+            browser.loadURL(serverUrl + 'drawio/webapp/export3.html').then(_ => { }).catch(_ => { })
         } else {
             browser.loadFile('./public/drawio/webapp/export3.html').then(_ => { }).catch(_ => { })
         }
