@@ -58,10 +58,10 @@
                     <div class="emoji-users" @click="onShowEmojiUser(item)">
                         <ul>
                             <template v-for="(uitem, uindex) in sortEmojiUser(item.userids)">
-                                <li v-if="uindex < emojiUsersNum">
+                                <li v-if="uindex < emojiUsersNum" :key="`emoji-user-li-${uindex}-${uitem}`">
                                     <UserAvatar :userid="uitem" show-name :show-icon="false"/>
                                 </li>
-                                <li v-else-if="uindex == emojiUsersNum">+{{item.userids.length - emojiUsersNum}}位</li>
+                                <li v-else-if="uindex == emojiUsersNum" :key="`emoji-user-more-${uindex}`">+{{item.userids.length - emojiUsersNum}}位</li>
                             </template>
                         </ul>
                     </div>
@@ -93,7 +93,7 @@
                                 {{ $L('完成') }}
                             </div>
                             <ul>
-                                <li v-for="item in todoDoneList">
+                                <li v-for="item in todoDoneList" :key="`todo-done-${item.userid}`">
                                     <UserAvatar :userid="item.userid" :size="26" showName/>
                                 </li>
                             </ul>
@@ -106,7 +106,7 @@
                                 <Button type="primary" size="small" @click="handleTodoAdd">{{ $L('添加') }}</Button>
                             </div>
                             <ul>
-                                <li v-for="item in todoUndoneList">
+                                <li v-for="item in todoUndoneList" :key="`todo-undone-${item.userid}`">
                                     <UserAvatar :userid="item.userid" :size="26" showName/>
                                 </li>
                             </ul>
@@ -145,7 +145,7 @@
                                         {{ $L('已读') }}
                                     </div>
                                     <ul>
-                                        <li v-for="item in readList">
+                                        <li v-for="item in readList" :key="`read-${item.userid}`">
                                             <UserAvatar :userid="item.userid" :size="26" showName/>
                                         </li>
                                     </ul>
@@ -156,7 +156,7 @@
                                         {{ $L('未读') }}
                                     </div>
                                     <ul>
-                                        <li v-for="item in unreadList">
+                                        <li v-for="item in unreadList" :key="`unread-${item.userid}`">
                                             <UserAvatar :userid="item.userid" :size="26" showName/>
                                         </li>
                                     </ul>
@@ -191,6 +191,15 @@ import TemplateMsg from "./template";
 import LoadMsg from "./load.vue";
 import UnknownMsg from "./unknown.vue";
 import emitter from "../../../../store/events";
+
+// 模块级别的正则表达式常量，所有组件实例共享
+const REGEX_CACHE = Object.freeze({
+    emoticon: /^<img\s+class="emoticon"[^>]*?>$/,
+    threeEmoji: /^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){3}\s*<\/p>\s*$/,
+    twoEmoji: /^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){2}\s*<\/p>\s*$/,
+    oneEmoji: /^\s*<p>\s*[\uD800-\uDBFF][\uDC00-\uDFFF]\s*<\/p>\s*$/,
+    emojiRange: /^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){1,3}\s*<\/p>\s*$/
+});
 
 export default {
     name: "DialogView",
@@ -332,8 +341,8 @@ export default {
             }
             if (reply_id === 0 && $A.arrayLength(emoji) === 0) {
                 if (type === 'text') {
-                    if (/^<img\s+class="emoticon"[^>]*?>$/.test(msg.text)
-                        || /^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){1,3}\s*<\/p>\s*$/.test(msg.text)) {
+                    if (REGEX_CACHE.emoticon.test(msg.text)
+                        || REGEX_CACHE.emojiRange.test(msg.text)) {
                         classArray.push('transparent')
                     }
                 }
@@ -352,20 +361,25 @@ export default {
         contentClass() {
             const {type, msg} = this.msgData;
             const classArray = [];
+            
             if (this.operateEnter || this.pointerMouse) {
                 classArray.push('user-select-auto')
             }
-            if (type === 'text') {
-                if (/^<img\s+class="emoticon"[^>]*?>$/.test(msg.text)) {
+            
+            if (type === 'text' && msg?.text) {
+                const text = msg.text;
+                
+                if (REGEX_CACHE.emoticon.test(text)) {
                     classArray.push('an-emoticon')
-                } else if (/^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){3}\s*<\/p>\s*$/.test(msg.text)) {
+                } else if (REGEX_CACHE.threeEmoji.test(text)) {
                     classArray.push('three-emoji')
-                } else if (/^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){2}\s*<\/p>\s*$/.test(msg.text)) {
+                } else if (REGEX_CACHE.twoEmoji.test(text)) {
                     classArray.push('two-emoji')
-                } else if (/^\s*<p>\s*[\uD800-\uDBFF][\uDC00-\uDFFF]\s*<\/p>\s*$/.test(msg.text)) {
+                } else if (REGEX_CACHE.oneEmoji.test(text)) {
                     classArray.push('an-emoji')
                 }
             }
+            
             return classArray;
         }
     },
