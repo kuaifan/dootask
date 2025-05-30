@@ -96,14 +96,13 @@ services:
   appstore:
     container_name: "dootask-appstore-${APP_ID}"
     privileged: true
-    image: "dootask/appstore:0.0.7"
+    image: "dootask/appstore:0.0.8"
     volumes:
       - shared_data:/usr/share/dootask
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/var/www
     environment:
       HOST_PWD: "${PWD}"
-      RUN_MODE: "strict"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 5s
