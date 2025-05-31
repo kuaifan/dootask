@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.31]
+
+### Bug Fixes
+
+- 修复移动端审批列表无法滚动到底部的情况
+- 修复重复周期 子任务没有复制过去
+
+### Features
+
+- 桌面端使用web服务启动
+
 ## [1.0.0]
 
 ### Bug Fixes

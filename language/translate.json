@@ -17196,18 +17196,6 @@
         "ru": "и (%T1) других файлов"
     },
     {
-        "key": "审批详情",
-        "zh": "",
-        "zh-CHT": "審批詳情",
-        "en": "Approval Details",
-        "ko": "승인 세부 정보",
-        "ja": "承認詳細",
-        "de": "Genehmigungsdetails",
-        "fr": "Détails de l'approbation",
-        "id": "Detail Persetujuan",
-        "ru": "Детали утверждения"
-    },
-    {
         "key": "天前",
         "zh": "",
         "zh-CHT": "天前",
@@ -30094,5 +30082,17 @@
         "fr": "L'application « * » n'est pas installée",
         "id": "Aplikasi '*' tidak terpasang",
         "ru": "Приложение «*» не установлено"
+    },
+    {
+        "key": "周期任务的子任务时间将被重置，是否继续？",
+        "zh": "",
+        "zh-CHT": "週期任務的子任務時間將被重置，是否繼續？",
+        "en": "The subtask time of the recurring task will be reset. Do you wish to continue?",
+        "ko": "주기적인 작업의 하위 작업 시간이 초기화됩니다. 계속하시겠습니까?",
+        "ja": "周期タスクのサブタスク時間がリセットされます。続行しますか？",
+        "de": "Die Unteraufgabenzeit der wiederkehrenden Aufgabe wird zurückgesetzt. Möchten Sie fortfahren?",
+        "fr": "Le temps des sous-tâches de la tâche récurrente sera réinitialisé. Souhaitez-vous continuer?",
+        "id": "Waktu sub-tugas dari tugas berulang akan diatur ulang. Apakah Anda ingin melanjutkan?",
+        "ru": "Время подзадачи повторяющейся задачи будет сброшено. Хотите продолжить?"
     }
 ]

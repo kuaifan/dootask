@@ -4720,7 +4720,8 @@ export default {
     async updateMicroAppsStatus({commit, state}) {
         const {data: {code, data}} = await axios.get($A.mainUrl('appstore/api/v1/internal/installed'), {
             headers: {
-                Token: state.userToken
+                Token: state.userToken,
+                Language: languageName,
             }
         })
         if (code === 200) {
