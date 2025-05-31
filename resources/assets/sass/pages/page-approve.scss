@@ -231,25 +231,6 @@
     border-radius: 10px;
     background: #fff;
 
-    .approve-details-nav{
-        height: 52px;
-        padding:0 8px;
-        text-align: center;
-        line-height: 52px;
-        background-color: #f8f8f8;
-        display: none;
-        @media (max-width: 425px) {
-           display: block;
-        }
-        .common-nav-back{
-            float: left;
-        }
-        h2{
-            font-size: 17px;
-            font-weight: 600;
-        }
-    }
-
     .approve-details-box {
         flex: 1 1 auto;
         padding: 24px;

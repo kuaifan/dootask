@@ -1,13 +1,5 @@
 <template>
     <div class="approve-details" :style="{'z-index':modalTransferIndex}">
-        <!-- 导航 -->
-        <div class="approve-details-nav">
-            <div class="common-nav-back" @click="onBack">
-                <i class="taskfont">&#xe676;</i>
-            </div>
-            <h2>{{$L('审批详情')}}</h2>
-        </div>
-
         <!-- 审批详情 -->
         <div v-if="datas.id" class="approve-details-box" ref="approveDetailsBox">
             <h2 class="approve-details-title">
