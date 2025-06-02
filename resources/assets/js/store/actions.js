@@ -1246,7 +1246,7 @@ export default {
                 userid: state.userId,
             }
             // 如果是访问：服务器域名 或 本地文件，则添加 token 参数
-            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) || isLocalHost(window.location)) {
+            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) || isLocalHost(url)) {
                 params.token = state.userToken
             }
             resolve($A.urlAddParams(url, params))
