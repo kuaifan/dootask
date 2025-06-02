@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.37]
+
+### Bug Fixes
+
+- 修复客户端无法打开工作报告
+- 修复部分机子无法打开OKR的情况
+
 ## [1.0.31]
 
 ### Bug Fixes
