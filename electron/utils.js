@@ -623,12 +623,20 @@ const utils = {
     },
 
     /**
-     * 是否本地资源路径
-     * @param {string} url
+     * 判断是否是本地URL
+     * @param url
      * @returns {boolean}
      */
-    isLocalAssetPath(url) {
-        return url.startsWith('local-asset://')
+    isLocalHost(url) {
+        if (!url) {
+            return false
+        }
+        try {
+            const uri = new URL(url)
+            return uri.hostname == "localhost"
+        } catch (e) {
+            return false
+        }
     },
 
     /**
@@ -637,7 +645,7 @@ const utils = {
      * @returns {string}
      */
     localAssetRestoreRealPath(url) {
-        if (!utils.isLocalAssetPath(url)) {
+        if (!utils.isLocalHost(url)) {
             return url
         }
 
@@ -664,7 +672,7 @@ const utils = {
     loadUrl(browser, serverUrl, hash = null) {
         if (serverUrl) {
             if (hash) {
-                serverUrl = `${serverUrl}#${hash}`.replace(/\/*#\/*/g, '/')
+                serverUrl = `${serverUrl}#${hash}`
             }
             browser.loadURL(serverUrl).then(_ => { }).catch(_ => { })
         } else {

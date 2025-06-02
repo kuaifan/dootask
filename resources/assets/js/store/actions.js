@@ -1,6 +1,7 @@
 import * as openpgp from 'openpgp_hi/lightweight';
 import {initLanguage, languageList, languageName} from "../language";
 import {$callData, $urlSafe, SSEClient} from '../utils'
+import {isLocalHost} from "../components/Replace/utils";
 import emitter from "./events";
 import axios from "axios";
 
@@ -1224,7 +1225,7 @@ export default {
     userUrl({state}, url) {
         return new Promise(resolve => {
             // 如果是访问：服务器域名 且 当前是本地文件，则将服务器域名替换成本地路径
-            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) && window.location.protocol == "file:") {
+            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) && isLocalHost(window.location)) {
                 try {
                     const remoteURL = new URL(url)
                     if (/^\/(single|meeting)\//.test(remoteURL.pathname)) {
@@ -1245,7 +1246,7 @@ export default {
                 userid: state.userId,
             }
             // 如果是访问：服务器域名 或 本地文件，则添加 token 参数
-            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) || $A.getProtocol(url) == "file:") {
+            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) || isLocalHost(window.location)) {
                 params.token = state.userToken
             }
             resolve($A.urlAddParams(url, params))
@@ -1305,11 +1306,11 @@ export default {
 
         if (typeof objects.params.allowAccess === "undefined") {
             // 如果是本地文件，则允许跨域
-            objects.params.allowAccess = $A.getProtocol(objects.params.url) == "file:"
+            objects.params.allowAccess = isLocalHost(objects.params.url)
         }
         if (typeof objects.params.showProgress === "undefined") {
             // 如果不是本地文件，则显示进度条
-            objects.params.showProgress = $A.getProtocol(objects.params.url) != "file:"
+            objects.params.showProgress = !isLocalHost(objects.params.url)
         }
 
         $A.eeuiAppOpenPage(objects)

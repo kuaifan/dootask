@@ -67,15 +67,20 @@ const convertLocalResourcePath = (() => {
 })()
 
 /**
- * 是否是本地资源路径
+ * 是否是本地URL
  * @param url
  * @returns {*}
  */
-const isLocalResourcePath = (url) => {
-    return url && (
-        url.startsWith('file://') ||
-        url.startsWith('local-asset://')
-    )
+const isLocalHost = (url) => {
+    if (!url) {
+        return false
+    }
+    try {
+        const uri = new URL(url)
+        return uri.hostname == "localhost"
+    } catch (e) {
+        return false
+    }
 }
 
-export {convertLocalResourcePath, isLocalResourcePath}
+export {convertLocalResourcePath, isLocalHost}

@@ -559,7 +559,6 @@ async function startBuild(data) {
         origin: "./",
         homeUrl:  utils.formatUrl(data.url),
         apiUrl:  utils.formatUrl(data.url) + "api/",
-        routeMode: "hash",
     }
     // information
     if (data.id === 'app') {

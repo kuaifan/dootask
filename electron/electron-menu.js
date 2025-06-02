@@ -59,7 +59,7 @@ const electronMenu = {
 
     async saveImageAs(url, params) {
         let extension = '';
-        if (utils.isLocalAssetPath(url)) {
+        if (utils.isLocalHost(url)) {
             extension = utils.localAssetRestoreRealPath(url).split('.').pop().toLowerCase();
         } else {
             const urlExtension = url.split('.').pop().split(/[#?]/)[0].toLowerCase();
@@ -89,7 +89,7 @@ const electronMenu = {
         try {
             if (electronMenu.isBlobOrDataUrl(url)) {
                 await electronMenu.writeNativeImage(filePath, nativeImage.createFromDataURL(url));
-            } else if (utils.isLocalAssetPath(url)) {
+            } else if (utils.isLocalHost(url)) {
                 await fs.promises.copyFile(utils.localAssetRestoreRealPath(url), filePath);
             } else {
                 const writeStream = fs.createWriteStream(filePath)
@@ -127,7 +127,7 @@ const electronMenu = {
             if (params.linkURL || params.srcURL) {
                 const url = params.linkURL || params.srcURL;
 
-                if (!electronMenu.isBlobOrDataUrl(url) && !utils.isLocalAssetPath(url)) {
+                if (!electronMenu.isBlobOrDataUrl(url) && !utils.isLocalHost(url)) {
                     popupMenu.append(new MenuItem({
                         label: electronMenu.language.openInBrowser,
                         click: async function () {
@@ -161,7 +161,7 @@ const electronMenu = {
                                 clipboard.writeText(url.substring(MAILTO_PREFIX.length));
                             },
                         }));
-                    } else if (!utils.isLocalAssetPath(url)) {
+                    } else if (!utils.isLocalHost(url)) {
                         popupMenu.append(new MenuItem({
                             label: params.hasImageContents ? electronMenu.language.copyImageAddress : electronMenu.language.copyLinkAddress,
                             click: async function () {

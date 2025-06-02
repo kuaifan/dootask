@@ -3,6 +3,7 @@ const isEEUIApp = window && window.navigator && /eeui/i.test(window.navigator.us
 const isSoftware = isElectron || isEEUIApp;
 
 import {languageName, switchLanguage as $L} from "./language";
+import {isLocalHost} from "./components/Replace/utils";
 
 import './functions/common'
 import './functions/eeui'
@@ -77,7 +78,7 @@ VueRouter.prototype.push = function push(location) {
 }
 
 // 路由方式
-const routeMode = (window && window.systemInfo && window.systemInfo.routeMode === 'hash') ? 'hash' : 'history';
+const routeMode = isLocalHost(window.location) ? 'hash' : 'history';
 const router = new VueRouter({mode: routeMode, routes});
 
 // 进度条配置
@@ -337,24 +338,24 @@ const $preload = async () => {
     }
 
     await store.dispatch("preload");
-    const hash = (window.location[routeMode === 'history' ? 'pathname' : 'hash']).replace(/^[#\/\s]+/, '');
+    const hash = (window.location[routeMode === 'hash' ? 'hash' : 'pathname']).replace(/^[#\/\s]+/, '');
     if (hash !== 'preload') {
         await $init()
         return
     }
 
-    window.__initializeApp = async (route) => {
-        if (/^https?:\/\//.test(route)) {
-            if ($A.getDomain(route) !== $A.getDomain($A.mainUrl())) {
+    window.__initializeApp = async (loadHash) => {
+        if (/^https?:\/\//.test(loadHash)) {
+            if ($A.getDomain(loadHash) !== $A.getDomain($A.mainUrl())) {
                 window.location.href = url;
                 return;
             }
-            route = route.replace(/^https?:\/\/[^\/]+/, '');
+            loadHash = loadHash.replace(/^https?:\/\/[^\/]+/, '');
         }
         if (routeMode === 'hash') {
-            route = `#/${route.replace(/^[#\/\s]+/, '')}`;
+            loadHash = `#/${loadHash.replace(/^[#\/\s]+/, '')}`;
         }
-        window.history.replaceState(null, '', route)
+        window.history.replaceState(null, '', loadHash)
         await $init()
     }
 }

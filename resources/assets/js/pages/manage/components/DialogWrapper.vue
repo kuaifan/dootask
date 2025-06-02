@@ -672,7 +672,7 @@ import longpress from "../../../directives/longpress";
 import TransferDom from "../../../directives/transfer-dom";
 import resizeObserver from "../../../directives/resize-observer";
 import {languageList} from "../../../language";
-import {isLocalResourcePath} from "../../../components/Replace/utils";
+import {isLocalHost} from "../../../components/Replace/utils";
 import emitter from "../../../store/events";
 import Forwarder from "./Forwarder/index.vue";
 import {throttle} from "lodash";
@@ -3086,7 +3086,7 @@ export default {
                                 value: $A.thumbRestore(event.target.currentSrc),
                             })
                         }
-                        if (data.type !== 'file' && !isLocalResourcePath(event.target.currentSrc)) {
+                        if (data.type !== 'file' && !isLocalHost(event.target.currentSrc)) {
                             this.operateCopys.push({
                                 type: 'imagedown',
                                 icon: '&#xe7a8;',

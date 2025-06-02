@@ -129,7 +129,7 @@
                 return this.activeItem ? this.activeItem.title : 'Untitled'
             },
             canBrowser() {
-                return !(this.activeItem && /^file:/.test(this.activeItem.url))
+                return !(this.activeItem && this.isLocalHost(this.activeItem.url))
             }
         },
         watch: {
@@ -181,6 +181,23 @@
 
             sendMessage(event, args) {
                 electron?.sendMessage(event, args)
+            },
+
+            /**
+             * 判断是否是本地URL
+             * @param url
+             * @returns {boolean}
+             */
+            isLocalHost(url) {
+                if (!url) {
+                    return false
+                }
+                try {
+                    const uri = new URL(url)
+                    return uri.hostname == "localhost"
+                } catch (e) {
+                    return false
+                }
             }
         },
     }
