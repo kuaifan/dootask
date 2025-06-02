@@ -721,7 +721,7 @@ async function startBuild(data) {
 
 if (["dev"].includes(argv[2])) {
     // 开发模式
-    fs.writeFileSync(devloadCachePath, utils.formatUrl("127.0.0.1:" + env.parsed.APP_PORT), 'utf8');
+    fs.writeFileSync(devloadCachePath, utils.formatUrl("localhost:" + env.parsed.APP_PORT), 'utf8');
     child_process.spawn("npx", ["vite", "--", "fromcmd", "electronDev"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 } else if (["app"].includes(argv[2])) {
