@@ -58,17 +58,8 @@ const electronMenu = {
     },
 
     async saveImageAs(url, params) {
-        let extension = '';
-        if (utils.isLocalHost(url)) {
-            extension = utils.localAssetRestoreRealPath(url).split('.').pop().toLowerCase();
-        } else {
-            const urlExtension = url.split('.').pop().split(/[#?]/)[0].toLowerCase();
-            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(urlExtension)) {
-                extension = urlExtension;
-            }
-        }
-
-        if (!extension) {
+        let extension = url.split('.').pop().split(/[#?]/)[0].toLowerCase();
+        if (!['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
             extension = 'png';
         }
 
@@ -89,8 +80,6 @@ const electronMenu = {
         try {
             if (electronMenu.isBlobOrDataUrl(url)) {
                 await electronMenu.writeNativeImage(filePath, nativeImage.createFromDataURL(url));
-            } else if (utils.isLocalHost(url)) {
-                await fs.promises.copyFile(utils.localAssetRestoreRealPath(url), filePath);
             } else {
                 const writeStream = fs.createWriteStream(filePath)
                 const readStream = request(url)

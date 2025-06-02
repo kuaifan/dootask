@@ -640,30 +640,6 @@ const utils = {
     },
 
     /**
-     * 本地资源路径还原
-     * @param {string} url
-     * @returns {string}
-     */
-    localAssetRestoreRealPath(url) {
-        if (!utils.isLocalHost(url)) {
-            return url
-        }
-
-        let p0 = url.replace(/^local-asset:\/\//, '')
-
-        const p1 = path.join(__dirname, '.', p0)
-        if (fs.existsSync(p1)) {
-            return p1
-        }
-
-        const p2 = path.join(__dirname, '..', p0)
-        if (fs.existsSync(p2)) {
-            return p2
-        }
-        return url
-    },
-
-    /**
      * 加载URL或文件
      * @param browser
      * @param serverUrl

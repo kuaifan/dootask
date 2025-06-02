@@ -11,7 +11,6 @@ const {
     shell,
     globalShortcut,
     nativeTheme,
-    protocol,
     Tray,
     Menu,
     BrowserView,
@@ -89,50 +88,6 @@ if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true });
 }
 
-// 在最开始就注册协议为特权协议
-protocol.registerSchemesAsPrivileged([
-    {
-        scheme: 'local-asset',
-        privileges: {
-            standard: true,
-            secure: true,
-            supportFetchAPI: true,
-            corsEnabled: true
-        }
-    }
-])
-
-/**
- * 创建协议
- */
-function createProtocol() {
-    protocol.handle('local-asset', async (request) => {
-        const url = utils.localAssetRestoreRealPath(request.url)
-
-        if (url.includes('..')) {
-            return new Response('Access Denied', { status: 403 })
-        }
-
-        try {
-            if (!fs.existsSync(url)) {
-                return new Response('Not Found', { status: 404 })
-            }
-
-            const data = await fs.promises.readFile(url)
-            const mimeType = utils.getMimeType(url)
-
-            return new Response(data, {
-                headers: {
-                    'Content-Type': mimeType
-                }
-            })
-        } catch (error) {
-            console.error('Protocol handler error:', error)
-            return new Response('Internal Error', { status: 500 })
-        }
-    })
-}
-
 /**
  * 启动web服务
  */
@@ -140,11 +95,11 @@ async function startWebServer() {
     if (serverUrl) {
         return Promise.resolve();
     }
-    
+
     return new Promise((resolve, reject) => {
         // 创建Express应用
         const app = express();
-        
+
         // 使用express.static中间件提供静态文件服务
         // Express内置了全面的MIME类型支持，无需手动配置
         app.use(express.static(serverPublicDir, {
@@ -164,18 +119,18 @@ async function startWebServer() {
                 }
             }
         }));
-        
+
         // 404处理中间件
         app.use((req, res) => {
             res.status(404).send('File not found');
         });
-        
+
         // 错误处理中间件
         app.use((err, req, res, next) => {
             console.error('Server error:', err);
             res.status(500).send('Internal Server Error');
         });
-        
+
         // 启动服务器
         const server = app.listen(serverPort, 'localhost', () => {
             console.log(`Express static file server running at http://localhost:${serverPort}/`);
@@ -183,7 +138,7 @@ async function startWebServer() {
             serverUrl = `http://localhost:${serverPort}/`;
             resolve(server);
         });
-        
+
         // 错误处理
         server.on('error', (err) => {
             console.error('Server error:', err);
@@ -373,7 +328,7 @@ function preCreateChildWindow() {
     const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
     browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
 
-    utils.loadUrl(browser, serverUrl, 'preload')
+    utils.loadUrl(browser, serverUrl, '/preload')
 
     preloadWindow = browser;
 }
@@ -1010,8 +965,6 @@ if (!getTheLock) {
         }
         // SameSite
         utils.useCookie()
-        // 创建协议
-        createProtocol()
         // 创建主窗口
         createMainWindow()
         // 预创建子窗口
