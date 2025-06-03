@@ -1,5 +1,5 @@
 <template>
-    <div class="task-tag-select" :class="{'no-search': filteredTags.length <= 5}">
+    <div class="task-tag-select" :class="{'no-search': filteredTags.length <= 5 && !searchQuery}">
         <!-- Search Box -->
         <div class="search-box">
             <input
