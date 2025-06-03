@@ -23,6 +23,7 @@
         "@kangc/v-md-editor": "^1.7.12",
         "@micro-zoe/micro-app": "^1.0.0-rc.24",
         "@traptitech/markdown-it-katex": "^3.6.0",
+        "@vue/runtime-dom": "^3.5.16",
         "autoprefixer": "^10.4.13",
         "axios": "^1.8.4",
         "chokidar": "^4.0.1",
