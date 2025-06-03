@@ -3156,8 +3156,12 @@ export default {
                 return
             }
             //
-            if (state.dialogId) {
-                emitter.emit('handleMoveTop', 'dialogModal'); // 已打开对话时将对话窗口置顶
+            if (state.dialogModalShow) {
+                // 已打开对话时将对话窗口置顶
+                emitter.emit('handleMoveTop', 'dialogModal');
+            } else if (state.dialogId === dialogId) {
+                // 如果对话窗口未打开，则清除当前对话ID（避免类此：已经在消息中打开项目对话时无法在其他地方打开项目对话）
+                state.dialogId = 0;
             }
             //
             requestAnimationFrame(_ => {

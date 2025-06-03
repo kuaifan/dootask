@@ -93,6 +93,7 @@ export default {
         },
 
         show(v) {
+            this.$store.state.dialogModalShow = v;
             $A.eeuiAppSetScrollDisabled(v && this.windowPortrait)
         }
     },

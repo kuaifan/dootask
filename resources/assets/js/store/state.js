@@ -143,6 +143,7 @@ export default {
     dialogSseList: [],
     dialogDroupWordChain: {},
     dialogGroupVote: {},
+    dialogModalShow: false,
 
     // 搜索关键词（主要用于移动端判断滑动返回）
     messengerSearchKey: {dialog: '', contacts: ''},
