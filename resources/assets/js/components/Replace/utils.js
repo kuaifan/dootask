@@ -19,7 +19,7 @@ const convertLocalResourcePath = (() => {
 
         // 设置应用前缀URL
         if ($A.isEEUIApp || $A.isElectron) {
-            appPreUrl = window.origin + "/"
+            appPreUrl = window.location.origin + "/"
         }
 
         // 如果没有特殊前缀，提前返回

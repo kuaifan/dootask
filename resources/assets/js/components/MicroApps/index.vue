@@ -111,6 +111,7 @@ export default {
         microApp.start({
             'iframe': true,
             'router-mode': 'state',
+            'iframeSrc': window.location.origin + '/assets/empty.html',
         })
     },
 
