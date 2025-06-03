@@ -49,6 +49,9 @@ export default {
                         colorUtils.generateColorScheme(item.color, defaultColor) :
                         defaultColors;
                     backgroundColor = colors[index % colors.length];
+                    if (backgroundColor === '#ffffff' || backgroundColor === '#000000') {
+                        backgroundColor = item.color;
+                    }
                 }
 
                 return {
