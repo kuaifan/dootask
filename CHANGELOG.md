@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.45]
+
+### Bug Fixes
+
+- 修复已经在消息中打开项目对话时无法在其他地方打开项目沟通
+- 修复搜索标签后搜索框消失的情况
+- 修复部分标签背景色不显示的情况
+
+### Performance
+
+- 优化本地资源加载方式
+- 优化微应用参数变量的支持
+
 ## [1.0.37]
 
 ### Bug Fixes
