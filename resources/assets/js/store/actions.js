@@ -4697,7 +4697,12 @@ export default {
             .replace(/\{user_token}/g, encodeURIComponent(state.userToken))
             .replace(/\{system_theme}/g, state.systemConfig.themeName)
             .replace(/\{system_lang}/g, languageName)
-            .replace(/\{system_base_url}/g, $A.mainUrl('').replace(/\/$/, ''));
+            .replace(/\{system_base_url}/g, $A.mainUrl('').replace(/\/$/, ''))
+            .replace(/\{window_location_(\w+)}/g, (match, property) => {
+                if (property in window.location) {
+                    return window.location[property];
+                }
+            });
         emitter.emit('observeMicroApp:open', config);
     },
 
