@@ -1258,7 +1258,7 @@ class ProjectController extends AbstractController
         $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
         //
         go(function () use ($user, $userid, $time, $type, $botUser, $dialog) {
-            Coroutine::sleep(0.1);
+            Coroutine::sleep(1);
             $headings = [];
             $headings[] = Doo::translate('任务ID');
             $headings[] = Doo::translate('父级任务ID');
@@ -1394,7 +1394,7 @@ class ProjectController extends AbstractController
                     'type' => 'content',
                     'title' => $content[0]['content'],
                     'content' => $content,
-                ], $botUser->userid, false, false, true);
+                ], $botUser->userid, true, false, true);
                 return;
             }
             //
@@ -1428,7 +1428,7 @@ class ProjectController extends AbstractController
                     'type' => 'content',
                     'title' => $content[0]['content'],
                     'content' => $content,
-                ], $botUser->userid, false, false, true);
+                ], $botUser->userid, true, false, true);
                 return;
             }
             //
@@ -1455,7 +1455,7 @@ class ProjectController extends AbstractController
                     'name' => $fileName,
                     'size' => filesize($zipPath),
                     'url' => $fileUrl,
-                ], $botUser->userid, false, false, true);
+                ], $botUser->userid, true, false, true);
             } else {
                 $content[] = [
                     'content' => "打包失败，请稍后再试...",
@@ -1465,9 +1465,15 @@ class ProjectController extends AbstractController
                     'type' => 'content',
                     'title' => $content[0]['content'],
                     'content' => $content,
-                ], $botUser->userid, false, false, true);
+                ], $botUser->userid, true, false, true);
             }
         });
+        //
+        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+            'type' => 'content',
+            'content' => '正在导出任务统计，请稍等...',
+        ], $botUser->userid, true, false, true);
+        //
         return Base::retSuccess('success');
     }
 
@@ -1487,103 +1493,156 @@ class ProjectController extends AbstractController
     {
         $user = User::auth('admin');
         //
-        $headings = [];
-        $headings[] = Doo::translate('任务ID');
-        $headings[] = Doo::translate('父级任务ID');
-        $headings[] = Doo::translate('所属项目');
-        $headings[] = Doo::translate('任务标题');
-        $headings[] = Doo::translate('任务标签');
-        $headings[] = Doo::translate('任务开始时间');
-        $headings[] = Doo::translate('任务结束时间');
-        $headings[] = Doo::translate('任务计划用时');
-        $headings[] = Doo::translate('超时时间');
-        $headings[] = Doo::translate('负责人');
-        $headings[] = Doo::translate('创建人');
-        $data = [];
+        $botUser = User::botGetOrCreate('system-msg');
+        if (empty($botUser)) {
+            return Base::retError('系统机器人不存在');
+        }
+        $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
         //
-        ProjectTask::with(['taskTag'])
-            ->whereNull('complete_at')
-            ->whereNotNull('end_at')
-            ->where('end_at', '<=', Carbon::now())
-            ->orderBy('end_at')
-            ->chunk(100, function ($tasks) use (&$data) {
-                /** @var ProjectTask $task */
-                foreach ($tasks as $task) {
-                    $taskStartTime = Carbon::parse($task->start_at ?: $task->created_at)->timestamp;
-                    $totalTime = time() - $taskStartTime; //开发测试总用时
-                    $planTime = '-';//任务计划用时
-                    $overTime = '-';//超时时间
-                    if ($task->end_at) {
-                        $startTime = Carbon::parse($task->start_at)->timestamp;
-                        $endTime = Carbon::parse($task->end_at)->timestamp;
-                        $planTotalTime = $endTime - $startTime;
-                        $residueTime = $planTotalTime - $totalTime;
-                        if ($residueTime < 0) {
-                            $overTime = Doo::translate(Timer::timeFormat(abs($residueTime)));
+        go(function () use ($botUser, $dialog, $user) {
+            Coroutine::sleep(1);
+            //
+            $headings = [];
+            $headings[] = Doo::translate('任务ID');
+            $headings[] = Doo::translate('父级任务ID');
+            $headings[] = Doo::translate('所属项目');
+            $headings[] = Doo::translate('任务标题');
+            $headings[] = Doo::translate('任务标签');
+            $headings[] = Doo::translate('任务开始时间');
+            $headings[] = Doo::translate('任务结束时间');
+            $headings[] = Doo::translate('任务计划用时');
+            $headings[] = Doo::translate('超时时间');
+            $headings[] = Doo::translate('负责人');
+            $headings[] = Doo::translate('创建人');
+            $data = [];
+            //
+            $content = [];
+            $content[] = [
+                'content' => '导出超期任务已完成',
+                'style' => 'font-weight: bold;padding-bottom: 4px;',
+            ];
+            //
+            ProjectTask::with(['taskTag'])
+                ->whereNull('complete_at')
+                ->whereNotNull('end_at')
+                ->where('end_at', '<=', Carbon::now())
+                ->orderBy('end_at')
+                ->chunk(100, function ($tasks) use (&$data) {
+                    /** @var ProjectTask $task */
+                    foreach ($tasks as $task) {
+                        $taskStartTime = Carbon::parse($task->start_at ?: $task->created_at)->timestamp;
+                        $totalTime = time() - $taskStartTime; //开发测试总用时
+                        $planTime = '-';//任务计划用时
+                        $overTime = '-';//超时时间
+                        if ($task->end_at) {
+                            $startTime = Carbon::parse($task->start_at)->timestamp;
+                            $endTime = Carbon::parse($task->end_at)->timestamp;
+                            $planTotalTime = $endTime - $startTime;
+                            $residueTime = $planTotalTime - $totalTime;
+                            if ($residueTime < 0) {
+                                $overTime = Doo::translate(Timer::timeFormat(abs($residueTime)));
+                            }
+                            $planTime = Doo::translate(Timer::timeDiff($startTime, $endTime));
                         }
-                        $planTime = Doo::translate(Timer::timeDiff($startTime, $endTime));
+                        $ownerIds = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
+                        $ownerNames = [];
+                        foreach ($ownerIds as $ownerId) {
+                            $ownerNames[] = Base::filterEmoji(User::userid2nickname($ownerId)) . " (ID: {$ownerId})";
+                        }
+                        $data[] = [
+                            $task->id,
+                            $task->parent_id ?: '-',
+                            Base::filterEmoji($task->project?->name) ?: '-',
+                            Base::filterEmoji($task->name),
+                            $task->taskTag->map(function ($tag) {
+                                return Base::filterEmoji($tag->name);
+                            })->join(', ') ?: '-',
+                            $task->start_at ?: '-',
+                            $task->end_at ?: '-',
+                            $planTime,
+                            $overTime,
+                            implode(', ', $ownerNames),
+                            Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
+                        ];
                     }
-                    $ownerIds = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
-                    $ownerNames = [];
-                    foreach ($ownerIds as $ownerId) {
-                        $ownerNames[] = Base::filterEmoji(User::userid2nickname($ownerId)) . " (ID: {$ownerId})";
-                    }
-                    $data[] = [
-                        $task->id,
-                        $task->parent_id ?: '-',
-                        Base::filterEmoji($task->project?->name) ?: '-',
-                        Base::filterEmoji($task->name),
-                        $task->taskTag->map(function ($tag) {
-                            return Base::filterEmoji($tag->name);
-                        })->join(', ') ?: '-',
-                        $task->start_at ?: '-',
-                        $task->end_at ?: '-',
-                        $planTime,
-                        $overTime,
-                        implode(', ', $ownerNames),
-                        Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
-                    ];
-                }
-            });
-        if (empty($data)) {
-            return Base::retError('没有任何数据');
-        }
+                });
+            if (empty($data)) {
+                $content[] = [
+                    'content' => '没有任何数据',
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+                return;
+            }
+            //
+            $title = Doo::translate('超期任务');
+            $sheets = [
+                BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data)->setStyles(["A1:J1" => ["font" => ["bold" => true]]])
+            ];
+            //
+            $fileName = $title . '_' . Timer::time() . '.xls';
+            $filePath = "temp/task/export/" . date("Ym", Timer::time());
+            $export = new BillMultipleExport($sheets);
+            $res = $export->store($filePath . "/" . $fileName);
+            if ($res != 1) {
+                $content[] = [
+                    'content' => "导出失败，{$fileName}！",
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+                return;
+            }
+            $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
+            $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
+            $zipPath = storage_path($zipFile);
+            if (file_exists($zipPath)) {
+                Base::deleteDirAndFile($zipPath, true);
+            }
+            try {
+                Madzipper::make($zipPath)->add($xlsPath)->close();
+            } catch (\Throwable) {
+            }
+            //
+            if (file_exists($zipPath)) {
+                $base64 = base64_encode(Base::array2string([
+                    'file' => $zipFile,
+                ]));
+                $fileUrl = Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
+                Session::put('task::export:userid', $user->userid);
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'file_download',
+                    'title' => '导出超期任务已完成',
+                    'name' => $fileName,
+                    'size' => filesize($zipPath),
+                    'url' => $fileUrl,
+                ], $botUser->userid, true, false, true);
+            } else {
+                $content[] = [
+                    'content' => "打包失败，请稍后再试...",
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+            }
+        });
         //
-        $title = Doo::translate('超期任务');
-        $sheets = [
-            BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data)->setStyles(["A1:J1" => ["font" => ["bold" => true]]])
-        ];
+        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+            'type' => 'content',
+            'content' => '正在导出超期任务，请稍等...',
+        ], $botUser->userid, true, false, true);
         //
-        $fileName = $title . '_' . Timer::time() . '.xls';
-        $filePath = "temp/task/export/" . date("Ym", Timer::time());
-        $export = new BillMultipleExport($sheets);
-        $res = $export->store($filePath . "/" . $fileName);
-        if ($res != 1) {
-            return Base::retError('导出失败，' . $fileName . '！');
-        }
-        $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
-        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
-        $zipPath = storage_path($zipFile);
-        if (file_exists($zipPath)) {
-            Base::deleteDirAndFile($zipPath, true);
-        }
-        try {
-            Madzipper::make($zipPath)->add($xlsPath)->close();
-        } catch (\Throwable) {
-        }
-        //
-        if (file_exists($zipPath)) {
-            $base64 = base64_encode(Base::array2string([
-                'file' => $zipFile,
-            ]));
-            Session::put('task::export:userid', $user->userid);
-            return Base::retSuccess('success', [
-                'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
-                'url' => Base::fillUrl('api/project/task/down?key=' . urlencode($base64)),
-            ]);
-        } else {
-            return Base::retError('打包失败，请稍后再试...');
-        }
+        return Base::retSuccess('success');
     }
 
     /**

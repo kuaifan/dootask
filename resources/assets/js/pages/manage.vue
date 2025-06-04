@@ -844,11 +844,9 @@ export default {
                     return new Promise((resolve, reject) => {
                         this.$store.dispatch("call", {
                             url: 'project/task/exportoverdue',
-                        }).then(({data}) => {
+                        }).then(() => {
                             resolve();
-                            this.$store.dispatch('downUrl', {
-                                url: data.url
-                            });
+                            $A.modalSuccess('正在打包，请留意系统消息。');
                         }).catch(({msg}) => {
                             reject(msg);
                         });
