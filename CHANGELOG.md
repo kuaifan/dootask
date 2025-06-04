@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.51]
+
+### Bug Fixes
+
+- 修复应用商店参数失效问题
+
+### Features
+
+- 微应用支持iframe模式
+
+### Performance
+
+- 优化导出签到功能
+- 优化导出审批功能
+- 优化导出任务功能
+
 ## [1.0.45]
 
 ### Bug Fixes
