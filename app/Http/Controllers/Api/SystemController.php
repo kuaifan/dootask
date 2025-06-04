@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\UserDevice;
+use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogMsg;
 use Request;
 use Session;
 use Response;
@@ -22,6 +24,7 @@ use App\Module\Apps;
 use App\Module\BillMultipleExport;
 use LdapRecord\LdapRecordException;
 use Guanguans\Notify\Messages\EmailMessage;
+use Swoole\Coroutine;
 
 /**
  * @apiDefine system
@@ -1264,7 +1267,7 @@ class SystemController extends AbstractController
      */
     public function checkin__export()
     {
-        User::auth('admin');
+        $user = User::auth('admin');
         //
         $setting = Base::setting('checkinSetting');
         if ($setting['open'] !== 'open') {
@@ -1294,126 +1297,179 @@ class SystemController extends AbstractController
         $secondStart = strtotime("2000-01-01 {$time[0]}") - strtotime("2000-01-01 00:00:00");
         $secondEnd = strtotime("2000-01-01 {$time[1]}") - strtotime("2000-01-01 00:00:00");
         //
-        $headings = [];
-        $headings[] = Doo::translate('签到人');
-        $headings[] = Doo::translate('签到日期');
-        $headings[] = Doo::translate('班次时间');
-        $headings[] = Doo::translate('首次签到时间');
-        $headings[] = Doo::translate('首次签到结果');
-        $headings[] = Doo::translate('最后签到时间');
-        $headings[] = Doo::translate('最后签到结果');
-        $headings[] = Doo::translate('参数数据');
+        $botUser = User::botGetOrCreate('system-msg');
+        if (empty($botUser)) {
+            return Base::retError('系统机器人不存在');
+        }
+        $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
         //
-        $sheets = [];
-        $startD = Carbon::parse($date[0])->startOfDay();
-        $endD = Carbon::parse($date[1])->endOfDay();
-        $users = User::whereIn('userid', $userid)->take(100)->get();
-        /** @var User $user */
-        foreach ($users as $user) {
-            $recordTimes = UserCheckinRecord::getTimes($user->userid, [$startD, $endD]);
+        go(function () use ($secondStart, $secondEnd, $time, $userid, $date, $user, $botUser, $dialog) {
+            Coroutine::sleep(1);
             //
-            $nickname = Base::filterEmoji($user->nickname);
-            $styles = ["A1:H1" => ["font" => ["bold" => true]]];
-            $datas = [];
-            $startT = $startD->timestamp;
-            $endT = $endD->timestamp;
-            $index = 1;
-            while ($startT < $endT) {
-                $index++;
-                $sameDate = date("Y-m-d", $startT);
-                $sameTimes = $recordTimes[$sameDate] ?? [];
-                $sameCollect = UserCheckinRecord::atCollect($sameDate, $sameTimes);
-                $firstBetween = [Carbon::createFromTimestamp($startT), Carbon::createFromTimestamp($startT + $secondEnd - 1)];
-                $lastBetween = [Carbon::createFromTimestamp($startT + $secondStart + 1), Carbon::createFromTimestamp($startT + 86400)];
-                $firstRecord = $sameCollect?->whereBetween("datetime", $firstBetween)->first();
-                $lastRecord = $sameCollect?->whereBetween("datetime", $lastBetween)->last();
-                $firstTimestamp = $firstRecord['timestamp'] ?: 0;
-                $lastTimestamp = $lastRecord['timestamp'] ?: 0;
-                if (Timer::time() < $startT + $secondStart) {
-                    $firstResult = "-";
-                } else {
-                    $firstResult = Doo::translate("正常");
-                    if (empty($firstTimestamp)) {
-                        $firstResult = Doo::translate("缺卡");
-                        $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
-                    } elseif ($firstTimestamp > $startT + $secondStart) {
-                        $firstResult = Doo::translate("迟到");
-                        $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
+            $headings = [];
+            $headings[] = Doo::translate('签到人');
+            $headings[] = Doo::translate('签到日期');
+            $headings[] = Doo::translate('班次时间');
+            $headings[] = Doo::translate('首次签到时间');
+            $headings[] = Doo::translate('首次签到结果');
+            $headings[] = Doo::translate('最后签到时间');
+            $headings[] = Doo::translate('最后签到结果');
+            $headings[] = Doo::translate('参数数据');
+            //
+            $content = [];
+            $content[] = [
+                'content' => '导出签到数据已完成',
+                'style' => 'font-weight: bold;padding-bottom: 4px;',
+            ];
+            //
+            $sheets = [];
+            $startD = Carbon::parse($date[0])->startOfDay();
+            $endD = Carbon::parse($date[1])->endOfDay();
+            $users = User::whereIn('userid', $userid)->take(100)->get();
+            /** @var User $user */
+            foreach ($users as $user) {
+                $recordTimes = UserCheckinRecord::getTimes($user->userid, [$startD, $endD]);
+                //
+                $nickname = Base::filterEmoji($user->nickname);
+                $styles = ["A1:H1" => ["font" => ["bold" => true]]];
+                $datas = [];
+                $startT = $startD->timestamp;
+                $endT = $endD->timestamp;
+                $index = 1;
+                while ($startT < $endT) {
+                    $index++;
+                    $sameDate = date("Y-m-d", $startT);
+                    $sameTimes = $recordTimes[$sameDate] ?? [];
+                    $sameCollect = UserCheckinRecord::atCollect($sameDate, $sameTimes);
+                    $firstBetween = [Carbon::createFromTimestamp($startT), Carbon::createFromTimestamp($startT + $secondEnd - 1)];
+                    $lastBetween = [Carbon::createFromTimestamp($startT + $secondStart + 1), Carbon::createFromTimestamp($startT + 86400)];
+                    $firstRecord = $sameCollect?->whereBetween("datetime", $firstBetween)->first();
+                    $lastRecord = $sameCollect?->whereBetween("datetime", $lastBetween)->last();
+                    $firstTimestamp = $firstRecord['timestamp'] ?: 0;
+                    $lastTimestamp = $lastRecord['timestamp'] ?: 0;
+                    if (Timer::time() < $startT + $secondStart) {
+                        $firstResult = "-";
+                    } else {
+                        $firstResult = Doo::translate("正常");
+                        if (empty($firstTimestamp)) {
+                            $firstResult = Doo::translate("缺卡");
+                            $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
+                        } elseif ($firstTimestamp > $startT + $secondStart) {
+                            $firstResult = Doo::translate("迟到");
+                            $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
+                        }
                     }
-                }
-                if (Timer::time() < $startT + $secondEnd) {
-                    $lastResult = "-";
-                    $lastTimestamp = 0;
-                } else {
-                    $lastResult = Doo::translate("正常");
-                    if (empty($lastTimestamp) || $lastTimestamp === $firstTimestamp) {
-                        $lastResult = Doo::translate("缺卡");
-                        $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
-                    } elseif ($lastTimestamp < $startT + $secondEnd) {
-                        $lastResult = Doo::translate("早退");
-                        $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
+                    if (Timer::time() < $startT + $secondEnd) {
+                        $lastResult = "-";
+                        $lastTimestamp = 0;
+                    } else {
+                        $lastResult = Doo::translate("正常");
+                        if (empty($lastTimestamp) || $lastTimestamp === $firstTimestamp) {
+                            $lastResult = Doo::translate("缺卡");
+                            $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
+                        } elseif ($lastTimestamp < $startT + $secondEnd) {
+                            $lastResult = Doo::translate("早退");
+                            $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
+                        }
                     }
+                    $firstTimestamp = $firstTimestamp ? date("H:i", $firstTimestamp) : "-";
+                    $lastTimestamp = $lastTimestamp ? date("H:i", $lastTimestamp) : "-";
+                    $section = array_map(function($item) {
+                        return $item[0] . "-" . ($item[1] ?: "None");
+                    }, UserCheckinRecord::atSection($sameTimes));
+                    $datas[] = [
+                        "{$nickname} (ID: {$user->userid})",
+                        $sameDate,
+                        implode("-", $time),
+                        $firstTimestamp,
+                        $firstResult,
+                        $lastTimestamp,
+                        $lastResult,
+                        implode(", ", $section),
+                    ];
+                    $startT += 86400;
                 }
-                $firstTimestamp = $firstTimestamp ? date("H:i", $firstTimestamp) : "-";
-                $lastTimestamp = $lastTimestamp ? date("H:i", $lastTimestamp) : "-";
-                $section = array_map(function($item) {
-                    return $item[0] . "-" . ($item[1] ?: "None");
-                }, UserCheckinRecord::atSection($sameTimes));
-                $datas[] = [
-                    "{$nickname} (ID: {$user->userid})",
-                    $sameDate,
-                    implode("-", $time),
-                    $firstTimestamp,
-                    $firstResult,
-                    $lastTimestamp,
-                    $lastResult,
-                    implode(", ", $section),
-                ];
-                $startT += 86400;
+                $title = (count($sheets) + 1) . "." . ($nickname ?: $user->userid);
+                $sheets[] = BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles($styles);
             }
-            $title = (count($sheets) + 1) . "." . ($nickname ?: $user->userid);
-            $sheets[] = BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles($styles);
-        }
-        if (empty($sheets)) {
-            return Base::retError('没有任何数据');
-        }
+            if (empty($sheets)) {
+                $content[] = [
+                    'content' => '没有任何数据',
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+                return;
+            }
+            //
+            $fileName = $users[0]->nickname;
+            if (count($users) > 1) {
+                $fileName .= "等" . count($userid) . "位成员的签到记录";
+            } else {
+                $fileName .= '的签到记录';
+            }
+            $fileName = Doo::translate($fileName) . '_' . Timer::time() . '.xlsx';
+            $filePath = "temp/checkin/export/" . date("Ym", Timer::time());
+            $export = new BillMultipleExport($sheets);
+            $res = $export->store($filePath . "/" . $fileName);
+            if ($res != 1) {
+                $content[] = [
+                    'content' => "导出失败，{$fileName}！",
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+                return;
+            }
+            $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
+            $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xlsx') . ".zip";
+            $zipPath = storage_path($zipFile);
+            if (file_exists($zipPath)) {
+                Base::deleteDirAndFile($zipPath, true);
+            }
+            try {
+                Madzipper::make($zipPath)->add($xlsPath)->close();
+            } catch (\Throwable) {
+            }
+            //
+            if (file_exists($zipPath)) {
+                $base64 = base64_encode(Base::array2string([
+                    'file' => $zipFile,
+                ]));
+                $fileUrl = Base::fillUrl('api/system/checkin/down?key=' . urlencode($base64));
+                Session::put('checkin::export:userid', $user->userid);
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'file_download',
+                    'title' => '导出签到数据已完成',
+                    'name' => $fileName,
+                    'size' => filesize($zipPath),
+                    'url' => $fileUrl,
+                ], $botUser->userid, true, false, true);
+            } else {
+                $content[] = [
+                    'content' => "打包失败，请稍后再试...",
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+            }
+        });
         //
-        $fileName = $users[0]->nickname;
-        if (count($users) > 1) {
-            $fileName .= "等" . count($userid) . "位成员的签到记录";
-        } else {
-            $fileName .= '的签到记录';
-        }
-        $fileName = Doo::translate($fileName) . '_' . Timer::time() . '.xlsx';
-        $filePath = "temp/checkin/export/" . date("Ym", Timer::time());
-        $export = new BillMultipleExport($sheets);
-        $res = $export->store($filePath . "/" . $fileName);
-        if ($res != 1) {
-            return Base::retError('导出失败，' . $fileName . '！');
-        }
-        $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
-        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xlsx') . ".zip";
-        $zipPath = storage_path($zipFile);
-        if (file_exists($zipPath)) {
-            Base::deleteDirAndFile($zipPath, true);
-        }
-        try {
-            Madzipper::make($zipPath)->add($xlsPath)->close();
-        } catch (\Throwable) {
-        }
+        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+            'type' => 'content',
+            'content' => '正在导出签到数据，请稍等...',
+        ], $botUser->userid, true, false, true);
         //
-        if (file_exists($zipPath)) {
-            $base64 = base64_encode(Base::array2string([
-                'file' => $zipFile,
-            ]));
-            Session::put('checkin::export:userid', $user->userid);
-            return Base::retSuccess('success', [
-                'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
-                'url' => Base::fillUrl('api/system/checkin/down?key=' . urlencode($base64)),
-            ]);
-        } else {
-            return Base::retError('打包失败，请稍后再试...');
-        }
+        return Base::retSuccess('success');
     }
 
     /**
