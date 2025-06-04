@@ -4675,6 +4675,11 @@ export default {
         if (!data.id || !data.name || !data.url) {
             return
         }
+        data.url = data.url.replace(/\{window[._]location[._](\w+)}/ig, (match, property) => {
+            if (property in window.location) {
+                return window.location[property];
+            }
+        })
         const config = {
             id: data.id,
             name: data.name,
@@ -4697,12 +4702,7 @@ export default {
             .replace(/\{user_token}/g, encodeURIComponent(state.userToken))
             .replace(/\{system_theme}/g, state.systemConfig.themeName)
             .replace(/\{system_lang}/g, languageName)
-            .replace(/\{system_base_url}/g, $A.mainUrl('').replace(/\/$/, ''))
-            .replace(/\{window_location_(\w+)}/g, (match, property) => {
-                if (property in window.location) {
-                    return window.location[property];
-                }
-            });
+            .replace(/\{system_base_url}/g, $A.mainUrl('').replace(/\/$/, ''));
         emitter.emit('observeMicroApp:open', config);
     },
 
