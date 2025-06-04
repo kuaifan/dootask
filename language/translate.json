@@ -30094,5 +30094,89 @@
         "fr": "Le temps des sous-tâches de la tâche récurrente sera réinitialisé. Souhaitez-vous continuer?",
         "id": "Waktu sub-tugas dari tugas berulang akan diatur ulang. Apakah Anda ingin melanjutkan?",
         "ru": "Время подзадачи повторяющейся задачи будет сброшено. Хотите продолжить?"
+    },
+    {
+        "key": "正在导出任务统计，请稍等...",
+        "zh": "",
+        "zh-CHT": "正在匯出任務統計，請稍等...",
+        "en": "Exporting task statistics, please wait...",
+        "ko": "작업 통계를 내보내는 중입니다. 잠시만 기다려 주세요...",
+        "ja": "タスク統計をエクスポート中です。しばらくお待ちください...",
+        "de": "Aufgabenstatistiken werden exportiert, bitte warten...",
+        "fr": "Exportation des statistiques de tâches, veuillez patienter...",
+        "id": "Sedang mengekspor statistik tugas, harap tunggu...",
+        "ru": "Экспорт статистики задач, пожалуйста, подождите..."
+    },
+    {
+        "key": "导出超期任务已完成",
+        "zh": "",
+        "zh-CHT": "匯出超期任務已完成",
+        "en": "The export of overdue tasks is complete",
+        "ko": "연체 작업 내보내기가 완료되었습니다.",
+        "ja": "期限超過タスクのエクスポートが完了しました",
+        "de": "Export von überfälligen Aufgaben abgeschlossen",
+        "fr": "L'exportation des tâches en retard est terminée",
+        "id": "Ekspor tugas yang melewati batas waktu telah selesai",
+        "ru": "Экспорт просроченных задач завершен"
+    },
+    {
+        "key": "正在导出超期任务，请稍等...",
+        "zh": "",
+        "zh-CHT": "正在匯出超期任務，請稍等...",
+        "en": "Exporting overdue tasks, please wait...",
+        "ko": "연체 작업을 내보내는 중입니다. 잠시만 기다려 주세요...",
+        "ja": "期限超過タスクをエクスポート中です。しばらくお待ちください...",
+        "de": "Überfällige Aufgaben werden exportiert, bitte warten...",
+        "fr": "Exportation des tâches en retard, veuillez patienter...",
+        "id": "Sedang mengekspor tugas yang melewati batas waktu, harap tunggu...",
+        "ru": "Экспорт просроченных задач, пожалуйста, подождите..."
+    },
+    {
+        "key": "导出审批数据已完成",
+        "zh": "",
+        "zh-CHT": "匯出審批數據已完成",
+        "en": "The export of approval data is complete",
+        "ko": "승인 데이터 내보내기가 완료되었습니다.",
+        "ja": "承認データのエクスポートが完了しました",
+        "de": "Export der Genehmigungsdaten abgeschlossen",
+        "fr": "L'exportation des données d'approbation est terminée",
+        "id": "Ekspor data persetujuan telah selesai",
+        "ru": "Экспорт данных утверждения завершен"
+    },
+    {
+        "key": "正在导出审批数据，请稍等...",
+        "zh": "",
+        "zh-CHT": "正在匯出審批數據，請稍等...",
+        "en": "Exporting approval data, please wait...",
+        "ko": "승인 데이터를 내보내는 중입니다. 잠시만 기다려 주세요...",
+        "ja": "承認データをエクスポート中です。しばらくお待ちください...",
+        "de": "Genehmigungsdaten werden exportiert, bitte warten...",
+        "fr": "Exportation des données d'approbation, veuillez patienter...",
+        "id": "Sedang mengekspor data persetujuan, harap tunggu...",
+        "ru": "Экспорт данных утверждения, пожалуйста, подождите..."
+    },
+    {
+        "key": "导出签到数据已完成",
+        "zh": "",
+        "zh-CHT": "匯出簽到數據已完成",
+        "en": "The export of check-in data is complete",
+        "ko": "체크인 데이터 내보내기가 완료되었습니다.",
+        "ja": "チェックインデータのエクスポートが完了しました",
+        "de": "Export der Check-in-Daten abgeschlossen",
+        "fr": "L'exportation des données d'enregistrement est terminée",
+        "id": "Ekspor data check-in telah selesai",
+        "ru": "Экспорт данных регистрации завершен"
+    },
+    {
+        "key": "正在导出签到数据，请稍等...",
+        "zh": "",
+        "zh-CHT": "正在匯出簽到數據，請稍等...",
+        "en": "Exporting check-in data, please wait...",
+        "ko": "체크인 데이터를 내보내는 중입니다. 잠시만 기다려 주세요...",
+        "ja": "チェックインデータをエクスポート中です。しばらくお待ちください...",
+        "de": "Check-in-Daten werden exportiert, bitte warten...",
+        "fr": "Exportation des données d'enregistrement, veuillez patienter...",
+        "id": "Sedang mengekspor data check-in, harap tunggu...",
+        "ru": "Экспорт данных регистрации, пожалуйста, подождите..."
     }
 ]
