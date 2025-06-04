@@ -9,17 +9,20 @@
             :transparent="app.transparent"
             :autoDarkTheme="app.auto_dark_theme"
             :beforeClose="async () => { await onBeforeClose(app.name) }">
+            <MicroIFrame
+                v-if="app.url_type === 'iframe' && app.isOpen && app.url"
+                :name="app.name"
+                :url="app.url"
+                @mounted="mounted"
+                @error="error"/>
             <micro-app
-                v-if="app.isOpen && app.url"
+                v-else-if="app.isOpen && app.url"
                 :name="app.name"
                 :url="app.url"
                 :keep-alive="app.keep_alive"
                 :disable-scopecss="app.disable_scope_css"
                 :data="appData(app.name)"
-                @created="created"
-                @beforemount="beforemount"
                 @mounted="mounted"
-                @unmount="unmount"
                 @error="error"/>
             <div v-if="app.isLoading" class="micro-app-loader">
                 <Loading/>
@@ -86,11 +89,12 @@ import emitter from "../../store/events";
 import TransferDom from "../../directives/transfer-dom";
 import store from "../../store";
 import MicroModal from "./modal.vue";
+import MicroIFrame from "./iframe.vue";
 
 export default {
     name: "MicroApps",
     directives: {TransferDom},
-    components: {MicroModal, UserSelect},
+    components: {MicroModal, UserSelect, MicroIFrame},
 
     props: {
         windowType: {
@@ -149,26 +153,14 @@ export default {
     },
 
     methods: {
-        // 元素被创建
-        created() {
-        },
-
-        // 即将渲染
-        beforemount() {
-        },
-
         // 已经渲染完成
         mounted(e) {
-            this.finish(e)
-        },
-
-        // 已经卸载
-        unmount() {
+            this.finish(e.detail.name)
         },
 
         // 加载出错
         error(e) {
-            this.finish(e)
+            this.finish(e.detail.name)
             $A.modalError({
                 language: false,
                 title: this.$L('应用加载失败'),
@@ -180,8 +172,8 @@ export default {
         },
 
         // 加载结束
-        finish(e) {
-            const app = this.apps.find(({name}) => name == e.detail.name);
+        finish(name) {
+            const app = this.apps.find(app => app.name == name);
             if (app) {
                 app.isLoading = false
             }

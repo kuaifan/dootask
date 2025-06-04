@@ -4675,11 +4675,15 @@ export default {
         if (!data.id || !data.name || !data.url) {
             return
         }
-        data.url = data.url.replace(/\{window[._]location[._](\w+)}/ig, (match, property) => {
-            if (property in window.location) {
-                return window.location[property];
-            }
-        })
+        data.url = data.url
+            .replace(/^\:(\d+)/ig, (_, port) => {
+                return window.location.protocol + '//' + window.location.hostname + ':' + port;
+            })
+            .replace(/\{window[._]location[._](\w+)}/ig, (_, property) => {
+                if (property in window.location) {
+                    return window.location[property];
+                }
+            })
         const config = {
             id: data.id,
             name: data.name,
