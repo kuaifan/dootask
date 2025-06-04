@@ -23,6 +23,7 @@ use App\Models\WebSocketDialogMsg;
 use App\Module\Apps;
 use App\Module\BillMultipleExport;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
+use Swoole\Coroutine;
 
 /**
  * @apiDefine approve
@@ -768,131 +769,192 @@ class ApproveController extends AbstractController
         if (Carbon::parse($date[1])->timestamp - Carbon::parse($date[0])->timestamp > 35 * 86400) {
             return Base::retError('日期范围限制最大35天');
         }
-        //
-        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/findAllProcIns', json_encode($data));
-        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
-        if (!$process || $process['status'] != 200) {
-            return Base::retError($process['message'] ?? '查询失败');
+        $botUser = User::botGetOrCreate('system-msg');
+        if (empty($botUser)) {
+            return Base::retError('系统机器人不存在');
         }
+        $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
         //
-        $res = Base::arrayKeyToUnderline($process['data']);
-        //
-        $headings = [];
-        $headings[] = Doo::translate('申请编号');
-        $headings[] = Doo::translate('标题');
-        $headings[] = Doo::translate('申请状态');
-        $headings[] = Doo::translate('发起时间');
-        $headings[] = Doo::translate('完成时间');
-        $headings[] = Doo::translate('发起人工号');
-        $headings[] = Doo::translate('发起人User ID');
-        $headings[] = Doo::translate('发起人姓名');
-        $headings[] = Doo::translate('发起人部门');
-        $headings[] = Doo::translate('发起人部门ID');
-        $headings[] = Doo::translate('部门负责人');
-        $headings[] = Doo::translate('历史审批人');
-        $headings[] = Doo::translate('历史办理人');
-        $headings[] = Doo::translate('审批记录');
-        $headings[] = Doo::translate('当前处理人');
-        $headings[] = Doo::translate('审批节点');
-        $headings[] = Doo::translate('审批人数');
-        $headings[] = Doo::translate('审批耗时');
-        $headings[] = Doo::translate('假期类型');
-        $headings[] = Doo::translate('开始时间');
-        $headings[] = Doo::translate('结束时间');
-        $headings[] = Doo::translate('时长');
-        $headings[] = Doo::translate('请假事由');
-        $headings[] = Doo::translate('请假单位');
-        //
-        $datas = [];
-        foreach ($res as $val) {
+        go(function () use ($data, $user, $botUser, $dialog) {
+            Coroutine::sleep(1);
             //
-            $nickname = Base::filterEmoji($val['start_user_name']);
-            $participant = $this->getUserProcessParticipantById($val['id']); // 获取参与人
-            $participant = $this->handleParticipant($val, $participant['data']); // 处理参与人返回数据
-            //
-            $job_number = ''; // 发起人工号
-            $department_leader = User::userid2nickname(UserDepartment::find(1, ['owner_userid'])['owner_userid']); // 部门负责人
-            $historical_approver = $participant['historical_approver'] ?? ''; // 历史审批人
-            $historical_agent = ''; // 历史办理人
-            $approval_record = $participant['approval_record'] ?? ''; // 审批记录
-            $current_handler = !$val['is_finished'] ? implode(',', User::whereIn('userid', explode(';', $val['candidate']))->pluck('nickname')->toArray()) : ''; // 当前处理人
-            $approved_node = $participant['approved_node'] ?? 0; // 审批节点
-            $approved_num = $participant['approved_num'] ?? 0; // 审批人数
-            // 计算审批耗时
-            $startTime = Carbon::parse($val['start_time'])->timestamp;
-            $endTime = $val['end_time'] ? Carbon::parse($val['end_time'])->timestamp : time();
-            $approval_time = Doo::translate(Timer::timeDiff($startTime, $endTime)); // 审批耗时
-            // 计算时长
-            $varStartTime = Carbon::parse($val['var']['start_time']);
-            $varEndTime = Carbon::parse($val['var']['end_time']);
-            $duration = $varEndTime->floatDiffInHours($varStartTime);
-            $duration_unit = Doo::translate('小时'); // 时长单位
-            $datas[] = [
-                $val['id'], // 申请编号
-                $val['proc_def_name'], // 标题
-                $this->getStateDescription($val['state']), // 申请状态
-                $val['start_time'], // 发起时间
-                $val['end_time'], // 完成时间
-                $job_number, // 发起人工号
-                $val['start_user_id'], // 发起人User ID
-                $nickname, // 发起人姓名
-                $val['department'], // 发起人部门
-                $val['department_id'], // 发起人部门ID
-                $department_leader, // 部门负责人
-                $historical_approver, // 历史审批人
-                $historical_agent, // 历史办理人
-                $approval_record, // 审批记录
-                $current_handler, // 当前处理人
-                $approved_node, // 审批节点
-                $approved_num, // 审批人数
-                $approval_time, // 审批耗时
-                $val['var']['type'], // 假期类型
-                $val['var']['start_time'], // 开始时间
-                $val['var']['end_time'], // 结束时间
-                $duration, // 时长
-                $val['var']['description'], // 请假事由
-                $duration_unit, // 请假单位
+            $content = [];
+            $content[] = [
+                'content' => '导出审批数据已完成',
+                'style' => 'font-weight: bold;padding-bottom: 4px;',
             ];
-        }
-        if (empty($datas)) {
-            return Base::retError('没有任何数据');
-        }
+            //
+            $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/findAllProcIns', json_encode($data));
+            $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+            if (!$process || $process['status'] != 200) {
+                $content[] = [
+                    'content' => $process['message'] ?? '查询失败',
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+                return;
+            }
+            //
+            $res = Base::arrayKeyToUnderline($process['data']);
+            //
+            $headings = [];
+            $headings[] = Doo::translate('申请编号');
+            $headings[] = Doo::translate('标题');
+            $headings[] = Doo::translate('申请状态');
+            $headings[] = Doo::translate('发起时间');
+            $headings[] = Doo::translate('完成时间');
+            $headings[] = Doo::translate('发起人工号');
+            $headings[] = Doo::translate('发起人User ID');
+            $headings[] = Doo::translate('发起人姓名');
+            $headings[] = Doo::translate('发起人部门');
+            $headings[] = Doo::translate('发起人部门ID');
+            $headings[] = Doo::translate('部门负责人');
+            $headings[] = Doo::translate('历史审批人');
+            $headings[] = Doo::translate('历史办理人');
+            $headings[] = Doo::translate('审批记录');
+            $headings[] = Doo::translate('当前处理人');
+            $headings[] = Doo::translate('审批节点');
+            $headings[] = Doo::translate('审批人数');
+            $headings[] = Doo::translate('审批耗时');
+            $headings[] = Doo::translate('假期类型');
+            $headings[] = Doo::translate('开始时间');
+            $headings[] = Doo::translate('结束时间');
+            $headings[] = Doo::translate('时长');
+            $headings[] = Doo::translate('请假事由');
+            $headings[] = Doo::translate('请假单位');
+            //
+            $datas = [];
+            foreach ($res as $val) {
+                //
+                $nickname = Base::filterEmoji($val['start_user_name']);
+                $participant = $this->getUserProcessParticipantById($val['id']); // 获取参与人
+                $participant = $this->handleParticipant($val, $participant['data']); // 处理参与人返回数据
+                //
+                $job_number = ''; // 发起人工号
+                $department_leader = User::userid2nickname(UserDepartment::find(1, ['owner_userid'])['owner_userid']); // 部门负责人
+                $historical_approver = $participant['historical_approver'] ?? ''; // 历史审批人
+                $historical_agent = ''; // 历史办理人
+                $approval_record = $participant['approval_record'] ?? ''; // 审批记录
+                $current_handler = !$val['is_finished'] ? implode(',', User::whereIn('userid', explode(';', $val['candidate']))->pluck('nickname')->toArray()) : ''; // 当前处理人
+                $approved_node = $participant['approved_node'] ?? 0; // 审批节点
+                $approved_num = $participant['approved_num'] ?? 0; // 审批人数
+                // 计算审批耗时
+                $startTime = Carbon::parse($val['start_time'])->timestamp;
+                $endTime = $val['end_time'] ? Carbon::parse($val['end_time'])->timestamp : time();
+                $approval_time = Doo::translate(Timer::timeDiff($startTime, $endTime)); // 审批耗时
+                // 计算时长
+                $varStartTime = Carbon::parse($val['var']['start_time']);
+                $varEndTime = Carbon::parse($val['var']['end_time']);
+                $duration = $varEndTime->floatDiffInHours($varStartTime);
+                $duration_unit = Doo::translate('小时'); // 时长单位
+                $datas[] = [
+                    $val['id'], // 申请编号
+                    $val['proc_def_name'], // 标题
+                    $this->getStateDescription($val['state']), // 申请状态
+                    $val['start_time'], // 发起时间
+                    $val['end_time'], // 完成时间
+                    $job_number, // 发起人工号
+                    $val['start_user_id'], // 发起人User ID
+                    $nickname, // 发起人姓名
+                    $val['department'], // 发起人部门
+                    $val['department_id'], // 发起人部门ID
+                    $department_leader, // 部门负责人
+                    $historical_approver, // 历史审批人
+                    $historical_agent, // 历史办理人
+                    $approval_record, // 审批记录
+                    $current_handler, // 当前处理人
+                    $approved_node, // 审批节点
+                    $approved_num, // 审批人数
+                    $approval_time, // 审批耗时
+                    $val['var']['type'], // 假期类型
+                    $val['var']['start_time'], // 开始时间
+                    $val['var']['end_time'], // 结束时间
+                    $duration, // 时长
+                    $val['var']['description'], // 请假事由
+                    $duration_unit, // 请假单位
+                ];
+            }
+            if (empty($datas)) {
+                $content[] = [
+                    'content' => '没有任何数据',
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+                return;
+            }
+            //
+            $title = Doo::translate("审批记录");
+            $sheets = [
+                BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles(["A1:Y1" => ["font" => ["bold" => true]]])
+            ];
+            //
+            $fileName = $title . '_' . Timer::time() . '.xlsx';
+            $filePath = "temp/approve/export/" . date("Ym", Timer::time());
+            $export = new BillMultipleExport($sheets);
+            $res = $export->store($filePath . "/" . $fileName);
+            if ($res != 1) {
+                $content[] = [
+                    'content' => "导出失败，{$fileName}！",
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+                return;
+            }
+            $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
+            $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xlsx') . ".zip";
+            $zipPath = storage_path($zipFile);
+            if (file_exists($zipPath)) {
+                Base::deleteDirAndFile($zipPath, true);
+            }
+            try {
+                Madzipper::make($zipPath)->add($xlsPath)->close();
+            } catch (\Throwable) {
+            }
+            //
+            if (file_exists($zipPath)) {
+                $base64 = base64_encode(Base::array2string([
+                    'file' => $zipFile,
+                ]));
+                $fileUrl = Base::fillUrl('api/approve/down?key=' . urlencode($base64));
+                Session::put('approve::export:userid', $user->userid);
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'file_download',
+                    'title' => '导出审批数据已完成',
+                    'name' => $fileName,
+                    'size' => filesize($zipPath),
+                    'url' => $fileUrl,
+                ], $botUser->userid, true, false, true);
+            } else {
+                $content[] = [
+                    'content' => "打包失败，请稍后再试...",
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, true, false, true);
+            }
+        });
         //
-        $title = Doo::translate("审批记录");
-        $sheets = [
-            BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles(["A1:Y1" => ["font" => ["bold" => true]]])
-        ];
+        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+            'type' => 'content',
+            'content' => '正在导出审批数据，请稍等...',
+        ], $botUser->userid, true, false, true);
         //
-        $fileName = $title . '_' . Timer::time() . '.xlsx';
-        $filePath = "temp/approve/export/" . date("Ym", Timer::time());
-        $export = new BillMultipleExport($sheets);
-        $res = $export->store($filePath . "/" . $fileName);
-        if ($res != 1) {
-            return Base::retError('导出失败，' . $fileName . '！');
-        }
-        $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
-        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xlsx') . ".zip";
-        $zipPath = storage_path($zipFile);
-        if (file_exists($zipPath)) {
-            Base::deleteDirAndFile($zipPath, true);
-        }
-        try {
-            Madzipper::make($zipPath)->add($xlsPath)->close();
-        } catch (\Throwable) {
-        }
-        //
-        if (file_exists($zipPath)) {
-            $base64 = base64_encode(Base::array2string([
-                'file' => $zipFile,
-            ]));
-            Session::put('approve::export:userid', $user->userid);
-            return Base::retSuccess('success', [
-                'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
-                'url' => Base::fillUrl('api/approve/down?key=' . urlencode($base64)),
-            ]);
-        } else {
-            return Base::retError('打包失败，请稍后再试...');
-        }
+        return Base::retSuccess('success');
     }
 
     function getStateDescription($state)

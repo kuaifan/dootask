@@ -110,11 +110,9 @@ export default {
             this.$store.dispatch("call", {
                 url: 'approve/export',
                 data: this.formData,
-            }).then(({data}) => {
+            }).then(() => {
                 this.show = false;
-                this.$store.dispatch('downUrl', {
-                    url: data.url
-                });
+                $A.modalSuccess('正在打包，请留意系统消息。');
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
