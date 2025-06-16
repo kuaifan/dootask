@@ -10,6 +10,7 @@ use App\Module\Table\OnlineData;
 use App\Services\RequestContext;
 use Cache;
 use Carbon\Carbon;
+use Request;
 
 /**
  * App\Models\User
@@ -436,6 +437,19 @@ class User extends AbstractModel
     }
 
     /**
+     * 临时日志记录
+     * @param $message
+     * @return void
+     */
+    private static function tmpLog($message)
+    {
+        if (Request::input('log') !== 'yes') {
+            return;
+        }
+        info("[User] [" . date("Y-m-d H:i:s") . "] " . $message);
+    }
+
+    /**
      * 用户身份认证（获取用户信息）
      * @param null $identity 判断身份
      * @return self
@@ -444,11 +458,20 @@ class User extends AbstractModel
     {
         $user = self::authInfo();
         if (!$user) {
+            self::tmpLog('auth failed');
             $token = Base::token();
             if ($token) {
                 UserDevice::forget($token);
+                self::tmpLog('auth token found: ' . Base::array2json([
+                        'header' => Request::header(),
+                        'input' => Request::input(),
+                    ]));
                 throw new ApiException('身份已失效,请重新登录', [], -1);
             } else {
+                self::tmpLog('auth no token found: ' . Base::array2json([
+                        'header' => Request::header(),
+                        'input' => Request::input(),
+                    ]));
                 throw new ApiException('请登录后继续...', [], -1);
             }
         }
@@ -467,25 +490,31 @@ class User extends AbstractModel
      */
     private static function authInfo()
     {
+        self::tmpLog('auth start');
         if (RequestContext::has('auth')) {
             // 缓存
+            self::tmpLog('auth from cache');
             return RequestContext::get('auth');
         }
         if (Doo::userId() <= 0) {
             // 没有登录
+            self::tmpLog('auth no login');
             return RequestContext::save('auth', false);
         }
         if (Doo::userExpired()) {
             // 登录过期
+            self::tmpLog('auth expired');
             return RequestContext::save('auth', false);
         }
         if (!UserDevice::check()) {
             // token 不存在
+            self::tmpLog('auth token not found');
             return RequestContext::save('auth', false);
         }
         $user = self::whereUserid(Doo::userId())->whereEmail(Doo::userEmail())->whereEncrypt(Doo::userEncrypt())->first();
         if (!$user) {
             // 登录信息不匹配
+            self::tmpLog('auth user not found');
             return RequestContext::save('auth', false);
         }
 
@@ -507,6 +536,7 @@ class User extends AbstractModel
             $user->updateInstance($upArray);
             $user->save();
         }
+        self::tmpLog('auth success: ' . $user->userid . ' - ' . $user->email);
         return RequestContext::save('auth', $user);
     }
 
