@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Module\Base;
 use App\Module\Doo;
+use App\Module\Lock;
 use Cache;
 use Carbon\Carbon;
 use DeviceDetector\DeviceDetector;
@@ -218,13 +219,8 @@ class UserDevice extends AbstractModel
             self::record();
             return $hash;
         }
-        // 没有记录，尝试创建一个（防止升级后所有登录都失效，保证留一个可以保持登录） // todo 后期删除
-        return AbstractModel::transaction(function () use ($hash, $userid) {
-            if (self::whereUserid($userid)->withoutTrashed()->lockForUpdate()->exists()) {
-                return null;
-            }
-            return self::record() ? $hash : null;
-        });
+        // 没有记录
+        return null;
     }
 
     /**
@@ -234,46 +230,48 @@ class UserDevice extends AbstractModel
      */
     public static function record(string $token = null): ?self
     {
-        return AbstractModel::transaction(function () use ($token) {
-            if (empty($token)) {
-                $token = Doo::userToken();
-                $userid = Doo::userId();
-                $expiredAt = Doo::userExpiredAt();
-            } else {
-                $info = Doo::tokenDecode($token);
-                $userid = $info['userid'] ?? 0;
-                $expiredAt = $info['expired_at'];
-            }
-
-            $hash = md5($token);
-            $row = self::whereHash($hash)->lockForUpdate()->first();
-            if (empty($row)) {
-                // 生成一个新的设备记录
-                $row = self::createInstance([
-                    'userid' => $userid,
-                    'hash' => $hash,
-                ]);
-                if (!$row->save()) {
-                    return null;
-                }
-                // 删除多余的设备记录
-                $currentDeviceCount = self::whereUserid($userid)->count();
-                if ($currentDeviceCount > self::$deviceLimit) {
-                    $rows = self::whereUserid($userid)->orderBy('id')->take($currentDeviceCount - self::$deviceLimit)->get();
-                    foreach ($rows as $row) {
-                        UserDevice::forget($row);
+        if (empty($token)) {
+            $token = Doo::userToken();
+            $userid = Doo::userId();
+            $expiredAt = Doo::userExpiredAt();
+        } else {
+            $info = Doo::tokenDecode($token);
+            $userid = $info['userid'] ?? 0;
+            $expiredAt = $info['expired_at'];
+        }
+        $hash = md5($token);
+        //
+        return Lock::withLock("userDeviceRecord:{$hash}", function () use ($expiredAt, $userid, $hash, $token) {
+            return AbstractModel::transaction(function () use ($expiredAt, $userid, $hash, $token) {
+                $row = self::whereHash($hash)->first();
+                if (empty($row)) {
+                    // 生成一个新的设备记录
+                    $row = self::createInstance([
+                        'userid' => $userid,
+                        'hash' => $hash,
+                    ]);
+                    if (!$row->save()) {
+                        return null;
+                    }
+                    // 删除多余的设备记录
+                    $currentDeviceCount = self::whereUserid($userid)->count();
+                    if ($currentDeviceCount > self::$deviceLimit) {
+                        $rows = self::whereUserid($userid)->orderBy('id')->take($currentDeviceCount - self::$deviceLimit)->get();
+                        foreach ($rows as $row) {
+                            UserDevice::forget($row);
+                        }
                     }
                 }
-            }
-            $row->expired_at = $expiredAt;
-            if (Request::hasHeader('version')) {
-                $deviceInfo = array_merge(Base::json2array($row->detail), self::getDeviceInfo($_SERVER['HTTP_USER_AGENT'] ?? ''));
-                $row->detail = Base::array2json($deviceInfo);
-            }
-            $row->save();
+                $row->expired_at = $expiredAt;
+                if (Request::hasHeader('version')) {
+                    $deviceInfo = array_merge(Base::json2array($row->detail), self::getDeviceInfo($_SERVER['HTTP_USER_AGENT'] ?? ''));
+                    $row->detail = Base::array2json($deviceInfo);
+                }
+                $row->save();
 
-            Cache::put(self::ck($hash), $row->userid, now()->addHour());
-            return $row;
+                Cache::put(self::ck($hash), $row->userid, now()->addHour());
+                return $row;
+            });
         });
     }
 

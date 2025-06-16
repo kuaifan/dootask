@@ -25,7 +25,6 @@ use App\Tasks\ZincSearchSyncTask;
 use App\Tasks\UnclaimedTaskRemindTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Laravolt\Avatar\Avatar;
-use Swoole\Coroutine;
 
 
 /**
