@@ -147,10 +147,6 @@
                 border-radius: 6px;
             }
             .messenger-list {
-                flex: 1;
-                height: 0;
-                width: 100%;
-                overflow-x: hidden;
                 ul {
                     > li {
                         &.nothing {
