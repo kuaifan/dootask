@@ -1,6 +1,7 @@
 const windowWidth = $A(window).width(),
     windowHeight = $A(window).height(),
-    windowOrientation = $A.screenOrientation()
+    windowOrientation = $A.screenOrientation(),
+    windowIsFullScreen = $A.isFullScreen();
 
 export default {
     // 客户端ID（希望不变的，除非清除浏览器缓存或者卸载应用）
@@ -35,6 +36,9 @@ export default {
     windowOrientation: windowOrientation,
     windowLandscape: windowOrientation === 'landscape', // 横屏
     windowPortrait: windowOrientation === 'portrait',   // 竖屏
+
+    // 是否全屏
+    windowIsFullScreen: windowIsFullScreen,
 
     // 表单布局
     formOptions: {

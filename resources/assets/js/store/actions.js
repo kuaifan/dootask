@@ -27,6 +27,8 @@ export default {
             state.windowLandscape = windowOrientation === 'landscape'
             state.windowPortrait = windowOrientation === 'portrait'
 
+            state.windowIsFullScreen = $A.isFullScreen()
+
             state.formOptions = {
                 class: windowWidth > 576 ? '' : 'form-label-weight-bold',
                 labelPosition: windowWidth > 576 ? 'right' : 'top',

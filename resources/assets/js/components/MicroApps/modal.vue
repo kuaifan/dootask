@@ -204,7 +204,7 @@ export default {
 
     &-close {
         position: absolute;
-        top: 0;
+        top: var(--status-bar-height, 0);
         left: -40px;
         z-index: 1;
         width: 40px;

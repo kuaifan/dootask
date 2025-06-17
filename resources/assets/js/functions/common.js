@@ -1511,6 +1511,29 @@ const timezone = require("dayjs/plugin/timezone");
                 };
                 img.src = url;
             })
+        },
+
+        /**
+         * 是否全屏（根据尺寸对比）
+         * @returns {boolean}
+         */
+        isFullScreen() {
+            const windowWidth = $A(window).width();
+            const windowHeight = $A(window).height();
+            const screenWidth = window.screen.width;
+            const screenHeight = window.screen.height;
+
+            // 如果高比宽大，对调宽高
+            const adjustedWindowWidth = windowWidth > windowHeight ? windowWidth : windowHeight;
+            const adjustedWindowHeight = windowWidth > windowHeight ? windowHeight : windowWidth;
+            const adjustedScreenWidth = screenWidth > screenHeight ? screenWidth : screenHeight;
+            const adjustedScreenHeight = screenWidth > screenHeight ? screenHeight : screenWidth;
+
+            // 判断是否全屏，误差1内视为全屏
+            const widthDiff = Math.abs(adjustedWindowWidth - adjustedScreenWidth);
+            const heightDiff = Math.abs(adjustedWindowHeight - adjustedScreenHeight);
+
+            return widthDiff <= 1 && heightDiff <= 1;
         }
     });
 
