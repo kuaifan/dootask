@@ -210,10 +210,12 @@
             </ButtonGroup>
         </div>
 
-        <div class="manage-box-main">
+        <div class="manage-box-main" :role="routeName">
+            <div class="manage-status-bar"><span></span></div>
             <keep-alive>
                 <router-view class="manage-box-view" @on-click="onTabbarClick"></router-view>
             </keep-alive>
+            <div class="manage-navigation-bar"><span></span></div>
         </div>
 
         <!--新建项目-->

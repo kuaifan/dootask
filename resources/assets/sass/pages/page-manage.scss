@@ -278,6 +278,57 @@
             bottom: 0;
             overflow: auto;
         }
+
+        .manage-status-bar,
+        .manage-navigation-bar {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            background-color: var(--manage-bar-bg-color, transparent);
+        }
+        .manage-status-bar {
+            top: calc(var(--status-bar-height) * -1);
+            height: var(--status-bar-height);
+        }
+        .manage-navigation-bar {
+            bottom: calc(var(--navigation-bar-height) * -1);
+            height: var(--navigation-bar-height);
+        }
+        &[role="manage-dashboard"],
+        &[role="manage-calendar"],
+        &[role="manage-messenger"],
+        &[role^="manage-setting"],
+        &[role="manage-file"] {
+            --manage-bar-bg-color: #ffffff;
+        }
+        &[role="manage-messenger"] {
+            .manage-status-bar,
+            .manage-navigation-bar {
+                > span {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 30%;
+                    min-width: 240px;
+                    max-width: 320px;
+                    height: var(--status-bar-height);
+                    &:before {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        right: 0;
+                        width: 1px;
+                        background-color: #f4f5f5;
+                        transform: translateX(100%);
+                    }
+                }
+            }
+        }
+        &[role="manage-project"],
+        &[role="manage-application"] {
+            --manage-bar-bg-color: #fafafa;
+        }
     }
 }
 
