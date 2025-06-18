@@ -1,3 +1,16 @@
+body {
+    .ivu-modal-wrap {
+        &.common-drawer-overlay {
+            .ivu-modal {
+                .ivu-modal-content {
+                    margin-top: 0;
+                    margin-bottom: 0;
+                }
+            }
+        }
+    }
+}
+
 .common-drawer-overlay {
     .ivu-modal {
         margin: 0;
@@ -35,6 +48,7 @@
             display: flex;
             align-items: flex-end;
             justify-content: flex-end;
+            padding-top: var(--status-bar-height);
 
             > a {
                 display: flex;
@@ -76,6 +90,24 @@
             background: #fff;
             border-radius: 18px 18px 0 0;
             cursor: default;
+            display: flex;
+            flex-direction: column;
+
+            .overlay-content-status {
+                flex-shrink: 0;
+                height: var(--status-bar-height);
+            }
+
+            .overlay-content-body {
+                flex: 1;
+                height: 0;
+                position: relative;
+            }
+
+            .overlay-content-navigation {
+                flex-shrink: 0;
+                height: var(--navigation-bar-height);
+            }
 
             .ivu-modal-wrap-apply {
                 .ivu-modal-wrap-apply-title {

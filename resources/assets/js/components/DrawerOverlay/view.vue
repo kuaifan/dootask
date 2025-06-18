@@ -17,7 +17,11 @@
             :reverse="true"
             :beforeResize="beforeResize"
             @on-change="onChangeResize"/>
-        <div class="overlay-content"><slot/></div>
+        <div class="overlay-content">
+            <div class="overlay-content-status"></div>
+            <div class="overlay-content-body"><slot/></div>
+            <div class="overlay-content-navigation"></div>
+        </div>
     </div>
 </template>
 

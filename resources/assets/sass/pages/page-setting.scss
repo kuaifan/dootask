@@ -63,6 +63,7 @@
         flex-shrink: 0;
         border-right: 1px solid #F4F4F5;
         overflow: auto;
+        z-index: 1;
         > ul {
             padding: 12px 0 0 32px;
             > li {
