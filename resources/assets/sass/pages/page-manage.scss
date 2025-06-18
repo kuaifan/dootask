@@ -488,6 +488,12 @@ body.window-portrait {
         .manage-box-menu {
             display: none;
         }
+        .manage-box-main {
+            .manage-status-bar,
+            .manage-navigation-bar {
+                display: none;
+            }
+        }
         &.show-tabbar {
             .manage-box-main {
                 margin-bottom: 60px;

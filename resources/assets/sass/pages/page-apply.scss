@@ -88,8 +88,6 @@
         }
 
         @media (max-width: 510px) {
-            background-color: #FFFFFF;
-
             .apply-row-title {
                 margin-bottom: 8px !important;
             }
@@ -128,7 +126,6 @@
                 }
             }
         }
-
     }
 }
 
@@ -513,17 +510,21 @@
 
 body.window-portrait {
     .page-apply {
-        .apply-head {
-            margin: 24px 24px 0 24px;
-        }
+        .apply-wrapper {
+            background-color: #FFFFFF;
 
-        .apply-content {
-            padding: 16px 20px;
+            .apply-head {
+                margin: 24px 24px 0 24px;
+            }
 
-            .apply-col {
-                > div {
-                    font-size: 12px;
-                    font-weight: 500;
+            .apply-content {
+                padding: 16px 20px;
+
+                .apply-col {
+                    > div {
+                        font-size: 12px;
+                        font-weight: 500;
+                    }
                 }
             }
         }

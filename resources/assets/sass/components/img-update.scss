@@ -12,20 +12,22 @@
     }
 }
 
+.common-img-update {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
 .imgcomp-upload-list {
     display: inline-block;
     width: 60px;
     height: 60px;
     text-align: center;
     line-height: 60px;
-    border: 1px solid transparent;
     border-radius: 4px;
     overflow: hidden;
     background: #fff;
     position: relative;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, .2);
-    margin-right: 4px;
-    vertical-align: top;
 
     .imgcomp-upload-img {
         position: absolute;
@@ -48,19 +50,19 @@
         flex-direction: row;
         align-items: center;
         justify-content: center;
-    }
 
-    .imgcomp-upload-list-cover i {
-        color: #fff;
-        font-size: 24px;
-        cursor: pointer;
-        vertical-align: middle;
-        margin: 0;
-        transition: all .2s;
-    }
+        i {
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            vertical-align: middle;
+            margin: 0;
+            transition: all .2s;
 
-    .imgcomp-upload-list-cover i:hover {
-        font-size: 28px;
+            &:hover {
+                font-size: 28px;
+            }
+        }
     }
 
     .ivu-progress {
@@ -119,6 +121,10 @@
         justify-content: center;
         width: 100%;
         height: 100%;
+
+        > i {
+            pointer-events: none;
+        }
     }
 
     .add-box-upload {
