@@ -4679,15 +4679,17 @@ export default {
         if (!data.id || !data.name || !data.url) {
             return
         }
+        const serverLocation = new URL($A.mainUrl(''))
         data.url = data.url
             .replace(/^\:(\d+)/ig, (_, port) => {
-                return window.location.protocol + '//' + window.location.hostname + ':' + port;
+                return serverLocation.protocol + '//' + serverLocation.hostname + ':' + port;
             })
             .replace(/\{window[._]location[._](\w+)}/ig, (_, property) => {
-                if (property in window.location) {
-                    return window.location[property];
+                if (property in serverLocation) {
+                    return serverLocation[property];
                 }
             })
+            .replace(/\{system_base_url}/g, serverLocation.origin)
         const config = {
             id: data.id,
             name: data.name,
@@ -4703,14 +4705,14 @@ export default {
             $A.modalWarning(`应用「${config.id}」未安装`);
             return;
         }
-        config.url = config.url.replace(/\{user_id}/g, state.userId)
+        config.url = config.url
+            .replace(/\{user_id}/g, state.userId)
             .replace(/\{user_nickname}/g, encodeURIComponent(state.userInfo.nickname))
             .replace(/\{user_email}/g, encodeURIComponent(state.userInfo.email))
             .replace(/\{user_avatar}/g, encodeURIComponent(state.userInfo.userimg))
             .replace(/\{user_token}/g, encodeURIComponent(state.userToken))
             .replace(/\{system_theme}/g, state.systemConfig.themeName)
-            .replace(/\{system_lang}/g, languageName)
-            .replace(/\{system_base_url}/g, $A.mainUrl('').replace(/\/$/, ''));
+            .replace(/\{system_lang}/g, languageName);
         emitter.emit('observeMicroApp:open', config);
     },
 
