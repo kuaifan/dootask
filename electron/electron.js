@@ -96,9 +96,17 @@ async function startWebServer() {
         return Promise.resolve();
     }
 
+    // 每次启动前清理缓存
+    utils.clearServerCache();
+
     return new Promise((resolve, reject) => {
         // 创建Express应用
         const app = express();
+
+        // 健康检查
+        app.head('/health', (req, res) => {
+            res.status(200).send('OK');
+        });
 
         // 使用express.static中间件提供静态文件服务
         // Express内置了全面的MIME类型支持，无需手动配置
@@ -113,9 +121,12 @@ async function startWebServer() {
             dotfiles: 'ignore',
             // 自定义头部
             setHeaders: (res, path, stat) => {
-                // 对HTML文件禁用缓存，方便开发调试
-                if (path.endsWith('.html')) {
-                    res.set('Cache-Control', 'no-cache');
+                const ext = path.split('.').pop().toLowerCase();
+                // HTML、JS、CSS文件禁用缓存，方便开发调试
+                if (['html', 'js', 'css'].includes(ext)){
+                    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+                    res.set('Pragma', 'no-cache');
+                    res.set('Expires', '0');
                 }
             }
         }));
@@ -1481,6 +1492,14 @@ ipcMain.on('setStore', (event, args) => {
  */
 ipcMain.handle('getStore', (event, args) => {
     return store.get(args)
+});
+
+/**
+ * 清理服务器缓存
+ */
+ipcMain.on('clearServerCache', (event) => {
+    utils.clearServerCache();
+    event.returnValue = "ok";
 });
 
 //================================================================

@@ -682,6 +682,24 @@ const utils = {
         } else {
             return "#FFFFFF";
         }
+    },
+
+    /**
+     * 清理服务器缓存
+     */
+    clearServerCache() {
+        try {
+            // 清理require缓存中的express相关模块
+            Object.keys(require.cache).forEach(key => {
+                if (key.includes('express') || key.includes('static')) {
+                    delete require.cache[key];
+                }
+            });
+
+            console.log('Server cache cleared');
+        } catch (e) {
+            console.error('Failed to clear server cache:', e);
+        }
     }
 }
 
