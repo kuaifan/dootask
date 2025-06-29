@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.61]
+
+### Bug Fixes
+
+- 修复客户端无法打开部分应用的问题
+
+### Performance
+
+- 优化客户端缓存
+- 优化已知问题
+- 优化iPadOS兼容性
+- 优化设备登录
+
 ## [1.0.51]
 
 ### Bug Fixes
