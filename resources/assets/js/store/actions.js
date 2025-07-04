@@ -4665,7 +4665,8 @@ export default {
      *  - id                应用ID（必须）
      *  - name              应用名称（必须）
      *  - url               应用地址（必须）
-     *  - url_type          地址类型
+     *  - url_type          地址类型（可选）
+     *  - background        背景颜色（可选）
      *  - transparent       是否透明模式 (true/false)，默认 false
      *  - disable_scope_css 是否禁用样式隔离 (true/false)，默认 false
      *  - auto_dark_theme   是否自动适配深色主题 (true/false)，默认 true
@@ -4695,6 +4696,7 @@ export default {
             name: data.name,
             url: $A.mainUrl(data.url),
             url_type: data.url_type || 'inline',
+            background: data.background || null,
             transparent: typeof data.transparent == 'boolean' ? data.transparent : false,
             disable_scope_css: typeof data.disable_scope_css == 'boolean' ? data.disable_scope_css : false,
             auto_dark_theme: typeof data.auto_dark_theme == 'boolean' ? data.auto_dark_theme : true,

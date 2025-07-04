@@ -20,7 +20,7 @@
                         :reverse="true"
                         :beforeResize="beforeResize"
                         @on-change="onChangeResize"/>
-                    <div ref="body" class="micro-modal-body">
+                    <div ref="body" class="micro-modal-body" :style="bodyStyle">
                         <slot></slot>
                     </div>
                 </div>
@@ -49,6 +49,9 @@ export default {
         minSize: {
             type: Number,
             default: 300
+        },
+        background: {
+            default: null
         },
         transparent: {
             type: Boolean,
@@ -80,6 +83,15 @@ export default {
                 return ['', '']
             }
             return ['micro-modal-fade', 'micro-modal-slide']
+        },
+        bodyStyle() {
+            const styleObject = {}
+            if ($A.isJson(this.background)) {
+                styleObject.background = this.background
+            } else if (this.background) {
+                styleObject.backgroundColor = this.background;
+            }
+            return styleObject;
         },
         maskStyle({zIndex}) {
             return {zIndex}

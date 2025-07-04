@@ -6,6 +6,7 @@
             v-model="app.isOpen"
             :ref="`ref-${app.name}`"
             :size="1200"
+            :background="app.background"
             :transparent="app.transparent"
             :autoDarkTheme="app.auto_dark_theme"
             :beforeClose="async () => { await onBeforeClose(app.name) }">
@@ -13,6 +14,7 @@
                 v-if="app.url_type === 'iframe' && app.isOpen && app.url"
                 :name="app.name"
                 :url="app.url"
+                :data="appData(app.name)"
                 @mounted="mounted"
                 @error="error"/>
             <micro-app
@@ -205,6 +207,10 @@ export default {
 
                 props: {
                     ...app.props,
+
+                    name: app.name,
+                    url: app.url,
+                    urlType: app.url_type,
 
                     userId: this.userId,
                     userToken: this.userToken,
