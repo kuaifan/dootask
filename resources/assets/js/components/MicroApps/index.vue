@@ -237,28 +237,6 @@ export default {
                     back: () => {
                         this.closeByName(name)
                     },
-                    nextZIndex: () => {
-                        if (typeof window.modalTransferIndex === 'number') {
-                            return window.modalTransferIndex++;
-                        }
-                        return 1000;
-                    },
-                    selectUsers: async (params) => {
-                        if (!$A.isJson(params)) {
-                            params = {value: params}
-                        }
-                        if ($A.isArray(params.value)) {
-                            params.value = params.value ? [params.value] : []
-                        }
-                        this.userSelectOptions.value = params.value
-                        delete params.value
-                        this.userSelectOptions.config = params
-                        return await new Promise(resolve => {
-                            this.$refs.userSelect.onSelection((res) => {
-                                return resolve(res)
-                            })
-                        })
-                    },
                     popoutWindow: async (windowConfig = null) => {
                         const app = this.apps.find(item => item.name == name);
                         if (!app) {
@@ -293,6 +271,31 @@ export default {
                                 titleFixed: typeof params.titleFixed === 'boolean' ? params.titleFixed : false,
                             },
                         });
+                    },
+                    requestAPI: async(params) => {
+                        return await store.dispatch('call', params);
+                    },
+                    selectUsers: async (params) => {
+                        if (!$A.isJson(params)) {
+                            params = {value: params}
+                        }
+                        if ($A.isArray(params.value)) {
+                            params.value = params.value ? [params.value] : []
+                        }
+                        this.userSelectOptions.value = params.value
+                        delete params.value
+                        this.userSelectOptions.config = params
+                        return await new Promise(resolve => {
+                            this.$refs.userSelect.onSelection((res) => {
+                                return resolve(res)
+                            })
+                        })
+                    },
+                    nextZIndex: () => {
+                        if (typeof window.modalTransferIndex === 'number') {
+                            return window.modalTransferIndex++;
+                        }
+                        return 1000;
                     },
                     extraCallA: (...args) => {
                         if (args.length > 0 && typeof args[0] === 'string') {

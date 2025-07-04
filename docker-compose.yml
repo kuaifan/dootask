@@ -1,7 +1,7 @@
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0.rc20"
+    image: "kuaifan/php:swoole-8.0.rc21"
     shm_size: 2G
     ulimits:
       core:
@@ -96,7 +96,7 @@ services:
   appstore:
     container_name: "dootask-appstore-${APP_ID}"
     privileged: true
-    image: "dootask/appstore:0.1.3"
+    image: "dootask/appstore:0.1.4"
     volumes:
       - shared_data:/usr/share/dootask
       - /var/run/docker.sock:/var/run/docker.sock
