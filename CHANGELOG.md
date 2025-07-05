@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.65]
+
+### Performance
+
+- 优化应用商城
+
 ## [1.0.61]
 
 ### Bug Fixes
