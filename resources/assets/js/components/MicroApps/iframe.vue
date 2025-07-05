@@ -155,7 +155,7 @@ export default {
                     delete iframeWindow.microApp
                 }
             } catch (error) {
-                // console.error('Failed to cleanup microApp object:', error)
+                // console.error('Failed to clean up microApp object:', error)
             }
         },
     }

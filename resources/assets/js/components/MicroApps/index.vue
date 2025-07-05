@@ -352,7 +352,8 @@ export default {
         async inlineBlank(config, windowConfig = null) {
             const appConfig = {
                 ...config,
-                url_type: 'inline',
+                
+                url_type: config.url_type === 'iframe' ? 'iframe' : 'inline',
                 transparent: true,
                 keep_alive: false,
             };
