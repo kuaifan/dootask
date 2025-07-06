@@ -190,8 +190,10 @@ class WebSocketDialogMsgTask extends AbstractTask
             $setting = Base::setting('appPushSetting');
             if ($setting['push'] === 'open') {
                 $umengTitle = User::userid2nickname($msg->userid);
+                $umengBody = WebSocketDialogMsg::previewMsg($msg);
                 if ($dialog->type == 'group') {
-                    $umengTitle = "{$dialog->getGroupName()} ($umengTitle)";
+                    $umengBody = $umengTitle . ': ' . $umengBody;
+                    $umengTitle = $dialog->getGroupName();
                 }
                 $langs = User::select(['userid', 'lang'])
                     ->whereIn('userid', $umengUserid)
@@ -205,7 +207,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                     Doo::setLanguage($lang);
                     $umengMsg = [
                         'title' => $umengTitle,
-                        'body' => WebSocketDialogMsg::previewMsg($msg),
+                        'body' => $umengBody,
                         'description' => "MID:{$msg->id}",
                         'seconds' => 3600,
                         'badge' => 1,
