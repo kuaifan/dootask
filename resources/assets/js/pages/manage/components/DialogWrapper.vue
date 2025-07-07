@@ -2368,6 +2368,12 @@ export default {
             if (tempId > 0) {
                 const index = this.tempMsgs.findIndex(({id}) => id == tempId)
                 if (index > -1) {
+                    if (data.type === 'text') {
+                        const tempMsg = this.tempMsgs[index]
+                        if (tempMsg) {
+                            data.msg.text = this.replaceImgSrcAndKeepOriginal(data.msg.text, tempMsg.msg.text)
+                        }
+                    }
                     this.tempMsgs.splice(index, 1, data)
                 }
                 setTimeout(_ => {
@@ -2387,6 +2393,29 @@ export default {
             }
             this.cancelQuote();
             this.onActive();
+        },
+
+        replaceImgSrcAndKeepOriginal(dataHtml, tempHtml) {
+            const tempImgs = [];
+            const dataImgs = [];
+            tempHtml = tempHtml || '';
+            dataHtml = dataHtml || '';
+            tempHtml.replace(/<img [^>]*src=["']([^"']+)["'][^>]*>/g, (m, src) => { tempImgs.push(src); return m; });
+            dataHtml.replace(/<img [^>]*src=["']([^"']+)["'][^>]*>/g, (m, src) => { dataImgs.push(src); return m; });
+            if (tempImgs.length !== dataImgs.length || dataImgs.length === 0) {
+                return dataHtml;
+            }
+            let imgIndex = 0;
+            return dataHtml.replace(/<img ([^>]*?)src=("|')([^"']+)\2([^>]*)>/g, (match, before, quote, src, after) => {
+                const newSrc = tempImgs[imgIndex] || src;
+                const originalSrc = src;
+                imgIndex++;
+                let originalSrcAttr = '';
+                if (!/original-src=/.test(match)) {
+                    originalSrcAttr = ` original-src=\"${originalSrc}\"`;
+                }
+                return `<img ${before}src=${quote}${newSrc}${quote}${originalSrcAttr}${after}>`;
+            });
         },
 
         forgetTempMsg(tempId) {
