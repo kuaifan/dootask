@@ -1057,17 +1057,16 @@ export default {
             if (userid == this.userId) {
                 return; // 自己的消息不通知
             }
-            const body = $A.getMsgSimpleDesc(data);
             this.__notificationId = id;
             //
-            const notificationFuncA = async (title) => {
+            const notificationFuncA = async (title, body) => {
                 const tempUser = await this.$store.dispatch("getUserData", userid).catch(_ => {});
                 if (dialog_type === 'group' && tempUser) {
-                    title = `${title} (${tempUser.nickname})`
+                    body = tempUser.nickname + ': ' + body;
                 }
-                notificationFuncB(title, tempUser?.userimg)
+                notificationFuncB(title, body, tempUser?.userimg)
             }
-            const notificationFuncB = (title, userimg) => {
+            const notificationFuncB = (title, body, userimg) => {
                 if (this.__notificationId === id) {
                     this.__notificationId = null
                     if (this.$isEEUIApp) {
@@ -1103,10 +1102,11 @@ export default {
                 }
             }
             const dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
+            const summary = $A.getMsgSimpleDesc(data);
             if (dialog) {
-                notificationFuncA(dialog.name)
+                notificationFuncA(dialog.name, summary)
             } else {
-                this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => notificationFuncA(data.name)).catch(() => {})
+                this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => notificationFuncA(data.name, summary)).catch(() => {})
             }
         },
 
