@@ -515,6 +515,7 @@
         <DrawerOverlay
             v-model="taskTagShow"
             placement="right"
+            :beforeClose="taskTagBeforeClose"
             :size="720">
             <ProjectTaskTag ref="taskTag" v-if="taskTagShow" :project-id="projectId"/>
         </DrawerOverlay>
@@ -1605,6 +1606,10 @@ export default {
             this.$nextTick(_ => {
                 this.$refs.inviteInput.focus({cursor:'all'});
             });
+        },
+
+        async taskTagBeforeClose() {
+            this.$store.dispatch("getTaskForProject", this.projectId).catch(() => {})
         },
 
         workflowBeforeClose() {
