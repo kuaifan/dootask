@@ -30178,5 +30178,29 @@
         "fr": "Exportation des données d'enregistrement, veuillez patienter...",
         "id": "Sedang mengekspor data check-in, harap tunggu...",
         "ru": "Экспорт данных регистрации, пожалуйста, подождите..."
+    },
+    {
+        "key": "加入项目",
+        "zh": "",
+        "zh-CHT": "加入專案",
+        "en": "Join project",
+        "ko": "프로젝트 가입",
+        "ja": "プロジェクトに参加",
+        "de": "Dem Projekt beitreten",
+        "fr": "Rejoindre le projet",
+        "id": "Bergabung dengan proyek",
+        "ru": "Присоединиться к проекту"
+    },
+    {
+        "key": "邀请地址不存在或已被删除！",
+        "zh": "",
+        "zh-CHT": "邀請地址不存在或已被刪除！",
+        "en": "Invitation link does not exist or has been deleted!",
+        "ko": "초대 주소가 존재하지 않거나 삭제되었습니다!",
+        "ja": "招待リンクが存在しないか、削除されました！",
+        "de": "Einladungslink existiert nicht oder wurde gelöscht!",
+        "fr": "Le lien d'invitation n'existe pas ou a été supprimé !",
+        "id": "Tautan undangan tidak ada atau telah dihapus!",
+        "ru": "Пригласительная ссылка не существует или была удалена!"
     }
 ]
