@@ -3044,7 +3044,7 @@ class ProjectController extends AbstractController
             if (!$tag) {
                 return Base::retError('标签不存在或已被删除');
             }
-            AbstractModel::transaction(function () use ($data, $tag) {
+            AbstractModel::transaction(function () use ($data, $tag, $project) {
                 $tagWhere = [
                     'project_id' => $tag->project_id,
                     'name' => $tag->name,
@@ -3061,6 +3061,9 @@ class ProjectController extends AbstractController
                     'name' => $data['name'],
                 ]);
                 // 更新标签
+                $project->addLog("修改标签", [
+                    'change' => [$tag->name . '(' . $tag->color . ')', $data['name'] . '(' . $data['color'] . ')']
+                ]);
                 $tag->update($data);
             });
         } else {
@@ -3074,8 +3077,8 @@ class ProjectController extends AbstractController
             ])->exists()) {
                 return Base::retError('标签已存在');
             }
+            $project->addLog("添加标签: " . $data['name']);
             $tag = ProjectTag::create($data);
-            $project->addLog("添加标签【" . $tag->name . "】");
         }
         return Base::retSuccess('保存成功', $tag);
     }
@@ -3111,7 +3114,7 @@ class ProjectController extends AbstractController
             return Base::retError('没有权限删除标签');
         }
         //
-        return AbstractModel::transaction(function () use ($tag) {
+        return AbstractModel::transaction(function () use ($tag, $project) {
             $tagWhere = [
                 'project_id' => $tag->project_id,
                 'name' => $tag->name,
@@ -3125,6 +3128,7 @@ class ProjectController extends AbstractController
             // 删除任务标签
             ProjectTaskTag::where($tagWhere)->delete();
             // 删除标签
+            $project->addLog("删除标签: " . $tag->name);
             $tag->delete();
             return Base::retSuccess('删除成功');
         });
