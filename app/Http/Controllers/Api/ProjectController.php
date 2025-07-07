@@ -2907,8 +2907,8 @@ class ProjectController extends AbstractController
             $template->update($data);
         } else {
             $templateCount = ProjectTaskTemplate::where('project_id', $projectId)->count();
-            if ($templateCount >= 20) {
-                return Base::retError('每个项目最多添加20个模板');
+            if ($templateCount >= 50) {
+                return Base::retError('每个项目最多添加50个模板');
             }
             $template = ProjectTaskTemplate::create($data);
         }
@@ -3043,8 +3043,8 @@ class ProjectController extends AbstractController
             $tag->update($data);
         } else {
             $tagCount = ProjectTag::where('project_id', $projectId)->count();
-            if ($tagCount >= 20) {
-                return Base::retError('每个项目最多添加20个标签');
+            if ($tagCount >= 100) {
+                return Base::retError('每个项目最多添加100个标签');
             }
             $tag = ProjectTag::create($data);
             $project->addLog("添加标签【" . $tag->name . "】");
