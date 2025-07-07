@@ -66,7 +66,8 @@
                             <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
                         </EDropdownMenu>
                         <EDropdownMenu v-else slot="dropdown">
-                            <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
+                            <EDropdownItem command="task_tag">{{$L('任务标签')}}</EDropdownItem>
+                            <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
                             <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
                             <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
                             <EDropdownItem command="exit" divided style="color:#f40">{{$L('退出项目')}}</EDropdownItem>

@@ -72,6 +72,9 @@ export default {
             formRules: {
                 name: [
                     { required: true, message: this.$L('请输入标签名称'), trigger: 'blur' }
+                ],
+                color: [
+                    { required: true, message: this.$L('请选择标签颜色'), trigger: 'blur' }
                 ]
             },
 

@@ -3032,11 +3032,14 @@ class ProjectController extends AbstractController
             'color' => $color,
             'userid' => $user->userid
         ];
-        $project = Project::userProject($projectId, true, $id > 0 ? true : null);
+        $project = Project::userProject($projectId);
         if ($id > 0) {
             $tag = ProjectTag::where('id', $id)
                 ->where('project_id', $projectId)
                 ->first();
+            if (!$project->owner && $tag->userid != $user->userid) {
+                return Base::retError('没有权限修改标签');
+            }
             if (!$tag) {
                 return Base::retError('标签不存在或已被删除');
             }

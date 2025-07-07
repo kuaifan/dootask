@@ -28,12 +28,18 @@
                         <div v-if="item.desc" class="tag-desc">{{ item.desc }}</div>
                     </div>
                     <div class="tag-actions">
-                        <Button @click="handleAdd(item)" type="primary">
-                            {{$L('编辑')}}
-                        </Button>
-                        <Button @click="handleDelete(item)" type="error">
-                            {{$L('删除')}}
-                        </Button>
+                        <div v-if="item.userid === userId || projectData.owner_userid === userId" class="tag-actions-btns">
+                            <Button @click="handleAdd(item)" type="primary">
+                                {{$L('编辑')}}
+                            </Button>
+                            <Button @click="handleDelete(item)" type="error">
+                                {{$L('删除')}}
+                            </Button>
+                        </div>
+                        <div class="tag-actions-owner">
+                            <UserAvatar v-if="item.userid !== userId" :title="$L('创建人')" :userid="item.userid" show-name :show-icon="false" :size="16"/>
+                            <span :title="$L('创建时间')">{{item.created_at}}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -45,7 +51,7 @@
 </template>
 
 <script>
-import {mapState} from 'vuex'
+import {mapState, mapGetters} from 'vuex'
 import Tags from "./tags.vue";
 import TaskTagAdd from "./add.vue";
 
@@ -68,6 +74,7 @@ export default {
         }
     },
     computed: {
+        ...mapGetters(['projectData']),
         ...mapState(['formOptions'])
     },
     created() {
