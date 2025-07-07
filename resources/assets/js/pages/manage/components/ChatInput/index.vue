@@ -1179,7 +1179,12 @@ export default {
                         array.some(item => {
                             let list = item.list;
                             if (searchTerm) {
-                                list = list.filter(({value, key}) => $A.strExists(key || value, searchTerm));
+                                list = list.filter(({id, value, key}) => {
+                                    if (/^\d+$/.test(searchTerm) && id && id == searchTerm) {
+                                        return true;
+                                    }
+                                    return $A.strExists(key || value, searchTerm)
+                                });
                             }
                             if (list.length > 0) {
                                 item.label && values.push(...item.label)

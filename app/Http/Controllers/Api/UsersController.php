@@ -494,7 +494,7 @@ class UsersController extends AbstractController
      * @apiName searchinfo
      *
      * @apiParam {Object} keys          搜索条件
-     * - keys.key                           昵称、拼音、邮箱关键字
+     * - keys.key                           会员ID、昵称、拼音、邮箱关键字
      * - keys.disable                       0-排除离职（默认），1-仅离职，2-含离职
      * - keys.bot                           0-排除机器人（默认），1-仅机器人，2-含机器人
      * - keys.project_id                    在指定项目ID
@@ -534,6 +534,8 @@ class UsersController extends AbstractController
         if ($keys['key']) {
             if (str_contains($keys['key'], "@")) {
                 $builder->where("email", "like", "%{$keys['key']}%");
+            } elseif (Base::isNumber($keys['key'])) {
+                $builder->where("userid", intval($keys['key']));
             } else {
                 $builder->where(function($query) use ($keys) {
                     $query->where("nickname", "like", "%{$keys['key']}%")

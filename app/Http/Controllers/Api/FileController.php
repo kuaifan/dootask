@@ -134,7 +134,11 @@ class FileController extends AbstractController
             $builder->where("id", $id);
         }
         if ($key) {
-            $builder->where("name", "like", "%{$key}%");
+            if (!$id && Base::isNumber($key)) {
+                $builder->where("id", $key);
+            } else {
+                $builder->where("name", "like", "%{$key}%");
+            }
         }
         $array = $builder->take($take)->get()->toArray();
         // 搜索共享的
