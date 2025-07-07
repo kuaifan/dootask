@@ -17,6 +17,9 @@
         <!--会议管理-->
         <MeetingManager/>
 
+        <!--项目邀请-->
+        <ProjectInvite/>
+
         <!--下拉菜单-->
         <DropdownMenu/>
 
@@ -89,6 +92,7 @@ import NetworkException from "./components/NetworkException";
 import GuidePage from "./components/GuidePage";
 import TaskOperation from "./pages/manage/components/TaskOperation";
 import MeetingManager from "./pages/manage/components/MeetingManager";
+import ProjectInvite from "./pages/manage/components/ProjectInvite";
 import MobileNotification from "./components/Mobile/Notification.vue";
 import MobileBack from "./components/Mobile/Back.vue";
 import DropdownMenu from "./components/DropdownMenu";
@@ -109,6 +113,7 @@ export default {
         MobileNotification,
         AuthException,
         MeetingManager,
+        ProjectInvite,
         DropdownMenu,
         TaskOperation,
         NetworkException,
@@ -416,6 +421,14 @@ export default {
                             meetingid: meetingId,
                             meetingdisabled: true,
                         });
+                        return 2;
+                    }
+                    // manage/project/invite/xxxx 项目邀请
+                    // manage/project/invite?code=xxxx 项目邀请
+                    if (/^\/manage\/project\/invite/.test(pathname)) {
+                        const paths = pathname.split('/')
+                        const code = paths.length > 4 ? paths[4] : searchParams.get('code')
+                        emitter.emit('openProjectInvite', {code})
                         return 2;
                     }
                 } catch (e) { }
