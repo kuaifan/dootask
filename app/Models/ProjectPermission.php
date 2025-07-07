@@ -128,8 +128,8 @@ class ProjectPermission extends AbstractModel
     /**
      * 更新项目权限
      *
-     * @param  int  $projectId
-     * @param  array  $permissions
+     * @param int $projectId
+     * @param $newPermissions
      * @return ProjectPermission
      */
     public static function updatePermissions($projectId, $newPermissions)
@@ -146,9 +146,9 @@ class ProjectPermission extends AbstractModel
 
     /**
      * 检查用户是否有执行特定动作的权限
-     * @param string $action 动作名称
      * @param Project $project 项目实例
-     * @param ProjectTask $task 任务实例
+     * @param string $action 动作名称
+     * @param ProjectTask|null $task 任务实例
      * @return bool
      */
     public static function userTaskPermission(Project $project, $action, ProjectTask $task = null)

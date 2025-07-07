@@ -2120,14 +2120,17 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id);
         //
-        $project = Project::userProject($task->project_id);
-        $permissionKey = ProjectPermission::TASK_UPDATE;
-        if (Arr::exists($param, 'times')) {
-            $permissionKey = ProjectPermission::TASK_TIME;
-        } else if (Arr::exists($param, 'flow_item_id')) {
-            $permissionKey = ProjectPermission::TASK_STATUS;
+        if ($task->hasOwner()) {
+            // 已经存在负责人，则需要检查权限（即：没有任务负责人时，不检查权限）
+            $project = Project::userProject($task->project_id);
+            $permissionKey = ProjectPermission::TASK_UPDATE;
+            if (Arr::exists($param, 'times')) {
+                $permissionKey = ProjectPermission::TASK_TIME;
+            } else if (Arr::exists($param, 'flow_item_id')) {
+                $permissionKey = ProjectPermission::TASK_STATUS;
+            }
+            ProjectPermission::userTaskPermission($project, $permissionKey, $task);
         }
-        ProjectPermission::userTaskPermission($project, $permissionKey, $task);
         //
         $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->get();
         $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();
