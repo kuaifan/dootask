@@ -50,7 +50,7 @@
                 <li class="project-icon">
                     <EDropdown @command="projectDropdown" trigger="click" transfer>
                         <Icon class="menu-icon" type="ios-more" />
-                        <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
+                        <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown" class="project-panel-project-menu-dropdown">
                             <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                             <EDropdownItem command="permissions">{{$L('权限设置')}}</EDropdownItem>
                             <EDropdownItem command="task_template">{{$L('任务模板')}}</EDropdownItem>

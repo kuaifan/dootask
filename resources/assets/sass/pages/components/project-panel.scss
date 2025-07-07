@@ -953,6 +953,10 @@
         position: relative
     }
 }
+.project-panel-project-menu-dropdown {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
 .project-panel-more-dropdown-menu {
     > li {
         .item {
