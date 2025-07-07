@@ -6,7 +6,7 @@
         </div>
         <div v-else class="invite-warp">
             <Card v-if="project.id > 0">
-                <p slot="title">{{project.name}}</p>
+                <p slot="title" v-html="transformEmojiToHtml(project.name)"></p>
                 <div v-if="project.desc" class="invite-desc" :title="$L('项目介绍')">{{project.desc}}</div>
                 <div v-else>{{$L('暂无介绍')}}</div>
                 <div class="invite-footer">
@@ -47,6 +47,7 @@
 </style>
 <script>
 import {mapState} from "vuex";
+import transformEmojiToHtml from "../../utils/emoji";
 
 export default {
     data() {
@@ -65,7 +66,7 @@ export default {
         '$route': {
             handler(route) {
                 if (route.name == 'manage-project-invite') {
-                    this.code = route.query ? route.query.code : '';
+                    this.code = route.query?.code || route.params?.inviteId || '';
                     this.getData();
                     this.wakeApp();
                 }
@@ -74,6 +75,7 @@ export default {
         },
     },
     methods: {
+        transformEmojiToHtml,
         /**
          * 获取邀请信息
          */

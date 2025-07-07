@@ -424,7 +424,7 @@ class ProjectController extends AbstractController
      */
     public function invite()
     {
-        User::auth();
+        $user = User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $refresh = Request::input('refresh', 'no');
@@ -440,17 +440,17 @@ class ProjectController extends AbstractController
         if (empty($projectInvite)) {
             $projectInvite = ProjectInvite::createInstance([
                 'project_id' => $project->id,
-                'code' => Base::generatePassword(64),
+                'code' => base64_encode("{$project->id},{$user->userid}," . Base::generatePassword()),
             ]);
             $projectInvite->save();
         } else {
             if ($refresh == 'yes') {
-                $projectInvite->code = Base::generatePassword(64);
+                $projectInvite->code = base64_encode("{$project->id},{$user->userid}," . Base::generatePassword());
                 $projectInvite->save();
             }
         }
         return Base::retSuccess('success', [
-            'url' => Base::fillUrl('manage/project/invite?code=' . $projectInvite->code),
+            'url' => Base::fillUrl('manage/project/invite/' . $projectInvite->code),
             'num' => $projectInvite->num
         ]);
     }
