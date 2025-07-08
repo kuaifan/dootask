@@ -35,7 +35,7 @@
 
         <!-- Add Button -->
         <div class="footer-box">
-            <div class="add-button" @click="$emit('add')">
+            <div class="add-button" @click="$emit('add', searchQuery)">
                 <i class="el-icon-plus"></i>
                 <span>{{ $L('添加标签') }}</span>
             </div>
@@ -98,6 +98,9 @@ export default {
     methods: {
         isSelected(tag) {
             return this.value.some(item => item.name === tag.name);
+        },
+        clearSearch() {
+            this.searchQuery = '';
         },
         toggleTag(tag) {
             const isSelected = this.isSelected(tag);
@@ -176,6 +179,8 @@ export default {
         flex: 1;
         overflow-y: auto;
         max-height: 300px;
+        margin: 0 -12px;
+        padding: 0 12px;
 
         .tag-item {
             display: flex;

@@ -98,10 +98,7 @@ export default {
     },
     methods: {
         onOpen(tag = null) {
-            if (tag === null) {
-                tag = this.getEmptyTag()
-            }
-            this.editingTag = { ...tag }
+            this.editingTag = { ...this.getEmptyTag(), ...(tag || {}) }
             this.showEditModal = true
         },
 

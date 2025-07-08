@@ -155,6 +155,7 @@
                         <div class="item-content tags">
                             <EPopover v-model="tagShow" class="tags-select" placement="bottom">
                                 <TaskTagSelect
+                                    ref="tagSelect"
                                     v-model="tagValue"
                                     :data-sources="tagData"
                                     :loading="tagLoad > 0"
@@ -2063,13 +2064,13 @@ export default {
             this.$set(this.delayTaskForm, 'type', type)
         },
 
-        onTagAdd() {
+        onTagAdd(tagName) {
             // 避免关闭选择框时触发更新
             this.tagValue = this.getTag;
             this.tagBakValue = $A.cloneJSON(this.tagValue);
             // 隐藏选择框并打开添加框
             this.tagShow = false
-            this.$refs.addTag.onOpen(null)
+            this.$refs.addTag.onOpen(tagName ? {name: tagName} : null)
         },
 
         onTagAddSave(result) {
@@ -2082,6 +2083,7 @@ export default {
             ];
             // 触发更新
             this.updateData('tag', mergedTags);
+            this.$refs.tagSelect?.clearSearch();
         },
 
         getTypeLabel(type) {
