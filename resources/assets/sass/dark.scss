@@ -430,6 +430,14 @@ body.dark-mode-reverse {
         .login-body {
             .login-box {
                 box-shadow: none;
+
+                .login-mode-switch {
+                    .login-mode-switch-box {
+                        .login-mode-switch-icon {
+                            opacity: 0.85;
+                        }
+                    }
+                }
             }
         }
     }

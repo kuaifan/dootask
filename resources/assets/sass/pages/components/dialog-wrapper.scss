@@ -760,8 +760,10 @@
                         position: relative;
 
                         p {
-                            word-break: keep-all;
+                            word-break: break-all;
                             overflow-wrap: break-word;
+                            word-wrap: break-word;
+                            white-space: pre-wrap;
                         }
 
                         a,
