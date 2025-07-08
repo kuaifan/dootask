@@ -19,6 +19,7 @@ const {
 const {autoUpdater} = require("electron-updater")
 const Store = require("electron-store");
 const loger = require("electron-log");
+const axios = require('axios');
 const electronConf = require('electron-config')
 const userConf = new electronConf()
 const fsProm = require('fs/promises');
@@ -50,7 +51,8 @@ let mainWindow = null,
     isDevelopMode = false,
     serverPort = 22223,
     serverPublicDir = path.join(__dirname, 'public'),
-    serverUrl = "";
+    serverUrl = "",
+    serverTimer = null;
 
 let screenshotObj = null,
     screenshotKey = null;
@@ -91,8 +93,8 @@ if (!fs.existsSync(cacheDir)) {
 /**
  * 启动web服务
  */
-async function startWebServer() {
-    if (serverUrl) {
+async function startWebServer(force = false) {
+    if (serverUrl && !force) {
         return Promise.resolve();
     }
 
@@ -138,24 +140,55 @@ async function startWebServer() {
 
         // 错误处理中间件
         app.use((err, req, res, next) => {
-            console.error('Server error:', err);
+            loger.error('Server error:', err);
             res.status(500).send('Internal Server Error');
         });
 
         // 启动服务器
         const server = app.listen(serverPort, 'localhost', () => {
-            console.log(`Express static file server running at http://localhost:${serverPort}/`);
-            console.log(`Serving files from: ${serverPublicDir}`);
+            loger.info(`Express static file server running at http://localhost:${serverPort}/`);
+            loger.info(`Serving files from: ${serverPublicDir}`);
             serverUrl = `http://localhost:${serverPort}/`;
             resolve(server);
+            // 启动健康检查定时器
+            serverTimeout();
         });
 
         // 错误处理
         server.on('error', (err) => {
-            console.error('Server error:', err);
+            loger.error('Server error:', err);
             reject(err);
         });
     });
+}
+
+/**
+ * 健康检查定时器
+ */
+function serverTimeout() {
+    clearTimeout(serverTimer)
+    serverTimer = setTimeout(async () => {
+        if (!serverUrl) {
+            return;  // 没有服务器URL，直接返回
+        }
+        try {
+            const res = await axios.head(serverUrl + 'health')
+            if (res.status === 200) {
+                serverTimeout()  // 健康检查通过，重新设置定时器
+                return;
+            }
+            loger.error('Server health check failed with status: ' + res.status);
+        } catch (err) {
+            loger.error('Server health check error:', err);
+        }
+        // 如果健康检查失败，尝试重新启动服务器
+        try {
+            await startWebServer(true)
+            loger.info('Server restarted successfully');
+        } catch (error) {
+            loger.error('Failed to restart server:', error);
+        }
+    }, 10000)
 }
 
 /**
@@ -255,7 +288,7 @@ function createUpdaterWindow(updateTitle) {
 
         // 检查updater应用是否存在
         if (!fs.existsSync(updaterPath)) {
-            console.log('Updater not found:', updaterPath);
+            loger.error('Updater not found:', updaterPath);
             return;
         }
 
@@ -267,13 +300,13 @@ function createUpdaterWindow(updateTitle) {
                 try {
                     spawn('icacls', [updaterPath, '/grant', 'everyone:F'], { stdio: 'inherit', shell: true });
                 } catch (e) {
-                    console.log('Failed to set executable permission:', e);
+                    loger.error('Failed to set executable permission:', e);
                 }
             } else if (process.platform === 'darwin') {
                 try {
                     spawn('chmod', ['+x', updaterPath], {stdio: 'inherit'});
                 } catch (e) {
-                    console.log('Failed to set executable permission:', e);
+                    loger.error('Failed to set executable permission:', e);
                 }
             }
         }
@@ -296,11 +329,11 @@ function createUpdaterWindow(updateTitle) {
         child.unref();
 
         child.on('error', (err) => {
-            console.log('Updater process error:', err);
+            loger.error('Updater process error:', err);
         });
 
     } catch (e) {
-        console.log('Failed to create updater process:', e);
+        loger.error('Failed to create updater process:', e);
     }
 }
 
@@ -408,7 +441,7 @@ function createChildWindow(args) {
         } else {
             // 创建新窗口
             browser = new BrowserWindow(options)
-            console.log("create new window")
+            loger.info("create new window")
         }
 
         browser.on('page-title-updated', (event, title) => {
@@ -1411,7 +1444,7 @@ ipcMain.on('copyImageAt', (event, args) => {
     try {
         event.sender.copyImageAt(args.x, args.y);
     } catch (e) {
-        // loger.error(e)
+        loger.error('copyImageAt error:', e)
     }
     event.returnValue = "ok"
 })
