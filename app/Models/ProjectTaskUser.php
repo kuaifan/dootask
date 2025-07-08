@@ -68,7 +68,18 @@ class ProjectTaskUser extends AbstractModel
                     $item->save();
                 }
                 if ($item->projectTask) {
-                    $item->projectTask->addLog("移交{任务}身份", ['userid' => [$originalUserid, ' => ', $newUserid]], 0, 1);
+                    $item->projectTask->addLog("移交{任务}身份", [
+                        'change' => [
+                            [
+                                'type' => 'user',
+                                'data' => $originalUserid,
+                            ],
+                            [
+                                'type' => 'user',
+                                'data' => $newUserid,
+                            ]
+                        ],
+                    ], 0, 1);
                     if (!in_array($item->task_pid, $tastIds)) {
                         $tastIds[] = $item->task_pid;
                         $item->projectTask->syncDialogUser();

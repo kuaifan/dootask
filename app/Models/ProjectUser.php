@@ -74,7 +74,18 @@ class ProjectUser extends AbstractModel
                         $item->project->name = "【{$name}】{$item->project->name}";
                         $item->project->save();
                     }
-                    $item->project->addLog("移交项目身份", ['userid' => [$originalUserid, ' => ', $newUserid]]);
+                    $item->project->addLog("移交项目身份", [
+                        'change' => [
+                            [
+                                'type' => 'user',
+                                'data' => $originalUserid
+                            ],
+                            [
+                                'type' => 'user',
+                                'data' => $newUserid
+                            ],
+                        ],
+                    ]);
                     $item->project->syncDialogUser();
                     $projectIds[] = $item->project_id;
                 }

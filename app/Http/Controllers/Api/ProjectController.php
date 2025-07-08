@@ -3062,7 +3062,18 @@ class ProjectController extends AbstractController
                 ]);
                 // 更新标签
                 $project->addLog("修改标签", [
-                    'change' => [$tag->name . '(' . $tag->color . ')', $data['name'] . '(' . $data['color'] . ')']
+                    'change' => [
+                        [
+                            'type' => 'tag',
+                            'name' => $tag->name,
+                            'color' => $tag->color
+                        ],
+                        [
+                            'type' => 'tag',
+                            'name' => $data['name'],
+                            'color' => $data['color']
+                        ]
+                    ],
                 ]);
                 $tag->update($data);
             });
@@ -3077,7 +3088,13 @@ class ProjectController extends AbstractController
             ])->exists()) {
                 return Base::retError('标签已存在');
             }
-            $project->addLog("添加标签: " . $data['name']);
+            $project->addLog("添加标签", [
+                'change' => [
+                    'type' => 'tag',
+                    'name' => $name,
+                    'color' => $color
+                ]
+            ]);
             $tag = ProjectTag::create($data);
         }
         return Base::retSuccess('保存成功', $tag);
@@ -3128,7 +3145,13 @@ class ProjectController extends AbstractController
             // 删除任务标签
             ProjectTaskTag::where($tagWhere)->delete();
             // 删除标签
-            $project->addLog("删除标签: " . $tag->name);
+            $project->addLog("删除标签", [
+                'change' => [
+                    'type' => 'tag',
+                    'name' => $tag->name,
+                    'color' => $tag->color
+                ],
+            ]);
             $tag->delete();
             return Base::retSuccess('删除成功');
         });

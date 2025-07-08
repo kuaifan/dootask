@@ -176,104 +176,154 @@ export default {
         /**
          * 日志详情
          * @param h
+         * @param id
          * @param detail
          * @param record
          * @returns {*[]}
          */
-        logDetail(h, {detail, record}) {
-            let vNode = [h('span', detail)];
-            if ($A.isJson(record)) {
-                if ($A.isArray(record.change)) {
-                    let [before, now] = record.change
-                    vNode.push(h('span', ': '))
-                    if (before && before != now) {
-                        vNode.push(h('span', {class:'change-value'}, `${before || '-'}`))
-                        vNode.push(h('span', ' => '))
-                        vNode.push(h('span', {class:'change-value'}, `${now || '-'}`))
-                    } else {
-                        vNode.push(h('span', {class:'change-value'}, now || '-'))
-                    }
-                }
-                if ($A.isArray(record.tags)) {
-                    vNode.push(h('span', {
-                        class: 'change-tags'
-                    }, [
-                        h('TaskTag', {
-                            props: {
-                                tags: record.tags
+        logDetail(h, {id, detail, record}) {
+            const nodes = (nodeData) => {
+                const {type, data} = nodeData;
+                switch (type) {
+                    case 'tag':
+                        return h('span', {
+                            class: 'change-tags'
+                        }, [
+                            h('TaskTag', {
+                                props: {
+                                    tags: [nodeData]
+                                }
+                            })
+                        ])
+
+                    case 'tags':
+                        return h('span', {
+                            class: 'change-tags'
+                        }, [
+                            h('TaskTag', {
+                                props: {
+                                    tags: data
+                                }
+                            })
+                        ])
+
+                    case 'link':
+                        const {title, url} = data;
+                        return h('a', {
+                            attrs: {
+                                href: $A.mainUrl(url),
+                                target: '_blank'
+                            },
+                            on: {
+                                click: e => {
+                                    const path = `/${url}`
+                                    if (this.$Electron) {
+                                        e.preventDefault()
+                                        this.$store.dispatch('openChildWindow', {
+                                            name: `project-log-${id}`,
+                                            path: path,
+                                            force: false,
+                                            config: {
+                                                title: this.$L(title),
+                                                parent: null,
+                                                width: Math.min(window.screen.availWidth, 1440),
+                                                height: Math.min(window.screen.availHeight, 900),
+                                            },
+                                        });
+                                    } else if (this.$isEEUIApp) {
+                                        e.preventDefault()
+                                        this.$store.dispatch('openAppChildPage', {
+                                            pageType: 'app',
+                                            pageTitle: this.$L(title),
+                                            url: 'web.js',
+                                            params: {
+                                                url: $A.urlReplaceHash(path)
+                                            },
+                                        })
+                                    }
+                                }
+                            }
+                        }, this.$L(title))
+
+                    case 'user':
+                    case 'userid':
+                        const userNode = [];
+                        const userids = $A.isArray(data) ? data : [data];
+                        userids.some(userid => {
+                            if (/^\d+$/.test(userid)) {
+                                userNode.push(h('UserAvatar', {
+                                    props: {
+                                        size: 18,
+                                        userid
+                                    }
+                                }))
+                            } else {
+                                userNode.push(h('span', userid))
                             }
                         })
-                    ]))
-                }
-                if ($A.isJson(record.link)) {
-                    const {title, url} = record.link
-                    vNode.push(h('span', ': '))
-                    vNode.push(h('a', {
-                        attrs: {
-                            href: url,
-                            target: '_blank'
-                        },
-                        on: {
-                            click: e => {
-                                e.preventDefault()
-                                const path = `/${url}`
-                                if (this.$Electron) {
-                                    this.$store.dispatch('openChildWindow', {
-                                        name: `project-log-${record.id}`,
-                                        path: path,
-                                        force: false,
-                                        config: {
-                                            title: this.$L(title),
-                                            parent: null,
-                                            width: Math.min(window.screen.availWidth, 1440),
-                                            height: Math.min(window.screen.availHeight, 900),
-                                        },
-                                    });
-                                } else if (this.$isEEUIApp) {
-                                    this.$store.dispatch('openAppChildPage', {
-                                        pageType: 'app',
-                                        pageTitle: this.$L(title),
-                                        url: 'web.js',
-                                        params: {
-                                            url: $A.urlReplaceHash(path)
-                                        },
-                                    })
-                                } else {
-                                    window.open($A.mainUrl(path.substring(1)))
-                                }
-                            }
+                        if (userNode.length > 0) {
+                            return h('div', {
+                                class: 'detail-user'
+                            }, [
+                                h('div', {
+                                    class: 'detail-user-wrap'
+                                }, userNode)
+                            ])
                         }
-                    }, this.$L(title)))
-                }
-                if (record.userid) {
-                    let userids = $A.isArray(record.userid) ? record.userid : [record.userid]
-                    let userNode = [];
-                    userids.some(userid => {
-                        if (/^\d+$/.test(userid)) {
-                            userNode.push(h('UserAvatar', {
-                                props: {
-                                    size: 18,
-                                    userid
-                                }
-                            }))
-                        } else {
-                            userNode.push(h('span', userid))
-                        }
-                    })
-                    if (userNode.length > 0) {
-                        vNode.push(h('div', {
-                            class: 'detail-user'
-                        }, [
-                            h('div', {
-                                class: 'detail-user-wrap'
-                            }, userNode)
-                        ]))
-                    }
+                        return null
+
+                    case 'value':
+                        return h('span', {class: 'change-value'}, data || '-')
+
+                    default:
+                        return null
                 }
             }
-            return h('span', {
-                class: 'log-text'
-            }, vNode)
+            const vNode = [h('span', detail)];
+            if ($A.isJson(record)) {
+                let changes = [];
+                if ($A.isArray(record.tags)) {
+                    changes.push({
+                        'type': 'tags',
+                        'data': record.tags
+                    })
+                } else if ($A.isJson(record.link)) {
+                    changes.push({
+                        'type': 'link',
+                        'data': record.link
+                    })
+                } else if (record.userid) {
+                    changes.push({
+                        'type': 'user',
+                        'data': record.userid
+                    })
+                } else if (record.change) {
+                    if ($A.isArray(record.change)) {
+                        changes.push(...record.change.map(item => {
+                            if ($A.isJson(item)) {
+                                return item
+                            }
+                            return {
+                                type: 'value',
+                                data: item
+                            }
+                        }));
+                    } else if ($A.isJson(record.change)) {
+                        changes.push(record.change);
+                    }
+                }
+                if (changes.length > 0) {
+                    const connector = changes.length > 2 ? ', ' : ' => '
+                    vNode.push(h('span', ': '))
+                    changes.forEach((change, index) => {
+                        if (index > 0) {
+                            vNode.push(h('span', connector))
+                        }
+                        vNode.push(nodes(change))
+                    })
+                }
+            }
+            return h('span', { class: 'log-text' }, vNode)
         },
 
         /**
