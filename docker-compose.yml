@@ -96,7 +96,7 @@ services:
   appstore:
     container_name: "dootask-appstore-${APP_ID}"
     privileged: true
-    image: "dootask/appstore:0.1.5"
+    image: "dootask/appstore:0.1.6"
     volumes:
       - shared_data:/usr/share/dootask
       - /var/run/docker.sock:/var/run/docker.sock
