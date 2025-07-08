@@ -105,23 +105,24 @@ body {
 
 .address-list {
     display: none;
+    flex-direction: column;
     min-height: 300px;
-    overflow-y: auto;
+    overflow: hidden;
     background: #fff;
 }
 
 .address-list h3 {
+    flex-shrink: 0;
     font-size: 18px;
     font-weight: bold;
     padding: 12px 14px 10px;
-    position: sticky;
-    top: 0;
-    z-index: 1;
     background-color: #ffffff;
     word-break: break-all;
 }
 
 #poi-list {
+    flex: 1;
+    overflow: auto;
     list-style: none;
     padding-bottom: 10px;
 }

@@ -1277,7 +1277,7 @@ export default {
                 channel,
             }
             $A.eeuiAppSetVariate(`location::${channel}`, "");
-            const url = $A.urlAddParams($A.eeuiAppRewriteUrl('../public/tools/map/index.html'), Object.assign(params, objects || {}))
+            const url = $A.urlAddParams(window.location.origin + '/tools/map/index.html', Object.assign(params, objects || {}))
             dispatch('openAppChildPage', {
                 pageType: 'app',
                 pageTitle: title,

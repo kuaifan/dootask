@@ -506,7 +506,7 @@ class BaiduMapPicker {
      */
     updatePoiList(pois) {
         const addressList = document.getElementById('address-list');
-        addressList.style.display = 'block';
+        addressList.style.display = 'flex';
 
         const poiList = document.getElementById('poi-list');
         poiList.innerHTML = '';
