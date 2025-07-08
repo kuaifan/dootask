@@ -27636,18 +27636,6 @@
         "ru": "Каждому проекту можно добавить не более (%T1) тегов"
     },
     {
-        "key": "添加标签【(%T1)】",
-        "zh": "",
-        "zh-CHT": "",
-        "en": "Add tag【(%T1)】",
-        "ko": "태그 추가【(%T1)】",
-        "ja": "タグを追加【(%T1)】",
-        "de": "Tag hinzufügen【(%T1)】",
-        "fr": "Ajouter un tag【(%T1)】",
-        "id": "Tambahkan tag【(%T1)】",
-        "ru": "Добавить тег【(%T1)】"
-    },
-    {
         "key": "删除任务标签",
         "zh": "",
         "zh-CHT": "",
@@ -30202,5 +30190,65 @@
         "fr": "Le lien d'invitation n'existe pas ou a été supprimé !",
         "id": "Tautan undangan tidak ada atau telah dihapus!",
         "ru": "Пригласительная ссылка не существует или была удалена!"
+    },
+    {
+        "key": "删除标签",
+        "zh": "",
+        "zh-CHT": "刪除標籤",
+        "en": "Delete label",
+        "ko": "레이블 삭제",
+        "ja": "ラベルを削除",
+        "de": "Label löschen",
+        "fr": "Supprimer l'étiquette",
+        "id": "Hapus label",
+        "ru": "Удалить метку"
+    },
+    {
+        "key": "修改标签",
+        "zh": "",
+        "zh-CHT": "修改標籤",
+        "en": "Modify label",
+        "ko": "레이블 수정",
+        "ja": "ラベルを変更",
+        "de": "Label bearbeiten",
+        "fr": "Modifier l'étiquette",
+        "id": "Ubah label",
+        "ru": "Изменить метку"
+    },
+    {
+        "key": "没有权限修改标签",
+        "zh": "",
+        "zh-CHT": "沒有權限修改標籤",
+        "en": "No permission to modify label",
+        "ko": "레이블 수정 권한 없음",
+        "ja": "ラベルを変更する権限がありません",
+        "de": "Keine Berechtigung zum Bearbeiten des Labels",
+        "fr": "Pas d'autorisation pour modifier l'étiquette",
+        "id": "Tidak ada izin untuk mengubah label",
+        "ru": "Нет разрешения на изменение метки"
+    },
+    {
+        "key": "没有权限删除标签",
+        "zh": "",
+        "zh-CHT": "沒有權限刪除標籤",
+        "en": "No permission to delete label",
+        "ko": "레이블 삭제 권한 없음",
+        "ja": "ラベルを削除する権限がありません",
+        "de": "Keine Berechtigung zum Löschen des Labels",
+        "fr": "Pas d'autorisation pour supprimer l'étiquette",
+        "id": "Tidak ada izin untuk menghapus label",
+        "ru": "Нет разрешения на удаление метки"
+    },
+    {
+        "key": "标签已存在",
+        "zh": "",
+        "zh-CHT": "標籤已存在",
+        "en": "Label already exists",
+        "ko": "레이블이 이미 있습니다",
+        "ja": "ラベルはすでに存在します",
+        "de": "Label existiert bereits",
+        "fr": "L'étiquette existe déjà",
+        "id": "Label sudah ada",
+        "ru": "Метка уже существует"
     }
 ]
