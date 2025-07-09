@@ -85,6 +85,10 @@ export default {
             }
             const {type, message} = e.data;
             switch (type) {
+                case 'MICRO_APP_READY':
+                    this.injectMicroApp()
+                    break
+                    
                 case 'MICRO_APP_METHOD':
                     if (!this.data || !this.data.methods) {
                         return
