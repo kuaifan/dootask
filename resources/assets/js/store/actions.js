@@ -4682,6 +4682,7 @@ export default {
         }
         const serverLocation = new URL($A.mainUrl(''))
         data.url = data.url
+            .replace(/^\/+/, '')
             .replace(/^\:(\d+)/ig, (_, port) => {
                 return serverLocation.protocol + '//' + serverLocation.hostname + ':' + port;
             })
