@@ -353,6 +353,51 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @api {get} api/users/info/departments          08. 获取我的部门列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName info__departments
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccessExample {json} data:
+    [
+        {
+            "id": 1,
+            "name": "部门1",
+            "parent_id": 0,
+            "owner_userid": 1
+        },
+     ]
+     */
+    public function info__departments()
+    {
+        $user = User::auth();
+        
+        // 获取部门列表
+        $list = UserDepartment::select(['id', 'owner_userid', 'parent_id', 'name'])
+            ->whereIn('id', $user->department)
+            ->take(10)
+            ->get()
+            ->toArray();
+
+        // 将 owner_userid 等于当前用户的部门排在前面
+        usort($list, function($a, $b) use ($user) {
+            if ($a['owner_userid'] == $user->userid && $b['owner_userid'] != $user->userid) {
+                return -1;
+            } elseif ($a['owner_userid'] != $user->userid && $b['owner_userid'] == $user->userid) {
+                return 1;
+            }
+            return 0;
+        });
+
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
      * @api {get} api/users/editdata          09. 修改自己的资料
      *
      * @apiDescription 需要token身份
