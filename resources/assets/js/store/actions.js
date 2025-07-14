@@ -4714,7 +4714,7 @@ export default {
             .replace(/\{user_email}/g, encodeURIComponent(state.userInfo.email))
             .replace(/\{user_avatar}/g, encodeURIComponent(state.userInfo.userimg))
             .replace(/\{user_token}/g, encodeURIComponent(state.userToken))
-            .replace(/\{system_theme}/g, state.systemConfig.themeName)
+            .replace(/\{system_theme}/g, state.themeName)
             .replace(/\{system_lang}/g, languageName);
         emitter.emit('observeMicroApp:open', config);
     },
