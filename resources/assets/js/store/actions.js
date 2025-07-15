@@ -3316,10 +3316,9 @@ export default {
      * 关闭对话
      * @param state
      * @param commit
-     * @param dispatch
      * @param data
      */
-    closeDialog({state, commit, dispatch}, data) {
+    closeDialog({state, commit}, data) {
         $A.syncDispatch("closeDialog", data)
 
         // 判断参数
@@ -3336,6 +3335,24 @@ export default {
             const delIds = msgs.sort((a, b) => b.id - a.id).splice(state.dialogMsgKeep).map(item => item.id)
             commit("message/save", state.dialogMsgs.filter(item => !delIds.includes(item.id)))
         }
+    },
+
+    /**
+     * 清理会话本地缓存
+     * @param state
+     * @param commit
+     * @param data
+     */
+    clearDialogMsgs({state, commit}, data) {
+        $A.syncDispatch("clearDialogMsgs", data)
+
+        // 判断参数
+        if (!/^\d+$/.test(data.id)) {
+            return
+        }
+
+        // 清理会话本地缓存
+        commit("message/save", state.dialogMsgs.filter(item => item.dialog_id != data.id))
     },
 
     /**

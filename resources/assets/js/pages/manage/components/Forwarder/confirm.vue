@@ -250,6 +250,11 @@ export default {
                 const processQueue = async () => {
                     try {
                         for (const user of this.aiUser) {
+                            // 清理会话本地缓存
+                            this.$store.dispatch("clearDialogMsgs", {
+                                id: this.dialogId
+                            });
+                            // 创建新会话
                             await this.$store.dispatch("call", {
                                 url: 'dialog/session/create',
                                 data: {

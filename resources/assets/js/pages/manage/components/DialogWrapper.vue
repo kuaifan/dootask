@@ -1920,6 +1920,11 @@ export default {
                     if (!this.isAiBot) {
                         return
                     }
+                    // 清理会话本地缓存
+                    this.$store.dispatch("clearDialogMsgs", {
+                        id: this.dialogId
+                    });
+                    // 创建新会话
                     this.$store.dispatch("call", {
                         url: 'dialog/session/create',
                         data: {
