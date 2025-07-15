@@ -1,19 +1,37 @@
 <template>
-    <iframe
-        ref="iframe"
-        class="micro-app-iframe"
-        :src="src"
-        sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-    </iframe>
+    <div class="micro-app-iframe">
+        <iframe
+            ref="iframe"
+            class="micro-app-iframe-container"
+            :src="src"
+            sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+        </iframe>
+        <div v-if="isLoading" class="micro-app-iframe-cover"></div>
+    </div>
 </template>
 
 <style lang="scss" scoped>
 .micro-app-iframe {
-    border: none;
+    position: relative;
     width: 100%;
     height: 100%;
-    padding-top: var(--status-bar-height);
-    padding-bottom: var(--navigation-bar-height);
+
+    .micro-app-iframe-container {
+        border: none;
+        width: 100%;
+        height: 100%;
+        padding-top: var(--status-bar-height);
+        padding-bottom: var(--navigation-bar-height);
+    }
+
+    .micro-app-iframe-cover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+    }
 }
 </style>
 <script>
@@ -37,6 +55,7 @@ export default {
     data() {
         return {
             src: this.url,
+            isLoading: true,
             onBeforeClose: {},
         }
     },
@@ -57,11 +76,10 @@ export default {
 
     methods: {
         // 处理 iframe 加载完成
-        handleLoad(e) {
+        handleLoad() {
             this.injectMicroApp()
 
             this.$emit('mounted', {
-                ...e,
                 detail: {
                     name: this.name,
                 }
@@ -71,7 +89,6 @@ export default {
         // 处理 iframe 加载错误
         handleError(e) {
             this.$emit('error', {
-                ...e,
                 detail: {
                     name: this.name,
                     error: e,
@@ -87,7 +104,8 @@ export default {
             const {type, message} = e.data;
             switch (type) {
                 case 'MICRO_APP_READY':
-                    this.injectMicroApp()
+                    this.handleLoad()
+                    this.isLoading = false
                     this.$store.commit('microApps/update', {
                         name: this.name,
                         data: {
