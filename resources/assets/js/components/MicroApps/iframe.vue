@@ -106,24 +106,26 @@ export default {
                 case 'MICRO_APP_READY':
                     this.handleLoad()
                     this.isLoading = false
-                    this.$store.commit('microApps/update', {
-                        name: this.name,
-                        data: {
-                            onBeforeClose: () => {
-                                return new Promise(resolve => {
-                                    const message = {
-                                        id: $A.randomString(16),
-                                        name: this.name
-                                    }
-                                    this.$refs.iframe.contentWindow.postMessage({
-                                        type: 'MICRO_APP_BEFORE_CLOSE',
-                                        message
-                                    }, '*')
-                                    this.onBeforeClose[message.id] = resolve
-                                })
+                    if (message && message.supportBeforeClose) {
+                        this.$store.commit('microApps/update', {
+                            name: this.name,
+                            data: {
+                                onBeforeClose: () => {
+                                    return new Promise(resolve => {
+                                        const message = {
+                                            id: $A.randomString(16),
+                                            name: this.name
+                                        }
+                                        this.$refs.iframe.contentWindow.postMessage({
+                                            type: 'MICRO_APP_BEFORE_CLOSE',
+                                            message
+                                        }, '*')
+                                        this.onBeforeClose[message.id] = resolve
+                                    })
+                                }
                             }
-                        }
-                    })
+                        })
+                    }
                     break
 
                 case 'MICRO_APP_METHOD':
