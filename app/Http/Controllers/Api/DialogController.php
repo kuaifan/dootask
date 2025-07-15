@@ -1599,6 +1599,67 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {post} api/dialog/msg/sendbot          30. 发送机器人消息
+     *
+     * @apiDescription 需要token身份，通过机器人发送消息给指定用户
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendbot
+     *
+     * @apiParam {Number} userid            对方会员ID
+     * @apiParam {String} text              消息内容，markdown格式
+     * @apiParam {String} [bot_type]        机器人类型
+     * - system-msg: 系统消息（默认）
+     * - task-alert: 任务提醒
+     * - check-in: 签到打卡
+     * - approval-alert: 审批
+     * - meeting-alert: 会议通知
+     * @apiParam {Boolean} [silence]        静默发送
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__sendbot()
+    {
+        User::auth();
+        //
+        $userid = intval(Request::input('userid'));
+        $text = trim(Request::input('text'));
+        $botType = trim(Request::input('bot_type', 'system-msg'));
+        $silence = Request::input('silence', false);
+        //
+        $toUser = User::whereUserid($userid)->first();
+        if (empty($toUser) || $toUser->bot) {
+            return Base::retError("机器人消息仅允许发送给个人");
+        }
+        if ($toUser->isDisable()) {
+            return Base::retError("对方已离职");
+        }
+        $strlen = mb_strlen($text);
+        if ($strlen < 1) {
+            return Base::retError('消息内容不能为空');
+        }
+        if ($strlen > 2000) {
+            return Base::retError('消息内容最大不能超过2000字');
+        }
+        //
+        $botUser = User::botGetOrCreate($botType);
+        if (empty($botUser)) {
+            return Base::retError('机器人不存在');
+        }
+        $dialog = WebSocketDialog::checkUserDialog($botUser, $toUser->userid);
+        if (empty($dialog)) {
+            return Base::retError('机器人会话不存在');
+        }
+        $msgData = [
+            'type' => 'md',
+            'text' => $text,
+        ];
+        return WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', $msgData, $botUser->userid, false, false, $silence);
+    }
+
+    /**
      * @api {post} api/dialog/msg/sendlocation          31. 发送位置消息
      *
      * @apiDescription 需要token身份
