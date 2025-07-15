@@ -19,7 +19,6 @@ use App\Module\Ihttp;
 use App\Module\TextExtractor;
 use Carbon\Carbon;
 use Exception;
-use League\HTMLToMarkdown\HtmlConverter;
 use DB;
 
 /**
@@ -532,6 +531,18 @@ class BotReceiveMsgTask extends AbstractTask
                 'version' => Base::getVersion(),
                 'extras' => Base::array2json($extras)
             ];
+            if ($botUser->isAiBot()) {
+                // AI机器人需要用户信息
+                $userInfo = User::find($msg->userid);
+                $data['msg_user'] = [
+                    'userid' => $userInfo->userid,
+                    'email' => $userInfo->email,
+                    'nickname' => $userInfo->nickname,
+                    'profession' => $userInfo->profession,
+                    'lang' => $userInfo->lang,
+                    'token' => Doo::tokenEncode($userInfo->userid, $userInfo->email, $userInfo->encrypt, 3),
+                ];
+            }
             $res = Ihttp::ihttp_post($webhookUrl, $data, 30);
             if ($userBot) {
                 $userBot->webhook_num++;
