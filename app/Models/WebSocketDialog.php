@@ -706,6 +706,27 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 检查是否是AI对话
+     * @return bool
+     */
+    public function isAiDialog()
+    {
+        // 这个不会有变化，所以可以使用永久缓存
+        return Cache::rememberForever('is-ai-dialog-' . $this->id, function () {
+            if ($this->type !== 'user') {
+                return false;
+            }
+            $data = $this->dialogUserBuilder()->get();
+            foreach ($data as $item) {
+                if (preg_match('/^ai-(.*?)@bot\.system$/', $item->email)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    /**
      * 获取对话（同时检验对话身份）
      * @param $dialog_id
      * @param bool|string $checkOwner 是否校验群组身份，'auto'时有群主为true无群主为false

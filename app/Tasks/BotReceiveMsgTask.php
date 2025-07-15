@@ -408,6 +408,10 @@ class BotReceiveMsgTask extends AbstractTask
         $errorContent = null;
         if ($botUser->isAiBot($type)) {
             // AI机器人
+            if (Base::val($msg->msg, 'forward_data.leave')) {
+                // AI机器人不处理带有留言的转发消息，因为他要处理那条留言消息
+                return;
+            }
             $setting = Base::setting('aibotSetting');
             $extras = [
                 'model_type' => match ($type) {
