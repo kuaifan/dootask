@@ -37,6 +37,7 @@ export default {
     data() {
         return {
             src: this.url,
+            onBeforeClose: {},
         }
     },
 
@@ -87,8 +88,26 @@ export default {
             switch (type) {
                 case 'MICRO_APP_READY':
                     this.injectMicroApp()
+                    this.$store.commit('microApps/update', {
+                        name: this.name,
+                        data: {
+                            onBeforeClose: () => {
+                                return new Promise(resolve => {
+                                    const message = {
+                                        id: $A.randomString(16),
+                                        name: this.name
+                                    }
+                                    this.$refs.iframe.contentWindow.postMessage({
+                                        type: 'MICRO_APP_BEFORE_CLOSE',
+                                        message
+                                    }, '*')
+                                    this.onBeforeClose[message.id] = resolve
+                                })
+                            }
+                        }
+                    })
                     break
-                    
+
                 case 'MICRO_APP_METHOD':
                     if (!this.data || !this.data.methods) {
                         return
@@ -109,6 +128,14 @@ export default {
                         }
                     }
                     break
+
+                case 'MICRO_APP_BEFORE_CLOSE':
+                    if (this.onBeforeClose[message.id]) {
+                        this.onBeforeClose[message.id]()
+                        delete this.onBeforeClose[message.id]
+                    }
+                    break
+
                 default:
                     break
             }
@@ -117,7 +144,7 @@ export default {
         // 验证消息是否来自当前 iframe
         isFromCurrentIframe(event) {
             try {
-                const { source } = event
+                const {source} = event
                 return this.$refs.iframe && source === this.$refs.iframe.contentWindow
             } catch (error) {
                 // console.error('Failed to validate message from current iframe:', error)

@@ -178,8 +178,8 @@ export default {
         --modal-body-background-color: transparent;
     }
 
-    // 小屏幕适配
-    @media (max-width: 500px) {
+    // 移动端适配
+    @media (max-width: 768px) {
         --modal-mask-bg: transparent;
         --modal-close-display: none;
         --modal-resize-display: none;
@@ -313,6 +313,7 @@ body.dark-mode-reverse {
                 --modal-mask-bg: rgba(230, 230, 230, 0.6);
                 --modal-close-color: #323232;
             }
+
             &.no-dark-content {
                 --modal-mask-bg: rgba(20, 20, 20, 0.6);
                 --modal-body-background-color: #000000;

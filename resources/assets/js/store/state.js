@@ -267,6 +267,7 @@ export default {
     longpressData: {type: '', data: null, element: null},
 
     // 微应用数据
+    microApps: [],
     microAppsIds: [],
     microAppsMenus: [],
 };

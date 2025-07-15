@@ -1,7 +1,7 @@
 <template>
     <div>
         <MicroModal
-            v-for="(app, key) in apps"
+            v-for="(app, key) in microApps"
             :key="key"
             v-model="app.isOpen"
             :ref="`ref-${app.name}`"
@@ -107,7 +107,6 @@ export default {
 
     data() {
         return {
-            apps: [],
             assistShow: false,
             userSelectOptions: {value: [], config: {}},
         }
@@ -139,9 +138,9 @@ export default {
         themeName() {
             this.closeAllMicroApp()
         },
-        apps: {
-            handler(apps) {
-                this.assistShow = !!apps.find(item => item.isOpen)
+        microApps: {
+            handler(items) {
+                this.assistShow = !!items.find(item => item.isOpen)
             },
             deep: true,
         }
@@ -151,6 +150,7 @@ export default {
         ...mapState([
             'userInfo',
             'themeName',
+            'microApps',
         ]),
     },
 
@@ -175,10 +175,7 @@ export default {
 
         // 加载结束
         finish(name) {
-            const app = this.apps.find(app => app.name == name);
-            if (app) {
-                app.isLoading = false
-            }
+            this.$store.commit('microApps/update', {name, data: {isLoading: false}})
         },
 
         /**
@@ -187,7 +184,7 @@ export default {
          * @returns {*}
          */
         appData(name) {
-            const app = this.apps.find(item => item.name == name);
+            const app = this.microApps.find(item => item.name == name);
             if (!app) {
                 return {};
             }
@@ -238,7 +235,7 @@ export default {
                         this.closeByName(name)
                     },
                     popoutWindow: async (windowConfig = null) => {
-                        const app = this.apps.find(item => item.name == name);
+                        const app = this.microApps.find(item => item.name == name);
                         if (!app) {
                             $A.modalError("应用不存在");
                             return
@@ -272,7 +269,7 @@ export default {
                             },
                         });
                     },
-                    requestAPI: async(params) => {
+                    requestAPI: async (params) => {
                         return await store.dispatch('call', params);
                     },
                     selectUsers: async (params) => {
@@ -307,6 +304,9 @@ export default {
                         }
                         return null;
                     },
+                    isFullScreen: () => {
+                        return window.innerWidth < 768 || this.windowType === 'popout'
+                    },
                 },
             }
         },
@@ -316,7 +316,7 @@ export default {
          * @param config
          */
         async observeMicroApp(config) {
-            if (config.url_type === 'inline_blank') {
+            if (/_blank$/i.test(config.url_type)) {
                 await this.inlineBlank(config)
                 return
             }
@@ -325,7 +325,7 @@ export default {
                 return
             }
 
-            const app = this.apps.find(({name}) => name == config.name);
+            const app = this.microApps.find(({name}) => name == config.name);
             if (app) {
                 // 更新微应用
                 if (app.url != config.url) {
@@ -338,7 +338,8 @@ export default {
                 // 新建微应用
                 config.isLoading = true
                 config.isOpen = false
-                this.apps.push(config)
+                config.onBeforeClose = () => true
+                this.$store.commit('microApps/push', config)
                 requestAnimationFrame(_ => config.isOpen = true)
             }
         },
@@ -353,7 +354,7 @@ export default {
             const appConfig = {
                 ...config,
 
-                url_type: config.url_type === 'iframe' ? 'iframe' : 'inline',
+                url_type: config.url_type.replace(/_blank$/, ''),
                 transparent: true,
                 keep_alive: false,
             };
@@ -444,7 +445,7 @@ export default {
          * @param destroy
          */
         closeMicroApp(name, destroy) {
-            const app = this.apps.find(item => item.name == name);
+            const app = this.microApps.find(item => item.name == name);
             if (!app) {
                 return;
             }
@@ -460,7 +461,7 @@ export default {
          * @param destroy
          */
         closeAllMicroApp(destroy = true) {
-            this.apps.forEach(app => {
+            this.microApps.forEach(app => {
                 app.isOpen = false
                 if (destroy) {
                     microApp.unmountApp(app.name, {destroy: true})
@@ -475,16 +476,38 @@ export default {
          */
         onBeforeClose(name) {
             return new Promise(resolve => {
+                const onClose = () => {
+                    if ($A.isSubElectron) {
+                        $A.Electron.sendMessage('windowDestroy');
+                    } else {
+                        resolve()
+                    }
+                }
+
+                const app = this.microApps.find(item => item.name == name);
+                if (!app) {
+                    onClose()
+                    return
+                }
+
+                if (/^iframe/i.test(app.url_type)) {
+                    const before = app.onBeforeClose();
+                    if (before && before.then) {
+                        before.then(() => {
+                            onClose()
+                        });
+                    } else {
+                        onClose()
+                    }
+                    return
+                }
+
                 microApp.forceSetData(name, {type: 'beforeClose'}, array => {
                     if (!array?.find(item => item === true)) {
                         if ($A.leftExists(name, 'appstore')) {
                             this.$store.dispatch("updateMicroAppsStatus");
                         }
-                        if ($A.isSubElectron) {
-                            $A.Electron.sendMessage('windowDestroy');
-                        } else {
-                            resolve()
-                        }
+                        onClose()
                     }
                 })
             })
@@ -496,7 +519,7 @@ export default {
          */
         onAssistClose() {
             return new Promise(resolve => {
-                const app = this.apps.findLast(item => item.isOpen)
+                const app = this.microApps.findLast(item => item.isOpen)
                 if (app) {
                     this.closeByName(app.name)
                 } else {

@@ -300,6 +300,25 @@ export default {
     },
 
     // 微应用管理
+    'microApps/push': function(state, data) {
+        state.microApps.push(data)
+    },
+
+    'microApps/update': function(state, {name, data}) {
+        const app = state.microApps.find(item => item.name == name)
+        if (app) {
+            Object.assign(app, data)
+        }
+    },
+
+    'microApps/splice': function(state, {index, data, count = 1}) {
+        if (typeof data === "undefined") {
+            state.microApps.splice(index, count)
+        } else {
+            state.microApps.splice(index, count, data)
+        }
+    },
+    
     'microApps/data': function(state, data) {
         data.unshift({
             id: 'appstore',
