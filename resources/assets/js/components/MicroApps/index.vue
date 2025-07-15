@@ -9,9 +9,10 @@
             :background="app.background"
             :transparent="app.transparent"
             :autoDarkTheme="app.auto_dark_theme"
+            :keepAlive="app.keep_alive"
             :beforeClose="async () => { await onBeforeClose(app.name) }">
             <MicroIFrame
-                v-if="app.url_type === 'iframe' && app.isOpen && app.url"
+                v-if="shouldRenderIFrame(app)"
                 :name="app.name"
                 :url="app.url"
                 :data="appData(app.name)"
@@ -327,20 +328,34 @@ export default {
 
             const app = this.microApps.find(({name}) => name == config.name);
             if (app) {
+                // 恢复 keep_alive
+                if (app.keepAliveBackup !== undefined) {
+                    app.keep_alive = app.keepAliveBackup
+                    delete app.keepAliveBackup
+                }
+
                 // 更新微应用
                 if (app.url != config.url) {
                     await microApp.unmountApp(app.name, {destroy: true})
                     app.isLoading = true
                 }
                 Object.assign(app, config)
-                requestAnimationFrame(_ => app.isOpen = true)
+                requestAnimationFrame(_ => {
+                    app.isOpen = true
+                    app.lastOpenAt = Date.now()
+                    this.$store.commit('microApps/keepAlive', 3)
+                })
             } else {
                 // 新建微应用
                 config.isLoading = true
                 config.isOpen = false
                 config.onBeforeClose = () => true
                 this.$store.commit('microApps/push', config)
-                requestAnimationFrame(_ => config.isOpen = true)
+                requestAnimationFrame(_ => {
+                    config.isOpen = true
+                    config.lastOpenAt = Date.now()
+                    this.$store.commit('microApps/keepAlive', 3)
+                })
             }
         },
 
@@ -527,6 +542,15 @@ export default {
                 }
             })
         },
+
+        /**
+         * 是否渲染 iframe
+         * @param app
+         * @returns {boolean}
+         */
+        shouldRenderIFrame(app) {
+            return app.url_type === 'iframe' && (app.isOpen || app.keep_alive) && app.url;
+        }
     }
 }
 </script>

@@ -311,6 +311,20 @@ export default {
         }
     },
 
+    'microApps/keepAlive': function(state, keepAliveNum) {
+        const keepAliveApps = state.microApps.filter(app => app.keep_alive)
+        if (keepAliveApps.length <= keepAliveNum) {
+            return
+        }
+        keepAliveApps
+            .sort((a, b) => a.lastOpenAt - b.lastOpenAt)
+            .slice(0, keepAliveApps.length - keepAliveNum)
+            .forEach(app => {
+                app.keepAliveBackup = true
+                app.keep_alive = false
+            })
+    },
+
     'microApps/splice': function(state, {index, data, count = 1}) {
         if (typeof data === "undefined") {
             state.microApps.splice(index, count)
