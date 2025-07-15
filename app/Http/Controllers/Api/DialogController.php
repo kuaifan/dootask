@@ -329,8 +329,6 @@ class DialogController extends AbstractController
         ]);
     }
 
-
-
     /**
      * @api {get} api/dialog/hide          09. 会话隐藏
      *
