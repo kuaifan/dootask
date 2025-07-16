@@ -1612,6 +1612,8 @@ class DialogController extends AbstractController
      * - check-in: 签到打卡
      * - approval-alert: 审批
      * - meeting-alert: 会议通知
+     * - xxxxxx: 其他机器人，xxxxxx 是任意6-20个字符串（如果不存在，则自动创建）
+     * @apiParam {String} [bot_name]        机器人名称（bot_type 为 xxxxxx 时有效）
      * @apiParam {Boolean} [silence]        静默发送
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -1620,11 +1622,12 @@ class DialogController extends AbstractController
      */
     public function msg__sendbot()
     {
-        User::auth();
+        $user = User::auth();
         //
         $userid = intval(Request::input('userid'));
         $text = trim(Request::input('text'));
         $botType = trim(Request::input('bot_type', 'system-msg'));
+        $botName = trim(Request::input('bot_name'));
         $silence = Request::input('silence', false);
         //
         $toUser = User::whereUserid($userid)->first();
@@ -1642,6 +1645,7 @@ class DialogController extends AbstractController
             return Base::retError('消息内容最大不能超过2000字');
         }
         //
+        $botUpdate = [];
         if (!in_array($botType, [
             'system-msg',
             'task-alert',
@@ -1650,9 +1654,16 @@ class DialogController extends AbstractController
             'meeting-alert',
             'bot-manager',
         ])) {
-            return Base::retError('机器人类型错误');
+            if (strlen($botType) < 6 || strlen($botType) > 20) {
+                return Base::retError("机器人类型由6-20个字符组成。");
+            }
+            if ($botName && (strlen($botName) < 2 || strlen($botName) > 20)) {
+                return Base::retError("机器人名称由2-20个字符组成。");
+            }
+            $botType = 'user-auto-' . $botType;
+            $botUpdate['nickname'] = $botName;
         }
-        $botUser = User::botGetOrCreate($botType);
+        $botUser = User::botGetOrCreate($botType, $botUpdate, $user->userid);
         if (empty($botUser)) {
             return Base::retError('机器人不存在');
         }

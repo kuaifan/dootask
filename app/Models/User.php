@@ -753,11 +753,11 @@ class User extends AbstractModel
             }
         }
         if ($update) {
-            $botUser->updateInstance($update);
-            if (isset($update['nickname'])) {
+            if (isset($update['nickname']) && $botUser->nickname != $update['nickname']) {
                 $botUser->az = Base::getFirstCharter($botUser->nickname);
                 $botUser->pinyin = Base::cn2pinyin($botUser->nickname);
             }
+            $botUser->updateInstance($update);
             $botUser->save();
         }
         return $botUser;
