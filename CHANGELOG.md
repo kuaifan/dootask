@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3]
+
+### Bug Fixes
+
+- 转发消息同时留言时ai会回复两条的情况
+- 修复应用 {system_theme} 参数无效的问题
+- 修复应用 selectUsers 方法的问题
+- 修复应用地址转换不正确的问题
+
+### Performance
+
+- 优化应用
+- 优化创建新会话数据
+- 新增使用系统机器人发送消息
+- 优化应用中心
+- 获取我的部门列表接口
+
 ## [1.0.88]
 
 ### Bug Fixes
