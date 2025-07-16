@@ -21,7 +21,7 @@ export default {
             return
         }
 
-        await this.$refs.app.observeMicroApp(app)
+        await this.$refs.app.onOpen(app)
     }
 }
 </script>

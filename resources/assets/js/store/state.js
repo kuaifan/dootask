@@ -268,6 +268,7 @@ export default {
 
     // 微应用数据
     microApps: [],
+    microAppsInstalled: [],
     microAppsIds: [],
     microAppsMenus: [],
 };

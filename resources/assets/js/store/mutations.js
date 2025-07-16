@@ -1,3 +1,5 @@
+import emitter from "./events";
+
 export default {
     // 路由加载
     'route/loading': function(state, load) {
@@ -332,10 +334,12 @@ export default {
             state.microApps.splice(index, count, data)
         }
     },
-    
+
     'microApps/data': function(state, data) {
+        // 添加应用商店
         data.unshift({
             id: 'appstore',
+            version: '1.0.0',
             menu_items: [{
                 location: "application/admin",
                 label: $A.L("应用商店"),
@@ -346,10 +350,21 @@ export default {
                 auto_dark_theme: false,
             }]
         })
-        const ids = [];
+        // 找出已卸载的应用和版本更新的应用
+        const updatedOrUninstalledApps = state.microAppsInstalled
+            .filter((oldApp) => !data.some((newApp) => newApp.id === oldApp.id))
+            .map((app) => ({type: 'uninstall', id: app.id}));
+        state.microAppsInstalled.forEach((oldApp) => {
+            const newApp = data.find((app) => app.id === oldApp.id);
+            if (newApp && oldApp.version !== newApp.version) {
+                updatedOrUninstalledApps.push({type: 'update', id: oldApp.id});
+            }
+        });
+        state.microAppsInstalled = data;
+        emitter.emit('observeMicroApp:updatedOrUninstalled', updatedOrUninstalledApps);
+        // 更新菜单
         const menus = [];
         data.forEach((item) => {
-            ids.push(item.id);
             if (item.menu_items) {
                 menus.push(...item.menu_items.map(m => Object.assign(m, {id: item.id})));
             }
@@ -357,14 +372,16 @@ export default {
         menus.forEach(item => {
             let name = item.id
             if (menus.filter(m => m.id === item.id).length > 1) {
-                name += "_" + `${item.url}`.replace(/^https?:\/\/.*?\//, '').replace(/[^a-zA-Z0-9]/g, '_');
+                name += "_" + `${item.url}`
+                    .replace(/^https?:\/\/.*?\//, '')
+                    .replace(/[^a-zA-Z0-9]/g, '_');
             }
             if (menus.find(m => m.name === name)) {
                 name += "_" + $A.randomString(8)
             }
             item.name = name;
         })
-        $A.IDBSave("microAppsIds", state.microAppsIds = ids);
+        $A.IDBSave("microAppsIds", state.microAppsIds = data.map(item => item.id));
         $A.IDBSave("microAppsMenus", state.microAppsMenus = menus);
     },
 }

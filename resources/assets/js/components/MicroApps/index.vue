@@ -122,11 +122,13 @@ export default {
     },
 
     mounted() {
-        emitter.on('observeMicroApp:open', this.observeMicroApp);
+        emitter.on('observeMicroApp:open', this.onOpen);
+        emitter.on('observeMicroApp:updatedOrUninstalled', this.onUpdatedOrUninstalled);
     },
 
     beforeDestroy() {
-        emitter.off('observeMicroApp:open', this.observeMicroApp);
+        emitter.off('observeMicroApp:open', this.onOpen);
+        emitter.off('observeMicroApp:updatedOrUninstalled', this.onUpdatedOrUninstalled);
     },
 
     watch: {
@@ -316,7 +318,7 @@ export default {
          * 观察打开微应用
          * @param config
          */
-        async observeMicroApp(config) {
+        async onOpen(config) {
             if (/_blank$/i.test(config.url_type)) {
                 await this.inlineBlank(config)
                 return
@@ -336,7 +338,7 @@ export default {
 
                 // 更新微应用
                 if (app.url != config.url) {
-                    await microApp.unmountApp(app.name, {destroy: true})
+                    this.unmountMicroApp(app)
                     app.isLoading = true
                 }
                 Object.assign(app, config)
@@ -467,7 +469,7 @@ export default {
 
             app.isOpen = false
             if (destroy) {
-                microApp.unmountApp(app.name, {destroy: true})
+                this.unmountMicroApp(app)
             }
         },
 
@@ -479,9 +481,21 @@ export default {
             this.microApps.forEach(app => {
                 app.isOpen = false
                 if (destroy) {
-                    microApp.unmountApp(app.name, {destroy: true})
+                    this.unmountMicroApp(app)
                 }
             });
+        },
+
+        /**
+         * 卸载微应用
+         * @param app
+         */
+        unmountMicroApp(app) {
+            if (app.keep_alive) {
+                app.keepAliveBackup = true
+                app.keep_alive = false
+            }
+            microApp.unmountApp(app.name, {destroy: true})
         },
 
         /**
@@ -550,6 +564,22 @@ export default {
          */
         shouldRenderIFrame(app) {
             return app.url_type === 'iframe' && (app.isOpen || app.keep_alive) && app.url;
+        },
+
+        /**
+         * 应用更新或卸载
+         * @param apps
+         */
+        onUpdatedOrUninstalled(apps) {
+            const ids = apps.map(item => item.id)
+            if (ids.length === 0) {
+                return
+            }
+            this.microApps.forEach(app => {
+                if (ids.includes(app.id)) {
+                    this.closeMicroApp(app.name, true)
+                }
+            })
         }
     }
 }
