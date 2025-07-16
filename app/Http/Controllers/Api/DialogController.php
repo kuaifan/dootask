@@ -1642,6 +1642,16 @@ class DialogController extends AbstractController
             return Base::retError('消息内容最大不能超过2000字');
         }
         //
+        if (!in_array($botType, [
+            'system-msg',
+            'task-alert',
+            'check-in',
+            'approval-alert',
+            'meeting-alert',
+            'bot-manager',
+        ])) {
+            return Base::retError('机器人类型错误');
+        }
         $botUser = User::botGetOrCreate($botType);
         if (empty($botUser)) {
             return Base::retError('机器人不存在');
