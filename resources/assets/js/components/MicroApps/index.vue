@@ -384,7 +384,7 @@ export default {
             const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != appConfig.name);
             apps.length > 50 && apps.splice(0, 10)
             apps.push(appConfig)
-            await $A.IDBSet("cacheMicroApps", apps);
+            await $A.IDBSet("cacheMicroApps", $A.cloneJSON(apps));
 
             if (this.$Electron) {
                 await this.$store.dispatch('openChildWindow', {
