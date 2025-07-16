@@ -30250,5 +30250,17 @@
         "fr": "L'étiquette existe déjà",
         "id": "Label sudah ada",
         "ru": "Метка уже существует"
+    },
+    {
+        "key": "机器人类型由6-20个字符组成。",
+        "zh": "",
+        "zh-CHT": "機器人類型由6-20個字符組成。",
+        "en": "The robot type must consist of 6-20 characters.",
+        "ko": "로봇 유형은 6-20자로 구성되어야 합니다.",
+        "ja": "ロボットのタイプは6〜20文字で構成する必要があります。",
+        "de": "Der Robotertyp muss aus 6 bis 20 Zeichen bestehen.",
+        "fr": "Le type de robot doit comporter entre 6 et 20 caractères.",
+        "id": "Jenis robot harus terdiri dari 6-20 karakter.",
+        "ru": "Тип робота должен состоять из 6-20 символов."
     }
 ]
