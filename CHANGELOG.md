@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.8]
+
+### Bug Fixes
+
+- 修复机器人发送消息接口
+- 修复应用无法在窗口独立显示
+
 ## [1.1.3]
 
 ### Bug Fixes
