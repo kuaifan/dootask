@@ -114,61 +114,90 @@ export default {
             const {type, message} = e.data;
             switch (type) {
                 case 'MICRO_APP_READY':
-                    this.handleLoad()
-                    this.isLoading = false
-                    if (message && message.supportBeforeClose) {
-                        this.$store.commit('microApps/update', {
-                            name: this.name,
-                            data: {
-                                onBeforeClose: () => {
-                                    return new Promise(resolve => {
-                                        const message = {
-                                            id: $A.randomString(16),
-                                            name: this.name
-                                        }
-                                        this.$refs.iframe.contentWindow.postMessage({
-                                            type: 'MICRO_APP_BEFORE_CLOSE',
-                                            message
-                                        }, '*')
-                                        this.onBeforeClose[message.id] = resolve
-                                    })
-                                }
-                            }
-                        })
-                    }
+                    this.handleMessageOfReady(message);
                     break
 
                 case 'MICRO_APP_METHOD':
-                    if (!this.data || !this.data.methods) {
-                        return
-                    }
-                    const {id, method, args} = message;
-                    if (this.data.methods[method]) {
-                        const postMessage = (result) => {
-                            this.$refs.iframe.contentWindow.postMessage({
-                                type: 'MICRO_APP_METHOD_RESULT',
-                                message: {id, result: $A.cloneJSON(result)}
-                            }, '*')
-                        }
-                        const before = this.data.methods[method](...args)
-                        if (before && before.then) {
-                            before.then(postMessage).catch(postMessage)
-                        } else {
-                            postMessage(before)
-                        }
-                    }
+                    this.handleMessageOfMethod(message)
                     break
 
                 case 'MICRO_APP_BEFORE_CLOSE':
-                    if (this.onBeforeClose[message.id]) {
-                        this.onBeforeClose[message.id]()
-                        delete this.onBeforeClose[message.id]
-                    }
+                    this.handleMessageOfBeforeClose(message)
                     break
 
                 default:
                     break
             }
+        },
+
+        // 处理消息的准备状态 (MICRO_APP_READY)
+        handleMessageOfReady(message) {
+            this.handleLoad()
+            this.isLoading = false
+
+            if (!message?.supportBeforeClose) {
+                return
+            }
+            this.$store.commit('microApps/update', {
+                name: this.name,
+                data: {
+                    onBeforeClose: () => {
+                        return new Promise(resolve => {
+                            const message = {
+                                id: $A.randomString(16),
+                                name: this.name
+                            }
+                            this.$refs.iframe.contentWindow.postMessage({
+                                type: 'MICRO_APP_BEFORE_CLOSE',
+                                message
+                            }, '*')
+                            this.onBeforeClose[message.id] = resolve
+                        })
+                    }
+                }
+            })
+        },
+
+        // 处理方法消息 (MICRO_APP_METHOD)
+        handleMessageOfMethod(message) {
+            if (!this.data || !this.data.methods) {
+                return
+            }
+
+            const {id, method, args} = message;
+            if (!this.data.methods[method]) {
+                return;
+            }
+
+            const postMessage = (result) => {
+                this.$refs.iframe.contentWindow.postMessage({
+                    type: 'MICRO_APP_METHOD_RESULT',
+                    message: {id, result: $A.cloneJSON(result)}
+                }, '*')
+            }
+
+            const postError = (error) => {
+                this.$refs.iframe.contentWindow.postMessage({
+                    type: 'MICRO_APP_METHOD_RESULT',
+                    message: {id, result: null, error: error?.message || error}
+                }, '*')
+            }
+
+            const before = this.data.methods[method](...args)
+            if (before && before.then) {
+                before.then(postMessage).catch(postError)
+            } else {
+                postMessage(before)
+            }
+        },
+
+        // 处理方法消息 (MICRO_APP_BEFORE_CLOSE)
+        handleMessageOfBeforeClose(message) {
+            if (!this.onBeforeClose[message.id]) {
+                return
+            }
+            this.onBeforeClose[message.id]()
+            delete this.onBeforeClose[message.id]
         },
 
         // 验证消息是否来自当前 iframe
