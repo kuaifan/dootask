@@ -665,8 +665,16 @@ class WebSocketDialogMsg extends AbstractModel
             if (preg_match('/:::\s*reasoning\s+/', $text)) {
                 return Doo::translate('思考中...');
             }
-            $text = Base::markdown2html($text);
-            $text = self::previewConvertTaskList($text);
+            $title = '';
+            if (preg_match('/^#{1,2}\s+(.+)/m', $text, $matches)) {
+                $title = trim($matches[1]);
+            }
+            if ($title) {
+                $text = $title;
+            } else {
+                $text = Base::markdown2html($text);
+                $text = self::previewConvertTaskList($text);
+            }
         }
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[" . Doo::translate('动画表情') . "]", $text);

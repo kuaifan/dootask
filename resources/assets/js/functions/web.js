@@ -250,7 +250,16 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 if (/:::\s*reasoning\s+/.test(text)) {
                     return $A.L('思考中...')
                 }
-                text = MarkdownPreview(text);
+                let titleText = '';
+                const titleMatch = text.match(/^#{1,2}\s+(.+)/m);
+                if (titleMatch) {
+                    titleText = titleMatch[1].trim();
+                }
+                if (titleText) {
+                    text = titleText;
+                } else {
+                    text = MarkdownPreview(text);
+                }
             }
             //
             text = text.replace(/<img\s+class="emoticon"[^>]*?alt="(\S+)"[^>]*?>/g, "[$1]")
