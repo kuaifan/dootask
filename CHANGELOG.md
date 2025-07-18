@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.15]
+
+### Bug Fixes
+
+- 修复客户度右键复制图片失败的情况
+- 修复部分emoji表情无法提交的情况
+
+### Performance
+
+- 优化预览消息
+- 优化应用参数
+
 ## [1.1.8]
 
 ### Bug Fixes
