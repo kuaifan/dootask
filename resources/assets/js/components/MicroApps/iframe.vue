@@ -66,34 +66,71 @@ export default {
         return {
             src: this.url,
             isLoading: true,
-            onBeforeClose: {},
+            hasMounted: false,
         }
     },
 
     mounted() {
-        this.injectMicroApp()
-        window.addEventListener('message', this.handleMessage.bind(this))
-        this.$refs.iframe.addEventListener('load', this.handleLoad.bind(this))
-        this.$refs.iframe.addEventListener('error', this.handleError.bind(this))
+        this.pendingBeforeCloses = new Map();
+        this.pendingFunctionCalls = new Map();
+
+        this.boundHandleMessage = this.handleMessage.bind(this);
+        this.boundHandleLoad = this.handleLoad.bind(this);
+        this.boundHandleError = this.handleError.bind(this);
+
+        this.injectMicroApp();
+        window.addEventListener('message', this.boundHandleMessage);
+        this.$refs.iframe.addEventListener('load', this.boundHandleLoad);
+        this.$refs.iframe.addEventListener('error', this.boundHandleError);
     },
 
     beforeDestroy() {
-        this.cleanupMicroApp()
-        window.removeEventListener('message', this.handleMessage.bind(this))
-        this.$refs.iframe.removeEventListener('load', this.handleLoad.bind(this))
-        this.$refs.iframe.removeEventListener('error', this.handleError.bind(this))
+        this.cleanupMicroApp();
+
+        // 正确移除事件监听器
+        if (this.boundHandleMessage) {
+            window.removeEventListener('message', this.boundHandleMessage);
+        }
+        if (this.boundHandleLoad) {
+            this.$refs.iframe.removeEventListener('load', this.boundHandleLoad);
+        }
+        if (this.boundHandleError) {
+            this.$refs.iframe.removeEventListener('error', this.boundHandleError);
+        }
+
+        // 清理待处理的函数调用
+        if (this.pendingFunctionCalls) {
+            this.pendingFunctionCalls.forEach(pending => {
+                clearTimeout(pending.timeout);
+                pending.reject(new Error('Component destroyed'));
+            });
+            this.pendingFunctionCalls.clear();
+        }
+
+        // 清理待处理的关闭回调
+        if (this.pendingBeforeCloses) {
+            this.pendingBeforeCloses.forEach(resolve => {
+                resolve(false);
+            });
+            this.pendingBeforeCloses.clear();
+        }
     },
 
     methods: {
         // 处理 iframe 加载完成
         handleLoad() {
+            // 总是执行注入
             this.injectMicroApp()
 
-            this.$emit('mounted', {
-                detail: {
-                    name: this.name,
-                }
-            })
+            // 只触发一次 mounted 事件
+            if (!this.hasMounted) {
+                this.hasMounted = true
+                this.$emit('mounted', {
+                    detail: {
+                        name: this.name,
+                    }
+                })
+            }
         },
 
         // 处理 iframe 加载错误
@@ -114,15 +151,19 @@ export default {
             const {type, message} = e.data;
             switch (type) {
                 case 'MICRO_APP_READY':
-                    this.handleMessageOfReady(message);
+                    this.handleMessageOfReady(this.handleMessageEnsureJson(message));
                     break
 
                 case 'MICRO_APP_METHOD':
-                    this.handleMessageOfMethod(message)
+                    this.handleMessageOfMethod(this.handleMessageEnsureJson(message))
+                    break
+
+                case 'MICRO_APP_FUNCTION_RESULT':
+                    this.handleMessageOfFunctionResult(this.handleMessageEnsureJson(message))
                     break
 
                 case 'MICRO_APP_BEFORE_CLOSE':
-                    this.handleMessageOfBeforeClose(message)
+                    this.handleMessageOfBeforeClose(this.handleMessageEnsureJson(message))
                     break
 
                 default:
@@ -130,12 +171,17 @@ export default {
             }
         },
 
+        // 确保消息是 JSON 格式
+        handleMessageEnsureJson(message) {
+            return $A.isJson(message) ? message : {}
+        },
+
         // 处理消息的准备状态 (MICRO_APP_READY)
-        handleMessageOfReady(message) {
+        handleMessageOfReady({supportBeforeClose}) {
             this.handleLoad()
             this.isLoading = false
 
-            if (!message?.supportBeforeClose) {
+            if (!supportBeforeClose) {
                 return
             }
             this.$store.commit('microApps/update', {
@@ -151,7 +197,7 @@ export default {
                                 type: 'MICRO_APP_BEFORE_CLOSE',
                                 message
                             }, '*')
-                            this.onBeforeClose[message.id] = resolve
+                            this.pendingBeforeCloses.set(message.id, resolve)
                         })
                     }
                 }
@@ -159,14 +205,9 @@ export default {
         },
 
         // 处理方法消息 (MICRO_APP_METHOD)
-        handleMessageOfMethod(message) {
-            if (!this.data || !this.data.methods) {
+        handleMessageOfMethod({id, method, args}) {
+            if (!this.data || !this.data.methods || !this.data.methods[method]) {
                 return
-            }
-
-            const {id, method, args} = message;
-            if (!this.data.methods[method]) {
-                return;
             }
 
             const postMessage = (result) => {
@@ -183,21 +224,44 @@ export default {
                 }, '*')
             }
 
-            const before = this.data.methods[method](...args)
-            if (before && before.then) {
-                before.then(postMessage).catch(postError)
+            try {
+                const processedArgs = this.deserializeFunctions(args);
+                const before = this.data.methods[method](...processedArgs);
+
+                if (before && before.then) {
+                    before.then(postMessage).catch(postError);
+                } else {
+                    postMessage(before);
+                }
+            } catch (error) {
+                postError(error);
+            }
+        },
+
+        // 处理函数结果消息 (MICRO_APP_FUNCTION_RESULT)
+        handleMessageOfFunctionResult({callId, result, error}) {
+            const pending = this.pendingFunctionCalls.get(callId);
+            if (!pending) {
+                return
+            }
+
+            this.pendingFunctionCalls.delete(callId);
+            clearTimeout(pending.timeout);
+
+            if (error) {
+                pending.reject(new Error(error));
             } else {
-                postMessage(before)
+                pending.resolve(result);
             }
         },
 
         // 处理方法消息 (MICRO_APP_BEFORE_CLOSE)
-        handleMessageOfBeforeClose(message) {
-            if (!this.onBeforeClose[message.id]) {
+        handleMessageOfBeforeClose({id}) {
+            if (!this.pendingBeforeCloses.has(id)) {
                 return
             }
-            this.onBeforeClose[message.id]()
-            delete this.onBeforeClose[message.id]
+            this.pendingBeforeCloses.get(id)()
+            this.pendingBeforeCloses.delete(id)
         },
 
         // 验证消息是否来自当前 iframe
@@ -209,6 +273,54 @@ export default {
                 // console.error('Failed to validate message from current iframe:', error)
                 return false
             }
+        },
+
+        // 反序列化函数
+        deserializeFunctions(value) {
+            if (value && typeof value === 'object' && value.__func) {
+                return (...args) => {
+                    return new Promise((resolve, reject) => {
+                        const callId = `call_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+                        // 设置超时
+                        const timeout = setTimeout(() => {
+                            this.pendingFunctionCalls.delete(callId);
+                            reject(new Error('Function call timeout'));
+                        }, 5000);
+
+                        // 存储待处理的调用
+                        this.pendingFunctionCalls.set(callId, {
+                            resolve,
+                            reject,
+                            timeout
+                        });
+
+                        // 发送函数调用请求
+                        if (!this.$refs.iframe || !this.$refs.iframe.contentWindow) {
+                            reject(new Error('Iframe not ready'));
+                            return;
+                        }
+                        this.$refs.iframe.contentWindow.postMessage({
+                            type: 'MICRO_APP_FUNCTION_CALL',
+                            message: {funcId: value.__func, callId, args}
+                        }, '*');
+                    });
+                };
+            }
+
+            if (Array.isArray(value)) {
+                return value.map(item => this.deserializeFunctions(item));
+            }
+
+            if (value && typeof value === 'object' && value.constructor === Object) {
+                const result = {};
+                for (const key in value) {
+                    result[key] = this.deserializeFunctions(value[key]);
+                }
+                return result;
+            }
+
+            return value;
         },
 
         // 注入 microApp 对象到 iframe
