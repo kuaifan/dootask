@@ -540,7 +540,7 @@ class BotReceiveMsgTask extends AbstractTask
                     'nickname' => $userInfo->nickname,
                     'profession' => $userInfo->profession,
                     'lang' => $userInfo->lang,
-                    'token' => Doo::tokenEncode($userInfo->userid, $userInfo->email, $userInfo->encrypt, 3),
+                    'token' => User::generateTokenNoDevice($userInfo),
                 ];
             }
             $res = Ihttp::ihttp_post($webhookUrl, $data, 30);

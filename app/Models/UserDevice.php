@@ -79,7 +79,7 @@ class UserDevice extends AbstractModel
      * @param string $hash
      * @return string
      */
-    private static function ck(string $hash): string
+    public static function ck(string $hash): string
     {
         return "user_devices:{$hash}";
     }

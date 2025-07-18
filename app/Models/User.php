@@ -568,6 +568,23 @@ class User extends AbstractModel
     }
 
     /**
+     * 生成无设备的 token（主要用于接口调用，此 token 不检查设备是否存在）
+     * @param self $userinfo
+     * @param int $days
+     * @return mixed
+     */
+    public static function generateTokenNoDevice($userinfo, $days = 3)
+    {
+        $key = 'user_token_' . $userinfo->userid . '_' . $days;
+        $ttl = now()->addDays($days);
+        return Cache::remember($key, $ttl, function () use ($userinfo, $ttl, $days) {
+            $token = Doo::tokenEncode($userinfo->userid, $userinfo->email, $userinfo->encrypt, $days);
+            Cache::put(UserDevice::ck(md5($token)), $userinfo->userid, $ttl);
+            return $token;
+        });
+    }
+
+    /**
      * userid 获取 基础信息
      * @param int $userid 会员ID
      * @return self
