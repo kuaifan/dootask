@@ -2210,7 +2210,22 @@ class DialogController extends AbstractController
         $msg_id = intval(Request::input("msg_id"));
         $symbol = Request::input("symbol");
         //
-        if (!preg_match('/[\x{1F300}-\x{1F9FF}]|[\x{1F000}-\x{1F02F}]|[\x{1F0A0}-\x{1F0FF}]|[\x{1F100}-\x{1F64F}]|[\x{1F680}-\x{1F6FF}]|[\x{2600}-\x{26FF}]|[\x{2700}-\x{27BF}]/u', $symbol)) {
+        $emojiPattern = '/(?:' .
+            '[\x{1F600}-\x{1F64F}]|' .          // 表情符号
+            '[\x{1F300}-\x{1F5FF}]|' .          // 符号和象形文字
+            '[\x{1F680}-\x{1F6FF}]|' .          // 交通和地图符号
+            '[\x{1F1E0}-\x{1F1FF}]|' .          // 区域指示符号（国旗）
+            '[\x{2600}-\x{26FF}]|' .            // 杂项符号
+            '[\x{2700}-\x{27BF}]|' .            // 装饰符号
+            '[\x{1F900}-\x{1F9FF}]|' .          // 补充符号和象形文字
+            '[\x{1F000}-\x{1F02F}]|' .          // 麻将牌
+            '[\x{1F0A0}-\x{1F0FF}]|' .          // 扑克牌
+            '[\x{1F100}-\x{1F64F}]|' .          // 封闭字母数字补充
+            '[\x{FE0F}]|' .                     // 变体选择器-16
+            '[\x{20E3}]|' .                     // 组合封闭键帽
+            '[\x{30}-\x{39}\x{23}\x{2A}][\x{FE0F}]?[\x{20E3}]' . // 键帽序列 (0-9, #, *)
+        ')/u';
+        if (!preg_match($emojiPattern, $symbol)) {
             return Base::retError("参数错误");
         }
         //
