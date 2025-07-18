@@ -4688,6 +4688,7 @@ export default {
      *  - disable_scope_css 是否禁用样式隔离 (true/false)，默认 false
      *  - auto_dark_theme   是否自动适配深色主题 (true/false)，默认 true
      *  - keep_alive        是否开启微应用保活 (true/false)，默认 true
+     *  - iframe_immersive  是否开启沉浸式模式，仅在 url_type=iframe[_blank] 时有效 (true/false)，默认 false
      *  - props             传递参数
      */
     async openMicroApp({state}, data) {
@@ -4719,6 +4720,7 @@ export default {
             disable_scope_css: typeof data.disable_scope_css == 'boolean' ? data.disable_scope_css : false,
             auto_dark_theme: typeof data.auto_dark_theme == 'boolean' ? data.auto_dark_theme : true,
             keep_alive: typeof data.keep_alive == 'boolean' ? data.keep_alive : true,
+            iframe_immersive: typeof data.iframe_immersive == 'boolean' ? data.iframe_immersive : false,
             props: $A.isJson(data.props) ? data.props : {},
         }
         if (!state.microAppsIds.includes(config.id)) {

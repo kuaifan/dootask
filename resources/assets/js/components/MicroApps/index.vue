@@ -16,6 +16,7 @@
                 :name="app.name"
                 :url="app.url"
                 :data="appData(app.name)"
+                :immersive="app.iframe_immersive"
                 @mounted="mounted"
                 @error="error"/>
             <micro-app
@@ -154,6 +155,7 @@ export default {
             'userInfo',
             'themeName',
             'microApps',
+            'safeAreaSize',
         ]),
     },
 
@@ -228,6 +230,7 @@ export default {
                     languageList,
                     languageName,
                     themeName: this.themeName,
+                    safeArea: this.safeAreaSize,
                 },
 
                 methods: {

@@ -3,6 +3,7 @@
         <iframe
             ref="iframe"
             class="micro-app-iframe-container"
+            :class="{'iframe-immersive': immersive}"
             :src="src"
             sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox">
         </iframe>
@@ -22,6 +23,11 @@
         height: 100%;
         padding-top: var(--status-bar-height);
         padding-bottom: var(--navigation-bar-height);
+
+        &.iframe-immersive {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
     }
 
     .micro-app-iframe-cover {
@@ -49,6 +55,10 @@ export default {
         data: {
             type: Object,
             default: null
+        },
+        immersive: {
+            type: Boolean,
+            default: false
         }
     },
 
