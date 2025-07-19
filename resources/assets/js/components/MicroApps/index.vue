@@ -115,6 +115,10 @@ export default {
     },
 
     created() {
+        // 卸载所有微应用（防止刷新导致的缓存）
+        microApp.unmountAllApps({destroy: true})
+
+        // 初始化微应用
         microApp.start({
             'iframe': true,
             'router-mode': 'state',
@@ -137,10 +141,10 @@ export default {
             if (token) {
                 return
             }
-            this.closeAllMicroApp()
+            this.unmountAllMicroApp()
         },
         themeName() {
-            this.closeAllMicroApp()
+            this.unmountAllMicroApp()
         },
         microApps: {
             handler(items) {
@@ -477,15 +481,12 @@ export default {
         },
 
         /**
-         * 关闭所有微应用
-         * @param destroy
+         * 卸载所有微应用
          */
-        closeAllMicroApp(destroy = true) {
+        unmountAllMicroApp() {
             this.microApps.forEach(app => {
                 app.isOpen = false
-                if (destroy) {
-                    this.unmountMicroApp(app)
-                }
+                this.unmountMicroApp(app)
             });
         },
 
