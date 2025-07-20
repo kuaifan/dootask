@@ -531,18 +531,16 @@ class BotReceiveMsgTask extends AbstractTask
                 'version' => Base::getVersion(),
                 'extras' => Base::array2json($extras)
             ];
-            if ($botUser->isAiBot()) {
-                // AI机器人需要用户信息
-                $userInfo = User::find($msg->userid);
-                $data['msg_user'] = [
-                    'userid' => $userInfo->userid,
-                    'email' => $userInfo->email,
-                    'nickname' => $userInfo->nickname,
-                    'profession' => $userInfo->profession,
-                    'lang' => $userInfo->lang,
-                    'token' => User::generateTokenNoDevice($userInfo),
-                ];
-            }
+            // 添加用户信息
+            $userInfo = User::find($msg->userid);
+            $data['msg_user'] = [
+                'userid' => $userInfo->userid,
+                'email' => $userInfo->email,
+                'nickname' => $userInfo->nickname,
+                'profession' => $userInfo->profession,
+                'lang' => $userInfo->lang,
+                'token' => User::generateTokenNoDevice($userInfo, now()->addHour()),
+            ];
             $res = Ihttp::ihttp_post($webhookUrl, $data, 30);
             if ($userBot) {
                 $userBot->webhook_num++;

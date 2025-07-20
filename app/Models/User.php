@@ -570,15 +570,14 @@ class User extends AbstractModel
     /**
      * 生成无设备的 token（主要用于接口调用，此 token 不检查设备是否存在）
      * @param self $userinfo
-     * @param int $days
+     * @param $ttl
      * @return mixed
      */
-    public static function generateTokenNoDevice($userinfo, $days = 3)
+    public static function generateTokenNoDevice($userinfo, $ttl)
     {
-        $key = 'user_token_' . $userinfo->userid . '_' . $days;
-        $ttl = now()->addDays($days);
-        return Cache::remember($key, $ttl, function () use ($userinfo, $ttl, $days) {
-            $token = Doo::tokenEncode($userinfo->userid, $userinfo->email, $userinfo->encrypt, $days);
+        $key = 'user_token_no_device_' . $userinfo->userid;
+        return Cache::remember($key, $ttl, function () use ($userinfo, $ttl) {
+            $token = Doo::tokenEncode($userinfo->userid, $userinfo->email, $userinfo->encrypt);
             Cache::put(UserDevice::ck(md5($token)), $userinfo->userid, $ttl);
             return $token;
         });
