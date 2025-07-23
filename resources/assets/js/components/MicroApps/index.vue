@@ -304,6 +304,9 @@ export default {
                         }
                         return 1000;
                     },
+                    isFullScreen: () => {
+                        return window.innerWidth < 768 || this.windowType === 'popout'
+                    },
                     extraCallA: (...args) => {
                         if (args.length > 0 && typeof args[0] === 'string') {
                             const methodName = args[0];
@@ -314,8 +317,13 @@ export default {
                         }
                         return null;
                     },
-                    isFullScreen: () => {
-                        return window.innerWidth < 768 || this.windowType === 'popout'
+                    extraCallStore: async (...args) => {
+                        if (args.length > 0 && typeof args[0] === 'string') {
+                            const actionName = args[0];
+                            const payload = args.slice(1);
+                            await this.$store.dispatch(actionName, ...payload)
+                        }
+                        return null;
                     },
                 },
             }
