@@ -402,7 +402,7 @@ class BotReceiveMsgTask extends AbstractTask
     {
         $serverUrl = 'http://nginx';
         $userBot = null;
-        $extras = [];
+        $extras = ['timestamp' => time()];
         $replyText = null;
         $errorContent = null;
         if ($botUser->isAiBot($type)) {

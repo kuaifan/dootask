@@ -24,6 +24,7 @@
         <p><span class="mark-color">dialog_type</span>: {{$L("对话类型")}}</p>
         <p><span class="mark-color">msg_id</span>: {{$L("消息ID")}}</p>
         <p><span class="mark-color">msg_uid</span>: {{$L("消息发送人ID")}}</p>
+        <p><span class="mark-color">msg_user</span>: {{$L("消息发送人信息")}}</p>
         <p><span class="mark-color">mention</span>: {{$L("是否被@到")}}</p>
         <p><span class="mark-color">bot_uid</span>: {{$L("机器人ID")}}</p>
         <p><span class="mark-color">version</span>: {{$L("系统版本")}}</p>
