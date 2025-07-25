@@ -21,7 +21,7 @@ export default {
                 "| ID | {{名称}} | {{清理时间}} | Webhook |",
                 "| ------ | ------ | ------ | ------ |",
                 ...this.msg.data.map(item => {
-                    return "| " + item.userid + " | " + item.nickname + " | " + item.clear_day + " | " + (item.webhook_url ? '✅' : '-') + " |";
+                    return "| " + item.userid + " | " + item.nickname + " | " + item.clear_day + " | " + (item.webhook_url ? '√' : '') + " |";
                 }),
             ].map(item => item.replace(/\{\{([^}]+)\}\}/g, (_, v1) => this.$L(v1))).join("\n");
         },
