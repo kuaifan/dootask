@@ -1078,11 +1078,7 @@
 
 .ql-mention-list-container {
     width: auto;
-    min-width: 220px;
-    max-width: 280px;
-    max-height: 360px;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
 
     &.task-mention {
         .ql-mention-list {
@@ -1101,6 +1097,12 @@
     }
 
     .ql-mention-list {
+        min-width: 220px;
+        max-width: 280px;
+        max-height: 360px;
+        overflow-x: hidden;
+        overflow-y: auto;
+
         > li {
             &:first-child {
                 margin-top: 8px;
@@ -1119,6 +1121,13 @@
 
         &.selected {
             border-radius: 4px;
+        }
+
+        &.sticky-top {
+            position: sticky;
+            background-color: #ffffff;
+            top: 0;
+            z-index: 10;
         }
 
         .mention-item-at {

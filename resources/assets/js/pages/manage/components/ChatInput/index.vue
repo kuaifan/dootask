@@ -1993,10 +1993,10 @@ export default {
                                     })
                                 }
                                 this.userCache.push(...[{
-                                    label: [{id: 0, value: this.$L('群内成员'), disabled: true}],
+                                    label: [{id: 0, value: this.$L('群内成员'), className: "sticky-top", disabled: true}],
                                     list,
                                 }, {
-                                    label: [{id: 0, value: this.$L('群外成员'), disabled: true}],
+                                    label: [{id: 0, value: this.$L('群外成员'), className: "sticky-top", disabled: true}],
                                     list: moreUser,
                                 }])
                             } else {
@@ -2005,7 +2005,7 @@ export default {
                                         label: null,
                                         list: [{id: 0, value: this.$L('所有人.All'), tip: ''}]
                                     }, {
-                                        label: [{id: 0, value: this.$L('群成员'), disabled: true}],
+                                        label: [{id: 0, value: this.$L('群成员'), className: "sticky-top", disabled: true}],
                                         list,
                                     }])
                                 } else {
