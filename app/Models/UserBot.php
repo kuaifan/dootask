@@ -180,28 +180,8 @@ class UserBot extends AbstractModel
                 ];
 
             default:
-                if (preg_match('/^ai-(.*?)@bot\.system$/', $email, $match)) {
-                    if (!Base::judgeClientVersion('0.42.62')) {
-                        return [
-                            'key' => '%3A.clear',
-                            'label' => Doo::translate('清空上下文')
-                        ];
-                    }
-                    $aibotSetting = Base::setting('aibotSetting');
-                    $aibotModel = $aibotSetting[$match[1] . '_model'];
-                    $aibotModels = Setting::AIModels2Array($aibotSetting[$match[1] . '_models']);
-                    if (empty($aibotModels)) {
-                        return [];
-                    }
-                    return [
-                        [
-                            'key' => '~ai-model-select',
-                            'label' => Doo::translate('选择模型'),
-                            'config' => [
-                                'model' => $aibotModel,
-                                'models' => $aibotModels
-                            ]
-                        ],
+                if (preg_match('/^(ai-|user-session-)(.*?)@bot\.system$/', $email, $match)) {
+                    $menus = [
                         [
                             'key' => '~ai-session-create',
                             'label' => Doo::translate('开启新会话'),
@@ -211,6 +191,27 @@ class UserBot extends AbstractModel
                             'label' => Doo::translate('历史会话'),
                         ]
                     ];
+                    if ($match[1] === "ai-") {
+                        $aibotSetting = Base::setting('aibotSetting');
+                        $aibotModel = $aibotSetting[$match[1] . '_model'];
+                        $aibotModels = Setting::AIModels2Array($aibotSetting[$match[1] . '_models']);
+                        if ($aibotModels) {
+                            $menus = array_merge(
+                                [
+                                    [
+                                        'key' => '~ai-model-select',
+                                        'label' => Doo::translate('选择模型'),
+                                        'config' => [
+                                            'model' => $aibotModel,
+                                            'models' => $aibotModels
+                                        ]
+                                    ]
+                                ],
+                                $menus
+                            );
+                        }
+                    }
+                    return $menus;
                 }
                 return [];
         }
@@ -445,11 +446,12 @@ class UserBot extends AbstractModel
 
     /**
      * 创建我的机器人
-     * @param $userid
-     * @param $botName
+     * @param int $userid               创建人userid
+     * @param string $botName           机器人名称
+     * @param bool $sessionSupported    是否支持会话
      * @return array
      */
-    public static function newbot($userid, $botName)
+    public static function newBot($userid, $botName, $sessionSupported = false)
     {
         if (User::select(['users.*'])
                 ->join('user_bots', 'users.userid', '=', 'user_bots.bot_id')
@@ -461,7 +463,8 @@ class UserBot extends AbstractModel
         if (strlen($botName) < 2 || strlen($botName) > 20) {
             return Base::retError("机器人名称由2-20个字符组成。");
         }
-        $data = User::botGetOrCreate("user-" . Base::generatePassword(), [
+        $botType = ($sessionSupported ? "user-session-" : "user-normal-") . Base::generatePassword();
+        $data = User::botGetOrCreate($botType, [
             'nickname' => $botName
         ], $userid);
         if (empty($data)) {
@@ -469,6 +472,15 @@ class UserBot extends AbstractModel
         }
         $dialog = WebSocketDialog::checkUserDialog($data, $userid);
         if ($dialog) {
+            if ($sessionSupported) {
+                $dialogSession = WebSocketDialogSession::create([
+                    'dialog_id' => $dialog->id,
+                    'title' => 'Default',
+                ]);
+                $dialogSession->save();
+                $dialog->session_id = $dialogSession->id;
+                $dialog->save();
+            }
             WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                 'type' => '/hello',
                 'title' => '创建成功。',

@@ -20,6 +20,7 @@
         <p><span class="mark-color">text</span>: {{$L("消息文本")}}</p>
         <p><span class="mark-color">reply_text</span>: {{$L("回复/引用消息文本")}}</p>
         <p><span class="mark-color">token</span>: {{$L("机器人Token")}}</p>
+        <p v-if="/^(ai-|user-session-)/.test(msg.email)"><span class="mark-color">session_id</span>: {{$L("会话ID")}}</p>
         <p><span class="mark-color">dialog_id</span>: {{$L("对话ID")}}</p>
         <p><span class="mark-color">dialog_type</span>: {{$L("对话类型")}}</p>
         <p><span class="mark-color">msg_id</span>: {{$L("消息ID")}}</p>

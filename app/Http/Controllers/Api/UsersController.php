@@ -376,7 +376,7 @@ class UsersController extends AbstractController
     public function info__departments()
     {
         $user = User::auth();
-        
+
         // 获取部门列表
         $list = UserDepartment::select(['id', 'owner_userid', 'parent_id', 'name'])
             ->whereIn('id', $user->department)
@@ -2103,6 +2103,11 @@ class UsersController extends AbstractController
      * @apiParam {Number} [id]          机器人ID（编辑时必填，留空为添加）
      * @apiParam {String} [name]        机器人名称
      * @apiParam {String} [avatar]      机器人头像
+     * @apiParam {Number} [session]     开启新会话功能（仅 我的机器人）
+     * - 1：开启、0：关闭, 默认：0
+     * - 此参数仅在添加机器人时有效
+     * - 开启后，机器人对话窗口会出现新会话菜单和历史会话菜单
+     * - 开启后，webhook_url 消息会多一个 session_id 字段
      * @apiParam {Number} [clear_day]   清理天数（仅 我的机器人）
      * @apiParam {String} [webhook_url] Webhook地址（仅 我的机器人）
      *
@@ -2115,8 +2120,9 @@ class UsersController extends AbstractController
         $user = User::auth();
         //
         $botId = intval(Request::input('id'));
+        $session = intval(Request::input('session'));
         if (empty($botId)) {
-            $res = UserBot::newbot($user->userid, trim(Request::input('name')));
+            $res = UserBot::newBot($user->userid, trim(Request::input('name')), (bool)$session);
             if (Base::isError($res)) {
                 return $res;
             }

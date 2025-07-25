@@ -3291,15 +3291,7 @@ class DialogController extends AbstractController
             $dialog = WebSocketDialog::checkDialog($dialog_id);
         }
         //
-        if ($dialog->type != 'user') {
-            return Base::retError('当前对话不支持');
-        }
-        //
-        $hasAiUser = WebSocketDialogUser::join('users as u', 'web_socket_dialog_users.userid', '=', 'u.userid')
-            ->where('dialog_id', $dialog->id)
-            ->where('u.email', 'like', 'ai-%@bot.system')
-            ->exists();
-        if (!$hasAiUser) {
+        if (!$dialog->isSessionDialog()) {
             return Base::retError('当前对话不支持');
         }
         //
@@ -3312,7 +3304,6 @@ class DialogController extends AbstractController
         //
         $session = WebSocketDialogSession::create([
             'dialog_id' => $dialog->id,
-            'status' => 1,
             'title' => '',
         ]);
         $session->save();

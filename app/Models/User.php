@@ -174,10 +174,9 @@ class User extends AbstractModel
         return UserDepartment::where('owner_userid', $this->userid)->exists();
     }
 
-
     /**
      * 获取机器人所有者
-     * @return int|mixed
+     * @return int
      */
     public function getBotOwner()
     {
@@ -782,18 +781,17 @@ class User extends AbstractModel
     /**
      * 是否机器人
      * @param $userid
-     * @return bool|mixed
+     * @return bool
      */
     public static function isBot($userid)
     {
         if (empty($userid)) {
             return false;
         }
-        $userid = intval($userid);
-        if (RequestContext::has("isBot_" . $userid)) {
-            return RequestContext::get("isBot_" . $userid);
-        }
-        return (bool)User::find($userid)?->bot;
+        // 这个不会有变化，所以可以使用永久缓存
+        return (bool)Cache::rememberForever('is-bot-user-' . $userid, function () use ($userid) {
+            return (bool)User::find($userid)?->bot;
+        });
     }
 
     /**

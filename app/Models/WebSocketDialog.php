@@ -706,6 +706,27 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 检查是否支持创建会话
+     * @return bool
+     */
+    public function isSessionDialog()
+    {
+        // 这个不会有变化，所以可以使用永久缓存
+        return Cache::rememberForever('is-session-dialog-' . $this->id, function () {
+            if ($this->type !== 'user') {
+                return false;
+            }
+            $data = $this->dialogUserBuilder()->get();
+            foreach ($data as $item) {
+                if (preg_match('/^(ai-|user-session-)(.*?)@bot\.system$/', $item->email)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    /**
      * 检查是否是AI对话
      * @return bool
      */
@@ -799,6 +820,7 @@ class WebSocketDialog extends AbstractModel
                     WebSocketDialogUser::createInstance([
                         'dialog_id' => $dialog->id,
                         'userid' => $value,
+                        'bot' => User::isBot($value) ? 1 : 0,
                         'important' => !in_array($group_type, ['user', 'all']),
                         'last_at' => in_array($group_type, ['user', 'department', 'all']) ? Carbon::now() : null,
                     ])->save();
@@ -835,16 +857,17 @@ class WebSocketDialog extends AbstractModel
             WebSocketDialogUser::createInstance([
                 'dialog_id' => $dialog->id,
                 'userid' => $user->userid,
+                'bot' => User::isBot($user->userid) ? 1 : 0,
             ])->save();
             WebSocketDialogUser::createInstance([
                 'dialog_id' => $dialog->id,
                 'userid' => $receiver,
+                'bot' => User::isBot($receiver) ? 1 : 0,
             ])->save();
             //
             if ($user->isAiBot() || User::find($receiver)?->isAiBot()) {
                 $session = WebSocketDialogSession::create([
                     'dialog_id' => $dialog->id,
-                    'status' => 1,
                     'title' => '',
                 ]);
                 $session->save();

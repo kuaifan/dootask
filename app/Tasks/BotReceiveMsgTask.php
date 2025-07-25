@@ -205,7 +205,7 @@ class BotReceiveMsgTask extends AbstractTask
                  * 创建
                  */
                 case '/newbot':
-                    $res = UserBot::newbot($msg->userid, $array[1]);
+                    $res = UserBot::newBot($msg->userid, $array[1]);
                     if (Base::isError($res)) {
                         $content = $res['msg'];
                     } else {
@@ -381,6 +381,7 @@ class BotReceiveMsgTask extends AbstractTask
                     default => '不支持的指令',
                 };
                 if ($type == '/api') {
+                    $msgData['email'] = $botUser->email;
                     $msgData['version'] = Base::getVersion();
                 } elseif ($type == '/help') {
                     $msgData['manager'] = $isManager;
@@ -522,6 +523,7 @@ class BotReceiveMsgTask extends AbstractTask
                 'text' => $command,
                 'reply_text' => $replyText,
                 'token' => User::generateToken($botUser),
+                'session_id' => $dialog->session_id,
                 'dialog_id' => $dialog->id,
                 'dialog_type' => $dialog->type,
                 'msg_id' => $msg->id,

@@ -1917,13 +1917,6 @@ export default {
 
                 // 开启新会话
                 case "~ai-session-create":
-                    if (!this.isAiBot) {
-                        return
-                    }
-                    // 清理会话本地缓存
-                    this.$store.dispatch("clearDialogMsgs", {
-                        id: this.dialogId
-                    });
                     // 创建新会话
                     this.$store.dispatch("call", {
                         url: 'dialog/session/create',
@@ -1940,9 +1933,6 @@ export default {
 
                 // 历史会话
                 case "~ai-session-history":
-                    if (!this.isAiBot) {
-                        return
-                    }
                     this.sessionHistoryData = {
                         dialog_id: this.dialogId,
                         name: this.dialogData.name,
