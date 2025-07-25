@@ -30514,5 +30514,41 @@
         "fr": "ID de session",
         "id": "ID sesi",
         "ru": "ID сессии"
+    },
+    {
+        "key": "列表视图",
+        "zh": "",
+        "zh-CHT": "列表視圖",
+        "en": "List View",
+        "ko": "목록 보기",
+        "ja": "リストビュー",
+        "de": "Listenansicht",
+        "fr": "Vue en liste",
+        "id": "Tampilan Daftar",
+        "ru": "Вид списка"
+    },
+    {
+        "key": "部门视图",
+        "zh": "",
+        "zh-CHT": "部門視圖",
+        "en": "Department View",
+        "ko": "부서 보기",
+        "ja": "部門ビュー",
+        "de": "Abteilungsansicht",
+        "fr": "Vue du département",
+        "id": "Tampilan Departemen",
+        "ru": "Просмотр отдела"
+    },
+    {
+        "key": "部门成员",
+        "zh": "",
+        "zh-CHT": "部門成員",
+        "en": "Department Members",
+        "ko": "부서 구성원",
+        "ja": "部門メンバー",
+        "de": "Abteilungsmitglieder",
+        "fr": "Membres du département",
+        "id": "Anggota Departemen",
+        "ru": "Члены отдела"
     }
 ]
