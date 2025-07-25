@@ -70,6 +70,7 @@
                 bottom: 0;
                 left: 100px;
                 right: 100px;
+
                 > span {
                     text-align: center;
                     font-size: 16px;
@@ -234,10 +235,26 @@
                 flex: 1;
                 display: flex;
                 flex-direction: column;
-                max-height: 400px;
+                min-height: 300px;
+                max-height: calc(100vh - 280px);
 
                 ul {
-                    padding: 16px 24px;
+                    padding: 8px 24px;
+
+                    &:first-child {
+                        padding-top: 16px;
+                    }
+
+                    &:last-child {
+                        padding-bottom: 16px;
+                    }
+
+                    &.sticky-top {
+                        position: sticky;
+                        top: 0;
+                        background-color: #ffffff;
+                        z-index: 10;
+                    }
 
                     &.user-modal-project {
                         > li {
@@ -303,10 +320,12 @@
                         &.disabled {
                             color: #c5c8ce;
                             cursor: not-allowed;
+
                             &:hover {
                                 color: #c5c8ce;
                                 cursor: not-allowed;
                             }
+
                             .user-modal-icon {
                                 color: #c5c8ce;
                             }
@@ -319,9 +338,24 @@
                             color: rgba($primary-desc-color, 0.7);
                         }
 
-                        .user-modal-all {
-                            font-size: 15px;
-                            font-weight: 500;
+                        .user-modal-label {
+                            flex: 1;
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-start;
+
+                            > span {
+                                font-size: 15px;
+                                font-weight: 500;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            }
+                        }
+
+                        .user-modal-view {
+                            flex-shrink: 0;
+                            margin-left: 12px;
                         }
 
                         .user-modal-avatar {

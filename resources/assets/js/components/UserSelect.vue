@@ -1,9 +1,11 @@
 <template>
     <div class="common-user-select" :class="warpClass">
         <ul v-if="!module">
-            <li v-for="userid in values" v-if="userid" @click="onSelection">
-                <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName"/>
-            </li>
+            <template v-for="userid in values">
+                <li v-if="userid" :key="userid" @click="onSelection">
+                    <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName"/>
+                </li>
+            </template>
             <li v-if="addIcon || values.length === 0" class="add-icon" :style="addStyle" @click="onSelection"></li>
         </ul>
 
@@ -19,19 +21,21 @@
             <!-- 顶部 -->
             <template #header>
                 <div v-if="isFullscreen" class="user-modal-header">
-                    <div class="user-modal-close" @click="showModal=false">{{$L('关闭')}}</div>
+                    <div class="user-modal-close" @click="showModal=false">{{ $L('关闭') }}</div>
                     <div class="user-modal-title">
-                        <span ref="headerTitle" @click="onClickTitle">{{localTitle}}</span>
+                        <span ref="headerTitle" @click="onClickTitle">{{ localTitle }}</span>
                     </div>
                     <div ref="headerSubmit" class="user-modal-submit" @click="onSubmit">
-                        <div v-if="submittIng > 0" class="submit-loading"><Loading /></div>
-                        {{$L('确定')}}
+                        <div v-if="submittIng > 0" class="submit-loading">
+                            <Loading/>
+                        </div>
+                        {{ $L('确定') }}
                         <template v-if="selects.length > 0">
-                            ({{selects.length}}<span v-if="multipleMax">/{{multipleMax}}</span>)
+                            ({{ selects.length }}<span v-if="multipleMax">/{{ multipleMax }}</span>)
                         </template>
                     </div>
                 </div>
-                <div v-else class="ivu-modal-header-inner">{{localTitle}}</div>
+                <div v-else class="ivu-modal-header-inner">{{ localTitle }}</div>
             </template>
             <template #close>
                 <i class="ivu-icon ivu-icon-ios-close"></i>
@@ -41,14 +45,14 @@
             <div class="user-modal-search">
                 <Scrollbar ref="selected" class="search-selected" v-if="selects.length > 0" enable-x :enable-y="false">
                     <ul>
-                        <li v-for="item in formatSelect(selects)" :data-id="item.userid" @click.stop="onRemoveItem(item.userid)">
+                        <li v-for="item in formatSelect(selects)" :key="item.userid" :data-id="item.userid" @click.stop="onRemoveItem(item.userid)">
                             <template v-if="item.type=='group'">
                                 <EAvatar v-if="item.avatar" class="img-avatar" :src="item.avatar" :size="32"></EAvatar>
                                 <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                                 <i v-else-if="item.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="item.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
-                                <Icon v-else class="icon-avatar" type="ios-people" />
+                                <Icon v-else class="icon-avatar" type="ios-people"/>
                             </template>
                             <UserAvatar v-else :userid="item.userid"/>
                         </li>
@@ -57,7 +61,7 @@
                 <div class="search-input">
                     <div class="search-pre">
                         <Loading v-if="loadIng > 0"/>
-                        <Icon v-else type="ios-search" />
+                        <Icon v-else type="ios-search"/>
                     </div>
                     <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
                         <Input
@@ -76,7 +80,8 @@
                 <li
                     v-for="item in switchItems" :key="item.key"
                     :class="{active:switchActive===item.key}"
-                    @click="switchActive=item.key">{{ $L(item.label) }}</li>
+                    @click="switchActive=item.key">{{ $L(item.label) }}
+                </li>
             </ul>
 
             <!-- 列表 -->
@@ -85,71 +90,95 @@
                 <ul v-if="switchActive == 'project'" class="user-modal-project">
                     <li
                         v-for="item in lists"
+                        :key="item.id"
                         :class="selectClass(item.userid_list)"
-                        @click="onSelectProject(item.userid_list)">
-                        <Icon class="user-modal-icon" :type="selectIcon(item.userid_list)" />
+                        @click="onSelectMultiple(item.userid_list)">
+                        <Icon class="user-modal-icon" :type="selectIcon(item.userid_list)"/>
                         <div class="user-modal-avatar">
                             <i class="taskfont icon-avatar">&#xe6f9;</i>
                             <div class="project-name">
-                                <div class="label">{{item.name}}</div>
+                                <div class="label">{{ item.name }}</div>
                                 <div class="subtitle">
-                                    {{item.userid_list.length}} {{$L('项目成员')}}
-                                    <em class="all">{{$L('已全选')}}</em>
-                                    <em class="some">{{$L('已选部分')}}</em>
+                                    {{ item.userid_list.length }} {{ $L('项目成员') }}
+                                    <em class="all">{{ $L('已全选') }}</em>
+                                    <em class="some">{{ $L('已选部分') }}</em>
                                 </div>
                             </div>
                         </div>
                     </li>
                 </ul>
                 <!-- 会员、会话 -->
-                <ul v-else>
-                    <li
-                        v-if="showSelectAll"
-                        :class="selectClass('all')"
-                        @click="onSelectAll">
-                        <Icon class="user-modal-icon" :type="selectIcon('all')" />
-                        <div class="user-modal-all">{{$L('全选')}}</div>
-                    </li>
-                    <li
-                        v-for="item in lists"
-                        :class="{
-                            selected: selects.includes(item.userid),
-                            disabled: isNoChoice(item.userid)
-                        }"
-                        @click="onSelectItem(item)">
-                        <Icon v-if="selects.includes(item.userid)" class="user-modal-icon" type="ios-checkmark-circle" />
-                        <Icon v-else-if="isNoChoice(item.userid)" class="user-modal-icon" type="ios-remove-circle-outline" />
-                        <Icon v-else class="user-modal-icon" type="ios-radio-button-off" />
-                        <div v-if="item.type=='group'" class="user-modal-avatar">
-                            <EAvatar v-if="item.avatar" class="img-avatar" :src="item.avatar" :size="40"></EAvatar>
-                            <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
-                            <i v-else-if="item.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
-                            <i v-else-if="item.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
-                            <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
-                            <Icon v-else class="icon-avatar" type="ios-people" />
-                            <div class="avatar-name">
-                                <span>{{item.name}}</span>
+                <template v-else>
+                    <ul v-if="showSelectAll || switchActive=='contact'" class="sticky-top">
+                        <li :class="selectClass('all')">
+                            <div v-if="showSelectAll" @click="onSelectAll" class="user-modal-label">
+                                <Icon class="user-modal-icon" :type="selectIcon('all')"/>
+                                <span>{{ $L('全选') }}</span>
                             </div>
-                        </div>
-                        <UserAvatar v-else class="user-modal-avatar" :userid="item.userid" :size="40" show-name/>
-                    </li>
-                </ul>
+                            <div v-if="switchActive=='contact'" class="user-modal-view">
+                                <RadioGroup v-model="contactViewMode" type="button" button-style="solid">
+                                    <Radio label="list">{{ $L('列表视图') }}</Radio>
+                                    <Radio label="department">{{ $L('部门视图') }}</Radio>
+                                </RadioGroup>
+                            </div>
+                        </li>
+                    </ul>
+                    <template v-for="items in convertTwoList(lists)">
+                        <ul v-if="items.name !== null" :key="`${items.id}-sticky`" class="sticky-top">
+                            <li :class="selectClass(items.userid_list)">
+                                <div @click="onSelectMultiple(items.userid_list)" class="user-modal-label">
+                                    <Icon class="user-modal-icon" :type="selectIcon(items.userid_list)"/>
+                                    <span>{{ items.name }}</span>
+                                </div>
+                                <div class="user-modal-view">{{ items.list.length }} {{ $L('部门成员') }}</div>
+                            </li>
+                        </ul>
+                        <ul :key="`${items.id}-list`">
+                            <li
+                                v-for="item in items.list"
+                                :key="item.userid"
+                                :class="{
+                                    selected: selects.includes(item.userid),
+                                    disabled: isNoChoice(item.userid),
+                                }"
+                                @click="onSelectItem(item)">
+                                <Icon v-if="selects.includes(item.userid)" class="user-modal-icon" type="ios-checkmark-circle"/>
+                                <Icon v-else-if="isNoChoice(item.userid)" class="user-modal-icon" type="ios-remove-circle-outline"/>
+                                <Icon v-else class="user-modal-icon" type="ios-radio-button-off"/>
+                                <div v-if="item.type=='group'" class="user-modal-avatar">
+                                    <EAvatar v-if="item.avatar" class="img-avatar" :src="item.avatar" :size="40"></EAvatar>
+                                    <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
+                                    <i v-else-if="item.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                                    <i v-else-if="item.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                    <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                    <Icon v-else class="icon-avatar" type="ios-people"/>
+                                    <div class="avatar-name">
+                                        <span>{{ item.name }}</span>
+                                    </div>
+                                </div>
+                                <UserAvatar v-else class="user-modal-avatar" :userid="item.userid" :size="40" show-name/>
+                            </li>
+                        </ul>
+                    </template>
+                </template>
             </Scrollbar>
             <!-- 空 -->
             <div v-else class="user-modal-empty">
                 <Loading v-if="waitIng > 0"/>
                 <template v-else>
-                    <div class="empty-icon"><Icon type="ios-cafe-outline" /></div>
-                    <div class="empty-text">{{$L('暂无结果')}}</div>
+                    <div class="empty-icon">
+                        <Icon type="ios-cafe-outline"/>
+                    </div>
+                    <div class="empty-text">{{ $L('暂无结果') }}</div>
                 </template>
             </div>
 
             <!-- 底部 -->
             <template #footer>
                 <Button type="primary" :loading="submittIng > 0" @click="onSubmit">
-                    {{$L('确定')}}
+                    {{ $L('确定') }}
                     <template v-if="selects.length > 0">
-                        ({{selects.length}}<span v-if="multipleMax">/{{multipleMax}}</span>)
+                        ({{ selects.length }}<span v-if="multipleMax">/{{ multipleMax }}</span>)
                     </template>
                 </Button>
             </template>
@@ -289,6 +318,7 @@ export default {
                 {key: 'project', label: '项目成员'},
             ],
             switchActive: 'recent',
+            contactViewMode: 'list',
 
             loadIng: 0,             // 搜索框等待效果
             waitIng: 0,             // 页面等待效果
@@ -308,6 +338,9 @@ export default {
             searchKey: null,
             searchCache: [],
         }
+    },
+    async mounted() {
+        this.contactViewMode = await $A.IDBString("userSelectContactViewMode", this.contactViewMode)
     },
     watch: {
         value: {
@@ -352,6 +385,10 @@ export default {
 
         switchActive() {
             this.searchBefore()
+        },
+
+        contactViewMode(value) {
+            $A.IDBSet("userSelectContactViewMode", value)
         },
 
         isFullscreen(value) {
@@ -473,6 +510,48 @@ export default {
             })
         },
 
+        convertTwoList(lists) {
+            if (this.switchActive === 'contact' && this.contactViewMode === 'department') {
+                const departmentMap = new Map()
+                const noDepartmentMembers = []
+                // 部门视图
+                lists.forEach(item => {
+                    if (item.department_info && item.department_info.length > 0) {
+                        // 用户可能属于多个部门
+                        item.department_info.forEach(dept => {
+                            if (!departmentMap.has(dept.id)) {
+                                departmentMap.set(dept.id, {
+                                    id: dept.id,
+                                    name: dept.name,
+                                    list: [],
+                                })
+                            }
+                            departmentMap.get(dept.id).list.push(item)
+                        })
+                    } else {
+                        // 没有部门信息的成员
+                        noDepartmentMembers.push(item)
+                    }
+                })
+                // 处理默认部门（未分组）
+                if (noDepartmentMembers.length > 0) {
+                    departmentMap.set(0, {
+                        id: 0,
+                        name: this.$L('默认部门'),
+                        list: noDepartmentMembers,
+                    })
+                }
+                return Array.from(departmentMap.values()).map(item => ({...item, userid_list: item.list.map(item => item.userid)}))
+            }
+            return [
+                {
+                    id: 0,
+                    name: null,
+                    list: lists,
+                },
+            ]
+        },
+
         selectIcon(value) {
             if (value === 'all') {
                 return this.isSelectAll ? 'ios-checkmark-circle' : 'ios-radio-button-off';
@@ -584,7 +663,8 @@ export default {
                         disable: this.showDisable && key ? 2 : 0,
                     },
                     page,
-                    pagesize: 50
+                    pagesize: 100,
+                    with_department: 1,
                 },
             }).then(({data}) => {
                 if (this.searchKey != key) {
@@ -695,25 +775,6 @@ export default {
             })
         },
 
-        onSelectAll() {
-            if (this.isSelectAll) {
-                this.selects = $A.cloneJSON(this.uncancelable)
-                return
-            }
-            this.lists.some(item => {
-                if (this.isDisabled(item.userid)) {
-                    return false
-                }
-                if (this.multipleMax && this.selects.length >= this.multipleMax) {
-                    $A.messageWarning("已超过最大选择数量")
-                    return true
-                }
-                if (!this.selects.includes(item.userid)) {
-                    this.selects.push(item.userid)
-                }
-            })
-        },
-
         onSelectItem({userid}) {
             if (this.selects.includes(userid)) {
                 if (this.isUncancelable(userid)) {
@@ -739,7 +800,7 @@ export default {
             }
         },
 
-        onSelectProject(userid_list) {
+        onSelectMultiple(userid_list) {
             switch (this.selectIcon(userid_list)) {
                 case 'ios-checkmark-circle':
                     // 去除
@@ -763,6 +824,25 @@ export default {
                     }
                     break;
             }
+        },
+
+        onSelectAll() {
+            if (this.isSelectAll) {
+                this.selects = $A.cloneJSON(this.uncancelable)
+                return
+            }
+            this.lists.some(item => {
+                if (this.isDisabled(item.userid)) {
+                    return false
+                }
+                if (this.multipleMax && this.selects.length >= this.multipleMax) {
+                    $A.messageWarning("已超过最大选择数量")
+                    return true
+                }
+                if (!this.selects.includes(item.userid)) {
+                    this.selects.push(item.userid)
+                }
+            })
         },
 
         onRemoveItem(userid) {
