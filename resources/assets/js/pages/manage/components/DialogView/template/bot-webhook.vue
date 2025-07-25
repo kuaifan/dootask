@@ -1,23 +1,31 @@
 <template>
-    <div>
-        <p><b>{{$L("设置Webhook地址")}}</b></p>
-        <p>&nbsp;</p>
-
-        <p>{{$L("机器人ID")}}：<span class="mark-color">{{ msg.data.userid }}</span></p>
-        <p>{{$L("机器人名称")}}：<span class="mark-color">{{ msg.data.nickname }}</span></p>
-        <p>{{$L("Webhook地址")}}：<span class="mark-color">{{ msg.data.webhook_url }}</span></p>
-    </div>
+    <DialogMarkdown :text="content"/>
 </template>
 
 <script>
+import DialogMarkdown from "../../DialogMarkdown.vue";
+
 export default {
+    components: {DialogMarkdown},
     props: {
         msg: Object,
     },
     data() {
         return {};
     },
-    computed: {},
+    computed: {
+        content() {
+            return [
+                "### {{设置Webhook地址}}",
+                "",
+                "| {{属性}} | {{结果}} |",
+                "| ------ | ------ |",
+                "| {{机器人ID}} | " + this.msg.data.userid + " |",
+                "| {{机器人名称}} | " + this.msg.data.nickname + " |",
+                "| {{Webhook地址}} | " + this.msg.data.webhook_url + " |",
+            ].map(item => item.replace(/\{\{([^}]+)\}\}/g, (_, v1) => this.$L(v1))).join("\n");
+        },
+    },
     methods: {},
 }
 </script>

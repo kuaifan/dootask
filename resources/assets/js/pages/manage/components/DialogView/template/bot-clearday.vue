@@ -1,24 +1,32 @@
 <template>
-    <div>
-        <p><b>{{$L("设置保留消息时间")}}</b></p>
-        <p>&nbsp;</p>
-
-        <p>{{$L("机器人ID")}}：<span class="mark-color">{{ msg.data.userid }}</span></p>
-        <p>{{$L("机器人名称")}}：<span class="mark-color">{{ msg.data.nickname }}</span></p>
-        <p>{{$L("清理周期")}}：<span class="mark-color">{{ msg.data.clear_day }}{{$L("天")}}</span></p>
-        <p>{{$L("下次清理")}}：<span class="mark-color">{{ msg.data.clear_at }}</span></p>
-    </div>
+    <DialogMarkdown :text="content"/>
 </template>
 
 <script>
+import DialogMarkdown from "../../DialogMarkdown.vue";
+
 export default {
+    components: {DialogMarkdown},
     props: {
         msg: Object,
     },
     data() {
         return {};
     },
-    computed: {},
+    computed: {
+        content() {
+            return [
+                "### {{设置保留消息时间}}",
+                "",
+                "| {{属性}} | {{结果}} |",
+                "| ------ | ------ |",
+                "| {{机器人ID}} | " + this.msg.data.userid + " |",
+                "| {{机器人名称}} | " + this.msg.data.nickname + " |",
+                "| {{清理周期}} | " + this.msg.data.clear_day + " {{天}} |",
+                "| {{下次清理}} | " + this.msg.data.clear_at + " |",
+            ].map(item => item.replace(/\{\{([^}]+)\}\}/g, (_, v1) => this.$L(v1))).join("\n");
+        },
+    },
     methods: {},
 }
 </script>

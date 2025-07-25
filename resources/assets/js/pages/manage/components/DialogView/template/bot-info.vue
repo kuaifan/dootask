@@ -1,26 +1,32 @@
 <template>
-    <div>
-        <p><b>{{$L("机器人详情")}}</b></p>
-        <p>&nbsp;</p>
-
-        <p>{{$L("机器人ID")}}：<span class="mark-color">{{ msg.data.userid }}</span></p>
-        <p>{{$L("机器人名称")}}：<span class="mark-color">{{ msg.data.nickname }}</span></p>
-        <p>{{$L("保留消息时间")}}：<span class="mark-color">{{ msg.data.clear_day }}</span></p>
-        <p>{{$L("最后一次清理时间")}}：<span class="mark-color">{{ msg.data.clear_at || '-' }}</span></p>
-        <p>{{$L("Webhook地址")}}：<span class="mark-color">{{ msg.data.webhook_url || '-' }}</span></p>
-        <p>{{$L("Webhook请求次数")}}：<span class="mark-color">{{ msg.data.webhook_num }}</span></p>
-    </div>
+    <DialogMarkdown :text="content"/>
 </template>
 
 <script>
+import DialogMarkdown from "../../DialogMarkdown.vue";
+
 export default {
+    components: {DialogMarkdown},
     props: {
         msg: Object,
     },
     data() {
         return {};
     },
-    computed: {},
+    computed: {
+        content() {
+            return [
+                "### {{机器人详情}}",
+                "",
+                "| {{属性}} | {{结果}} |",
+                "| ------ | ------ |",
+                "| {{机器人ID}} | " + this.msg.data.userid + " |",
+                "| {{机器人名称}} | " + this.msg.data.nickname + " |",
+                "| {{保留消息时间}} | " + this.msg.data.clear_day + " |",
+                "| {{最后一次清理时间}} | " + this.msg.data.clear_at + " |",
+            ].map(item => item.replace(/\{\{([^}]+)\}\}/g, (_, v1) => this.$L(v1))).join("\n");
+        },
+    },
     methods: {},
 }
 </script>

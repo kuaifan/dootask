@@ -1,22 +1,30 @@
 <template>
-    <div>
-        <p><b>{{$L("撤销机器人Token令牌")}}</b></p>
-        <p>&nbsp;</p>
-
-        <p>{{$L("机器人ID")}}：<span class="mark-color">{{ msg.data.userid }}</span></p>
-        <p>{{$L("机器人名称")}}：<span class="mark-color">{{ msg.data.nickname }}</span></p>
-    </div>
+    <DialogMarkdown :text="content"/>
 </template>
 
 <script>
+import DialogMarkdown from "../../DialogMarkdown.vue";
+
 export default {
+    components: {DialogMarkdown},
     props: {
         msg: Object,
     },
     data() {
         return {};
     },
-    computed: {},
+    computed: {
+        content() {
+            return [
+                "### {{撤销机器人Token令牌}}",
+                "",
+                "| {{属性}} | {{结果}} |",
+                "| ------ | ------ |",
+                "| {{机器人ID}} | " + this.msg.data.userid + " |",
+                "| {{机器人名称}} | " + this.msg.data.nickname + " |",
+            ].map(item => item.replace(/\{\{([^}]+)\}\}/g, (_, v1) => this.$L(v1))).join("\n");
+        },
+    },
     methods: {},
 }
 </script>
