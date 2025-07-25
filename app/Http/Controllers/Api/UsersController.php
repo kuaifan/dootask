@@ -545,12 +545,16 @@ class UsersController extends AbstractController
      * - keys.project_id                    在指定项目ID
      * - keys.no_project_id                 不在指定项目ID
      * - keys.dialog_id                     在指定对话ID
+     * - keys.departments                   部门ID（多个用逗号分隔）
      * @apiParam {Object} sorts         排序方式
      * - sorts.az                           按字母：asc|desc
      * @apiParam {Number} updated_time  在这个时间戳之后更新的
      * @apiParam {Number} state         获取在线状态
      * - 0: 不获取（默认）
      * - 1: 获取会员在线状态，返回数据多一个online值
+     * @apiParam {Number} [with_department]  是否返回部门信息
+     * - 0: 不返回部门信息（默认）
+     * - 1: 返回部门信息（返回数据多一个department_info字段），department_info={id, name, parent_id, owner_userid}
      *
      * @apiParam {Number} [take]        获取数量，10-100
      * @apiParam {Number} [page]        当前页，默认:1（赋值分页模式，take参数无效）
@@ -573,6 +577,7 @@ class UsersController extends AbstractController
         $sorts = Request::input('sorts');
         $updatedTime = intval(Request::input('updated_time'));
         $state = intval(Request::input('state', 0));
+        $withDepartment = intval(Request::input('with_department', 0));
         $keys = is_array($keys) ? $keys : [];
         $sorts = is_array($sorts) ? $sorts : [];
         //
@@ -644,7 +649,7 @@ class UsersController extends AbstractController
             $list = $builder->orderBy('userid')->take(Base::getPaginate(100, 10, 'take'))->get();
         }
         //
-        $list->transform(function (User $userInfo) use ($user, $state) {
+        $list->transform(function (User $userInfo) use ($user, $state, $withDepartment) {
             $tags = [];
             $dep = $userInfo->getDepartmentName();
             $dep = array_values(array_filter(explode(",", $dep), function($item) {
@@ -668,6 +673,9 @@ class UsersController extends AbstractController
             //
             if ($state === 1) {
                 $userInfo->online = $userInfo->getOnlineStatus();
+            }
+            if ($withDepartment) {
+                $userInfo->department_info = UserDepartment::getDepartmentsByIds($userInfo->department);
             }
             return $userInfo;
         });

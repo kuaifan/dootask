@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
+use Cache;
 
 /**
  * App\Models\UserDepartment
@@ -168,4 +169,47 @@ class UserDepartment extends AbstractModel
             }
         });
     }
+
+    /**
+     * 获取部门基本信息（缓存时间1小时）
+     * @param int|array $ids
+     * @return \Illuminate\Support\Collection|static|null
+     */
+    public static function getDepartmentsByIds($ids)
+    {
+        $ids = is_array($ids) ? $ids : [$ids];
+        $departments = collect();
+        $uncachedIds = [];
+
+        foreach ($ids as $id) {
+            $cacheKey = "department_info_{$id}";
+            $department = Cache::get($cacheKey);
+            if ($department) {
+                $departments->push($department);
+            } else {
+                $uncachedIds[] = $id;
+            }
+        }
+
+        if (!empty($uncachedIds)) {
+            $dbDepartments = self::select(['id', 'name', 'parent_id', 'owner_userid'])->whereIn('id', $uncachedIds)->get();
+            foreach ($dbDepartments as $department) {
+                $cacheKey = "department_info_{$department->id}";
+                Cache::put($cacheKey, $department, 60 * 60); // 1小时
+                $departments->push($department);
+            }
+        }
+
+        // 保持返回顺序与传入ids一致
+        $departments = $departments->keyBy('id');
+        $result = collect();
+        foreach ($ids as $id) {
+            if ($departments->has($id)) {
+                $result->push($departments->get($id));
+            }
+        }
+
+        return is_array($ids) ? $result : $result->first();
+    }
+
 }
