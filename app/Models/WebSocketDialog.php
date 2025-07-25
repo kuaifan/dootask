@@ -868,7 +868,6 @@ class WebSocketDialog extends AbstractModel
             if ($user->isAiBot() || User::find($receiver)?->isAiBot()) {
                 $session = WebSocketDialogSession::create([
                     'dialog_id' => $dialog->id,
-                    'title' => '',
                 ]);
                 $session->save();
                 $dialog->session_id = $session->id;

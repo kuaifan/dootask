@@ -3304,7 +3304,6 @@ class DialogController extends AbstractController
         //
         $session = WebSocketDialogSession::create([
             'dialog_id' => $dialog->id,
-            'title' => '',
         ]);
         $session->save();
         $dialog->session_id = $session->id;

@@ -656,7 +656,7 @@ class WebSocketDialogMsg extends AbstractModel
      * @param bool $preserveHtml    保留html格式
      * @return string|string[]|null
      */
-    private static function previewTextMsg($msgData, $preserveHtml = false)
+    public static function previewTextMsg($msgData, $preserveHtml = false)
     {
         $text = $msgData['text'] ?? '';
         if (!$text) return '';

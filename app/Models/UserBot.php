@@ -475,7 +475,6 @@ class UserBot extends AbstractModel
             if ($sessionSupported) {
                 $dialogSession = WebSocketDialogSession::create([
                     'dialog_id' => $dialog->id,
-                    'title' => 'Default',
                 ]);
                 $dialogSession->save();
                 $dialog->session_id = $dialogSession->id;

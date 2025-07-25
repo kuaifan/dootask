@@ -66,15 +66,14 @@ class WebSocketDialogSession extends AbstractModel
         if ($dialogMsg->type != 'text') {
             return;
         }
+        if ($dialogMsg->msg['text'] === '...') {
+            return;
+        }
         $cacheKey = 'dialog_session_title_' . $sessionId;
         if (Cache::has($cacheKey)) {
             return;
         }
-        $originalTitle = $dialogMsg->key ?: $dialogMsg->msg['text'] ?: 'Untitled';
-        $title = Base::cutStr($originalTitle, 100);
-        if ($title == '...') {
-            return;
-        }
+        $title = $dialogMsg->key ?: WebSocketDialogMsg::previewTextMsg($dialogMsg->msg) ?: 'Untitled';
         $session = self::whereId($sessionId)->first();
         if (!$session) {
             return;
@@ -82,6 +81,6 @@ class WebSocketDialogSession extends AbstractModel
         $session->title = $title;
         $session->save();
         Cache::forever($cacheKey, true);
-        Task::deliver(new UpdateSessionTitleViaAiTask($session->id, $originalTitle));
+        Task::deliver(new UpdateSessionTitleViaAiTask($session->id, $dialogMsg->msg['text']));
     }
 }
