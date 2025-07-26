@@ -2,6 +2,7 @@
 
 namespace App\Module;
 
+use App\Models\Setting;
 use Cache;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -24,25 +25,25 @@ class Extranet
             return Base::retError("语音文件不存在");
         }
         $systemSetting = Base::setting('system');
-        $aibotSetting = Base::setting('aibotSetting');
-        if ($systemSetting['voice2text'] !== 'open' || empty($aibotSetting['openai_key'])) {
+        $aiSetting = Base::setting('aiSetting');
+        if ($systemSetting['voice2text'] !== 'open' || !Setting::AIOpen()) {
             return Base::retError("语音转文字功能未开启");
         }
         $extra = [
             'Content-Type' => 'multipart/form-data',
-            'Authorization' => 'Bearer ' . $aibotSetting['openai_key'],
+            'Authorization' => 'Bearer ' . $aiSetting['ai_api_key'],
         ];
-        if ($aibotSetting['openai_agency']) {
-            $extra['CURLOPT_PROXY'] = $aibotSetting['openai_agency'];
-            $extra['CURLOPT_PROXYTYPE'] = str_contains($aibotSetting['openai_agency'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
+        if ($aiSetting['ai_proxy']) {
+            $extra['CURLOPT_PROXY'] = $aiSetting['ai_proxy'];
+            $extra['CURLOPT_PROXYTYPE'] = str_contains($aiSetting['ai_proxy'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
         }
         $post = array_merge($extParams, [
             'file' => new \CURLFile($filePath),
             'model' => 'whisper-1',
         ]);
         $cacheKey = "openAItranscriptions::" . md5($filePath . '_' . Base::array2json($extra) . '_' . Base::array2json($extParams));
-        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function() use ($extra, $post) {
-            $res = Ihttp::ihttp_request('https://api.openai.com/v1/audio/transcriptions', $post, $extra, 15);
+        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function() use ($aiSetting, $extra, $post) {
+            $res = Ihttp::ihttp_request(($aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1') . '/audio/transcriptions', $post, $extra, 15);
             if (Base::isError($res)) {
                 return Base::retError("语音转文字失败", $res);
             }
@@ -67,17 +68,17 @@ class Extranet
     public static function openAItranslations($text, $targetLanguage)
     {
         $systemSetting = Base::setting('system');
-        $aibotSetting = Base::setting('aibotSetting');
-        if ($systemSetting['translation'] !== 'open' || empty($aibotSetting['openai_key'])) {
+        $aiSetting = Base::setting('aiSetting');
+        if ($systemSetting['translation'] !== 'open' || !Setting::AIOpen()) {
             return Base::retError("翻译功能未开启");
         }
         $extra = [
             'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . $aibotSetting['openai_key'],
+            'Authorization' => 'Bearer ' . $aiSetting['ai_api_key'],
         ];
-        if ($aibotSetting['openai_agency']) {
-            $extra['CURLOPT_PROXY'] = $aibotSetting['openai_agency'];
-            $extra['CURLOPT_PROXYTYPE'] = str_contains($aibotSetting['openai_agency'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
+        if ($aiSetting['ai_proxy']) {
+            $extra['CURLOPT_PROXY'] = $aiSetting['ai_proxy'];
+            $extra['CURLOPT_PROXYTYPE'] = str_contains($aiSetting['ai_proxy'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
         }
         $post = json_encode([
             "model" => "gpt-4o-mini",
@@ -101,8 +102,8 @@ class Extranet
             ]
         ]);
         $cacheKey = "openAItranslations::" . md5(Base::array2json($extra) . '_' . Base::array2json($post));
-        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function() use ($extra, $post) {
-            $res = Ihttp::ihttp_request('https://api.openai.com/v1/chat/completions', $post, $extra, 15);
+        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function() use ($aiSetting, $extra, $post) {
+            $res = Ihttp::ihttp_request(($aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1') . '/chat/completions', $post, $extra, 15);
             if (Base::isError($res)) {
                 return Base::retError("翻译失败", $res);
             }
@@ -131,19 +132,19 @@ class Extranet
      */
     public static function openAIGenerateTitle($text)
     {
-        $aibotSetting = Base::setting('aibotSetting');
-        if (empty($aibotSetting['openai_key'])) {
+        $aiSetting = Base::setting('aiSetting');
+        if (!Setting::AIOpen()) {
             return Base::retError("AI接口未配置");
         }
         $extra = [
             'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . $aibotSetting['openai_key'],
+            'Authorization' => 'Bearer ' . $aiSetting['ai_api_key'],
         ];
-        if ($aibotSetting['openai_agency']) {
-            $extra['CURLOPT_PROXY'] = $aibotSetting['openai_agency'];
-            $extra['CURLOPT_PROXYTYPE'] = str_contains($aibotSetting['openai_agency'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
+        if ($aiSetting['ai_proxy']) {
+            $extra['CURLOPT_PROXY'] = $aiSetting['ai_proxy'];
+            $extra['CURLOPT_PROXYTYPE'] = str_contains($aiSetting['ai_proxy'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
         }
-        $res = Ihttp::ihttp_request('https://api.openai.com/v1/chat/completions', json_encode([
+        $res = Ihttp::ihttp_request(($aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1') . '/chat/completions', json_encode([
             "model" => "gpt-4o-mini",
             "messages" => [
                 [

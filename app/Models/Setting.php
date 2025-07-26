@@ -48,6 +48,7 @@ class Setting extends AbstractModel
         }
         $value = Base::json2array($value);
         switch ($this->name) {
+            // 系统设置
             case 'system':
                 $value['system_alias'] = $value['system_alias'] ?: env('APP_NAME');
                 $value['image_compress'] = $value['image_compress'] ?: 'open';
@@ -58,11 +59,21 @@ class Setting extends AbstractModel
                 }
                 break;
 
+            // 文件设置
             case 'fileSetting':
                 $value['permission_pack_type'] = $value['permission_pack_type'] ?: 'all';
                 $value['permission_pack_userids'] = is_array($value['permission_pack_userids']) ? $value['permission_pack_userids'] : [];
                 break;
 
+            // AI 助手设置
+            case 'aiSetting':
+                $value['ai_provider'] = $value['ai_provider'] ?: 'openai';
+                $value['ai_api_key'] = $value['ai_api_key'] ?: '';
+                $value['ai_api_url'] = $value['ai_api_url'] ?: '';
+                $value['ai_proxy'] = $value['ai_proxy'] ?: '';
+                break;
+
+            // AI 机器人设置
             case 'aibotSetting':
                 if ($value['claude_token'] && empty($value['claude_key'])) {
                     $value['claude_key'] = $value['claude_token'];
@@ -81,12 +92,12 @@ class Setting extends AbstractModel
                                     $content = array_filter($content);
                                 }
                                 if (empty($content)) {
-                                    $content = self::AIDefaultModels($aiName);
+                                    $content = self::AIBotDefaultModels($aiName);
                                 }
                                 $content = implode("\n", $content);
                                 break;
                             case 'model':
-                                $models = Setting::AIModels2Array($array[$key . 's'], true);
+                                $models = Setting::AIBotModels2Array($array[$key . 's'], true);
                                 $content = in_array($content, $models) ? $content : ($models[0] ?? '');
                                 break;
                             case 'temperature':
@@ -105,22 +116,20 @@ class Setting extends AbstractModel
     }
 
     /**
-     * 是否开启AI
-     * @param $ai
+     * 是否开启 AI 助理
      * @return bool
      */
-    public static function AIOpen($ai = 'openai')
+    public static function AIOpen()
     {
-        $array = Base::setting('aibotSetting');
-        return !!$array[$ai . '_key'];
+        return !!Base::settingFind('aiSetting', 'ai_api_key');
     }
 
     /**
-     * AI默认模型
+     * AI 机器人默认模型
      * @param string $ai
      * @return array
      */
-    public static function AIDefaultModels($ai = 'openai')
+    public static function AIBotDefaultModels($ai = 'openai')
     {
         return match ($ai) {
             'openai' => [
@@ -205,12 +214,12 @@ class Setting extends AbstractModel
     }
 
     /**
-     * AI模型转数组
+     * AI 机器人模型转数组
      * @param $models
      * @param bool $retValue
      * @return array
      */
-    public static function AIModels2Array($models, $retValue = false)
+    public static function AIBotModels2Array($models, $retValue = false)
     {
         $list = is_array($models) ? $models : explode("\n", $models);
         $array = [];

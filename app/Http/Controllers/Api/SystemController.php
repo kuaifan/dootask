@@ -107,10 +107,10 @@ class SystemController extends AbstractController
                 }
             }
             if ($all['voice2text'] == 'open' && !Setting::AIOpen()) {
-                return Base::retError('开启语音转文字功能需要在应用中开启 ChatGPT AI 机器人。');
+                return Base::retError('开启语音转文字功能需要先设置 AI 助理。');
             }
             if ($all['translation'] == 'open' && !Setting::AIOpen()) {
-                return Base::retError('开启翻译功能需要在应用中开启 ChatGPT AI 机器人。');
+                return Base::retError('开启翻译功能需要先设置 AI 助理。');
             }
             if ($all['system_alias'] == env('APP_NAME')) {
                 $all['system_alias'] = '';
@@ -286,6 +286,48 @@ class SystemController extends AbstractController
     }
 
     /**
+     * @api {get} api/system/setting/ai          04. AI助手设置（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName setting__ai
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存设置（参数：['ai_provider', 'ai_api_key', 'ai_api_url', 'ai_proxy']）
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function setting__ai()
+    {
+        User::auth('admin');
+        //
+        $type = trim(Request::input('type'));
+        if ($type == 'save') {
+            if (env("SYSTEM_SETTING") == 'disabled') {
+                return Base::retError('当前环境禁止修改');
+            }
+            $all = Base::newTrim(Request::input());
+            foreach ($all as $key => $value) {
+                if (!in_array($key, [
+                    'ai_provider',
+                    'ai_api_key',
+                    'ai_api_url',
+                    'ai_proxy',
+                ])) {
+                    unset($all[$key]);
+                }
+            }
+            $setting = Base::setting('aiSetting', Base::newTrim($all));
+        } else {
+            $setting = Base::setting('aiSetting');
+        }
+        //
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
+
+    /**
      * @api {get} api/system/setting/aibot          04. 获取会议设置、保存AI机器人设置（限管理员）
      *
      * @apiVersion 1.0.0
@@ -393,7 +435,7 @@ class SystemController extends AbstractController
             }
             return Extranet::ollamaModels($baseUrl, $key, $agency);
         }
-        $models = Setting::AIDefaultModels($type);
+        $models = Setting::AIBotDefaultModels($type);
         if (empty($models)) {
             return Base::retError('未找到默认模型');
         }

@@ -194,7 +194,7 @@ class UserBot extends AbstractModel
                     if ($match[1] === "ai-") {
                         $aibotSetting = Base::setting('aibotSetting');
                         $aibotModel = $aibotSetting[$match[1] . '_model'];
-                        $aibotModels = Setting::AIModels2Array($aibotSetting[$match[1] . '_models']);
+                        $aibotModels = Setting::AIBotModels2Array($aibotSetting[$match[1] . '_models']);
                         if ($aibotModels) {
                             $menus = array_merge(
                                 [
