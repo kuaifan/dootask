@@ -105,7 +105,7 @@ if (count($needs) > 0) {
         $openAi = new OpenAi(OPEN_AI_KEY);
         $openAi->setProxy(OPEN_AI_PROXY);
         $result = $openAi->chat([
-            'model' => 'gpt-4o',
+            'model' => 'gpt-4.1',
             'messages' => [
                 [
                     "role" => "system",

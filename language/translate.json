@@ -17748,18 +17748,6 @@
         "ru": "Длительное нажатие на голосовые сообщения для преобразования их в текст."
     },
     {
-        "key": "需要在应用中开启 ChatGPT AI 机器人",
-        "zh": "",
-        "zh-CHT": "需要在應用中開啟 ChatGPT AI 機器人",
-        "en": "Need to enable ChatGPT AI bot in the application",
-        "ko": "애플리케이션에서 ChatGPT AI 봇을 활성화해야 합니다",
-        "ja": "アプリケーションでChatGPT AIボットを有効にする必要があります",
-        "de": "ChatGPT AI-Bot muss in der Anwendung aktiviert werden",
-        "fr": "Besoin d'activer le bot AI ChatGPT dans l'application",
-        "id": "Perlu mengaktifkan bot AI ChatGPT di aplikasi",
-        "ru": "Необходимо включить бота ChatGPT AI в приложении"
-    },
-    {
         "key": "关闭语音转文字功能。",
         "zh": "",
         "zh-CHT": "關閉語音轉文字功能。",
@@ -20086,18 +20074,6 @@
         "fr": "Échec de l'enregistrement",
         "id": "Pendaftaran gagal",
         "ru": "Регистрация не удалась"
-    },
-    {
-        "key": "开启语音转文字功能需要在应用中开启 ChatGPT AI 机器人。",
-        "zh": "",
-        "zh-CHT": "開啟語音轉文字功能需要在應用中開啟 ChatGPT AI 機器人。",
-        "en": "To enable the voice-to-text feature, you need to enable the ChatGPT AI bot in the app.",
-        "ko": "음성을 텍스트로 변환하는 기능을 사용하려면 앱에서 ChatGPT AI 봇을 활성화해야 합니다.",
-        "ja": "音声からテキストへの変換機能を有効にするには、アプリでChatGPT AIボットを有効にする必要があります。",
-        "de": "Um die Sprach-zu-Text-Funktion zu aktivieren, müssen Sie den ChatGPT AI-Bot in der App aktivieren.",
-        "fr": "Pour activer la fonction de conversion de la voix en texte, vous devez activer le bot ChatGPT AI dans l'application.",
-        "id": "Untuk mengaktifkan fitur suara ke teks, Anda perlu mengaktifkan bot ChatGPT AI di aplikasi.",
-        "ru": "Чтобы включить функцию преобразования голоса в текст, необходимо включить бота ChatGPT AI в приложении."
     },
     {
         "key": "语音转文字功能未开启",
@@ -22752,42 +22728,6 @@
         "ru": "Новый аккаунт"
     },
     {
-        "key": "IT资讯",
-        "zh": "",
-        "zh-CHT": "IT資訊",
-        "en": "IT news",
-        "ko": "IT 뉴스",
-        "ja": "ITニュース",
-        "de": "IT-Nachrichten",
-        "fr": "Actualités IT",
-        "id": "Berita IT",
-        "ru": "IT новости"
-    },
-    {
-        "key": "36氪",
-        "zh": "",
-        "zh-CHT": "36氪",
-        "en": "36Kr",
-        "ko": "36Kr",
-        "ja": "36Kr",
-        "de": "36Kr",
-        "fr": "36Kr",
-        "id": "36Kr",
-        "ru": "36Kr"
-    },
-    {
-        "key": "60s读世界",
-        "zh": "",
-        "zh-CHT": "60s讀世界",
-        "en": "60s Read the World",
-        "ko": "60초 세계 읽기",
-        "ja": "60秒で世界を読む",
-        "de": "60s Die Welt lesen",
-        "fr": "60s Lire le monde",
-        "id": "60 detik Membaca Dunia",
-        "ru": "60 секунд чтения мира"
-    },
-    {
         "key": "使用说明",
         "zh": "",
         "zh-CHT": "使用說明",
@@ -22810,30 +22750,6 @@
         "fr": "Déclaration de confidentialité",
         "id": "Pernyataan Privasi",
         "ru": "Заявление о конфиденциальности"
-    },
-    {
-        "key": "开心笑话",
-        "zh": "",
-        "zh-CHT": "開心笑話",
-        "en": "Funny Jokes",
-        "ko": "재미있는 농담",
-        "ja": "面白いジョーク",
-        "de": "Lustige Witze",
-        "fr": "Blagues drôles",
-        "id": "Lelucon lucu",
-        "ru": "Смешные шутки"
-    },
-    {
-        "key": "心灵鸡汤",
-        "zh": "",
-        "zh-CHT": "心靈雞湯",
-        "en": "Inspirational Quotes",
-        "ko": "영감을 주는 인용문",
-        "ja": "インスピレーションを与える引用",
-        "de": "Inspirierende Zitate",
-        "fr": "Citations inspirantes",
-        "id": "Kutipan inspirasional",
-        "ru": "Вдохновляющие цитаты"
     },
     {
         "key": "请填写基本配置",
@@ -24322,18 +24238,6 @@
         "fr": "Le contenu du message est vide",
         "id": "Konten pesan kosong",
         "ru": "Содержание сообщения пусто"
-    },
-    {
-        "key": "开启翻译功能需要在应用中开启 ChatGPT AI 机器人。",
-        "zh": "",
-        "zh-CHT": "開啟翻譯功能需要在應用中開啟 ChatGPT AI 機器人。",
-        "en": "To enable the translation feature, you need to activate the ChatGPT AI bot in the application.",
-        "ko": "번역 기능을 활성화하려면 애플리케이션에서 ChatGPT AI 봇을 활성화해야 합니다.",
-        "ja": "翻訳機能を有効にするには、アプリケーションでChatGPT AIボットを有効にする必要があります。",
-        "de": "Um die Übersetzungsfunktion zu aktivieren, müssen Sie den ChatGPT AI-Bot in der Anwendung aktivieren.",
-        "fr": "Pour activer la fonction de traduction, vous devez activer le bot AI ChatGPT dans l'application.",
-        "id": "Untuk mengaktifkan fitur terjemahan, Anda perlu mengaktifkan bot AI ChatGPT di aplikasi.",
-        "ru": "Чтобы включить функцию перевода, вам нужно активировать бота ChatGPT AI в приложении."
     },
     {
         "key": "翻译功能未开启",
@@ -30550,5 +30454,209 @@
         "fr": "Membres du département",
         "id": "Anggota Departemen",
         "ru": "Члены отдела"
+    },
+    {
+        "key": "需要先设置 AI 助理",
+        "zh": "",
+        "zh-CHT": "需要先設定 AI 助理",
+        "en": "You need to set up an AI assistant first",
+        "ko": "AI 도우미를 먼저 설정해야 합니다",
+        "ja": "AIアシスタントを先に設定する必要があります",
+        "de": "Sie müssen zuerst einen KI-Assistenten einrichten",
+        "fr": "Vous devez d'abord configurer l'assistant IA",
+        "id": "Anda harus mengatur asisten AI terlebih dahulu",
+        "ru": "Сначала нужно настроить AI-ассистента"
+    },
+    {
+        "key": "AI 助手",
+        "zh": "",
+        "zh-CHT": "AI 助手",
+        "en": "AI Assistant",
+        "ko": "AI 도우미",
+        "ja": "AIアシスタント",
+        "de": "KI-Assistent",
+        "fr": "Assistant IA",
+        "id": "Asisten AI",
+        "ru": "AI-ассистент"
+    },
+    {
+        "key": "此功能并非聊天机器人，而是用于辅助工作。比如：语音转文字、聊天翻译等。",
+        "zh": "",
+        "zh-CHT": "此功能並非聊天機器人，而是用於輔助工作。例如：語音轉文字、聊天翻譯等。",
+        "en": "This feature is not a chatbot, but rather an assistant to support work, such as speech-to-text conversion and chat translation.",
+        "ko": "이 기능은 챗봇이 아니라 업무를 보조하기 위한 것입니다. 예: 음성 텍스트 변환, 채팅 번역 등.",
+        "ja": "この機能はチャットボットではなく、作業を支援するためのものです。例えば、音声をテキストに変換したり、チャット翻訳など。",
+        "de": "Diese Funktion ist kein Chatbot, sondern dient zur Unterstützung der Arbeit, z.B. Sprach-zu-Text oder Chat-Übersetzung.",
+        "fr": "Cette fonctionnalité n'est pas un chatbot, mais un assistant pour vous aider dans votre travail, par exemple : conversion de la parole en texte, traduction de discussions, etc.",
+        "id": "Fitur ini bukan chatbot, melainkan asisten untuk membantu pekerjaan seperti konversi suara ke teks, terjemahan chat, dan lain-lain.",
+        "ru": "Эта функция — не чат-бот, а помощник для поддержки работы, например, преобразование речи в текст, перевод чатов и т.д."
+    },
+    {
+        "key": "如果需要聊天机器人，请在「应用」中使用「AI 机器人」插件。",
+        "zh": "",
+        "zh-CHT": "如果需要聊天機器人，請在「應用」中使用「AI 機器人」插件。",
+        "en": "If you need a chatbot, please use the 'AI Robot' plugin in 'Applications'.",
+        "ko": "챗봇이 필요하다면 '응용 프로그램'에서 'AI 로봇' 플러그인을 사용하세요.",
+        "ja": "チャットボットが必要な場合は、「アプリ」の「AIロボット」プラグインを使用してください。",
+        "de": "Wenn Sie einen Chatbot benötigen, verwenden Sie bitte das Plugin „KI-Roboter“ unter „Anwendungen“.",
+        "fr": "Si vous avez besoin d'un chatbot, veuillez utiliser le plugin 'Robot IA' dans 'Applications'.",
+        "id": "Jika Anda membutuhkan chatbot, silakan gunakan plugin 'AI Robot' di 'Aplikasi'.",
+        "ru": "Если нужен чат-бот, воспользуйтесь плагином «AI-робот» в разделе «Приложения»."
+    },
+    {
+        "key": "AI 提供商",
+        "zh": "",
+        "zh-CHT": "AI 提供商",
+        "en": "AI Provider",
+        "ko": "AI 제공업체",
+        "ja": "AIプロバイダー",
+        "de": "KI-Anbieter",
+        "fr": "Fournisseur d'IA",
+        "id": "Penyedia AI",
+        "ru": "Поставщик AI"
+    },
+    {
+        "key": "支持：OpenAI",
+        "zh": "",
+        "zh-CHT": "支持：OpenAI",
+        "en": "Supported: OpenAI",
+        "ko": "지원: OpenAI",
+        "ja": "サポート：OpenAI",
+        "de": "Unterstützt: OpenAI",
+        "fr": "Pris en charge : OpenAI",
+        "id": "Didukung: OpenAI",
+        "ru": "Поддерживается: OpenAI"
+    },
+    {
+        "key": "API 密钥",
+        "zh": "",
+        "zh-CHT": "API 密鑰",
+        "en": "API Key",
+        "ko": "API 키",
+        "ja": "APIキー",
+        "de": "API-Schlüssel",
+        "fr": "Clé API",
+        "id": "Kunci API",
+        "ru": "API-ключ"
+    },
+    {
+        "key": "请输入 API 密钥",
+        "zh": "",
+        "zh-CHT": "請輸入 API 密鑰",
+        "en": "Please enter the API key",
+        "ko": "API 키를 입력하세요",
+        "ja": "APIキーを入力してください",
+        "de": "Bitte geben Sie den API-Schlüssel ein",
+        "fr": "Veuillez saisir la clé API",
+        "id": "Silakan masukkan kunci API",
+        "ru": "Пожалуйста, введите API-ключ"
+    },
+    {
+        "key": "请输入 API 密钥，留空表示不启用 AI 助手",
+        "zh": "",
+        "zh-CHT": "請輸入 API 密鑰，留空表示不啟用 AI 助手",
+        "en": "Please enter the API key; leave it blank to disable the AI assistant",
+        "ko": "API 키를 입력하세요. 비워두면 AI 도우미가 비활성화됩니다.",
+        "ja": "APIキーを入力してください。空欄の場合はAIアシスタントが無効になります。",
+        "de": "Bitte geben Sie den API-Schlüssel ein; lassen Sie das Feld leer, um den KI-Assistenten zu deaktivieren.",
+        "fr": "Veuillez saisir la clé API ; laissez vide pour désactiver l’assistant IA.",
+        "id": "Silakan masukkan kunci API. Biarkan kosong untuk menonaktifkan asisten AI.",
+        "ru": "Пожалуйста, введите API-ключ. Оставьте поле пустым, чтобы отключить AI-ассистента."
+    },
+    {
+        "key": "API URL",
+        "zh": "",
+        "zh-CHT": "API URL",
+        "en": "API URL",
+        "ko": "API URL",
+        "ja": "API URL",
+        "de": "API-URL",
+        "fr": "URL de l’API",
+        "id": "URL API",
+        "ru": "API URL"
+    },
+    {
+        "key": "请输入 API URL",
+        "zh": "",
+        "zh-CHT": "請輸入 API URL",
+        "en": "Please enter API URL",
+        "ko": "API URL을 입력하세요",
+        "ja": "API URLを入力してください",
+        "de": "Bitte API-URL eingeben",
+        "fr": "Veuillez saisir l'URL de l'API",
+        "id": "Silakan masukkan URL API",
+        "ru": "Пожалуйста, введите API URL"
+    },
+    {
+        "key": "选填，请输入 API URL",
+        "zh": "",
+        "zh-CHT": "選填，請輸入 API URL",
+        "en": "Optional, please enter API URL",
+        "ko": "선택 사항, API URL을 입력하세요",
+        "ja": "任意、API URLを入力してください",
+        "de": "Optional, bitte API-URL eingeben",
+        "fr": "Facultatif, veuillez saisir l'URL de l'API",
+        "id": "Opsional, silakan masukkan URL API",
+        "ru": "Необязательно, введите API URL"
+    },
+    {
+        "key": "代理",
+        "zh": "",
+        "zh-CHT": "代理",
+        "en": "Proxy",
+        "ko": "프록시",
+        "ja": "プロキシ",
+        "de": "Proxy",
+        "fr": "Proxy",
+        "id": "Proxy",
+        "ru": "Прокси"
+    },
+    {
+        "key": "请输入代理",
+        "zh": "",
+        "zh-CHT": "請輸入代理",
+        "en": "Please enter proxy",
+        "ko": "프록시를 입력하세요",
+        "ja": "プロキシを入力してください",
+        "de": "Bitte Proxy eingeben",
+        "fr": "Veuillez saisir le proxy",
+        "id": "Silakan masukkan proxy",
+        "ru": "Пожалуйста, введите прокси"
+    },
+    {
+        "key": "选填，支持 http、https、socks5 协议",
+        "zh": "",
+        "zh-CHT": "選填，支援 http、https、socks5 協議",
+        "en": "Optional, supports http, https, and socks5 protocols",
+        "ko": "선택 사항, http, https, socks5 프로토콜 지원",
+        "ja": "任意、http、https、socks5プロトコルに対応",
+        "de": "Optional, unterstützt http-, https- und socks5-Protokolle",
+        "fr": "Facultatif, prend en charge les protocoles http, https, socks5",
+        "id": "Opsional, mendukung protokol http, https, socks5",
+        "ru": "Необязательно, поддерживаются протоколы http, https, socks5"
+    },
+    {
+        "key": "开启语音转文字功能需要先设置 AI 助理。",
+        "zh": "",
+        "zh-CHT": "開啟語音轉文字功能需先設置 AI 助理。",
+        "en": "To enable speech-to-text, please set up the AI assistant first.",
+        "ko": "음성 인식 기능을 사용하려면 AI 어시스턴트를 먼저 설정해야 합니다.",
+        "ja": "音声から文字への変換機能を有効にするには、先にAIアシスタントを設定してください。",
+        "de": "Um die Sprach-zu-Text-Funktion zu aktivieren, richten Sie bitte zuerst den KI-Assistenten ein.",
+        "fr": "Pour activer la fonction de conversion vocale en texte, veuillez d'abord configurer l'assistant IA.",
+        "id": "Untuk mengaktifkan fitur konversi suara ke teks, silakan atur asisten AI terlebih dahulu.",
+        "ru": "Чтобы включить функцию преобразования речи в текст, сначала настройте AI-ассистента."
+    },
+    {
+        "key": "开启翻译功能需要先设置 AI 助理。",
+        "zh": "",
+        "zh-CHT": "開啟翻譯功能需先設置 AI 助理。",
+        "en": "To enable translation, please set up the AI assistant first.",
+        "ko": "번역 기능을 사용하려면 AI 어시스턴트를 먼저 설정해야 합니다.",
+        "ja": "翻訳機能を有効にするには、先にAIアシスタントを設定してください。",
+        "de": "Um die Übersetzungsfunktion zu aktivieren, richten Sie bitte zuerst den KI-Assistenten ein.",
+        "fr": "Pour activer la fonction de traduction, veuillez d'abord configurer l'assistant IA.",
+        "id": "Untuk mengaktifkan fitur terjemahan, silakan atur asisten AI terlebih dahulu.",
+        "ru": "Чтобы включить функцию перевода, сначала настройте AI-ассистента."
     }
 ]
