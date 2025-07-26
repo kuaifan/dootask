@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\UserDevice;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
+use App\Module\AI;
 use Request;
 use Session;
 use Response;
@@ -15,7 +16,6 @@ use App\Models\User;
 use App\Module\Base;
 use App\Module\Timer;
 use App\Models\Setting;
-use App\Module\Extranet;
 use LdapRecord\Container;
 use App\Module\BillExport;
 use Guanguans\Notify\Factory;
@@ -433,7 +433,7 @@ class SystemController extends AbstractController
             if (empty($baseUrl)) {
                 return Base::retError('请先填写 Base URL');
             }
-            return Extranet::ollamaModels($baseUrl, $key, $agency);
+            return AI::ollamaModels($baseUrl, $key, $agency);
         }
         $models = Setting::AIBotDefaultModels($type);
         if (empty($models)) {

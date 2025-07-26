@@ -2,8 +2,8 @@
 
 namespace App\Tasks;
 
+use App\Module\AI;
 use App\Module\Base;
-use App\Module\Extranet;
 use Cache;
 use Carbon\Carbon;
 
@@ -33,7 +33,7 @@ class JokeSoupTask extends AbstractTask
         Cache::put(self::keyName("YmdH"), date("YmdH"), Carbon::now()->addDay());
 
         // 开始生成笑话和心灵鸡汤
-        $result = Extranet::openAIGenJokeAndSoup();
+        $result = AI::generateJokeAndSoup();
         if (Base::isError($result)) {
             Cache::forget(self::keyName("YmdH"));
             return;

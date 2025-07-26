@@ -7,6 +7,7 @@ use Request;
 use Redirect;
 use Carbon\Carbon;
 use App\Tasks\PushTask;
+use App\Module\AI;
 use App\Module\Doo;
 use App\Models\File;
 use App\Models\User;
@@ -1355,7 +1356,7 @@ class DialogController extends AbstractController
                 'prompt' => "将此语音识别为“" . Doo::getLanguages($language) . "”。",
             ];
         }
-        $result = Extranet::openAItranscriptions($recordData['file'], $extParams);
+        $result = AI::transcriptions($recordData['file'], $extParams);
         if (Base::isError($result)) {
             return $result;
         }
@@ -1367,7 +1368,7 @@ class DialogController extends AbstractController
             return Base::retSuccess('success', $result['data']['text']);
         }
         // 需要翻译
-        $result = Extranet::openAItranslations($result['data']['text'], Doo::getLanguages($translate));
+        $result = AI::translations($result['data']['text'], Doo::getLanguages($translate));
         if (Base::isError($result)) {
             return $result;
         }
@@ -1940,7 +1941,7 @@ class DialogController extends AbstractController
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        $result = Extranet::openAItranscriptions(public_path($msgData['path']));
+        $result = AI::transcriptions(public_path($msgData['path']));
         if (Base::isError($result)) {
             return $result;
         }
@@ -2009,7 +2010,7 @@ class DialogController extends AbstractController
         if ($msg->type === 'text' && $msgData['type'] === 'md') {
             $msgData['text'] = preg_replace('/:::\s*reasoning.*?:::/s', '', $msgData['text']);
         }
-        $result = Extranet::openAItranslations($msgData['text'], $targetLanguage);
+        $result = AI::translations($msgData['text'], $targetLanguage, $force);
         if (Base::isError($result)) {
             return $result;
         }
