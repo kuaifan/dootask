@@ -5,8 +5,6 @@ namespace App\Module;
 use App\Models\Setting;
 use Cache;
 use Carbon\Carbon;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Config;
 
 /**
  * 外网资源请求
@@ -29,6 +27,7 @@ class Extranet
         if ($systemSetting['voice2text'] !== 'open' || !Setting::AIOpen()) {
             return Base::retError("语音转文字功能未开启");
         }
+
         $extra = [
             'Content-Type' => 'multipart/form-data',
             'Authorization' => 'Bearer ' . $aiSetting['ai_api_key'],
@@ -37,12 +36,14 @@ class Extranet
             $extra['CURLOPT_PROXY'] = $aiSetting['ai_proxy'];
             $extra['CURLOPT_PROXYTYPE'] = str_contains($aiSetting['ai_proxy'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
         }
-        $post = array_merge($extParams, [
-            'file' => new \CURLFile($filePath),
-            'model' => 'whisper-1',
-        ]);
+
         $cacheKey = "openAItranscriptions::" . md5($filePath . '_' . Base::array2json($extra) . '_' . Base::array2json($extParams));
-        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function() use ($aiSetting, $extra, $post) {
+        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function () use ($aiSetting, $extra, $extParams, $filePath) {
+            $post = array_merge($extParams, [
+                'file' => new \CURLFile($filePath),
+                'model' => 'whisper-1',
+            ]);
+
             $res = Ihttp::ihttp_request(($aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1') . '/audio/transcriptions', $post, $extra, 15);
             if (Base::isError($res)) {
                 return Base::retError("语音转文字失败", $res);
@@ -51,7 +52,11 @@ class Extranet
             if (empty($resData['text'])) {
                 return Base::retError("语音转文字失败", $resData);
             }
-            return Base::retSuccess("success", $resData['text']);
+
+            return Base::retSuccess("success", [
+                'file' => $filePath,
+                'text' => $resData['text'],
+            ]);
         });
         if (Base::isError($result)) {
             Cache::forget($cacheKey);
@@ -61,8 +66,8 @@ class Extranet
 
     /**
      * 通过 openAI 翻译
-     * @param $text
-     * @param $targetLanguage
+     * @param string $text 需要翻译的文本内容
+     * @param string $targetLanguage 目标语言（如：English, 简体中文, 日本語等）
      * @return array
      */
     public static function openAItranslations($text, $targetLanguage)
@@ -72,6 +77,7 @@ class Extranet
         if ($systemSetting['translation'] !== 'open' || !Setting::AIOpen()) {
             return Base::retError("翻译功能未开启");
         }
+
         $extra = [
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . $aiSetting['ai_api_key'],
@@ -80,45 +86,66 @@ class Extranet
             $extra['CURLOPT_PROXY'] = $aiSetting['ai_proxy'];
             $extra['CURLOPT_PROXYTYPE'] = str_contains($aiSetting['ai_proxy'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
         }
-        $post = json_encode([
-            "model" => "gpt-4o-mini",
-            "messages" => [
-                [
-                    "role" => "system",
-                    "content" => <<<EOF
-                        你是一名专业翻译人员，请将 <translation_original_text> 标签内的内容翻译为{$targetLanguage}。
 
-                        翻译要求：
-                        - 翻译结果需符合“项目任务管理系统”的专业术语和使用场景。
-                        - 保持原文格式、结构和排版不变。
-                        - 语言表达准确、简洁，符合项目管理领域的行业规范。
-                        - 注意专业术语的一致性和连贯性。
-                        EOF
+        $cacheKey = "openAItranslations::" . md5($text . '_' . $targetLanguage . '_' . ($aiSetting['ai_api_key'] ?? ''));
+        $result = Cache::remember($cacheKey, Carbon::now()->addDays(7), function () use ($aiSetting, $extra, $text, $targetLanguage) {
+            $post = json_encode([
+                "model" => "gpt-4.1-nano",
+                "messages" => [
+                    [
+                        "role" => "system",
+                        "content" => <<<EOF
+                            你是一名资深的专业翻译专家，专门从事项目任务管理系统的多语言本地化工作。
+
+                            翻译任务：将提供的文本内容翻译为 {$targetLanguage}
+
+                            专业要求：
+                            1. 术语一致性：确保项目管理、任务管理、团队协作等专业术语的准确翻译
+                            2. 上下文理解：根据项目管理场景选择最合适的表达方式
+                            3. 格式保持：严格保持原文的格式、结构、标点符号和排版
+                            4. 语言规范：使用目标语言的标准表达，符合该语言的语法和习惯
+                            5. 专业性：体现项目管理领域的专业水准和准确性
+                            6. 简洁性：避免冗余表达，保持语言简洁明了
+
+                            注意事项：
+                            - 保留所有HTML标签、特殊符号、数字、日期格式
+                            - 对于专有名词（如软件名称、品牌名）保持原文
+                            - 确保翻译后的文本自然流畅，符合目标语言的表达习惯
+                            - 如遇到歧义表达，优先选择项目管理场景下的含义
+
+                            请直接返回翻译结果，不要包含任何解释或标记。
+                            EOF
+                    ],
+                    [
+                        "role" => "user",
+                        "content" => "请将以下内容翻译为 {$targetLanguage}：\n\n{$text}"
+                    ]
                 ],
-                [
-                    "role" => "user",
-                    "content" => "<translation_original_text>{$text}</translation_original_text>"
-                ]
-            ]
-        ]);
-        $cacheKey = "openAItranslations::" . md5(Base::array2json($extra) . '_' . Base::array2json($post));
-        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function() use ($aiSetting, $extra, $post) {
-            $res = Ihttp::ihttp_request(($aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1') . '/chat/completions', $post, $extra, 15);
+                "temperature" => 0.2,
+                "max_tokens" => max(1000, intval(mb_strlen($text) * 1.5))
+            ]);
+
+            $res = Ihttp::ihttp_request(($aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1') . '/chat/completions', $post, $extra, 60);
             if (Base::isError($res)) {
-                return Base::retError("翻译失败", $res);
+                return Base::retError("翻译请求失败", $res);
             }
             $resData = Base::json2array($res['data']);
             if (empty($resData['choices'])) {
-                return Base::retError("翻译失败", $resData);
+                return Base::retError("翻译响应格式错误", $resData);
             }
-            $result = $resData['choices'][0]['message']['content'];
-            $result = preg_replace('/^\"|\"$/', '', trim($result));
-            $result = preg_replace('/<\/*translation_original_text>/', '', trim($result));
-            if (empty($result)) {
-                return Base::retError("翻译失败", $result);
+            $translatedText = $resData['choices'][0]['message']['content'];
+            $translatedText = trim($translatedText);
+            if (empty($translatedText)) {
+                return Base::retError("翻译结果为空");
             }
-            return Base::retSuccess("success", $result);
+
+            return Base::retSuccess("success", [
+                'translated_text' => $translatedText,
+                'target_language' => $targetLanguage,
+                'translated_at' => date('Y-m-d H:i:s')
+            ]);
         });
+
         if (Base::isError($result)) {
             Cache::forget($cacheKey);
         }
@@ -127,7 +154,7 @@ class Extranet
 
     /**
      * 通过 openAI 生成标题
-     * @param $text
+     * @param string $text 需要生成标题的文本内容
      * @return array
      */
     public static function openAIGenerateTitle($text)
@@ -136,6 +163,7 @@ class Extranet
         if (!Setting::AIOpen()) {
             return Base::retError("AI接口未配置");
         }
+
         $extra = [
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . $aiSetting['ai_api_key'],
@@ -144,32 +172,172 @@ class Extranet
             $extra['CURLOPT_PROXY'] = $aiSetting['ai_proxy'];
             $extra['CURLOPT_PROXYTYPE'] = str_contains($aiSetting['ai_proxy'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
         }
-        $res = Ihttp::ihttp_request(($aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1') . '/chat/completions', json_encode([
-            "model" => "gpt-4o-mini",
-            "messages" => [
-                [
-                    "role" => "system",
-                    "content" => "你是一个专业的标题生成器，擅长为对话生成简洁的标题，请将提供的文本生成一个标题。"
+
+        $cacheKey = "openAIGenerateTitle::" . md5($text . '_' . Base::array2json($extra));
+        $result = Cache::remember($cacheKey, Carbon::now()->addHours(24), function () use ($aiSetting, $extra, $text) {
+            $post = json_encode([
+                "model" => "gpt-4.1-nano",
+                "messages" => [
+                    [
+                        "role" => "system",
+                        "content" => <<<EOF
+                            你是一个专业的标题生成器，专门为项目任务管理系统的对话内容生成精准、简洁的标题。
+
+                            要求：
+                            1. 标题要准确概括文本的核心内容和主要意图
+                            2. 标题长度控制在5-20个字符之间
+                            3. 语言简洁明了，避免冗余词汇
+                            4. 适合在项目管理场景中使用
+                            5. 不要包含引号或特殊符号
+                            6. 如果是技术讨论，突出技术要点
+                            7. 如果是项目管理内容，突出关键动作或目标
+                            8. 如果是需求讨论，突出需求的核心点
+
+                            请直接返回标题，不要包含任何解释或其他内容。
+                            EOF
+                    ],
+                    [
+                        "role" => "user",
+                        "content" => "请为以下内容生成一个合适的标题：\n\n" . $text
+                    ]
                 ],
-                [
-                    "role" => "user",
-                    "content" => $text
-                ]
-            ]
-        ]), $extra, 15);
-        if (Base::isError($res)) {
-            return Base::retError("生成失败", $res);
+                "temperature" => 0.3,
+                "max_tokens" => 100
+            ]);
+
+            $res = Ihttp::ihttp_request(($aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1') . '/chat/completions', $post, $extra, 10);
+            if (Base::isError($res)) {
+                return Base::retError("标题生成失败", $res);
+            }
+            $resData = Base::json2array($res['data']);
+            if (empty($resData['choices'])) {
+                return Base::retError("标题生成失败", $resData);
+            }
+            $result = $resData['choices'][0]['message']['content'];
+            $result = trim($result);
+            if (empty($result)) {
+                return Base::retError("生成的标题为空");
+            }
+
+            return Base::retSuccess("success", [
+                'title' => $result,
+                'length' => mb_strlen($result),
+                'generated_at' => date('Y-m-d H:i:s')
+            ]);
+        });
+
+        if (Base::isError($result)) {
+            Cache::forget($cacheKey);
         }
-        $resData = Base::json2array($res['data']);
-        if (empty($resData['choices'])) {
-            return Base::retError("生成失败", $resData);
+
+        return $result;
+    }
+
+    /**
+     * 通过 openAI 生成职场笑话、心灵鸡汤
+     * @return array 返回20个笑话和20个心灵鸡汤
+     */
+    public static function openAIGenJokeAndSoup()
+    {
+        $aiSetting = Base::setting('aiSetting');
+        if (!Setting::AIOpen()) {
+            return Base::retError("AI接口未配置");
         }
-        $result = $resData['choices'][0]['message']['content'];
-        $result = preg_replace('/^\"|\"$/', '', $result);
-        if (empty($result)) {
-            return Base::retError("生成失败", $result);
+
+        $extra = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $aiSetting['ai_api_key'],
+        ];
+        if ($aiSetting['ai_proxy']) {
+            $extra['CURLOPT_PROXY'] = $aiSetting['ai_proxy'];
+            $extra['CURLOPT_PROXYTYPE'] = str_contains($aiSetting['ai_proxy'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
         }
-        return Base::retSuccess("success", $result);
+
+        $cacheKey = "openAIJokeAndSoup::" . md5(date('Y-m-d'));
+        $result = Cache::remember($cacheKey, Carbon::now()->addHours(6), function () use ($aiSetting, $extra) {
+            $post = json_encode([
+                "model" => "gpt-4.1-nano",
+                "messages" => [
+                    [
+                        "role" => "system",
+                        "content" => <<<EOF
+                            你是一个专业的内容生成器。
+
+                            要求：
+                            1. 笑话要幽默风趣，适合职场环境，内容积极正面
+                            2. 心灵鸡汤要励志温暖，适合职场人士阅读
+                            3. 每个笑话和鸡汤都要简洁明了，尽量不超过100字
+                            4. 必须严格按照以下JSON格式返回，不要markdown格式，不要包含任何其他内容：
+
+                            {
+                                "jokes": [
+                                    "笑话内容1",
+                                    "笑话内容2",
+                                    ...
+                                ],
+                                "soups": [
+                                    "心灵鸡汤内容1",
+                                    "心灵鸡汤内容2",
+                                    ...
+                                ]
+                            }
+                            EOF
+                    ],
+                    [
+                        "role" => "user",
+                        "content" => "请生成20个职场笑话和20个心灵鸡汤"
+                    ]
+                ],
+                "temperature" => 0.8
+            ]);
+
+            $res = Ihttp::ihttp_request(($aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1') . '/chat/completions', $post, $extra, 120);
+            if (Base::isError($res)) {
+                return Base::retError("生成失败", $res);
+            }
+            $resData = Base::json2array($res['data']);
+            if (empty($resData['choices'])) {
+                return Base::retError("生成失败", $resData);
+            }
+
+            // 清理可能的markdown代码块标记
+            $content = $resData['choices'][0]['message']['content'];
+            $content = preg_replace('/^\s*```json\s*/', '', $content);
+            $content = preg_replace('/\s*```\s*$/', '', $content);
+            $content = trim($content);
+
+            // 解析JSON
+            $parsedData = Base::json2array($content);
+            if (!$parsedData || !isset($parsedData['jokes']) || !isset($parsedData['soups'])) {
+                return Base::retError("生成内容格式错误", $content);
+            }
+
+            // 验证数据完整性
+            if (!is_array($parsedData['jokes']) || !is_array($parsedData['soups'])) {
+                return Base::retError("生成内容格式错误", $parsedData);
+            }
+
+            // 过滤空内容并确保有内容
+            $jokes = array_filter(array_map('trim', $parsedData['jokes']));
+            $soups = array_filter(array_map('trim', $parsedData['soups']));
+
+            if (empty($jokes) || empty($soups)) {
+                return Base::retError("生成内容为空", $parsedData);
+            }
+
+            return Base::retSuccess("success", [
+                'jokes' => array_values($jokes), // 重新索引数组
+                'soups' => array_values($soups),
+                'total_jokes' => count($jokes),
+                'total_soups' => count($soups),
+                'generated_at' => date('Y-m-d H:i:s')
+            ]);
+        });
+
+        if (Base::isError($result)) {
+            Cache::forget($cacheKey);
+        }
+        return $result;
     }
 
     /**
@@ -211,111 +379,6 @@ class Extranet
             'models' => $models,
             'original' => $resData['models']
         ]);
-    }
-
-    /**
-     * 获取IP地址经纬度
-     * @param string $ip
-     * @return array
-     */
-    public static function getIpGcj02(string $ip = ''): array
-    {
-        if (empty($ip)) {
-            $ip = Base::getIp();
-        }
-        $cacheKey = "getIpPoint::" . md5($ip);
-        $result = Cache::rememberForever($cacheKey, function () use ($ip) {
-            return Ihttp::ihttp_request("https://www.ifreesite.com/ipaddress/address.php?q=" . $ip, [], [], 12);
-        });
-        if (Base::isError($result)) {
-            Cache::forget($cacheKey);
-            return $result;
-        }
-        $data = $result['data'];
-        $lastPos = strrpos($data, ',');
-        $long = floatval(Base::getMiddle(substr($data, $lastPos + 1), null, ')'));
-        $lat = floatval(Base::getMiddle(substr($data, strrpos(substr($data, 0, $lastPos), ',') + 1), null, ','));
-        return Base::retSuccess("success", [
-            'long' => $long,
-            'lat' => $lat,
-        ]);
-    }
-
-    /**
-     * 百度接口：根据ip获取经纬度
-     * @param string $ip
-     * @return array
-     */
-    public static function getIpGcj02ByBaidu(string $ip = ''): array
-    {
-        if (empty($ip)) {
-            $ip = Base::getIp();
-        }
-
-        $cacheKey = "getIpPoint::" . md5($ip);
-        $result = Cache::rememberForever($cacheKey, function () use ($ip) {
-            $ak = Config::get('app.baidu_app_key');
-            $url = 'http://api.map.baidu.com/location/ip?ak=' . $ak . '&ip=' . $ip . '&coor=bd09ll';
-            return Ihttp::ihttp_request($url, [], [], 12);
-        });
-
-        if (Base::isError($result)) {
-            Cache::forget($cacheKey);
-            return $result;
-        }
-        $data = json_decode($result['data'], true);
-
-        // x坐标纬度, y坐标经度
-        $long = Arr::get($data, 'content.point.x');
-        $lat = Arr::get($data, 'content.point.y');
-        return Base::retSuccess("success", [
-            'long' => $long,
-            'lat' => $lat,
-        ]);
-    }
-
-    /**
-     * 获取IP地址详情
-     * @param string $ip
-     * @return array
-     */
-    public static function getIpInfo(string $ip = ''): array
-    {
-        if (empty($ip)) {
-            $ip = Base::getIp();
-        }
-        $cacheKey = "getIpInfo::" . md5($ip);
-        $result = Cache::rememberForever($cacheKey, function () use ($ip) {
-            return Ihttp::ihttp_request("http://ip.taobao.com/service/getIpInfo.php?accessKey=alibaba-inc&ip=" . $ip, [], [], 12);
-        });
-        if (Base::isError($result)) {
-            Cache::forget($cacheKey);
-            return $result;
-        }
-        $data = json_decode($result['data'], true);
-        if (!is_array($data) || intval($data['code']) != 0) {
-            Cache::forget($cacheKey);
-            return Base::retError("error ip: -1");
-        }
-        $data = $data['data'];
-        if (!is_array($data) || !isset($data['country'])) {
-            return Base::retError("error ip: -2");
-        }
-        $data['text'] = $data['country'];
-        $data['textSmall'] = $data['country'];
-        if ($data['region'] && $data['region'] != $data['country'] && $data['region'] != "XX") {
-            $data['text'] .= " " . $data['region'];
-            $data['textSmall'] = $data['region'];
-        }
-        if ($data['city'] && $data['city'] != $data['region'] && $data['city'] != "XX") {
-            $data['text'] .= " " . $data['city'];
-            $data['textSmall'] .= " " . $data['city'];
-        }
-        if ($data['county'] && $data['county'] != $data['city'] && $data['county'] != "XX") {
-            $data['text'] .= " " . $data['county'];
-            $data['textSmall'] .= " " . $data['county'];
-        }
-        return Base::retSuccess("success", $data);
     }
 
     /**
@@ -371,125 +434,6 @@ class Extranet
             'icons' => [],
             'total_count' => 0
         ];
-    }
-
-    /**
-     * 随机笑话接口
-     * @return string
-     */
-    public static function randJoke(): string
-    {
-        $data = self::curl("https://hmajax.itheima.net/api/randjoke");
-        $data = Base::json2array($data);
-        if ($data['message'] === '获取成功' && $text = trim($data['data'])) {
-            return $text;
-        }
-        return "";
-    }
-
-    /**
-     * 心灵鸡汤
-     * @return string
-     */
-    public static function soups(): string
-    {
-        $data = self::curl("https://hmajax.itheima.net/api/ambition");
-        $data = Base::json2array($data);
-        if ($data['message'] === '获取成功' && $text = trim($data['data'])) {
-            return $text;
-        }
-        return "";
-    }
-
-    /**
-     * 签到机器人网络内容
-     * @param $type
-     * @return string
-     */
-    public static function checkinBotQuickMsg($type): string
-    {
-        $text = "维护中...";
-        switch ($type) {
-            case "it":
-                $data = self::curl('http://vvhan.api.hitosea.com/api/hotlist?type=itNews', 3600);
-                if ($data = Base::json2array($data)) {
-                    $i = 1;
-                    $array = array_map(function ($item) use (&$i) {
-                        if ($item['title'] && $item['desc']) {
-                            return "<p>" . ($i++) . ". <strong><a href='{$item['mobilUrl']}' target='_blank'>{$item['title']}</a></strong></p><p>{$item['desc']}</p>";
-                        } else {
-                            return null;
-                        }
-                    }, $data['data']);
-                    $array = array_values(array_filter($array));
-                    if ($array) {
-                        array_unshift($array, "<p><strong>{$data['title']}</strong>（{$data['update_time']}）</p>");
-                        $text = implode("<p>&nbsp;</p>", $array);
-                    }
-                }
-                break;
-
-            case "36ke":
-                $data = self::curl('http://vvhan.api.hitosea.com/api/hotlist?type=36Ke', 3600);
-                if ($data = Base::json2array($data)) {
-                    $i = 1;
-                    $array = array_map(function ($item) use (&$i) {
-                        if ($item['title'] && $item['desc']) {
-                            return "<p>" . ($i++) . ". <strong><a href='{$item['mobilUrl']}' target='_blank'>{$item['title']}</a></strong></p><p>{$item['desc']}</p>";
-                        } else {
-                            return null;
-                        }
-                    }, $data['data']);
-                    $array = array_values(array_filter($array));
-                    if ($array) {
-                        array_unshift($array, "<p><strong>{$data['title']}</strong>（{$data['update_time']}）</p>");
-                        $text = implode("<p>&nbsp;</p>", $array);
-                    }
-                }
-                break;
-
-            case "60s":
-                $data = self::curl('http://vvhan.api.hitosea.com/api/60s?type=json', 3600);
-                if ($data = Base::json2array($data)) {
-                    $i = 1;
-                    $array = array_map(function ($item) use (&$i) {
-                        if ($item) {
-                            return "<p>" . ($i++) . ". {$item}</p>";
-                        } else {
-                            return null;
-                        }
-                    }, $data['data']);
-                    $array = array_values(array_filter($array));
-                    if ($array) {
-                        array_unshift($array, "<p><strong>{$data['name']}</strong>（{$data['time'][0]}）</p>");
-                        $text = implode("<p>&nbsp;</p>", $array);
-                    }
-                }
-                break;
-
-            case "joke":
-                $text = "笑话被掏空";
-                $data = self::curl('http://vvhan.api.hitosea.com/api/joke?type=json', 5);
-                if ($data = Base::json2array($data)) {
-                    if ($data = trim($data['joke'])) {
-                        $text = "开心笑话：{$data}";
-                    }
-                }
-                break;
-
-            case "soup":
-                $text = "鸡汤分完了";
-                $data = self::curl('https://api.ayfre.com/jt/?type=bot', 5);
-                if ($data) {
-                    $text = "心灵鸡汤：{$data}";
-                }
-                break;
-
-            default:
-                $text = "";
-                break;
-        }
-        return $text;
     }
 
     /**

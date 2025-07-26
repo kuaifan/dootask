@@ -921,8 +921,6 @@ class SystemController extends AbstractController
         }
         return Base::retSuccess('success', [
             'ip' => Base::getIp(),
-            'ip-info' => Extranet::getIpInfo(Base::getIp()),
-            'ip-gcj02' => Extranet::getIpGcj02(Base::getIp()),
             'ip-iscn' => Base::isCnIp(Base::getIp()),
             'header' => Request::header(),
             'token' => Doo::userToken(),
@@ -960,40 +958,6 @@ class SystemController extends AbstractController
      */
     public function get__cnip() {
         return Base::isCnIp(Request::input('ip'));
-    }
-
-    /**
-     * @api {get} api/system/get/ipgcj02          18. 获取IP地址经纬度
-     *
-     * @apiVersion 1.0.0
-     * @apiGroup system
-     * @apiName get__ipgcj02
-     *
-     * @apiParam {String} ip        IP值
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function get__ipgcj02() {
-        return Extranet::getIpGcj02(Request::input("ip"));
-    }
-
-    /**
-     * @api {get} api/system/get/ipinfo          19. 获取IP地址详细信息
-     *
-     * @apiVersion 1.0.0
-     * @apiGroup system
-     * @apiName get__ipinfo
-     *
-     * @apiParam {String} ip        IP值
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function get__ipinfo() {
-        return Extranet::getIpInfo(Request::input("ip"));
     }
 
     /**

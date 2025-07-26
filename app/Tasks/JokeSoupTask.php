@@ -26,25 +26,27 @@ class JokeSoupTask extends AbstractTask
 
     public function start()
     {
-        // 判断每分钟执行一次
-        if (Cache::get(self::keyName("YmdHi")) == date("YmdHi")) {
+        // 判断每小时执行一次
+        if (Cache::get(self::keyName("YmdH")) == date("YmdH")) {
             return;
         }
-        Cache::put(self::keyName("YmdHi"), date("YmdHi"), Carbon::now()->addDay());
-        //
-        $array = Base::json2array(Cache::get(self::keyName("jokes")));
-        $data = Extranet::randJoke();
-        if ($data) {
-            $array[] = $data;
+        Cache::put(self::keyName("YmdH"), date("YmdH"), Carbon::now()->addDay());
+
+        // 开始生成笑话和心灵鸡汤
+        $result = Extranet::openAIGenJokeAndSoup();
+        if (Base::isError($result)) {
+            Cache::forget(self::keyName("YmdH"));
+            return;
         }
-        Cache::forever(self::keyName("jokes"), Base::array2json(array_slice($array, -200)));
-        //
-        $array = Base::json2array(Cache::get(self::keyName("soups")));
-        $data = Extranet::soups();
-        if ($data) {
-            $array[] = $data;
+
+        // 笑话和心灵鸡汤的缓存
+        foreach (['jokes', 'soups'] as $key) {
+            if ($result['data'][$key] && is_array($result['data'][$key])) {
+                $array = Base::json2array(Cache::get(self::keyName($key)));
+                $array = array_merge($array, $result['data'][$key]);
+                Cache::forever(self::keyName($key), Base::array2json(array_slice($array, -200)));
+            }
         }
-        Cache::forever(self::keyName("soups"), Base::array2json(array_slice($array, -200)));
     }
 
     public function end()

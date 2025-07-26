@@ -11,6 +11,9 @@ use App\Module\Extranet;
  */
 class UpdateSessionTitleViaAiTask extends AbstractTask
 {
+    protected $sessionId;
+    protected $msgText;
+
     public function __construct($sessionId, $msgText)
     {
         parent::__construct();
@@ -29,12 +32,12 @@ class UpdateSessionTitleViaAiTask extends AbstractTask
             return;
         }
 
-        $res = Extranet::openAIGenerateTitle($this->msgText);
-        if (Base::isError($res)) {
+        $result = Extranet::openAIGenerateTitle($this->msgText);
+        if (Base::isError($result)) {
             return;
         }
 
-        $newTitle = $res['data'];
+        $newTitle = $result['data']['title'];
         if ($newTitle && $newTitle != $session->title) {
             $session->title = Base::cutStr($newTitle, 100);
             $session->save();

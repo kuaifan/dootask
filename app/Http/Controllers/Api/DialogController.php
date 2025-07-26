@@ -1359,18 +1359,19 @@ class DialogController extends AbstractController
         if (Base::isError($result)) {
             return $result;
         }
-        if (strlen($result['data']) < 1) {
+        if (strlen($result['data']['text']) < 1) {
             return Base::retError('转文字失败');
         }
-        // 翻译
-        if ($translate) {
-            $result = Extranet::openAItranslations($result['data'], Doo::getLanguages($translate));
-            if (Base::isError($result)) {
-                return $result;
-            }
+        // 不翻译
+        if (!$translate) {
+            return Base::retSuccess('success', $result['data']['text']);
         }
-        // 返回
-        return $result;
+        // 需要翻译
+        $result = Extranet::openAItranslations($result['data']['text'], Doo::getLanguages($translate));
+        if (Base::isError($result)) {
+            return $result;
+        }
+        return Base::retSuccess('success', $result['data']['translated_text']);
     }
 
     /**
@@ -1939,13 +1940,16 @@ class DialogController extends AbstractController
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        $res = Extranet::openAItranscriptions(public_path($msgData['path']));
-        if (Base::isError($res)) {
-            return $res;
+        $result = Extranet::openAItranscriptions(public_path($msgData['path']));
+        if (Base::isError($result)) {
+            return $result;
         }
         //
         $msg->updateInstance([
-            'msg' => array_merge($msgData, ['text' => $res['data'], 'text_userid' => [$user->userid]]),
+            'msg' => array_merge($msgData, [
+                'text' => $result['data']['text'],
+                'text_userid' => [$user->userid]
+            ]),
         ]);
         $msg->save();
         return Base::retSuccess("success", $msg);
@@ -2005,15 +2009,15 @@ class DialogController extends AbstractController
         if ($msg->type === 'text' && $msgData['type'] === 'md') {
             $msgData['text'] = preg_replace('/:::\s*reasoning.*?:::/s', '', $msgData['text']);
         }
-        $res = Extranet::openAItranslations($msgData['text'], $targetLanguage);
-        if (Base::isError($res)) {
-            return $res;
+        $result = Extranet::openAItranslations($msgData['text'], $targetLanguage);
+        if (Base::isError($result)) {
+            return $result;
         }
         $row = WebSocketDialogMsgTranslate::createInstance([
             'dialog_id' => $msg->dialog_id,
             'msg_id' => $msg_id,
             'language' => $language,
-            'content' => $res['data'],
+            'content' => $result['data']['translated_text'],
         ]);
         $row->save();
         //

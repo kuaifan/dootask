@@ -97,24 +97,7 @@ class UserBot extends AbstractModel
     {
         switch ($email) {
             case 'check-in@bot.system':
-                $menu = [
-                    /*[
-                        'key' => 'it',
-                        'label' => Doo::translate('IT资讯')
-                    ], [
-                        'key' => '36ke',
-                        'label' => Doo::translate('36氪')
-                    ], [
-                        'key' => '60s',
-                        'label' => Doo::translate('60s读世界')
-                    ], [
-                        'key' => 'joke',
-                        'label' => Doo::translate('开心笑话')
-                    ], [
-                        'key' => 'soup',
-                        'label' => Doo::translate('心灵鸡汤')
-                    ]*/
-                ];
+                $menu = [];
                 $setting = Base::setting('checkinSetting');
                 if ($setting['open'] !== 'open') {
                     return $menu;
@@ -193,8 +176,8 @@ class UserBot extends AbstractModel
                     ];
                     if ($match[1] === "ai-") {
                         $aibotSetting = Base::setting('aibotSetting');
-                        $aibotModel = $aibotSetting[$match[1] . '_model'];
-                        $aibotModels = Setting::AIBotModels2Array($aibotSetting[$match[1] . '_models']);
+                        $aibotModel = $aibotSetting[$match[2] . '_model'];
+                        $aibotModels = Setting::AIBotModels2Array($aibotSetting[$match[2] . '_models']);
                         if ($aibotModels) {
                             $menus = array_merge(
                                 [
@@ -240,7 +223,6 @@ class UserBot extends AbstractModel
                 return '暂未开放手动签到。';
             }
             UserBot::checkinBotCheckin('manual-' . $userid, Timer::time(), true);
-            return null;
         } elseif ($command === 'locat-checkin') {
             $setting = Base::setting('checkinSetting');
             if ($setting['open'] !== 'open') {
@@ -258,10 +240,8 @@ class UserBot extends AbstractModel
                 return '错误的定位签到。';
             }
             UserBot::checkinBotCheckin('locat-' . $userid, Timer::time(), true);
-            return null;
-        } else {
-            return Extranet::checkinBotQuickMsg($command);
         }
+        return null;
     }
 
     /**
