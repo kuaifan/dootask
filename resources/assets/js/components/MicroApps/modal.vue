@@ -2,14 +2,22 @@
     <div v-transfer-dom :data-transfer="true">
         <div :class="className">
             <transition :name="transitions[0]">
-                <div v-if="shouldRenderInDom" v-show="value" class="micro-modal-mask" @click="onClose" :style="maskStyle"></div>
+                <div v-if="shouldRenderInDom" v-show="value" class="micro-modal-mask" @click="onClose(false)" :style="maskStyle"></div>
             </transition>
             <transition :name="transitions[1]">
                 <div v-if="shouldRenderInDom" v-show="value" class="micro-modal-content" :style="contentStyle">
-                    <div class="micro-modal-close" @click="onClose">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
-                            <path d="M8.28596 6.51819C7.7978 6.03003 7.00634 6.03003 6.51819 6.51819C6.03003 7.00634 6.03003 7.7978 6.51819 8.28596L11.2322 13L6.51819 17.714C6.03003 18.2022 6.03003 18.9937 6.51819 19.4818C7.00634 19.97 7.7978 19.97 8.28596 19.4818L13 14.7678L17.714 19.4818C18.2022 19.97 18.9937 19.97 19.4818 19.4818C19.97 18.9937 19.97 18.2022 19.4818 17.714L14.7678 13L19.4818 8.28596C19.97 7.7978 19.97 7.00634 19.4818 6.51819C18.9937 6.03003 18.2022 6.03003 17.714 6.51819L13 11.2322L8.28596 6.51819Z" fill="currentColor"></path>
-                        </svg>
+                    <div class="micro-modal-tools" :class="{expanded: $A.isMainElectron}">
+                        <div class="tool-fullscreen" @click="$emit('on-popout-window')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 9V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h4"></path>
+                                <rect width="10" height="7" x="12" y="13" rx="2"></rect>
+                            </svg>
+                        </div>
+                        <div class="tool-close" @click="onClose(true)">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
+                                <path d="M8.28596 6.51819C7.7978 6.03003 7.00634 6.03003 6.51819 6.51819C6.03003 7.00634 6.03003 7.7978 6.51819 8.28596L11.2322 13L6.51819 17.714C6.03003 18.2022 6.03003 18.9937 6.51819 19.4818C7.00634 19.97 7.7978 19.97 8.28596 19.4818L13 14.7678L17.714 19.4818C18.2022 19.97 18.9937 19.97 19.4818 19.4818C19.97 18.9937 19.97 18.2022 19.4818 17.714L14.7678 13L19.4818 8.28596C19.97 7.7978 19.97 7.00634 19.4818 6.51819C18.9937 6.03003 18.2022 6.03003 17.714 6.51819L13 11.2322L8.28596 6.51819Z" fill="currentColor"></path>
+                            </svg>
+                        </div>
                     </div>
                     <ResizeLine
                         class="micro-modal-resize"
@@ -146,11 +154,11 @@ export default {
             }
         },
 
-        onClose() {
+        onClose(isClick = false) {
             if (!this.beforeClose) {
                 return this.handleClose();
             }
-            const before = this.beforeClose();
+            const before = this.beforeClose(isClick);
             if (before && before.then) {
                 before.then(() => {
                     this.handleClose();
@@ -221,29 +229,66 @@ export default {
         background-color: var(--modal-mask-bg, rgba(0, 0, 0, .4));
     }
 
-    &-close {
+    &-tools {
         position: absolute;
         top: var(--status-bar-height, 0);
         left: -40px;
-        z-index: 1;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+        z-index: 2;
+        min-width: 40px;
+        min-height: 40px;
         display: var(--modal-close-display, flex);
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        color: var(--modal-close-color, #ffffff);
-        cursor: pointer;
 
-        > svg {
-            width: 24px;
-            height: 24px;
-            transition: transform 0.3s ease-in-out;
+        > div {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--modal-close-color, #ffffff);
+            cursor: pointer;
+
+            &:hover {
+                > svg {
+                    transform: rotate(-90deg);
+                }
+            }
+
+            > svg {
+                width: 24px;
+                height: 24px;
+                transition: transform 0.2s ease-in-out;
+            }
+
+            &.tool-fullscreen {
+                display: none;
+
+                > svg {
+                    width: 20px;
+                    height: 20px;
+                }
+            }
         }
 
-        &:hover {
-            > svg {
-                transform: rotate(-90deg);
+        &.expanded {
+            margin-top: -40px;
+            transition: margin-top 0.2s ease-in-out;
+
+            &:hover {
+                margin-top: 0;
+            }
+
+            > div {
+                &:hover {
+                    > svg {
+                        transform: scale(1.2);
+                    }
+                }
+                
+                &.tool-fullscreen {
+                    display: flex;
+                }
             }
         }
     }

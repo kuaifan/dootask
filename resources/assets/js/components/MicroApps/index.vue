@@ -10,7 +10,8 @@
             :transparent="app.transparent"
             :autoDarkTheme="app.auto_dark_theme"
             :keepAlive="app.keep_alive"
-            :beforeClose="async () => { await onBeforeClose(app.name) }">
+            :beforeClose="async (isClick) => { await onBeforeClose(app.name, isClick) }"
+            @on-popout-window="onPopoutWindow(app.name)">
             <MicroIFrame
                 v-if="shouldRenderIFrame(app)"
                 :name="app.name"
@@ -245,12 +246,7 @@ export default {
                         this.closeByName(name)
                     },
                     popoutWindow: async (windowConfig = null) => {
-                        const app = this.microApps.find(item => item.name == name);
-                        if (!app) {
-                            $A.modalError("应用不存在");
-                            return
-                        }
-                        await this.inlineBlank(app, windowConfig)
+                        await this.onPopoutWindow(name, windowConfig)
                     },
                     openWindow: (params) => {
                         if (!$A.isJson(params)) {
@@ -513,9 +509,10 @@ export default {
         /**
          * 关闭之前判断
          * @param name
+         * @param {boolean} isClick 是否是点击关闭
          * @returns {Promise<unknown>}
          */
-        onBeforeClose(name) {
+        onBeforeClose(name, isClick = false) {
             return new Promise(resolve => {
                 const onClose = () => {
                     if ($A.isSubElectron) {
@@ -527,6 +524,12 @@ export default {
 
                 const app = this.microApps.find(item => item.name == name);
                 if (!app) {
+                    // 如果应用不存在，则直接关闭
+                    onClose()
+                    return
+                }
+                if (isClick && app.keep_alive) {
+                    // 如果是点击关闭，并且是 keep_alive 的应用，则不执行 onBeforeClose
                     onClose()
                     return
                 }
@@ -567,6 +570,19 @@ export default {
                     resolve()
                 }
             })
+        },
+
+        /**
+         * 弹出窗口（全屏）
+         * @param name
+         */
+        async onPopoutWindow(name, windowConfig = null) {
+            const app = this.microApps.find(item => item.name == name);
+            if (!app) {
+                $A.modalError("应用不存在");
+                return
+            }
+            await this.inlineBlank(app, windowConfig)
         },
 
         /**

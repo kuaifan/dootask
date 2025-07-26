@@ -65,8 +65,10 @@ export default {
     data() {
         return {
             src: this.url,
+            isReady: false,
             isLoading: true,
             hasMounted: false,
+            hearTbeatLastTime: 0,
         }
     },
 
@@ -148,22 +150,31 @@ export default {
             if (!this.isFromCurrentIframe(e)) {
                 return
             }
-            const {type, message} = e.data;
+            const type = e.data.type;
+            const message = this.handleMessageEnsureJson(e.data.message);
             switch (type) {
                 case 'MICRO_APP_READY':
-                    this.handleMessageOfReady(this.handleMessageEnsureJson(message));
+                    this.handleMessageOfReady(message);
+                    break
+
+                case 'MICRO_APP_HEARTBEAT':
+                    this.handleMessageOfHeartbeat(message);
                     break
 
                 case 'MICRO_APP_METHOD':
-                    this.handleMessageOfMethod(this.handleMessageEnsureJson(message))
+                    this.handleMessageOfMethod(message)
                     break
 
                 case 'MICRO_APP_FUNCTION_RESULT':
-                    this.handleMessageOfFunctionResult(this.handleMessageEnsureJson(message))
+                    this.handleMessageOfFunctionResult(message)
                     break
 
                 case 'MICRO_APP_BEFORE_CLOSE':
-                    this.handleMessageOfBeforeClose(this.handleMessageEnsureJson(message))
+                    this.handleMessageOfBeforeClose(message)
+                    break
+
+                case 'MICRO_APP_BEFORE_UNLOAD':
+                    this.handleMessageOfBeforeUnload(message);
                     break
 
                 default:
@@ -179,29 +190,37 @@ export default {
         // 处理消息的准备状态 (MICRO_APP_READY)
         handleMessageOfReady({supportBeforeClose}) {
             this.handleLoad()
+            this.isReady = true
             this.isLoading = false
 
-            if (!supportBeforeClose) {
-                return
-            }
-            this.$store.commit('microApps/update', {
-                name: this.name,
-                data: {
-                    onBeforeClose: () => {
-                        return new Promise(resolve => {
-                            const message = {
-                                id: $A.randomString(16),
-                                name: this.name
+            if (supportBeforeClose) {
+                this.$store.commit('microApps/update', {
+                    name: this.name,
+                    data: {
+                        onBeforeClose: () => {
+                            if (this.hearTbeatLastTime && Date.now() - this.hearTbeatLastTime > 5000) {
+                                return true // 超时，允许关闭
                             }
-                            this.$refs.iframe.contentWindow.postMessage({
-                                type: 'MICRO_APP_BEFORE_CLOSE',
-                                message
-                            }, '*')
-                            this.pendingBeforeCloses.set(message.id, resolve)
-                        })
+                            return new Promise(resolve => {
+                                const message = {
+                                    id: $A.randomString(16),
+                                    name: this.name
+                                }
+                                this.$refs.iframe.contentWindow.postMessage({
+                                    type: 'MICRO_APP_BEFORE_CLOSE',
+                                    message
+                                }, '*')
+                                this.pendingBeforeCloses.set(message.id, resolve)
+                            })
+                        }
                     }
-                }
-            })
+                })
+            }
+        },
+
+        // 处理心跳消息 (MICRO_APP_HEARTBEAT)
+        handleMessageOfHeartbeat() {
+            this.hearTbeatLastTime = Date.now()
         },
 
         // 处理方法消息 (MICRO_APP_METHOD)
@@ -262,6 +281,18 @@ export default {
             }
             this.pendingBeforeCloses.get(id)()
             this.pendingBeforeCloses.delete(id)
+        },
+
+        // 处理卸载前消息 (MICRO_APP_BEFORE_UNLOAD)
+        handleMessageOfBeforeUnload() {
+            this.isReady = false
+
+            this.$store.commit('microApps/update', {
+                name: this.name,
+                data: {
+                    onBeforeClose: () => true
+                }
+            })
         },
 
         // 验证消息是否来自当前 iframe
