@@ -23,7 +23,7 @@
                         <div class="form-tip">{{$L('支持：OpenAI')}}</div>
                     </FormItem>
                     <FormItem :label="$L('API 密钥')" prop="ai_api_key">
-                        <Input v-model="formData.ai_api_key" :placeholder="$L('请输入 API 密钥')"/>
+                        <Input v-model="formData.ai_api_key" type="password" :placeholder="$L('请输入 API 密钥')"/>
                         <div class="form-tip">{{$L('请输入 API 密钥，留空表示不启用 AI 助手')}}</div>
                     </FormItem>
                     <FormItem label="API URL" prop="ai_api_url">

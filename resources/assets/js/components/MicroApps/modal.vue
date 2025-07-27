@@ -285,7 +285,7 @@ export default {
                         transform: scale(1.2);
                     }
                 }
-                
+
                 &.tool-fullscreen {
                     display: flex;
                 }
@@ -298,9 +298,9 @@ export default {
         position: absolute;
         top: 0;
         bottom: 0;
-        left: -3px;
+        left: 0;
         z-index: 1;
-        width: 3px;
+        width: 5px;
     }
 
     &-content {
