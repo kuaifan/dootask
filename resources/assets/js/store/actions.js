@@ -1260,7 +1260,7 @@ export default {
     /**
      * 打开地图选位置（App）
      * @param dispatch
-     * @param objects {{key: string, point: string}}
+     * @param objects {{type: string, key: string, point: string, radius: number}}
      * @returns {Promise<unknown>}
      */
     openAppMapPage({dispatch}, objects) {
@@ -1292,6 +1292,42 @@ export default {
                         const data = $A.jsonParse($A.eeuiAppGetVariate(`location::${channel}`));
                         if (data.point) {
                             $A.eeuiAppSetVariate(`location::${channel}`, "");
+                            if (data.distance > objects.radius) {
+                                $A.modalError(`你选择的位置「${data.title}」不在签到范围内`)
+                                return
+                            }
+                            data.thumb = null;
+                            if (objects.type === 'baidu') {
+                                data.thumb = $A.urlAddParams('https://api.map.baidu.com/staticimage/v2', {
+                                    ak: objects.key,
+                                    center: `${data.point.lng},${data.point.lat}`,
+                                    markers: `${data.point.lng},${data.point.lat}`,
+                                    width: 800,
+                                    height: 480,
+                                    zoom: 19,
+                                    copyright: 1,
+                                })
+                            } else if (objects.type === 'amap') {
+                                data.thumb = $A.urlAddParams('https://restapi.amap.com/v3/staticmap', {
+                                    key: objects.key,
+                                    center: `${data.point.lng},${data.point.lat}`,
+                                    markers: `${data.point.lng},${data.point.lat}`,
+                                    width: 800,
+                                    height: 480,
+                                    zoom: 19,
+                                    copyright: 1,
+                                })
+                            } else if (objects.type === 'tencent') {
+                                data.thumb = $A.urlAddParams('https://apis.map.qq.com/ws/staticmap/v2', {
+                                    key: objects.key,
+                                    center: `${data.point.lng},${data.point.lat}`,
+                                    markers: `${data.point.lng},${data.point.lat}`,
+                                    width: 800,
+                                    height: 480,
+                                    zoom: 19,
+                                    copyright: 1,
+                                })
+                            }
                             resolve(data);
                         }
                     }

@@ -1842,6 +1842,7 @@ export default {
                 // 位置签到
                 case "locat-checkin":
                     this.$store.dispatch('openAppMapPage', {
+                        type: item.config.type,
                         key: item.config.key,
                         point: `${item.config.lng},${item.config.lat}`,
                         radius: item.config.radius,
@@ -1849,27 +1850,14 @@ export default {
                         if (!$A.isJson(data)) {
                             return
                         }
-                        if (data.distance > item.config.radius) {
-                            $A.modalError(`你选择的位置「${data.title}」不在签到范围内`)
-                            return
-                        }
-                        const thumb = $A.urlAddParams('https://api.map.baidu.com/staticimage/v2', {
-                            ak: item.config.key,
-                            center: `${data.point.lng},${data.point.lat}`,
-                            markers: `${data.point.lng},${data.point.lat}`,
-                            width: 800,
-                            height: 480,
-                            zoom: 19,
-                            copyright: 1,
-                        })
                         this.sendLocationMsg({
-                            type: 'bd',
+                            type: item.config.type,
                             lng: data.point.lng,
                             lat: data.point.lat,
                             title: data.title,
                             distance: data.distance,
                             address: data.address || '',
-                            thumb
+                            thumb: data.thumb,
                         })
                     })
                     break;

@@ -506,9 +506,9 @@ class SystemController extends AbstractController
                 if (is_array($all['modes'])) {
                     if (in_array('locat', $all['modes'])) {
                         $mapTypes = [
-                            'baidu'   => ['key' => 'locat_bd_lbs_key',     'point' => 'locat_bd_lbs_point',     'msg' => '请填写百度地图AK'],
-                            'amap'    => ['key' => 'locat_amap_key',       'point' => 'locat_amap_point',       'msg' => '请填写高德地图Key'],
-                            'tencent' => ['key' => 'locat_tencent_key',    'point' => 'locat_tencent_point',    'msg' => '请填写腾讯地图Key'],
+                            'baidu' => ['key' => 'locat_bd_lbs_key', 'point' => 'locat_bd_lbs_point', 'msg' => '请填写百度地图AK'],
+                            'amap' => ['key' => 'locat_amap_key', 'point' => 'locat_amap_point', 'msg' => '请填写高德地图Key'],
+                            'tencent' => ['key' => 'locat_tencent_key', 'point' => 'locat_tencent_point', 'msg' => '请填写腾讯地图Key'],
                         ];
                         $type = $all['locat_map_type'];
                         if (!isset($mapTypes[$type])) {
