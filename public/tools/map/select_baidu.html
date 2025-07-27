@@ -29,6 +29,8 @@
             right: 0;
             bottom: 0;
         }
+        
+
     </style>
     <script>
         class Pickup {
@@ -133,6 +135,20 @@
 
             bindEvents() {
                 this.map.addEventListener("click", (e) => this.handleMapClick(e));
+                
+                // 监听父页面消息
+                window.addEventListener('message', (event) => {
+                    if (event.data.action === 'update_radius') {
+                        const newRadius = parseInt(event.data.radius);
+                        if (newRadius && newRadius >= 50 && newRadius <= 5000) {
+                            this.params.radius = newRadius;
+                            if (this.circle) {
+                                this.updateMarkerAndCircle();
+                                this.updateInfoPanel();
+                            }
+                        }
+                    }
+                });
             }
 
             handleMapClick(e) {
@@ -191,13 +207,16 @@
             }
 
             updateInfoPanel() {
+                const currentRadius = this.circle ? this.circle.getRadius().toFixed(0) : this.params.radius.toString();
                 const data = {
                     longitude: this.centerPoint.lng.toFixed(6),
                     latitude: this.centerPoint.lat.toFixed(6),
-                    radius: this.circle ? this.circle.getRadius().toFixed(0) : '-'
+                    radius: currentRadius
                 }
+                
+                // 发送消息给父页面
                 window.parent.postMessage(Object.assign(data, {
-                    action: "bd_lbs_select_point",
+                    action: "baidu_lbs_select_point",
                 }), "*");
             }
 

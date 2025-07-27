@@ -481,8 +481,13 @@ class SystemController extends AbstractController
                     'face_remark',
                     'face_retip',
                     'locat_remark',
+                    'locat_map_type',
                     'locat_bd_lbs_key',
                     'locat_bd_lbs_point', // 格式：{"lng":116.404, "lat":39.915, "radius":500}
+                    'locat_amap_key',
+                    'locat_amap_point', // 格式：{"lng":116.404, "lat":39.915, "radius":500}
+                    'locat_tencent_key',
+                    'locat_tencent_point', // 格式：{"lng":116.404, "lat":39.915, "radius":500}
                     'manual_remark',
                     'modes',
                     'key',
@@ -500,14 +505,25 @@ class SystemController extends AbstractController
                 }
                 if (is_array($all['modes'])) {
                     if (in_array('locat', $all['modes'])) {
-                        if (empty($all['locat_bd_lbs_key'])) {
-                            return Base::retError('请填写百度地图AK');
+                        $mapTypes = [
+                            'baidu'   => ['key' => 'locat_bd_lbs_key',     'point' => 'locat_bd_lbs_point',     'msg' => '请填写百度地图AK'],
+                            'amap'    => ['key' => 'locat_amap_key',       'point' => 'locat_amap_point',       'msg' => '请填写高德地图Key'],
+                            'tencent' => ['key' => 'locat_tencent_key',    'point' => 'locat_tencent_point',    'msg' => '请填写腾讯地图Key'],
+                        ];
+                        $type = $all['locat_map_type'];
+                        if (!isset($mapTypes[$type])) {
+                            return Base::retError('请选择地图类型');
                         }
-                        if (!is_array($all['locat_bd_lbs_point'])) {
+                        $conf = $mapTypes[$type];
+                        if (empty($all[$conf['key']])) {
+                            return Base::retError($conf['msg']);
+                        }
+                        if (!is_array($all[$conf['point']])) {
                             return Base::retError('请选择允许签到位置');
                         }
-                        $all['locat_bd_lbs_point']['radius'] = intval($all['locat_bd_lbs_point']['radius']);
-                        if (empty($all['locat_bd_lbs_point']['lng']) || empty($all['locat_bd_lbs_point']['lat']) || empty($all['locat_bd_lbs_point']['radius'])) {
+                        $all[$conf['point']]['radius'] = intval($all[$conf['point']]['radius']);
+                        $point = $all[$conf['point']];
+                        if (empty($point['lng']) || empty($point['lat']) || empty($point['radius'])) {
                             return Base::retError('请选择有效的签到位置');
                         }
                     }
@@ -539,7 +555,10 @@ class SystemController extends AbstractController
         $setting['face_remark'] = $setting['face_remark'] ?: Doo::translate('考勤机');
         $setting['face_retip'] = $setting['face_retip'] ?: 'open';
         $setting['locat_remark'] = $setting['locat_remark'] ?: Doo::translate('定位签到');
+        $setting['locat_map_type'] = $setting['locat_map_type'] ?: 'baidu';
         $setting['locat_bd_lbs_point'] = is_array($setting['locat_bd_lbs_point']) ? $setting['locat_bd_lbs_point'] : ['radius' => 500];
+        $setting['locat_amap_point'] = is_array($setting['locat_amap_point']) ? $setting['locat_amap_point'] : ['radius' => 500];
+        $setting['locat_tencent_point'] = is_array($setting['locat_tencent_point']) ? $setting['locat_tencent_point'] : ['radius' => 500];
         $setting['manual_remark'] = $setting['manual_remark'] ?: Doo::translate('手动签到');
         $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['09:00', '18:00'];
         $setting['advance'] = intval($setting['advance']) ?: 120;

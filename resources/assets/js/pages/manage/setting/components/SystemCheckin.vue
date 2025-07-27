@@ -125,20 +125,71 @@
                             <FormItem :label="$L('签到备注')" prop="locat_remark">
                                 <Input :maxlength="30" v-model="formData.locat_remark"/>
                             </FormItem>
-                            <FormItem :label="$L('百度地图AK')" prop="locat_bd_lbs_key">
-                                <Input :maxlength="100" v-model="formData.locat_bd_lbs_key"/>
-                                <div class="form-tip">{{$L('获取AK流程')}}: <a href="https://lbs.baidu.com/faq/search?id=299&title=677" target="_blank">https://lbs.baidu.com/faq/search?id=299&title=677</a></div>
+                            <FormItem :label="$L('地图类型')" prop="locat_map_type">
+                                <RadioGroup v-model="formData.locat_map_type">
+                                    <Radio label="baidu">{{ $L('百度地图') }}</Radio>
+                                    <Radio label="amap">{{ $L('高德地图') }}</Radio>
+                                    <Radio label="tencent">{{ $L('腾讯地图') }}</Radio>
+                                </RadioGroup>
+                                <div class="form-tip">{{$L('仅支持移动端App')}}</div>
                             </FormItem>
-                            <FormItem :label="$L('允许签到位置')" prop="locat_bd_allow_point">
-                                <ETooltip v-if="formData.locat_bd_lbs_point.lng" :content="$L('点击修改')">
-                                    <div class="form-tip">
-                                        <a href="javascript:void(0)" @click="openBdSelect">
-                                            {{ $L(`经度：${formData.locat_bd_lbs_point.lng}，纬度：${formData.locat_bd_lbs_point.lat}，半径：${formData.locat_bd_lbs_point.radius}米`) }}
-                                        </a>
-                                    </div>
-                                </ETooltip>
-                                <a v-else href="javascript:void(0)" @click="openBdSelect">{{$L('点击设置')}}</a>
-                            </FormItem>
+                            
+                            <!-- 百度地图配置 -->
+                            <template v-if="formData.locat_map_type === 'baidu'">
+                                <FormItem :label="$L('百度地图AK')" prop="locat_bd_lbs_key">
+                                    <Input :maxlength="100" v-model="formData.locat_bd_lbs_key"/>
+                                    <div class="form-tip">{{$L('获取AK流程')}}: <a href="https://lbs.baidu.com/faq/search?id=299&title=677" target="_blank">https://lbs.baidu.com/faq/search?id=299&title=677</a></div>
+                                </FormItem>
+                                <FormItem :label="$L('允许签到位置')" prop="locat_bd_lbs_point">
+                                    <template v-if="formData.locat_bd_lbs_point.lng">
+                                        <div class="form-tip">
+                                            <a href="javascript:void(0)" @click="openMapSelect">
+                                                {{ $L(`经度：${formData.locat_bd_lbs_point.lng}，纬度：${formData.locat_bd_lbs_point.lat}，半径：${formData.locat_bd_lbs_point.radius}米`) }}
+                                            </a>
+                                        </div>
+                                        <div class="form-tip" @click="openMapSelect">{{$L('点击修改允许签到位置')}}</div>
+                                    </template>
+                                    <a v-else href="javascript:void(0)" @click="openMapSelect">{{$L('点击设置')}}</a>
+                                </FormItem>
+                            </template>
+
+                            <!-- 高德地图配置 -->
+                            <template v-if="formData.locat_map_type === 'amap'">
+                                <FormItem :label="$L('高德地图Key')" prop="locat_amap_key">
+                                    <Input :maxlength="100" v-model="formData.locat_amap_key"/>
+                                    <div class="form-tip">{{$L('获取Key流程')}}: <a href="https://lbs.amap.com/api/javascript-api/guide/abc/prepare" target="_blank">https://lbs.amap.com/api/javascript-api/guide/abc/prepare</a></div>
+                                </FormItem>
+                                <FormItem :label="$L('允许签到位置')" prop="locat_amap_point">
+                                    <template v-if="formData.locat_amap_point.lng">
+                                        <div class="form-tip">
+                                            <a href="javascript:void(0)" @click="openMapSelect">
+                                                {{ $L(`经度：${formData.locat_amap_point.lng}，纬度：${formData.locat_amap_point.lat}，半径：${formData.locat_amap_point.radius}米`) }}
+                                            </a>
+                                        </div>
+                                        <div class="form-tip" @click="openMapSelect">{{$L('点击修改允许签到位置')}}</div>
+                                    </template>
+                                    <a v-else href="javascript:void(0)" @click="openMapSelect">{{$L('点击设置')}}</a>
+                                </FormItem>
+                            </template>
+
+                            <!-- 腾讯地图配置 -->
+                            <template v-if="formData.locat_map_type === 'tencent'">
+                                <FormItem :label="$L('腾讯地图Key')" prop="locat_tencent_key">
+                                    <Input :maxlength="100" v-model="formData.locat_tencent_key"/>
+                                    <div class="form-tip">{{$L('获取Key流程')}}: <a href="https://lbs.qq.com/dev/console/application/mine" target="_blank">https://lbs.qq.com/dev/console/application/mine</a></div>
+                                </FormItem>
+                                <FormItem :label="$L('允许签到位置')" prop="locat_tencent_point">
+                                    <template v-if="formData.locat_tencent_point.lng">
+                                        <div class="form-tip">
+                                            <a href="javascript:void(0)" @click="openMapSelect">
+                                                {{ $L(`经度：${formData.locat_tencent_point.lng}，纬度：${formData.locat_tencent_point.lat}，半径：${formData.locat_tencent_point.radius}米`) }}
+                                            </a>
+                                        </div>
+                                        <div class="form-tip" @click="openMapSelect">{{$L('点击修改允许签到位置')}}</div>
+                                    </template>
+                                    <a v-else href="javascript:void(0)" @click="openMapSelect">{{$L('点击设置')}}</a>
+                                </FormItem>
+                            </template>
                         </div>
                     </div>
                 </template>
@@ -171,37 +222,139 @@
             <TeamManagement v-if="allUserShow" checkin-mode/>
         </DrawerOverlay>
 
-        <!--百度选择签到位置-->
+        <!--地图选择签到位置-->
         <Modal
-            v-model="bdSelectShow"
+            v-model="mapSelectShow"
             :title="$L('允许签到位置')"
             :mask-closable="false"
-            width="800">
+            :styles="{
+                width: '90%',
+                maxWidth: '1000px'
+            }">
             <div>
-                <div v-if="bdSelectPoint.radius" class="bd-select-point-tip">{{ $L(`签到半径${bdSelectPoint.radius}米`) }}</div>
-                <div v-else class="bd-select-point-tip">{{ $L('请点击地图选择签到位置') }}</div>
-                <IFrame v-if="bdSelectShow" class="bd-select-point-iframe" :src="bdSelectUrl" @on-message="onBdMessage"/>
+                <div class="map-select-container">
+                    <div class="map-select-iframe-container">
+                        <IFrame v-if="mapSelectShow" ref="mapSelectIframe" class="map-select-point-iframe" :src="mapSelectUrl" @on-message="onMapMessage"/>
+                    </div>
+                    <div class="map-radius-control">
+                        <div class="radius-control-header">
+                            <h4>{{ $L('签到半径设置') }}</h4>
+                        </div>
+                        <div class="radius-control-body">
+                            <Input :value="mapSelectPoint.radius" @on-change="onRadiusChange" @on-blur="onRadiusBlur">
+                                <span slot="prepend">{{ $L('半径') }}</span>
+                                <span slot="append">{{ $L('米') }}</span>
+                            </Input>
+                            <div class="location-info">
+                                <div class="info-item">
+                                    <span class="info-label">{{ $L('经度') }}：</span>
+                                    <span class="info-value">{{ mapSelectPoint.lng || '-' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">{{ $L('纬度') }}：</span>
+                                    <span class="info-value">{{ mapSelectPoint.lat || '-' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">{{ $L('半径') }}：</span>
+                                    <span class="info-value">{{ mapSelectPoint.radius || '-' }} {{ $L('米') }}</span>
+                                </div>
+                            </div>
+                            <div class="radius-control-tip">
+                                <template v-if="formData.locat_map_type === 'baidu'">
+                                    {{ $L('点击地图选择中心位置，拖拽圆形边缘调整半径，或在上方输入框直接设置半径值') }}
+                                </template>
+                                <template v-else>
+                                    {{ $L('点击地图选择中心位置，在上方输入框中设置签到半径值') }}
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="bdSelectShow=false">{{$L('关闭')}}</Button>
-                <Button type="primary" @click="onBdSelect">{{$L('确定')}}</Button>
+                <Button type="default" @click="mapSelectShow=false">{{$L('关闭')}}</Button>
+                <Button type="primary" @click="onMapSelect">{{$L('确定')}}</Button>
             </div>
         </Modal>
 
     </div>
 </template>
 <style lang="scss" scoped>
-.bd-select-point-tip {
-    font-size: 16px;
-    text-align: center;
-    margin-bottom: 12px;
-    margin-top: -12px;
-}
-.bd-select-point-iframe {
-    width: 100%;
+.map-select-container {
+    display: flex;
+    gap: 20px;
     height: 500px;
+    @media (max-width: 768px) {
+        flex-direction: column;
+        height: 700px;
+        .map-radius-control {
+            width: 100%;
+            border-left: 0;
+            padding-left: 0;
+        }
+    }
+}
+.map-select-iframe-container {
+    flex: 1;
+}
+.map-select-point-iframe {
+    width: 100%;
+    height: 100%;
     border: 0;
     border-radius: 12px;
+}
+.map-radius-control {
+    width: 280px;
+    border-left: 1px solid #e8e8e8;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+}
+.radius-control-header {
+    margin-bottom: 15px;
+}
+.radius-control-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+.radius-control-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.location-info {
+    margin: 15px 0;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+.info-item:last-child {
+    margin-bottom: 0;
+}
+.info-label {
+    color: #666;
+}
+.info-value {
+    color: #333;
+    font-weight: 500;
+}
+.radius-control-tip {
+    background: #f0f8ff;
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid #007cff;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.4;
+    margin-top: auto;
 }
 </style>
 <script>
@@ -227,16 +380,22 @@ export default {
                 face_retip: '',
                 manual_remark: '',
                 locat_remark: '',
-                locat_bd_lbs_point: {},
+                locat_map_type: 'baidu', // 地图类型
+                locat_bd_lbs_key: '', // 百度地图AK
+                locat_bd_lbs_point: {}, // 百度地图允许签到位置
+                locat_amap_key: '', // 高德地图Key
+                locat_amap_point: {}, // 高德地图允许签到位置
+                locat_tencent_key: '', // 腾讯地图Key
+                locat_tencent_point: {}, // 腾讯地图允许签到位置
             },
             ruleData: {},
 
             allUserShow: false,
             exportShow: false,
 
-            bdSelectShow: false,
-            bdSelectPoint: {},
-            bdSelectUrl: '',
+            mapSelectShow: false,
+            mapSelectPoint: {},
+            mapSelectUrl: '',
         }
     },
 
@@ -291,37 +450,98 @@ export default {
             });
         },
 
-        openBdSelect() {
-            if (!this.formData.locat_bd_lbs_key) {
-                $A.messageError('请先填写百度地图AK');
-                return;
+        openMapSelect() {
+            const mapType = this.formData.locat_map_type;
+            let mapKey = '';
+            let currentPoint = {};
+            
+            // 根据地图类型获取对应的key和point
+            switch (mapType) {
+                case 'baidu':
+                    mapKey = this.formData.locat_bd_lbs_key;
+                    currentPoint = this.formData.locat_bd_lbs_point;
+                    if (!mapKey) {
+                        $A.messageError('请先填写百度地图AK');
+                        return;
+                    }
+                    break;
+                case 'amap':
+                    mapKey = this.formData.locat_amap_key;
+                    currentPoint = this.formData.locat_amap_point;
+                    if (!mapKey) {
+                        $A.messageError('请先填写高德地图Key');
+                        return;
+                    }
+                    break;
+                case 'tencent':
+                    mapKey = this.formData.locat_tencent_key;
+                    currentPoint = this.formData.locat_tencent_point;
+                    if (!mapKey) {
+                        $A.messageError('请先填写腾讯地图Key');
+                        return;
+                    }
+                    break;
+                default:
+                    $A.messageError('请选择地图类型');
+                    return;
             }
-            const url = $A.urlAddParams($A.mainUrl('tools/map/select.html'), {
-                key: this.formData.locat_bd_lbs_key,
-                point: this.formData.locat_bd_lbs_point.lng + ',' + this.formData.locat_bd_lbs_point.lat,
-                radius: this.formData.locat_bd_lbs_point.radius,
+
+            const selectPage = `select_${mapType}.html`;
+            const url = $A.urlAddParams($A.mainUrl(`tools/map/${selectPage}`), {
+                key: mapKey,
+                point: currentPoint.lng + ',' + currentPoint.lat,
+                radius: currentPoint.radius,
             })
+            
             this.$store.dispatch('userUrl', url).then(newUrl => {
-                this.bdSelectUrl = newUrl;
-                this.bdSelectPoint = this.formData.locat_bd_lbs_point;
-                this.bdSelectShow = true;
+                this.mapSelectUrl = newUrl;
+                this.mapSelectPoint = currentPoint;
+                this.mapSelectShow = true;
             });
         },
 
-        onBdMessage(data) {
-            if (data.action !== 'bd_lbs_select_point') {
+        onMapMessage(data) {
+            const expectedAction = `${this.formData.locat_map_type}_lbs_select_point`;
+            if (data.action !== expectedAction) {
                 return;
             }
-            this.bdSelectPoint = {
-                lng: data.longitude,
-                lat: data.latitude,
-                radius: data.radius,
+            this.mapSelectPoint = {
+                lng: parseFloat(data.longitude),
+                lat: parseFloat(data.latitude),
+                radius: parseInt(data.radius),
             }
         },
 
-        onBdSelect() {
-            this.formData.locat_bd_lbs_point = this.bdSelectPoint;
-            this.bdSelectShow = false;
+        onRadiusChange({target}) {
+            const value = parseInt(target.value);
+            if (value && value >= 50 && value <= 5000) {
+                this.mapSelectPoint.radius = value;
+                const iframe = this.$refs.mapSelectIframe;
+                iframe?.postMessage({
+                    action: 'update_radius',
+                    radius: value
+                })
+            }
+        },
+
+        onRadiusBlur({target}) {
+            target.value = this.mapSelectPoint.radius;
+        },
+
+        onMapSelect() {
+            const mapType = this.formData.locat_map_type;
+            switch (mapType) {
+                case 'baidu':
+                    this.formData.locat_bd_lbs_point = this.mapSelectPoint;
+                    break;
+                case 'amap':
+                    this.formData.locat_amap_point = this.mapSelectPoint;
+                    break;
+                case 'tencent':
+                    this.formData.locat_tencent_point = this.mapSelectPoint;
+                    break;
+            }
+            this.mapSelectShow = false;
         },
     }
 }

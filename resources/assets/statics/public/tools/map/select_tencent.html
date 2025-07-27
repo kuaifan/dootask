@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html.theme-dark {
+            -webkit-filter: invert(100%) hue-rotate(180deg) contrast(90%) !important;
+            filter: invert(100%) hue-rotate(180deg) contrast(90%) !important;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+            font-size: 14px;
+            color: #303133;
+        }
+
+        #map-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+
+    </style>
+    <script>
+        class TencentPickup {
+            constructor(containerId) {
+                this.containerId = containerId;
+                this.map = null;
+                this.circle = null;
+                this.marker = null;
+                this.centerPoint = null;
+                this.isFirstClick = true;
+                this.params = {
+                    theme: 'light',     // 主题风格，light|dark
+                    key: null,          // 腾讯地图 API Key
+                    point: null,        // 初始坐标，如：116.404,39.915
+                    radius: 300,        // 圆形半径
+                    zoom: 16,           // 地图缩放级别
+                }
+                this.init();
+            }
+
+            async init() {
+                // 先初始化参数
+                this.initParams();
+
+                // 如果没有 key，直接返回
+                if (!this.params.key) {
+                    console.error('未提供腾讯地图 API Key');
+                    return;
+                }
+
+                try {
+                    // 等待地图 JS 加载完成
+                    await this.loadMapScript();
+                    // 初始化地图
+                    this.initMap();
+                } catch (error) {
+                    console.error('加载腾讯地图失败：', error);
+                }
+            }
+
+            initParams() {
+                // 获取当前URL的查询参数
+                const urlParams = new URLSearchParams(window.location.search);
+
+                // 遍历 params 对象的所有属性
+                Object.keys(this.params).forEach(key => {
+                    // 从 URL 参数中获取值
+                    const value = urlParams.get(key);
+                    if (value !== null) {
+                        // 根据参数类型进行转换
+                        switch (key) {
+                            case 'radius':
+                                // 转换为数字
+                                this.params[key] = parseInt(value) || 300;
+                                break;
+                            case 'point':
+                                // 转换为坐标数组
+                                const [lng, lat] = value.replace(/[|-]/, ',').split(',').map(parseFloat);
+                                if (lng && lat) {
+                                    this.params[key] = {lng, lat};
+                                }
+                                break;
+                            default:
+                                // 字符串类型直接赋值
+                                this.params[key] = value;
+                        }
+                    }
+                });
+
+                // 设置主题风格
+                if (!['dark', 'light'].includes(this.params.theme)) {
+                    this.params.theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.classList.add(`theme-${this.params.theme}`);
+                document.body.style.backgroundColor = "#ffffff";
+            }
+
+            // 初始化地图
+            initMap() {
+                const center = this.params.point ? 
+                    new TMap.LatLng(this.params.point.lat, this.params.point.lng) : 
+                    new TMap.LatLng(39.915, 116.404);
+                
+                this.map = new TMap.Map(this.containerId, {
+                    center: center,
+                    zoom: this.params.zoom
+                });
+
+                if (this.params.point) {
+                    this.centerPoint = center;
+                    this.handleMapClick({latLng: center});
+                } else {
+                    this.centerPoint = center;
+                }
+
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                this.map.on('click', (e) => this.handleMapClick(e));
+                
+                // 监听父页面消息
+                window.addEventListener('message', (event) => {
+                    if (event.data.action === 'update_radius') {
+                        const newRadius = parseInt(event.data.radius);
+                        if (newRadius && newRadius >= 50 && newRadius <= 5000) {
+                            this.params.radius = newRadius;
+                            if (this.circle) {
+                                this.updateMarkerAndCircle();
+                                this.updateInfoPanel();
+                            }
+                        }
+                    }
+                });
+            }
+
+            handleMapClick(e) {
+                this.centerPoint = e.latLng;
+
+                if (this.isFirstClick) {
+                    this.createMarkerAndCircle();
+                    this.isFirstClick = false;
+                } else {
+                    this.updateMarkerAndCircle();
+                }
+
+                this.updateInfoPanel();
+            }
+
+            createMarkerAndCircle() {
+                this.createMarker();
+                this.createCircle();
+            }
+
+            createMarker() {
+                if (this.marker) {
+                    this.marker.setMap(null);
+                }
+                
+                // 使用MultiMarker，但不设置自定义样式，使用默认样式
+                this.marker = new TMap.MultiMarker({
+                    map: this.map,
+                    geometries: [{
+                        id: 'marker1',
+                        position: this.centerPoint
+                    }]
+                });
+            }
+
+            createCircle() {
+                if (this.circle) {
+                    this.circle.setMap(null);
+                }
+                
+                // 使用MultiCircle，但不设置自定义样式，使用默认样式
+                this.circle = new TMap.MultiCircle({
+                    map: this.map,
+                    geometries: [{
+                        id: 'circle1',
+                        center: this.centerPoint,
+                        radius: this.params.radius
+                    }]
+                });
+            }
+
+            updateMarkerAndCircle() {
+                if (this.marker) {
+                    this.marker.updateGeometries([{
+                        id: 'marker1',
+                        position: this.centerPoint
+                    }]);
+                }
+                
+                if (this.circle) {
+                    this.circle.updateGeometries([{
+                        id: 'circle1',
+                        center: this.centerPoint,
+                        radius: this.params.radius
+                    }]);
+                }
+            }
+
+            updateInfoPanel() {
+                const data = {
+                    longitude: this.centerPoint.lng.toFixed(6),
+                    latitude: this.centerPoint.lat.toFixed(6),
+                    radius: this.params.radius.toString()
+                }
+                
+                // 发送消息给父页面
+                window.parent.postMessage(Object.assign(data, {
+                    action: "tencent_lbs_select_point",
+                }), "*");
+            }
+
+            // 获取当前选择的数据
+            getData() {
+                if (!this.circle) return null;
+
+                return {
+                    center: {
+                        lng: this.centerPoint.lng,
+                        lat: this.centerPoint.lat
+                    },
+                    radius: this.params.radius
+                };
+            }
+
+            // 设置中心点和半径
+            setData(lng, lat, radius) {
+                this.centerPoint = new TMap.LatLng(lat, lng);
+                this.params.radius = radius || this.params.radius;
+
+                if (this.isFirstClick) {
+                    this.createMarkerAndCircle();
+                    this.isFirstClick = false;
+                } else {
+                    this.updateMarkerAndCircle();
+                }
+
+                this.updateInfoPanel();
+                this.map.setCenter(this.centerPoint);
+            }
+
+            loadMapScript() {
+                return new Promise((resolve, reject) => {
+                    // 如果已经加载过，直接返回
+                    if (window.TMap) {
+                        resolve();
+                        return;
+                    }
+
+                    // 创建script标签
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = `https://map.qq.com/api/gljs?v=1.exp&key=${this.params.key}&callback=initTencentMap`;
+
+                    // 添加回调函数
+                    window.initTencentMap = () => {
+                        resolve();
+                        delete window.initTencentMap;
+                    };
+
+                    // 处理加载错误
+                    script.onerror = () => {
+                        reject(new Error('腾讯地图脚本加载失败'));
+                    };
+
+                    // 添加到页面
+                    document.body.appendChild(script);
+                });
+            }
+        }
+
+        // 页面加载完成后初始化
+        window.onload = function () {
+            window.pickup = new TencentPickup("map-container");
+        };
+    </script>
+</head>
+<body>
+<div id="map-container"></div>
+</body>
+</html> 
