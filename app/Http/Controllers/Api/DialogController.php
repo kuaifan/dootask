@@ -1690,7 +1690,9 @@ class DialogController extends AbstractController
      *
      * @apiParam {Number} dialog_id             对话ID
      * @apiParam {String} type                  位置类型
-     * - bd: 百度地图
+     * - baidu: 百度地图
+     * - amap: 高德地图
+     * - tencent: 腾讯地图
      * @apiParam {Number} lng                   经度
      * @apiParam {Number} lat                   纬度
      * @apiParam {String} title                 位置名称
@@ -1725,7 +1727,7 @@ class DialogController extends AbstractController
         //
         WebSocketDialog::checkDialog($dialog_id);
         //
-        if ($type == 'bd') {
+        if (in_array($type, ['baidu', 'amap', 'tencent'])) {
             $msgData = [
                 'type' => $type,
                 'lng' => $lng,

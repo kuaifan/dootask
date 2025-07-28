@@ -501,6 +501,27 @@ class BaiduMapPicker {
     }
 
     /**
+     * 生成百度地图缩略图
+     * @param point
+     * @returns {string}
+     */
+    generateThumb(point) {
+        if (!point || !this.params.key) return null;
+        
+        const params = new URLSearchParams({
+            ak: this.params.key,
+            center: `${point.lng},${point.lat}`,
+            markers: `${point.lng},${point.lat}`,
+            width: 800,
+            height: 480,
+            zoom: 17,
+            copyright: 1,
+        });
+        
+        return `https://api.map.baidu.com/staticimage/v2?${params.toString()}`;
+    }
+
+    /**
      * 更新搜索结果列表
      * @param pois
      */
@@ -547,8 +568,9 @@ class BaiduMapPicker {
                 const point = poi.point;
                 this.updateMarker(point);
                 this.map.setCenter(point);
-                //
-                App.setVariate("location::" + this.params.channel, JSON.stringify(poi));
+                App.setVariate("location::" + this.params.channel, JSON.stringify(Object.assign(poi, {
+                    thumb: this.generateThumb(poi.point)
+                })));
                 if (this.params.selectclose) {
                     App.closePage();
                 }
@@ -632,8 +654,830 @@ class BaiduMapPicker {
     }
 }
 
+// 高德地图选点类
+class AmapPicker {
+    constructor() {
+        this.map = null;
+        this.marker = null;
+        this.placeSearch = null;
+        this.currentPoint = null;
+        this.params = {
+            theme: 'light',
+            key: null,
+            title: null,
+            label: null,
+            placeholder: null,
+            point: null,
+            noresult: null,
+            radius: 300,
+            zoom: 16,
+            errtip: null,
+            channel: null,
+            selectclose: false,
+        };
+        this.init();
+    }
+
+    async init() {
+        this.initParams();
+        if (!this.params.key) {
+            console.error('未提供高德地图 API Key');
+            return;
+        }
+        
+        try {
+            await this.loadMapScript();
+            this.initMap();
+        } catch (error) {
+            console.error('加载高德地图失败：', error);
+        }
+    }
+
+    initParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        Object.keys(this.params).forEach(key => {
+            const value = urlParams.get(key);
+            if (value !== null) {
+                switch (key) {
+                    case 'radius':
+                        this.params[key] = parseInt(value) || 300;
+                        break;
+                    case 'point':
+                        const [lng, lat] = value.replace(/[|-]/, ',').split(',').map(parseFloat);
+                        if (lng && lat) {
+                            this.params[key] = {lng, lat};
+                        }
+                        break;
+                    default:
+                        this.params[key] = value;
+                }
+            }
+        });
+
+        if (!['dark', 'light'].includes(this.params.theme)) {
+            this.params.theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.classList.add(`theme-${this.params.theme}`);
+        document.body.style.backgroundColor = "#ffffff";
+
+        if (this.params.title) document.title = this.params.title;
+        if (this.params.placeholder) document.getElementById('search-input').placeholder = this.params.placeholder;
+        if (this.params.label) document.getElementById('address-label').innerText = this.params.label;
+    }
+
+    initMap() {
+        this.map = new AMap.Map('map-container', {
+            zoom: this.params.zoom,
+            center: this.params.point ? [this.params.point.lng, this.params.point.lat] : [116.404, 39.915],
+            keyboardEnable: false
+        });
+
+        // 设置签到范围圆形
+        if (this.params.point) {
+            const circle = new AMap.Circle({
+                center: [this.params.point.lng, this.params.point.lat],
+                radius: this.params.radius,
+                strokeColor: '#333333',
+                strokeWeight: 1,
+                strokeOpacity: 0.3,
+                fillColor: '#333333',
+                fillOpacity: 0.1,
+                map: this.map
+            });
+        }
+
+        this.bindEvents();
+        this.getCurrentLocation().catch(error => {
+            this.locationError(error);
+        }).finally(() => {
+            document.getElementById('map-location').style.display = 'block';
+        });
+    }
+
+    bindEvents() {
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') searchInput.blur();
+        });
+        searchInput.addEventListener('blur', () => this.searchAddress());
+
+        document.getElementById('map-location').addEventListener('click', () => {
+            this.getCurrentLocation().catch(error => this.locationError(error));
+        });
+    }
+
+    getCurrentLocation() {
+        return new Promise((resolve, reject) => {
+            Loader.show();
+            App.getLocation().then(res => {
+                Loader.hide();
+                if (!App.isJson(res) || res.status !== 'success') {
+                    reject(res.error || "unknown error");
+                    return;
+                }
+                // WGS84坐标转换为GCJ02坐标系（高德地图使用的坐标系）
+                const gcj02_coord = CoordTransform.wgs84ToGcj02(res.longitude, res.latitude);
+                const point = [gcj02_coord[0], gcj02_coord[1]];
+                this.updateCurrentPoint(point);
+                resolve(point);
+            });
+        });
+    }
+
+    updateCurrentPoint(point) {
+        this.currentPoint = point;
+        this.map.setCenter(point);
+        this.map.setZoom(this.params.zoom);
+        this.updateMarker(point);
+        this.searchAddress();
+    }
+
+    updateMarker(point) {
+        if (this.marker) {
+            this.marker.setPosition(point);
+        } else {
+            this.marker = new AMap.Marker({
+                position: point,
+                map: this.map
+            });
+        }
+    }
+
+    searchAddress() {
+        const keyword = document.getElementById('search-input').value.trim();
+        if (keyword) {
+            this.searchKeyword(keyword);
+        } else {
+            this.searchLocation();
+        }
+    }
+
+    searchKeyword(keyword) {
+        if (!keyword || !this.currentPoint) return;
+        
+        Loader.show();
+        // 使用Web服务API进行搜索，避免密钥平台不匹配问题
+        const searchUrl = `https://restapi.amap.com/v3/place/around?key=${this.params.key}&location=${this.currentPoint[0]},${this.currentPoint[1]}&keywords=${encodeURIComponent(keyword)}&radius=${this.params.radius}&offset=20&page=1&extensions=all`;
+        
+        fetch(searchUrl)
+            .then(response => response.json())
+            .then(data => {
+                Loader.hide();
+                console.log('高德地图Web服务搜索结果:', data);
+                if (data.status === '1' && data.pois) {
+                    // 转换数据格式以匹配原有的处理逻辑
+                    const pois = data.pois.map(poi => ({
+                        name: poi.name,
+                        address: poi.address,
+                        location: {
+                            lng: parseFloat(poi.location.split(',')[0]),
+                            lat: parseFloat(poi.location.split(',')[1])
+                        }
+                    }));
+                    this.updatePoiList(pois);
+                } else {
+                    console.log('高德地图Web服务搜索失败:', data);
+                    this.updatePoiList([]);
+                }
+            })
+            .catch(error => {
+                Loader.hide();
+                console.error('高德地图Web服务搜索错误:', error);
+                this.updatePoiList([]);
+            });
+    }
+
+    searchLocation() {
+        if (!this.currentPoint) return;
+        
+        Loader.show();
+        // 使用Web服务API获取附近POI，避免密钥平台不匹配问题
+        const geocodeUrl = `https://restapi.amap.com/v3/geocode/regeo?key=${this.params.key}&location=${this.currentPoint[0]},${this.currentPoint[1]}&radius=${this.params.radius}&extensions=all&batch=false&roadlevel=0`;
+        
+        fetch(geocodeUrl)
+            .then(response => response.json())
+            .then(data => {
+                Loader.hide();
+                console.log('高德地图Web服务逆地理编码结果:', data);
+                if (data.status === '1' && data.regeocode && data.regeocode.pois) {
+                    // 转换数据格式以匹配原有的处理逻辑
+                    const pois = data.regeocode.pois.map(poi => ({
+                        name: poi.name,
+                        address: poi.address,
+                        location: {
+                            lng: parseFloat(poi.location.split(',')[0]),
+                            lat: parseFloat(poi.location.split(',')[1])
+                        }
+                    }));
+                    this.updatePoiList(pois);
+                } else {
+                    console.log('高德地图Web服务逆地理编码失败:', data);
+                    // 如果没有POI数据，尝试使用周边搜索
+                    this.searchNearbyPlaces();
+                }
+            })
+            .catch(error => {
+                Loader.hide();
+                console.error('高德地图Web服务逆地理编码错误:', error);
+                // 网络错误时尝试周边搜索
+                this.searchNearbyPlaces();
+            });
+    }
+
+    // 周边地点搜索的备用方法
+    searchNearbyPlaces() {
+        if (!this.currentPoint) return;
+        
+        Loader.show();
+        // 搜索常见的POI类型
+        const keywords = ['餐厅|商店|银行|医院|学校|酒店|超市|加油站'];
+        const searchUrl = `https://restapi.amap.com/v3/place/around?key=${this.params.key}&location=${this.currentPoint[0]},${this.currentPoint[1]}&keywords=${keywords}&radius=${this.params.radius}&offset=20&page=1&extensions=all`;
+        
+        fetch(searchUrl)
+            .then(response => response.json())
+            .then(data => {
+                Loader.hide();
+                console.log('高德地图周边搜索结果:', data);
+                if (data.status === '1' && data.pois) {
+                    const pois = data.pois.map(poi => ({
+                        name: poi.name,
+                        address: poi.address,
+                        location: {
+                            lng: parseFloat(poi.location.split(',')[0]),
+                            lat: parseFloat(poi.location.split(',')[1])
+                        }
+                    }));
+                    this.updatePoiList(pois);
+                } else {
+                    console.log('高德地图周边搜索也失败:', data);
+                    this.updatePoiList([]);
+                }
+            })
+            .catch(error => {
+                Loader.hide();
+                console.error('高德地图周边搜索错误:', error);
+                this.updatePoiList([]);
+            });
+    }
+
+    /**
+     * 生成高德地图缩略图
+     * @param point
+     * @returns {string}
+     */
+    generateThumb(point) {
+        if (!point || !this.params.key) return null;
+        
+        const params = new URLSearchParams({
+            key: this.params.key,
+            location: `${point.lng},${point.lat}`,
+            zoom: 17,
+            size: '800*480',
+            markers: `mid,,A:${point.lng},${point.lat}`,
+        });
+        
+        return `https://restapi.amap.com/v3/staticmap?${params.toString()}`;
+    }
+
+    updatePoiList(pois) {
+        const addressList = document.getElementById('address-list');
+        addressList.style.display = 'flex';
+
+        const poiList = document.getElementById('poi-list');
+        poiList.innerHTML = '';
+
+        console.log('高德地图POI列表:', pois);
+
+        if (pois.length === 0) {
+            if (this.params.noresult) {
+                poiList.innerHTML = '<li><div class="address-noresult">' + this.params.noresult + '</div></li>';
+            }
+            return;
+        }
+
+        // 计算距离并过滤
+        const filteredPois = pois.filter(poi => {
+            // 确保POI有位置信息
+            if (!poi.location) {
+                console.log('POI缺少位置信息:', poi);
+                return false;
+            }
+            
+            // 计算到签到中心点的距离
+            if (this.params.point) {
+                poi.distance = this.calculateDistance(
+                    this.params.point.lat, this.params.point.lng,
+                    poi.location.lat, poi.location.lng
+                );
+            } else {
+                poi.distance = null;
+            }
+            
+            // 计算到当前位置的距离
+            poi.distance_current = this.calculateDistance(
+                this.currentPoint[1], this.currentPoint[0],
+                poi.location.lat, poi.location.lng
+            );
+            
+            return poi.distance_current < this.params.radius + 100;
+        }).sort((a, b) => a.distance_current - b.distance_current).slice(0, 20);
+
+        console.log('过滤后的POI列表:', filteredPois);
+
+        filteredPois.forEach(poi => {
+            const li = document.createElement('li');
+            const distanceFormat = poi.distance ? `<div class="address-distance">${this.convertDistance(Math.round(poi.distance))}</div>` : '';
+            li.innerHTML = `
+                <div class="address-name">${poi.name || poi.title}</div>
+                <div class="address-detail">${poi.address || ""}${distanceFormat}</div>
+            `;
+            li.addEventListener('click', () => {
+                const point = [poi.location.lng, poi.location.lat];
+                this.updateMarker(point);
+                this.map.setCenter(point);
+                App.setVariate("location::" + this.params.channel, JSON.stringify({
+                    title: poi.name || poi.title,
+                    address: poi.address || "",
+                    point: {lng: poi.location.lng, lat: poi.location.lat},
+                    distance: poi.distance,
+                    thumb: this.generateThumb(poi.location)
+                }));
+                if (this.params.selectclose) {
+                    App.closePage();
+                }
+            });
+            poiList.appendChild(li);
+        });
+    }
+
+    // 简单的距离计算方法（当AMap.GeometryUtil不可用时使用）
+    calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371000; // 地球半径（米）
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    convertDistance(d) {
+        if (d > 1000) {
+            return (d / 1000).toFixed(1) + 'km';
+        }
+        return d.toString() + 'm';
+    }
+
+    locationError(error) {
+        if (this.params.errtip) {
+            alert(this.params.errtip + '：' + error);
+        } else {
+            alert(error);
+        }
+    }
+
+    loadMapScript() {
+        return new Promise((resolve, reject) => {
+            if (window.AMap) {
+                resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            // 只加载基础地图API，POI搜索使用Web服务API
+            script.src = `https://webapi.amap.com/maps?v=1.4.15&key=${this.params.key}&callback=initAmapMap`;
+
+            window.initAmapMap = () => {
+                console.log('高德地图加载完成');
+                resolve();
+                delete window.initAmapMap;
+            };
+
+            script.onerror = () => {
+                reject(new Error('高德地图脚本加载失败'));
+            };
+
+            document.body.appendChild(script);
+        });
+    }
+}
+
+// 腾讯地图选点类
+class TencentMapPicker {
+    constructor() {
+        this.map = null;
+        this.marker = null;
+        this.currentPoint = null;
+        this.params = {
+            theme: 'light',
+            key: null,
+            title: null,
+            label: null,
+            placeholder: null,
+            point: null,
+            noresult: null,
+            radius: 300,
+            zoom: 16,
+            errtip: null,
+            channel: null,
+            selectclose: false,
+        };
+        this.init();
+    }
+
+    async init() {
+        this.initParams();
+        if (!this.params.key) {
+            console.error('未提供腾讯地图 API Key');
+            return;
+        }
+        
+        try {
+            await this.loadMapScript();
+            this.initMap();
+        } catch (error) {
+            console.error('加载腾讯地图失败：', error);
+        }
+    }
+
+    initParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        Object.keys(this.params).forEach(key => {
+            const value = urlParams.get(key);
+            if (value !== null) {
+                switch (key) {
+                    case 'radius':
+                        this.params[key] = parseInt(value) || 300;
+                        break;
+                    case 'point':
+                        const [lng, lat] = value.replace(/[|-]/, ',').split(',').map(parseFloat);
+                        if (lng && lat) {
+                            this.params[key] = {lng, lat};
+                        }
+                        break;
+                    default:
+                        this.params[key] = value;
+                }
+            }
+        });
+
+        if (!['dark', 'light'].includes(this.params.theme)) {
+            this.params.theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.classList.add(`theme-${this.params.theme}`);
+        document.body.style.backgroundColor = "#ffffff";
+
+        if (this.params.title) document.title = this.params.title;
+        if (this.params.placeholder) document.getElementById('search-input').placeholder = this.params.placeholder;
+        if (this.params.label) document.getElementById('address-label').innerText = this.params.label;
+    }
+
+    initMap() {
+        const center = this.params.point ? 
+            new TMap.LatLng(this.params.point.lat, this.params.point.lng) : 
+            new TMap.LatLng(39.915, 116.404);
+            
+        this.map = new TMap.Map('map-container', {
+            center: center,
+            zoom: this.params.zoom,
+            disableKeyboard: true,
+            showControl: false,
+            showScale: false,
+            showZoom: false
+        });
+
+        // 设置签到范围圆形
+        if (this.params.point) {
+            const circle = new TMap.MultiCircle({
+                map: this.map,
+                geometries: [{
+                    id: 'circle1',
+                    center: new TMap.LatLng(this.params.point.lat, this.params.point.lng),
+                    radius: this.params.radius
+                }]
+            });
+        }
+
+        this.bindEvents();
+        this.getCurrentLocation().catch(error => {
+            this.locationError(error);
+        }).finally(() => {
+            document.getElementById('map-location').style.display = 'block';
+        });
+    }
+
+    bindEvents() {
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') searchInput.blur();
+        });
+        searchInput.addEventListener('blur', () => this.searchAddress());
+
+        document.getElementById('map-location').addEventListener('click', () => {
+            this.getCurrentLocation().catch(error => this.locationError(error));
+        });
+    }
+
+    getCurrentLocation() {
+        return new Promise((resolve, reject) => {
+            Loader.show();
+            App.getLocation().then(res => {
+                Loader.hide();
+                if (!App.isJson(res) || res.status !== 'success') {
+                    reject(res.error || "unknown error");
+                    return;
+                }
+                // WGS84坐标转换为GCJ02坐标系（腾讯地图使用的坐标系）
+                const gcj02_coord = CoordTransform.wgs84ToGcj02(res.longitude, res.latitude);
+                const point = new TMap.LatLng(gcj02_coord[1], gcj02_coord[0]);
+                this.updateCurrentPoint(point);
+                resolve(point);
+            });
+        });
+    }
+
+    updateCurrentPoint(point) {
+        this.currentPoint = point;
+        this.map.setCenter(point);
+        this.map.setZoom(this.params.zoom);
+        this.updateMarker(point);
+        this.searchAddress();
+    }
+
+    updateMarker(point) {
+        if (this.marker) {
+            this.marker.updateGeometries([{
+                id: 'marker1',
+                position: point
+            }]);
+        } else {
+            this.marker = new TMap.MultiMarker({
+                map: this.map,
+                geometries: [{
+                    id: 'marker1',
+                    position: point
+                }]
+            });
+        }
+    }
+
+    searchAddress() {
+        const keyword = document.getElementById('search-input').value.trim();
+        if (keyword) {
+            this.searchKeyword(keyword);
+        } else {
+            this.searchLocation();
+        }
+    }
+
+    searchKeyword(keyword) {
+        if (!this.currentPoint || !keyword) {
+            this.updatePoiList([]);
+            return;
+        }
+        
+        Loader.show();
+        // 使用JSONP方式调用腾讯地图Web服务API，避免跨域
+        this.searchWithJsonp(`https://apis.map.qq.com/ws/place/v1/search?boundary=nearby(${this.currentPoint.lat},${this.currentPoint.lng},${this.params.radius})&keyword=${encodeURIComponent(keyword)}&page_size=20&page_index=1&orderby=_distance&key=${this.params.key}&output=jsonp&callback=tencentSearchCallback`);
+    }
+
+    searchLocation() {
+        if (!this.currentPoint) return;
+        
+        Loader.show();
+        // 使用JSONP方式调用腾讯地图逆地理编码API
+        this.searchWithJsonp(`https://apis.map.qq.com/ws/geocoder/v1/?location=${this.currentPoint.lat},${this.currentPoint.lng}&key=${this.params.key}&get_poi=1&poi_options=radius=${this.params.radius};page_size=20&output=jsonp&callback=tencentGeocodeCallback`);
+    }
+
+    searchWithJsonp(url) {
+        // 生成唯一的回调函数名
+        const callbackId = 'tencentCallback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const isSearchApi = url.includes('/place/v1/search');
+        const actualCallback = isSearchApi ? 'tencentSearchCallback' : 'tencentGeocodeCallback';
+        
+        // 替换URL中的回调函数名
+        const actualUrl = url.replace(/callback=[^&]+/, `callback=${actualCallback}`);
+        
+        // 保存this引用
+        const self = this;
+        
+        // 设置全局回调函数
+        if (isSearchApi) {
+            window.tencentSearchCallback = (data) => {
+                Loader.hide();
+                console.log('腾讯地图JSONP搜索结果:', data);
+                if (data.status === 0 && data.data) {
+                    const pois = data.data.map(item => ({
+                        title: item.title,
+                        address: item.address,
+                        point: {lng: item.location.lng, lat: item.location.lat},
+                        distance: self.params.point ? self.calculateDistance(
+                            self.params.point.lat, self.params.point.lng,
+                            item.location.lat, item.location.lng
+                        ) : null
+                    }));
+                    self.updatePoiList(pois);
+                } else {
+                    console.log('腾讯地图JSONP搜索失败:', data);
+                    self.updatePoiList([]);
+                }
+                // 清理全局回调函数
+                setTimeout(() => {
+                    delete window.tencentSearchCallback;
+                }, 100);
+            };
+        } else {
+            window.tencentGeocodeCallback = (data) => {
+                Loader.hide();
+                console.log('腾讯地图JSONP逆地理编码结果:', data);
+                if (data.status === 0 && data.result) {
+                    const pois = [];
+                    
+                    // 只添加附近POI，不添加当前位置
+                    if (data.result.pois) {
+                        data.result.pois.forEach(poi => {
+                            pois.push({
+                                title: poi.title,
+                                address: poi.address,
+                                point: {lng: poi.location.lng, lat: poi.location.lat},
+                                distance: self.params.point ? self.calculateDistance(
+                                    self.params.point.lat, self.params.point.lng,
+                                    poi.location.lat, poi.location.lng
+                                ) : null
+                            });
+                        });
+                    }
+                    
+                    self.updatePoiList(pois);
+                } else {
+                    console.log('腾讯地图JSONP逆地理编码失败:', data);
+                    self.updatePoiList([]);
+                }
+                // 清理全局回调函数
+                setTimeout(() => {
+                    delete window.tencentGeocodeCallback;
+                }, 100);
+            };
+        }
+
+        // 创建script标签进行JSONP调用
+        const script = document.createElement('script');
+        script.src = actualUrl;
+        script.onerror = () => {
+            Loader.hide();
+            console.error('腾讯地图JSONP调用失败');
+            self.updatePoiList([]);
+            // 清理
+            document.body.removeChild(script);
+            if (isSearchApi) {
+                delete window.tencentSearchCallback;
+            } else {
+                delete window.tencentGeocodeCallback;
+            }
+        };
+        
+        script.onload = () => {
+            // 移除script标签
+            setTimeout(() => {
+                if (document.body.contains(script)) {
+                    document.body.removeChild(script);
+                }
+            }, 100);
+        };
+
+        document.body.appendChild(script);
+    }
+
+    calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371000; // 地球半径（米）
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    /**
+     * 生成腾讯地图缩略图
+     * @param point
+     * @returns {string}
+     */
+    generateThumb(point) {
+        if (!point || !this.params.key) return null;
+        
+        const params = new URLSearchParams({
+            key: this.params.key,
+            center: `${point.lat},${point.lng}`,
+            zoom: 18,
+            size: '800*480',
+            maptype: 'roadmap',
+            markers: `size:large|color:0xFF0000|label:A|${point.lat},${point.lng}`,
+        });
+        
+        return `https://apis.map.qq.com/ws/staticmap/v2/?${params.toString()}`;
+    }
+
+    updatePoiList(pois) {
+        const addressList = document.getElementById('address-list');
+        addressList.style.display = 'flex';
+
+        const poiList = document.getElementById('poi-list');
+        poiList.innerHTML = '';
+
+        if (pois.length === 0) {
+            if (this.params.noresult) {
+                poiList.innerHTML = '<li><div class="address-noresult">' + this.params.noresult + '</div></li>';
+            }
+            return;
+        }
+
+        pois.forEach(poi => {
+            const li = document.createElement('li');
+            const distanceFormat = poi.distance ? `<div class="address-distance">${this.convertDistance(Math.round(poi.distance))}</div>` : '';
+            li.innerHTML = `
+                <div class="address-name">${poi.title}</div>
+                <div class="address-detail">${poi.address || ""}${distanceFormat}</div>
+            `;
+            li.addEventListener('click', () => {
+                const point = new TMap.LatLng(poi.point.lat, poi.point.lng);
+                this.updateMarker(point);
+                this.map.setCenter(point);
+                App.setVariate("location::" + this.params.channel, JSON.stringify(Object.assign(poi, {
+                    thumb: this.generateThumb(poi.point)
+                })));
+                if (this.params.selectclose) {
+                    App.closePage();
+                }
+            });
+            poiList.appendChild(li);
+        });
+    }
+
+    convertDistance(d) {
+        if (d > 1000) {
+            return (d / 1000).toFixed(1) + 'km';
+        }
+        return d.toString() + 'm';
+    }
+
+    locationError(error) {
+        if (this.params.errtip) {
+            alert(this.params.errtip + '：' + error);
+        } else {
+            alert(error);
+        }
+    }
+
+    loadMapScript() {
+        return new Promise((resolve, reject) => {
+            if (window.TMap) {
+                resolve();
+                return;
+            }
+
+            // 只加载GL版本用于地图显示，POI搜索使用JSONP调用Web服务API
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = `https://map.qq.com/api/gljs?v=1.exp&key=${this.params.key}&callback=initTencentMap`;
+
+            window.initTencentMap = () => {
+                resolve();
+                delete window.initTencentMap;
+            };
+
+            script.onerror = () => {
+                reject(new Error('腾讯地图脚本加载失败'));
+            };
+
+            document.body.appendChild(script);
+        });
+    }
+}
+
+// 地图工厂类
+class MapFactory {
+    static createMap() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mapType = urlParams.get('type') || 'baidu';
+        
+        switch (mapType) {
+            case 'amap':
+                return new AmapPicker();
+            case 'tencent':
+                return new TencentMapPicker();
+            case 'baidu':
+            default:
+                return new BaiduMapPicker();
+        }
+    }
+}
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
     new App();
-    new BaiduMapPicker();
+    MapFactory.createMap();
 });

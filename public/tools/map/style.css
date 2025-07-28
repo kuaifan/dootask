@@ -73,11 +73,11 @@ body {
     position: relative;
     display: flex;
     flex: 1;
+    min-height: 240px;
 }
 
 #map-container {
     flex: 1;
-    min-height: 240px;
 }
 
 #map-location {
@@ -85,7 +85,7 @@ body {
     position: absolute;
     bottom: 16px;
     right: 16px;
-    z-index: 100;
+    z-index: 9999;
     background: #fff;
     border-radius: 4px;
     cursor: pointer;
