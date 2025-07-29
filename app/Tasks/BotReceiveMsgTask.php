@@ -599,9 +599,7 @@ class BotReceiveMsgTask extends AbstractTask
      */
     private function extractMessageContent(WebSocketDialogMsg $msg)
     {
-        $result = '';
         $reserves = [];
-
         switch ($msg->type) {
             case "file":
                 // 提取文件消息
@@ -656,7 +654,9 @@ class BotReceiveMsgTask extends AbstractTask
                 ], $result);
 
                 // 转成 markdown
-                $result = Base::html2markdown($result);
+                if ($msg->msg['type'] !== 'md') {
+                    $result = Base::html2markdown($result);
+                }
                 break;
 
             default:
