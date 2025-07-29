@@ -12,7 +12,6 @@ use App\Tasks\PushTask;
 use App\Exceptions\ApiException;
 use App\Observers\ProjectTaskObserver;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
-use League\HTMLToMarkdown\HtmlConverter;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -1958,8 +1957,7 @@ class ProjectTask extends AbstractModel
         if ($this->content) {
             $taskDesc = $this->content?->getContentInfo();
             if ($taskDesc) {
-                $converter = new HtmlConverter(['strip_tags' => true]);
-                $descContent = Base::cutStr($converter->convert($taskDesc['content']), 2000);
+                $descContent = Base::cutStr(Base::html2markdown($taskDesc['content'], ['strip_tags' => true]), 2000);
                 $contexts[] = <<<EOF
                     任务描述：
                     ```md

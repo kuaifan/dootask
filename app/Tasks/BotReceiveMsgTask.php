@@ -23,7 +23,7 @@ use DB;
 
 /**
  * 机器人消息接收处理任务
- * 
+ *
  * @package App\Tasks
  */
 class BotReceiveMsgTask extends AbstractTask
@@ -37,7 +37,7 @@ class BotReceiveMsgTask extends AbstractTask
     /**
      * 构造函数
      * 初始化机器人消息处理任务的相关参数
-     * 
+     *
      * @param int $userid 机器人用户ID
      * @param int $msgId 消息ID
      * @param array $mentions 提及的用户ID数组
@@ -95,7 +95,7 @@ class BotReceiveMsgTask extends AbstractTask
     /**
      * 处理机器人接收到的消息
      * 根据消息类型和机器人类型执行相应的处理逻辑
-     * 
+     *
      * @param WebSocketDialogMsg $msg 接收到的消息对象
      * @param User $botUser 机器人用户对象
      * @return void
@@ -421,7 +421,7 @@ class BotReceiveMsgTask extends AbstractTask
     /**
      * 处理机器人Webhook请求
      * 根据机器人类型（AI机器人或用户机器人）发送相应的Webhook请求
-     * 
+     *
      * @param string $sendText 发送的文本内容
      * @param string $replyText 回复的文本内容
      * @param WebSocketDialogMsg $msg 消息对象
@@ -593,27 +593,31 @@ class BotReceiveMsgTask extends AbstractTask
     /**
      * 提取消息内容
      * 根据消息类型（文件、文本等）提取相应的内容文本
-     * 
+     *
      * @param WebSocketDialogMsg $msg 消息对象
      * @return string 提取出的消息文本内容
      */
     private function extractMessageContent(WebSocketDialogMsg $msg)
     {
+        $result = '';
+        $reserves = [];
+
         switch ($msg->type) {
             case "file":
                 // 提取文件消息
                 $msgData = Base::json2array($msg->getRawOriginal('msg'));
-                return $this->convertMentionFormat("path", $msgData['path'], $msgData['name']);
+                $result = $this->convertMentionFormat("path", $msgData['path'], $msgData['name'], $reserves);
+                break;
 
             case "text":
                 // 提取文本消息
-                $original = $msg->msg['text'] ?: '';
-                if (empty($original)) {
+                $result = $msg->msg['text'] ?: '';
+                if (empty($result)) {
                     return '';
                 }
 
                 // 提取快捷键
-                if (preg_match("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
+                if (preg_match("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/span>/is", $result, $match)) {
                     $command = $match[2] ?? '';
                     $command = preg_replace("/^%3A\.?/", ":", $command);
                     $command = trim($command);
@@ -623,63 +627,73 @@ class BotReceiveMsgTask extends AbstractTask
                 }
 
                 // 提及任务、文件、报告
-                $original = preg_replace_callback_array([
+                $result = preg_replace_callback_array([
                     // 用户
                     "/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/" => function () {
                         return "";
                     },
 
                     // 任务
-                    "/<span class=\"mention task\" data-id=\"(\d+)\">(.*?)<\/span>/" => function ($match) {
-                        return $this->convertMentionFormat("task", $match[1], $match[2]);
+                    "/<span class=\"mention task\" data-id=\"(\d+)\">#?(.*?)<\/span>/" => function ($match) use (&$reserves) {
+                        return $this->convertMentionFormat("task", $match[1], $match[2], $reserves);
                     },
 
                     // 文件
-                    "/<a class=\"mention file\" href=\"([^\"']+?)\"[^>]*?>(.*?)<\/a>/" => function ($match) {
+                    "/<a class=\"mention file\" href=\"([^\"']+?)\"[^>]*?>~?(.*?)<\/a>/" => function ($match) use (&$reserves) {
                         if (preg_match("/single\/file\/(.*?)$/", $match[1], $subMatch)) {
-                            return $this->convertMentionFormat("file", $subMatch[1], $match[2]);
+                            return $this->convertMentionFormat("file", $subMatch[1], $match[2], $reserves);
                         }
                         return "";
                     },
 
                     // 报告
-                    "/<a class=\"mention report\" href=\"([^\"']+?)\"[^>]*?>(.*?)<\/a>/" => function ($match) {
+                    "/<a class=\"mention report\" href=\"([^\"']+?)\"[^>]*?>%?(.*?)<\/a>/" => function ($match) use (&$reserves) {
                         if (preg_match("/single\/report\/detail\/(.*?)$/", $match[1], $subMatch)) {
-                            return $this->convertMentionFormat("report", $subMatch[1], $match[2]);
+                            return $this->convertMentionFormat("report", $subMatch[1], $match[2], $reserves);
                         }
                         return "";
                     },
-                ], $original);
+                ], $result);
 
-                // 转成 markdown 并返回
-                return Base::html2markdown($original);
+                // 转成 markdown
+                $result = Base::html2markdown($result);
+                break;
 
             default:
                 // 其他类型消息不处理
                 return '';
         }
+
+        // 处理 reserves
+        foreach ($reserves as $rand => $mention) {
+            $result = str_replace($rand, $mention, $result);
+        }
+
+        return $result;
     }
 
     /**
      * 转换提及消息格式
      * 将提及的任务、文件、报告等转换为统一的格式 [type#key#name]
-     * 
+     *
      * @param string $type 提及类型（task、file、report、path）
      * @param string $key 提及对象的唯一标识
      * @param string $name 提及对象的显示名称
      * @return string 格式化后的提及字符串
      */
-    private function convertMentionFormat($type, $key, $name)
+    private function convertMentionFormat($type, $key, $name, &$reserves)
     {
-        $key = preg_replace('/[#\[\]]/', '', $key);
-        $name = preg_replace('/[#\[\]]/', '', $name);
-        return "[{$type}#{$key}#{$name}]";
+        $key = str_replace(['#', '-->'], '', $key);
+        $name = str_replace(['#', '-->'], '', $name);
+        $rand = Base::generatePassword(12);
+        $reserves[$rand] = "<!--{$type}#{$key}#{$name}-->";
+        return $rand;
     }
 
     /**
      * 为AI机器人转换提及消息格式
      * 将提及的任务、文件、报告转换为AI可理解的格式，并提取相关内容
-     * 
+     *
      * @param string $original 原始消息文本
      * @return string 转换后的消息文本，包含相关内容的标签
      * @throws Exception 当提及的对象不存在或读取失败时抛出异常
@@ -687,7 +701,7 @@ class BotReceiveMsgTask extends AbstractTask
     private function convertMentionForAI($original)
     {
         $array = [];
-        $original = preg_replace_callback('/\[([^#\[\]]+)#([^#\[\]]+)#([^#\[\]]*)\]/', function ($match) use (&$array) {
+        $original = preg_replace_callback('/<!--(.*?)#(.*?)#(.*?)-->/', function ($match) use (&$array) {
             // 初始化 tag 内容
             $pathTag = null;
             $pathName = null;
@@ -748,7 +762,7 @@ class BotReceiveMsgTask extends AbstractTask
                     }
                     $pathTag = "report_content";
                     $pathName = addslashes($match[3]) . " (ID:{$reportInfo->id})";
-                    $pathContent = $reportInfo->content;
+                    $pathContent = Base::html2markdown($reportInfo->content);
                     break;
             }
 
@@ -772,7 +786,7 @@ class BotReceiveMsgTask extends AbstractTask
     /**
      * 为AI机器人生成系统提示词
      * 根据对话类型（用户对话、项目群、任务群、部门群等）生成相应的系统提示词
-     * 
+     *
      * @param int|null $userid 用户ID
      * @param WebSocketDialog $dialog 对话对象
      * @param array $extras 额外参数数组，通过引用传递以修改system_message
@@ -867,7 +881,7 @@ class BotReceiveMsgTask extends AbstractTask
     /**
      * 获取机器人信息
      * 根据机器人ID和用户ID获取机器人的详细信息，包括清理设置和webhook配置
-     * 
+     *
      * @param int $botId 机器人ID
      * @param int $userid 用户ID
      * @return User|null 机器人用户对象，如果不存在则返回null

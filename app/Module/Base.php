@@ -3049,12 +3049,13 @@ class Base
     /**
      * html 转 MD(markdown)
      * @param $html
+     * @param array $options
      * @return mixed|string
      */
-    public static function html2markdown($html)
+    public static function html2markdown($html, $options = [])
     {
         try {
-            $converter = new HtmlConverter();
+            $converter = new HtmlConverter($options);
             return $converter->convert($html);
         } catch (\Exception) {
             return $html;
