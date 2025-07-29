@@ -2159,10 +2159,10 @@ class UsersController extends AbstractController
         $upUser = [];
         $upBot = [];
         //
-        if (isset($data['name'])) {
+        if (Arr::exists($data, 'name')) {
             $upUser['nickname'] = trim($data['name']);
         }
-        if (isset($data['avatar'])) {
+        if (Arr::exists($data, 'avatar')) {
             $avatar = $data['avatar'];
             $avatar = $avatar ? Base::unFillUrl(is_array($avatar) ? $avatar[0]['path'] : $avatar) : '';
             if (str_contains($avatar, 'avatar/')) {
@@ -2170,10 +2170,10 @@ class UsersController extends AbstractController
             }
             $upUser['userimg'] = $avatar;
         }
-        if (isset($data['clear_day'])) {
+        if (Arr::exists($data, 'clear_day')) {
             $upBot['clear_day'] = min(max(intval($data['clear_day']), 1), 999);
         }
-        if (isset($data['webhook_url'])) {
+        if (Arr::exists($data, 'webhook_url')) {
             $upBot['webhook_url'] = trim($data['webhook_url']);
         }
         //
