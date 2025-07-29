@@ -22,56 +22,85 @@ use Exception;
 use DB;
 
 /**
- * 推送会话消息
- * Class BotReceiveMsgTask
+ * 机器人消息接收处理任务
+ * 
  * @package App\Tasks
  */
 class BotReceiveMsgTask extends AbstractTask
 {
     protected $userid;          // 机器人ID
     protected $msgId;           // 消息ID
-    protected $mention;         // 是否提及
+    protected $mention;         // 是否提及（机器人被@，不含@所有人）
     protected $mentionOther;    // 是否提及其他人
     protected $client = [];     // 客户端信息（版本、语言、平台）
 
+    /**
+     * 构造函数
+     * 初始化机器人消息处理任务的相关参数
+     * 
+     * @param int $userid 机器人用户ID
+     * @param int $msgId 消息ID
+     * @param array $mentions 提及的用户ID数组
+     * @param array $client 客户端信息（版本、语言、平台等）
+     */
     public function __construct($userid, $msgId, $mentions, $client = [])
     {
         parent::__construct(...func_get_args());
         $this->userid = $userid;
         $this->msgId = $msgId;
-        $this->mention = array_intersect([$userid], $mentions) ? 1 : 0;     // 是否提及（不含@所有人）
-        $this->mentionOther = array_diff($mentions, [0, $userid]) ? 1 : 0;  // 是否提及其他人
+        $this->mention = array_intersect([$userid], $mentions) ? 1 : 0;
+        $this->mentionOther = array_diff($mentions, [0, $userid]) ? 1 : 0;
         $this->client = is_array($client) ? $client : [];
     }
 
+    /**
+     * 任务开始执行
+     * 验证机器人用户和消息的有效性，然后处理机器人接收到的消息
+     */
     public function start()
     {
+        // 判断是否是机器人用户
         $botUser = User::whereUserid($this->userid)->whereBot(1)->first();
         if (empty($botUser)) {
             return;
         }
+
+        // 判断消息是否存在
         $msg = WebSocketDialogMsg::with(['user'])->find($this->msgId);
         if (empty($msg)) {
             return;
         }
+
+        // 标记消息已读
         $msg->readSuccess($botUser->userid);
-        if (!$msg->user?->bot) {
-            $this->botReceiveBusiness($msg, $botUser);
+
+        // 判断消息是否是机器人发送的则不处理，避免循环
+        if (!$msg->user || $msg->user->bot) {
+            return;
         }
+
+        // 处理机器人消息
+        $this->processMessage($msg, $botUser);
     }
 
+    /**
+     * 任务结束回调
+     * 当前为空实现，可在此处添加清理逻辑
+     */
     public function end()
     {
 
     }
 
     /**
-     * 机器人处理消息
-     * @param WebSocketDialogMsg $msg
-     * @param User $botUser
+     * 处理机器人接收到的消息
+     * 根据消息类型和机器人类型执行相应的处理逻辑
+     * 
+     * @param WebSocketDialogMsg $msg 接收到的消息对象
+     * @param User $botUser 机器人用户对象
      * @return void
      */
-    private function botReceiveBusiness(WebSocketDialogMsg $msg, User $botUser)
+    private function processMessage(WebSocketDialogMsg $msg, User $botUser)
     {
         // 位置消息（仅支持签到机器人）
         if ($msg->type === 'location') {
@@ -88,16 +117,14 @@ class BotReceiveMsgTask extends AbstractTask
         }
 
         // 提取指令
-        try {
-            $command = $this->extractCommand($msg, $botUser, $this->mention);
-            if (empty($command)) {
-                return;
-            }
-        } catch (Exception $e) {
-            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
-                'type' => 'content',
-                'content' => $e->getMessage() ?: "指令解析失败。",
-            ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+        $sendText = $this->extractMessageContent($msg);
+        $replyText = null;
+        if ($msg->reply_id && $replyMsg = WebSocketDialogMsg::find($msg->reply_id)) {
+            $replyText = $this->extractMessageContent($replyMsg);
+        }
+
+        // 没有提取到指令，则不处理
+        if (empty($sendText) && empty($replyText)) {
             return;
         }
 
@@ -107,22 +134,22 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
 
-        // 如果是群聊，未提及丹提及其他人
-        if ($dialog->type === 'group' && !$this->mention && $this->mentionOther) {
+        // 如果是群聊，@别人但是没有@自己，则不处理
+        if ($dialog->type === 'group' && $this->mentionOther && !$this->mention) {
             return;
         }
 
         // 推送Webhook
-        $this->botWebhookBusiness($command, $msg, $botUser, $dialog);
+        $this->handleWebhookRequest($sendText, $replyText, $msg, $dialog, $botUser);
 
-        // 仅支持用户会话
+        // 如果不是用户对话，则只处理到这里
         if ($dialog->type !== 'user') {
             return;
         }
 
         // 签到机器人
         if ($botUser->email === 'check-in@bot.system') {
-            $content = UserBot::checkinBotQuickMsg($command, $msg->userid);
+            $content = UserBot::checkinBotQuickMsg($sendText, $msg->userid);
             if ($content) {
                 WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
                     'type' => 'content',
@@ -133,7 +160,7 @@ class BotReceiveMsgTask extends AbstractTask
 
         // 隐私机器人
         if ($botUser->email === 'anon-msg@bot.system') {
-            $array = UserBot::anonBotQuickMsg($command);
+            $array = UserBot::anonBotQuickMsg($sendText);
             if ($array) {
                 WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
                     'type' => 'content',
@@ -144,7 +171,7 @@ class BotReceiveMsgTask extends AbstractTask
         }
 
         // 管理机器人
-        if (str_starts_with($command, '/')) {
+        if (str_starts_with($sendText, '/')) {
             // 判断是否是机器人管理员
             if ($botUser->email === 'bot-manager@bot.system') {
                 $isManager = true;
@@ -159,7 +186,7 @@ class BotReceiveMsgTask extends AbstractTask
             }
 
             // 指令处理
-            $array = Base::newTrim(explode(" ", "{$command}    "));
+            $array = Base::newTrim(explode(" ", "{$sendText}    "));
             $type = $array[0];
             $data = [];
             $content = "";
@@ -195,7 +222,7 @@ class BotReceiveMsgTask extends AbstractTask
                 case '/hello':
                 case '/info':
                     $botId = $isManager ? $array[1] : $botUser->userid;
-                    $data = $this->botOne($botId, $msg->userid);
+                    $data = $this->getBotInfo($botId, $msg->userid);
                     if (!$data) {
                         $content = "机器人不存在。";
                     }
@@ -223,7 +250,7 @@ class BotReceiveMsgTask extends AbstractTask
                         $content = "机器人名称由2-20个字符组成。";
                         break;
                     }
-                    $data = $this->botOne($botId, $msg->userid);
+                    $data = $this->getBotInfo($botId, $msg->userid);
                     if ($data) {
                         $data->nickname = $nameString;
                         $data->az = Base::getFirstCharter($nameString);
@@ -240,7 +267,7 @@ class BotReceiveMsgTask extends AbstractTask
                  */
                 case '/deletebot':
                     $botId = $isManager ? $array[1] : $botUser->userid;
-                    $data = $this->botOne($botId, $msg->userid);
+                    $data = $this->getBotInfo($botId, $msg->userid);
                     if ($data) {
                         $data->deleteUser('delete bot');
                     } else {
@@ -253,7 +280,7 @@ class BotReceiveMsgTask extends AbstractTask
                  */
                 case '/token':
                     $botId = $isManager ? $array[1] : $botUser->userid;
-                    $data = $this->botOne($botId, $msg->userid);
+                    $data = $this->getBotInfo($botId, $msg->userid);
                     if ($data) {
                         User::generateToken($data);
                     } else {
@@ -266,7 +293,7 @@ class BotReceiveMsgTask extends AbstractTask
                  */
                 case '/revoke':
                     $botId = $isManager ? $array[1] : $botUser->userid;
-                    $data = $this->botOne($botId, $msg->userid);
+                    $data = $this->getBotInfo($botId, $msg->userid);
                     if ($data) {
                         $data->encrypt = Base::generatePassword(6);
                         $data->password = Doo::md5s(Base::generatePassword(32), $data->encrypt);
@@ -282,7 +309,7 @@ class BotReceiveMsgTask extends AbstractTask
                 case '/clearday':
                     $botId = $isManager ? $array[1] : $botUser->userid;
                     $clearDay = $isManager ? $array[2] : $array[1];
-                    $data = $this->botOne($botId, $msg->userid);
+                    $data = $this->getBotInfo($botId, $msg->userid);
                     if ($data) {
                         $userBot = UserBot::whereBotId($botId)->whereUserid($msg->userid)->first();
                         if ($userBot) {
@@ -303,7 +330,7 @@ class BotReceiveMsgTask extends AbstractTask
                 case '/webhook':
                     $botId = $isManager ? $array[1] : $botUser->userid;
                     $webhookUrl = $isManager ? $array[2] : $array[1];
-                    $data = $this->botOne($botId, $msg->userid);
+                    $data = $this->getBotInfo($botId, $msg->userid);
                     if (strlen($webhookUrl) > 255) {
                         $content = "webhook地址最长仅支持255个字符。";
                     } elseif ($data) {
@@ -326,7 +353,7 @@ class BotReceiveMsgTask extends AbstractTask
                 case '/dialog':
                     $botId = $isManager ? $array[1] : $botUser->userid;
                     $nameKey = $isManager ? $array[2] : $array[1];
-                    $data = $this->botOne($botId, $msg->userid);
+                    $data = $this->getBotInfo($botId, $msg->userid);
                     if ($data) {
                         $list = DB::table('web_socket_dialog_users as u')
                             ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
@@ -338,7 +365,7 @@ class BotReceiveMsgTask extends AbstractTask
                             ->orderByDesc('u.last_at')
                             ->take(20)
                             ->get()
-                            ->map(function($item) use ($data) {
+                            ->map(function ($item) use ($data) {
                                 return WebSocketDialog::synthesizeData($item, $data->userid);
                             })
                             ->all();
@@ -392,135 +419,133 @@ class BotReceiveMsgTask extends AbstractTask
     }
 
     /**
-     * 机器人处理 Webhook
-     * @param string $command
-     * @param WebSocketDialogMsg $msg
-     * @param User $botUser
-     * @param WebSocketDialog $dialog
+     * 处理机器人Webhook请求
+     * 根据机器人类型（AI机器人或用户机器人）发送相应的Webhook请求
+     * 
+     * @param string $sendText 发送的文本内容
+     * @param string $replyText 回复的文本内容
+     * @param WebSocketDialogMsg $msg 消息对象
+     * @param WebSocketDialog $dialog 对话对象
+     * @param User $botUser 机器人用户对象
      * @return void
      */
-    private function botWebhookBusiness(string $command, WebSocketDialogMsg $msg, User $botUser, WebSocketDialog $dialog)
+    private function handleWebhookRequest($sendText, $replyText, WebSocketDialogMsg $msg, WebSocketDialog $dialog, User $botUser)
     {
-        $serverUrl = 'http://nginx';
-        $userBot = null;
+        $webhookUrl = null;
         $extras = ['timestamp' => time()];
-        $replyText = null;
-        $errorContent = null;
-        if ($botUser->isAiBot($type)) {
-            // AI机器人
-            if (Base::val($msg->msg, 'forward_data.leave')) {
-                // AI机器人不处理带有留言的转发消息，因为他要处理那条留言消息
-                return;
-            }
-            $setting = Base::setting('aibotSetting');
-            $extras = [
-                'model_type' => match ($type) {
-                    'qianwen' => 'qwen',
-                    default => $type,
-                },
-                'model_name' => $setting[$type . '_model'],
-                'system_message' => $setting[$type . '_system'],
-                'api_key' => $setting[$type . '_key'],
-                'base_url' => $setting[$type . '_base_url'],
-                'agency' => $setting[$type . '_agency'],
-                'server_url' => $serverUrl,
-            ];
-            if ($setting[$type . '_temperature']) {
-                $extras['temperature'] = floatval($setting[$type . '_temperature']);
-            }
-            if ($msg->msg['model_name']) {
-                $extras['model_name'] = $msg->msg['model_name'];
-            }
-            // 提取模型“思考”参数
-            $thinkPatterns = [
-                "/^(.+?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/",
-                "/^(.+?)\s*\(\s*(think|thinking|reasoning)\s*\)\s*$/"
-            ];
-            $thinkMatch = [];
-            foreach ($thinkPatterns as $pattern) {
-                if (preg_match($pattern, $extras['model_name'], $thinkMatch)) {
-                    break;
+
+        try {
+            if ($botUser->isAiBot($type)) {
+                // AI机器人
+                if (Base::val($msg->msg, 'forward_data.leave')) {
+                    // AI机器人不处理带有留言的转发消息，因为他要处理那条留言消息
+                    return;
                 }
-            }
-            if ($thinkMatch && !empty($thinkMatch[1])) {
-                $extras['model_name'] = $thinkMatch[1];
-                $extras['max_tokens'] = 20000;
-                $extras['thinking'] = 4096;
-                $extras['temperature'] = 1.0;
-            }
-            // 设定会话ID
-            if ($dialog->session_id) {
-                $extras['context_key'] = 'session_' . $dialog->session_id;
-            }
-            // 设置文心一言的API密钥
-            if ($type === 'wenxin') {
-                $extras['api_key'] .= ':' . $setting['wenxin_secret'];
-            }
-            if ($type === 'ollama') {
-                if (empty($extras['base_url'])) {
-                    $errorContent = '机器人未启用。';
+                if (in_array($this->client['platform'], ['win', 'mac', 'web']) && !Base::judgeClientVersion("0.41.11", $this->client['version'])) {
+                    throw new Exception('当前客户端版本低（所需版本≥v0.41.11）。');
+                }
+                if (!Apps::isInstalled('ai')) {
+                    throw new Exception('应用「AI Robot」未安装');
+                }
+                // 整理机器人参数
+                $setting = Base::setting('aibotSetting');
+                $extras = [
+                    'model_type' => match ($type) {
+                        'qianwen' => 'qwen',
+                        default => $type,
+                    },
+                    'model_name' => $setting[$type . '_model'],
+                    'system_message' => $setting[$type . '_system'],
+                    'api_key' => $setting[$type . '_key'],
+                    'base_url' => $setting[$type . '_base_url'],
+                    'agency' => $setting[$type . '_agency'],
+                    'server_url' => 'http://nginx',
+                ];
+                if ($setting[$type . '_temperature']) {
+                    $extras['temperature'] = floatval($setting[$type . '_temperature']);
+                }
+                if ($msg->msg['model_name']) {
+                    $extras['model_name'] = $msg->msg['model_name'];
+                }
+                // 提取模型“思考”参数
+                $thinkPatterns = [
+                    "/^(.+?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/",
+                    "/^(.+?)\s*\(\s*(think|thinking|reasoning)\s*\)\s*$/"
+                ];
+                $thinkMatch = [];
+                foreach ($thinkPatterns as $pattern) {
+                    if (preg_match($pattern, $extras['model_name'], $thinkMatch)) {
+                        break;
+                    }
+                }
+                if ($thinkMatch && !empty($thinkMatch[1])) {
+                    $extras['model_name'] = $thinkMatch[1];
+                    $extras['max_tokens'] = 20000;
+                    $extras['thinking'] = 4096;
+                    $extras['temperature'] = 1.0;
+                }
+                // 设定会话ID
+                if ($dialog->session_id) {
+                    $extras['context_key'] = 'session_' . $dialog->session_id;
+                }
+                // 设置文心一言的API密钥
+                if ($type === 'wenxin') {
+                    $extras['api_key'] .= ':' . $setting['wenxin_secret'];
+                }
+                if ($type === 'ollama') {
+                    if (empty($extras['base_url'])) {
+                        throw new Exception('机器人未启用。');
+                    }
+                    if (empty($extras['api_key'])) {
+                        $extras['api_key'] = Base::strRandom(6);
+                    }
                 }
                 if (empty($extras['api_key'])) {
-                    $extras['api_key'] = Base::strRandom(6);
+                    throw new Exception('机器人未启用。');
                 }
-            }
-            if (empty($extras['api_key'])) {
-                $errorContent = '机器人未启用。';
-            }
-            if (in_array($this->client['platform'], ['win', 'mac', 'web']) && !Base::judgeClientVersion("0.41.11", $this->client['version'])) {
-                $errorContent = '当前客户端版本低（所需版本≥v0.41.11）。';
-            }
-            if (!Apps::isInstalled('ai')) {
-                $errorContent = '应用「AI Robot」未安装';
-            }
-            if ($msg->reply_id > 0) {
-                $replyCommand = $this->extractReplyCommand($msg->reply_id, $botUser);
-                if (Base::isError($replyCommand)) {
-                    $errorContent = $replyCommand['msg'];
-                } else {
-                    $command = <<<EOF
+                $this->generateSystemPromptForAI($msg->userid, $dialog, $extras);
+                // 转换提及格式
+                $sendText = $this->convertMentionForAI($sendText);
+                $replyText = $this->convertMentionForAI($replyText);
+                if ($replyText) {
+                    $sendText = <<<EOF
                         <quoted_content>
-                        {$replyCommand['data']}
+                        {$replyText}
                         </quoted_content>
 
                         The content within the above quoted_content tags is a citation.
 
-                        {$command}
+                        {$sendText}
                         EOF;
                 }
-            }
-            $this->AIGenerateSystemMessage($msg->userid, $dialog, $extras);
-            $webhookUrl = "{$serverUrl}/ai/chat";
-        } else {
-            // 用户机器人
-            if ($botUser->isUserBot() && str_starts_with($command, '/')) {
-                // 用户机器人不处理指令类型命令
-                return;
-            }
-
-            if ($msg->reply_id > 0) {
-                $replyCommand = $this->extractReplyCommand($msg->reply_id, $botUser);
-                if (Base::isSuccess($replyCommand)) {
-                    $replyText = $replyCommand['data'] ?: '';
+                $webhookUrl = "http://nginx/ai/chat";
+            } else {
+                // 用户机器人
+                if ($botUser->isUserBot() && str_starts_with($sendText, '/')) {
+                    // 用户机器人不处理指令类型命令
+                    return;
+                }
+                $userBot = UserBot::whereBotId($botUser->userid)->first();
+                if ($userBot) {
+                    $userBot->webhook_num++;
+                    $userBot->save();
+                    $webhookUrl = $userBot->webhook_url;
                 }
             }
-            $userBot = UserBot::whereBotId($botUser->userid)->first();
-            $webhookUrl = $userBot?->webhook_url;
-        }
-        if ($errorContent) {
+            if (!preg_match("/^https?:\/\//", $webhookUrl)) {
+                return;
+            }
+        } catch (\Exception $e) {
             WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
                 'type' => 'content',
-                'content' => $errorContent,
+                'content' => $e->getMessage(),
             ], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
-            return;
-        }
-        if (!preg_match("/^https?:\/\//", $webhookUrl)) {
             return;
         }
         //
         try {
             $data = [
-                'text' => $command,
+                'text' => $sendText,
                 'reply_text' => $replyText,
                 'token' => User::generateToken($botUser),
                 'session_id' => $dialog->session_id,
@@ -535,22 +560,23 @@ class BotReceiveMsgTask extends AbstractTask
             ];
             // 添加用户信息
             $userInfo = User::find($msg->userid);
-            $data['msg_user'] = [
-                'userid' => $userInfo->userid,
-                'email' => $userInfo->email,
-                'nickname' => $userInfo->nickname,
-                'profession' => $userInfo->profession,
-                'lang' => $userInfo->lang,
-                'token' => User::generateTokenNoDevice($userInfo, now()->addHour()),
-            ];
-            $res = Ihttp::ihttp_post($webhookUrl, $data, 30);
-            if ($userBot) {
-                $userBot->webhook_num++;
-                $userBot->save();
+            if ($userInfo) {
+                $data['msg_user'] = [
+                    'userid' => $userInfo->userid,
+                    'email' => $userInfo->email,
+                    'nickname' => $userInfo->nickname,
+                    'profession' => $userInfo->profession,
+                    'lang' => $userInfo->lang,
+                    'token' => User::generateTokenNoDevice($userInfo, now()->addHour()),
+                ];
             }
-            if ($res['data'] && $data = Base::json2array($res['data'])) {
+            // 请求Webhook
+            $result = Ihttp::ihttp_post($webhookUrl, $data, 30);
+            if ($result['data'] && $data = Base::json2array($result['data'])) {
                 if ($data['code'] != 200 && $data['message']) {
-                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $res['data']['message']], $botUser->userid, false, false, true);
+                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', [
+                        'text' => $result['data']['message']
+                    ], $botUser->userid, false, false, true);
                 }
             }
         } catch (\Throwable $th) {
@@ -565,177 +591,198 @@ class BotReceiveMsgTask extends AbstractTask
     }
 
     /**
-     * 获取机器人信息
-     * @param $botId
-     * @param $userid
-     * @return User
+     * 提取消息内容
+     * 根据消息类型（文件、文本等）提取相应的内容文本
+     * 
+     * @param WebSocketDialogMsg $msg 消息对象
+     * @return string 提取出的消息文本内容
      */
-    private function botOne($botId, $userid)
+    private function extractMessageContent(WebSocketDialogMsg $msg)
     {
-        $botId = intval($botId);
-        $userid = intval($userid);
-        if ($botId > 0) {
-            return User::select([
-                'users.*',
-                'user_bots.clear_day',
-                'user_bots.clear_at',
-                'user_bots.webhook_url',
-                'user_bots.webhook_num'
-            ])
-                ->join('user_bots', 'users.userid', '=', 'user_bots.bot_id')
-                ->where('users.bot', 1)
-                ->where('user_bots.bot_id', $botId)
-                ->where('user_bots.userid', $userid)
-                ->first();
+        switch ($msg->type) {
+            case "file":
+                // 提取文件消息
+                $msgData = Base::json2array($msg->getRawOriginal('msg'));
+                return $this->convertMentionFormat("path", $msgData['path'], $msgData['name']);
+
+            case "text":
+                // 提取文本消息
+                $original = $msg->msg['text'] ?: '';
+                if (empty($original)) {
+                    return '';
+                }
+
+                // 提取快捷键
+                if (preg_match("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
+                    $command = $match[2] ?? '';
+                    $command = preg_replace("/^%3A\.?/", ":", $command);
+                    $command = trim($command);
+                    if ($command) {
+                        return $command;
+                    }
+                }
+
+                // 提及任务、文件、报告
+                $original = preg_replace_callback_array([
+                    // 用户
+                    "/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/" => function () {
+                        return "";
+                    },
+
+                    // 任务
+                    "/<span class=\"mention task\" data-id=\"(\d+)\">(.*?)<\/span>/" => function ($match) {
+                        return $this->convertMentionFormat("task", $match[1], $match[2]);
+                    },
+
+                    // 文件
+                    "/<a class=\"mention file\" href=\"([^\"']+?)\"[^>]*?>(.*?)<\/a>/" => function ($match) {
+                        if (preg_match("/single\/file\/(.*?)$/", $match[1], $subMatch)) {
+                            return $this->convertMentionFormat("file", $subMatch[1], $match[2]);
+                        }
+                        return "";
+                    },
+
+                    // 报告
+                    "/<a class=\"mention report\" href=\"([^\"']+?)\"[^>]*?>(.*?)<\/a>/" => function ($match) {
+                        if (preg_match("/single\/report\/detail\/(.*?)$/", $match[1], $subMatch)) {
+                            return $this->convertMentionFormat("report", $subMatch[1], $match[2]);
+                        }
+                        return "";
+                    },
+                ], $original);
+
+                // 转成 markdown 并返回
+                return Base::html2markdown($original);
+
+            default:
+                // 其他类型消息不处理
+                return '';
         }
-        return null;
     }
 
     /**
-     * 提取消息指令（提取消息内容）
-     * @param WebSocketDialogMsg $msg
-     * @param User $botUser
-     * @param bool $mention
-     * @return string
-     * @throws Exception
+     * 转换提及消息格式
+     * 将提及的任务、文件、报告等转换为统一的格式 [type#key#name]
+     * 
+     * @param string $type 提及类型（task、file、report、path）
+     * @param string $key 提及对象的唯一标识
+     * @param string $name 提及对象的显示名称
+     * @return string 格式化后的提及字符串
      */
-    private function extractCommand(WebSocketDialogMsg $msg, User $botUser, bool $mention = false)
+    private function convertMentionFormat($type, $key, $name)
     {
-        if ($msg->type !== 'text') {
-            return '';
-        }
+        $key = preg_replace('/[#\[\]]/', '', $key);
+        $name = preg_replace('/[#\[\]]/', '', $name);
+        return "[{$type}#{$key}#{$name}]";
+    }
 
-        $original = $msg->msg['text'] ?: '';
-        if ($mention) {
-            $original = preg_replace("/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/", "", $original);
-        }
-        if (preg_match("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
-            $command = $match[2];
-            if (str_starts_with($command, '%3A.')) {
-                $command = ":" . substr($command, 4);
-            }
-            return $command;
-        }
+    /**
+     * 为AI机器人转换提及消息格式
+     * 将提及的任务、文件、报告转换为AI可理解的格式，并提取相关内容
+     * 
+     * @param string $original 原始消息文本
+     * @return string 转换后的消息文本，包含相关内容的标签
+     * @throws Exception 当提及的对象不存在或读取失败时抛出异常
+     */
+    private function convertMentionForAI($original)
+    {
+        $array = [];
+        $original = preg_replace_callback('/\[([^#\[\]]+)#([^#\[\]]+)#([^#\[\]]*)\]/', function ($match) use (&$array) {
+            // 初始化 tag 内容
+            $pathTag = null;
+            $pathName = null;
+            $pathContent = null;
 
-        if ($botUser->isAiBot()) {
-            // AI 机器人
-            $contents = [];
-            if (preg_match_all("/<span class=\"mention task\" data-id=\"(\d+)\">(.*?)<\/span>/", $original, $match)) {
+            // 根据 type 提取 tag 内容
+            switch ($match[1]) {
                 // 任务
-                $taskIds = Base::newIntval($match[1]);
-                foreach ($taskIds as $index => $taskId) {
-                    $taskInfo = ProjectTask::with(['content'])->whereId($taskId)->first();
+                case 'task':
+                    $taskInfo = ProjectTask::with(['content'])->whereId(intval($match[2]))->first();
                     if (!$taskInfo) {
                         throw new Exception("任务不存在或已被删除");
                     }
-                    $taskName = addslashes($taskInfo->name) . " (ID:{$taskId})";
-                    $taskContext = implode("\n", $taskInfo->AIContext());
-                    $contents[] = "<task_content path=\"{$taskName}\">\n{$taskContext}\n</task_content>";
-                    $original = str_replace($match[0][$index], "'{$taskName}' (see below for task_content tag)", $original);
-                }
-            }
-            if (preg_match_all("/<a class=\"mention ([^'\"]*)\" href=\"([^\"']+?)\"[^>]*?>[~%]([^>]*)<\/a>/", $original, $match)) {
-                // 文件、报告
-                $urlPaths = $match[2];
-                foreach ($urlPaths as $index => $urlPath) {
-                    $pathTag = null;
-                    $pathName = null;
-                    $pathContent = null;
-                    // 文件
-                    if (preg_match("/single\/file\/(.*?)$/", $urlPath, $fileMatch)) {
-                        $fileInfo = FileContent::idOrCodeToContent($fileMatch[1]);
-                        if (!$fileInfo || !isset($fileInfo->content['url'])) {
-                            throw new Exception("文件不存在或已被删除");
-                        }
-                        $urlPath = public_path($fileInfo->content['url']);
-                        if (!file_exists($urlPath)) {
-                            throw new Exception("文件不存在或已被删除");
-                        }
-                        $fileResult = TextExtractor::extractFile($urlPath);
-                        if (Base::isError($fileResult)) {
-                            throw new Exception("文件读取失败：" . $fileResult['msg']);
-                        }
-                        $pathTag = "file_content";
-                        $pathName = addslashes($match[3][$index]) . " (ID:{$fileInfo->id})";
-                        $pathContent = $fileResult['data'];
-                    }
-                    // 报告
-                    elseif (preg_match("/single\/report\/detail\/(.*?)$/", $urlPath, $reportMatch)) {
-                        $reportInfo = Report::idOrCodeToContent($reportMatch[1]);
-                        if (!$reportInfo) {
-                            throw new Exception("报告不存在或已被删除");
-                        }
-                        $pathTag = "report_content";
-                        $pathName = addslashes($match[3][$index]) . " (ID:{$reportInfo->id})";
-                        $pathContent = $reportInfo->content;
-                    }
-                    if ($pathTag) {
-                        $contents[] = "<{$pathTag} path=\"{$pathName}\">\n{$pathContent}\n</{$pathTag}>";
-                        $original = str_replace($match[0][$index], "'{$pathName}' (see below for {$pathTag} tag)", $original);
-                    }
-                }
-            }
-            $original = Base::html2markdown($original);
-            if ($contents) {
-                // 添加tag内容
-                $original .= "\n\n" . implode("\n\n", $contents);
-            }
-            return $original;
-        } elseif ($botUser->isUserBot()) {
-            // 用户机器人
-            return Base::html2markdown($original);
-        } else {
-            // 其他机器人（系统）
-            return trim(strip_tags($original));
-        }
-    }
-
-    /**
-     * 提取回复消息指令
-     * @param $id
-     * @param User $botUser
-     * @return array
-     */
-    private function extractReplyCommand($id, User $botUser)
-    {
-        $replyMsg = WebSocketDialogMsg::find($id);
-        $replyCommand = null;
-        if ($replyMsg) {
-            switch ($replyMsg->type) {
-                case 'text':
-                    try {
-                        $replyCommand = $this->extractCommand($replyMsg, $botUser);
-                    } catch (Exception) {
-                        return Base::retError('error', "引用消息解析失败。");
-                    }
+                    $pathTag = "task_content";
+                    $pathName = addslashes($taskInfo->name) . " (ID:{$taskInfo->id})";
+                    $pathContent = implode("\n", $taskInfo->AIContext());
                     break;
+
+                // 文件
                 case 'file':
-                    if ($botUser->isAiBot()) {
-                        $msgData = Base::json2array($replyMsg->getRawOriginal('msg'));
-                        $fileResult = TextExtractor::extractFile(public_path($msgData['path']));
-                        if (Base::isError($fileResult)) {
-                            return Base::retError('error', $fileResult['msg']);
-                        } else {
-                            $replyCommand = $fileResult['data'];
-                        }
+                    $fileInfo = FileContent::idOrCodeToContent($match[2]);
+                    if (!$fileInfo || !isset($fileInfo->content['url'])) {
+                        throw new Exception("文件不存在或已被删除");
                     }
+                    $urlPath = public_path($fileInfo->content['url']);
+                    if (!file_exists($urlPath)) {
+                        throw new Exception("文件不存在或已被删除");
+                    }
+                    $fileResult = TextExtractor::extractFile($urlPath);
+                    if (Base::isError($fileResult)) {
+                        throw new Exception("文件读取失败：" . $fileResult['msg']);
+                    }
+                    $pathTag = "file_content";
+                    $pathName = addslashes($match[3]) . " (ID:{$fileInfo->id})";
+                    $pathContent = $fileResult['data'];
+                    break;
+
+                // 文件路径
+                case 'path':
+                    $urlPath = public_path($match[2]);
+                    if (!file_exists($urlPath)) {
+                        throw new Exception("文件不存在或已被删除");
+                    }
+                    $fileResult = TextExtractor::extractFile($urlPath);
+                    if (Base::isError($fileResult)) {
+                        throw new Exception("文件读取失败：" . $fileResult['msg']);
+                    }
+                    $pathTag = "file_content";
+                    $pathName = addslashes($match[3]);
+                    $pathContent = $fileResult['data'];
+                    break;
+
+                // 报告
+                case 'report':
+                    $reportInfo = Report::idOrCodeToContent($match[2]);
+                    if (!$reportInfo) {
+                        throw new Exception("报告不存在或已被删除");
+                    }
+                    $pathTag = "report_content";
+                    $pathName = addslashes($match[3]) . " (ID:{$reportInfo->id})";
+                    $pathContent = $reportInfo->content;
                     break;
             }
+
+            // 如果提取到 tag 内容，则添加到 contents 数组中
+            if ($pathTag) {
+                $array[] = "<{$pathTag} path=\"{$pathName}\">\n{$pathContent}\n</{$pathTag}>";
+                return "`{$pathName}` (see below for {$pathTag} tag)";
+            }
+
+            return "";
+        }, $original);
+
+        // 添加 tag 内容
+        if ($array) {
+            $original .= "\n\n" . implode("\n\n", $array);
         }
-        return Base::retSuccess('success', $replyCommand);
+
+        return $original;
     }
 
     /**
-     * 生成AI系统提示词
-     * @param int|null $userid
-     * @param WebSocketDialog $dialog
-     * @param array $extras
+     * 为AI机器人生成系统提示词
+     * 根据对话类型（用户对话、项目群、任务群、部门群等）生成相应的系统提示词
+     * 
+     * @param int|null $userid 用户ID
+     * @param WebSocketDialog $dialog 对话对象
+     * @param array $extras 额外参数数组，通过引用传递以修改system_message
      * @return void
      */
-    private function AIGenerateSystemMessage(int|null $userid, WebSocketDialog $dialog, array &$extras)
+    private function generateSystemPromptForAI($userid, WebSocketDialog $dialog, array &$extras)
     {
         $system_messages = [];
         switch ($dialog->type) {
+            // 用户对话
             case "user":
                 $aiPrompt = WebSocketDialogConfig::where([
                     'dialog_id' => $dialog->id,
@@ -746,10 +793,13 @@ class BotReceiveMsgTask extends AbstractTask
                     $extras['system_message'] = $aiPrompt;
                 }
                 break;
+            // 群组对话
             case "group":
                 switch ($dialog->group_type) {
+                    // 用户群
                     case 'user':
                         break;
+                    // 项目群
                     case 'project':
                         $projectInfo = Project::whereDialogId($dialog->id)->first();
                         if ($projectInfo) {
@@ -772,6 +822,7 @@ class BotReceiveMsgTask extends AbstractTask
                                 EOF;
                         }
                         break;
+                    // 任务群
                     case 'task':
                         $taskInfo = ProjectTask::with(['content'])->whereDialogId($dialog->id)->first();
                         if ($taskInfo) {
@@ -791,12 +842,14 @@ class BotReceiveMsgTask extends AbstractTask
                                 EOF;
                         }
                         break;
+                    // 部门群
                     case 'department':
                         $userDepartment = UserDepartment::whereDialogId($dialog->id)->first();
                         if ($userDepartment) {
                             $system_messages[] = "当前我在【{$userDepartment->name}】的部门群聊中";
                         }
                         break;
+                    // 全体成员群
                     case 'all':
                         $system_messages[] = "当前我在【全体成员】的群聊中";
                         break;
@@ -807,7 +860,36 @@ class BotReceiveMsgTask extends AbstractTask
             array_unshift($system_messages, $extras['system_message']);
         }
         if ($system_messages) {
-            $extras['system_message'] = implode("\n\n====\n\n", Base::newTrim($system_messages));
+            $extras['system_message'] = implode("\n\n----------------\n\n", Base::newTrim($system_messages));
         }
+    }
+
+    /**
+     * 获取机器人信息
+     * 根据机器人ID和用户ID获取机器人的详细信息，包括清理设置和webhook配置
+     * 
+     * @param int $botId 机器人ID
+     * @param int $userid 用户ID
+     * @return User|null 机器人用户对象，如果不存在则返回null
+     */
+    private function getBotInfo($botId, $userid)
+    {
+        $botId = intval($botId);
+        $userid = intval($userid);
+        if ($botId > 0) {
+            return User::select([
+                'users.*',
+                'user_bots.clear_day',
+                'user_bots.clear_at',
+                'user_bots.webhook_url',
+                'user_bots.webhook_num'
+            ])
+                ->join('user_bots', 'users.userid', '=', 'user_bots.bot_id')
+                ->where('users.bot', 1)
+                ->where('user_bots.bot_id', $botId)
+                ->where('user_bots.userid', $userid)
+                ->first();
+        }
+        return null;
     }
 }
