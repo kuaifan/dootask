@@ -1858,12 +1858,22 @@ class Base
      * 获取每页数量
      * @param $max
      * @param $default
-     * @param string $inputName
+     * @param string|array $inputName
      * @return mixed
      */
-    public static function getPaginate($max, $default, $inputName = 'pagesize')
+    public static function getPaginate($max, $default, $inputName = ['pagesize', 'take'])
     {
-        return Min(Max(Base::nullShow(Request::input($inputName), $default), 1), $max);
+        $value = null;
+        if (!is_array($inputName)) {
+            $inputName = [$inputName];
+        }
+        foreach ($inputName as $name) {
+            if (Request::exists($name)) {
+                $value = Request::input($name);
+                break;
+            }
+        }
+        return Min(Max(Base::nullShow($value, $default), 1), $max);
     }
 
     /**
