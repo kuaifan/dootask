@@ -505,8 +505,8 @@ class BotReceiveMsgTask extends AbstractTask
                 }
                 $this->generateSystemPromptForAI($msg->userid, $dialog, $extras);
                 // 转换提及格式
-                $sendText = $this->convertMentionForAI($sendText);
-                $replyText = $this->convertMentionForAI($replyText);
+                $sendText = self::convertMentionForAI($sendText);
+                $replyText = self::convertMentionForAI($replyText);
                 if ($replyText) {
                     $sendText = <<<EOF
                         <quoted_content>
@@ -698,7 +698,7 @@ class BotReceiveMsgTask extends AbstractTask
      * @return string 转换后的消息文本，包含相关内容的标签
      * @throws Exception 当提及的对象不存在或读取失败时抛出异常
      */
-    private function convertMentionForAI($original)
+    public static function convertMentionForAI($original)
     {
         $array = [];
         $original = preg_replace_callback('/<!--(.*?)#(.*?)#(.*?)-->/', function ($match) use (&$array) {

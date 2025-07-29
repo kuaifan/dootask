@@ -30,6 +30,7 @@ use App\Models\WebSocketDialogMsgTranslate;
 use App\Models\WebSocketDialogSession;
 use App\Module\Table\OnlineData;
 use App\Module\ZincSearch\ZincSearchDialogMsg;
+use App\Tasks\BotReceiveMsgTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
@@ -2439,6 +2440,33 @@ class DialogController extends AbstractController
             'color' => $color
         ];
         return Base::retSuccess("success", $data);
+    }
+
+    /**
+     * @api {post} api/dialog/msg/webhookmsg2ai          48. 转换为AI对话
+     *
+     * @apiDescription 需要token身份，将webhook消息转换为适合AI对话的格式消息，用于AI对话
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__webhookmsg2ai
+     *
+     * @apiParam {String} msg               消息内容
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__webhookmsg2ai()
+    {
+        User::auth();
+        //
+        $msg = Request::input('msg');
+        try {
+            $res = BotReceiveMsgTask::convertMentionForAI($msg);
+            return Base::retSuccess("success", ['msg' => $res]);
+        } catch (\Exception $e) {
+            return Base::retError($e->getMessage());
+        }
     }
 
     /**
