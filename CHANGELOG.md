@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.56]
+
+### Bug Fixes
+
+- 修复无法删除webhook的问题
+- 用户头像加载失败的情况
+
+### Features
+
+- 优化请求上下文处理
+
+### Performance
+
+- 优化错误提示
+- 优化应用菜单
+- 优化机器人消息接收处理任务
+- 签到新增高德和腾讯地图
+- 优化国际化
+- 优化 AI 设置
+- 优化应用弹窗
+- 优化会员选择器
+- 优化会员搜索接口
+- 优化提及窗口
+- 优化机器人消息
+- 机器人支持新会话
+- 优化应用方法
+- 机器人 webhook 添加用户信息
+- 优化应用
+
 ## [1.1.15]
 
 ### Bug Fixes
