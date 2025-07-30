@@ -121,6 +121,21 @@ import {languageName} from "../language";
             $A.eeuiModule("webview")?.setUrl(url);
         },
 
+        // 生成webview快照
+        eeuiAppGetWebviewSnapshot(callback) {
+            $A.eeuiModule("webview")?.createSnapshot(callback);
+        },
+
+        // 显示webview快照
+        eeuiAppShowWebviewSnapshot() {
+            $A.eeuiModule("webview")?.showSnapshot();
+        },
+
+        // 隐藏webview快照
+        eeuiAppHideWebviewSnapshot() {
+            $A.eeuiModule("webview")?.hideSnapshot();
+        },
+
         // 扫码
         eeuiAppScan(callback) {
             $A.eeuiModule()?.openScaner({}, (res) => {

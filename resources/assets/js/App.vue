@@ -612,17 +612,23 @@ export default {
             if (!this.$isEEUIApp) {
                 return;
             }
+            $A.eeuiAppHideWebviewSnapshot()
             // APP进入前台
             window.__onAppActive = () => {
                 this.autoTheme()
                 $A.updateTimezone()
                 $A.IDBTest()
+                $A.eeuiAppHideWebviewSnapshot()
                 this.$store.dispatch("safeAreaInsets")
                 const nowYmd = $A.daytz().format('YYYY-MM-DD')
                 if (this.lastCheckUpgradeYmd != nowYmd) {
                     this.lastCheckUpgradeYmd = nowYmd
                     $A.eeuiAppCheckUpdate();
                 }
+            }
+            // APP进入后台
+            window.__onAppDeactive = () => {
+                $A.eeuiAppGetWebviewSnapshot(ok => ok && $A.eeuiAppShowWebviewSnapshot());
             }
             // 页面失活
             window.__onPagePause = () => {
