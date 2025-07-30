@@ -76,6 +76,6 @@ class WebApi
     public function terminate()
     {
         // 请求结束后清理上下文
-        RequestContext::clear();
+        RequestContext::clean();
     }
 }

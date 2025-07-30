@@ -4,14 +4,17 @@ namespace App\Module;
 
 use App\Exceptions\ApiException;
 use App\Models\User;
+use App\Services\RequestContext;
 use Cache;
 use Carbon\Carbon;
 use FFI;
+use FFI\CData;
+use FFI\Exception;
 
 class Doo
 {
-    private static $doo;
-    private static $userLanguage = "";
+    private const DOO_INSTANCE = 'doo_instance';
+    private const DOO_LANGUAGE = 'doo_language';
 
     /**
      * char转为字符串
@@ -20,17 +23,26 @@ class Doo
      */
     private static function string($text): string
     {
-        return FFI::string($text);
+        if (!($text instanceof CData)) {
+            return "";
+        }
+
+        try {
+            return FFI::string($text);
+        } catch (Exception) {
+            return "";
+        }
     }
 
     /**
      * 装载
      * @param $token
      * @param $language
+     * @return FFI
      */
     public static function load($token = null, $language = null)
     {
-        self::$doo = FFI::cdef(<<<EOF
+        $instance = FFI::cdef(<<<EOF
                 void initialize(char* work, char* token, char* lang);
                 char* license();
                 char* licenseDecode(char* license);
@@ -54,7 +66,12 @@ class Doo
             EOF, "/usr/lib/doo/doo.so");
         $token = $token ?: Base::token();
         $language = $language ?: Base::headerOrInput('language');
-        self::$doo->initialize("/var/www", $token, $language);
+        $instance->initialize("/var/www", $token, $language);
+
+        RequestContext::set(self::DOO_INSTANCE, $instance);
+        RequestContext::set(self::DOO_LANGUAGE, $language);
+
+        return $instance;
     }
 
     /**
@@ -65,10 +82,11 @@ class Doo
      */
     public static function doo($token = null, $language = null)
     {
-        if (self::$doo == null) {
-            self::load($token, $language);
+        $instance = RequestContext::get(self::DOO_INSTANCE);
+        if ($instance === null) {
+            $instance = self::load($token, $language);
         }
-        return self::$doo;
+        return $instance;
     }
 
     /**
@@ -277,19 +295,25 @@ class Doo
      */
     public static function translate($text, string $lang = ""): string
     {
-        return self::string(self::doo()->translate($text, $lang ?: self::$userLanguage));
+        if (empty($text)) {
+            return "";
+        }
+        if (empty($lang)) {
+            $lang = RequestContext::get(self::DOO_LANGUAGE);
+        }
+        return self::string(self::doo()->translate($text, $lang));
     }
 
     /**
      * 设置语言
-     * @param string|integer $lang 语言 或 会员ID
+     * @param string|int $lang 语言 或 会员ID
      * @return void
      */
     public static function setLanguage($lang) {
         if (Base::isNumber($lang)) {
             $lang = User::find(intval($lang))?->lang ?: "";
         }
-        self::$userLanguage = $lang;
+        RequestContext::set(self::DOO_LANGUAGE, $lang);
     }
 
     /**

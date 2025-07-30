@@ -2,32 +2,83 @@
 
 namespace App\Services;
 
+use App\Module\ClientContext;
 use Illuminate\Http\Request;
+use Swoole\Coroutine;
 
+/**
+ * 请求上下文
+ */
 class RequestContext
 {
-    /** @var array<string, array<string, mixed>> */
-    private static array $context = [];
 
-    private const REQUEST_ID_PREFIX = 'req_';
+    /** @var string 请求ID前缀 */
+    private const REQUEST_ID_PREFIX = 'req';
+
+    /** @var int 上下文的TTL（生存时间） */
+    private const TTL_SECONDS = 3600;  // 上下文 TTL 为 1 小时
+
+    /** @var array<string, ClientContext> 存储每个请求的上下文数据 */
+    private static array $context = [];
 
     /**
      * 生成请求唯一ID
      */
     public static function generateRequestId(): string
     {
-        return self::REQUEST_ID_PREFIX . uniqid() . mt_rand(10000, 99999);
+        $pid = getmypid();
+        $cid = Coroutine::getCid() ?? 0;
+        $microtime = str_replace('.', '', microtime(true));
+        return self::REQUEST_ID_PREFIX . '_' . $pid . '_' . $cid . '_' . $microtime . '_' . mt_rand(1000, 9999);
     }
 
     /**
      * 获取当前请求ID
      */
-    private static function getCurrentRequestId(): ?string
+    public static function getCurrentRequestId($requestId = null): ?string
     {
-        /** @var Request $request */
-        $request = request();
-        return $request?->requestId;
+        return $requestId ?? request()?->requestId;
     }
+
+    /**
+     * 获取当前请求的上下文示例
+     */
+    public static function getCurrentRequestContext($requestId = null): ?ClientContext
+    {
+        $requestId = self::getCurrentRequestId($requestId);
+        if ($requestId === null) {
+            return null;
+        }
+
+        if (!isset(self::$context[$requestId])) {
+            // 如果上下文不存在，则创建一个新的上下文
+            self::$context[$requestId] = new ClientContext();
+        } else {
+            // 如果上下文已存在，更新访问时间
+            self::$context[$requestId]->update();
+        }
+
+        return self::$context[$requestId];
+    }
+
+    /**
+     * 清理过期上下文数据，防止内存泄漏
+     */
+    public static function cleanExpired(): void
+    {
+        $now = microtime(true);
+
+        // 清理过期的上下文
+        foreach (self::$context as $requestId => $context) {
+            if ($now - $context->updatedAt > self::TTL_SECONDS) {
+                unset(self::$context[$requestId]);
+            }
+        }
+    }
+
+    /** ***************************************************************************************** */
+    /** ***************************************************************************************** */
+    /** ***************************************************************************************** */
 
     /**
      * 设置请求上下文
@@ -39,13 +90,34 @@ class RequestContext
      */
     public static function set(string $key, mixed $value, ?string $requestId = null): void
     {
-        $requestId = $requestId ?? self::getCurrentRequestId();
-        if ($requestId === null) {
+        $context = self::getCurrentRequestContext($requestId);
+        if ($context === null) {
             return;
         }
 
-        self::$context[$requestId] ??= [];
-        self::$context[$requestId][$key] = $value;
+        $context->set($key, $value);
+
+        // 概率性清理，避免频繁清理影响性能
+        if (mt_rand(1, 100) === 1) {
+            self::cleanExpired();
+        }
+    }
+
+    /**
+     * 批量设置上下文数据
+     *
+     * @param array<string, mixed> $data
+     * @param string|null $requestId
+     * @return void
+     */
+    public static function setMultiple(array $data, ?string $requestId = null): void
+    {
+        $context = self::getCurrentRequestContext($requestId);
+        if ($context === null) {
+            return;
+        }
+
+        $context->setMultiple($data);
     }
 
     // 与 set 方法的区别是，save 方法会返回传入的 value 值
@@ -65,12 +137,28 @@ class RequestContext
      */
     public static function get(string $key, mixed $default = null, ?string $requestId = null): mixed
     {
-        $requestId = $requestId ?? self::getCurrentRequestId();
-        if ($requestId === null) {
+        $context = self::getCurrentRequestContext($requestId);
+        if ($context === null) {
             return $default;
         }
 
-        return self::$context[$requestId][$key] ?? $default;
+        return $context->get($key, $default);
+    }
+
+    /**
+     * 获取当前请求的所有上下文数据
+     *
+     * @param string|null $requestId
+     * @return array<string, mixed>
+     */
+    public static function getAll(?string $requestId = null): array
+    {
+        $context = self::getCurrentRequestContext($requestId);
+        if ($context === null) {
+            return [];
+        }
+
+        return $context->context ?? [];
     }
 
     /**
@@ -82,12 +170,12 @@ class RequestContext
      */
     public static function has(string $key, ?string $requestId = null): bool
     {
-        $requestId = $requestId ?? self::getCurrentRequestId();
-        if ($requestId === null) {
+        $context = self::getCurrentRequestContext($requestId);
+        if ($context === null) {
             return false;
         }
 
-        return isset(self::$context[$requestId][$key]);
+        return $context->has($key);
     }
 
     /**
@@ -96,48 +184,14 @@ class RequestContext
      * @param string|null $requestId
      * @return void
      */
-    public static function clear(?string $requestId = null): void
+    public static function clean(?string $requestId = null): void
     {
-        $requestId = $requestId ?? self::getCurrentRequestId();
+        $requestId = self::getCurrentRequestId($requestId);
         if ($requestId === null) {
             return;
         }
 
         unset(self::$context[$requestId]);
-    }
-
-    /**
-     * 获取当前请求的所有上下文数据
-     *
-     * @param string|null $requestId
-     * @return array<string, mixed>
-     */
-    public static function getAll(?string $requestId = null): array
-    {
-        $requestId = $requestId ?? self::getCurrentRequestId();
-        if ($requestId === null) {
-            return [];
-        }
-
-        return self::$context[$requestId] ?? [];
-    }
-
-    /**
-     * 批量设置上下文数据
-     *
-     * @param array<string, mixed> $data
-     * @param string|null $requestId
-     * @return void
-     */
-    public static function setMultiple(array $data, ?string $requestId = null): void
-    {
-        $requestId = $requestId ?? self::getCurrentRequestId();
-        if ($requestId === null) {
-            return;
-        }
-
-        self::$context[$requestId] ??= [];
-        self::$context[$requestId] = array_merge(self::$context[$requestId], $data);
     }
 
     /** ***************************************************************************************** */
