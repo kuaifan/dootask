@@ -1512,13 +1512,13 @@ class SystemController extends AbstractController
     {
         $userid = Session::get('checkin::export:userid');
         if (empty($userid)) {
-            return Base::ajaxError("请求已过期，请重新导出！", [], 0, 502);
+            return Base::ajaxError("请求已过期，请重新导出！", [], 0, 403);
         }
         //
         $array = Base::string2array(base64_decode(urldecode(Request::input('key'))));
         $file = $array['file'];
         if (empty($file) || !file_exists(storage_path($file))) {
-            return Base::ajaxError("文件不存在！", [], 0, 502);
+            return Base::ajaxError("文件不存在！", [], 0, 403);
         }
         return Response::download(storage_path($file));
     }

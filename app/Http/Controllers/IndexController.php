@@ -352,9 +352,7 @@ class IndexController extends InvokeController
                     break;
                 }
             }
-            if (empty($avaiPath)) {
-                abort(404);
-            }
+            abort_if(empty($avaiPath), 404);
             $lists = Base::recursiveFiles($dirPath, false);
             $files = [];
             foreach ($lists as $file) {
@@ -432,13 +430,9 @@ class IndexController extends InvokeController
         $path = Arr::get($data, 'path');
         $file = public_path($path);
         // 防止 ../ 穿越获取到系统文件
-        if (!str_starts_with(realpath($file), public_path())) {
-            abort(404);
-        }
-        //
-        if (!file_exists($file)) {
-            abort(404);
-        }
+        abort_if(!str_starts_with(realpath($file), public_path()), 404);
+        // 如果文件不存在，直接返回 404
+        abort_if(!file_exists($file), 404);
         //
         parse_str($data['query'], $query);
         $name = Arr::get($query, 'name');

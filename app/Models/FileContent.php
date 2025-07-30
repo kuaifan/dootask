@@ -129,9 +129,7 @@ class FileContent extends AbstractModel
                 ],
                 default => json_decode('{}'),
             };
-            if ($download) {
-                abort(403, "This file is empty.");
-            }
+            abort_if($download, 403, "This file is empty.");
         } else {
             $path = $content['url'];
             if ($file->ext) {
@@ -147,11 +145,8 @@ class FileContent extends AbstractModel
             }
             if ($download) {
                 $filePath = public_path($path);
-                if (isset($filePath)) {
-                    return Base::DownloadFileResponse($filePath, $name);
-                } else {
-                    abort(403, "This file not support download.");
-                }
+                abort_if(!isset($filePath),403, "This file not support download.");
+                return Base::DownloadFileResponse($filePath, $name);
             }
         }
         return Base::retSuccess('success', [ 'content' => $content ]);

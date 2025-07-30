@@ -1857,12 +1857,8 @@ class DialogController extends AbstractController
         $down = Request::input('down', 'yes');
         //
         $msg = WebSocketDialogMsg::whereId($msg_id)->first();
-        if (empty($msg)) {
-            abort(403, "This file not exist.");
-        }
-        if ($msg->type != 'file') {
-            abort(403, "This file not support download.");
-        }
+        abort_if(empty($msg), 403, "This file not exist.");
+        abort_if($msg->type != 'file', 403, "This file not support download.");
         $array = Base::json2array($msg->getRawOriginal('msg'));
         //
         if ($down === 'preview') {
