@@ -288,10 +288,10 @@ export default {
                         this.userSelectOptions.value = params.value
                         delete params.value
                         this.userSelectOptions.config = params
-                        return await new Promise(resolve => {
+                        return await new Promise((resolve, reject) => {
                             this.$refs.userSelect.onSelection((res) => {
-                                return resolve(res)
-                            })
+                                resolve(res)
+                            }, reject)
                         })
                     },
                     nextZIndex: () => {

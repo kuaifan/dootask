@@ -328,6 +328,7 @@ export default {
             values: [],
             selects: [],
             callback: null,
+            closeCallback: null,
 
             recents: [],
             contacts: [],
@@ -373,6 +374,7 @@ export default {
                 this.upTitleWidth()
             } else {
                 this.searchKey = ""
+                this.closeCallback && this.closeCallback()
             }
             this.$emit("on-show-change", v)
             //
@@ -764,13 +766,14 @@ export default {
             }, this.searchCache.length > 0 ? 300 : 0)
         },
 
-        onSelection(callback = null) {
+        onSelection(callback = null, closeCallback = null) {
             if (this.disabled) {
                 return
             }
             this.$nextTick(_ => {
                 this.selects = $A.cloneJSON(this.values)
                 this.callback = typeof callback === 'function' ? callback : null
+                this.closeCallback = typeof closeCallback === 'function' ? closeCallback : null
                 this.showModal = true
             })
         },

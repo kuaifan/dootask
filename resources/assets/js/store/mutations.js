@@ -337,19 +337,20 @@ export default {
 
     'microApps/data': function(state, data) {
         // 添加应用商店
-        data.unshift({
-            id: 'appstore',
-            version: '1.0.0',
-            menu_items: [{
-                location: "application/admin",
-                label: $A.L("应用商店"),
-                icon: $A.mainUrl("images/application/appstore.svg"),
-                url: 'appstore/internal?language={system_lang}&theme={system_theme}',
-                only_admin: true,
-                disable_scope_css: true,
-                auto_dark_theme: false,
-            }]
-        })
+        if (state.userIsAdmin) {
+            data.unshift({
+                id: 'appstore',
+                version: '1.0.0',
+                menu_items: [{
+                    location: "application/admin",
+                    label: $A.L("应用商店"),
+                    icon: $A.mainUrl("images/application/appstore.svg"),
+                    url: 'appstore/internal?language={system_lang}&theme={system_theme}',
+                    disable_scope_css: true,
+                    auto_dark_theme: false,
+                }]
+            })
+        }
         // 找出已卸载的应用和版本更新的应用
         const updatedOrUninstalledApps = state.microAppsInstalled
             .filter((oldApp) => !data.some((newApp) => newApp.id === oldApp.id))

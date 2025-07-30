@@ -287,9 +287,6 @@ export default {
      */
     filterMicroAppsMenus: (state) => {
         return state.microAppsMenus.filter(item => {
-            if (item.only_admin === true && !state.userIsAdmin) {
-                return false
-            }
             return item.location === 'application'
         })
     },
@@ -303,9 +300,6 @@ export default {
      */
     filterMicroAppsMenusAdmin: (state) => {
         return state.microAppsMenus.filter(item => {
-            if (item.only_admin === true && !state.userIsAdmin) {
-                return false
-            }
             return item.location === 'application/admin'
         })
     },
@@ -319,9 +313,6 @@ export default {
      */
     filterMicroAppsMenusMain: (state) => {
         return state.microAppsMenus.filter(item => {
-            if (item.only_admin === true && !state.userIsAdmin) {
-                return false
-            }
             return item.location === 'main/menu'
         })
     }
