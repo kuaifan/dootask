@@ -1258,26 +1258,27 @@ class ProjectController extends AbstractController
         }
         $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
         //
-        go(function () use ($user, $userid, $time, $type, $botUser, $dialog) {
+        $doo = Doo::load();
+        go(function () use ($doo, $user, $userid, $time, $type, $botUser, $dialog) {
             Coroutine::sleep(1);
             $headings = [];
-            $headings[] = Doo::translate('任务ID');
-            $headings[] = Doo::translate('父级任务ID');
-            $headings[] = Doo::translate('所属项目');
-            $headings[] = Doo::translate('任务标题');
-            $headings[] = Doo::translate('任务标签');
-            $headings[] = Doo::translate('任务开始时间');
-            $headings[] = Doo::translate('任务结束时间');
-            $headings[] = Doo::translate('完成时间');
-            $headings[] = Doo::translate('归档时间');
-            $headings[] = Doo::translate('任务计划用时');
-            $headings[] = Doo::translate('实际完成用时');
-            $headings[] = Doo::translate('超时时间');
-            $headings[] = Doo::translate('开发用时');
-            $headings[] = Doo::translate('验收/测试用时');
-            $headings[] = Doo::translate('负责人');
-            $headings[] = Doo::translate('创建人');
-            $headings[] = Doo::translate('状态');
+            $headings[] = $doo->translate('任务ID');
+            $headings[] = $doo->translate('父级任务ID');
+            $headings[] = $doo->translate('所属项目');
+            $headings[] = $doo->translate('任务标题');
+            $headings[] = $doo->translate('任务标签');
+            $headings[] = $doo->translate('任务开始时间');
+            $headings[] = $doo->translate('任务结束时间');
+            $headings[] = $doo->translate('完成时间');
+            $headings[] = $doo->translate('归档时间');
+            $headings[] = $doo->translate('任务计划用时');
+            $headings[] = $doo->translate('实际完成用时');
+            $headings[] = $doo->translate('超时时间');
+            $headings[] = $doo->translate('开发用时');
+            $headings[] = $doo->translate('验收/测试用时');
+            $headings[] = $doo->translate('负责人');
+            $headings[] = $doo->translate('创建人');
+            $headings[] = $doo->translate('状态');
             $datas = [];
             //
             $content = [];
@@ -1330,9 +1331,9 @@ class ProjectController extends AbstractController
                         $planTotalTime = $endTime - $startTime;
                         $residueTime = $planTotalTime - $totalTime;
                         if ($residueTime < 0) {
-                            $overTime = Doo::translate(Timer::timeFormat(abs($residueTime)));
+                            $overTime = $doo->translate(Timer::timeFormat(abs($residueTime)));
                         }
-                        $planTime = Doo::translate(Timer::timeDiff($startTime, $endTime));
+                        $planTime = $doo->translate(Timer::timeDiff($startTime, $endTime));
                     }
                     $actualTime = $task->complete_at ? $totalTime : 0; // 实际完成用时
                     $statusText = '未完成';
@@ -1376,13 +1377,13 @@ class ProjectController extends AbstractController
                         $task->complete_at ?: '-',
                         $task->archived_at ?: '-',
                         $planTime,
-                        $actualTime ? Doo::translate(Timer::timeFormat($actualTime)) : '-',
+                        $actualTime ? $doo->translate(Timer::timeFormat($actualTime)) : '-',
                         $overTime,
-                        $developTime > 0 ? Doo::translate(Timer::timeFormat($developTime)) : '-',
-                        $testTime > 0 ? Doo::translate(Timer::timeFormat($testTime)) : '-',
+                        $developTime > 0 ? $doo->translate(Timer::timeFormat($developTime)) : '-',
+                        $testTime > 0 ? $doo->translate(Timer::timeFormat($testTime)) : '-',
                         Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
                         Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
-                        Doo::translate($statusText),
+                        $doo->translate($statusText),
                     ];
                 }
             });
@@ -1416,7 +1417,7 @@ class ProjectController extends AbstractController
             } else {
                 $fileName .= '的任务统计';
             }
-            $fileName = Doo::translate($fileName) . '_' . Timer::time() . '.xls';
+            $fileName = $doo->translate($fileName) . '_' . Timer::time() . '.xls';
             $filePath = "temp/task/export/" . date("Ym", Timer::time());
             $export = new BillMultipleExport($sheets);
             $res = $export->store($filePath . "/" . $fileName);
@@ -1500,21 +1501,22 @@ class ProjectController extends AbstractController
         }
         $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
         //
-        go(function () use ($botUser, $dialog, $user) {
+        $doo = Doo::load();
+        go(function () use ($doo, $botUser, $dialog, $user) {
             Coroutine::sleep(1);
             //
             $headings = [];
-            $headings[] = Doo::translate('任务ID');
-            $headings[] = Doo::translate('父级任务ID');
-            $headings[] = Doo::translate('所属项目');
-            $headings[] = Doo::translate('任务标题');
-            $headings[] = Doo::translate('任务标签');
-            $headings[] = Doo::translate('任务开始时间');
-            $headings[] = Doo::translate('任务结束时间');
-            $headings[] = Doo::translate('任务计划用时');
-            $headings[] = Doo::translate('超时时间');
-            $headings[] = Doo::translate('负责人');
-            $headings[] = Doo::translate('创建人');
+            $headings[] = $doo->translate('任务ID');
+            $headings[] = $doo->translate('父级任务ID');
+            $headings[] = $doo->translate('所属项目');
+            $headings[] = $doo->translate('任务标题');
+            $headings[] = $doo->translate('任务标签');
+            $headings[] = $doo->translate('任务开始时间');
+            $headings[] = $doo->translate('任务结束时间');
+            $headings[] = $doo->translate('任务计划用时');
+            $headings[] = $doo->translate('超时时间');
+            $headings[] = $doo->translate('负责人');
+            $headings[] = $doo->translate('创建人');
             $data = [];
             //
             $content = [];
@@ -1541,9 +1543,9 @@ class ProjectController extends AbstractController
                             $planTotalTime = $endTime - $startTime;
                             $residueTime = $planTotalTime - $totalTime;
                             if ($residueTime < 0) {
-                                $overTime = Doo::translate(Timer::timeFormat(abs($residueTime)));
+                                $overTime = $doo->translate(Timer::timeFormat(abs($residueTime)));
                             }
-                            $planTime = Doo::translate(Timer::timeDiff($startTime, $endTime));
+                            $planTime = $doo->translate(Timer::timeDiff($startTime, $endTime));
                         }
                         $ownerIds = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
                         $ownerNames = [];
@@ -1580,7 +1582,7 @@ class ProjectController extends AbstractController
                 return;
             }
             //
-            $title = Doo::translate('超期任务');
+            $title = $doo->translate('超期任务');
             $sheets = [
                 BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data)->setStyles(["A1:J1" => ["font" => ["bold" => true]]])
             ];

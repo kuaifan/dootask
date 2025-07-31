@@ -39,16 +39,22 @@ class RequestContext
      */
     public static function getCurrentRequestId($requestId = null): ?string
     {
-        if (str_starts_with($requestId, self::REQUEST_ID_PREFIX)) {
+        // 如果提供了有效的请求ID，直接返回
+        if ($requestId && str_starts_with($requestId, self::REQUEST_ID_PREFIX)) {
             return $requestId;
         }
 
+        // 尝试从当前请求获取
         $request = request();
-        if (!$request->attributes->has(static::CONTEXT_KEY)) {
-            $request->attributes->set(static::CONTEXT_KEY, self::generateRequestId());
+        if ($request && method_exists($request, 'attributes') && $request->attributes) {
+            if (!$request->attributes->has(static::CONTEXT_KEY)) {
+                $request->attributes->set(static::CONTEXT_KEY, self::generateRequestId());
+            }
+            return $request->attributes->get(static::CONTEXT_KEY);
         }
 
-        return $request->attributes->get(static::CONTEXT_KEY);
+        // 如果没有请求上下文，生成一个新的请求ID
+        return self::generateRequestId();
     }
 
     /**

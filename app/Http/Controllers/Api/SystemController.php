@@ -1328,18 +1328,19 @@ class SystemController extends AbstractController
         }
         $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
         //
-        go(function () use ($secondStart, $secondEnd, $time, $userid, $date, $user, $botUser, $dialog) {
+        $doo = Doo::load();
+        go(function () use ($doo, $secondStart, $secondEnd, $time, $userid, $date, $user, $botUser, $dialog) {
             Coroutine::sleep(1);
             //
             $headings = [];
-            $headings[] = Doo::translate('签到人');
-            $headings[] = Doo::translate('签到日期');
-            $headings[] = Doo::translate('班次时间');
-            $headings[] = Doo::translate('首次签到时间');
-            $headings[] = Doo::translate('首次签到结果');
-            $headings[] = Doo::translate('最后签到时间');
-            $headings[] = Doo::translate('最后签到结果');
-            $headings[] = Doo::translate('参数数据');
+            $headings[] = $doo->translate('签到人');
+            $headings[] = $doo->translate('签到日期');
+            $headings[] = $doo->translate('班次时间');
+            $headings[] = $doo->translate('首次签到时间');
+            $headings[] = $doo->translate('首次签到结果');
+            $headings[] = $doo->translate('最后签到时间');
+            $headings[] = $doo->translate('最后签到结果');
+            $headings[] = $doo->translate('参数数据');
             //
             $content = [];
             $content[] = [
@@ -1375,12 +1376,12 @@ class SystemController extends AbstractController
                     if (Timer::time() < $startT + $secondStart) {
                         $firstResult = "-";
                     } else {
-                        $firstResult = Doo::translate("正常");
+                        $firstResult = $doo->translate("正常");
                         if (empty($firstTimestamp)) {
-                            $firstResult = Doo::translate("缺卡");
+                            $firstResult = $doo->translate("缺卡");
                             $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
                         } elseif ($firstTimestamp > $startT + $secondStart) {
-                            $firstResult = Doo::translate("迟到");
+                            $firstResult = $doo->translate("迟到");
                             $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
                         }
                     }
@@ -1388,12 +1389,12 @@ class SystemController extends AbstractController
                         $lastResult = "-";
                         $lastTimestamp = 0;
                     } else {
-                        $lastResult = Doo::translate("正常");
+                        $lastResult = $doo->translate("正常");
                         if (empty($lastTimestamp) || $lastTimestamp === $firstTimestamp) {
-                            $lastResult = Doo::translate("缺卡");
+                            $lastResult = $doo->translate("缺卡");
                             $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
                         } elseif ($lastTimestamp < $startT + $secondEnd) {
-                            $lastResult = Doo::translate("早退");
+                            $lastResult = $doo->translate("早退");
                             $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
                         }
                     }
@@ -1436,7 +1437,7 @@ class SystemController extends AbstractController
             } else {
                 $fileName .= '的签到记录';
             }
-            $fileName = Doo::translate($fileName) . '_' . Timer::time() . '.xlsx';
+            $fileName = $doo->translate($fileName) . '_' . Timer::time() . '.xlsx';
             $filePath = "temp/checkin/export/" . date("Ym", Timer::time());
             $export = new BillMultipleExport($sheets);
             $res = $export->store($filePath . "/" . $fileName);

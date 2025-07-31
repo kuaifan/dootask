@@ -2,14 +2,9 @@
 
 namespace App\Module;
 
-use App\Exceptions\ApiException;
 use App\Models\User;
+use App\Module\Interface\DooSo;
 use App\Services\RequestContext;
-use Cache;
-use Carbon\Carbon;
-use FFI;
-use FFI\CData;
-use FFI\Exception;
 
 class Doo
 {
@@ -17,75 +12,26 @@ class Doo
     private const DOO_LANGUAGE = 'doo_language';
 
     /**
-     * char转为字符串
-     * @param $text
-     * @return string
-     */
-    private static function string($text): string
-    {
-        if (!($text instanceof CData)) {
-            return "";
-        }
-
-        try {
-            return FFI::string($text);
-        } catch (Exception) {
-            return "";
-        }
-    }
-
-    /**
-     * 装载
+     * 加载Doo实例
+     * - 如果已经存在，则直接返回
+     * - 否则，创建一个新的FFI实例，并初始化
      * @param $token
      * @param $language
-     * @return FFI
+     * @return DooSo
      */
-    public static function load($token = null, $language = null)
+    public static function load($token = null, $language = null): DooSo
     {
-        $instance = FFI::cdef(<<<EOF
-                void initialize(char* work, char* token, char* lang);
-                char* license();
-                char* licenseDecode(char* license);
-                char* licenseSave(char* license);
-                int userId();
-                char* userExpiredAt();
-                char* userEmail();
-                char* userEncrypt();
-                char* userToken();
-                char* userCreate(char* email, char* password);
-                char* tokenEncode(int userid, char* email, char* encrypt, int days);
-                char* tokenDecode(char* val);
-                char* translate(char* val, char* val);
-                char* md5s(char* text, char* password);
-                char* macs();
-                char* dooSN();
-                char* version();
-                char* pgpGenerateKeyPair(char* name, char* email, char* passphrase);
-                char* pgpEncrypt(char* plainText, char* publicKey);
-                char* pgpDecrypt(char* cipherText, char* privateKey, char* passphrase);
-            EOF, "/usr/lib/doo/doo.so");
+        if (RequestContext::has(self::DOO_INSTANCE)) {
+            return RequestContext::get(self::DOO_INSTANCE);
+        }
+
         $token = $token ?: Base::token();
         $language = $language ?: Base::headerOrInput('language');
-        $instance->initialize("/var/www", $token, $language);
+        $instance = new DooSo($token, $language);
 
         RequestContext::set(self::DOO_INSTANCE, $instance);
         RequestContext::set(self::DOO_LANGUAGE, $language);
 
-        return $instance;
-    }
-
-    /**
-     * 获取实例
-     * @param $token
-     * @param $language
-     * @return mixed
-     */
-    public static function doo($token = null, $language = null)
-    {
-        $instance = RequestContext::get(self::DOO_INSTANCE);
-        if ($instance === null) {
-            $instance = self::load($token, $language);
-        }
         return $instance;
     }
 
@@ -95,41 +41,7 @@ class Doo
      */
     public static function license(): array
     {
-        $array = Base::json2array(self::string(self::doo()->license()));
-
-        $ips = explode(",", $array['ip']);
-        $array['ip'] = [];
-        foreach ($ips as $ip) {
-            if (Base::is_ipv4($ip)) {
-                $array['ip'][] = $ip;
-            }
-        }
-
-        $domains = explode(",", $array['domain']);
-        $array['domain'] = [];
-        foreach ($domains as $domain) {
-            if (Base::is_domain($domain)) {
-                $array['domain'][] = $domain;
-            }
-        }
-
-        $macs = explode(",", $array['mac']);
-        $array['mac'] = [];
-        foreach ($macs as $mac) {
-            if (Base::isMac($mac)) {
-                $array['mac'][] = $mac;
-            }
-        }
-
-        $emails = explode(",", $array['email']);
-        $array['email'] = [];
-        foreach ($emails as $email) {
-            if (Base::isEmail($email)) {
-                $array['email'][] = $email;
-            }
-        }
-
-        return $array;
+        return self::load()->license();
     }
 
     /**
@@ -158,25 +70,12 @@ class Doo
     }
 
     /**
-     * 解析License
-     * @param $license
-     * @return array
-     */
-    public static function licenseDecode($license): array
-    {
-        return Base::json2array(self::string(self::doo()->licenseDecode($license)));
-    }
-
-    /**
      * 保存License
      * @param $license
      */
     public static function licenseSave($license): void
     {
-        $res = self::string(self::doo()->licenseSave($license));
-        if ($res != 'success') {
-            throw new ApiException($res ?: 'LICENSE 保存失败');
-        }
+        self::load()->licenseSave($license);
     }
 
     /**
@@ -185,7 +84,7 @@ class Doo
      */
     public static function userId(): int
     {
-        return intval(self::doo()->userId());
+        return self::load()->userId();
     }
 
     /**
@@ -194,8 +93,7 @@ class Doo
      */
     public static function userExpired(): bool
     {
-        $expiredAt = self::userExpiredAt();
-        return $expiredAt && Carbon::parse($expiredAt)->isBefore(Carbon::now());
+        return self::load()->userExpired();
     }
 
     /**
@@ -204,8 +102,7 @@ class Doo
      */
     public static function userExpiredAt(): ?string
     {
-        $expiredAt = self::string(self::doo()->userExpiredAt());
-        return $expiredAt === 'forever' ? null : $expiredAt;
+        return self::load()->userExpiredAt();
     }
 
     /**
@@ -214,7 +111,7 @@ class Doo
      */
     public static function userEmail(): string
     {
-        return self::string(self::doo()->userEmail());
+        return self::load()->userEmail();
     }
 
     /**
@@ -223,7 +120,7 @@ class Doo
      */
     public static function userEncrypt(): string
     {
-        return self::string(self::doo()->userEncrypt());
+        return self::load()->userEncrypt();
     }
 
     /**
@@ -232,7 +129,7 @@ class Doo
      */
     public static function userToken(): string
     {
-        return self::string(self::doo()->userToken());
+        return self::load()->userToken();
     }
 
     /**
@@ -243,23 +140,7 @@ class Doo
      */
     public static function userCreate($email, $password): User|null
     {
-        $data = Base::json2array(self::string(self::doo()->userCreate($email, $password)));
-        if (Base::isError($data)) {
-            throw new ApiException($data['msg'] ?: '注册失败');
-        }
-        if (\DB::transactionLevel() > 0) {
-            try {
-                \DB::commit();
-                \DB::beginTransaction();
-            } catch (\Throwable) {
-                // do nothing
-            }
-        }
-        $user = User::whereEmail($email)->first();
-        if (empty($user)) {
-            throw new ApiException('注册失败');
-        }
-        return $user;
+        return self::load()->userCreate($email, $password);
     }
 
     /**
@@ -272,7 +153,7 @@ class Doo
      */
     public static function tokenEncode($userid, $email, $encrypt, int $days = 15): string
     {
-        return self::string(self::doo()->tokenEncode($userid, $email, $encrypt, $days));
+        return self::load()->tokenEncode($userid, $email, $encrypt, $days);
     }
 
     /**
@@ -282,34 +163,30 @@ class Doo
      */
     public static function tokenDecode($token): array
     {
-        $array = Base::json2array(self::string(self::doo()->tokenDecode($token)));
-        $array['expired_at'] = $array['expired_at'] === 'forever' ? null : $array['expired_at'];
-        return $array;
+        return self::load()->tokenDecode($token);
     }
 
     /**
      * 翻译
      * @param $text
-     * @param string $lang
+     * @param ?string $lang
      * @return string
      */
-    public static function translate($text, string $lang = ""): string
+    public static function translate($text, ?string $lang = ""): string
     {
-        if (empty($text)) {
-            return "";
-        }
         if (empty($lang)) {
             $lang = RequestContext::get(self::DOO_LANGUAGE);
         }
-        return self::string(self::doo()->translate($text, $lang));
+        return self::load()->translate($text, $lang);
     }
 
     /**
      * 设置语言
-     * @param string|int $lang 语言 或 会员ID
+     * @param int|string $lang 语言 或 会员ID
      * @return void
      */
-    public static function setLanguage($lang) {
+    public static function setLanguage(int|string $lang): void
+    {
         if (Base::isNumber($lang)) {
             $lang = User::find(intval($lang))?->lang ?: "";
         }
@@ -318,10 +195,10 @@ class Doo
 
     /**
      * 获取语言列表 或 语言名称
-     * @param string|false $lang
+     * @param bool|string $lang
      * @return string|string[]
      */
-    public static function getLanguages($lang = false)
+    public static function getLanguages(bool|string $lang = false): array|string
     {
         $array = [
             "zh" => "简体中文",
@@ -358,7 +235,7 @@ class Doo
      */
     public static function md5s($text, string $password = ""): string
     {
-        return self::string(self::doo()->md5s($text, $password));
+        return self::load()->md5s($text, $password);
     }
 
     /**
@@ -367,14 +244,7 @@ class Doo
      */
     public static function macs(): array
     {
-        $macs = explode(",", self::string(self::doo()->macs()));
-        $array = [];
-        foreach ($macs as $mac) {
-            if (Base::isMac($mac)) {
-                $array[] = $mac;
-            }
-        }
-        return $array;
+        return self::load()->macs();
     }
 
     /**
@@ -383,7 +253,7 @@ class Doo
      */
     public static function dooSN(): string
     {
-        return self::string(self::doo()->dooSN());
+        return self::load()->dooSN();
     }
 
     /**
@@ -392,7 +262,7 @@ class Doo
      */
     public static function dooVersion(): string
     {
-        return self::string(self::doo()->version());
+        return self::load()->dooVersion();
     }
 
     /**
@@ -404,7 +274,7 @@ class Doo
      */
     public static function pgpGenerateKeyPair($name, $email, string $passphrase = ""): array
     {
-        return Base::json2array(self::string(self::doo()->pgpGenerateKeyPair($name, $email, $passphrase)));
+        return self::load()->pgpGenerateKeyPair($name, $email, $passphrase);
     }
 
     /**
@@ -415,11 +285,7 @@ class Doo
      */
     public static function pgpEncrypt($plaintext, $publicKey): string
     {
-        if (strlen($publicKey) < 50) {
-            $keyCache = Base::json2array(Cache::get("KeyPair::" . $publicKey));
-            $publicKey = $keyCache['public_key'];
-        }
-        return self::string(self::doo()->pgpEncrypt($plaintext, $publicKey));
+        return self::load()->pgpEncrypt($plaintext, $publicKey);
     }
 
     /**
@@ -431,12 +297,7 @@ class Doo
      */
     public static function pgpDecrypt($encryptedText, $privateKey, $passphrase = null): string
     {
-        if (strlen($privateKey) < 50) {
-            $keyCache = Base::json2array(Cache::get("KeyPair::" . $privateKey));
-            $privateKey = $keyCache['private_key'];
-            $passphrase = $keyCache['passphrase'];
-        }
-        return self::string(self::doo()->pgpDecrypt($encryptedText, $privateKey, $passphrase));
+        return self::load()->pgpDecrypt($encryptedText, $privateKey, $passphrase);
     }
 
     /**
@@ -447,9 +308,7 @@ class Doo
      */
     public static function pgpEncryptApi($plaintext, $publicKey): string
     {
-        $content = Base::array2json($plaintext);
-        $content = self::pgpEncrypt($content, $publicKey);
-        return preg_replace("/\s*-----(BEGIN|END) PGP MESSAGE-----\s*/i", "", $content);
+        return self::load()->pgpEncryptApi($plaintext, $publicKey);
     }
 
     /**
@@ -461,9 +320,7 @@ class Doo
      */
     public static function pgpDecryptApi($encryptedText, $privateKey, $passphrase = null): array
     {
-        $content = "-----BEGIN PGP MESSAGE-----\n\n" . $encryptedText . "\n-----END PGP MESSAGE-----";
-        $content = self::pgpDecrypt($content, $privateKey, $passphrase);
-        return Base::json2array($content);
+        return self::load()->pgpDecryptApi($encryptedText, $privateKey, $passphrase);
     }
 
     /**
@@ -473,24 +330,7 @@ class Doo
      */
     public static function pgpParseStr($string): array
     {
-        $array = [
-            'encrypt_type' => '',
-            'encrypt_id' => '',
-            'client_type' => '',
-            'client_key' => '',
-        ];
-        $string = str_replace(";", "&", $string);
-        parse_str($string, $params);
-        foreach ($params as $key => $value) {
-            $key = strtolower(trim($key));
-            if ($key) {
-                $array[$key] = trim($value);
-            }
-        }
-        if ($array['client_type'] === 'pgp' && $array['client_key']) {
-            $array['client_key'] = self::pgpPublicFormat($array['client_key']);
-        }
-        return $array;
+        return self::load()->pgpParseStr($string);
     }
 
     /**
@@ -500,10 +340,6 @@ class Doo
      */
     public static function pgpPublicFormat($key): string
     {
-        $key = str_replace(["-", "_", "$"], ["+", "/", "\n"], $key);
-        if (!str_contains($key, '-----BEGIN PGP PUBLIC KEY BLOCK-----')) {
-            $key = "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n" . $key . "\n-----END PGP PUBLIC KEY BLOCK-----";
-        }
-        return $key;
+        return self::load()->pgpPublicFormat($key);
     }
 }

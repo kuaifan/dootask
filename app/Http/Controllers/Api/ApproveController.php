@@ -775,7 +775,8 @@ class ApproveController extends AbstractController
         }
         $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
         //
-        go(function () use ($data, $user, $botUser, $dialog) {
+        $doo = Doo::load();
+        go(function () use ($doo, $data, $user, $botUser, $dialog) {
             Coroutine::sleep(1);
             //
             $content = [];
@@ -802,30 +803,30 @@ class ApproveController extends AbstractController
             $res = Base::arrayKeyToUnderline($process['data']);
             //
             $headings = [];
-            $headings[] = Doo::translate('申请编号');
-            $headings[] = Doo::translate('标题');
-            $headings[] = Doo::translate('申请状态');
-            $headings[] = Doo::translate('发起时间');
-            $headings[] = Doo::translate('完成时间');
-            $headings[] = Doo::translate('发起人工号');
-            $headings[] = Doo::translate('发起人User ID');
-            $headings[] = Doo::translate('发起人姓名');
-            $headings[] = Doo::translate('发起人部门');
-            $headings[] = Doo::translate('发起人部门ID');
-            $headings[] = Doo::translate('部门负责人');
-            $headings[] = Doo::translate('历史审批人');
-            $headings[] = Doo::translate('历史办理人');
-            $headings[] = Doo::translate('审批记录');
-            $headings[] = Doo::translate('当前处理人');
-            $headings[] = Doo::translate('审批节点');
-            $headings[] = Doo::translate('审批人数');
-            $headings[] = Doo::translate('审批耗时');
-            $headings[] = Doo::translate('假期类型');
-            $headings[] = Doo::translate('开始时间');
-            $headings[] = Doo::translate('结束时间');
-            $headings[] = Doo::translate('时长');
-            $headings[] = Doo::translate('请假事由');
-            $headings[] = Doo::translate('请假单位');
+            $headings[] = $doo->translate('申请编号');
+            $headings[] = $doo->translate('标题');
+            $headings[] = $doo->translate('申请状态');
+            $headings[] = $doo->translate('发起时间');
+            $headings[] = $doo->translate('完成时间');
+            $headings[] = $doo->translate('发起人工号');
+            $headings[] = $doo->translate('发起人User ID');
+            $headings[] = $doo->translate('发起人姓名');
+            $headings[] = $doo->translate('发起人部门');
+            $headings[] = $doo->translate('发起人部门ID');
+            $headings[] = $doo->translate('部门负责人');
+            $headings[] = $doo->translate('历史审批人');
+            $headings[] = $doo->translate('历史办理人');
+            $headings[] = $doo->translate('审批记录');
+            $headings[] = $doo->translate('当前处理人');
+            $headings[] = $doo->translate('审批节点');
+            $headings[] = $doo->translate('审批人数');
+            $headings[] = $doo->translate('审批耗时');
+            $headings[] = $doo->translate('假期类型');
+            $headings[] = $doo->translate('开始时间');
+            $headings[] = $doo->translate('结束时间');
+            $headings[] = $doo->translate('时长');
+            $headings[] = $doo->translate('请假事由');
+            $headings[] = $doo->translate('请假单位');
             //
             $datas = [];
             foreach ($res as $val) {
@@ -845,12 +846,12 @@ class ApproveController extends AbstractController
                 // 计算审批耗时
                 $startTime = Carbon::parse($val['start_time'])->timestamp;
                 $endTime = $val['end_time'] ? Carbon::parse($val['end_time'])->timestamp : time();
-                $approval_time = Doo::translate(Timer::timeDiff($startTime, $endTime)); // 审批耗时
+                $approval_time = $doo->translate(Timer::timeDiff($startTime, $endTime)); // 审批耗时
                 // 计算时长
                 $varStartTime = Carbon::parse($val['var']['start_time']);
                 $varEndTime = Carbon::parse($val['var']['end_time']);
                 $duration = $varEndTime->floatDiffInHours($varStartTime);
-                $duration_unit = Doo::translate('小时'); // 时长单位
+                $duration_unit = $doo->translate('小时'); // 时长单位
                 $datas[] = [
                     $val['id'], // 申请编号
                     $val['proc_def_name'], // 标题
@@ -891,7 +892,7 @@ class ApproveController extends AbstractController
                 return;
             }
             //
-            $title = Doo::translate("审批记录");
+            $title = $doo->translate("审批记录");
             $sheets = [
                 BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles(["A1:Y1" => ["font" => ["bold" => true]]])
             ];
