@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use Request;
-use Session;
 use Response;
 use Madzipper;
 use Carbon\Carbon;
+use App\Module\Down;
 use App\Models\User;
 use App\Module\Base;
 use App\Module\Doo;
@@ -925,11 +925,10 @@ class ApproveController extends AbstractController
             }
             //
             if (file_exists($zipPath)) {
-                $base64 = base64_encode(Base::array2string([
+                $key = Down::cache_encode([
                     'file' => $zipFile,
-                ]));
-                $fileUrl = Base::fillUrl('api/approve/down?key=' . urlencode($base64));
-                Session::put('approve::export:userid', $user->userid);
+                ]);
+                $fileUrl = Base::fillUrl('api/approve/down?key=' . $key);
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                     'type' => 'file_download',
                     'title' => '导出审批数据已完成',
@@ -983,12 +982,7 @@ class ApproveController extends AbstractController
      */
     public function down()
     {
-        $userid = Session::get('approve::export:userid');
-        if (empty($userid)) {
-            return Base::ajaxError("请求已过期，请重新导出！", [], 0, 403);
-        }
-        //
-        $array = Base::string2array(base64_decode(urldecode(Request::input('key'))));
+        $array = Down::cache_decode();
         $file = $array['file'];
         if (empty($file) || !file_exists(storage_path($file))) {
             return Base::ajaxError("文件不存在！", [], 0, 403);

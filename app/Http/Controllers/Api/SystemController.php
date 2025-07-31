@@ -6,8 +6,8 @@ use App\Models\UserDevice;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\AI;
+use App\Module\Down;
 use Request;
-use Session;
 use Response;
 use Madzipper;
 use Carbon\Carbon;
@@ -1465,11 +1465,10 @@ class SystemController extends AbstractController
             }
             //
             if (file_exists($zipPath)) {
-                $base64 = base64_encode(Base::array2string([
+                $key = Down::cache_encode([
                     'file' => $zipFile,
-                ]));
-                $fileUrl = Base::fillUrl('api/system/checkin/down?key=' . urlencode($base64));
-                Session::put('checkin::export:userid', $user->userid);
+                ]);
+                $fileUrl = Base::fillUrl('api/system/checkin/down?key=' . $key);
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                     'type' => 'file_download',
                     'title' => '导出签到数据已完成',
@@ -1511,12 +1510,7 @@ class SystemController extends AbstractController
      */
     public function checkin__down()
     {
-        $userid = Session::get('checkin::export:userid');
-        if (empty($userid)) {
-            return Base::ajaxError("请求已过期，请重新导出！", [], 0, 403);
-        }
-        //
-        $array = Base::string2array(base64_decode(urldecode(Request::input('key'))));
+        $array = Down::cache_decode();
         $file = $array['file'];
         if (empty($file) || !file_exists(storage_path($file))) {
             return Base::ajaxError("文件不存在！", [], 0, 403);

@@ -12,10 +12,10 @@ use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Down;
 use App\Module\Timer;
 use App\Module\Ihttp;
 use Response;
-use Session;
 use Swoole\Coroutine;
 use Carbon\Carbon;
 use Redirect;
@@ -1016,14 +1016,8 @@ class FileController extends AbstractController
      */
     public function download__pack()
     {
-        $key = Request::input('key');
-        if ($key) {
-            $userid = Session::get('file::pack:userid');
-            if (empty($userid)) {
-                return Base::ajaxError("请求已过期，请重新导出！", [], 0, 403);
-            }
-            //
-            $array = Base::string2array(base64_decode(urldecode($key)));
+        if (Request::has('key')) {
+            $array = Down::cache_decode();
             $file = $array['file'];
             if (empty($file) || !file_exists(storage_path($file))) {
                 return Base::ajaxError("文件不存在！", [], 0, 403);
@@ -1091,11 +1085,10 @@ class FileController extends AbstractController
             return Base::retError('文件总大小已超过1GB，请分批下载');
         }
 
-        $base64 = base64_encode(Base::array2string([
+        $key = Down::cache_encode([
             'file' => $zipFile,
-        ]));
-        $fileUrl = Base::fillUrl('api/file/download/pack?key=' . urlencode($base64));
-        Session::put('file::pack:userid', $user->userid);
+        ]);
+        $fileUrl = Base::fillUrl('api/file/download/pack?key=' . $key);
 
         $zip = new \ZipArchive();
         Base::makeDir(dirname($zipPath));

@@ -25,8 +25,11 @@ class Doo
             return RequestContext::get(self::DOO_INSTANCE);
         }
 
-        $token = $token ?: Base::token();
-        $language = $language ?: Base::headerOrInput('language');
+        $request = request();
+        if ($request && method_exists($request, 'header')) {
+            $token = $token ?: Base::token();
+            $language = $language ?: Base::headerOrInput('language');
+        }
         $instance = new DooSo($token, $language);
 
         RequestContext::set(self::DOO_INSTANCE, $instance);

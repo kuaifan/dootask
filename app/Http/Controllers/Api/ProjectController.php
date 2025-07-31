@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use Request;
-use Session;
 use Redirect;
 use Response;
 use Madzipper;
 use Carbon\Carbon;
+use App\Module\Down;
 use App\Module\Doo;
 use App\Models\File;
 use App\Models\User;
@@ -1292,7 +1292,7 @@ class ProjectController extends AbstractController
                 ->where('project_task_users.owner', 1)
                 ->whereIn('project_task_users.userid', $userid)
                 ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(), $type);
-            $builder->orderByDesc('project_tasks.id')->chunk(100, function ($tasks) use (&$datas) {
+            $builder->orderByDesc('project_tasks.id')->chunk(100, function ($tasks) use ($doo, &$datas) {
                 /** @var ProjectTask $task */
                 foreach ($tasks as $task) {
                     $flowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
@@ -1446,11 +1446,10 @@ class ProjectController extends AbstractController
             }
             //
             if (file_exists($zipPath)) {
-                $base64 = base64_encode(Base::array2string([
+                $key = Down::cache_encode([
                     'file' => $zipFile,
-                ]));
-                $fileUrl = Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
-                Session::put('task::export:userid', $user->userid);
+                ]);
+                $fileUrl = Base::fillUrl('api/project/task/down?key=' . $key);
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                     'type' => 'file_download',
                     'title' => '导出任务统计已完成',
@@ -1530,7 +1529,7 @@ class ProjectController extends AbstractController
                 ->whereNotNull('end_at')
                 ->where('end_at', '<=', Carbon::now())
                 ->orderBy('end_at')
-                ->chunk(100, function ($tasks) use (&$data) {
+                ->chunk(100, function ($tasks) use ($doo, &$data) {
                     /** @var ProjectTask $task */
                     foreach ($tasks as $task) {
                         $taskStartTime = Carbon::parse($task->start_at ?: $task->created_at)->timestamp;
@@ -1615,11 +1614,10 @@ class ProjectController extends AbstractController
             }
             //
             if (file_exists($zipPath)) {
-                $base64 = base64_encode(Base::array2string([
+                $key = Down::cache_encode([
                     'file' => $zipFile,
-                ]));
-                $fileUrl = Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
-                Session::put('task::export:userid', $user->userid);
+                ]);
+                $fileUrl = Base::fillUrl('api/project/task/down?key=' . $key);
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                     'type' => 'file_download',
                     'title' => '导出超期任务已完成',
@@ -1661,12 +1659,7 @@ class ProjectController extends AbstractController
      */
     public function task__down()
     {
-        $userid = Session::get('task::export:userid');
-        if (empty($userid)) {
-            return Base::ajaxError("请求已过期，请重新导出！", [], 0, 403);
-        }
-        //
-        $array = Base::string2array(base64_decode(urldecode(Request::input('key'))));
+        $array = Down::cache_decode();
         $file = $array['file'];
         if (empty($file) || !file_exists(storage_path($file))) {
             return Base::ajaxError("文件不存在！", [], 0, 403);
