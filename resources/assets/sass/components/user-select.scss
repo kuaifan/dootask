@@ -518,11 +518,13 @@
                     max-height: none;
 
                     ul {
-                        padding-bottom: var(--navigation-bar-height);
+                        &:last-child {
+                            padding-bottom: var(--navigation-bar-height);
 
-                        > li {
-                            &:last-child {
-                                padding-bottom: 16px;
+                            > li {
+                                &:last-child {
+                                    padding-bottom: 16px;
+                                }
                             }
                         }
                     }
