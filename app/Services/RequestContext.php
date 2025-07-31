@@ -11,6 +11,8 @@ use Swoole\Coroutine;
  */
 class RequestContext
 {
+    /** @var string 请求ID的上下文键 */
+    private const CONTEXT_KEY = 'request_id';
 
     /** @var string 请求ID前缀 */
     private const REQUEST_ID_PREFIX = 'req';
@@ -37,7 +39,16 @@ class RequestContext
      */
     public static function getCurrentRequestId($requestId = null): ?string
     {
-        return $requestId ?? request()?->requestId;
+        if (str_starts_with($requestId, self::REQUEST_ID_PREFIX)) {
+            return $requestId;
+        }
+
+        $request = request();
+        if (!$request->attributes->has(static::CONTEXT_KEY)) {
+            $request->attributes->set(static::CONTEXT_KEY, self::generateRequestId());
+        }
+
+        return $request->attributes->get(static::CONTEXT_KEY);
     }
 
     /**
