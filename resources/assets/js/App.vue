@@ -614,7 +614,10 @@ export default {
             if (!this.$isEEUIApp) {
                 return;
             }
-            $A.eeuiAppHideWebviewSnapshot()
+            // 隐藏快照
+            setTimeout(() => {
+                this.appActivated && $A.eeuiAppHideWebviewSnapshot()
+            }, 500)
             // APP进入前台
             window.__onAppActive = () => {
                 this.appActivated = true
