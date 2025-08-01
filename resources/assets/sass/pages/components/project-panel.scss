@@ -953,12 +953,18 @@
         position: relative
     }
 }
+
 .project-panel-project-menu-dropdown {
     max-height: calc(100vh - 120px);
     overflow-y: auto;
 }
+
 .project-panel-more-dropdown-menu {
-    > li {
+    .project-panel-more-dropdown-warp {
+        min-height: 120px;
+        max-height: calc(100vh - 250px);
+        overflow-y: auto;
+        list-style: none;
         .item {
             display: flex;
             align-items: center;

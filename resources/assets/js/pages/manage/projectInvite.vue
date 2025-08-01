@@ -7,10 +7,12 @@
         <div v-else class="invite-warp">
             <Card v-if="project.id > 0">
                 <p slot="title" v-html="transformEmojiToHtml(project.name)"></p>
-                <div v-if="project.desc" class="invite-desc" :title="$L('项目介绍')">{{project.desc}}</div>
+                <div v-if="project.desc" class="invite-desc user-select-auto">
+                    <VMPreviewNostyle :value="project.desc"/>
+                </div>
                 <div v-else>{{$L('暂无介绍')}}</div>
                 <div class="invite-footer">
-                    <Button v-if="already" type="success" icon="ios-checkmark-circle-outline" @click="goProject">{{$L('已加入')}}</Button>
+                    <Button v-if="already" type="success" icon="md-checkmark-circle-outline" @click="goProject">{{$L('已加入')}}</Button>
                     <Button v-else type="primary" :loading="joinLoad > 0" @click="joinProject">{{$L('加入项目')}}</Button>
                 </div>
             </Card>
@@ -27,7 +29,13 @@
     align-items: center;
     justify-content: center;
     .invite-warp {
+        max-width: 90%;
+
+        .ivu-card {
+            border-radius: 8px;
+        }
         .invite-desc {
+            min-width: 400px;
             max-width: 460px;
             max-height: 300px;
             overflow: auto;
@@ -48,8 +56,10 @@
 <script>
 import {mapState} from "vuex";
 import transformEmojiToHtml from "../../utils/emoji";
+import VMPreviewNostyle from "../../components/VMEditor/nostyle.vue";
 
 export default {
+    components: {VMPreviewNostyle},
     data() {
         return {
             loadIng: 0,

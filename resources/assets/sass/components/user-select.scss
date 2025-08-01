@@ -236,7 +236,11 @@
                 display: flex;
                 flex-direction: column;
                 min-height: 300px;
-                max-height: calc(100vh - 280px);
+                max-height: calc(100vh - 410px);
+
+                @media (max-height: 900px) {
+                    max-height: calc(100vh - 280px);
+                }
 
                 ul {
                     padding: 8px 24px;
@@ -254,6 +258,17 @@
                         top: 0;
                         background-color: #ffffff;
                         z-index: 10;
+
+                        &:before {
+                            content: "";
+                            position: absolute;
+                            left: 0;
+                            right: 0;
+                            top: -2px;
+                            height: 4px;
+                            background-color: #ffffff;
+                            pointer-events: none;
+                        }
                     }
 
                     &.user-modal-project {

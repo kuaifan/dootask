@@ -132,21 +132,25 @@
                                 @command="dropColumn(column, $event)">
                                 <Icon type="ios-more" />
                                 <EDropdownMenu slot="dropdown" class="project-panel-more-dropdown-menu">
-                                    <EDropdownItem command="title">
-                                        <div class="item">
-                                            <Icon type="md-create" />{{$L('修改')}}
-                                        </div>
-                                    </EDropdownItem>
-                                    <EDropdownItem command="remove">
-                                        <div class="item">
-                                            <Icon type="md-trash" />{{$L('删除')}}
-                                        </div>
-                                    </EDropdownItem>
-                                    <EDropdownItem v-for="(c, k) in $store.state.columnColorList" :key="k" :divided="k==0" :command="c">
-                                        <div class="item">
-                                            <i class="taskfont" :style="{color:c.color||'#ddd'}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
-                                        </div>
-                                    </EDropdownItem>
+                                    <li class="project-panel-more-dropdown-warp">
+                                        <ul>
+                                            <EDropdownItem command="title">
+                                                <div class="item">
+                                                    <Icon type="md-create" />{{$L('修改')}}
+                                                </div>
+                                            </EDropdownItem>
+                                            <EDropdownItem command="remove">
+                                                <div class="item">
+                                                    <Icon type="md-trash" />{{$L('删除')}}
+                                                </div>
+                                            </EDropdownItem>
+                                            <EDropdownItem v-for="(c, k) in $store.state.columnColorList" :key="k" :divided="k==0" :command="c">
+                                                <div class="item">
+                                                    <i class="taskfont" :style="{color:c.color||'#ddd'}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                                </div>
+                                            </EDropdownItem>
+                                        </ul>
+                                    </li>
                                 </EDropdownMenu>
                             </EDropdown>
                             <Icon class="last" type="md-add" @click="addTopShow(column.id, true)" />

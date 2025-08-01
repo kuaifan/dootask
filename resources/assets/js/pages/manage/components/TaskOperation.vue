@@ -45,7 +45,7 @@
                             <template v-if="operationShow">
                                 <EDropdownItem command="send" :divided="turns.length > 0">
                                     <div class="item">
-                                        <i class="taskfont movefont">&#xe606;</i>{{$L('发送')}}
+                                        <i class="taskfont movefont">&#xe629;</i>{{$L('发送')}}
                                     </div>
                                 </EDropdownItem>
                                 <EDropdownItem command="archived">

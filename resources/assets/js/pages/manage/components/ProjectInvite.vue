@@ -9,7 +9,9 @@
             </div>
             <div v-else-if="project.id > 0" class="invite-content">
                 <p slot="title" class="invite-title" v-html="transformEmojiToHtml(project.name)"></p>
-                <div v-if="project.desc" class="invite-desc" :title="$L('项目介绍')">{{project.desc}}</div>
+                <div v-if="project.desc" class="invite-desc user-select-auto">
+                    <VMPreviewNostyle :value="project.desc"/>
+                </div>
                 <div v-else>{{$L('暂无介绍')}}</div>
             </div>
             <div v-else>
@@ -18,7 +20,7 @@
             <div slot="footer" class="adaption">
                 <template v-if="already">
                     <Button v-if="project.id > 0" type="default" @click="show=false">{{$L('关闭')}}</Button>
-                    <Button v-if="already" type="success" icon="ios-checkmark-circle-outline" @click="goProject">{{$L('已加入')}}</Button>
+                    <Button v-if="already" type="success" icon="md-checkmark-circle-outline" @click="goProject">{{$L('已加入')}}</Button>
                 </template>
                 <template v-else-if="project.id > 0">
                     <Button v-if="project.id > 0" :disabled="joinLoad > 0" type="default" @click="show=false">{{$L('取消')}}</Button>
@@ -59,9 +61,11 @@
 <script>
 import emitter from "../../../store/events";
 import transformEmojiToHtml from "../../../utils/emoji";
+import VMPreviewNostyle from "../../../components/VMEditor/nostyle.vue";
 
 export default {
     name: "ProjectInvite",
+    components: {VMPreviewNostyle},
     data() {
         return {
             show: false,
