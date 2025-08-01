@@ -545,6 +545,7 @@ class DialogController extends AbstractController
         //
         if ($list->isNotEmpty()) {
             $list->transform(function (WebSocketDialogMsg $item) {
+                $item->todo_done = $item->isTodoDone();
                 $item->next_id = 0;
                 $item->prev_id = 0;
                 return $item;
@@ -2387,6 +2388,7 @@ class DialogController extends AbstractController
                 $msg->webSocketDialog?->pushMsg('update', [
                     'id' => $msg->id,
                     'todo' => $msg->todo,
+                    'todo_done' => $msg->isTodoDone(true),
                     'dialog_id' => $msg->dialog_id,
                 ]);
             }

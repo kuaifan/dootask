@@ -14,15 +14,17 @@
             "{{$A.getMsgSimpleDesc(source.msg.data)}}"
         </div>
         <div v-else-if="source.type === 'todo'" class="dialog-todo" @click="onViewTodo">
-            <div class="todo-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
-            {{$L(source.msg.action === 'remove' ? '取消待办' : (source.msg.action === 'done' ? '完成' : '设待办'))}}
-            "{{$A.getMsgSimpleDesc(source.msg.data)}}"
-            <div v-if="formatTodoUser(source.msg.data).length > 0" class="todo-users">
-                <span>{{$L('给')}}</span>
-                <template v-for="(item, index) in formatTodoUser(source.msg.data)">
-                    <div v-if="index < 3" class="todo-user"><UserAvatar :userid="item" :show-name="true" :show-icon="false"/></div>
-                    <div v-else-if="index == 3" class="todo-user">+{{formatTodoUser(source.msg.data).length - 3}}</div>
-                </template>
+            <div class="no-dark-content">
+                <div class="todo-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
+                {{$L(source.msg.action === 'remove' ? '取消待办' : (source.msg.action === 'done' ? '完成' : '设待办'))}}
+                "{{$A.getMsgSimpleDesc(source.msg.data)}}"
+                <div v-if="formatTodoUser(source.msg.data).length > 0" class="todo-users">
+                    <span>{{$L('给')}}</span>
+                    <template v-for="(item, index) in formatTodoUser(source.msg.data)">
+                        <div v-if="index < 3" class="todo-user"><UserAvatar :userid="item" :show-name="true" :show-icon="false"/></div>
+                        <div v-else-if="index == 3" class="todo-user">+{{formatTodoUser(source.msg.data).length - 3}}</div>
+                    </template>
+                </div>
             </div>
         </div>
         <div v-else-if="source.type === 'notice'" class="dialog-notice">

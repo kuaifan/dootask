@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Cache;
 use Carbon\Carbon;
 use App\Module\Base;
 use App\Module\Doo;
@@ -316,6 +317,24 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 是否完成所有待办
+     * @param bool $noCache 是否禁止缓存
+     * @return int 1=已完成 0=未完成
+     */
+    public function isTodoDone(?bool $noCache = false): int
+    {
+        if ($noCache) {
+            Cache::forget('todo_done_' . $this->id);
+        }
+        if ($this->todo <= 0) {
+            return 1;
+        }
+        return (int) Cache::remember('todo_done_' . $this->id, Carbon::now()->addDays(), function () {
+            return WebSocketDialogMsgTodo::whereMsgId($this->id)->whereDoneAt(null)->exists() ? 0 : 1;
+        });
+    }
+
+    /**
      * 标注、取消标注
      * @param int $sender       标注的会员ID
      * @return mixed
@@ -367,23 +386,15 @@ class WebSocketDialogMsg extends AbstractModel
         if (in_array($this->type, ['tag', 'todo', 'notice'])) {
             return Base::retError('此消息不支持设待办');
         }
+        $dialog = WebSocketDialog::find($this->dialog_id);
         $current = WebSocketDialogMsgTodo::whereMsgId($this->id)->pluck('userid')->toArray();
         $cancel = array_diff($current, $userids);
         $setup = array_diff($userids, $current);
         //
         $this->todo = $setup || count($current) > count($cancel) ? $sender : 0;
         $this->save();
-        $upData = [
-            'id' => $this->id,
-            'todo' => $this->todo,
-            'dialog_id' => $this->dialog_id,
-        ];
-        $dialog = WebSocketDialog::find($this->dialog_id);
         //
-        $retData = [
-            'add' => [],
-            'update' => $upData
-        ];
+        $addData = [];
         if ($cancel) {
             $res = self::sendMsg(null, $this->dialog_id, 'todo', [
                 'action' => 'remove',
@@ -395,7 +406,7 @@ class WebSocketDialogMsg extends AbstractModel
                 ]
             ], $sender);
             if (Base::isSuccess($res)) {
-                $retData['add'][] = $res['data'];
+                $addData[] = $res['data'];
                 WebSocketDialogMsgTodo::whereMsgId($this->id)->whereIn('userid', $cancel)->delete();
             }
         }
@@ -410,7 +421,7 @@ class WebSocketDialogMsg extends AbstractModel
                 ]
             ], $sender);
             if (Base::isSuccess($res)) {
-                $retData['add'][] = $res['data'];
+                $addData[] = $res['data'];
                 $useridList = $dialog->dialogUser->pluck('userid')->toArray();
                 foreach ($setup as $userid) {
                     if (!in_array($userid, $useridList)) {
@@ -425,8 +436,18 @@ class WebSocketDialogMsg extends AbstractModel
             }
         }
         //
+        $upData = [
+            'id' => $this->id,
+            'todo' => $this->todo,
+            'todo_done' => $this->isTodoDone(true),
+            'dialog_id' => $this->dialog_id,
+        ];
         $dialog->pushMsg('update', $upData);
-        return Base::retSuccess($this->todo ? '设置成功' : '取消成功', $retData);
+        //
+        return Base::retSuccess($this->todo ? '设置成功' : '取消成功', [
+            'add' => $addData,
+            'update' => $upData,
+        ]);
     }
 
     /**
@@ -1336,7 +1357,6 @@ class WebSocketDialogMsg extends AbstractModel
             ]);
         });
     }
-
 
     /**
      * 将被@的人加入群

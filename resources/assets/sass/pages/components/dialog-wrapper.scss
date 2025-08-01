@@ -1668,6 +1668,9 @@
                     .todo {
                         position: relative;
                         cursor: pointer;
+                        &.todo_done {
+                            color: $primary-color;
+                        }
                         .common-loading {
                             margin: 0 3px 0 0;
                         }

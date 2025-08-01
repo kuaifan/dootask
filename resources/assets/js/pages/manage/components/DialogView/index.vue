@@ -80,7 +80,7 @@
                 <i class="taskfont">&#xe61e;</i>
             </div>
             <!--待办-->
-            <div v-if="msgData.todo" class="todo" @click="openTodo">
+            <div v-if="msgData.todo" class="todo" :class="{'todo_done': msgData.todo_done}" @click="openTodo">
                 <EPopover
                     v-model="todoShow"
                     ref="todo"
@@ -361,14 +361,14 @@ export default {
         contentClass() {
             const {type, msg} = this.msgData;
             const classArray = [];
-            
+
             if (this.operateEnter || this.pointerMouse) {
                 classArray.push('user-select-auto')
             }
-            
+
             if (type === 'text' && msg?.text) {
                 const text = msg.text;
-                
+
                 if (REGEX_CACHE.emoticon.test(text)) {
                     classArray.push('an-emoticon')
                 } else if (REGEX_CACHE.threeEmoji.test(text)) {
@@ -379,7 +379,7 @@ export default {
                     classArray.push('an-emoji')
                 }
             }
-            
+
             return classArray;
         }
     },
