@@ -485,7 +485,7 @@ class ProjectTask extends AbstractModel
             foreach ($projectFlowItem as $item) {
                 if ($item->status == 'start') {
                     $task->flow_item_id = $item->id;
-                    $task->flow_item_name = $item->status . "|" . $item->name;
+                    $task->flow_item_name = $item->status . "|" . $item->name . "|" . $item->color;
                     $owner = array_merge($owner, $item->userids);
                     break;
                 }
@@ -649,7 +649,7 @@ class ProjectTask extends AbstractModel
                     $data['column_id'] = $newFlowItem->columnid;
                 }
                 $this->flow_item_id = $newFlowItem->id;
-                $this->flow_item_name = $newFlowItem->status . "|" . $newFlowItem->name;
+                $this->flow_item_name = $newFlowItem->status . "|" . $newFlowItem->name . "|" . $newFlowItem->color;
                 $this->addLog("修改{任务}状态", [
                     'flow' => $flowData,
                     'change' => [$currentFlowItem?->name, $newFlowItem->name]
@@ -1907,7 +1907,7 @@ class ProjectTask extends AbstractModel
                 // 更新任务流程
                 $flowItem = projectFlowItem::whereProjectId($projectId)->whereId($flowItemId)->first();
                 $this->flow_item_id = $flowItemId;
-                $this->flow_item_name = $flowItem->status . "|" . $flowItem->name;
+                $this->flow_item_name = $flowItem->status . "|" . $flowItem->name . "|" . $flowItem->color;
                 if ($flowItem->status == 'end') {
                     $this->completeTask(Carbon::now(), $flowItem->name);
                 } else {

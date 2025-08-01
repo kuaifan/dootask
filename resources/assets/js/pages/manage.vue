@@ -36,6 +36,7 @@
                                     v-for="(item, key) in taskBrowseLists"
                                     v-if="item.id > 0 && key < 10"
                                     :key="key"
+                                    :style="$A.generateColorVarStyle(item.flow_item_color, [10], 'flow-item-custom-color')"
                                     class="task-title"
                                     @click.native="openTask(item)"
                                     :name="item.name">

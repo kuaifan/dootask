@@ -193,15 +193,20 @@ export default {
     // 列表背景色
     columnColorList: [
         {name: '默认', color: ''},
-        {name: '灰色', color: '#999999'},
-        {name: '棕色', color: '#947364'},
-        {name: '橘色', color: '#faaa6c'},
-        {name: '黄色', color: '#f2d86d'},
-        {name: '绿色', color: '#73b45c'},
         {name: '蓝色', color: '#51abea'},
+        {name: '绿色', color: '#73b45c'},
+        {name: '黄色', color: '#f2d86d'},
+        {name: '橙色', color: '#faaa6c'},
+        {name: '红色', color: '#ff7070'},
         {name: '紫色', color: '#b583e3'},
         {name: '粉色', color: '#ff819c'},
-        {name: '红色', color: '#ff7070'},
+        {name: '青色', color: '#3ad1c8'},
+        {name: '棕色', color: '#947364'},
+        {name: '灰色', color: '#999999'},
+        {name: '深蓝', color: '#2b5caa'},
+        {name: '深绿', color: '#1a7f5a'},
+        {name: '金色', color: '#ffd700'},
+        {name: '湖蓝', color: '#00bcd4'},
     ],
 
     // 任务背景色

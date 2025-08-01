@@ -40,7 +40,7 @@ class LoopTask extends AbstractTask
                         foreach ($projectFlowItem as $flowItem) {
                             if ($flowItem->status == 'start') {
                                 $task->flow_item_id = $flowItem->id;
-                                $task->flow_item_name = $flowItem->status . "|" . $flowItem->name;
+                                $task->flow_item_name = $flowItem->status . "|" . $flowItem->name . "|" . $flowItem->color;
                                 if ($flowItem->userids) {
                                     $userids = array_values(array_unique($flowItem->userids));
                                     foreach ($userids as $uid) {

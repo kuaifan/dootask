@@ -692,6 +692,71 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 return secondLast;
             }
             return "";
+        },
+
+        /**
+         * 根据十六进制颜色生成通用 CSS 变量样式
+         * @param {string} hexColor - 颜色值，格式如 "#RRGGBB"
+         * @param {number[]} levels - 需要生成的透明度等级数组（如 [10, 20, 70]，代表 10%、20%、70%）
+         * @param {string} prefix - 生成的 CSS 变量前缀，默认为 'custom-color'
+         * @param {Object|null} styles - 可选的样式对象，如果未传入则会创建一个新的对象
+         * @returns {Object|null} 返回包含 CSS 变量的对象，若未传入颜色则返回 null
+         */
+        generateColorVarStyle(hexColor, levels = [], prefix = 'custom-color', styles = null) {
+            if (typeof hexColor !== 'string' || !/^#([0-9a-fA-F]{6})$/.test(hexColor)) {
+                return styles;
+            }
+            // 解析十六进制颜色为 RGB
+            const r = parseInt(hexColor.substring(1, 3), 16);
+            const g = parseInt(hexColor.substring(3, 5), 16);
+            const b = parseInt(hexColor.substring(5, 7), 16);
+
+            // 初始化样式对象
+            if (!$A.isJson(styles)) {
+                styles = {};
+            }
+
+            // 遍历 levels，生成对应透明度的 rgba 变量
+            levels.forEach(level => {
+                // 只处理有效的数字
+                if (typeof level === 'number' && level >= 0 && level <= 100) {
+                    const alpha = Math.round((level / 100) * 100) / 100; // 保留两位小数
+                    styles[`--${prefix}-${level}`] = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                }
+            });
+
+            // 加上 100% 不透明度直接用 hexColor
+            styles[`--${prefix}-100`] = hexColor
+
+            return styles;
+        },
+
+        /**
+         * 转换工作流状态
+         * @param {string|{flow_item_name, complete_at}} item
+         * @returns {{status: null, name: string, color: null}}
+         */
+        convertWorkflow(item) {
+            let status = null,
+                name = item,
+                color = null;
+            if ($A.isJson(item)) {
+                name = item.flow_item_name
+                if (name.indexOf("|") === -1) {
+                    if (name.complete_at) {
+                        name = $A.L('已完成');
+                    } else {
+                        name = $A.L('未完成');
+                    }
+                }
+            }
+            if (name && name.indexOf("|") !== -1) {
+               const arr = `${name}||`.split("|")
+                status = arr[0]
+                name = arr[1]
+                color = arr[2]
+            }
+            return {status, name, color}
         }
     });
 

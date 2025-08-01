@@ -129,29 +129,29 @@
                     white-space: nowrap;
                     overflow: hidden;
                     &.archived {
-                        background-color: rgba($flow-status-archived-color, 0.1);
-                        border-color: rgba($flow-status-archived-color, 0.1);
-                        color: $flow-status-archived-color;
+                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-archived-color, 0.1));
+                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-archived-color, 0.1));
+                        color: var(--flow-item-custom-color-100, $flow-status-archived-color);
                     }
                     &.start {
-                        background-color: rgba($flow-status-start-color, 0.1);
-                        border-color: rgba($flow-status-start-color, 0.1);
-                        color: $flow-status-start-color;
+                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                        color: var(--flow-item-custom-color-100, $flow-status-start-color);
                     }
                     &.progress {
-                        background-color: rgba($flow-status-progress-color, 0.1);
-                        border-color: rgba($flow-status-progress-color, 0.1);
-                        color: $flow-status-progress-color;
+                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                        color: var(--flow-item-custom-color-100, $flow-status-progress-color);
                     }
                     &.test {
-                        background-color: rgba($flow-status-test-color, 0.1);
-                        border-color: rgba($flow-status-test-color, 0.1);
-                        color: $flow-status-test-color;
+                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                        color: var(--flow-item-custom-color-100, $flow-status-test-color);
                     }
                     &.end {
-                        background-color: rgba($flow-status-end-color, 0.1);
-                        border-color: rgba($flow-status-end-color, 0.1);
-                        color: $flow-status-end-color;
+                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+                        color: var(--flow-item-custom-color-100, $flow-status-end-color);
                     }
                 }
             }
@@ -445,24 +445,24 @@
                                     text-align: center;
                                     cursor: pointer;
                                     &.start {
-                                        background-color: rgba($flow-status-start-color, 0.1);
-                                        border-color: rgba($flow-status-start-color, 0.1);
-                                        color: $flow-status-start-color;
+                                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                                        color: var(--flow-item-custom-color-100, $flow-status-start-color);
                                     }
                                     &.progress {
-                                        background-color: rgba($flow-status-progress-color, 0.1);
-                                        border-color: rgba($flow-status-progress-color, 0.1);
-                                        color: $flow-status-progress-color;
+                                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                                        color: var(--flow-item-custom-color-100, $flow-status-progress-color);
                                     }
                                     &.test {
-                                        background-color: rgba($flow-status-test-color, 0.1);
-                                        border-color: rgba($flow-status-test-color, 0.1);
-                                        color: $flow-status-test-color;
+                                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                                        color: var(--flow-item-custom-color-100, $flow-status-test-color);
                                     }
                                     &.end {
-                                        background-color: rgba($flow-status-end-color, 0.1);
-                                        border-color: rgba($flow-status-end-color, 0.1);
-                                        color: $flow-status-end-color;
+                                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+                                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+                                        color: var(--flow-item-custom-color-100, $flow-status-end-color);
                                     }
                                 }
                             }

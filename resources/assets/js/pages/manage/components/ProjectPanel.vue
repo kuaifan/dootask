@@ -128,7 +128,6 @@
                             <EDropdown
                                 v-else
                                 trigger="click"
-                                size="small"
                                 @command="dropColumn(column, $event)">
                                 <Icon type="ios-more" />
                                 <EDropdownMenu slot="dropdown" class="project-panel-more-dropdown-menu">
@@ -181,9 +180,10 @@
                             @remove="sortUpdate">
                             <div
                                 v-for="item in column.tasks"
+                                :key="`${column.id}_${item.id}`"
                                 :data-id="item.id"
                                 :class="['task-item task-draggable', item.complete_at ? 'complete' : '', taskIsHidden(item) ? 'hidden' : '']"
-                                :style="taskItemStyle(item)"
+                                :style="$A.generateColorVarStyle(item.flow_item_color, [10], 'flow-item-custom-color', taskItemStyle(item))"
                                 @click="openTask(item)">
                                 <template v-if="taskItemVisible(item)">
                                     <div :class="['task-head', item.desc ? 'has-desc' : '']">
@@ -973,7 +973,8 @@ export default {
                             value: item2.id,
                             label: `${item2.name} (${length})`,
                             status: item2.status,
-                            class: item2.status
+                            class: item2.status,
+                            style: $A.generateColorVarStyle(item2.color, [10], 'flow-item-custom-color'),
                         }
                     })
                 }

@@ -20,7 +20,11 @@
                             </div>
                         </EDropdownItem>
                         <template v-else-if="turns.length > 0">
-                            <EDropdownItem v-for="item in turns" :key="item.id" :command="`turn::${item.id}`">
+                            <EDropdownItem
+                                v-for="item in turns"
+                                :key="item.id"
+                                :command="`turn::${item.id}`"
+                                :style="$A.generateColorVarStyle(item.color, [10], 'flow-item-custom-color')">
                                 <div class="item flow">
                                     <Icon v-if="item.id == task.flow_item_id && flow.auto_assign !== true" class="check" type="md-checkmark-circle-outline" />
                                     <Icon v-else type="md-radio-button-off" />

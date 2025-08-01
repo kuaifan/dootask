@@ -75,24 +75,24 @@
                     vertical-align: middle;
                     overflow: hidden;
                     &.start {
-                        background-color: rgba($flow-status-start-color, 0.1);
-                        border-color: rgba($flow-status-start-color, 0.1);
-                        color: $flow-status-start-color;
+                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                        color: var(--flow-item-custom-color-100, $flow-status-start-color);
                     }
                     &.progress {
-                        background-color: rgba($flow-status-progress-color, 0.1);
-                        border-color: rgba($flow-status-progress-color, 0.1);
-                        color: $flow-status-progress-color;
+                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                        color: var(--flow-item-custom-color-100, $flow-status-progress-color);
                     }
                     &.test {
-                        background-color: rgba($flow-status-test-color, 0.1);
-                        border-color: rgba($flow-status-test-color, 0.1);
-                        color: $flow-status-test-color;
+                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                        color: var(--flow-item-custom-color-100, $flow-status-test-color);
                     }
                     &.end {
-                        background-color: rgba($flow-status-end-color, 0.1);
-                        border-color: rgba($flow-status-end-color, 0.1);
-                        color: $flow-status-end-color;
+                        background-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+                        border-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+                        color: var(--flow-item-custom-color-100, $flow-status-end-color);
                     }
                 }
             }
@@ -337,74 +337,74 @@
                 }
 
                 &.start {
-                    border-color:rgba($flow-status-start-color, 0.2);
+                    border-color: var(--flow-item-custom-color-20, rgba($flow-status-start-color, 0.2));
                     &:hover {
-                        border-color: rgba($flow-status-start-color, 0.7);
+                        border-color: var(--flow-item-custom-color-70, rgba($flow-status-start-color, 0.7));
                     }
                     .ivu-radio-checked .ivu-radio-inner {
-                        border-color: $flow-status-start-color;
+                        border-color: var(--flow-item-custom-color-100, $flow-status-start-color);
                         box-shadow: none;
                     }
                     .ivu-radio-inner::after {
-                        background-color: $flow-status-start-color;
+                        background-color: var(--flow-item-custom-color-100, $flow-status-start-color);
                     }
                     .ivu-checkbox-checked .ivu-checkbox-inner {
-                        border-color: $flow-status-start-color;
-                        background-color: $flow-status-start-color;
+                        border-color: var(--flow-item-custom-color-100, $flow-status-start-color);
+                        background-color: var(--flow-item-custom-color-100, $flow-status-start-color);
                     }
                 }
 
                 &.progress {
-                    border-color: rgba($flow-status-progress-color, 0.2);
+                    border-color: var(--flow-item-custom-color-20, rgba($flow-status-progress-color, 0.2));
                     &:hover {
-                        border-color: rgba($flow-status-progress-color, 0.7);
+                        border-color: var(--flow-item-custom-color-70, rgba($flow-status-progress-color, 0.7));
                     }
                     .ivu-radio-checked .ivu-radio-inner {
-                        border-color: $flow-status-progress-color;
+                        border-color: var(--flow-item-custom-color-100, $flow-status-progress-color);
                         box-shadow: none;
                     }
                     .ivu-radio-inner::after {
-                        background-color: $flow-status-progress-color;
+                        background-color: var(--flow-item-custom-color-100, $flow-status-progress-color);
                     }
                     .ivu-checkbox-checked .ivu-checkbox-inner {
-                        border-color: $flow-status-progress-color;
-                        background-color: $flow-status-progress-color;
+                        border-color: var(--flow-item-custom-color-100, $flow-status-progress-color);
+                        background-color: var(--flow-item-custom-color-100, $flow-status-progress-color);
                     }
                 }
 
                 &.test {
-                    border-color: rgba($flow-status-test-color, 0.2);
+                    border-color: var(--flow-item-custom-color-20, rgba($flow-status-test-color, 0.2));
                     &:hover {
-                        border-color: rgba($flow-status-test-color, 0.7);
+                        border-color: var(--flow-item-custom-color-70, rgba($flow-status-test-color, 0.7));
                     }
                     .ivu-radio-checked .ivu-radio-inner {
-                        border-color: $flow-status-test-color;
+                        border-color: var(--flow-item-custom-color-100, $flow-status-test-color);
                         box-shadow: none;
                     }
                     .ivu-radio-inner::after {
-                        background-color: $flow-status-test-color;
+                        background-color: var(--flow-item-custom-color-100, $flow-status-test-color);
                     }
                     .ivu-checkbox-checked .ivu-checkbox-inner {
-                        border-color: $flow-status-test-color;
-                        background-color: $flow-status-test-color;
+                        border-color: var(--flow-item-custom-color-100, $flow-status-test-color);
+                        background-color: var(--flow-item-custom-color-100, $flow-status-test-color);
                     }
                 }
 
                 &.end {
-                    border-color: rgba($flow-status-end-color, 0.2);
+                    border-color: var(--flow-item-custom-color-20, rgba($flow-status-end-color, 0.2));
                     &:hover {
-                        border-color: rgba($flow-status-end-color, 0.7);
+                        border-color: var(--flow-item-custom-color-70, rgba($flow-status-end-color, 0.7));
                     }
                     .ivu-radio-checked .ivu-radio-inner {
-                        border-color: $flow-status-end-color;
+                        border-color: var(--flow-item-custom-color-100, $flow-status-end-color);
                         box-shadow: none;
                     }
                     .ivu-radio-inner::after {
-                        background-color: $flow-status-end-color;
+                        background-color: var(--flow-item-custom-color-100, $flow-status-end-color);
                     }
                     .ivu-checkbox-checked .ivu-checkbox-inner {
-                        border-color: $flow-status-end-color;
-                        background-color: $flow-status-end-color;
+                        border-color: var(--flow-item-custom-color-100, $flow-status-end-color);
+                        background-color: var(--flow-item-custom-color-100, $flow-status-end-color);
                     }
                 }
 
@@ -445,20 +445,20 @@
                 }
 
                 &.start {
-                    background-color: rgba($flow-status-start-color, 0.1);
-                    color: $flow-status-start-color;
+                    background-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                    color: var(--flow-item-custom-color-100, $flow-status-start-color);
                 }
                 &.progress {
-                    background-color: rgba($flow-status-progress-color, 0.1);
-                    color: $flow-status-progress-color;
+                    background-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                    color: var(--flow-item-custom-color-100, $flow-status-progress-color);
                 }
                 &.test {
-                    background-color: rgba($flow-status-test-color, 0.1);
-                    color: $flow-status-test-color;
+                    background-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                    color: var(--flow-item-custom-color-100, $flow-status-test-color);
                 }
                 &.end {
-                    background-color: rgba($flow-status-end-color, 0.1);
-                    color: $flow-status-end-color;
+                    background-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+                    color: var(--flow-item-custom-color-100, $flow-status-end-color);
                 }
 
                 .name {
@@ -545,6 +545,13 @@
     }
 }
 .taskflow-config-more-dropdown-menu {
+    .taskflow-config-more-dropdown-warp {
+        height: 400px;
+        min-height: 180px;
+        max-height: calc(100vh - 250px);
+        overflow-y: auto;
+        list-style: none;
+    }
     .users {
         display: flex;
         padding: 6px 0;

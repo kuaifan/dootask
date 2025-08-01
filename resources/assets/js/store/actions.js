@@ -1868,8 +1868,12 @@ export default {
             });
         } else if ($A.isJson(data)) {
             data._time = $A.dayjs().unix();
+            //
             if (data.flow_item_name && data.flow_item_name.indexOf("|") !== -1) {
-                [data.flow_item_status, data.flow_item_name] = data.flow_item_name.split("|")
+                const flowInfo = $A.convertWorkflow(data.flow_item_name)
+                data.flow_item_status = flowInfo.status;
+                data.flow_item_name = flowInfo.name;
+                data.flow_item_color = flowInfo.color;
             }
             //
             if (typeof data.archived_at !== "undefined") {
@@ -2652,7 +2656,7 @@ export default {
                         state.cacheTasks.filter(({flow_item_id})=> flow_item_id == item.id).some(task => {
                             dispatch("saveTask", {
                                 id: task.id,
-                                flow_item_name: `${item.status}|${item.name}`,
+                                flow_item_name: `${item.status}|${item.name}|${item.color}`,
                             })
                         })
                     }

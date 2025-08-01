@@ -64,7 +64,7 @@
                             v-for="(item, index) in column.list"
                             :key="index"
                             :class="{complete: item.complete_at}"
-                            :style="item.color ? {backgroundColor: item.color} : {}"
+                            :style="$A.generateColorVarStyle(item.flow_item_color, [10], 'flow-item-custom-color', item.color ? {backgroundColor: item.color} : {})"
                             @click="openTask(item)">
                             <em
                                 v-if="item.p_name"

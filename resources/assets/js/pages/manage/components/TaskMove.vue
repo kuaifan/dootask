@@ -1,5 +1,5 @@
 <template>
-    <div class="task-move">
+    <div class="task-move" :style="$A.generateColorVarStyle(task.flow_item_color, [10], 'flow-item-custom-color')">
 
         <Cascader
             v-model="cascader"

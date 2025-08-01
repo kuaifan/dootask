@@ -423,24 +423,25 @@ class Project extends AbstractModel
             $projectUserids = $this->relationUserids();
             foreach ($flows as $item) {
                 $id = intval($item['id']);
+                $name = trim(str_replace('|', '·', $item['name']));
                 $turns = Base::arrayRetainInt($item['turns'] ?: [], true);
                 $userids = Base::arrayRetainInt($item['userids'] ?: [], true);
                 $usertype = trim($item['usertype']);
                 $userlimit = intval($item['userlimit']);
                 $columnid = intval($item['columnid']);
                 if ($usertype == 'replace' && empty($userids)) {
-                    throw new ApiException("状态[{$item['name']}]设置错误，设置流转模式时必须填写状态负责人");
+                    throw new ApiException("状态[{$name}]设置错误，设置流转模式时必须填写状态负责人");
                 }
                 if ($usertype == 'merge' && empty($userids)) {
-                    throw new ApiException("状态[{$item['name']}]设置错误，设置剔除模式时必须填写状态负责人");
+                    throw new ApiException("状态[{$name}]设置错误，设置剔除模式时必须填写状态负责人");
                 }
                 if ($userlimit && empty($userids)) {
-                    throw new ApiException("状态[{$item['name']}]设置错误，设置限制负责人时必须填写状态负责人");
+                    throw new ApiException("状态[{$name}]设置错误，设置限制负责人时必须填写状态负责人");
                 }
                 foreach ($userids as $userid) {
                     if (!in_array($userid, $projectUserids)) {
                         $nickname = User::userid2nickname($userid);
-                        throw new ApiException("状态[{$item['name']}]设置错误，状态负责人[{$nickname}]不在项目成员内");
+                        throw new ApiException("状态[{$name}]设置错误，状态负责人[{$nickname}]不在项目成员内");
                     }
                 }
                 $flow = ProjectFlowItem::updateInsert([
@@ -448,8 +449,9 @@ class Project extends AbstractModel
                     'project_id' => $this->id,
                     'flow_id' => $projectFlow->id,
                 ], [
-                    'name' => trim($item['name']),
+                    'name' => $name,
                     'status' => trim($item['status']),
+                    'color' => trim($item['color']),
                     'sort' => intval($item['sort']),
                     'turns' => $turns,
                     'userids' => $userids,
@@ -469,7 +471,7 @@ class Project extends AbstractModel
                         $hasEnd = true;
                     }
                     if (!$isInsert) {
-                        $upTaskList[$flow->id] = $flow->status . "|" . $flow->name;
+                        $upTaskList[$flow->id] = $flow->status . "|" . $flow->name . "|" . $flow->color;
                     }
                 }
             }

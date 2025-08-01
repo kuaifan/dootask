@@ -12,6 +12,7 @@ use App\Module\Base;
  * @property int|null $flow_id 流程ID
  * @property string|null $name 名称
  * @property string|null $status 状态
+ * @property string|null $color 自定义颜色
  * @property array $turns 可流转
  * @property array $userids 状态负责人ID
  * @property string|null $usertype 流转模式
@@ -38,6 +39,7 @@ use App\Module\Base;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereProjectId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereSort($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereTurns($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereUserids($value)

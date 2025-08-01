@@ -13,7 +13,13 @@
                     <div class="workflow-item">
                         <div class="workflow-name">{{data.name}}</div>
                         <div class="workflow-status">
-                            <div v-for="item in data.project_flow_item" :class="item.status">{{item.name}}</div>
+                            <div
+                                v-for="item in data.project_flow_item"
+                                :key="item.id"
+                                :class="item.status"
+                                :style="$A.generateColorVarStyle(item.color, [10], 'flow-item-custom-color')">
+                                {{item.name}}
+                            </div>
                         </div>
                         <div class="workflow-save" @click.stop="">
                             <template v-if="contrast(data.project_flow_item, data.project_flow_bak)">
@@ -57,7 +63,7 @@
                                     </div>
                                     <div class="taskflow-config-table-block hr">
                                         <div class="taskflow-config-table-block-title">{{$L('可流转到')}}</div>
-                                        <div v-for="item in data.project_flow_item" class="taskflow-config-table-block-item">
+                                        <div v-for="item in data.project_flow_item" :key="item.id" class="taskflow-config-table-block-item">
                                             <span class="transform-status-name">{{item.name}}</span>
                                         </div>
                                     </div>
@@ -71,8 +77,13 @@
                                     class="taskflow-config-table-list-wrapper"
                                     tag="div"
                                     draggable=".column-border"
-                                    @sort="">
-                                    <div v-for="item in data.project_flow_item" class="taskflow-config-table-status-column column-border" :class="item.status">
+                                    @sort="() => {}">
+                                    <div
+                                        v-for="(item, index) in data.project_flow_item"
+                                        :key="index"
+                                        :style="$A.generateColorVarStyle(item.color, [10, 20, 70], 'flow-item-custom-color')"
+                                        class="taskflow-config-table-status-column column-border"
+                                        :class="item.status">
                                         <div
                                             class="taskflow-config-table-status-item taskflow-config-table-column-header">
                                             <div class="status-label-with-menu" :class="item.status">
@@ -88,29 +99,38 @@
                                                         </Badge>
                                                     </div>
                                                     <EDropdownMenu slot="dropdown" class="taskflow-config-more-dropdown-menu">
-                                                        <EDropdownItem v-if="item.userids.length > 0" command="user">
-                                                            <div class="users">
-                                                                <UserAvatar v-for="(uid, ukey) in item.userids" :key="ukey" :userid="uid" :size="28" :borderWidth="1" :showName="item.userids.length === 1"/>
-                                                            </div>
-                                                        </EDropdownItem>
-                                                        <EDropdownItem command="user">
-                                                            <div class="item">
-                                                                <Icon type="md-settings" />
-                                                                <Badge :dot="item.userids.length > 0 || item.columnid > 0">
-                                                                    {{$L('状态设置')}}
-                                                                </Badge>
-                                                            </div>
-                                                        </EDropdownItem>
-                                                        <EDropdownItem command="name">
-                                                            <div class="item">
-                                                                <Icon type="md-create" />{{$L('修改名称')}}
-                                                            </div>
-                                                        </EDropdownItem>
-                                                        <EDropdownItem command="remove">
-                                                            <div class="item delete">
-                                                                <Icon type="md-trash" />{{$L('删除')}}
-                                                            </div>
-                                                        </EDropdownItem>
+                                                        <li class="taskflow-config-more-dropdown-warp">
+                                                            <ul>
+                                                                <EDropdownItem v-if="item.userids.length > 0" command="user">
+                                                                    <div class="users">
+                                                                        <UserAvatar v-for="(uid, ukey) in item.userids" :key="ukey" :userid="uid" :size="28" :borderWidth="1" :showName="item.userids.length === 1"/>
+                                                                    </div>
+                                                                </EDropdownItem>
+                                                                <EDropdownItem command="user">
+                                                                    <div class="item">
+                                                                        <Icon type="md-settings" />
+                                                                        <Badge :dot="item.userids.length > 0 || item.columnid > 0">
+                                                                            {{$L('状态设置')}}
+                                                                        </Badge>
+                                                                    </div>
+                                                                </EDropdownItem>
+                                                                <EDropdownItem command="name">
+                                                                    <div class="item">
+                                                                        <Icon type="md-create" />{{$L('修改名称')}}
+                                                                    </div>
+                                                                </EDropdownItem>
+                                                                <EDropdownItem command="remove">
+                                                                    <div class="item delete">
+                                                                        <Icon type="md-trash" />{{$L('删除')}}
+                                                                    </div>
+                                                                </EDropdownItem>
+                                                                <EDropdownItem v-for="(c, k) in $store.state.columnColorList" :key="k" :divided="k==0" :command="c">
+                                                                    <div class="item">
+                                                                        <i class="taskfont" :style="{color:c.color||'#ddd'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                                                    </div>
+                                                                </EDropdownItem>
+                                                            </ul>
+                                                        </li>
                                                     </EDropdownMenu>
                                                 </EDropdown>
                                             </div>
@@ -415,8 +435,8 @@ export default {
             });
         },
 
-        onMore(name, item) {
-            switch (name) {
+        onMore(command, item) {
+            switch (command) {
                 case "user":
                     this.$set(this.settingData, 'id', item.id);
                     this.$set(this.settingData, 'name', item.name);
@@ -434,6 +454,11 @@ export default {
                 case "remove":
                     this.onRemove(item);
                     break;
+
+                default:
+                    if (command.name) {
+                        this.$set(item, 'color', command.color);
+                    }
             }
         },
 

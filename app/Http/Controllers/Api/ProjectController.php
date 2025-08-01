@@ -2367,7 +2367,7 @@ class ProjectController extends AbstractController
                 $task->updateTask($data, $updateMarking);
                 //
                 $data = ProjectTask::oneTask($task->id)->toArray();
-                $data["flow_item_name"] = $newFlowItem->status . "|" . $newFlowItem->name;
+                $data["flow_item_name"] = $newFlowItem->status . "|" . $newFlowItem->name . "|" . $newFlowItem->color;
                 $data['update_marking'] = $updateMarking ?: json_decode('{}');
                 $task->pushMsg('update', $data);
                 //
@@ -2424,7 +2424,7 @@ class ProjectController extends AbstractController
             ]);
         }
         //
-        $turns = ProjectFlowItem::select(['id', 'name', 'status', 'turns'])->whereFlowId($projectFlow->id)->orderBy('sort')->get();
+        $turns = ProjectFlowItem::select(['id', 'name', 'status', 'turns', 'color'])->whereFlowId($projectFlow->id)->orderBy('sort')->get();
         if (empty($projectFlowItem)) {
             $data = [
                 'task_id' => $projectTask->id,

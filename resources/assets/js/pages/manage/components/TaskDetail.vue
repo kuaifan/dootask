@@ -9,7 +9,10 @@
                 :load-status="taskDetail.loading === true"
                 @on-update="getLogLists"/>
         </div>
-        <div v-if="taskDetail.flow_item_name" class="subtask-flow">
+        <div
+            v-if="taskDetail.flow_item_name"
+            class="subtask-flow"
+            :style="$A.generateColorVarStyle(taskDetail.flow_item_color, [10], 'flow-item-custom-color')">
             <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
         </div>
         <div class="subtask-name">
@@ -69,7 +72,10 @@
                     size="medium"
                     :color-show="false"
                     @on-update="getLogLists"/>
-                <div v-if="taskDetail.flow_item_name" class="flow">
+                <div
+                    v-if="taskDetail.flow_item_name"
+                    class="flow"
+                    :style="$A.generateColorVarStyle(taskDetail.flow_item_color, [10], 'flow-item-custom-color')">
                     <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
                 </div>
                 <div v-if="taskDetail.archived_at" class="flow">

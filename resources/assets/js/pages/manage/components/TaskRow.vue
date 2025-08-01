@@ -8,7 +8,7 @@
             class="task-item">
             <Row
                 class="task-row"
-                :style="taskItemStyle(item)">
+                :style="$A.generateColorVarStyle(item.flow_item_color, [10], 'flow-item-custom-color', taskItemStyle(item))">
                 <template v-if="taskItemVisible(`${openKey}_${item.id}`)">
                     <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                     <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">

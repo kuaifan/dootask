@@ -974,19 +974,22 @@ body.window-portrait {
         transform: translateY(-50%);
     }
     &.start:after {
-        background-color: $flow-status-start-color;
+        background-color: var(--flow-item-custom-color-100, $flow-status-start-color);
     }
 
     &.progress:after {
-        background-color: $flow-status-progress-color;
+        background-color: var(--flow-item-custom-color-100, $flow-status-progress-color);
     }
 
     &.test:after {
-        background-color: $flow-status-test-color;
+        background-color: var(--flow-item-custom-color-100, $flow-status-test-color);
     }
 
-    &.completed:after,
     &.end:after {
+        background-color: var(--flow-item-custom-color-100, $flow-status-end-color);
+    }
+
+    &.completed:after {
         background-color: $flow-status-end-color;
     }
 

@@ -26,13 +26,19 @@
                             <template v-if="flows.type==='group'">
                                 <OptionGroup v-for="(group, index) in flows.groups" :key="index" :label="group.label">
                                     <Option v-for="(item, key) in group.items" :key="key" :value="item.id" :label="item.name">
-                                        <div class="tag-dot" :class="item.status">{{item.name}}</div>
+                                        <div
+                                            class="tag-dot"
+                                            :style="$A.generateColorVarStyle(item.color, [], 'flow-item-custom-color')"
+                                            :class="item.status">{{item.name}}</div>
                                     </Option>
                                 </OptionGroup>
                             </template>
                             <template v-else>
                                 <Option v-for="(item, key) in flows.items" :key="key" :value="item.id" :label="item.name">
-                                    <div class="tag-dot" :class="item.status">{{item.name}}</div>
+                                    <div
+                                        class="tag-dot"
+                                        :style="$A.generateColorVarStyle(item.color, [], 'flow-item-custom-color')"
+                                        :class="item.status">{{item.name}}</div>
                                 </Option>
                             </template>
                         </Select>
