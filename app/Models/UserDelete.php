@@ -13,7 +13,7 @@ use App\Module\Base;
  * @property int|null $userid 用户id
  * @property string|null $email 邮箱帐号
  * @property string|null $reason 注销原因
- * @property string $cache 会员资料缓存
+ * @property string|null $cache 会员资料缓存
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()

@@ -30874,5 +30874,17 @@
         "fr": "Veuillez saisir la clé Tencent Map",
         "id": "Silakan masukkan Kunci Peta Tencent",
         "ru": "Пожалуйста, введите ключ от карты Tencent"
+    },
+    {
+        "key": "工作流状态创建失败",
+        "zh": "",
+        "zh-CHT": "工作流狀態創建失敗",
+        "en": "Failed to create workflow status",
+        "ko": "워크플로우 상태 생성 실패",
+        "ja": "ワークフローのステータス作成に失敗しました",
+        "de": "Workflow-Status konnte nicht erstellt werden",
+        "fr": "Échec de la création de l'état du flux de travail",
+        "id": "Gagal membuat status alur kerja",
+        "ru": "Не удалось создать статус рабочего процесса"
     }
 ]

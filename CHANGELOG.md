@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.66]
+
+### Bug Fixes
+
+- 表格消息文字颜色冲突
+- 修复无法导出的问题
+
+### Features
+
+- 添加待办完成状态的支持
+- 工作流支持自定义颜色
+- 重构基础模块
+- 更新请求上下文处理
+
 ## [1.1.56]
 
 ### Bug Fixes
