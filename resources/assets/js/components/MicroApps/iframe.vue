@@ -80,15 +80,14 @@ export default {
         this.boundHandleLoad = this.handleLoad.bind(this);
         this.boundHandleError = this.handleError.bind(this);
 
-        this.injectMicroApp();
         window.addEventListener('message', this.boundHandleMessage);
         this.$refs.iframe.addEventListener('load', this.boundHandleLoad);
         this.$refs.iframe.addEventListener('error', this.boundHandleError);
+
+        this.injectMicroApp();
     },
 
     beforeDestroy() {
-        this.cleanupMicroApp();
-
         // 正确移除事件监听器
         if (this.boundHandleMessage) {
             window.removeEventListener('message', this.boundHandleMessage);
@@ -360,7 +359,7 @@ export default {
                 const iframeWindow = this.$refs.iframe.contentWindow
                 if (iframeWindow && this.data) {
                     try {
-                        // 直接注入 microApp 对象
+                        // 同源情况，直接注入 microApp 对象
                         iframeWindow.microApp = {
                             getData: () => this.data
                         }
@@ -377,18 +376,6 @@ export default {
                 }
             } catch (error) {
                 // console.error('Failed to inject microApp object:', error)
-            }
-        },
-
-        // 清理注入的 microApp 对象
-        cleanupMicroApp() {
-            try {
-                const iframeWindow = this.$refs.iframe.contentWindow
-                if (iframeWindow && iframeWindow.microApp) {
-                    delete iframeWindow.microApp
-                }
-            } catch (error) {
-                // console.error('Failed to clean up microApp object:', error)
             }
         },
     }
