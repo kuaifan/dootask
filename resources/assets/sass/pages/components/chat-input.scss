@@ -740,9 +740,9 @@
         border-radius: 4px;
 
         &.maybe-photo {
-            align-items: flex-start;
+            gap: 6px;
             flex-direction: column;
-            padding-bottom: 12px;
+            padding: 0 0 12px 0;
             border-radius: 0;
 
             &:hover {
@@ -750,8 +750,9 @@
             }
 
             > span {
-                line-height: 34px;
-                padding-bottom: 2px;
+                width: 100%;
+                display: flex;
+                line-height: 18px;
                 font-size: 12px;
                 opacity: 0.8;
             }

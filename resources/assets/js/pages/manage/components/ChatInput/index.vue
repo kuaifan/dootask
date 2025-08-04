@@ -91,7 +91,7 @@
                         </ETooltip>
                         <template v-if="!isAiBot">
                             <div v-if="maybePhotoShow" class="chat-input-popover-item maybe-photo" @click="onToolbar('maybe-photo')">
-                                <span>{{$L('你可能要发送的照片')}}:</span>
+                                <span :style="{maxWidth: maybePhotoStyle.width}">{{$L('可能要发的照片')}}:</span>
                                 <div class="photo-preview" :style="maybePhotoStyle"></div>
                             </div>
                             <div v-if="recordReady" class="chat-input-popover-item" @click="onToolbar('meeting')">
@@ -129,7 +129,7 @@
                                 <em>{{$L('上传文件')}}</em>
                             </div>
                         </template>
-                        <div class="chat-input-popover-item" @click="onToolbar('full')">
+                        <div ref="moreFull" class="chat-input-popover-item" @click="onToolbar('full')">
                             <i class="taskfont">&#xe6a7;</i>
                             <em>{{$L('全屏输入')}}</em>
                         </div>
@@ -789,11 +789,10 @@ export default {
                     return
                 }
                 $A.eeuiAppGetLatestPhoto().then(({thumbnail, original}) => {
-                    const width = 120;
-                    const height = Math.min(150, thumbnail.height / (thumbnail.width / width));
+                    const size = Math.min(120, Math.max(100, this.$refs.moreFull.clientWidth));
                     this.maybePhotoStyle = {
-                        width: width + 'px',
-                        height: height + 'px',
+                        width: size + 'px',
+                        height: size + 'px',
                         backgroundImage: `url(${thumbnail.base64})`,
                     }
                     this.maybePhotoData = {thumbnail, original}
