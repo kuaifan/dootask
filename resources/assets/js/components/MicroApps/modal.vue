@@ -263,10 +263,17 @@ export default {
             + div {
                 display: none;
             }
+
+            &.tool-fullscreen {
+                > svg {
+                    width: 20px;
+                    height: 20px;
+                }
+            }
         }
 
         &.expanded {
-            min-height: 120px;
+            height: 100%;
 
             &:hover {
                 > div {
@@ -279,7 +286,8 @@ export default {
             > div {
                 &:hover {
                     > svg {
-                        transform: scale(1.2);
+                        transform: none;
+                        opacity: 0.9;
                     }
                 }
 
