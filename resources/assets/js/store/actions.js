@@ -4118,6 +4118,15 @@ export default {
             return;
         }
         //
+        if (typeof window.wsInfo === "undefined") {
+            window.wsInfo = {
+                msgCount: 0,
+                repeatCount: 0,
+                lastTime: 0,
+                lastData: null,
+            }
+        }
+        //
         let url = $A.mainUrl('ws');
         url = url.replace("https://", "wss://");
         url = url.replace("http://", "ws://");
@@ -4166,6 +4175,16 @@ export default {
                 wgLog && console.log("[WS] Preload", e);
                 return;
             }
+            //
+            if ($A.dayjs().unix() - window.wsInfo.lastTime < 3 && window.wsInfo.lastData === e.data) {
+                console.log("[WS] Repeat", e, window.wsInfo.repeatCount);
+                window.wsInfo.repeatCount++
+                return
+            }
+            window.wsInfo.msgCount++
+            window.wsInfo.lastTime = $A.dayjs().unix()
+            window.wsInfo.lastData = e.data
+            //
             wgLog && console.log("[WS] Message", e);
             let result = $A.jsonParse(e.data);
             if (result.type === "encrypt" && result.encrypted) {
