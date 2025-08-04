@@ -1171,7 +1171,6 @@ export default {
                         containers[i].classList.remove("task-mention");
                         containers[i].classList.remove("file-mention");
                         containers[i].classList.add(mentionName);
-                        $A.scrollPreventThrough(containers[i]);
                     }
                     let mentionSourceCache = null;
                     this.getMentionSource(mentionChar, searchTerm, array => {
