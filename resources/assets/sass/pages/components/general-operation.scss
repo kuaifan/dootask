@@ -61,10 +61,16 @@
                         text-overflow: ellipsis;
                         white-space: nowrap;
 
-                        .item-prefix,
-                        .item-label {
+                        .item-prefix {
                             display: flex;
                             align-items: center;
+                        }
+
+                        .item-label {
+                            max-width: 220px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
                         }
 
                         > i {
