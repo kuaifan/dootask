@@ -387,6 +387,7 @@ export default {
                         "id": -14,
                         "name": this.$L("已取消"),
                         "status": "end",
+                        "color": "#999999",
                         "turns": [-10, -11, -12, -13, -14],
                         "userids": [],
                         "usertype": 'add',
