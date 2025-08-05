@@ -6,6 +6,24 @@
             </transition>
             <transition :name="transitions[1]">
                 <div v-if="shouldRenderInDom" v-show="value" class="micro-modal-content" :style="contentStyle">
+                    <!-- 工具栏（移动端） -->
+                    <div class="micro-modal-capsule" :style="capsuleStyle">
+                        <div class="micro-modal-capsule-item" @click="onCapsuleMore">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 11C3.10457 11 4 10.1046 4 9C4 7.89543 3.10457 7 2 7C0.895431 7 0 7.89543 0 9C0 10.1046 0.895431 11 2 11Z" fill="currentColor"/>
+                                <path d="M9 12C10.6569 12 12 10.6569 12 9C12 7.34315 10.6569 6 9 6C7.34315 6 6 7.34315 6 9C6 10.6569 7.34315 12 9 12Z" fill="currentColor"/>
+                                <path d="M16 11C17.1046 11 18 10.1046 18 9C18 7.89543 17.1046 7 16 7C14.8954 7 14 7.89543 14 9C14 10.1046 14.8954 11 16 11Z" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <div class="micro-modal-capsule-line"></div>
+                        <div class="micro-modal-capsule-item" @click="onClose(true)">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 16C12.866 16 16 12.866 16 9C16 5.13401 12.866 2 9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 12C10.6569 12 12 10.6569 12 9C12 7.34315 10.6569 6 9 6C7.34315 6 6 7.34315 6 9C6 10.6569 7.34315 12 9 12Z" fill="currentColor"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <!-- 工具栏（桌面端） -->
                     <div class="micro-modal-tools" :class="{expanded: $A.isMainElectron}">
                         <div class="tool-close" @click="onClose(true)">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
@@ -19,6 +37,7 @@
                             </svg>
                         </div>
                     </div>
+                    <!-- 窗口大小调整（桌面端） -->
                     <ResizeLine
                         class="micro-modal-resize"
                         v-model="dynamicSize"
@@ -28,6 +47,7 @@
                         :reverse="true"
                         :beforeResize="beforeResize"
                         @on-change="onChangeResize"/>
+                    <!-- 窗口内容 -->
                     <div ref="body" class="micro-modal-body" :style="bodyStyle">
                         <slot></slot>
                     </div>
@@ -40,6 +60,7 @@
 <script>
 import TransferDom from "../../directives/transfer-dom";
 import ResizeLine from "../ResizeLine.vue";
+import { mapState } from "vuex";
 
 export default {
     name: 'MicroModal',
@@ -82,15 +103,17 @@ export default {
         }
     },
     computed: {
+        ...mapState(['windowIsMobileLayout']),
         shouldRenderInDom() {
             return this.value || this.keepAlive;
         },
-        className({value, transparent, autoDarkTheme}) {
+        className({value, autoDarkTheme, transparent, windowIsMobileLayout}) {
             return {
                 'micro-modal': true,
                 'micro-modal-hidden': !value,
                 'no-dark-content': !autoDarkTheme,
-                'transparent-mode': transparent
+                'transparent-mode': transparent,
+                'capsule-mode': windowIsMobileLayout,
             }
         },
         transitions({transparent}) {
@@ -114,6 +137,9 @@ export default {
         contentStyle({dynamicSize, zIndex}) {
             const width = dynamicSize <= 100 ? `${dynamicSize}%` : `${dynamicSize}px`
             return {width, zIndex}
+        },
+        capsuleStyle({zIndex}) {
+            return {zIndex}
         },
     },
     watch: {
@@ -152,6 +178,25 @@ export default {
             if (this.$refs.body) {
                 this.dynamicSize = this.$refs.body.clientWidth;
             }
+        },
+
+        onCapsuleMore(event) {
+            const list = [
+                {label: '重启应用', value: 'restart'},
+                {label: '关闭应用', value: 'close'},
+            ];
+            this.$store.commit('menu/operation', {
+                event,
+                list,
+                size: 'large',
+                onUpdate: (value) => {
+                    if (value === 'restart') {
+                        this.$emit('on-restart-app');
+                    } else if (value === 'close') {
+                        this.onClose(true);
+                    }
+                }
+            })
         },
 
         onClose(isClick = false) {
@@ -193,6 +238,12 @@ export default {
         --modal-body-background-color: transparent;
     }
 
+    // 胶囊模式
+    &.capsule-mode {
+        --modal-capsule-display: flex;
+        --modal-close-display: none;
+    }
+
     // 移动端适配
     @media (max-width: 768px) {
         --modal-mask-bg: transparent;
@@ -227,6 +278,53 @@ export default {
         left: 0;
         right: 0;
         background-color: var(--modal-mask-bg, rgba(0, 0, 0, .4));
+    }
+
+    &-capsule {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 2;
+        transform: translateY(var(--status-bar-height, 0));
+        display: var(--modal-capsule-display, none);
+        align-items: center;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(229, 230, 235, 0.6);
+        border-radius: 16px;
+        transition: box-shadow 0.2s, background 0.2s;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        &-line {
+            width: 1px;
+            height: 16px;
+            background: rgba(229, 230, 235, 0.6);
+        }
+
+        &-item {
+            width: 42px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+
+            &:hover {
+                svg {
+                    color: #84C56A;
+                }
+            }
+
+            svg {
+                width: 20px;
+                height: 20px;
+                transition: color 0.2s;
+                pointer-events: none;
+            }
+        }
     }
 
     &-tools {

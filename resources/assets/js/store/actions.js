@@ -29,6 +29,8 @@ export default {
 
             state.windowIsFullScreen = $A.isFullScreen()
 
+            state.windowIsMobileLayout = windowWidth < 768 || state.windowTouch
+
             state.formOptions = {
                 class: windowWidth > 576 ? '' : 'form-label-weight-bold',
                 labelPosition: windowWidth > 576 ? 'right' : 'top',

@@ -11,6 +11,7 @@
             :autoDarkTheme="app.auto_dark_theme"
             :keepAlive="app.keep_alive"
             :beforeClose="async (isClick) => { await onBeforeClose(app.name, isClick) }"
+            @on-restart-app="onRestartApp(app.name)"
             @on-popout-window="onPopoutWindow(app.name)">
             <MicroIFrame
                 v-if="shouldRenderIFrame(app)"
@@ -167,6 +168,7 @@ export default {
             'themeName',
             'microApps',
             'safeAreaSize',
+            'windowIsMobileLayout',
         ]),
     },
 
@@ -308,6 +310,9 @@ export default {
                     },
                     isFullScreen: () => {
                         return window.innerWidth < 768 || this.windowType === 'popout'
+                    },
+                    isMobileLayout: () => {
+                        return this.windowIsMobileLayout
                     },
                     extraCallA: (...args) => {
                         if (args.length > 0 && typeof args[0] === 'string') {
@@ -575,6 +580,26 @@ export default {
                 } else {
                     resolve()
                 }
+            })
+        },
+
+        /**
+         * 重启应用
+         * @param name
+         */
+        async onRestartApp(name) {
+            this.closeMicroApp(name, true)
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            const app = this.microApps.find(item => item.name == name);
+            if (!app) {
+                $A.modalError("应用不存在");
+            }
+            app.isLoading = true;
+            requestAnimationFrame(_ => {
+                app.isOpen = true
+                app.lastOpenAt = Date.now()
+                this.$store.commit('microApps/keepAlive', 3)
             })
         },
 

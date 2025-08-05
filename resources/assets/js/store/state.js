@@ -40,6 +40,9 @@ export default {
     // 是否全屏
     windowIsFullScreen: windowIsFullScreen,
 
+    // 是否移动端布局
+    windowIsMobileLayout: windowWidth < 768 || ("ontouchend" in document),
+
     // 表单布局
     formOptions: {
         class: windowWidth > 576 ? '' : 'form-label-weight-bold',
