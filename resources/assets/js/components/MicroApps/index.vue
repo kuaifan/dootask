@@ -147,6 +147,12 @@ export default {
         themeName() {
             this.unmountAllMicroApp()
         },
+        assistShow(show) {
+            if (!show && $A.isSubElectron) {
+                // 如果是子 Electron 窗口，关闭窗口助理时销毁窗口
+                $A.Electron.sendMessage('windowDestroy');
+            }
+        },
         microApps: {
             handler(items) {
                 this.assistShow = !!items.find(item => item.isOpen)
@@ -456,7 +462,7 @@ export default {
         },
 
         /**
-         * 通过名称关闭微应用
+         * 关闭微应用（关闭前执行beforeClose）
          * @param name
          */
         closeByName(name) {
@@ -468,7 +474,7 @@ export default {
         },
 
         /**
-         * 关闭微应用
+         * 关闭微应用（直接关闭）
          * @param name
          * @param destroy
          */
@@ -575,6 +581,7 @@ export default {
         /**
          * 弹出窗口（全屏）
          * @param name
+         * @param windowConfig
          */
         async onPopoutWindow(name, windowConfig = null) {
             const app = this.microApps.find(item => item.name == name);
@@ -583,6 +590,7 @@ export default {
                 return
             }
             await this.inlineBlank(app, windowConfig)
+            this.closeMicroApp(name, true)
         },
 
         /**
