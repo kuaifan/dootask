@@ -460,6 +460,9 @@ export default {
         },
 
         getStyleComputedProperty(element, property) {
+            if (!element || !(element instanceof HTMLElement)) {
+                return null;
+            }
             const css = window.getComputedStyle(element, null);
             return css[property];
         },

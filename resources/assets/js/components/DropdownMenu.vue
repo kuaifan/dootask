@@ -41,15 +41,16 @@ export default {
         return {
             visible: false,
 
-            list: [],           // 数据列表: [{label: '', value: ''}]
-            size: 'small',      // 下拉框大小
-            active: '',         // 当前选中的值
-            activeClick: false, // 当前选中的值是否可以被点击
-            onUpdate: null,     // 选中后的回调函数
-            scrollHide: true,   // 滚动立即隐藏
-            tickShow: true,     // 是否显示打勾（默认为：true，如果 active === undefined 默认为：false）
-            maxHeight: 0,       // 滚动区域最大高度
-            language: true,     // 是否国际化 item.label（默认：true）
+            list: [],               // 数据列表: [{label: '', value: ''}]
+            size: 'small',          // 下拉框大小
+            active: '',             // 当前选中的值
+            activeClick: false,     // 当前选中的值是否可以被点击
+            onVisibleChange: null,  // 可见性变化的回调函数
+            onUpdate: null,         // 选中后的回调函数
+            scrollHide: true,       // 滚动立即隐藏
+            tickShow: true,         // 是否显示打勾（默认为：true，如果 active === undefined 默认为：false）
+            maxHeight: 0,           // 滚动区域最大高度
+            language: true,         // 是否国际化 item.label（默认：true）
 
             scrollTarget: null,
             menuTarget: null,
@@ -87,6 +88,7 @@ export default {
                 this.size = ['small', 'medium', 'large'].includes(data.size) ? data.size : 'small';
                 this.active = data.active && this.list.find(item => item.value === data.active) ? data.active : '';
                 this.activeClick = typeof data.activeClick === "boolean" ? data.activeClick : false;
+                this.onVisibleChange = typeof data.onVisibleChange === "function" ? data.onVisibleChange : null;
                 this.onUpdate = typeof data.onUpdate === "function" ? data.onUpdate : null;
                 this.scrollHide = typeof data.scrollHide === "boolean" ? data.scrollHide : true;
                 this.tickShow = typeof data.tickShow === "boolean" ? data.tickShow : (typeof data.active !== "undefined");
@@ -119,6 +121,9 @@ export default {
         visible(v) {
             if (!v) {
                 this.removeEventListeners()
+            }
+            if (typeof this.onVisibleChange === "function") {
+                this.onVisibleChange(v);
             }
         }
     },
@@ -218,6 +223,9 @@ export default {
         },
 
         getStyleComputedProperty(element, property) {
+            if (!element || !(element instanceof HTMLElement)) {
+                return null;
+            }
             const css = window.getComputedStyle(element, null);
             return css[property];
         }
