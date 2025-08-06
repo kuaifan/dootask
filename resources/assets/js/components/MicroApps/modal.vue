@@ -2,11 +2,12 @@
     <div v-transfer-dom :data-transfer="true">
         <div :class="className">
             <transition :name="transitions[0]">
-                <div v-if="shouldRenderInDom" v-show="value" class="micro-modal-mask" @click="onClose(false)" :style="maskStyle"></div>
+                <div v-if="shouldRenderInDom" v-show="open" class="micro-modal-mask" @click="onClose(false)" :style="maskStyle"></div>
             </transition>
             <transition :name="transitions[1]">
-                <div v-if="shouldRenderInDom" v-show="value" class="micro-modal-content" :style="contentStyle">
+                <div v-if="shouldRenderInDom" v-show="open" class="micro-modal-content" :style="contentStyle">
                     <!-- 工具栏（移动端） -->
+                    <div v-if="capsuleMenuShow" class="micro-modal-capsule-mask"></div>
                     <div class="micro-modal-capsule" :style="capsuleStyle">
                         <div class="micro-modal-capsule-item" @click="onCapsuleMore">
                             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,6 +24,7 @@
                             </svg>
                         </div>
                     </div>
+
                     <!-- 工具栏（桌面端） -->
                     <div class="micro-modal-tools" :class="{expanded: $A.isMainElectron}">
                         <div class="tool-close" @click="onClose(true)">
@@ -30,13 +32,14 @@
                                 <path d="M8.28596 6.51819C7.7978 6.03003 7.00634 6.03003 6.51819 6.51819C6.03003 7.00634 6.03003 7.7978 6.51819 8.28596L11.2322 13L6.51819 17.714C6.03003 18.2022 6.03003 18.9937 6.51819 19.4818C7.00634 19.97 7.7978 19.97 8.28596 19.4818L13 14.7678L17.714 19.4818C18.2022 19.97 18.9937 19.97 19.4818 19.4818C19.97 18.9937 19.97 18.2022 19.4818 17.714L14.7678 13L19.4818 8.28596C19.97 7.7978 19.97 7.00634 19.4818 6.51819C18.9937 6.03003 18.2022 6.03003 17.714 6.51819L13 11.2322L8.28596 6.51819Z" fill="currentColor"></path>
                             </svg>
                         </div>
-                        <div class="tool-fullscreen" @click="$emit('on-popout-window')">
+                        <div class="tool-fullscreen" @click="$emit('on-popout-window', options.name)">
                             <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M682.666667 298.666667H170.666667c-47.061333 0-85.333333 38.272-85.333334 85.333333v426.666667c0 47.061333 38.272 85.333333 85.333334 85.333333h512c47.061333 0 85.333333-38.272 85.333333-85.333333V384c0-47.061333-38.272-85.333333-85.333333-85.333333zM170.666667 810.666667v-341.333334h512V384l0.085333 426.666667H170.666667z" fill="currentColor"></path>
                                 <path d="M938.666667 213.333333c0-47.061333-38.272-85.333333-85.333334-85.333333H298.666667c-47.061333 0-85.333333 38.272-85.333334 85.333333h554.709334c46.976 0 85.162667 38.186667 85.290666 85.077334L853.418667 640H853.333333v85.333333c47.061333 0 85.333333-38.272 85.333334-85.333333V341.632L938.709333 341.333333V256L938.666667 255.573333V213.333333z" fill="currentColor"></path>
                             </svg>
                         </div>
                     </div>
+
                     <!-- 窗口大小调整（桌面端） -->
                     <ResizeLine
                         class="micro-modal-resize"
@@ -47,8 +50,9 @@
                         :reverse="true"
                         :beforeResize="beforeResize"
                         @on-change="onChangeResize"/>
+
                     <!-- 窗口内容 -->
-                    <div ref="body" class="micro-modal-body" :style="bodyStyle">
+                    <div ref="body" class="micro-modal-body" :class="bodyClass" :style="bodyStyle">
                         <slot></slot>
                     </div>
                 </div>
@@ -67,7 +71,7 @@ export default {
     components: {ResizeLine},
     directives: {TransferDom},
     props: {
-        value: {
+        open: {
             type: Boolean,
             default: false
         },
@@ -79,55 +83,49 @@ export default {
             type: Number,
             default: 300
         },
-        background: {
-            default: null
-        },
-        transparent: {
-            type: Boolean,
-            default: false
-        },
-        autoDarkTheme: {
-            type: Boolean,
-            default: true
-        },
-        keepAlive: {
-            type: Boolean,
-            default: true
+        options: {
+            type: Object,
+            default: () => ({})
         },
         beforeClose: Function
     },
     data() {
         return {
             dynamicSize: 0,
-            zIndex: 1000
+            zIndex: 1000,
+            capsuleMenuShow: false,
         }
     },
     computed: {
         ...mapState(['windowIsMobileLayout']),
         shouldRenderInDom() {
-            return this.value || this.keepAlive;
+            return this.open || !!this.options.keep_alive;
         },
-        className({value, autoDarkTheme, transparent, windowIsMobileLayout}) {
+        className() {
             return {
                 'micro-modal': true,
-                'micro-modal-hidden': !value,
-                'no-dark-content': !autoDarkTheme,
-                'transparent-mode': transparent,
-                'capsule-mode': windowIsMobileLayout,
+                'micro-modal-hidden': !this.open,
+                'transparent-mode': !!this.options.transparent,
+                'capsule-mode': this.windowIsMobileLayout,
             }
         },
-        transitions({transparent}) {
-            if (transparent) {
+        transitions() {
+            if (!!this.options.transparent) {
                 return ['', '']
             }
             return ['micro-modal-fade', 'micro-modal-slide']
         },
+        bodyClass() {
+            return {
+                'no-dark-content': !this.options.auto_dark_theme,
+            }
+        },
         bodyStyle() {
             const styleObject = {}
-            if ($A.isJson(this.background)) {
-                styleObject.background = this.background
-            } else if (this.background) {
-                styleObject.backgroundColor = this.background;
+            if ($A.isJson(this.options.background)) {
+                styleObject.background = this.options.background
+            } else if (this.options.background) {
+                styleObject.backgroundColor = this.options.background;
             }
             return styleObject;
         },
@@ -139,11 +137,24 @@ export default {
             return {width, zIndex}
         },
         capsuleStyle({zIndex}) {
-            return {zIndex}
+            const styleObject = {zIndex}
+            const {capsule} = this.options
+            if ($A.isJson(capsule)) {
+                if (capsule.visible === false) {
+                    styleObject.display = 'none';
+                }
+                if (typeof capsule.top === 'number') {
+                    styleObject.top = `${capsule.top}px`;
+                }
+                if (typeof capsule.right === 'number') {
+                    styleObject.right = `${capsule.right}px`;
+                }
+            }
+            return styleObject
         },
     },
     watch: {
-        value: {
+        open: {
             handler(val) {
                 if (val) {
                     this.zIndex = typeof window.modalTransferIndex === 'number' ? window.modalTransferIndex++ : 1000;
@@ -181,19 +192,31 @@ export default {
         },
 
         onCapsuleMore(event) {
-            const list = [
-                {label: '重启应用', value: 'restart'},
-                {label: '关闭应用', value: 'close'},
-            ];
+            const list = [];
+            const {capsule} = this.options;
+            if ($A.isJson(capsule) && $A.isArray(capsule.more_menus)) {
+                capsule.more_menus.forEach(item => {
+                    if (item.label && item.value) {
+                        list.push(item);
+                    }
+                });
+            }
+            list.push(...[
+                {label: this.$L('重启应用'), value: 'restart', divided: list.length > 0},
+                {label: this.$L('关闭应用'), value: 'close'},
+            ])
             this.$store.commit('menu/operation', {
                 event,
                 list,
                 size: 'large',
+                onVisibleChange: (visible) => {
+                    this.capsuleMenuShow = visible;
+                },
                 onUpdate: (value) => {
-                    if (value === 'restart') {
-                        this.$emit('on-restart-app');
-                    } else if (value === 'close') {
+                    if (value === 'close') {
                         this.onClose(true);
+                    } else {
+                        this.$emit('on-capsule-more', this.options.name, value);
                     }
                 }
             })
@@ -203,7 +226,7 @@ export default {
             if (!this.beforeClose) {
                 return this.handleClose();
             }
-            const before = this.beforeClose(isClick);
+            const before = this.beforeClose(this.options.name, isClick);
             if (before && before.then) {
                 before.then(() => {
                     this.handleClose();
@@ -214,7 +237,7 @@ export default {
         },
 
         handleClose() {
-            this.$emit('input', false)
+            this.$emit('on-close', this.options.name);
         }
     }
 }
@@ -280,10 +303,20 @@ export default {
         background-color: var(--modal-mask-bg, rgba(0, 0, 0, .4));
     }
 
+    &-capsule-mask {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: transparent;
+        z-index: 1;
+    }
+
     &-capsule {
         position: absolute;
-        top: 8px;
-        right: 8px;
+        top: 10px;
+        right: 10px;
         z-index: 2;
         transform: translateY(var(--status-bar-height, 0));
         display: var(--modal-capsule-display, none);
@@ -466,13 +499,10 @@ export default {
 body.dark-mode-reverse {
     .micro-modal {
         &:not(.transparent-mode) {
-            &:not(.no-dark-content) {
-                --modal-mask-bg: rgba(230, 230, 230, 0.6);
-                --modal-close-color: #323232;
-            }
+            --modal-mask-bg: rgba(230, 230, 230, 0.6);
+            --modal-close-color: #323232;
 
-            &.no-dark-content {
-                --modal-mask-bg: rgba(20, 20, 20, 0.6);
+            .no-dark-content {
                 --modal-body-background-color: #000000;
             }
         }

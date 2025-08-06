@@ -196,9 +196,18 @@ export default {
                 this.$store.commit('microApps/update', {
                     name: this.name,
                     data: {
+                        postMessage: (message) => {
+                            if (!this.$refs.iframe || !this.$refs.iframe.contentWindow) {
+                                return
+                            }
+                            this.$refs.iframe.contentWindow.postMessage(message, '*')
+                        },
                         onBeforeClose: () => {
                             if (this.hearTbeatLastTime && Date.now() - this.hearTbeatLastTime > 5000) {
                                 return true // 超时，允许关闭
+                            }
+                            if (!this.$refs.iframe || !this.$refs.iframe.contentWindow) {
+                                return true // iframe 不存在，允许关闭
                             }
                             return new Promise(resolve => {
                                 const message = {

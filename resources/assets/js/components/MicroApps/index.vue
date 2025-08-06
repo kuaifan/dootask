@@ -3,16 +3,14 @@
         <MicroModal
             v-for="(app, key) in microApps"
             :key="key"
-            v-model="app.isOpen"
+            :open="app.isOpen"
             :ref="`ref-${app.name}`"
             :size="1200"
-            :background="app.background"
-            :transparent="app.transparent"
-            :autoDarkTheme="app.auto_dark_theme"
-            :keepAlive="app.keep_alive"
-            :beforeClose="async (isClick) => { await onBeforeClose(app.name, isClick) }"
-            @on-restart-app="onRestartApp(app.name)"
-            @on-popout-window="onPopoutWindow(app.name)">
+            :options="app"
+            :beforeClose="onBeforeClose"
+            @on-capsule-more="onCapsuleMore"
+            @on-popout-window="onPopoutWindow"
+            @on-close="closeMicroApp">
             <MicroIFrame
                 v-if="shouldRenderIFrame(app)"
                 :name="app.name"
@@ -22,7 +20,7 @@
                 @mounted="mounted"
                 @error="error"/>
             <micro-app
-                v-else-if="app.isOpen && app.url"
+                v-else-if="shouldRenderMicro(app)"
                 :name="app.name"
                 :url="app.url"
                 :keep-alive="app.keep_alive"
@@ -30,10 +28,14 @@
                 :data="appData(app.name)"
                 @mounted="mounted"
                 @error="error"/>
-            <div v-if="app.isLoading" class="micro-app-loader">
+        </MicroModal>
+
+        <!--加载中-->
+        <transition name="fade">
+            <div v-if="loadings.length > 0" class="micro-app-loader">
                 <Loading/>
             </div>
-        </MicroModal>
+        </transition>
 
         <!--选择用户-->
         <UserSelect
@@ -58,6 +60,7 @@
 <style lang="scss">
 .micro-app-loader {
     position: absolute;
+    z-index: 9999;
     top: 0;
     left: 0;
     right: 0;
@@ -113,6 +116,9 @@ export default {
         return {
             assistShow: false,
             userSelectOptions: {value: [], config: {}},
+
+            loadings: [],
+            closings: [],
         }
     },
 
@@ -122,8 +128,8 @@ export default {
 
         // 初始化微应用
         microApp.start({
-            'iframe': true,
             'router-mode': 'state',
+            'iframe': true,
             'iframeSrc': window.location.origin + '/assets/empty.html',
         })
     },
@@ -193,7 +199,7 @@ export default {
 
         // 加载结束
         finish(name) {
-            this.$store.commit('microApps/update', {name, data: {isLoading: false}})
+            this.loadings = this.loadings.filter(item => item !== name);
         },
 
         /**
@@ -359,9 +365,9 @@ export default {
                 }
 
                 // 更新微应用
-                if (app.url != config.url) {
+                if (app.url != config.url || !app.keep_alive) {
                     this.unmountMicroApp(app)
-                    app.isLoading = true
+                    this.loadings.push(app.name)
                 }
                 Object.assign(app, config)
                 requestAnimationFrame(_ => {
@@ -371,10 +377,11 @@ export default {
                 })
             } else {
                 // 新建微应用
-                config.isLoading = true
                 config.isOpen = false
+                config.postMessage = () => {}
                 config.onBeforeClose = () => true
                 this.$store.commit('microApps/push', config)
+                this.loadings.push(config.name)
                 requestAnimationFrame(_ => {
                     config.isOpen = true
                     config.lastOpenAt = Date.now()
@@ -401,7 +408,7 @@ export default {
                 appConfig.url = windowConfig.url;
                 delete windowConfig.url;
             }
-            //
+
             const path = `/single/apps/${appConfig.name}`
             const apps = (await $A.IDBArray("cacheMicroApps")).filter(item => item.name != appConfig.name);
             apps.length > 50 && apps.splice(0, 10)
@@ -467,6 +474,19 @@ export default {
         },
 
         /**
+         * 关闭微应用状态
+         * @param {Object} app 微应用对象
+         * @param app
+         */
+        closeAppState(app) {
+            this.closings.push(app.name);
+            app.isOpen = false;
+            setTimeout(() => {
+                this.closings = this.closings.filter(item => item !== app.name);
+            }, 300);
+        },
+
+        /**
          * 关闭微应用（关闭前执行beforeClose）
          * @param name
          */
@@ -483,26 +503,16 @@ export default {
          * @param name
          * @param destroy
          */
-        closeMicroApp(name, destroy) {
+        closeMicroApp(name, destroy = false) {
             const app = this.microApps.find(item => item.name == name);
             if (!app) {
                 return;
             }
 
-            app.isOpen = false
-            if (destroy) {
+            this.closeAppState(app)
+            if (destroy === true) {
                 this.unmountMicroApp(app)
             }
-        },
-
-        /**
-         * 卸载所有微应用
-         */
-        unmountAllMicroApp() {
-            this.microApps.forEach(app => {
-                app.isOpen = false
-                this.unmountMicroApp(app)
-            });
         },
 
         /**
@@ -515,6 +525,16 @@ export default {
                 app.keep_alive = false
             }
             microApp.unmountApp(app.name, {destroy: true})
+        },
+
+        /**
+         * 卸载所有微应用
+         */
+        unmountAllMicroApp() {
+            this.microApps.forEach(app => {
+                this.closeAppState(app)
+                this.unmountMicroApp(app)
+            });
         },
 
         /**
@@ -545,7 +565,7 @@ export default {
                     return
                 }
 
-                if (/^iframe/i.test(app.url_type)) {
+                if (this.isIframe(app.url_type)) {
                     const before = app.onBeforeClose();
                     if (before && before.then) {
                         before.then(() => {
@@ -584,6 +604,30 @@ export default {
         },
 
         /**
+         * 点击更多操作
+         * @param name
+         * @param action
+         */
+        onCapsuleMore(name, action) {
+            if (action === 'restart') {
+                this.onRestartApp(name)
+                return
+            }
+            const app = this.microApps.find(item => item.name == name);
+            if (!app) {
+                return
+            }
+            if (this.isIframe(app.url_type)) {
+                app.postMessage({
+                    type: 'MICRO_APP_MENU_CLICK',
+                    message: action
+                });
+                return
+            }
+            microApp.forceSetData(name, {type: 'menuClick', message: action})
+        },
+
+        /**
          * 重启应用
          * @param name
          */
@@ -595,7 +639,7 @@ export default {
             if (!app) {
                 $A.modalError("应用不存在");
             }
-            app.isLoading = true;
+            this.loadings.push(app.name)
             requestAnimationFrame(_ => {
                 app.isOpen = true
                 app.lastOpenAt = Date.now()
@@ -619,12 +663,30 @@ export default {
         },
 
         /**
+         * 是否 iframe 类型
+         * @param type
+         * @returns {boolean}
+         */
+        isIframe(type) {
+            return /^iframe/i.test(type)
+        },
+
+        /**
          * 是否渲染 iframe
          * @param app
          * @returns {boolean}
          */
         shouldRenderIFrame(app) {
-            return app.url_type === 'iframe' && (app.isOpen || app.keep_alive) && app.url;
+            return app.url && this.isIframe(app.url_type) && (app.isOpen || app.keep_alive);
+        },
+
+        /**
+         * 是否渲染 micro
+         * @param app
+         * @returns {boolean}
+         */
+        shouldRenderMicro(app) {
+            return app.url && !this.isIframe(app.url_type) && (app.isOpen || this.closings.includes(app.name));
         },
 
         /**

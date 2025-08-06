@@ -4745,6 +4745,7 @@ export default {
             url: $A.mainUrl(data.url),
             url_type: data.url_type || 'inline',
             background: data.background || null,
+            capsule: $A.isJson(data.capsule) ? data.capsule : {},
             transparent: typeof data.transparent == 'boolean' ? data.transparent : false,
             disable_scope_css: typeof data.disable_scope_css == 'boolean' ? data.disable_scope_css : false,
             auto_dark_theme: typeof data.auto_dark_theme == 'boolean' ? data.auto_dark_theme : true,
