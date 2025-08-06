@@ -117,6 +117,7 @@ export default {
             assistShow: false,
             userSelectOptions: {value: [], config: {}},
 
+            backupConfigs: {},
             loadings: [],
             closings: [],
         }
@@ -355,6 +356,7 @@ export default {
                 await this.externalWindow(config)
                 return
             }
+            this.backupConfigs[config.name] = $A.cloneJSON(config);
 
             const app = this.microApps.find(({name}) => name == config.name);
             if (app) {
@@ -540,10 +542,10 @@ export default {
         /**
          * 关闭之前判断
          * @param name
-         * @param {boolean} isClick 是否是点击关闭
+         * @param {boolean} auto 当等于 true 并且是 keep_alive 的应用，则不执行 onBeforeClose
          * @returns {Promise<unknown>}
          */
-        onBeforeClose(name, isClick = false) {
+        onBeforeClose(name, auto = false) {
             return new Promise(resolve => {
                 const onClose = () => {
                     if ($A.isSubElectron) {
@@ -559,8 +561,8 @@ export default {
                     onClose()
                     return
                 }
-                if (isClick && app.keep_alive) {
-                    // 如果是点击关闭，并且是 keep_alive 的应用，则不执行 onBeforeClose
+                if (auto && app.keep_alive) {
+                    // 如果 auto，并且是 keep_alive 的应用，则不执行 onBeforeClose
                     onClose()
                     return
                 }
@@ -635,16 +637,12 @@ export default {
             this.closeMicroApp(name, true)
             await new Promise(resolve => setTimeout(resolve, 300));
 
-            const app = this.microApps.find(item => item.name == name);
+            const app = this.backupConfigs[name];
             if (!app) {
                 $A.modalError("应用不存在");
+                return
             }
-            this.loadings.push(app.name)
-            requestAnimationFrame(_ => {
-                app.isOpen = true
-                app.lastOpenAt = Date.now()
-                this.$store.commit('microApps/keepAlive', 3)
-            })
+            await this.onOpen(app)
         },
 
         /**

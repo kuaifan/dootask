@@ -7,7 +7,7 @@
             <transition :name="transitions[1]">
                 <div v-if="shouldRenderInDom" v-show="open" class="micro-modal-content" :style="contentStyle">
                     <!-- 工具栏（移动端） -->
-                    <div v-if="capsuleMenuShow" class="micro-modal-capsule-mask"></div>
+                    <div v-if="capsuleMenuShow" class="micro-modal-cmask"></div>
                     <div class="micro-modal-capsule" :style="capsuleStyle">
                         <div class="micro-modal-capsule-item" @click="onCapsuleMore">
                             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -17,7 +17,7 @@
                             </svg>
                         </div>
                         <div class="micro-modal-capsule-line"></div>
-                        <div class="micro-modal-capsule-item" @click="onClose(true)">
+                        <div class="micro-modal-capsule-item" @click="onClose(false)">
                             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M9 16C12.866 16 16 12.866 16 9C16 5.13401 12.866 2 9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M9 12C10.6569 12 12 10.6569 12 9C12 7.34315 10.6569 6 9 6C7.34315 6 6 7.34315 6 9C6 10.6569 7.34315 12 9 12Z" fill="currentColor"/>
@@ -52,7 +52,7 @@
                         @on-change="onChangeResize"/>
 
                     <!-- 窗口内容 -->
-                    <div ref="body" class="micro-modal-body" :class="bodyClass" :style="bodyStyle">
+                    <div ref="body" class="micro-modal-body" :style="bodyStyle">
                         <slot></slot>
                     </div>
                 </div>
@@ -105,6 +105,7 @@ export default {
             return {
                 'micro-modal': true,
                 'micro-modal-hidden': !this.open,
+                'no-dark-content': !this.options.auto_dark_theme,
                 'transparent-mode': !!this.options.transparent,
                 'capsule-mode': this.windowIsMobileLayout,
             }
@@ -114,11 +115,6 @@ export default {
                 return ['', '']
             }
             return ['micro-modal-fade', 'micro-modal-slide']
-        },
-        bodyClass() {
-            return {
-                'no-dark-content': !this.options.auto_dark_theme,
-            }
         },
         bodyStyle() {
             const styleObject = {}
@@ -136,8 +132,10 @@ export default {
             const width = dynamicSize <= 100 ? `${dynamicSize}%` : `${dynamicSize}px`
             return {width, zIndex}
         },
-        capsuleStyle({zIndex}) {
-            const styleObject = {zIndex}
+        capsuleStyle() {
+            const styleObject = {
+                zIndex: this.zIndex + 1000
+            }
             const {capsule} = this.options
             if ($A.isJson(capsule)) {
                 if (capsule.visible === false) {
@@ -222,11 +220,11 @@ export default {
             })
         },
 
-        onClose(isClick = false) {
+        onClose(auto = false) {
             if (!this.beforeClose) {
                 return this.handleClose();
             }
-            const before = this.beforeClose(this.options.name, isClick);
+            const before = this.beforeClose(this.options.name, auto);
             if (before && before.then) {
                 before.then(() => {
                     this.handleClose();
@@ -252,7 +250,7 @@ export default {
     // 透明模式
     &.transparent-mode {
         --modal-mask-bg: transparent;
-        --modal-close-display: none;
+        --modal-tool-display: none;
         --modal-resize-display: none;
         --modal-content-left: 0;
         --modal-content-min-width: 100%;
@@ -263,14 +261,14 @@ export default {
 
     // 胶囊模式
     &.capsule-mode {
+        --modal-tool-display: none;
         --modal-capsule-display: flex;
-        --modal-close-display: none;
     }
 
     // 移动端适配
     @media (max-width: 768px) {
         --modal-mask-bg: transparent;
-        --modal-close-display: none;
+        --modal-tool-display: none;
         --modal-resize-display: none;
         --modal-content-left: 0;
         --modal-content-min-width: 100%;
@@ -295,25 +293,27 @@ export default {
     }
 
     &-mask {
+        filter: var(--modal-dark-filter, none);
         position: fixed;
         top: 0;
-        bottom: 0;
         left: 0;
         right: 0;
+        bottom: 0;
         background-color: var(--modal-mask-bg, rgba(0, 0, 0, .4));
     }
 
-    &-capsule-mask {
+    &-cmask {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: transparent;
         z-index: 1;
+        background-color: transparent;
     }
 
     &-capsule {
+        filter: var(--modal-dark-filter, none);
         position: absolute;
         top: 10px;
         right: 10px;
@@ -354,6 +354,7 @@ export default {
             svg {
                 width: 20px;
                 height: 20px;
+                color: #303133;
                 transition: color 0.2s;
                 pointer-events: none;
             }
@@ -361,13 +362,14 @@ export default {
     }
 
     &-tools {
+        filter: var(--modal-dark-filter, none);
         position: absolute;
         top: var(--status-bar-height, 0);
         left: -40px;
         z-index: 2;
         min-width: 40px;
         min-height: 40px;
-        display: var(--modal-close-display, black);
+        display: var(--modal-tool-display, black);
         overflow: hidden;
 
         > div {
@@ -376,7 +378,7 @@ export default {
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--modal-close-color, #ffffff);
+            color: var(--modal-tool-color, #ffffff);
             cursor: pointer;
 
             &:hover {
@@ -500,9 +502,10 @@ body.dark-mode-reverse {
     .micro-modal {
         &:not(.transparent-mode) {
             --modal-mask-bg: rgba(230, 230, 230, 0.6);
-            --modal-close-color: #323232;
+            --modal-tool-color: #000000;
 
-            .no-dark-content {
+            &.no-dark-content {
+                --modal-dark-filter: invert(100%) hue-rotate(180deg) contrast(100%);
                 --modal-body-background-color: #000000;
             }
         }
