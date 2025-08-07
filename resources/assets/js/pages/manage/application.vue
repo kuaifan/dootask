@@ -61,11 +61,13 @@
 
         <!--MY BOT-->
         <DrawerOverlay v-model="mybotShow" placement="right" :size="720">
+            <template v-if="mybotShow" #title>
+                {{ $L('我的机器人') }}
+            </template>
+            <template v-if="mybotShow" #more>
+                <a href="javascript:void(0)" @click="applyClick({value: 'mybot-add'}, {id: 0})">{{ $L('添加机器人') }}</a>
+            </template>
             <div v-if="mybotShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('我的机器人') }}
-                    <p @click="applyClick({value: 'mybot-add'}, {id: 0})">{{ $L('添加机器人') }}</p>
-                </div>
                 <div class="ivu-modal-wrap-apply-body full-body">
                     <div v-if="mybotList.length === 0" class="empty-data">
                         <Loading v-if="mybotLoad"/>
@@ -162,11 +164,10 @@
 
         <!--AI BOT 设置-->
         <DrawerOverlay v-model="aibotSettingShow" placement="right" :size="950">
+            <template v-if="aibotSettingShow" #title>
+                {{ $L('AI 设置') }}
+            </template>
             <div v-if="aibotSettingShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('AI 设置') }}
-                    <p @click="aibotSettingShow=false">{{ $L('返回') }}</p>
-                </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <Tabs v-model="aibotTabAction" :animated="false" class="ai-tabs">
                         <TabPane v-for="(item, key) in aibotList" :key="key" :label="item.label" :name="item.value">
@@ -184,11 +185,13 @@
 
         <!--签到-->
         <DrawerOverlay v-model="signInShow" placement="right" :size="500">
+            <template v-if="signInShow" #title>
+                {{ $L('签到管理') }}
+            </template>
+            <template v-if="signInShow" #more>
+                <a href="javascript:void(0)" @click="signInSettingShow=true" v-if="userIsAdmin">{{ $L('签到设置') }}</a>
+            </template>
             <div v-if="signInShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('签到管理') }}
-                    <p @click="signInSettingShow=true" v-if="userIsAdmin">{{ $L('签到设置') }}</p>
-                </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <Checkin/>
                 </div>
@@ -197,11 +200,10 @@
 
         <!--签到设置-->
         <DrawerOverlay v-model="signInSettingShow" placement="right" :size="720">
+            <template v-if="signInSettingShow" #title>
+                {{ $L('签到设置') }}
+            </template>
             <div v-if="signInSettingShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('签到设置') }}
-                    <p @click="signInSettingShow=false">{{ $L('返回') }}</p>
-                </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <SystemCheckin/>
                 </div>
@@ -210,11 +212,13 @@
 
         <!--会议-->
         <DrawerOverlay v-model="meetingShow" placement="right" :size="720">
+            <template v-if="meetingShow" #title>
+                {{ $L('会议') }}
+            </template>
+            <template v-if="meetingShow" #more>
+                <a href="javascript:void(0)" @click="meetingSettingShow = true" v-if="userIsAdmin">{{ $L('会议设置') }}</a>
+            </template>
             <div v-if="meetingShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('会议') }}
-                    <p @click="meetingSettingShow = true" v-if="userIsAdmin">{{ $L('会议设置') }}</p>
-                </div>
                 <div class="ivu-modal-wrap-apply-body full-body">
                     <SystemMeetingNav @openDetail="openDetail" @onMeeting="onMeeting"/>
                 </div>
@@ -223,11 +227,10 @@
 
         <!--会议设置-->
         <DrawerOverlay v-model="meetingSettingShow" placement="right" :size="600">
+            <template v-if="meetingSettingShow" #title>
+                {{ $L('会议设置') }}
+            </template>
             <div v-if="meetingSettingShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('会议设置') }}
-                    <p @click="meetingSettingShow = false">{{ $L('返回') }}</p>
-                </div>
                 <div class="ivu-modal-wrap-apply-body full-body">
                     <SystemMeeting/>
                 </div>
@@ -236,10 +239,10 @@
 
         <!--LDAP-->
         <DrawerOverlay v-model="ldapShow" placement="right" :size="700">
+            <template v-if="ldapShow" #title>
+                {{ $L('LDAP 设置') }}
+            </template>
             <div v-if="ldapShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('LDAP 设置') }}
-                </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <SystemThirdAccess/>
                 </div>
@@ -248,10 +251,10 @@
 
         <!--邮件-->
         <DrawerOverlay v-model="mailShow" placement="right" :size="700">
+            <template v-if="mailShow" #title>
+                {{ $L('邮件通知') }}
+            </template>
             <div v-if="mailShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('邮件通知') }}
-                </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <SystemEmailSetting/>
                 </div>
@@ -260,10 +263,10 @@
 
         <!--App 推送-->
         <DrawerOverlay v-model="appPushShow" placement="right" :size="700">
+            <template v-if="appPushShow" #title>
+                {{ $L('APP 推送') }}
+            </template>
             <div v-if="appPushShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('APP 推送') }}
-                </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <SystemAppPush/>
                 </div>

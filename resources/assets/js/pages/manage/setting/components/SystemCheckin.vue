@@ -214,7 +214,7 @@
         <!--导出签到数据-->
         <CheckinExport v-model="exportShow"/>
 
-        <!--查看所有团队-->
+        <!--查看管理团队-->
         <DrawerOverlay
             v-model="allUserShow"
             placement="right"

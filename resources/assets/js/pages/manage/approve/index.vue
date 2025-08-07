@@ -4,7 +4,6 @@
         <div class="approve-wrapper" ref="fileWrapper">
             <div class="approve-head">
                 <div class="approve-nav">
-                    <div class="common-nav-back" @click="onBack"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
 
@@ -57,7 +56,7 @@
                             </div>
                         </div>
                         <div class="approve-main-right">
-                            <listDetails v-if="!detailsShow && tabsValue=='unread'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                            <ApproveDetails v-if="!detailsShow && tabsValue=='unread'" :data="details" @approve="tabsClick" @revocation="tabsClick"></ApproveDetails>
                         </div>
                     </div>
                 </TabPane>
@@ -88,7 +87,7 @@
                             </div>
                         </div>
                         <div class="approve-main-right">
-                            <listDetails v-if="!detailsShow && tabsValue=='done'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                            <ApproveDetails v-if="!detailsShow && tabsValue=='done'" :data="details" @approve="tabsClick" @revocation="tabsClick"></ApproveDetails>
                         </div>
                     </div>
                 </TabPane>
@@ -121,7 +120,7 @@
                             </div>
                         </div>
                         <div class="approve-main-right">
-                            <listDetails v-if="!detailsShow && tabsValue=='notify'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                            <ApproveDetails v-if="!detailsShow && tabsValue=='notify'" :data="details" @approve="tabsClick" @revocation="tabsClick"></ApproveDetails>
                         </div>
                     </div>
                 </TabPane>
@@ -155,7 +154,7 @@
                             </div>
                         </div>
                         <div class="approve-main-right">
-                            <listDetails v-if="!detailsShow && tabsValue=='initiated'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                            <ApproveDetails v-if="!detailsShow && tabsValue=='initiated'" :data="details" @approve="tabsClick" @revocation="tabsClick"></ApproveDetails>
                         </div>
                     </div>
                 </TabPane>
@@ -167,7 +166,7 @@
 
         <!--详情-->
         <DrawerOverlay v-model="detailsShow"  placement="right" :size="600">
-            <listDetails v-if="detailsShow" :data="details" @approve="tabsClick" @revocation="tabsClick" style="height: 100%;border-radius: 10px;"></listDetails>
+            <ApproveDetails v-if="detailsShow" :data="details" @approve="tabsClick" @revocation="tabsClick"></ApproveDetails>
         </DrawerOverlay>
 
         <!--发起-->
@@ -245,7 +244,7 @@
 
 <script>
 import list from "./list.vue";
-import listDetails from "./details.vue";
+import ApproveDetails from "./details.vue";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import ImgUpload from "../../../components/ImgUpload";
 import ApproveSetting from "./setting";
@@ -254,7 +253,7 @@ import {mapState} from 'vuex'
 import emitter from "../../../store/events";
 
 export default {
-    components: {list, listDetails, DrawerOverlay, ImgUpload, ApproveSetting, ApproveExport},
+    components: {list, ApproveDetails, DrawerOverlay, ImgUpload, ApproveSetting, ApproveExport},
     name: "approve",
     data() {
         return {
@@ -393,14 +392,6 @@ export default {
             this.addData.department_id = this.userInfo.department[0] || 0;
             this.addData.startTime = this.addData.endTime = $A.daytz().format('YYYY-MM-DD');
             this.isShowIcon = this.windowWidth < 515
-        },
-
-        onBack() {
-            if (this.$listeners['on-close']) {
-                this.$emit('on-close')
-            } else {
-                this.goBack()
-            }
         },
 
         // 收到websocket消息

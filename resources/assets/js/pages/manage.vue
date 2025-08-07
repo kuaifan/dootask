@@ -314,7 +314,7 @@
             <Report v-if="workReportShow" v-model="workReportTab" @on-read="$store.dispatch('getReportUnread', 1000)" />
         </DrawerOverlay>
 
-        <!--查看所有团队-->
+        <!--团队成员管理-->
         <DrawerOverlay
             v-model="allUserShow"
             placement="right"
@@ -346,20 +346,20 @@
             <ProjectArchived v-if="archivedProjectShow"/>
         </DrawerOverlay>
 
+        <!--审批中心-->
+        <DrawerOverlay v-model="approveShow" placement="right" :size="1380" class-name="approve-drawer">
+            <Approve v-if="approveShow"/>
+        </DrawerOverlay>
+
+        <!--审批详情-->
+        <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
+            <ApproveDetails v-if="approveDetailsShow" :data="approveDetails"/>
+        </DrawerOverlay>
+
         <!--移动端选项卡-->
         <transition name="mobile-slide">
             <MobileTabbar v-if="mobileTabbar" @on-click="onTabbarClick"/>
         </transition>
-
-        <!--审批中心-->
-        <DrawerOverlay v-model="approveShow" placement="right" :size="1380" class-name="approve-drawer">
-            <Approve v-if="approveShow" @on-close="approveShow=false"/>
-        </DrawerOverlay>
-
-        <!--审批详情-->
-        <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600" class-name="approve-drawer">
-            <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" @onBack="approveDetailsShow=false"/>
-        </DrawerOverlay>
 
         <!--应用详情-->
         <MicroApps/>

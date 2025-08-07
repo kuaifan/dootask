@@ -20,11 +20,10 @@
             </Col>
         </Row>
 
-        <!--查看所有项目-->
+        <!--设置流程-->
         <DrawerOverlay v-model="approvalSettingShow" placement="right" :size="1200">
             <iframe :src="iframeSrc"></iframe>
         </DrawerOverlay>
-
     </div>
 </template>
 
@@ -39,7 +38,7 @@ export default {
         return{
             value:false,
             loadIng:0,
-            approvalSettingShow:false,
+            approvalSettingShow: false,
             iframeSrc:"",
             name:"",
             list:[]

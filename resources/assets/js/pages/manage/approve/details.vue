@@ -283,10 +283,6 @@ export default {
                 this.getInfo()
             }
         },
-        // 返回
-        onBack() {
-            this.$emit('onBack')
-        },
         // 把时间转成几小时前
         getTimeAgo(time, type) {
             const timeDiff = $A.dayjs().unix() - $A.dayjs(time).unix(); // convert to seconds

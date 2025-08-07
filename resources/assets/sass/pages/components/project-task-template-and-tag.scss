@@ -5,7 +5,7 @@
 
     .header {
         height: 60px;
-        padding: 10px 20px;
+        padding: 10px 60px 10px 20px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
@@ -146,7 +146,7 @@
                         height: 28px;
                         padding: 0 12px;
                         font-size: 13px;
-    
+
                         > i {
                             margin: 0 -2px;
                         }
