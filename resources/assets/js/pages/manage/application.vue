@@ -127,11 +127,13 @@
 
         <!--AI BOT-->
         <DrawerOverlay v-model="aibotShow" placement="right" :size="720">
+            <template v-if="aibotShow" #title>
+                {{ $L('AI 列表') }}
+            </template>
+            <template v-if="aibotShow" #more>
+                <a href="javascript:void(0)" @click="applyClick({value: 'robot-setting'}, 'openai')" v-if="userIsAdmin">{{ $L('机器人设置') }}</a>
+            </template>
             <div v-if="aibotShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('AI 列表') }}
-                    <p @click="applyClick({value: 'robot-setting'}, 'openai')" v-if="userIsAdmin">{{ $L('机器人设置') }}</p>
-                </div>
                 <div class="ivu-modal-wrap-apply-body full-body">
                     <ul class="ivu-modal-wrap-ul">
                         <li v-for="(item, key) in aibotList" :key="key">

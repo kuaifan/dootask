@@ -415,8 +415,9 @@
         <!--查看/修改文件-->
         <DrawerOverlay
             v-model="fileShow"
-            class="page-file-drawer"
-            :beforeClose="fileBeforeClose"
+            class-name="file-drawer"
+            :before-close="fileBeforeClose"
+            :mask="true"
             :mask-closable="false">
             <FilePreview v-if="isPreview" :file="fileInfo"/>
             <FileContent v-else ref="fileContent" v-model="fileShow" :file="fileInfo"/>

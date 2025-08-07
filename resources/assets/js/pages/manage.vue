@@ -352,12 +352,12 @@
         </transition>
 
         <!--审批中心-->
-        <DrawerOverlay v-model="approveShow" placement="right" :size="1380" class="approve-drawer">
+        <DrawerOverlay v-model="approveShow" placement="right" :size="1380" class-name="approve-drawer">
             <Approve v-if="approveShow" @on-close="approveShow=false"/>
         </DrawerOverlay>
 
         <!--审批详情-->
-        <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
+        <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600" class-name="approve-drawer">
             <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" @onBack="approveDetailsShow=false"/>
         </DrawerOverlay>
 

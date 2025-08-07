@@ -80,20 +80,6 @@ body.dark-mode-reverse {
         }
     }
 
-    .common-drawer-overlay {
-        .overlay-body {
-            .overlay-close {
-                > a {
-                    color: #323232;
-
-                    &:hover {
-                        color: #000;
-                    }
-                }
-            }
-        }
-    }
-
     .file-content,
     .file-preview {
         .content-body {

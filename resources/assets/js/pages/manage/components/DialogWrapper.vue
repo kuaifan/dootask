@@ -575,7 +575,7 @@
         <DrawerOverlay
             v-model="replyListShow"
             placement="right"
-            modal-class="dialog-wrapper-modal-list"
+            class-name="dialog-wrapper-list"
             :size="500">
             <DialogWrapper
                 v-if="replyListShow"
@@ -591,6 +591,7 @@
         <DrawerOverlay
             v-model="respondShow"
             placement="right"
+            class-name="dialog-wrapper-list"
             :size="400">
             <DialogRespond v-if="respondShow" :respond-data="respondData" @on-close="respondShow=false"/>
         </DrawerOverlay>
@@ -599,6 +600,7 @@
         <DrawerOverlay
             v-model="sessionHistoryShow"
             placement="right"
+            class-name="dialog-wrapper-list"
             :size="500">
             <DialogSessionHistory
                 v-if="sessionHistoryShow"
@@ -611,7 +613,7 @@
         <DrawerOverlay
             v-model="todoViewShow"
             placement="right"
-            modal-class="dialog-wrapper-modal-list"
+            class-name="dialog-wrapper-list"
             :size="500">
             <div class="dialog-wrapper inde-list">
                 <div class="dialog-nav">

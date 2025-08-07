@@ -2492,12 +2492,6 @@ body:not(.window-touch) {
     }
 }
 
-.dialog-wrapper-modal-list {
-    .ivu-modal-fullscreen {
-        background-color: #f8f8f8;
-    }
-}
-
 @keyframes head-box-loading-animation {
     0% {
         box-shadow: 0 0, 0 0;
@@ -2547,8 +2541,8 @@ body.window-portrait {
         &.inde-list {
             .dialog-nav {
                 .drawer-title {
-                    height: 52px;
-                    line-height: 52px;
+                    height: 56px;
+                    line-height: 56px;
                     border-bottom: 0;
                 }
             }

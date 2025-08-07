@@ -15,7 +15,7 @@
             display: flex;
             align-items: center;
             padding-bottom: 16px;
-            margin: 20px 20px 5px;
+            margin: 20px 60px 5px 20px;
             border-bottom: 1px solid #F4F4F5;
             gap: 16px;
 
@@ -521,13 +521,5 @@
 .ivu-modal {
     .approve-details {
         border-width: 0;
-    }
-}
-
-body.window-portrait {
-    .page-approve{
-        .approve-head {
-            margin: 24px 16px 6px 16px;
-        }
     }
 }

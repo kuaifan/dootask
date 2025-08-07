@@ -1,3 +1,33 @@
+// 去除 modal 默认样式
+body {
+    .ivu-modal-wrap {
+        &.common-drawer {
+            overflow: hidden;
+
+            .ivu-modal {
+                .ivu-modal-content {
+                    margin-top: 0;
+                    margin-bottom: 0;
+                    background-color: transparent;
+                }
+
+                .ivu-modal-close {
+                    display: none;
+                }
+
+                .ivu-modal-body {
+                    padding: 0;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-end;
+                    align-items: flex-end;
+                }
+            }
+        }
+    }
+}
+
+// 通用抽屉样式
 .common-drawer {
     --margin-top: 8px;
     --margin-left: 8px;
@@ -142,6 +172,7 @@
     }
 }
 
+// 全屏抽屉样式
 .drawer-fullscreen {
     --margin-top: 0px;
     --margin-left: 0px;
@@ -155,44 +186,26 @@
         --close-top: 20px;
         --close-right: 12px;
     }
-}
 
-body {
-    .ivu-modal-wrap {
-        &.common-drawer {
-            overflow: hidden;
-
-            .ivu-modal {
-                .ivu-modal-content {
-                    margin-top: 0;
-                    margin-bottom: 0;
-                    background-color: transparent;
-                }
-
-                .ivu-modal-close {
-                    display: none;
-                }
-
-                .ivu-modal-body {
-                    padding: 0;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: flex-end;
-                    align-items: flex-end;
-                }
-            }
-        }
+    &.dialog-wrapper-list {
+        --content-bg-color: #f8f8f8;
     }
 }
 
 body.dark-mode-reverse {
+    // 暗黑模式下的抽屉样式
     .common-drawer {
         &.file-drawer {
             --close-color: #000000;
         }
     }
+    // 暗黑模式下的全屏抽屉样式
+    .drawer-fullscreen {
+
+    }
 }
 
+// 抽屉动画样式
 .drawer-animation {
     &-fade {
         &-enter-active,
