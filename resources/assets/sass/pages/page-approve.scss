@@ -64,7 +64,7 @@
                 max-width: 200px;
             }
 
-            @media (max-width: 515px) {
+            @media (width <= 515px) {
                 .ivu-btn{
                     min-width: 45px;
                 }
@@ -103,7 +103,7 @@
                 bottom: 12px;
                 max-width: 360px;
                 width: 100%;
-                @media (max-width: 1010px) {
+                @media (width <= 1010px) {
                     max-width: 100%;
                 }
 
@@ -169,7 +169,7 @@
 
                     .approve-list-active {
                         border: 1px solid #8bcf70;
-                        @media (max-width: 1010px) {
+                        @media (width <= 1010px) {
                             border: 1px solid #eeeeee;
                         }
                     }
@@ -189,7 +189,7 @@
                 flex: 1 1 auto;
                 display: flex;
                 margin: 0 0 12px 12px;
-                @media (max-width: 1010px) {
+                @media (width <= 1010px) {
                     display: none;
                 }
             }

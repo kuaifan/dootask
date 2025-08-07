@@ -97,7 +97,7 @@ body.window-portrait {
     }
 }
 
-@media (max-height: 600px) {
+@media (height <= 600px) {
     .common-right-bottom {
         display: none;
     }

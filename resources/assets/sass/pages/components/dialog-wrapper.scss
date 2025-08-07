@@ -2748,7 +2748,7 @@ body.window-portrait {
         }
     }
 
-    @media (max-width: 768px) and (min-width: 390px){
+    @media (390px < width < 768px) {
         .dialog-wrapper-operate {
             .operate-action {
                 width: 376px;

@@ -141,7 +141,7 @@
             color: #088acb
         }
 
-        @media (max-width: 768px) {
+        @media (width < 768px) {
             .mirror {
                 width: 100%;
                 padding: 0 15px 10px

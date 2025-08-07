@@ -473,7 +473,7 @@
     }
 }
 
-@media (max-height: 640px) {
+@media (height <= 640px) {
     .page-manage {
         .manage-box-menu {
             .menu-base {
@@ -501,7 +501,7 @@ body.window-portrait {
             .mobile-tabbar {
                 display: flex;
             }
-            @media (max-height: 400px) {
+            @media (height <= 400px) {
                 .manage-box-main {
                     margin-bottom: 0;
                 }

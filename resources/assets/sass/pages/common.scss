@@ -288,11 +288,11 @@ body {
         .ivu-modal {
             top: 100px;
             padding-bottom: 100px;
-            @media (max-width: 768px) {
+            @media (width < 768px) {
                 top: 60px;
                 padding-bottom: 60px;
             }
-            @media (max-height: 900px) {
+            @media (height <= 900px) {
                 top: 35px;
                 padding-bottom: 35px;
             }
@@ -329,7 +329,7 @@ body {
                     min-width: 94px;
                 }
 
-                @media (max-width: 576px) {
+                @media (width <= 576px) {
                     .adaption {
                         display: flex;
                         align-items: center;
@@ -738,7 +738,7 @@ body {
         }
     }
 
-    @media (max-width: 576px) {
+    @media (width <= 576px) {
         &.lr,
         &.auto {
             > ul {

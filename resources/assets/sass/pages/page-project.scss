@@ -10,7 +10,7 @@
     }
 }
 
-@media (max-height: 700px) {
+@media (height <= 700px) {
     .page-project {
         .project-panel {
             height: auto;

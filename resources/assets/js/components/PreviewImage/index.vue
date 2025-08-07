@@ -38,7 +38,7 @@ body {
                         top: 40px;
                         width: 40px;
 
-                        @media (max-width: 640px) {
+                        @media (width <= 640px) {
                             right: 24px;
                             top: 24px;
                         }

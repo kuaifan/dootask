@@ -213,7 +213,7 @@
                     }
                 }
             }
-            @media (max-width: 320px) {
+            @media (width <= 320px) {
                 .nav {
                     margin-right: 20px;
                 }

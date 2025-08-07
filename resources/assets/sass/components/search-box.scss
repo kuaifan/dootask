@@ -129,11 +129,11 @@
                             display: none;
                         }
 
-                        @media (max-width: 768px) {
+                        @media (width < 768px) {
                             gap: 12px;
                         }
 
-                        @media (max-width: 576px) {
+                        @media (width <= 576px) {
                             gap: 10px;
                             padding: 14px 18px 0;
                         }
@@ -197,7 +197,7 @@
                         max-height: calc(100vh - 305px);
                         overscroll-behavior: contain;
 
-                        @media (max-height: 900px) {
+                        @media (height <= 900px) {
                             max-height: calc(100vh - 175px);
                         }
 

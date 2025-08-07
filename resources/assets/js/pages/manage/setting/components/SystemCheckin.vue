@@ -133,7 +133,7 @@
                                 </RadioGroup>
                                 <div class="form-tip">{{$L('仅支持移动端App')}}</div>
                             </FormItem>
-                            
+
                             <!-- 百度地图配置 -->
                             <template v-if="formData.locat_map_type === 'baidu'">
                                 <FormItem :label="$L('百度地图AK')" prop="locat_bd_lbs_key">
@@ -284,7 +284,7 @@
     display: flex;
     gap: 20px;
     height: 500px;
-    @media (max-width: 768px) {
+    @media (width < 768px) {
         flex-direction: column;
         height: 700px;
         .map-radius-control {
@@ -454,7 +454,7 @@ export default {
             const mapType = this.formData.locat_map_type;
             let mapKey = '';
             let currentPoint = {};
-            
+
             // 根据地图类型获取对应的key和point
             switch (mapType) {
                 case 'baidu':
@@ -492,7 +492,7 @@ export default {
                 point: currentPoint.lng + ',' + currentPoint.lat,
                 radius: currentPoint.radius,
             })
-            
+
             this.$store.dispatch('userUrl', url).then(newUrl => {
                 this.mapSelectUrl = newUrl;
                 this.mapSelectPoint = currentPoint;

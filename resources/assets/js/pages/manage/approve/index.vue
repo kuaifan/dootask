@@ -722,7 +722,7 @@ export default {
 .page-approve .ivu-tabs-nav {
     display: flex;
     width: 350px;
-    @media (max-width: 1010px) {
+    @media (width <= 1010px) {
         width: 100%;
     }
 

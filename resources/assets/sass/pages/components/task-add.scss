@@ -12,13 +12,13 @@
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                @media (max-width: 600px) {
+                @media (width <= 600px) {
                     max-width: 200px;
                 }
-                @media (max-width: 400px) {
+                @media (width <= 400px) {
                     max-width: 160px;
                 }
-                @media (max-width: 320px) {
+                @media (width <= 320px) {
                     max-width: 100px;
                 }
             }

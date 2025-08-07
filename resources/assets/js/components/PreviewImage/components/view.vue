@@ -72,7 +72,7 @@
             z-index: 2;
             transform: translateY(-50%);
 
-            @media (max-width: 640px) {
+            @media (width <= 640px) {
                 display: none;
             }
 

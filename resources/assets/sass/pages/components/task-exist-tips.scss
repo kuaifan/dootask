@@ -39,7 +39,7 @@
         opacity: 0.5;
     }
 
-    @media (max-width: 640px) {
+    @media (width <= 640px) {
         .list-task {
             margin-top: 6px;
             flex-direction: column;
