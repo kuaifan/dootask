@@ -164,8 +164,6 @@ export default {
         margin: 0;
         border: 0;
         float: left;
-        border-top-left-radius: 18px;
-        border-bottom-left-radius: 18px;
     }
     .delcon{
         position: absolute;

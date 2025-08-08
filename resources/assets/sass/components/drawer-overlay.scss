@@ -53,8 +53,8 @@ body {
     }
 
     &.approve-drawer {
-        --close-top: 28px;
-        --close-right: 20px;
+        --close-top: 20px;
+        --close-right: 12px;
     }
 
     .overlay-body {
@@ -182,11 +182,6 @@ body {
     --close-top: 8px;
     --close-right: 8px;
     --border-radius: 0;
-
-    &.approve-drawer {
-        --close-top: 20px;
-        --close-right: 12px;
-    }
 
     &.dialog-wrapper-list {
         --content-bg-color: #f8f8f8;
