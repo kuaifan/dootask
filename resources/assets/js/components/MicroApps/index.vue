@@ -308,6 +308,17 @@ export default {
                             }, reject)
                         })
                     },
+                    setCapsuleConfig: (config) => {
+                        if (!$A.isJson(config)) {
+                            return
+                        }
+                        this.$store.commit('microApps/update', {
+                            name,
+                            data: {
+                                capsule: config,
+                            }
+                        })
+                    },
                     nextZIndex: () => {
                         if (typeof window.modalTransferIndex === 'number') {
                             return window.modalTransferIndex++;
