@@ -491,7 +491,7 @@ export default {
          */
         closeByName(name) {
             try {
-                this.$refs[`ref-${name}`][0].onClose()
+                this.$refs[`ref-${name}`][0].attemptClose()
             } catch (e) {
                 this.closeMicroApp(name)
             }
@@ -543,7 +543,7 @@ export default {
          */
         onBeforeClose(name) {
             return new Promise(resolve => {
-                const onClose = () => {
+                const handleClose = () => {
                     if ($A.isSubElectron) {
                         $A.Electron.sendMessage('windowDestroy');
                     } else {
@@ -554,7 +554,7 @@ export default {
                 const app = this.microApps.find(item => item.name == name);
                 if (!app) {
                     // 如果应用不存在，则直接关闭
-                    onClose()
+                    handleClose()
                     return
                 }
 
@@ -562,10 +562,10 @@ export default {
                     const before = app.onBeforeClose();
                     if (before && before.then) {
                         before.then(() => {
-                            onClose()
+                            handleClose()
                         });
                     } else {
-                        onClose()
+                        handleClose()
                     }
                     return
                 }
@@ -575,7 +575,7 @@ export default {
                         if ($A.leftExists(name, 'appstore')) {
                             this.$store.dispatch("updateMicroAppsStatus");
                         }
-                        onClose()
+                        handleClose()
                     }
                 })
             })
