@@ -7,7 +7,6 @@
             :src="src"
             sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox">
         </iframe>
-        <div v-if="isLoading" class="micro-app-iframe-cover"></div>
     </div>
 </template>
 
@@ -28,15 +27,6 @@
             padding-top: 0;
             padding-bottom: 0;
         }
-    }
-
-    .micro-app-iframe-cover {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 100;
     }
 }
 </style>
@@ -66,7 +56,6 @@ export default {
         return {
             src: this.url,
             isReady: false,
-            isLoading: true,
             hasMounted: false,
             hearTbeatLastTime: 0,
         }
@@ -190,7 +179,6 @@ export default {
         handleMessageOfReady({supportBeforeClose}) {
             this.handleLoad()
             this.isReady = true
-            this.isLoading = false
 
             if (supportBeforeClose) {
                 this.$store.commit('microApps/update', {

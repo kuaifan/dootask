@@ -348,6 +348,11 @@ export default {
                     url: 'appstore/internal?language={system_lang}&theme={system_theme}',
                     disable_scope_css: true,
                     auto_dark_theme: false,
+                    capsule: {
+                        visible: true,
+                        top: 18,
+                        right: 18,
+                    }
                 }]
             })
         }

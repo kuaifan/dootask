@@ -6,7 +6,7 @@
             </transition>
             <transition :name="transitions[1]">
                 <div v-if="shouldRenderInDom" v-show="open" class="micro-modal-content" :style="contentStyle">
-                    <!-- 工具栏（移动端） -->
+                    <!-- 胶囊工具栏 -->
                     <div v-if="capsuleMenuShow" class="micro-modal-cmask"></div>
                     <div class="micro-modal-capsule" :style="capsuleStyle">
                         <div class="micro-modal-capsule-item" @click="onCapsuleMore">
@@ -25,22 +25,7 @@
                         </div>
                     </div>
 
-                    <!-- 工具栏（桌面端） -->
-                    <div class="micro-modal-tools" :class="{expanded: $A.isMainElectron}">
-                        <div class="tool-close" @click="onClose(true)">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26">
-                                <path d="M8.28596 6.51819C7.7978 6.03003 7.00634 6.03003 6.51819 6.51819C6.03003 7.00634 6.03003 7.7978 6.51819 8.28596L11.2322 13L6.51819 17.714C6.03003 18.2022 6.03003 18.9937 6.51819 19.4818C7.00634 19.97 7.7978 19.97 8.28596 19.4818L13 14.7678L17.714 19.4818C18.2022 19.97 18.9937 19.97 19.4818 19.4818C19.97 18.9937 19.97 18.2022 19.4818 17.714L14.7678 13L19.4818 8.28596C19.97 7.7978 19.97 7.00634 19.4818 6.51819C18.9937 6.03003 18.2022 6.03003 17.714 6.51819L13 11.2322L8.28596 6.51819Z" fill="currentColor"></path>
-                            </svg>
-                        </div>
-                        <div class="tool-fullscreen" @click="$emit('on-popout-window', options.name)">
-                            <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M682.666667 298.666667H170.666667c-47.061333 0-85.333333 38.272-85.333334 85.333333v426.666667c0 47.061333 38.272 85.333333 85.333334 85.333333h512c47.061333 0 85.333333-38.272 85.333333-85.333333V384c0-47.061333-38.272-85.333333-85.333333-85.333333zM170.666667 810.666667v-341.333334h512V384l0.085333 426.666667H170.666667z" fill="currentColor"></path>
-                                <path d="M938.666667 213.333333c0-47.061333-38.272-85.333333-85.333334-85.333333H298.666667c-47.061333 0-85.333333 38.272-85.333334 85.333333h554.709334c46.976 0 85.162667 38.186667 85.290666 85.077334L853.418667 640H853.333333v85.333333c47.061333 0 85.333333-38.272 85.333334-85.333333V341.632L938.709333 341.333333V256L938.666667 255.573333V213.333333z" fill="currentColor"></path>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- 窗口大小调整（桌面端） -->
+                    <!-- 窗口大小调整 -->
                     <ResizeLine
                         class="micro-modal-resize"
                         v-model="dynamicSize"
@@ -118,10 +103,9 @@ export default {
         },
         bodyStyle() {
             const styleObject = {}
-            if ($A.isJson(this.options.background)) {
-                styleObject.background = this.options.background
-            } else if (this.options.background) {
-                styleObject.backgroundColor = this.options.background;
+            if (this.options.background) {
+                const colors = `${this.options.background}|`.split('|');
+                styleObject.background = (this.themeName === 'dark' ? colors[1] : null) || colors[0];
             }
             return styleObject;
         },
@@ -190,22 +174,28 @@ export default {
         },
 
         onCapsuleMore(event) {
-            const list = [];
+            const customMenu = [];
             const {capsule} = this.options;
             if ($A.isJson(capsule) && $A.isArray(capsule.more_menus)) {
                 capsule.more_menus.forEach(item => {
                     if (item.label && item.value) {
-                        list.push(item);
+                        customMenu.push(item);
                     }
                 });
             }
-            list.push(...[
-                {label: this.$L('重启应用'), value: 'restart', divided: list.length > 0},
+            const systemMenu = [
+                {label: this.$L('重启应用'), value: 'restart'},
                 {label: this.$L('关闭应用'), value: 'close'},
-            ])
+            ];
+            if ($A.isMainElectron) {
+                systemMenu.unshift({label: this.$L('新窗口打开'), value: 'popout'})
+            }
+            if (customMenu.length > 0) {
+                systemMenu[0].divided = true;
+            }
             this.$store.commit('menu/operation', {
                 event,
-                list,
+                list: [...customMenu, ...systemMenu],
                 size: 'large',
                 onVisibleChange: (visible) => {
                     this.capsuleMenuShow = visible;
@@ -247,32 +237,40 @@ export default {
     height: 100vh;
     will-change: auto;
 
+    --modal-mask-bg: rgba(0, 0, 0, .4);
+    --modal-resize-display: block;
+    --modal-content-left: auto;
+    --modal-content-min-width: auto;
+    --modal-body-margin: 8px;
+    --modal-body-border-radius: 16px;
+    --modal-body-background-color: #ffffff;
+    --modal-dark-filter: none;
+    --modal-slide-transform: translate(15%, 0) scale(0.98);
+
+    --modal-capsule-bgcolor: rgba(255, 255, 255, 0.6);
+    --modal-capsule-bor-color: rgba(229, 230, 235, 0.6);
+    --modal-capsule-hov-bgcolor: rgba(255, 255, 255, 0.9);
+    --modal-capsule-hov-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --modal-capsule-line-color: rgba(229, 230, 235, 0.8);
+
     // 透明模式
     &.transparent-mode {
         --modal-mask-bg: transparent;
-        --modal-tool-display: none;
         --modal-resize-display: none;
         --modal-content-left: 0;
         --modal-content-min-width: 100%;
-        --modal-content-max-width: 100%;
+        --modal-body-margin: 0;
         --modal-body-border-radius: 0;
         --modal-body-background-color: transparent;
     }
 
-    // 胶囊模式
-    &.capsule-mode {
-        --modal-tool-display: none;
-        --modal-capsule-display: flex;
-    }
-
-    // 移动端适配
-    @media (max-width: 768px) {
+    // 移动端适配（全屏）
+    @media (width < 768px) {
         --modal-mask-bg: transparent;
-        --modal-tool-display: none;
         --modal-resize-display: none;
         --modal-content-left: 0;
         --modal-content-min-width: 100%;
-        --modal-content-max-width: 100%;
+        --modal-body-margin: 0;
         --modal-body-border-radius: 0;
         --modal-slide-transform: translate(0, 15%) scale(0.98);
     }
@@ -293,13 +291,13 @@ export default {
     }
 
     &-mask {
-        filter: var(--modal-dark-filter, none);
+        filter: var(--modal-dark-filter);
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: var(--modal-mask-bg, rgba(0, 0, 0, .4));
+        background-color: var(--modal-mask-bg);
     }
 
     &-cmask {
@@ -318,23 +316,25 @@ export default {
         top: 10px;
         right: 10px;
         z-index: 2;
+        margin-top: var(--modal-body-margin);
+        margin-right: var(--modal-body-margin);
         transform: translateY(var(--status-bar-height, 0));
-        display: var(--modal-capsule-display, none);
+        display: flex;
         align-items: center;
-        background: rgba(255, 255, 255, 0.6);
-        border: 1px solid rgba(229, 230, 235, 0.6);
+        background: var(--modal-capsule-bgcolor);
+        border: 1px solid var(--modal-capsule-bor-color);
         border-radius: 16px;
         transition: box-shadow 0.2s, background 0.2s;
 
         &:hover {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            background: var(--modal-capsule-hov-bgcolor);
+            box-shadow: var(--modal-capsule-hov-shadow);
         }
 
         &-line {
             width: 1px;
             height: 16px;
-            background: rgba(229, 230, 235, 0.6);
+            background: var(--modal-capsule-line-color);
         }
 
         &-item {
@@ -361,84 +361,12 @@ export default {
         }
     }
 
-    &-tools {
-        filter: var(--modal-dark-filter, none);
-        position: absolute;
-        top: var(--status-bar-height, 0);
-        left: -40px;
-        z-index: 2;
-        min-width: 40px;
-        min-height: 40px;
-        display: var(--modal-tool-display, black);
-        overflow: hidden;
-
-        > div {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--modal-tool-color, #ffffff);
-            cursor: pointer;
-
-            &:hover {
-                > svg {
-                    transform: rotate(-90deg);
-                }
-            }
-
-            > svg {
-                width: 24px;
-                height: 24px;
-                transition: transform 0.2s ease-in-out;
-            }
-
-            + div {
-                display: none;
-            }
-
-            &.tool-fullscreen {
-                > svg {
-                    width: 20px;
-                    height: 20px;
-                }
-            }
-        }
-
-        &.expanded {
-            height: 100%;
-
-            &:hover {
-                > div {
-                    + div {
-                        opacity: 1;
-                    }
-                }
-            }
-
-            > div {
-                &:hover {
-                    > svg {
-                        transform: none;
-                        opacity: 0.9;
-                    }
-                }
-
-                + div {
-                    display: flex;
-                    opacity: 0;
-                    transition: opacity 0.2s ease-in-out;
-                }
-            }
-        }
-    }
-
     &-resize {
-        display: var(--modal-resize-display, 'block');
+        display: var(--modal-resize-display);
         position: absolute;
         top: 0;
+        left: var(--modal-body-margin);
         bottom: 0;
-        left: 0;
         z-index: 1;
         width: 5px;
     }
@@ -448,20 +376,21 @@ export default {
         top: 0;
         right: 0;
         bottom: 0;
-        left: var(--modal-content-left, auto);
+        left: var(--modal-content-left);
         display: flex;
         flex-direction: column;
         height: 100%;
-        min-width: var(--modal-content-min-width, auto);
-        max-width: var(--modal-content-max-width, calc(100% - 40px));
+        min-width: var(--modal-content-min-width);
+        max-width: 100%;
     }
 
     &-body {
         flex: 1;
         height: 0;
         overflow: hidden;
-        border-radius: var(--modal-body-border-radius, 18px 0 0 18px);
-        background-color: var(--modal-body-background-color, #ffffff);
+        margin: var(--modal-body-margin);
+        border-radius: var(--modal-body-border-radius);
+        background-color: var(--modal-body-background-color);
         position: relative;
     }
 
@@ -491,7 +420,7 @@ export default {
 
         &-enter,
         &-leave-to {
-            transform: var(--modal-slide-transform, translate(15%, 0) scale(0.98));
+            transform: var(--modal-slide-transform);
             opacity: 0;
         }
     }
@@ -502,7 +431,11 @@ body.dark-mode-reverse {
     .micro-modal {
         &:not(.transparent-mode) {
             --modal-mask-bg: rgba(230, 230, 230, 0.6);
-            --modal-tool-color: #000000;
+            --modal-capsule-bgcolor: rgba(210, 210, 210, 0.6);
+            --modal-capsule-bor-color: rgba(210, 210, 210, 0.3);
+            --modal-capsule-hov-bgcolor: rgba(210, 210, 210, 0.8);
+            --modal-capsule-hov-shadow: 0 4px 16px rgba(180, 180, 180, 0.2);
+            --modal-capsule-line-color: rgba(180, 180, 180, 0.6);
 
             &.no-dark-content {
                 --modal-dark-filter: invert(100%) hue-rotate(180deg) contrast(100%);

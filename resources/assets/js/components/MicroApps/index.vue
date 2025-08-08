@@ -16,7 +16,7 @@
                 :name="app.name"
                 :url="app.url"
                 :data="appData(app.name)"
-                :immersive="app.iframe_immersive"
+                :immersive="app.immersive"
                 @mounted="mounted"
                 @error="error"/>
             <micro-app
@@ -402,6 +402,7 @@ export default {
             const appConfig = {
                 ...config,
 
+                // 新窗口强制参数
                 url_type: config.url_type.replace(/_blank$/, ''),
                 transparent: true,
                 keep_alive: false,
@@ -611,22 +612,30 @@ export default {
          * @param action
          */
         onCapsuleMore(name, action) {
-            if (action === 'restart') {
-                this.onRestartApp(name)
-                return
+            switch (action) {
+                case "popout":
+                    this.onPopoutWindow(name)
+                    break;
+
+                case "restart":
+                    this.onRestartApp(name)
+                    break;
+
+                default:
+                    const app = this.microApps.find(item => item.name == name);
+                    if (!app) {
+                        return
+                    }
+                    if (this.isIframe(app.url_type)) {
+                        app.postMessage({
+                            type: 'MICRO_APP_MENU_CLICK',
+                            message: action
+                        });
+                        return
+                    }
+                    microApp.forceSetData(name, {type: 'menuClick', message: action})
+                    break;
             }
-            const app = this.microApps.find(item => item.name == name);
-            if (!app) {
-                return
-            }
-            if (this.isIframe(app.url_type)) {
-                app.postMessage({
-                    type: 'MICRO_APP_MENU_CLICK',
-                    message: action
-                });
-                return
-            }
-            microApp.forceSetData(name, {type: 'menuClick', message: action})
         },
 
         /**
