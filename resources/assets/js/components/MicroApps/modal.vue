@@ -235,11 +235,11 @@ export default {
     --modal-resize-display: block;
     --modal-content-left: auto;
     --modal-content-min-width: auto;
-    --modal-body-margin: 8px;
-    --modal-body-border-radius: 16px;
+    --modal-body-margin: 0;
+    --modal-body-border-radius: 0;
     --modal-body-background-color: #ffffff;
     --modal-dark-filter: none;
-    --modal-slide-transform: translate(15%, 0) scale(0.98);
+    --modal-slide-transform: translate(15%, 0);
 
     --modal-capsule-bgcolor: rgba(255, 255, 255, 0.6);
     --modal-capsule-bor-color: rgba(229, 230, 235, 0.6);
@@ -266,7 +266,7 @@ export default {
         --modal-content-min-width: 100%;
         --modal-body-margin: 0;
         --modal-body-border-radius: 0;
-        --modal-slide-transform: translate(0, 15%) scale(0.98);
+        --modal-slide-transform: translate(0, 15%);
     }
 
     &-hidden {
@@ -389,12 +389,9 @@ export default {
     }
 
     &-fade {
-        &-enter-active {
-            transition: all .2s ease;
-        }
-
+        &-enter-active,
         &-leave-active {
-            transition: all .2s ease;
+            transition: opacity .5s cubic-bezier(0.32, 0.72, 0, 1);
         }
 
         &-enter,
@@ -404,12 +401,9 @@ export default {
     }
 
     &-slide {
-        &-enter-active {
-            transition: all .2s ease;
-        }
-
+        &-enter-active,
         &-leave-active {
-            transition: all .2s ease;
+            transition: transform .3s cubic-bezier(0.32, 0.72, 0, 1), opacity .3s cubic-bezier(0.32, 0.72, 0, 1);
         }
 
         &-enter,

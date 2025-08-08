@@ -29,17 +29,17 @@ body {
 
 // 通用抽屉样式
 .common-drawer {
-    --margin-top: 8px;
-    --margin-left: 8px;
-    --margin-right: 8px;
-    --margin-bottom: 8px;
-    --close-top: 16px;
-    --close-right: 16px;
+    --margin-top: 0px;
+    --margin-left: 0px;
+    --margin-right: 0px;
+    --margin-bottom: 0px;
+    --close-top: 12px;
+    --close-right: 12px;
     --close-size: 40px;
     --close-color: #606266;
     --title-color: #303133;
     --content-bg-color: #ffffff;
-    --border-radius: 16px;
+    --border-radius: 0px;
 
     &.file-drawer {
         --margin-top: 40px;
@@ -155,6 +155,7 @@ body {
 
                 &-more {
                     flex-shrink: 0;
+                    margin: 0 8px;
                 }
             }
 
@@ -222,14 +223,12 @@ body.dark-mode-reverse {
     &-right {
         &-enter-active,
         &-leave-active {
-            touch-action: none;
-            will-change: transform, opacity;
-            transition: transform .2s cubic-bezier(0.32, 0.72, 0, 1), opacity .2s cubic-bezier(0.32, 0.72, 0, 1);
+            transition: transform .3s cubic-bezier(0.32, 0.72, 0, 1), opacity .3s cubic-bezier(0.32, 0.72, 0, 1);
         }
 
         &-enter,
         &-leave-to {
-            transform: translate(15%, 0) scale(0.98);
+            transform: translate(15%, 0);
             opacity: 0;
         }
     }
@@ -237,14 +236,12 @@ body.dark-mode-reverse {
     &-bottom {
         &-enter-active,
         &-leave-active {
-            touch-action: none;
-            will-change: transform, opacity;
-            transition: transform .2s cubic-bezier(0.32, 0.72, 0, 1), opacity .2s cubic-bezier(0.32, 0.72, 0, 1);
+            transition: transform .3s cubic-bezier(0.32, 0.72, 0, 1), opacity .3s cubic-bezier(0.32, 0.72, 0, 1);
         }
 
         &-enter,
         &-leave-to {
-            transform: translate(0, 15%) scale(0.98);
+            transform: translate(0, 15%);
             opacity: 0;
         }
     }
