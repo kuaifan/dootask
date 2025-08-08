@@ -10,7 +10,7 @@
             :beforeClose="onBeforeClose"
             @on-capsule-more="onCapsuleMore"
             @on-popout-window="onPopoutWindow"
-            @on-close="closeMicroApp">
+            @on-confirm-close="closeMicroApp">
             <MicroIFrame
                 v-if="shouldRenderIFrame(app)"
                 :name="app.name"
@@ -28,14 +28,14 @@
                 :data="appData(app.name)"
                 @mounted="mounted"
                 @error="error"/>
-        </MicroModal>
 
-        <!--加载中-->
-        <transition name="fade">
-            <div v-if="loadings.length > 0" class="micro-app-loader">
-                <Loading/>
-            </div>
-        </transition>
+            <!--加载中-->
+            <transition name="fade">
+                <div v-if="loadings.length > 0" class="micro-app-loader">
+                    <Loading/>
+                </div>
+            </transition>
+        </MicroModal>
 
         <!--选择用户-->
         <UserSelect
@@ -175,7 +175,6 @@ export default {
             'themeName',
             'microApps',
             'safeAreaSize',
-            'windowIsMobileLayout',
         ]),
     },
 
@@ -317,9 +316,6 @@ export default {
                     },
                     isFullScreen: () => {
                         return window.innerWidth < 768 || this.windowType === 'popout'
-                    },
-                    isMobileLayout: () => {
-                        return this.windowIsMobileLayout
                     },
                     extraCallA: (...args) => {
                         if (args.length > 0 && typeof args[0] === 'string') {
@@ -543,10 +539,9 @@ export default {
         /**
          * 关闭之前判断
          * @param name
-         * @param {boolean} auto 当等于 true 并且是 keep_alive 的应用，则不执行 onBeforeClose
          * @returns {Promise<unknown>}
          */
-        onBeforeClose(name, auto = false) {
+        onBeforeClose(name) {
             return new Promise(resolve => {
                 const onClose = () => {
                     if ($A.isSubElectron) {
@@ -559,11 +554,6 @@ export default {
                 const app = this.microApps.find(item => item.name == name);
                 if (!app) {
                     // 如果应用不存在，则直接关闭
-                    onClose()
-                    return
-                }
-                if (auto && app.keep_alive) {
-                    // 如果 auto，并且是 keep_alive 的应用，则不执行 onBeforeClose
                     onClose()
                     return
                 }
@@ -619,6 +609,10 @@ export default {
 
                 case "restart":
                     this.onRestartApp(name)
+                    break;
+
+                case "destroy":
+                    this.closeMicroApp(name, true)
                     break;
 
                 default:

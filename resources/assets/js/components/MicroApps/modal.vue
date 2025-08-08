@@ -2,7 +2,7 @@
     <div v-transfer-dom :data-transfer="true">
         <div :class="className">
             <transition :name="transitions[0]">
-                <div v-if="shouldRenderInDom" v-show="open" class="micro-modal-mask" @click="onClose(false)" :style="maskStyle"></div>
+                <div v-if="shouldRenderInDom" v-show="open" class="micro-modal-mask" :style="maskStyle"></div>
             </transition>
             <transition :name="transitions[1]">
                 <div v-if="shouldRenderInDom" v-show="open" class="micro-modal-content" :style="contentStyle">
@@ -17,7 +17,7 @@
                             </svg>
                         </div>
                         <div class="micro-modal-capsule-line"></div>
-                        <div class="micro-modal-capsule-item" @click="onClose(false)">
+                        <div class="micro-modal-capsule-item" @click="onCapsuleClose">
                             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M9 16C12.866 16 16 12.866 16 9C16 5.13401 12.866 2 9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M9 12C10.6569 12 12 10.6569 12 9C12 7.34315 10.6569 6 9 6C7.34315 6 6 7.34315 6 9C6 10.6569 7.34315 12 9 12Z" fill="currentColor"/>
@@ -82,7 +82,6 @@ export default {
         }
     },
     computed: {
-        ...mapState(['windowIsMobileLayout']),
         shouldRenderInDom() {
             return this.open || !!this.options.keep_alive;
         },
@@ -92,7 +91,6 @@ export default {
                 'micro-modal-hidden': !this.open,
                 'no-dark-content': !this.options.auto_dark_theme,
                 'transparent-mode': !!this.options.transparent,
-                'capsule-mode': this.windowIsMobileLayout,
             }
         },
         transitions() {
@@ -185,7 +183,7 @@ export default {
             }
             const systemMenu = [
                 {label: this.$L('重启应用'), value: 'restart'},
-                {label: this.$L('关闭应用'), value: 'close'},
+                {label: this.$L('关闭应用'), value: 'destroy'},
             ];
             if ($A.isMainElectron) {
                 systemMenu.unshift({label: this.$L('新窗口打开'), value: 'popout'})
@@ -201,20 +199,16 @@ export default {
                     this.capsuleMenuShow = visible;
                 },
                 onUpdate: (value) => {
-                    if (value === 'close') {
-                        this.onClose(true);
-                    } else {
-                        this.$emit('on-capsule-more', this.options.name, value);
-                    }
+                    this.$emit('on-capsule-more', this.options.name, value);
                 }
             })
         },
 
-        onClose(auto = false) {
+        onCapsuleClose() {
             if (!this.beforeClose) {
                 return this.handleClose();
             }
-            const before = this.beforeClose(this.options.name, auto);
+            const before = this.beforeClose(this.options.name);
             if (before && before.then) {
                 before.then(() => {
                     this.handleClose();
@@ -225,7 +219,7 @@ export default {
         },
 
         handleClose() {
-            this.$emit('on-close', this.options.name);
+            this.$emit('on-confirm-close', this.options.name);
         }
     }
 }
