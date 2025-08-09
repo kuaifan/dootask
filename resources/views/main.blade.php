@@ -34,7 +34,7 @@
 <body>
 
 @extends('ie')
-<div id="app">
+<div id="app" data-preload="false">
     <div class="app-view-loading no-dark-content">
         <div>
             <div>PAGE LOADING</div>
@@ -49,6 +49,13 @@
     </div>
 </div>
 
+<script>
+    setTimeout(function () {
+        if (document.getElementById("app")?.getAttribute("data-preload") === "false") {
+            window.location.reload();
+        }
+    }, 6000);
+</script>
 <script type="module" src="{{$script}}"></script>
 </body>
 </html>

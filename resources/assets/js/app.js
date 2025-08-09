@@ -314,6 +314,8 @@ const $init = async () => {
 }
 
 const $preload = async () => {
+    document.getElementById("app")?.setAttribute("data-preload", "true")
+
     if ($A.isEEUIApp) {
         const requireTime = new Date().getTime();
         while (typeof requireModuleJs !== "function") {
