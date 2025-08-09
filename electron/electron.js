@@ -140,8 +140,65 @@ async function startWebServer(force = false) {
 
         // 错误处理中间件
         app.use((err, req, res, next) => {
-            loger.error('Server error:', err);
-            res.status(500).send('Internal Server Error');
+            // 不是ENOENT错误，记录error级别日志
+            if (err.code !== 'ENOENT') {
+                loger.error('Server error:', err);
+                res.status(500).send('Internal Server Error');
+                return;
+            }
+
+            // 没有path，说明是404错误
+            if (!err.path) {
+                loger.warn('File not found:', req.url);
+                res.status(404).send('File not found');
+                return;
+            }
+
+            // 不是临时文件错误，普通404
+            if (!err.path.includes('.com.dootask.task.')) {
+                loger.warn('File not found:', err.path);
+                res.status(404).send('File not found');
+                return;
+            }
+
+            // 防止死循环 - 如果已经是重定向请求，直接返回404
+            if (req.query._dt_restored) {
+                const redirectTime = parseInt(req.query._dt_restored);
+                const timeDiff = Date.now() - redirectTime;
+                // 10秒内的重定向认为是死循环，直接返回404
+                if (timeDiff < 10000) {
+                    loger.warn('Recent redirect detected, avoiding loop:', timeDiff + 'ms ago');
+                    res.status(404).send('File not found');
+                    return;
+                }
+            }
+
+            loger.warn('Temporary file cleaned up by system:', err.path, req.url);
+
+            // 临时文件被系统清理，尝试从serverPublicDir重新读取并恢复
+            const requestedFile = path.join(serverPublicDir, req.url === '/' ? '/index.html' : req.url);
+            try {
+                // 检查文件是否存在于serverPublicDir
+                fs.accessSync(requestedFile, fs.constants.F_OK);
+
+                // 确保目标目录存在
+                const targetDir = path.dirname(err.path);
+                if (!fs.existsSync(targetDir)) {
+                    fs.mkdirSync(targetDir, {recursive: true});
+                }
+
+                // 从ASAR文件中读取文件并写入到临时位置
+                fs.writeFileSync(err.path, fs.readFileSync(requestedFile));
+
+                // 文件恢复成功后，301重定向到带__redirect参数的URL
+                const redirectUrl = new URL(req.url, serverUrl);
+                redirectUrl.searchParams.set('_dt_restored', Date.now());
+                res.redirect(301, redirectUrl.toString());
+            } catch (accessErr) {
+                // 文件不存在于serverPublicDir，返回404
+                loger.warn('Source file not found:', requestedFile, 'Error:', accessErr.message);
+                res.status(404).send('File not found');
+            }
         });
 
         // 启动服务器
