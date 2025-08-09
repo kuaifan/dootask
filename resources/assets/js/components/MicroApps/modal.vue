@@ -319,6 +319,7 @@ export default {
         border: 1px solid var(--modal-capsule-bor-color);
         border-radius: 16px;
         transition: box-shadow 0.2s, background 0.2s;
+        will-change: box-shadow, background;
 
         &:hover {
             background: var(--modal-capsule-hov-bgcolor);

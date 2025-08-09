@@ -84,13 +84,14 @@ body {
                 opacity: 0.8;
                 width: 24px;
                 height: 24px;
-                transition: all 0.3s;
+                transition: transform 0.3s, opacity 0.3s;
+                will-change: transform, opacity;
             }
 
             &:hover {
                 > svg {
-                    opacity: 1;
                     transform: rotate(-90deg);
+                    opacity: 1;
                 }
             }
         }
