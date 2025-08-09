@@ -318,6 +318,18 @@ export default {
                                 capsule: config,
                             }
                         })
+                        ;(async () => {
+                            const cache = await $A.IDBJson("microAppsCapsuleCache");
+                            if ($A.isTrue(config.no_cache)) {
+                                if (typeof cache[name] === "undefined") {
+                                    return
+                                }
+                                delete cache[name];
+                            } else {
+                                cache[name] = config;
+                            }
+                            await $A.IDBSet("microAppsCapsuleCache", cache);
+                        })()
                     },
                     nextZIndex: () => {
                         if (typeof window.modalTransferIndex === 'number') {
@@ -386,6 +398,12 @@ export default {
                 })
             } else {
                 // 新建微应用
+                if (!$A.isHave(config.capsule, true)) {
+                    const capsuleCache = await $A.IDBJson("microAppsCapsuleCache");
+                    if ($A.isJson(capsuleCache[config.name])) {
+                        config.capsule = capsuleCache[config.name];
+                    }
+                }
                 config.isOpen = false
                 config.postMessage = () => {}
                 config.onBeforeClose = () => true

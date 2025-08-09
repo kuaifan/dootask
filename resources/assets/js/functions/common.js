@@ -220,11 +220,34 @@ const timezone = require("dayjs/plugin/timezone");
 
         /**
          * 判断是否有
-         * @param set
+         * @param val
+         * @param {boolean} enhanced
          * @returns {boolean}
          */
-        isHave(set) {
-            return !!(set !== null && set !== "null" && set !== undefined && set !== "undefined" && set);
+        isHave(val, enhanced = false) {
+            // 基础检查
+            if (val === null || val === "null" || val === undefined || val === "undefined" || !val) {
+                return false;
+            }
+            // 增强检查
+            if (enhanced) {
+                if (Array.isArray(val)) return val.length > 0;
+                if (typeof val === 'object' && val.constructor === Object) return Object.keys(val).length > 0;
+            }
+            return true;
+        },
+
+        /**
+         * 判断是否为真
+         * @param value
+         * @returns {boolean}
+         */
+        isTrue(value) {
+            const type = typeof value;
+            if (type === 'boolean') return value === true;
+            if (type === 'number') return value === 1;
+            if (type === 'string') return value.toLowerCase() === 'true' || value === '1';
+            return false;
         },
 
         /**
