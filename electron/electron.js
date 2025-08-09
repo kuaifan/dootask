@@ -176,7 +176,8 @@ async function startWebServer(force = false) {
             loger.warn('Temporary file cleaned up by system:', err.path, req.url);
 
             // 临时文件被系统清理，尝试从serverPublicDir重新读取并恢复
-            const requestedFile = path.join(serverPublicDir, req.url === '/' ? '/index.html' : req.url);
+            const requestedUrl = new URL(req.url, serverUrl);
+            const requestedFile = path.join(serverPublicDir, requestedUrl.pathname === '/' ? '/index.html' : requestedUrl.pathname);
             try {
                 // 检查文件是否存在于serverPublicDir
                 fs.accessSync(requestedFile, fs.constants.F_OK);
@@ -191,9 +192,8 @@ async function startWebServer(force = false) {
                 fs.writeFileSync(err.path, fs.readFileSync(requestedFile));
 
                 // 文件恢复成功后，301重定向到带__redirect参数的URL
-                const redirectUrl = new URL(req.url, serverUrl);
-                redirectUrl.searchParams.set('_dt_restored', Date.now());
-                res.redirect(301, redirectUrl.toString());
+                requestedUrl.searchParams.set('_dt_restored', Date.now());
+                res.redirect(301, requestedUrl.toString());
             } catch (accessErr) {
                 // 文件不存在于serverPublicDir，返回404
                 loger.warn('Source file not found:', requestedFile, 'Error:', accessErr.message);
