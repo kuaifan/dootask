@@ -17,7 +17,7 @@
                     :enable-y="false"
                     :touch-content-blur="false"
                     class-name="chat-quick-emoji-wrapper scrollbar-hidden">
-                    <li v-for="item in emojiQuickItems" @click="onEmojiQuick(item)">
+                    <li v-for="(item, index) in emojiQuickItems" :key="index" @click="onEmojiQuick(item)">
                         <Imgs :title="item.name" :alt="item.name" :src="item.src"/>
                     </li>
                 </Scrollbar>
@@ -297,6 +297,7 @@
 <script>
 import {mapGetters, mapState} from "vuex";
 import Quill from 'quill-hi';
+import {Delta} from "quill-hi/core";
 import "quill-mention-hi";
 import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
@@ -1044,12 +1045,6 @@ export default {
                     const obj = {
                         insert: op.insert
                     };
-                    try {
-                        // 替换 mention 对象为纯文本
-                        if (typeof obj.insert.mention === "object" && node.innerHTML) {
-                            obj.insert = node.innerHTML.replace(/<[^>]+>/g, "")
-                        }
-                    } catch (e) { }
                     if (op.attributes) {
                         ['bold', 'strike', 'italic', 'underline', 'list', 'blockquote', 'link'].some(item => {
                             if (op.attributes[item]) {
@@ -1063,6 +1058,21 @@ export default {
                     return obj
                 })
                 return delta
+            })
+
+            // 专门处理mention的matcher - 同时处理span.mention和a.mention
+            this.quill.clipboard.addMatcher(['span.mention', 'a.mention'], (node, delta) => {
+                if (!this.pasteClean) {
+                    return delta
+                }
+                const mention = this.extractMentionData(node)
+                if (mention === null) {
+                    return delta
+                }
+
+                return new Delta([{
+                    insert: {mention}
+                }]);
             })
 
             // Link handler
@@ -1196,6 +1206,31 @@ export default {
                     })
                 }
             }
+        },
+
+        extractMentionData(node) {
+            let denotationChar = node.getAttribute('data-denotation-char');
+            let dataId = node.getAttribute('data-id') || node.getAttribute('href');
+            let dataValue = node.getAttribute('data-value');
+
+            if (!denotationChar || !dataValue) {
+                const textContent = node.textContent || node.innerText || '';
+                const match = textContent.match(/^([@#~%])(.*)$/);
+                if (match) {
+                    denotationChar = denotationChar || match[1];
+                    dataValue = dataValue || match[2];
+                }
+            }
+
+            if (!denotationChar || !dataId || !dataValue) {
+                return null
+            }
+
+            return {
+                denotationChar: denotationChar,
+                id: dataId,
+                value: dataValue
+            };
         },
 
         updateEmojiQuick(text) {
