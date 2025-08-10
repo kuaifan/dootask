@@ -1097,17 +1097,18 @@ class FileController extends AbstractController
             return Base::retError('创建压缩文件失败');
         }
 
-        go(function () use ($zipPath, $fileUrl, $zip, $files, $fileName, $botUser, $dialog) {
+        $userid = $user->userid;
+        go(function () use ($userid, $zipPath, $fileUrl, $zip, $files, $fileName, $botUser, $dialog) {
             Coroutine::sleep(0.1);
             // 压缩进度
             $progress = 0;
-            $zip->registerProgressCallback(0.05, function ($ratio) use ($fileUrl, $fileName, &$progress) {
+            $zip->registerProgressCallback(0.05, function ($ratio) use ($userid, $fileUrl, $fileName, &$progress) {
                 $progress = round($ratio * 100);
-                File::filePushMsg('compress', [
+                File::pushMsgSimple('compress', [
                     'name' => $fileName,
                     'url' => $fileUrl,
                     'progress' => $progress
-                ]);
+                ], $userid);
             });
             //
             foreach ($files as $file) {
@@ -1116,11 +1117,11 @@ class FileController extends AbstractController
             $zip->close();
             //
             if ($progress < 100) {
-                File::filePushMsg('compress', [
+                File::pushMsgSimple('compress', [
                     'name' => $fileName,
                     'url' => $fileUrl,
                     'progress' => 100
-                ]);
+                ], $userid);
             }
             //
             WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [

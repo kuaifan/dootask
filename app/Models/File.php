@@ -643,6 +643,29 @@ class File extends AbstractModel
     }
 
     /**
+     * 文件推送消息
+     * @param $action
+     * @param array|null $data   发送内容
+     * @param int $userid      会员ID
+     */
+    public static function pushMsgSimple($action, $data, $userid)
+    {
+        if (empty($data) || empty($userid)) {
+            return;
+        }
+        $msg = [
+            'type' => 'file',
+            'action' => $action,
+            'data' => $data,
+        ];
+        $params = [
+            'userid' => $userid,
+            'msg' => $msg
+        ];
+        Task::deliver(new PushTask($params));
+    }
+
+    /**
      * 获取推送会员
      * @param $action
      * @param $userid
@@ -954,30 +977,6 @@ class File extends AbstractModel
             // 在压缩包中创建文件夹
             $zip->addEmptyDir($file->path);
         }
-    }
-
-    /**
-     * 文件推送消息
-     * @param $action
-     * @param array|null $data   发送内容
-     * @param array $userid      会员ID
-     */
-    public static function filePushMsg($action, $data = null, $userid = null)
-    {
-        $userid = User::userid();
-        if (empty($userid)) {
-            return;
-        }
-        $msg = [
-            'type' => 'file',
-            'action' => $action,
-            'data' => $data,
-        ];
-        $params = [
-            'userid' => $userid,
-            'msg' => $msg
-        ];
-        Task::deliver(new PushTask($params));
     }
 
     /**
