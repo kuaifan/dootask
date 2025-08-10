@@ -201,8 +201,8 @@ class FileController extends AbstractController
         $pid = intval(Request::input('pid'));
         if (mb_strlen($name) < 2) {
             return Base::retError('文件名称不可以少于2个字');
-        } elseif (mb_strlen($name) > 32) {
-            return Base::retError('文件名称最多只能设置32个字');
+        } elseif (mb_strlen($name) > 100) {
+            return Base::retError('文件名称最多只能设置100个字');
         }
         $tmpName = preg_replace("/[\\\\\/:*?\"<>|]/", '', $name);
         if ($tmpName != $name) {
