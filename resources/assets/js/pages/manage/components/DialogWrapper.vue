@@ -3360,11 +3360,9 @@ export default {
                             reject("取消发送失败");
                         } else {
                             // 取消消息发送
-                            this.$store.dispatch('callCancel', this.operateItem.id).then(() => {
+                            this.$store.dispatch('callCancel', this.operateItem.id).finally(() => {
                                 this.forgetTempMsg(this.operateItem.id)
                                 resolve();
-                            }).catch(() => {
-                                reject("取消发送失败");
                             });
                         }
                     })
