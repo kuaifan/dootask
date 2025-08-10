@@ -2148,3 +2148,5 @@ API URL
 请输入代理
 选填，支持 http、https、socks5 协议
 需要先设置 AI 助理
+
+打开签到机器人

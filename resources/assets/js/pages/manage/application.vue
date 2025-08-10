@@ -1,6 +1,5 @@
 <template>
     <div class="page-apply">
-
         <PageTitle :title="$L('应用')"/>
 
         <div class="apply-wrapper">
