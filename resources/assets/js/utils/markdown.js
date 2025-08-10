@@ -65,6 +65,113 @@ const MarkdownUtils = {
     highlightBlock: (str, lang = '') => {
         return `<pre class="code-block-wrapper"><div class="code-block-header"><span class="code-block-header__lang">${lang}</span><span class="code-block-header__copy">${$A.L('复制')}</span></div><code class="hljs code-block-body ${lang}">${str}</code></pre>`
     },
+
+    /**
+     * 使用DOMParser安全地提取HTML中的纯文本
+     * @param {string} html - HTML字符串
+     * @returns {string} 纯文本内容
+     */
+    extractTextWithDOMParser(html) {
+        try {
+            // 使用DOMParser解析HTML，避免直接操作页面DOM
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // 获取纯文本内容，保留换行结构
+            let text = '';
+
+            // 遍历所有节点，提取文本并处理换行
+            const walker = document.createTreeWalker(
+                doc.body || doc.documentElement,
+                NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+                {
+                    acceptNode: function (node) {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            const tagName = node.tagName.toLowerCase();
+                            // 块级元素和换行元素需要添加换行符
+                            if (['p', 'div', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
+                                return NodeFilter.FILTER_ACCEPT;
+                            }
+                        }
+                        return NodeFilter.FILTER_SKIP;
+                    }
+                }
+            );
+
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    text += node.textContent;
+                } else {
+                    const tagName = node.tagName.toLowerCase();
+                    if (['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
+                        // 块级元素前后添加换行
+                        if (text && !text.endsWith('\n')) {
+                            text += '\n';
+                        }
+                    } else if (tagName === 'br') {
+                        text += '\n';
+                    }
+                }
+            }
+
+            return text.trim();
+        } catch (error) {
+            // 降级处理：如果DOMParser失败，使用简单的正则替换
+            return html
+                .replace(/<[^>]*>/g, '') // 移除所有HTML标签
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&')
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .trim();
+        }
+    },
+
+    /**
+     * 检测Markdown语法权重
+     * @param {*} text
+     * @returns
+     */
+    detectMarkdownSyntaxWeight(text) {
+        if (!text) {
+            return false;
+        }
+
+        // Markdown模式及其权重
+        const patterns = [
+            // 高权重 - 强烈表明是Markdown
+            {regex: /^#{1,6}\s+.+$/m, weight: 0.4},           // 标题
+            {regex: /```[\s\S]*?```/, weight: 0.4},           // 代码块
+            {regex: /\[[^\]]+\]\([^)]+\)/, weight: 0.3},      // 链接
+            {regex: /!\[[^\]]*\]\([^)]+\)/, weight: 0.3},     // 图片
+
+            // 中等权重
+            {regex: /\*\*[^*\s][^*]*[^*\s]\*\*/, weight: 0.2}, // 粗体
+            {regex: /__[^_\s][^_]*[^_\s]__/, weight: 0.2},     // 粗体
+            {regex: /~~[^~\s][^~]*[^~\s]~~/, weight: 0.2},     // 删除线
+
+            // 低权重 - 需谨慎
+            {regex: /`[^`\s][^`]*[^`\s]`/, weight: 0.15},      // 行内代码
+            {regex: /^[-*+]\s+.+$/m, weight: 0.1},             // 无序列表
+            {regex: /^\d+\.\s+.+$/m, weight: 0.1},             // 有序列表
+            {regex: /^>\s+.+$/m, weight: 0.1}                  // 引用
+        ];
+
+        // 计算总权重
+        let totalWeight = 0;
+        patterns.forEach(pattern => {
+            if (pattern.regex.test(text)) {
+                totalWeight += pattern.weight;
+            }
+        });
+
+        return totalWeight;
+    },
 }
 
 const MarkdownPluginUtils = {
@@ -262,7 +369,7 @@ const MarkdownPluginUtils = {
                 '</li>'
             ].join(''));
 
-            const htmls =  [
+            const htmls = [
                 '<div class="apply-create-task">',
                 '<ul>',
                 taskItems.join(''),
@@ -326,44 +433,26 @@ export function MarkdownPreview(text) {
 }
 
 export function isMarkdownFormat(html) {
-    if (html === '') {
-        return false
+    if (!html || html === '') {
+        return false;
     }
-    const tmp = html.replace(/<p>/g, '\n').replace(/(^|\s+)```([\s\S]*)```/gm, '')
+
+    // 预处理：移除代码块避免误判
+    const tmp = html.replace(/<p>/g, '\n').replace(/(^|\s+)```([\s\S]*)```/gm, '');
+
+    // 快速检测：如果包含富文本标签，直接返回false
     if (/<\/(strong|s|em|u|ol|ul|li|blockquote|pre|img|a)>/i.test(tmp)) {
-        return false
+        return false;
     }
+
+    // 检测mention标签
     if (/<span[^>]+?class="mention"[^>]*?>/i.test(tmp)) {
-        return false
+        return false;
     }
-    //
-    const el = document.createElement('div')
-    el.style.position = 'fixed'
-    el.style.top = '0'
-    el.style.left = '0'
-    el.style.width = '10px'
-    el.style.height = '10px'
-    el.style.overflow = 'hidden'
-    el.style.zIndex = '-9999'
-    el.style.opacity = '0'
-    el.innerHTML = html
-    document.body.appendChild(el)
-    const text = el.innerText
-    document.body.removeChild(el)
-    //
-    if (
-        /(^|\s+)#+\s(.*)$/m.test(text)              // 标题
-        || /(^|\s+)\*\*(.*)\*\*/m.test(text)        // 粗体
-        || /(^|\s+)__(.*)__/m.test(text)            // 粗体
-        || /(^|\s+)\*(.*)\*/m.test(text)            // 斜体
-        || /(^|\s+)_(.*)_/m.test(text)              // 斜体
-        || /(^|\s+)~~(.*)~~/m.test(text)            // 删除线
-        || /(^|\s+)\[(.*?)\]\((.*?)\)/m.test(text)  // 链接
-        || /(^|\s+)!\[(.*?)\]\((.*?)\)/m.test(text) // 图片
-        || /(^|\s+)`(.*?)`/m.test(text)             // 行内代码
-        || /(^|\s+)```([\s\S]*?)```/m.test(text)    // 代码块
-    ) {
-        return true
-    }
-    return false
+
+    // 使用DOMParser提取纯文本，替代原来的DOM操作
+    const text = MarkdownUtils.extractTextWithDOMParser(html);
+
+    // Markdown语法检测
+    return MarkdownUtils.detectMarkdownSyntaxWeight(text) >= 0.3;
 }
