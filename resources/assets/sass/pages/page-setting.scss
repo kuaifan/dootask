@@ -252,11 +252,19 @@
         overflow: auto;
     }
     .setting-checkin-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         padding-bottom: 4px;
         cursor: pointer;
         color: #2b85e4;
         &:hover {
             text-decoration: underline;
+        }
+        > svg {
+            width: 16px;
+            height: 16px;
+            margin: 0;
         }
     }
     &.submit {

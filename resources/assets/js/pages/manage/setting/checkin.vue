@@ -16,6 +16,10 @@
                 </TimelineItem>
             </Timeline>
             <div class="setting-checkin-button" @click="calendarShow=true">{{ $L('查看更多签到数据') }}</div>
+            <div class="setting-checkin-button" @click="openBot">
+                {{ $L('打开签到机器人') }}
+                <Loading v-if="openBotIng"/>
+            </div>
 
             <Divider orientation="left">{{ $L('签到设置') }}</Divider>
             <div class="setting-checkin-row">
@@ -82,6 +86,7 @@ export default {
     data() {
         return {
             loadIng: 0,
+            openBotIng: 0,
 
             formData: [],
             faceimgs: [],
@@ -209,7 +214,7 @@ export default {
 
         latelySection(section) {
             return section.map(item => {
-                return `${item[0]} - ${item[1] || 'None'}`
+                return `${item[0]} - ${item[1] || 'none'}`
             }).join('<br/>')
         },
 
@@ -238,6 +243,29 @@ export default {
             }).finally(_ => {
                 this.calendarLoading--;
             })
+        },
+
+        async openBot() {
+            this.openBotIng++;
+            try {
+                const {data} = await this.$store.dispatch("call", {
+                    url: 'users/search',
+                    data: {
+                        keys: {
+                            key: 'check-in@bot.system',
+                            bot: 1,
+                        }
+                    },
+                })
+                if (data.length === 0) {
+                    throw new Error('机器人暂未开启');
+                }
+                await this.$store.dispatch("openDialogUserid", data[0].userid)
+            } catch (error) {
+                $A.modalError(error.msg || '机器人暂未开启');
+            } finally {
+                this.openBotIng--;
+            }
         }
     }
 }
