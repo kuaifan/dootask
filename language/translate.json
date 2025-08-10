@@ -30886,5 +30886,17 @@
         "fr": "Échec de la création de l'état du flux de travail",
         "id": "Gagal membuat status alur kerja",
         "ru": "Не удалось создать статус рабочего процесса"
+    },
+    {
+        "key": "打开签到机器人",
+        "zh": "",
+        "zh-CHT": "打開簽到機器人",
+        "en": "Open check-in bot",
+        "ko": "출석 체크 봇 열기",
+        "ja": "チェックインボットを開く",
+        "de": "Check-in-Bot öffnen",
+        "fr": "Ouvrir le robot d'enregistrement",
+        "id": "Buka bot absensi",
+        "ru": "Открыть бота регистрации посещаемости"
     }
 ]
