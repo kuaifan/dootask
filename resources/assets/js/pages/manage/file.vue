@@ -35,7 +35,7 @@
             </div>
 
             <div class="file-navigator">
-                <ul class="scrollbar-hidden" v-show="showBtnText || (!selectIds.length && !shearFirst)">
+                <ul class="scrollbar-hidden" v-show="showBtnText || (!selectedItems.length && !shearFirst)">
                     <li @click="browseFolder(0)">
                         <span>{{$L('全部文件')}}</span>
                     </li>
@@ -56,20 +56,20 @@
                     </Button>
                     <Button type="primary" size="small" @click="clearShear">{{ $L('取消剪切') }}</Button>
                 </template>
-                <template v-else-if="selectIds.length > 0">
+                <template v-else-if="selectedItems.length > 0">
                     <Button size="small" type="info" @click="handleContextClick('shearSelect')" :style="{marginLeft: showBtnText ? '12px' : 0}">
                         <div class="tool-box">
                             <Icon type="ios-cut" />
                             <span v-show="showBtnText">{{$L('剪切')}}</span>
                         </div>
                     </Button>
-                    <Button v-if="selectIds.length > 1" :disabled="compressedSownloadDisabled" size="small" type="info" @click="downloadZipFile(selectIds)">
+                    <Button v-if="showDownloadZipButton" :disabled="compressedSownloadDisabled" size="small" type="info" @click="downloadZipFile(selectedItems.map(({id}) => id))">
                         <div class="tool-box">
                             <Icon type="ios-download" />
                             <span v-show="showBtnText">{{$L('打包下载')}}</span>
                         </div>
                     </Button>
-                    <Button size="small" type="error" @click="deleteFile(selectIds)">
+                    <Button size="small" type="error" @click="deleteFile(selectedItems.map(({id}) => id))">
                         <div class="tool-box">
                             <Icon type="ios-trash" />
                             <span v-show="showBtnText">{{$L('删除')}}</span>
@@ -125,14 +125,14 @@
                                     class="file-item"
                                     :class="{
                                         shear: shearIds.includes(item.id),
-                                        highlight: selectIds.includes(item.id),
+                                        highlight: selectedItems.some(({id}) => id === item.id),
                                         operate: contextMenuVisible && item.id === contextMenuItem.id,
                                     }"
                                     :data-id="item.id"
                                     @pointerdown="handleOperation"
                                     @click="dropFile(item, 'openCheckMenu')">
-                                    <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
-                                        <Checkbox :value="selectIds.includes(item.id)"/>
+                                    <div class="file-check" :class="{'file-checked':selectedItems.some(({id}) => id === item.id)}" @click.stop="dropFile(item, 'select')">
+                                        <Checkbox :value="selectedItems.some(({id}) => id === item.id)"/>
                                     </div>
                                     <div class="file-menu" @click.stop="handleRightClick($event, item)">
                                         <Icon type="ios-more" />
@@ -194,7 +194,7 @@
                                 {{$L('在上层文件夹中显示')}}
                             </DropdownItem>
 
-                            <DropdownItem name="select">{{$L(selectIds.includes(contextMenuItem.id) ? '取消选择' : '选择')}}</DropdownItem>
+                            <DropdownItem name="select">{{$L(selectedItems.some(({id}) => id === contextMenuItem.id) ? '取消选择' : '选择')}}</DropdownItem>
 
                             <Dropdown placement="right-start" transfer>
                                 <DropdownItem divided @click.native.stop="" name="new:">
@@ -221,7 +221,7 @@
                             <DropdownItem name="send" :disabled="contextMenuItem.type == 'folder'">{{$L('发送')}}</DropdownItem>
                             <DropdownItem name="link" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
                             <DropdownItem name="download" :disabled="contextMenuItem.ext == '' || (contextMenuItem.userid != userId && contextMenuItem.permission == 0)">{{$L('下载')}}</DropdownItem>
-                            <DropdownItem v-if="selectIds.length > 1" name="downloadzip" :disabled="contextMenuItem.userid != userId && contextMenuItem.permission == 0">{{$L('打包下载')}}</DropdownItem>
+                            <DropdownItem v-if="selectedItems.length > 1" name="downloadzip" :disabled="contextMenuItem.userid != userId && contextMenuItem.permission == 0">{{$L('打包下载')}}</DropdownItem>
 
                             <DropdownItem name="delete" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
@@ -552,7 +552,7 @@ export default {
             },
 
             shearIds: [],
-            selectIds: [],
+            selectedItems: [],
 
             dialogDrag: false,
             pasteShow: false,
@@ -812,7 +812,7 @@ export default {
         },
 
         fileList() {
-            const {fileLists, searchKey, hideShared, pid, selectIds, userId} = this;
+            const {fileLists, searchKey, hideShared, pid, selectedItems, userId} = this;
             const list = $A.cloneJSON(sortBy(fileLists.filter(file => {
                 if (hideShared && file.userid != userId && file.created_id != userId) {
                     return false
@@ -825,7 +825,7 @@ export default {
                 return (file.type == 'folder' ? 'a' : 'b') + file.name;
             }));
             return list.map(item => {
-                item._checked = selectIds.includes(item.id)
+                item._checked = selectedItems.some(({id}) => id === item.id)
                 return item;
             })
         },
@@ -890,6 +890,10 @@ export default {
             return this.windowHeight - 150
         },
 
+        showDownloadZipButton() {
+            return this.selectedItems.length > 1 || this.selectedItems.some(({type}) => type === 'folder');
+        },
+
         compressedSownloadDisabled() {
             return !!this.fileList?.find((res) => res._checked && res.permission < 1)
         },
@@ -909,7 +913,7 @@ export default {
     watch: {
         pid() {
             this.searchKey = '';
-            this.selectIds = [];
+            this.selectedItems = [];
             this.getFileList();
         },
 
@@ -943,9 +947,9 @@ export default {
             immediate: true
         },
 
-        selectIds: {
-            handler(ids) {
-                if (ids.length > 0) {
+        selectedItems: {
+            handler(items) {
+                if (items.length > 0) {
                     this.shearIds = [];
                 }
             },
@@ -955,7 +959,7 @@ export default {
         shearIds: {
             handler(list) {
                 if (list.length > 0) {
-                    this.selectIds = [];
+                    this.selectedItems = [];
                 }
             },
             deep: true
@@ -1238,11 +1242,16 @@ export default {
                     break;
 
                 case 'select':
-                    let index = this.selectIds.findIndex(id => id == item.id)
+                    let index = this.selectedItems.findIndex(({id}) => id == item.id)
                     if (index > -1) {
-                        this.selectIds.splice(index, 1)
+                        this.selectedItems.splice(index, 1)
                     } else {
-                        this.selectIds.push(item.id)
+                        this.selectedItems.push({
+                            id: item.id,
+                            name: item.name,
+                            type: item.type,
+                            size: item.size,
+                        })
                     }
                     break;
 
@@ -1270,7 +1279,7 @@ export default {
                     break;
 
                 case 'shearSelect':
-                    this.shearIds = $A.cloneJSON(this.selectIds);
+                    this.shearIds = $A.cloneJSON(this.selectedItems.map(({id}) => id));
                     break;
 
                 case 'send':
@@ -1457,7 +1466,7 @@ export default {
                         }).then(({msg}) => {
                             resolve(msg);
                             this.$store.dispatch("forgetFile", {id: ids});
-                            this.selectIds = this.selectIds.filter(id => !ids.includes(id))
+                            this.selectedItems = this.selectedItems.filter(({id}) => !ids.includes(id))
                         }).catch(({msg}) => {
                             reject(msg);
                         });
@@ -1791,12 +1800,17 @@ export default {
             $A.IDBSave("cacheFileSort", ['asc', 'desc'].includes(order) ? {key, order} : {});
         },
 
-        handleTableSelect(selection) {
-            this.selectIds = selection.map(item => item.id);
+        handleTableSelect(items) {
+            this.selectedItems = items.map(item => ({
+                id: item.id,
+                name: item.name,
+                type: item.type,
+                size: item.size,
+            }));
         },
 
         clearSelect() {
-            this.selectIds = [];
+            this.selectedItems = [];
         },
 
         clearShear() {
