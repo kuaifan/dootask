@@ -31,7 +31,7 @@
 
             <!--加载中-->
             <transition name="fade">
-                <div v-if="loadings.length > 0" class="micro-app-loader">
+                <div v-if="loadings.includes(app.name)" class="micro-app-loader">
                     <Loading/>
                 </div>
             </transition>
@@ -384,13 +384,13 @@ export default {
                 await this.inlineBlank(config)
                 return
             }
-            
+
             // 如果是外部链接，则在新窗口打开
             if (config.url_type === 'external') {
                 await this.externalWindow(config)
                 return
             }
-            
+
             const app = this.microApps.find(({name}) => name == config.name);
             if (app) {
                 // 恢复 keep_alive

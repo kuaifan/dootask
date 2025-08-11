@@ -2644,7 +2644,6 @@ export default {
                 name: 'okr_details',
                 url: 'apps/okr/#details',
                 props: {type: 'details', id},
-                capsule: {visible: false},
                 keep_alive: false,
                 transparent: true,
             });
