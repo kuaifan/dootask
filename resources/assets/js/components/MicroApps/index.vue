@@ -368,16 +368,29 @@ export default {
          * @param config
          */
         async onOpen(config) {
+            // 备份配置
+            this.backupConfigs[config.name] = $A.cloneJSON(config);
+
+            // 如果没有胶囊配置，则从缓存中恢复
+            if (!$A.isHave(config.capsule, true)) {
+                const capsuleCache = await $A.IDBJson("microAppsCapsuleCache");
+                if ($A.isJson(capsuleCache[config.name])) {
+                    config.capsule = capsuleCache[config.name];
+                }
+            }
+
+            // 如果是 blank 链接，则在新窗口打开
             if (/_blank$/i.test(config.url_type)) {
                 await this.inlineBlank(config)
                 return
             }
+            
+            // 如果是外部链接，则在新窗口打开
             if (config.url_type === 'external') {
                 await this.externalWindow(config)
                 return
             }
-            this.backupConfigs[config.name] = $A.cloneJSON(config);
-
+            
             const app = this.microApps.find(({name}) => name == config.name);
             if (app) {
                 // 恢复 keep_alive
@@ -399,12 +412,6 @@ export default {
                 })
             } else {
                 // 新建微应用
-                if (!$A.isHave(config.capsule, true)) {
-                    const capsuleCache = await $A.IDBJson("microAppsCapsuleCache");
-                    if ($A.isJson(capsuleCache[config.name])) {
-                        config.capsule = capsuleCache[config.name];
-                    }
-                }
                 config.isOpen = false
                 config.postMessage = () => {}
                 config.onBeforeClose = () => true
