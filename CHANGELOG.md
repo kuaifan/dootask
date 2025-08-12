@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.11]
+
+### Bug Fixes
+
+- 修复应用加载中无法点击胶囊
+
 ## [1.2.5]
 
 ### Bug Fixes
