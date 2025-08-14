@@ -31,6 +31,12 @@ function initialize(onStarted= null) {
         onInterrupted: (item) => {
             downloadManager.refresh(item.getSavePath());
             syncDownloadItems();
+            // 尝试更新下载项的错误信息
+            downloadManager.updateError(item).then(success => {
+                if (success) {
+                    syncDownloadItems();
+                }
+            });
         },
         onProgress: (item) => {
             downloadManager.refresh(item.path);

@@ -60,6 +60,7 @@ class DownloadManager {
         // 添加下载项
         this.downloadHistory.unshift({
             ...this.convert(downloadItem),
+            error: null,
             _source: downloadItem,
         });
         if (this.downloadHistory.length > 1000) {
@@ -99,6 +100,41 @@ class DownloadManager {
         }
         Object.assign(item, this.convert(downloadItem))
         store.set('downloadHistory', this.downloadHistory);
+    }
+
+    /**
+     * 尝试更新下载项的错误信息
+     * @param {Electron.DownloadItem} downloadItem
+     */
+    async updateError(downloadItem) {
+        const urls = downloadItem.getURLChain()
+        const url = urls.length > 0 ? urls[0] : downloadItem.getURL()
+        const path = downloadItem.getSavePath()
+
+        const item = this.downloadHistory.find(d => d.path === path)
+        if (!item) {
+            return;
+        }
+
+        try {
+            const res = await fetch(url, {
+                method: 'HEAD',
+            })
+            let error = null
+            if (res.headers.get('X-Error-Message-Base64')) {
+                error = Buffer.from(res.headers.get('X-Error-Message-Base64'), 'base64').toString('utf-8')
+            } else if (res.headers.get('X-Error-Message')) {
+                error = res.headers.get('X-Error-Message')
+            }
+            if (error) {
+                Object.assign(item, {error});
+                store.set('downloadHistory', this.downloadHistory);
+                return true;
+            }
+        } catch {
+            // 忽略错误
+        }
+        return false
     }
 
     /**

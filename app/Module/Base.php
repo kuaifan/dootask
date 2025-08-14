@@ -1404,7 +1404,12 @@ class Base
      */
     public static function ajaxError($msg, $data = [], $ret = 0, $abortCode = 404)
     {
-        abort_if(Request::header('Content-Type') !== 'application/json', $abortCode, Doo::translate($msg));
+        if (Request::header('Content-Type') !== 'application/json') {
+            $translateMsg = Doo::translate($msg);
+            abort($abortCode, $translateMsg, [
+                'X-Error-Message-Base64' => base64_encode($translateMsg),
+            ]);
+        }
         return Base::retError($msg, $data, $ret);
     }
 

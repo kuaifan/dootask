@@ -70,7 +70,7 @@
                             <span v-else class="download-time">{{ formatTime(item.startTime) }}</span>
                             <!-- 状态 -->
                             <span v-if="item.state !== 'progressing' || item.paused" class="state" :class="getStateClass(item)">
-                                {{ getStateText(item) }}
+                                {{ getStateText(item) }}{{item.error ? `: ${item.error}` : ''}}
                             </span>
                         </div>
                     </div>

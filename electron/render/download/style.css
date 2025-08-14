@@ -498,11 +498,13 @@ body.win32 {
 /* Toast 提示框样式 */
 .toast {
     position: fixed;
+    left: 0;
+    right: 0;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
     z-index: 1000;
     animation: toast-slide-up 0.3s ease-out;
+    display: flex;
+    justify-content: center;
 }
 
 .toast-content {
@@ -516,7 +518,7 @@ body.win32 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     font-size: 13px;
     min-width: 200px;
-    white-space: nowrap;
+    max-width: 90vw;
 }
 
 .toast.success .toast-content {
@@ -529,15 +531,17 @@ body.win32 {
 
 .toast-message {
     flex: 1;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 @keyframes toast-slide-up {
     from {
         opacity: 0;
-        transform: translate(-50%, 20px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
-        transform: translate(-50%, 0);
+        transform: translateY(0);
     }
 }
