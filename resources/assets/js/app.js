@@ -346,6 +346,7 @@ const $preload = async () => {
         return
     }
 
+    document.querySelector(".app-view-loading")?.setAttribute("data-visible", "false")
     window.__initializeApp = async (loadHash) => {
         if (/^https?:\/\//.test(loadHash)) {
             if ($A.getDomain(loadHash) !== $A.getDomain($A.mainUrl())) {
