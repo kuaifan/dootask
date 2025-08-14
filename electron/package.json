@@ -77,9 +77,9 @@
             "output": "dist"
         },
         "files": [
+            "lib/**/*",
             "render/**/*",
             "public/**/*",
-            "utils/**/*",
             "electron-down.js",
             "electron-menu.js",
             "electron-preload.js",

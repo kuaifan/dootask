@@ -1,7 +1,7 @@
 const path = require("path");
 const loger = require("electron-log");
 const Store = require('electron-store');
-const utils = require("./index");
+const utils = require("./utils");
 const store = new Store({
     name: 'download-manager',
     defaults: {
@@ -9,9 +9,20 @@ const store = new Store({
     }
 });
 
+const DownloadStore = {
+    get(key, defaultValue) {
+        return store.get(key, defaultValue);
+    },
+    set(key, value) {
+        store.set(key, value);
+    },
+};
+
 class DownloadManager {
+    static key = 'downloadHistory';
+
     constructor() {
-        const history = store.get('downloadHistory', []);
+        const history = DownloadStore.get(DownloadManager.key, []);
         if (utils.isArray(history)) {
             this.downloadHistory = history.map(item => ({
                 ...item,
@@ -66,7 +77,7 @@ class DownloadManager {
         if (this.downloadHistory.length > 1000) {
             this.downloadHistory = this.downloadHistory.slice(0, 1000);
         }
-        store.set('downloadHistory', this.downloadHistory);
+        DownloadStore.set(DownloadManager.key, this.downloadHistory);
     }
 
     /**
@@ -99,14 +110,15 @@ class DownloadManager {
             return;
         }
         Object.assign(item, this.convert(downloadItem))
-        store.set('downloadHistory', this.downloadHistory);
+        DownloadStore.set(DownloadManager.key, this.downloadHistory);
     }
 
     /**
      * 尝试更新下载项的错误信息
      * @param {Electron.DownloadItem} downloadItem
+     * @param {Object} headers
      */
-    async updateError(downloadItem) {
+    async updateError(downloadItem, headers = {}) {
         const urls = downloadItem.getURLChain()
         const url = urls.length > 0 ? urls[0] : downloadItem.getURL()
         const path = downloadItem.getSavePath()
@@ -119,6 +131,7 @@ class DownloadManager {
         try {
             const res = await fetch(url, {
                 method: 'HEAD',
+                headers,
             })
             let error = null
             if (res.headers.get('X-Error-Message-Base64')) {
@@ -128,7 +141,7 @@ class DownloadManager {
             }
             if (error) {
                 Object.assign(item, {error});
-                store.set('downloadHistory', this.downloadHistory);
+                DownloadStore.set(DownloadManager.key, this.downloadHistory);
                 return true;
             }
         } catch {
@@ -209,7 +222,7 @@ class DownloadManager {
         if (index > -1) {
             this.cancel(path);
             this.downloadHistory.splice(index, 1);
-            store.set('downloadHistory', this.downloadHistory);
+            DownloadStore.set(DownloadManager.key, this.downloadHistory);
         }
     }
 
@@ -219,8 +232,8 @@ class DownloadManager {
     removeAll() {
         this.cancelAll();
         this.downloadHistory = [];
-        store.set('downloadHistory', []);
+        DownloadStore.set(DownloadManager.key, []);
     }
 }
 
-module.exports = {DownloadManager};
+module.exports = {DownloadStore, DownloadManager};

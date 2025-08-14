@@ -38,7 +38,7 @@ const Screenshots = require("electron-screenshots-tool").Screenshots;
 const PDFDocument = require('pdf-lib').PDFDocument;
 
 // 本地模块和配置
-const utils = require('./utils');
+const utils = require('./lib/utils');
 const config = require('./package.json');
 const electronDown = require("./electron-down");
 const electronMenu = require("./electron-menu");
@@ -305,7 +305,7 @@ function createMainWindow() {
             webSecurity: true,
             nodeIntegration: true,
             contextIsolation: true,
-            nativeWindowOpen: true
+            backgroundThrottling: false,
         }
     })
 
@@ -456,7 +456,6 @@ function preCreateChildWindow() {
             webSecurity: true,
             nodeIntegration: true,
             contextIsolation: true,
-            nativeWindowOpen: true
         }
     });
 
@@ -514,7 +513,6 @@ function createChildWindow(args) {
                 webSecurity: true,
                 nodeIntegration: true,
                 contextIsolation: true,
-                nativeWindowOpen: true
             }, webPreferences),
         }, config)
         if (options.parent) {
@@ -763,9 +761,8 @@ function createWebTabWindow(args) {
                 webSecurity: true,
                 nodeIntegration: true,
                 contextIsolation: true,
-                nativeWindowOpen: true
             },
-        }, userConf.get('webTabWindow', {})))
+        }, userConf.get('webTabWindow') || {}))
 
         const originalClose = webTabWindow.close;
         webTabWindow.close = function() {
@@ -1869,7 +1866,6 @@ function exportVsdx(event, args, directFinalize) {
             webSecurity: true,
             nodeIntegration: true,
             contextIsolation: true,
-            nativeWindowOpen: true
         },
     })
 

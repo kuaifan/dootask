@@ -9,7 +9,7 @@ const {
 const fs = require('fs')
 const url = require('url')
 const request = require("request");
-const utils = require('./utils')
+const utils = require('./lib/utils')
 
 const MAILTO_PREFIX = "mailto:";
 

@@ -226,6 +226,18 @@
         },
 
         methods: {
+            async sendAsync(action, args = {}) {
+                try {
+                    return await electron?.sendAsync("downloadManager", {
+                        action,
+                        ...args
+                    });
+                } catch (e) {
+                    e.message = `${e.message}`.replace(/Error invoking remote method 'downloadManager': Error:\s+/, '');
+                    throw e;
+                }
+            },
+
             async copyUrl({url, urls}) {
                 try {
                     await navigator.clipboard.writeText(urls.length > 0 ? urls[0] : url);
@@ -443,13 +455,6 @@
                     day: '2-digit',
                     hour: '2-digit',
                     minute: '2-digit'
-                });
-            },
-
-            sendAsync(action, args = {}) {
-                return electron?.sendAsync("downloadManager", {
-                    action,
-                    ...args
                 });
             },
 

@@ -1,15 +1,15 @@
 const {BrowserWindow, screen, shell, ipcMain} = require('electron')
 const fs = require('fs');
 const path = require('path');
-const Store = require("electron-store");
 const loger = require("electron-log");
 const {default: electronDl, download} = require("@dootask/electron-dl");
-const utils = require("./utils");
-const {DownloadManager} = require("./utils/download");
+const utils = require("./lib/utils");
+const {DownloadManager, DownloadStore} = require("./lib/download-manager");
 
-const store = new Store();
 const downloadManager = new DownloadManager();
-let downloadWindow = null;
+
+let downloadWindow = null,
+    downloadLanguageCode = 'zh';
 
 function initialize(onStarted= null) {
     // 下载配置
@@ -32,7 +32,9 @@ function initialize(onStarted= null) {
             downloadManager.refresh(item.getSavePath());
             syncDownloadItems();
             // 尝试更新下载项的错误信息
-            downloadManager.updateError(item).then(success => {
+            downloadManager.updateError(item, {
+                language: downloadLanguageCode,
+            }).then(success => {
                 if (success) {
                     syncDownloadItems();
                 }
@@ -112,11 +114,7 @@ function syncDownloadItems() {
     }
 }
 
-function getLanguagePack(codeOrPack) {
-    if (codeOrPack && typeof codeOrPack === 'object') {
-        return codeOrPack;
-    }
-    const code = (codeOrPack || 'zh').toString();
+function getLanguageData(code) {
     const packs = {
         zh: {
             // 语言设置
@@ -516,12 +514,13 @@ function getLanguagePack(codeOrPack) {
             showFailed: 'Ошибка отображения файла: ',
         }
     };
+    downloadLanguageCode = code;
     return packs[code] || packs.zh;
 }
 
 async function open(language = 'zh', theme = 'light') {
     // 获取语言包
-    const finalLanguage = getLanguagePack(language);
+    const finalLanguage = getLanguageData(language);
 
     // 如果窗口已存在，直接显示
     if (downloadWindow) {
@@ -553,7 +552,7 @@ async function open(language = 'zh', theme = 'light') {
     }
 
     // 恢复窗口位置
-    const downloadWindowBounds = store.get('downloadWindowBounds', {});
+    const downloadWindowBounds = DownloadStore.get('downloadWindowBounds', {});
     if (
         downloadWindowBounds.width !== undefined &&
         downloadWindowBounds.height !== undefined &&
@@ -585,9 +584,9 @@ async function open(language = 'zh', theme = 'light') {
             downloadWindowBounds.width = Math.min(downloadWindowBounds.width, primaryArea.width - 100);
             downloadWindowBounds.height = Math.min(downloadWindowBounds.height, primaryArea.height - 100);
         }
+        downloadWindowOptions.center = false;
         downloadWindowOptions.width = downloadWindowBounds.width;
         downloadWindowOptions.height = downloadWindowBounds.height;
-        downloadWindowOptions.center = false;
         downloadWindowOptions.x = downloadWindowBounds.x;
         downloadWindowOptions.y = downloadWindowBounds.y;
     }
@@ -603,7 +602,7 @@ async function open(language = 'zh', theme = 'light') {
     // 监听窗口关闭保存窗口位置
     downloadWindow.on('close', () => {
         const bounds = downloadWindow.getBounds();
-        store.set('downloadWindowBounds', bounds);
+        DownloadStore.set('downloadWindowBounds', bounds);
     });
 
     // 监听窗口关闭事件
@@ -642,7 +641,7 @@ function destroy() {
 async function updateWindow(language, theme) {
     if (downloadWindow) {
         try {
-            const finalLanguage = getLanguagePack(language);
+            const finalLanguage = getLanguageData(language);
             downloadWindow.setTitle(finalLanguage.title);
             downloadWindow.webContents.send('download-theme', theme);
             downloadWindow.webContents.send('download-language', finalLanguage);
