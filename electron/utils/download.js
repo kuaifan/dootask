@@ -1,3 +1,4 @@
+const path = require("path");
 const loger = require("electron-log");
 const Store = require('electron-store');
 const utils = require("./index");
@@ -32,7 +33,7 @@ class DownloadManager {
      */
     convert(downloadItem) {
         return {
-            filename: downloadItem.getFilename(),
+            filename: path.basename(downloadItem.getSavePath()) || downloadItem.getFilename(),
             path: downloadItem.getSavePath(),
             url: downloadItem.getURL(),
             urls: downloadItem.getURLChain(),

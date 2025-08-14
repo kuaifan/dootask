@@ -26,7 +26,6 @@
         "url": "https://github.com/kuaifan/dootask.git"
     },
     "devDependencies": {
-        "@dootask/electron-dl": "^4.0.0-rc.2",
         "@electron-forge/cli": "^7.8.3",
         "@electron-forge/maker-deb": "^7.8.3",
         "@electron-forge/maker-rpm": "^7.8.3",
@@ -43,6 +42,7 @@
         "ora": "^4.1.1"
     },
     "dependencies": {
+        "@dootask/electron-dl": "^4.0.0-rc.2",
         "axios": "^1.11.0",
         "crc": "^3.8.0",
         "dayjs": "^1.11.13",
@@ -80,6 +80,7 @@
             "render/**/*",
             "public/**/*",
             "utils/**/*",
+            "electron-down.js",
             "electron-menu.js",
             "electron-preload.js",
             "electron.js"

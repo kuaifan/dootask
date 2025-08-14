@@ -124,7 +124,11 @@ if (!fs.existsSync(cacheDir)) {
 }
 
 // 初始化下载
-electronDown.initialize()
+electronDown.initialize(() => {
+    if (mainWindow) {
+        mainWindow.webContents.send("openDownloadWindow", {})
+    }
+})
 
 /**
  * 启动web服务

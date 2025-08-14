@@ -469,11 +469,6 @@ export default {
                 action: 'createDownload',
                 url
             });
-            $A.Electron.request({
-                action: 'openDownloadWindow',
-                language: languageName,
-                theme: state.themeName,
-            });
         } else if ($A.isEEUIApp) {
             $A.eeuiAppOpenWeb(url);
         } else {

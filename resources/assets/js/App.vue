@@ -149,7 +149,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize', 'isFirstPage', 'mobileTabbar']),
+        ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize', 'isFirstPage', 'mobileTabbar', 'themeName']),
 
         statusColor({routeName, windowLandscape}) {
             if (!routeName) {
@@ -614,6 +614,13 @@ export default {
             })
             this.$Electron.listener('systemThemeChanged', _ => {
                 this.autoTheme()
+            })
+            this.$Electron.listener('openDownloadWindow', _ => {
+                $A.Electron.request({
+                    action: 'openDownloadWindow',
+                    language: languageName,
+                    theme: this.themeName,
+                });
             })
             $A.bindScreenshotKey(this.$store.state.cacheKeyboard);
             //

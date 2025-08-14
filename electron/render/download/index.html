@@ -138,7 +138,7 @@
                 items: [],
                 lang: {
                     // 语言设置
-                    locale: 'zh',
+                    locale: 'zh-CN',
                     title: '下载管理器',
 
                     // 界面文本
@@ -437,19 +437,7 @@
             formatTime(timestamp) {
                 if (!timestamp) return '';
                 const date = new Date(timestamp * 1000);
-                const locales = {
-                    "zh": "zh-CN",
-                    "zh-CHT": "zh-TW",
-                    "en": "en-US",
-                    "ko": "ko-KR",
-                    "ja": "ja-JP",
-                    "de": "de-DE",
-                    "fr": "fr-FR",
-                    "id": "id-ID",
-                    "ru": "ru-RU"
-                };
-                const locale = locales[this.lang?.locale] || this.lang?.locale || locales['en'];
-                return date.toLocaleString(locale, {
+                return date.toLocaleString(this.lang?.locale || "zh-CN", {
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit',
