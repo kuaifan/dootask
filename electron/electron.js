@@ -2802,11 +2802,11 @@ ipcMain.on("rendererReq", async (event, args) => {
             case 'openDownloadWindow':
                 ret = await electronDown.open(args.language || 'zh', args.theme || 'light');
                 break;
-            case 'createDownloadTask':
-                ret = await electronDown.download(mainWindow, args.url, args.options || {});
-                break;
             case 'updateDownloadWindow':
-                ret = await electronDown.updateDownloadWindow(args.language, args.theme);
+                ret = await electronDown.updateWindow(args.language, args.theme);
+                break;
+            case 'createDownload':
+                ret = await electronDown.download(mainWindow, args.url, args.options || {});
                 break;
             case 'watchFile':
                 ret = await watchFile(args.path);

@@ -7,7 +7,7 @@
                         {{mateName}}<div class="input-box-push">+</div>Shift<div class="input-box-push">+</div><Input class="input-box-key" v-model="formData.screenshot_key" :maxlength="2"/>
                     </div>
                 </FormItem>
-                <FormItem :label="$L('下载内容')" prop="download_key">
+                <FormItem :label="$L('下载内容')">
                     <div class="input-box">
                         {{mateName}}<div class="input-box-push">+</div>{{altName}}<div class="input-box-push">+</div>L
                     </div>

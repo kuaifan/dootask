@@ -1,1 +1,502 @@
-123
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>Download</title>
+    <link rel="stylesheet" href="./style.css">
+    <script>
+        const getQueryParam = (name) => {
+            const url = window.location.href;
+            const match = url.match(new RegExp('[?&]' + name + '=([^&#]*)'));
+            return match ? decodeURIComponent(match[1]) : null;
+        }
+
+        const updateTheme = (theme) => {
+            const root = document.documentElement;
+            root.classList.toggle('dark', theme === 'dark');
+            root.classList.toggle('light', theme === 'light');
+        };
+
+        updateTheme(getQueryParam('theme'))
+    </script>
+    <script src="../tabs/assets/js/vue.global.min.js"></script>
+</head>
+<body>
+<div id="app" class="download-manager">
+    <div class="toolbar">
+        <label class="search">
+            <input class="search-input" v-model.trim="query" :placeholder="lang.searchPlaceholder"></input>
+        </label>
+        <div class="actions">
+            <button class="action-btn" @click="onRemoveAll" :disabled="items.length === 0">{{ lang.removeAll }}</button>
+            <button class="action-btn" @click="onRefresh">{{ lang.refresh }}</button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="tab-content all-tasks">
+            <div v-if="list.length === 0" class="empty-state">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                        <path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>
+                    </svg>
+                </div>
+                <div class="empty-text">{{ query ? lang.noSearchResult : lang.noItems }}</div>
+            </div>
+            <div v-else class="task-list">
+                <div
+                    v-for="(item, index) in list"
+                    :key="index"
+                    class="task-item"
+                    :class="{'progressing-item': item.state === 'progressing'}"
+                    :style="item.state === 'progressing' ? {'--progress': item.percent + '%'} : {'--progress': '0%'}">
+                    <div class="task-icon">
+                        <div class="file-icon" :class="getFileTypeClass(item)" v-html="getFileIcon(item)"></div>
+                    </div>
+                    <div class="task-info">
+                        <div class="task-name">
+                            <div class="task-name-clickable" :title="item.filename" @click="onOpenFile(item)">{{ item.filename }}</div>
+                        </div>
+                        <div class="task-meta">
+                            <!-- 大小 -->
+                            <span v-if="item.state === 'progressing'" class="file-size">
+                                {{ formatBytes(item.received) }}<template v-if="item.total > 0"> / {{ formatBytes(item.total) }}</template> ({{ item.percent }}%)
+                            </span>
+                            <span v-else class="file-size">
+                                {{ formatBytes(item.total) }}
+                            </span>
+                            <!-- 时间 -->
+                            <span v-if="item.state === 'completed'" class="download-time">{{ formatTime(item.endTime) }}</span>
+                            <span v-else class="download-time">{{ formatTime(item.startTime) }}</span>
+                            <!-- 状态 -->
+                            <span v-if="item.state !== 'progressing' || item.paused" class="state" :class="getStateClass(item)">
+                                {{ getStateText(item) }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <!-- 下载速度 -->
+                        <span v-if="item.state === 'progressing' && item.speed" class="speed">{{ formatBytes(item.speed) }}/s</span>
+                        <!-- 复制链接 -->
+                        <button @click="copyUrl(item)" class="icon-btn" :title="lang.copyLink">
+                            <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" focusable="false" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                            </svg>
+                        </button>
+                        <!-- 暂停和继续 -->
+                        <template v-if="item.state === 'progressing'">
+                            <button v-if="item.paused" @click="onResume(item)" class="icon-btn" :title="lang.resume">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </button>
+                            <button v-else @click="onPause(item)" class="icon-btn" :title="lang.pause">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                </svg>
+                            </button>
+                        </template>
+                        <!-- 显示文件夹 -->
+                        <button v-if="item.state === 'completed'" @click="onShowFolder(item)" class="icon-btn" :title="lang.showInFolder">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
+                            </svg>
+                        </button>
+                        <!-- 删除 -->
+                        <button @click="onRemove(item)" class="icon-btn danger" :title="lang.remove">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 信息提示框 -->
+    <div v-if="toast.show" class="toast" :class="toast.type">
+        <div class="toast-content">
+            <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            <svg v-else-if="toast.type === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span class="toast-message">{{ toast.message }}</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const {createApp} = Vue;
+
+    createApp({
+        data() {
+            return {
+                query: '',
+                items: [],
+                lang: {
+                    // 语言设置
+                    locale: 'zh',
+                    title: '下载管理器',
+
+                    // 界面文本
+                    searchPlaceholder: '搜索文件名或链接...',
+                    noItems: '暂无任务',
+                    noSearchResult: '未找到匹配的结果',
+
+                    // 操作按钮
+                    refresh: '刷新',
+                    removeAll: "清空历史",
+                    copyLink: '复制链接',
+                    resume: '继续',
+                    pause: '暂停',
+                    cancel: '取消',
+                    remove: '删除',
+                    showInFolder: '显示在文件夹',
+
+                    // 状态文本
+                    progressing: '下载中',
+                    completed: '已完成',
+                    cancelled: '已取消',
+                    interrupted: '失败',
+                    paused: '已暂停',
+
+                    // 成功消息
+                    copied: "已复制",
+                    refreshSuccess: '刷新成功',
+
+                    // 确认对话框
+                    confirmCancel: '确定要取消此下载任务并删除记录吗？',
+                    confirmRemove: '确定要从历史记录中删除此项吗？',
+                    confirmRemoveAll: '确定要清空下载历史吗？',
+
+                    // 错误消息
+                    copyFailed: '复制失败: ',
+                    pauseFailed: '暂停失败: ',
+                    resumeFailed: '继续失败: ',
+                    removeFailed: '删除失败: ',
+                    removeAllFailed: '清空失败: ',
+                    openFailed: '打开文件失败: ',
+                    showFailed: '显示文件失败: ',
+                },
+                toast: {
+                    show: false,
+                    type: 'success', // success, error
+                    message: '',
+                    timer: null
+                },
+            }
+        },
+        mounted() {
+            this.getList();
+
+            // 监听下载任务列表
+            electron?.listener('download-items', (items) => {
+                this.items = items
+            });
+
+            // 接收主题
+            electron?.listener('download-theme', (theme) => {
+                updateTheme(theme)
+            });
+
+            // 接收语言包
+            electron?.listener('download-language', (lang) => {
+                if (lang && typeof lang === 'object') {
+                    this.lang = {...this.lang, ...lang};
+                    document.title = this.lang.title || document.title;
+                }
+            });
+        },
+        beforeUnmount() {
+            if (this.toast.timer) {
+                clearTimeout(this.toast.timer);
+                this.toast.timer = null;
+            }
+        },
+        computed: {
+            list() {
+                const q = (this.query || '').toLowerCase();
+                return q
+                    ? this.items.filter(t => (t.filename || '').toLowerCase().includes(q) || (t.url || '').toLowerCase().includes(q))
+                    : this.items;
+            }
+        },
+
+        methods: {
+            async copyUrl({url, urls}) {
+                try {
+                    await navigator.clipboard.writeText(urls.length > 0 ? urls[0] : url);
+                    this.showToast(this.lang.copied);
+                } catch (e) {
+                    this.errorToast(this.lang.copyFailed + e.message);
+                }
+            },
+
+            async getList() {
+                try {
+                    const data = await this.sendAsync('get');
+                    this.items = data.items || [];
+                } catch (e) {
+                    console.error('加载下载任务失败:', e);
+                }
+            },
+
+            async onRefresh() {
+                await this.getList();
+                this.showToast(this.lang.refreshSuccess, 'success');
+            },
+
+            async onPause({path}) {
+                try {
+                    await this.sendAsync('pause', {path});
+                } catch (e) {
+                    this.errorToast(this.lang.pauseFailed + e.message);
+                }
+            },
+
+            async onResume({path}) {
+                try {
+                    await this.sendAsync('resume', {path});
+                } catch (e) {
+                    this.errorToast(this.lang.resumeFailed + e.message);
+                }
+            },
+
+            async onRemove({state, path}) {
+                if (!confirm(state === 'progressing' ? this.lang.confirmCancel : this.lang.confirmRemove)) {
+                    return;
+                }
+                try {
+                    await this.sendAsync('remove', {path});
+                } catch (e) {
+                    this.errorToast(this.lang.removeFailed + e.message);
+                }
+            },
+
+            async onRemoveAll() {
+                if (!confirm(this.lang.confirmRemoveAll)) {
+                    return;
+                }
+                try {
+                    await this.sendAsync('removeAll');
+                } catch (e) {
+                    this.errorToast(this.lang.removeAllFailed + e.message);
+                }
+            },
+
+            async onOpenFile({path}) {
+                try {
+                    await this.sendAsync('openFile', {path});
+                } catch (e) {
+                    this.errorToast(this.lang.openFailed + e.message);
+                }
+            },
+
+            async onShowFolder({path}) {
+                try {
+                    await this.sendAsync('showFolder', {path});
+                } catch (e) {
+                    this.errorToast(this.lang.showFailed + e.message);
+                }
+            },
+
+            isPaused({state, paused}) {
+                return state === 'progressing' && paused;
+            },
+
+            getStateText({state, paused}) {
+                if (this.isPaused({state, paused})) {
+                    return this.lang.paused;
+                }
+                const stateMap = {
+                    'progressing': this.lang.progressing,
+                    'completed': this.lang.completed,
+                    'cancelled': this.lang.cancelled,
+                    'interrupted': this.lang.interrupted,
+                };
+                return stateMap[state] || state;
+            },
+
+            getStateClass({state, paused}) {
+                if (this.isPaused({state, paused})) {
+                    return 'paused';
+                }
+                return state
+            },
+
+            getFileTypeClass({filename}) {
+                const typeMap = {
+                    'pdf': 'file-pdf',
+                    'doc': 'file-word',
+                    'docx': 'file-word',
+                    'xls': 'file-excel',
+                    'xlsx': 'file-excel',
+                    'ppt': 'file-powerpoint',
+                    'pptx': 'file-powerpoint',
+                    'jpg': 'file-image',
+                    'jpeg': 'file-image',
+                    'png': 'file-image',
+                    'gif': 'file-image',
+                    'svg': 'file-image',
+                    'webp': 'file-image',
+                    'bmp': 'file-image',
+                    'mp4': 'file-video',
+                    'avi': 'file-video',
+                    'mov': 'file-video',
+                    'mkv': 'file-video',
+                    'webm': 'file-video',
+                    'wmv': 'file-video',
+                    'mp3': 'file-audio',
+                    'wav': 'file-audio',
+                    'flac': 'file-audio',
+                    'aac': 'file-audio',
+                    'm4a': 'file-audio',
+                    'zip': 'file-archive',
+                    'rar': 'file-archive',
+                    '7z': 'file-archive',
+                    'tar': 'file-archive',
+                    'gz': 'file-archive',
+                    'txt': 'file-text',
+                    'md': 'file-text',
+                    'rtf': 'file-text',
+                    'js': 'file-code',
+                    'ts': 'file-code',
+                    'css': 'file-code',
+                    'html': 'file-code',
+                    'php': 'file-code',
+                    'py': 'file-code',
+                    'java': 'file-code',
+                    'cpp': 'file-code',
+                    'c': 'file-code',
+                    'exe': 'file-exe',
+                    'msi': 'file-exe',
+                    'dmg': 'file-exe',
+                    'deb': 'file-exe',
+                    'rpm': 'file-exe',
+                    '_': 'file-unknown'
+                };
+
+                return typeMap[this.getFileExt(filename)] || typeMap['_'];
+            },
+
+            getFileIcon({filename}) {
+                const iconMap = {
+                    'pdf': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ea4335"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v1h1.5v1.5H17.5V7h4v1.5z"/></svg>',
+
+                    'doc': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4285f4"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>',
+                    'docx': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4285f4"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>',
+
+                    'xls': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0f9d58"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>',
+                    'xlsx': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0f9d58"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>',
+
+                    'ppt': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ff6d01"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>',
+                    'pptx': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ff6d01"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>',
+
+                    'jpg': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9c27b0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
+                    'jpeg': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9c27b0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
+                    'png': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9c27b0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
+                    'gif': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9c27b0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>',
+
+                    'mp4': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#607d8b"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>',
+                    'avi': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#607d8b"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>',
+                    'mov': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#607d8b"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>',
+
+                    'mp3': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ff9800"><path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21s4.5-2.01 4.5-4.5V7h4V3h-7z"/></svg>',
+                    'wav': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ff9800"><path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21s4.5-2.01 4.5-4.5V7h4V3h-7z"/></svg>',
+
+                    'zip': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#795548"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>',
+                    'rar': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#795548"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>',
+
+                    'txt': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#757575"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>',
+
+                    'js': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f7df1e"><rect width="24" height="24" fill="#323330"/><path d="M12 12v8h2c2 0 3-1 3-3s-1-3-3-3h-2zm-2 0h-2v8h2v-3c0-1 1-2 2-2s2 1 2 2v3h2v-3c0-2-1-4-4-4s-4 2-4 4z" fill="#f7df1e"/></svg>',
+
+                    'exe': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#424242"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>',
+
+                    '_': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9e9e9e"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.11 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>'
+                };
+
+                return iconMap[this.getFileExt(filename)] || iconMap['_'];
+            },
+
+            getFileExt(value) {
+                return `${value}`.split('.').pop()?.toLowerCase();
+            },
+
+            formatBytes(bytes) {
+                if (!bytes || bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            },
+
+            formatTime(timestamp) {
+                if (!timestamp) return '';
+                const date = new Date(timestamp * 1000);
+                const locales = {
+                    "zh": "zh-CN",
+                    "zh-CHT": "zh-TW",
+                    "en": "en-US",
+                    "ko": "ko-KR",
+                    "ja": "ja-JP",
+                    "de": "de-DE",
+                    "fr": "fr-FR",
+                    "id": "id-ID",
+                    "ru": "ru-RU"
+                };
+                const locale = locales[this.lang?.locale] || this.lang?.locale || locales['en'];
+                return date.toLocaleString(locale, {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            },
+
+            sendAsync(action, args = {}) {
+                return electron?.sendAsync("downloadManager", {
+                    action,
+                    ...args
+                });
+            },
+
+            showToast(message, type = 'success') {
+                if (this.toast.timer) {
+                    clearTimeout(this.toast.timer);
+                    this.toast.timer = null;
+                }
+
+                if (this.toast.show) {
+                    this.toast.show = false;
+                    setTimeout(() => {
+                        this.displayToast(message, type);
+                    }, 100);
+                } else {
+                    this.displayToast(message, type);
+                }
+            },
+
+            errorToast(message) {
+                this.showToast(message, 'error');
+            },
+
+            displayToast(message, type) {
+                this.toast.message = message;
+                this.toast.type = type;
+                this.toast.show = true;
+
+                this.toast.timer = setTimeout(() => {
+                    this.toast.show = false;
+                    this.toast.timer = null;
+                }, 4000);
+            }
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>

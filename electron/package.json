@@ -26,7 +26,7 @@
         "url": "https://github.com/kuaifan/dootask.git"
     },
     "devDependencies": {
-        "@dootask/electron-dl": "^4.0.0-rc.1",
+        "@dootask/electron-dl": "^4.0.0-rc.2",
         "@electron-forge/cli": "^7.8.3",
         "@electron-forge/maker-deb": "^7.8.3",
         "@electron-forge/maker-rpm": "^7.8.3",

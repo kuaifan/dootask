@@ -30,7 +30,7 @@ class DownloadManager {
      * 转换下载项格式
      * @param {Electron.DownloadItem} downloadItem
      */
-    convertItem(downloadItem) {
+    convert(downloadItem) {
         return {
             filename: downloadItem.getFilename(),
             path: downloadItem.getSavePath(),
@@ -52,27 +52,26 @@ class DownloadManager {
      * 添加下载项
      * @param {Electron.DownloadItem} downloadItem
      */
-    addDownloadItem(downloadItem) {
+    add(downloadItem) {
         // 根据保存路径，如果下载项已存在，则取消下载（避免重复下载）
-        this.cancelDownloadItem(downloadItem.getSavePath());
+        this.cancel(downloadItem.getSavePath());
 
         // 添加下载项
         this.downloadHistory.unshift({
-            ...this.convertItem(downloadItem),
+            ...this.convert(downloadItem),
             _source: downloadItem,
         });
         if (this.downloadHistory.length > 1000) {
             this.downloadHistory = this.downloadHistory.slice(0, 1000);
         }
         store.set('downloadHistory', this.downloadHistory);
-        loger.info(`Download item added: ${downloadItem.getSavePath()}`);
     }
 
     /**
      * 获取下载列表
      * @returns {*}
      */
-    getDownloadItems() {
+    get() {
         return this.downloadHistory.map(item => {
             return {
                 ...item,
@@ -87,7 +86,7 @@ class DownloadManager {
      * 更新下载项
      * @param {string} path
      */
-    updateDownloadItem(path) {
+    refresh(path) {
         const item = this.downloadHistory.find(d => d.path === path)
         if (!item) {
             return;
@@ -97,16 +96,15 @@ class DownloadManager {
             loger.warn(`Download item not found for path: ${path}`);
             return;
         }
-        Object.assign(item, this.convertItem(downloadItem))
+        Object.assign(item, this.convert(downloadItem))
         store.set('downloadHistory', this.downloadHistory);
-        loger.info(`Download item updated: ${path} - ${item.state} (${item.percent}%)`);
     }
 
     /**
      * 暂停下载项
      * @param {string} path
      */
-    pauseDownloadItem(path) {
+    pause(path) {
         const item = this.downloadHistory.find(d => d.path === path)
         if (!item) {
             return;
@@ -117,14 +115,14 @@ class DownloadManager {
             return;
         }
         downloadItem.pause();
-        this.updateDownloadItem(path);
+        this.refresh(path);
     }
 
     /**
      * 恢复下载项
      * @param {string} path
      */
-    resumeDownloadItem(path) {
+    resume(path) {
         const item = this.downloadHistory.find(d => d.path === path)
         if (!item) {
             return;
@@ -135,14 +133,14 @@ class DownloadManager {
             return;
         }
         downloadItem.resume();
-        this.updateDownloadItem(path);
+        this.refresh(path);
     }
 
     /**
      * 取消下载项
      * @param {string} path
      */
-    cancelDownloadItem(path) {
+    cancel(path) {
         const item = this.downloadHistory.find(d => d.path === path)
         if (!item) {
             return;
@@ -153,39 +151,39 @@ class DownloadManager {
             return;
         }
         downloadItem.cancel();
-        this.updateDownloadItem(path);
+        this.refresh(path);
     }
 
     /**
      * 取消所有下载项
      */
-    cancelAllDownloadItems() {
+    cancelAll() {
         this.downloadHistory.forEach(item => {
-            this.cancelDownloadItem(item.path);
+            this.cancel(item.path);
         });
     }
 
     /**
-     * 从下载历史中移除下载项
+     * 删除下载项
      * @param {string} path
      */
-    removeFromDownloadHistory(path) {
+    remove(path) {
         const index = this.downloadHistory.findIndex(item => item.path === path);
         if (index > -1) {
-            this.cancelDownloadItem(path);
+            this.cancel(path);
             this.downloadHistory.splice(index, 1);
             store.set('downloadHistory', this.downloadHistory);
         }
     }
 
     /**
-     * 清空下载历史
+     * 清空下载项
      */
-    clearHistory() {
-        this.cancelAllDownloadItems();
+    removeAll() {
+        this.cancelAll();
         this.downloadHistory = [];
         store.set('downloadHistory', []);
     }
 }
 
-module.exports = { DownloadManager };
+module.exports = {DownloadManager};

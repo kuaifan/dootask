@@ -466,7 +466,7 @@ export default {
         }
         if ($A.Electron) {
             $A.Electron.request({
-                action: 'createDownloadTask',
+                action: 'createDownload',
                 url
             });
             $A.Electron.request({
