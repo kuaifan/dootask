@@ -9,7 +9,7 @@
                     <!-- 胶囊工具栏 -->
                     <div v-if="capsuleMenuShow" class="micro-modal-cmask"></div>
                     <div class="micro-modal-capsule" :style="capsuleStyle">
-                        <div class="micro-modal-capsule-item" v-touchclick="onCapsuleMore">
+                        <div class="micro-modal-capsule-item" @click="onCapsuleMore">
                             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 11C3.10457 11 4 10.1046 4 9C4 7.89543 3.10457 7 2 7C0.895431 7 0 7.89543 0 9C0 10.1046 0.895431 11 2 11Z" fill="currentColor"/>
                                 <path d="M9 12C10.6569 12 12 10.6569 12 9C12 7.34315 10.6569 6 9 6C7.34315 6 6 7.34315 6 9C6 10.6569 7.34315 12 9 12Z" fill="currentColor"/>
@@ -17,7 +17,7 @@
                             </svg>
                         </div>
                         <div class="micro-modal-capsule-line"></div>
-                        <div class="micro-modal-capsule-item" v-touchclick="attemptClose">
+                        <div class="micro-modal-capsule-item" @click="attemptClose">
                             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M9 16C12.866 16 16 12.866 16 9C16 5.13401 12.866 2 9 2C5.13401 2 2 5.13401 2 9C2 12.866 5.13401 16 9 16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M9 12C10.6569 12 12 10.6569 12 9C12 7.34315 10.6569 6 9 6C7.34315 6 6 7.34315 6 9C6 10.6569 7.34315 12 9 12Z" fill="currentColor"/>
@@ -48,13 +48,12 @@
 
 <script>
 import TransferDom from "../../directives/transfer-dom";
-import touchclick from "../../directives/touchclick";
 import ResizeLine from "../ResizeLine.vue";
 
 export default {
     name: 'MicroModal',
     components: {ResizeLine},
-    directives: {TransferDom, touchclick},
+    directives: {TransferDom},
     props: {
         open: {
             type: Boolean,

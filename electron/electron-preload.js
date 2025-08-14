@@ -32,7 +32,13 @@ contextBridge.exposeInMainWorld(
     'electron', {
         request: (msg, callback, error) => {
             msg.reqId = reqId++;
-            reqInfo[msg.reqId] = {callback: callback, error: error};
+            if (typeof callback !== "function") {
+                callback = function () {};
+            }
+            if (typeof error !== "function") {
+                error = function () {};
+            }
+            reqInfo[msg.reqId] = {callback, error};
             if (msg.action == 'watchFile') {
                 fileChangedListeners[msg.path] = msg.listener;
                 delete msg.listener;

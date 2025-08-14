@@ -88,7 +88,7 @@ export default {
             ]
 
             if (this.$Electron || this.$isEEUIApp) {
-                menu.push({path: 'keyboard', name: '键盘设置', desc: ' (Beta)'})
+                menu.push({path: 'keyboard', name: '键盘设置'})
             }
 
             if ($A.isDooServer() && this.$isEEUIApp) {

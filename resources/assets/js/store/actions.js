@@ -465,10 +465,14 @@ export default {
             url = $A.urlAddParams(url, params);
         }
         if ($A.Electron) {
-            $A.Electron.request({action: 'openExternal', url}, () => {
-                // 成功
-            }, () => {
-                // 失败
+            $A.Electron.request({
+                action: 'createDownloadTask',
+                url
+            });
+            $A.Electron.request({
+                action: 'openDownloadWindow',
+                language: languageName,
+                theme: state.themeName,
             });
         } else if ($A.isEEUIApp) {
             $A.eeuiAppOpenWeb(url);

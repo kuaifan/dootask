@@ -7,6 +7,11 @@
                         {{mateName}}<div class="input-box-push">+</div>Shift<div class="input-box-push">+</div><Input class="input-box-key" v-model="formData.screenshot_key" :maxlength="2"/>
                     </div>
                 </FormItem>
+                <FormItem :label="$L('下载内容')" prop="download_key">
+                    <div class="input-box">
+                        {{mateName}}<div class="input-box-push">+</div>{{altName}}<div class="input-box-push">+</div>L
+                    </div>
+                </FormItem>
                 <FormItem :label="$L('新建项目')">
                     <div class="input-box">
                         {{mateName}}<div class="input-box-push">+</div>B
@@ -14,7 +19,7 @@
                 </FormItem>
                 <FormItem :label="$L('新建任务')">
                     <div class="input-box">
-                        {{mateName}}<div class="input-box-push">+</div>N (K)
+                        {{mateName}}<div class="input-box-push">+</div>N
                     </div>
                 </FormItem>
                 <FormItem :label="$L('新会议')">
@@ -71,7 +76,7 @@ export default {
             loadIng: 0,
 
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? 'Command' : 'Ctrl',
-
+            altName: /macintosh|mac os x/i.test(navigator.userAgent) ? 'Option' : 'Alt',
 
             formData: {
                 screenshot_key: '',

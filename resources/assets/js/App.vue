@@ -401,20 +401,14 @@ export default {
             if (this.isMeetingUrlStrict(url)) {
                 return 1;
             }
+            // 同域名下载链接
+            if (this.isDownloadUrl(url)) {
+                return 1;
+            }
             // 同域名规则
             if ($A.getDomain(url) == $A.getDomain($A.mainUrl())) {
                 try {
                     const {pathname, searchParams} = new URL(url);
-                    // uploads/                    上传文件
-                    // api/dialog/msg/download     会话文件
-                    // api/project/task/filedown   任务文件
-                    if (/^\/(uploads|api\/dialog\/msg\/download|api\/project\/task\/filedown)/.test(pathname)) {
-                        return 1;
-                    }
-                    // api/file/content?down=yes   文件下载
-                    if (/^\/api\/file\/content/.test(pathname) && searchParams.get('down') === 'yes') {
-                        return 1;
-                    }
                     // meeting/1234567890/xxxxx    会议
                     if (/^\/meeting\/\d+\/\S+$/.test(pathname)) {
                         const meetingId = pathname.split('/')[2];
@@ -436,6 +430,32 @@ export default {
                 } catch (e) { }
             }
             return 0;
+        },
+
+        isDownloadUrl(url) {
+            if ($A.getDomain(url) == $A.getDomain($A.mainUrl())) {
+                try {
+                    const {pathname, searchParams} = new URL(url);
+                    // 匹配常见的下载相关路径
+                    const downloadPathPatterns = [
+                        '/uploads',                                   // 上传文件
+                        '/api/dialog/msg/download',                  // 会话文件
+                        '/api/project/task/filedown',                // 任务文件
+                        '/api/file/download/pack',                   // 文件打包下载
+                        '/api/approve/down',                         // 审批导出下载
+                        '/api/project/task/down',                    // 任务导出下载
+                        '/api/system/checkin/down'                   // 签到导出下载
+                    ];
+                    if (downloadPathPatterns.some(pattern => $A.leftExists(pathname, pattern))) {
+                        return true;
+                    }
+                    // 匹配文件内容下载（/api/file/content 带参数 down=yes）
+                    if ($A.leftExists(pathname, '/api/file/content') && searchParams.get('down') === 'yes') {
+                        return true;
+                    }
+                } catch (e) {}
+            }
+            return false;
         },
 
         isApplicationProtocol(url) {
@@ -576,6 +596,10 @@ export default {
                     return true;
                 } else if (urlType === 1) {
                     // 使用默认浏览器打开
+                    if (this.isDownloadUrl(url)) {
+                        this.$store.dispatch('downUrl', url)
+                        return true;
+                    }
                     return false;
                 }
                 // 使用内置浏览器打开

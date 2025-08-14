@@ -392,6 +392,7 @@ import notificationKoro from "notification-koro1";
 import emitter from "../store/events";
 import SearchBox from "../components/SearchBox.vue";
 import transformEmojiToHtml from "../utils/emoji";
+import {languageName} from "../language";
 
 export default {
     components: {
@@ -516,6 +517,7 @@ export default {
             'cacheDialogs',
             'cacheProjects',
             'projectTotal',
+            'themeName',
             'wsOpenNum',
             'columnTemplate',
 
@@ -629,7 +631,8 @@ export default {
         menu() {
             const {userIsAdmin} = this;
             const array = [
-                {path: 'taskBrowse', name: '最近打开的任务'}
+                {path: 'taskBrowse', name: '最近打开的任务'},
+                {path: 'download', name: '下载内容', visible: !!this.$Electron},
             ];
             if (userIsAdmin) {
                 array.push(...[
@@ -643,7 +646,6 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
-                    {path: 'complaint', name: '举报管理'},
                 ])
             } else {
                 array.push(...[
@@ -725,6 +727,19 @@ export default {
         windowActive(active) {
             if (!active) return
             this.$store.dispatch("getProjectByQueue", 600);
+        },
+
+        themeName: {
+            handler(theme) {
+                if (this.$Electron) {
+                    $A.Electron.request({
+                        action: 'updateDownloadWindow',
+                        language: languageName,
+                        theme,
+                    });
+                }
+            },
+            immediate: true
         },
 
         'cacheProjects.length': {
@@ -818,6 +833,13 @@ export default {
                     return;
                 case 'complaint':
                     this.complaintShow = true;
+                    return;
+                case 'download':
+                    $A.Electron.request({
+                        action: 'openDownloadWindow',
+                        language: languageName,
+                        theme: this.themeName,
+                    });
                     return;
                 case 'logout':
                     $A.modalConfirm({
@@ -976,6 +998,13 @@ export default {
                     case 78: // K、N - 新建任务
                         e.preventDefault();
                         this.onAddMenu('task')
+                        break;
+
+                    case 76: // L - 下载内容（+ alt）
+                        if (e.altKey) {
+                            e.preventDefault();
+                            this.settingRoute('download')
+                        }
                         break;
 
                     case 85: // U - 创建群组

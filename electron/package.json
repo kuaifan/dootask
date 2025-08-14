@@ -79,10 +79,10 @@
         "files": [
             "render/**/*",
             "public/**/*",
+            "utils/**/*",
             "electron-menu.js",
             "electron-preload.js",
-            "electron.js",
-            "utils.js"
+            "electron.js"
         ],
         "extraFiles": [
             {

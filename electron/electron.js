@@ -123,9 +123,6 @@ if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true });
 }
 
-// 初始化下载配置
-electronDown.initialize()
-
 /**
  * 启动web服务
  */
@@ -345,10 +342,10 @@ function createMainWindow() {
     // 新窗口处理
     mainWindow.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
-            openExternal(url)
+            openExternal(url).catch(() => {})
         } else {
             utils.onBeforeOpenWindow(mainWindow.webContents, url).then(() => {
-                openExternal(url)
+                openExternal(url).catch(() => {})
             })
         }
         return {action: 'deny'}
@@ -587,10 +584,10 @@ function createChildWindow(args) {
     // 新窗口处理
     browser.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
-            openExternal(url)
+            openExternal(url).catch(() => {})
         } else {
             utils.onBeforeOpenWindow(browser.webContents, url).then(() => {
-                openExternal(url)
+                openExternal(url).catch(() => {})
             })
         }
         return {action: 'deny'}
@@ -866,7 +863,7 @@ function createWebTabWindow(args) {
     })
     browserView.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
-            openExternal(url)
+            openExternal(url).catch(() => {})
         } else {
             createWebTabWindow({url})
         }
@@ -1102,6 +1099,8 @@ if (!getTheLock) {
         }
         // SameSite
         utils.useCookie()
+        // 初始化下载
+        electronDown.initialize()
         // 创建主窗口
         createMainWindow()
         // 预创建子窗口
@@ -1293,7 +1292,7 @@ ipcMain.on('webTabExternal', (event) => {
     if (!item) {
         return
     }
-    openExternal(item.view.webContents.getURL())
+    openExternal(item.view.webContents.getURL()).catch(() => {})
     event.returnValue = "ok"
 })
 
@@ -1358,6 +1357,7 @@ ipcMain.on('childWindowCloseAll', (event) => {
     })
     preloadWindow?.close()
     mediaWindow?.close()
+    electronDown.close()
     event.returnValue = "ok"
 })
 
@@ -1370,6 +1370,7 @@ ipcMain.on('childWindowDestroyAll', (event) => {
     })
     preloadWindow?.destroy()
     mediaWindow?.destroy()
+    electronDown.destroy()
     event.returnValue = "ok"
 })
 
@@ -1714,6 +1715,7 @@ ipcMain.on('updateQuitAndInstall', (event, args) => {
     })
     preloadWindow?.destroy()
     mediaWindow?.destroy()
+    electronDown.destroy()
 
     // 启动更新子窗口
     createUpdaterWindow(args.updateTitle)
@@ -2611,7 +2613,7 @@ function getPluginFile(plugin) {
     return null;
 }
 
-function uninstallPlugin(plugin) {
+async function uninstallPlugin(plugin) {
     const pluginFile = getPluginFile(plugin);
 
     if (pluginFile != null) {
@@ -2672,7 +2674,7 @@ async function deleteFile(file) {
     }
 }
 
-function windowAction(method) {
+async function windowAction(method) {
     let win = BrowserWindow.getFocusedWindow();
 
     if (win) {
@@ -2692,16 +2694,14 @@ function windowAction(method) {
     }
 }
 
-function openExternal(url) {
+async function openExternal(url) {
     //Only open http(s), mailto, tel, and callto links
     if (allowedUrls.test(url)) {
-        shell.openExternal(url).catch(_ => {});
-        return true;
+        await shell.openExternal(url)
     }
-    return false;
 }
 
-function watchFile(path) {
+async function watchFile(path) {
     let win = BrowserWindow.getFocusedWindow();
 
     if (win) {
@@ -2713,12 +2713,13 @@ function watchFile(path) {
                     prev: prev
                 });
             } catch (e) {
-            } // Ignore
+                // Ignore
+            }
         });
     }
 }
 
-function unwatchFile(path) {
+async function unwatchFile(path) {
     fs.unwatchFile(path);
 }
 
@@ -2747,7 +2748,7 @@ ipcMain.on("rendererReq", async (event, args) => {
                 ret = await getDocumentsFolder();
                 break;
             case 'checkFileExists':
-                ret = await checkFileExists(args.pathParts);
+                ret = checkFileExists(args.pathParts);
                 break;
             case 'showOpenDialog':
                 dialogOpen = true;
@@ -2768,7 +2769,7 @@ ipcMain.on("rendererReq", async (event, args) => {
                 ret = await uninstallPlugin(args.plugin);
                 break;
             case 'getPluginFile':
-                ret = await getPluginFile(args.plugin);
+                ret = getPluginFile(args.plugin);
                 break;
             case 'isPluginsEnabled':
                 ret = enablePlugins;
@@ -2780,7 +2781,7 @@ ipcMain.on("rendererReq", async (event, args) => {
                 ret = await readFile(args.filename, args.encoding);
                 break;
             case 'clipboardAction':
-                ret = await clipboardAction(args.method, args.data);
+                ret = clipboardAction(args.method, args.data);
                 break;
             case 'deleteFile':
                 ret = await deleteFile(args.file);
@@ -2797,6 +2798,15 @@ ipcMain.on("rendererReq", async (event, args) => {
             case 'openExternal':
                 ret = await openExternal(args.url);
                 break;
+            case 'openDownloadWindow':
+                ret = await electronDown.open(args.language || 'zh', args.theme || 'light');
+                break;
+            case 'createDownloadTask':
+                ret = await electronDown.download(mainWindow, args.url, args.options || {});
+                break;
+            case 'updateDownloadWindow':
+                ret = await electronDown.updateDownloadWindow(args.language, args.theme);
+                break;
             case 'watchFile':
                 ret = await watchFile(args.path);
                 break;
@@ -2804,12 +2814,13 @@ ipcMain.on("rendererReq", async (event, args) => {
                 ret = await unwatchFile(args.path);
                 break;
             case 'getCurDir':
-                ret = await getCurDir();
+                ret = getCurDir();
                 break;
         }
 
         event.reply('mainResp', {success: true, data: ret, reqId: args.reqId});
     } catch (e) {
         event.reply('mainResp', {error: true, msg: e.message, e: e, reqId: args.reqId});
+        loger.error('Renderer request error', e.message, e.stack);
     }
 });
