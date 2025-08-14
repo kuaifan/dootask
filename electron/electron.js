@@ -1,7 +1,17 @@
+// Node.js 核心模块
 const fs = require('fs')
 const os = require("os");
 const path = require('path')
+const spawn = require("child_process").spawn;
+const fsProm = require('fs/promises');
+const crc = require('crc');
+const zlib = require('zlib');
+
+// Web 服务相关
 const express = require('express')
+const axios = require('axios');
+
+// Electron 核心模块
 const {
     app,
     ipcMain,
@@ -16,56 +26,76 @@ const {
     BrowserView,
     BrowserWindow
 } = require('electron')
+
+// Electron 扩展和工具
 const {autoUpdater} = require("electron-updater")
 const Store = require("electron-store");
 const loger = require("electron-log");
-const axios = require('axios');
 const electronConf = require('electron-config')
-const userConf = new electronConf()
-const fsProm = require('fs/promises');
-const PDFDocument = require('pdf-lib').PDFDocument;
 const Screenshots = require("electron-screenshots-tool").Screenshots;
-const crc = require('crc');
-const zlib = require('zlib');
+
+// PDF 处理
+const PDFDocument = require('pdf-lib').PDFDocument;
+
+// 本地模块和配置
 const utils = require('./utils');
 const config = require('./package.json');
 const electronMenu = require("./electron-menu");
-const spawn = require("child_process").spawn;
+
+// 实例初始化
+const userConf = new electronConf()
 const store = new Store();
 
+// 平台检测常量
 const isMac = process.platform === 'darwin'
 const isWin = process.platform === 'win32'
+
+// URL 和调用验证正则
 const allowedUrls = /^(?:https?|mailto|tel|callto):/i;
 const allowedCalls = /^(?:mailto|tel|callto):/i;
-const cacheDir = path.join(os.tmpdir(), 'dootask-cache')
-let updaterLockFile = path.join(cacheDir, '.dootask_updater.lock');
-let enableStoreBkp = true;
-let dialogOpen = false;
-let enablePlugins = false;
 
-let mainWindow = null,
-    mainTray = null,
+// 路径和缓存配置
+const cacheDir = path.join(os.tmpdir(), 'dootask-cache')
+const updaterLockFile = path.join(cacheDir, '.dootask_updater.lock');
+
+// 应用状态标志
+let enableStoreBkp = true,
+    dialogOpen = false,
+    enablePlugins = false,
     isReady = false,
     willQuitApp = false,
-    devloadPath = path.resolve(__dirname, ".devload"),
-    isDevelopMode = false,
-    serverPort = 22223,
+    isDevelopMode = false;
+
+// 服务器配置
+let serverPort = 22223,
     serverPublicDir = path.join(__dirname, 'public'),
     serverUrl = "",
     serverTimer = null;
 
+// 截图相关变量
 let screenshotObj = null,
     screenshotKey = null;
 
-let childWindow = [],
+// 窗口实例变量
+let mainWindow = null,
+    mainTray = null,
     preloadWindow = null,
     mediaWindow = null,
-    mediaType = null,
-    webTabWindow = null,
-    webTabView = [],
+    webTabWindow = null;
+
+// 窗口数组和状态
+let childWindow = [],
+    webTabView = [];
+
+// 窗口配置和状态
+let mediaType = null,
     webTabHeight = 40,
     webTabClosedByShortcut = false;
 
+// 开发模式路径
+let devloadPath = path.resolve(__dirname, ".devload");
+
+// 窗口显示状态管理
 let showState = {},
     onShowWindow = (win) => {
         try {
@@ -78,6 +108,7 @@ let showState = {},
         }
     }
 
+// 开发模式加载
 if (fs.existsSync(devloadPath)) {
     let devloadContent = fs.readFileSync(devloadPath, 'utf8')
     if (devloadContent.startsWith('http')) {
@@ -86,6 +117,7 @@ if (fs.existsSync(devloadPath)) {
     }
 }
 
+// 缓存目录检查
 if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true });
 }

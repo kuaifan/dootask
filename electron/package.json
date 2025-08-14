@@ -44,6 +44,7 @@
         "crc": "^3.8.0",
         "dayjs": "^1.11.13",
         "electron-config": "^2.0.0",
+        "electron-dl": "^4.0.0",
         "electron-log": "^5.4.2",
         "electron-screenshots-tool": "^1.1.2",
         "electron-squirrel-startup": "^1.0.1",
