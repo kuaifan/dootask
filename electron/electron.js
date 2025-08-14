@@ -40,6 +40,7 @@ const PDFDocument = require('pdf-lib').PDFDocument;
 // 本地模块和配置
 const utils = require('./utils');
 const config = require('./package.json');
+const electronDown = require("./electron-down");
 const electronMenu = require("./electron-menu");
 
 // 实例初始化
@@ -121,6 +122,9 @@ if (fs.existsSync(devloadPath)) {
 if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true });
 }
+
+// 初始化下载配置
+electronDown.initialize()
 
 /**
  * 启动web服务
@@ -2471,7 +2475,7 @@ async function saveFile(fileObject, data, origStat, overwrite, defEnc) {
 
     async function doSaveFile(isNew) {
         if (enableStoreBkp && !isNew) {
-            //Copy file to backup file (after conflict and stat is checked)
+            //Copy file to back up file (after conflict and stat is checked)
             let bkpFh;
 
             try {
