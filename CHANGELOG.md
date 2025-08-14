@@ -2,11 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.11]
+## [1.2.21]
 
 ### Bug Fixes
 
 - 修复应用加载中无法点击胶囊
+
+### Performance
+
+- 优化下载工具
 
 ## [1.2.5]
 

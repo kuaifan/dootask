@@ -30898,5 +30898,17 @@
         "fr": "Ouvrir le robot d'enregistrement",
         "id": "Buka bot absensi",
         "ru": "Открыть бота регистрации посещаемости"
+    },
+    {
+        "key": "下载内容",
+        "zh": "",
+        "zh-CHT": "下載內容",
+        "en": "Download content",
+        "ko": "콘텐츠 다운로드",
+        "ja": "コンテンツをダウンロード",
+        "de": "Inhalte herunterladen",
+        "fr": "Télécharger le contenu",
+        "id": "Unduh konten",
+        "ru": "Скачать содержимое"
     }
 ]

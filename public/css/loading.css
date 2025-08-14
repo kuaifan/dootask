@@ -16,6 +16,9 @@ micro-app-body .app-view-loading {
 .app-view-loading > div {
     text-align: center;
 }
+.app-view-loading[data-visible=false] > div {
+    opacity: 0;
+}
 .app-view-loading > div > div {
     color: #ccc;
     margin: 0;
