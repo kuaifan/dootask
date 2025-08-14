@@ -123,6 +123,9 @@ if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true });
 }
 
+// 初始化下载
+electronDown.initialize()
+
 /**
  * 启动web服务
  */
@@ -1099,8 +1102,6 @@ if (!getTheLock) {
         }
         // SameSite
         utils.useCookie()
-        // 初始化下载
-        electronDown.initialize()
         // 创建主窗口
         createMainWindow()
         // 预创建子窗口

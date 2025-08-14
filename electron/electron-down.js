@@ -1,4 +1,5 @@
-const {BrowserWindow, screen} = require('electron')
+const {BrowserWindow, screen, shell, ipcMain} = require('electron')
+const fs = require('fs');
 const path = require('path');
 const Store = require("electron-store");
 const loger = require("electron-log");
@@ -34,6 +35,65 @@ function initialize(options = {}) {
             downloadManager.updateDownloadItem(item.path);
             syncDownloadItems();
         }
+    });
+
+    // IPC - 获取下载任务
+    ipcMain.handle('getDownloadTasks', () => {
+        return {
+            items: downloadManager.getDownloadItems()
+        };
+    });
+
+    // IPC - 暂停下载任务
+    ipcMain.handle('pauseDownloadTask', async (event, {path}) => {
+        downloadManager.pauseDownloadItem(path);
+        syncDownloadItems();
+        return true;
+    });
+
+    // IPC - 恢复下载任务
+    ipcMain.handle('resumeDownloadTask', async (event, {path}) => {
+        downloadManager.resumeDownloadItem(path);
+        syncDownloadItems();
+        return true;
+    });
+
+    // IPC - 取消下载任务
+    ipcMain.handle('cancelDownloadTask', async (event, {path}) => {
+        downloadManager.cancelDownloadItem(path);
+        syncDownloadItems();
+        return true;
+    });
+
+    // IPC - 从下载历史中移除下载项
+    ipcMain.handle('removeFromDownloadHistory', async (event, {path}) => {
+        downloadManager.removeFromDownloadHistory(path);
+        syncDownloadItems();
+        return true;
+    });
+
+    // IPC - 清理下载历史
+    ipcMain.handle('clearDownloadHistory', async () => {
+        downloadManager.clearHistory();
+        syncDownloadItems();
+        return true;
+    });
+
+    // IPC - 打开下载文件
+    ipcMain.handle('openDownloadedFile', async (event, {path}) => {
+        if (fs.existsSync(path)) {
+            return shell.openPath(path);
+        }
+        throw new Error('file not found');
+    });
+
+    // IPC - 显示下载文件
+    ipcMain.handle('showDownloadedFileInFolder', async (event, {path}) => {
+        if (fs.existsSync(path)) {
+            shell.showItemInFolder(path);
+            return true;
+        }
+        throw new Error('file not found');
     });
 }
 

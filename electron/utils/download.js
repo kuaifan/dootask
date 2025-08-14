@@ -1,5 +1,6 @@
 const loger = require("electron-log");
 const Store = require('electron-store');
+const utils = require("./index");
 const store = new Store({
     name: 'download-manager',
     defaults: {
@@ -9,7 +10,20 @@ const store = new Store({
 
 class DownloadManager {
     constructor() {
-        this.downloadHistory = store.get('downloadHistory', []);
+        const history = store.get('downloadHistory', []);
+        if (utils.isArray(history)) {
+            this.downloadHistory = history.map(item => ({
+                ...item,
+
+                // 历史记录中，将 progressing 状态改为 interrupted
+                state: item.state === 'progressing' ? 'interrupted' : item.state,
+
+                // 移除源对象，避免序列化问题
+                _source: undefined,
+            }));
+        } else {
+            this.downloadHistory = [];
+        }
     }
 
     /**
@@ -39,6 +53,10 @@ class DownloadManager {
      * @param {Electron.DownloadItem} downloadItem
      */
     addDownloadItem(downloadItem) {
+        // 根据保存路径，如果下载项已存在，则取消下载（避免重复下载）
+        this.cancelDownloadItem(downloadItem.getSavePath());
+
+        // 添加下载项
         this.downloadHistory.unshift({
             ...this.convertItem(downloadItem),
             _source: downloadItem,
@@ -58,7 +76,9 @@ class DownloadManager {
         return this.downloadHistory.map(item => {
             return {
                 ...item,
-                _source: undefined, // 移除源对象，避免序列化问题
+
+                // 移除源对象，避免序列化问题
+                _source: undefined,
             };
         });
     }
@@ -70,7 +90,6 @@ class DownloadManager {
     updateDownloadItem(path) {
         const item = this.downloadHistory.find(d => d.path === path)
         if (!item) {
-            loger.warn(`Download item not found for path: ${path}`);
             return;
         }
         const downloadItem = item._source;
@@ -90,7 +109,6 @@ class DownloadManager {
     pauseDownloadItem(path) {
         const item = this.downloadHistory.find(d => d.path === path)
         if (!item) {
-            loger.warn(`Download item not found for path: ${path}`);
             return;
         }
         const downloadItem = item._source;
@@ -109,7 +127,6 @@ class DownloadManager {
     resumeDownloadItem(path) {
         const item = this.downloadHistory.find(d => d.path === path)
         if (!item) {
-            loger.warn(`Download item not found for path: ${path}`);
             return;
         }
         const downloadItem = item._source;
@@ -128,7 +145,6 @@ class DownloadManager {
     cancelDownloadItem(path) {
         const item = this.downloadHistory.find(d => d.path === path)
         if (!item) {
-            loger.warn(`Download item not found for path: ${path}`);
             return;
         }
         const downloadItem = item._source;
@@ -150,9 +166,23 @@ class DownloadManager {
     }
 
     /**
+     * 从下载历史中移除下载项
+     * @param {string} path
+     */
+    removeFromDownloadHistory(path) {
+        const index = this.downloadHistory.findIndex(item => item.path === path);
+        if (index > -1) {
+            this.cancelDownloadItem(path);
+            this.downloadHistory.splice(index, 1);
+            store.set('downloadHistory', this.downloadHistory);
+        }
+    }
+
+    /**
      * 清空下载历史
      */
     clearHistory() {
+        this.cancelAllDownloadItems();
         this.downloadHistory = [];
         store.set('downloadHistory', []);
     }
