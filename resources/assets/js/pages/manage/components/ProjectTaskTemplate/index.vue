@@ -170,7 +170,7 @@ export default {
                     data: {
                         project_id: this.projectId
                     },
-                    spinner: 300
+                    spinner: 3000
                 })
                 this.templates = data || []
             } catch ({msg}) {
@@ -230,7 +230,7 @@ export default {
                     url: 'project/task/template_save',
                     data,
                     method: 'post',
-                    spinner: 300
+                    spinner: 3000
                 })
             } finally {
                 this.loadIng--
@@ -250,10 +250,10 @@ export default {
                             data: {
                                 id: template.id
                             },
-                            spinner: 300
+                            spinner: 3000
                         })
                         $A.messageSuccess(msg || '删除成功')
-                        this.loadTemplates()
+                        await this.loadTemplates()
                     } catch ({msg}) {
                         $A.messageError(msg || '删除失败')
                     } finally {
@@ -273,10 +273,10 @@ export default {
                         id: template.id,
                         project_id: this.projectId
                     },
-                    spinner: 300
+                    spinner: 3000
                 })
                 $A.messageSuccess(msg || '设置成功')
-                this.loadTemplates()
+                await this.loadTemplates()
             } catch ({msg}) {
                 $A.messageError(msg || '设置失败')
             } finally {

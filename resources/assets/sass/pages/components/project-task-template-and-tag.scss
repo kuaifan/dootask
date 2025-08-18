@@ -4,8 +4,8 @@
     flex-direction: column;
 
     .header {
-        height: 60px;
-        padding: 10px 60px 10px 20px;
+        height: 64px;
+        padding: 0 64px 0 20px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
@@ -28,6 +28,10 @@
                 width: 20px;
                 height: 20px;
             }
+        }
+
+        .actions {
+            margin-top: 1px;
         }
     }
 

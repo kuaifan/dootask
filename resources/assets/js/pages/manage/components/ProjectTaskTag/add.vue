@@ -152,7 +152,7 @@ export default {
                     url: 'project/tag/save',
                     data,
                     method: 'post',
-                    spinner: 300
+                    spinner: 3000
                 })
             } finally {
                 this.loadIng--

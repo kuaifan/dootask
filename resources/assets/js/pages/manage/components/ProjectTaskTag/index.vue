@@ -90,7 +90,7 @@ export default {
                     data: {
                         project_id: this.projectId
                     },
-                    spinner: 300
+                    spinner: 3000
                 })
                 this.tags = data || []
             } catch ({msg}) {
@@ -118,7 +118,7 @@ export default {
                             data: {
                                 id: tag.id
                             },
-                            spinner: 300
+                            spinner: 3000
                         })
                         $A.messageSuccess(msg || '删除成功')
                         await this.getTagData()
