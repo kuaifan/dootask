@@ -82,3 +82,158 @@
         }
     }
 }
+
+// 共同群组弹窗样式
+.common-dialog-content {
+    margin: -16px -32px 0;
+
+    .loading-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding-top: 60px;
+        padding-bottom: 100px;
+    }
+
+    .empty-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 40px;
+        padding-bottom: 80px;
+
+        .empty-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+            color: #999;
+            > i {
+                opacity: 0.3;
+            }
+        }
+    }
+
+    .dialog-list {
+        padding: 0 12px;
+        overflow-y: auto;
+        max-height: calc(100vh - 310px);
+
+        @media (height <= 900px) {
+            max-height: calc(100vh - 180px);
+        }
+
+        .dialog-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            border-radius: 6px;
+            margin: 4px 0;
+            transition: background-color 0.2s;
+
+            &:hover {
+                background-color: #f5f7fa;
+            }
+
+            .dialog-avatar {
+                flex-shrink: 0;
+                margin-right: 12px;
+
+                .img-avatar,
+                .user-avatar,
+                .icon-avatar {
+                    width: 42px;
+                    height: 42px;
+                    margin-right: 2px;
+                    flex-grow: 0;
+                    flex-shrink: 0;
+                }
+
+                .img-avatar {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    > img {
+                        width: 100%;
+                        height: 100%;
+                    }
+                }
+
+                .icon-avatar {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    font-size: 26px;
+                    background-color: #61B2F9;
+                    color: #ffffff;
+
+                    &.department {
+                        background-color: #5BC7B0;
+                    }
+
+                    &.project {
+                        background-color: #6E99EB;
+                    }
+
+                    &.task {
+                        background-color: #9B96DF;
+                        font-size: 24px;
+                    }
+                }
+            }
+
+            .dialog-info {
+                flex: 1;
+                min-width: 0;
+
+                .dialog-name {
+                    font-size: 14px;
+                    font-weight: 500;
+                    color: #17233d;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    margin-bottom: 4px;
+                }
+
+                .dialog-meta {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    font-size: 12px;
+                    color: #808695;
+
+                    .member-count {
+                        flex-shrink: 0;
+                    }
+
+                    .last-time {
+                        flex-shrink: 0;
+                    }
+                }
+            }
+
+            .enter-icon {
+                flex-shrink: 0;
+                color: #c5c8ce;
+                font-size: 16px;
+                margin-left: 8px;
+            }
+        }
+
+        &:last-child {
+            padding-bottom: 16px;
+        }
+    }
+
+    .load-more-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 12px 0;
+    }
+}

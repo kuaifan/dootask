@@ -321,6 +321,18 @@ body.dark-mode-reverse {
         }
     }
 
+    .common-dialog-content {
+        .dialog-list {
+            .dialog-item {
+                .dialog-avatar {
+                    .icon-avatar {
+                        color: #1c1917;
+                    }
+                }
+            }
+        }
+    }
+
     .file-icon {
         &:before {
             background-image: url("../images/file/dark/other.svg");

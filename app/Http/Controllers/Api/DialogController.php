@@ -2778,6 +2778,83 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/common/list          56. 共同群组群聊
+     *
+     * @apiDescription  需要token身份，按置顶时间、用户在群组中的最后活跃时间倒序排列
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName common__list
+     *
+     * @apiParam {Number} [target_userid]         目标用户ID（和谁的共同群组，不传则获取自己所有群组）
+     * @apiParam {Number} [page]                  当前页数，默认为1
+     * @apiParam {Number} [pagesize]              每页显示条数，默认为20，最大100
+     * @apiParam {String} [only_count]            是否只返回数量，传入 'yes' 则只返回数量不返回列表
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     *
+     * - 当 only_count=yes 时：
+     * @apiSuccess {Number} data.total 群组数量
+     *
+     * - 当获取列表时，返回 Laravel 标准分页格式：
+     * @apiSuccess {Array} data.data 群组列表数据
+     * @apiSuccess {Number} data.current_page 当前页数
+     * @apiSuccess {Number} data.per_page 每页显示条数
+     * @apiSuccess {Number} data.total 总数量
+     * @apiSuccess {String} data.first_page_url 第一页链接
+     * @apiSuccess {String} data.last_page_url 最后页链接
+     * @apiSuccess {String} data.next_page_url 下一页链接
+     * @apiSuccess {String} data.prev_page_url 上一页链接
+     */
+    public function common__list()
+    {
+        $user = User::auth();
+        //
+        $target_userid = intval(Request::input('target_userid'));
+        $only_count = trim(Request::input('only_count')) === 'yes';
+
+        // 参考getDialogList的查询模式
+        $builder = DB::table('web_socket_dialog_users as u')
+            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
+            ->where('u.userid', $user->userid)
+            ->where('d.type', 'group')
+            ->where('d.group_type', 'user')
+            ->whereNull('d.deleted_at');
+
+        if ($target_userid) {
+            // 获取与目标用户的共同群组
+            $builder->whereExists(function($query) use ($target_userid) {
+                $query->select(DB::raw(1))
+                      ->from('web_socket_dialog_users as du2')
+                      ->whereColumn('du2.dialog_id', 'd.id')
+                      ->where('du2.userid', $target_userid);
+            });
+        }
+
+        if ($only_count) {
+            // 只返回数量
+            return Base::retSuccess('success', [
+                'total' => $builder->count()
+            ]);
+        }
+
+        // 返回分页列表，参考getDialogList的排序逻辑
+        $list = $builder
+            ->orderByDesc('u.top_at')
+            ->orderByDesc('u.last_at')
+            ->paginate(Base::getPaginate(100, 20));
+        
+        // 处理分页数据，与getDialogList保持一致的处理方式
+        $list->transform(function ($item) use ($user) {
+            return WebSocketDialog::synthesizeData($item, $user->userid);
+        });
+
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
      * @api {post} api/dialog/okr/add          56. 创建OKR评论会话
      *
      * @apiDescription  需要token身份
