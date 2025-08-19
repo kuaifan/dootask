@@ -346,6 +346,10 @@
                             }
                         }
 
+                        &.select-view {
+                            gap: 12px;
+                        }
+
                         .user-modal-icon {
                             flex-shrink: 0;
                             font-size: 22px;
@@ -370,7 +374,6 @@
 
                         .user-modal-view {
                             flex-shrink: 0;
-                            margin-left: 12px;
                         }
 
                         .user-modal-avatar {

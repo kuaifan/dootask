@@ -110,7 +110,7 @@
                 <!-- 会员、会话 -->
                 <template v-else>
                     <ul v-if="showSelectAll || switchActive=='contact'" class="sticky-top">
-                        <li :class="selectClass('all')">
+                        <li :class="selectClass('all')" class="select-view">
                             <div v-if="showSelectAll" @click="onSelectAll" class="user-modal-label">
                                 <Icon class="user-modal-icon" :type="selectIcon('all')"/>
                                 <span>{{ $L('全选') }}</span>
