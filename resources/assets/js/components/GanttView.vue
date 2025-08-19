@@ -159,10 +159,10 @@ export default {
                 //开始位置时间（今天00:00:00）
                 let nowDay = $A.daytz().startOf('day');
                 //当前时间
-                let curDay = nowDay.clone().add(mouseDay, 'day');
+                let curDay = nowDay.clone().add(Math.floor(mouseDay), 'day');
                 //
                 if (index > 0) {
-                    curDay = curDay.add(index + 1, 'month');
+                    curDay = curDay.add(index, 'month');
                 }
                 return curDay.format('YYYY-MM')
             }
