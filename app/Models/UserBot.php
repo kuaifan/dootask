@@ -16,7 +16,6 @@ use Carbon\Carbon;
  * @property int $id
  * @property int|null $userid 所属人ID
  * @property int|null $bot_id 机器人ID
- * @property int|null $session 开启新会话功能
  * @property int|null $clear_day 消息自动清理天数
  * @property \Illuminate\Support\Carbon|null $clear_at 下一次清理时间
  * @property string|null $webhook_url 消息webhook地址
@@ -37,7 +36,6 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereClearDay($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereSession($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereWebhookNum($value)

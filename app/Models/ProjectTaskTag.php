@@ -6,10 +6,8 @@ namespace App\Models;
  * App\Models\ProjectTaskTag
  *
  * @property int $id
- * @property int|null $tag_id
  * @property int|null $project_id 项目ID
  * @property int|null $task_id 任务ID
- * @property int|null $userid 用户ID（创建者）
  * @property string|null $name 标题
  * @property string|null $color 颜色
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -28,10 +26,8 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereProjectId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereTagId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereTaskId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereUserid($value)
  * @mixin \Eloquent
  */
 class ProjectTaskTag extends AbstractModel
