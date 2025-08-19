@@ -23,7 +23,7 @@ const {
     nativeTheme,
     Tray,
     Menu,
-    BrowserView,
+    WebContentsView,
     BrowserWindow
 } = require('electron')
 
@@ -515,6 +515,9 @@ function createChildWindow(args) {
                 contextIsolation: true,
             }, webPreferences),
         }, config)
+        if (!options.webPreferences.contextIsolation) {
+            delete options.webPreferences.preload;
+        }
         if (options.parent) {
             options.parent = mainWindow
         }
@@ -838,17 +841,16 @@ function createWebTabWindow(args) {
     webTabWindow.show();
 
     // 创建 tab 子窗口
-    const viewOptions = Object.assign({
-        useHTMLTitleAndIcon: true,
-        useLoadingView: true,
-        useErrorView: true,
-    }, args.config || {})
+    const viewOptions = args.config || {}
     viewOptions.webPreferences = Object.assign({
         preload: path.join(__dirname, 'electron-preload.js'),
         nodeIntegration: true,
         contextIsolation: true
     }, args.webPreferences || {})
-    const browserView = new BrowserView(viewOptions)
+    if (!viewOptions.webPreferences.contextIsolation) {
+        delete viewOptions.webPreferences.preload;
+    }
+    const browserView = new WebContentsView(viewOptions)
     if (args.backgroundColor) {
         browserView.setBackgroundColor(args.backgroundColor)
     } else if (nativeTheme.shouldUseDarkColors) {
@@ -885,6 +887,20 @@ function createWebTabWindow(args) {
         if (!errorDescription) {
             return
         }
+        // 主框架加载失败时，展示内置的错误页面
+        if (isMainFrame) {
+            const originalUrl = validatedURL || args.url || ''
+            const filePath = path.join(__dirname, 'render', 'tabs', 'error.html')
+            browserView.webContents.loadFile(filePath, {
+                query: {
+                    id: String(browserView.webContents.id),
+                    url: originalUrl,
+                    code: String(errorCode),
+                    desc: errorDescription,
+                }
+            }).then(_ => { }).catch(_ => { })
+            return
+        }
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'title',
             id: browserView.webContents.id,
@@ -900,6 +916,9 @@ function createWebTabWindow(args) {
         }).then(_ => { })
     })
     browserView.webContents.on('did-start-loading', _ => {
+        webTabView.forEach(({id: vid, view}) => {
+            view.setVisible(vid === browserView.webContents.id)
+        })
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'start-loading',
             id: browserView.webContents.id,
@@ -933,8 +952,9 @@ function createWebTabWindow(args) {
     electronMenu.webContentsMenu(browserView.webContents, true)
 
     browserView.webContents.loadURL(args.url).then(_ => { }).catch(_ => { })
+    browserView.setVisible(true)
 
-    webTabWindow.addBrowserView(browserView)
+    webTabWindow.contentView.addChildView(browserView)
     webTabView.push({
         id: browserView.webContents.id,
         view: browserView
@@ -950,15 +970,36 @@ function createWebTabWindow(args) {
 
 /**
  * 获取当前内置浏览器标签
- * @returns {Electron.BrowserView|undefined}
+ * @returns {Electron.WebContentsView|undefined}
  */
 function currentWebTab() {
-    const views = webTabWindow.getBrowserViews()
-    const view = views.length ? views[views.length - 1] : undefined
-    if (!view) {
-        return undefined
+    // 第一：使用当前可见的标签
+    try {
+        const item = webTabView.find(({view}) => view?.getVisible && view.getVisible())
+        if (item) {
+            return item
+        }
+    } catch (e) {}
+    // 第二：使用当前聚焦的 webContents
+    try {
+        const focused = webContents.getFocusedWebContents?.()
+        if (focused) {
+            const item = webTabView.find(it => it.id === focused.id)
+            if (item) {
+                return item
+            }
+        }
+    } catch (e) {}
+    // 兜底：根据 children 顺序选择最上层的可用视图
+    const children = webTabWindow.contentView.children || []
+    for (let i = children.length - 1; i >= 0; i--) {
+        const id = children[i]?.webContents?.id
+        const item = webTabView.find(it => it.id === id)
+        if (item) {
+            return item
+        }
     }
-    return webTabView.find(item => item.id == view.webContents.id)
+    return undefined
 }
 
 /**
@@ -1011,8 +1052,10 @@ function activateWebTab(id) {
     if (!item) {
         return
     }
+    webTabView.forEach(({id: vid, view}) => {
+        view.setVisible(vid === item.id)
+    })
     resizeWebTab(item.id)
-    webTabWindow.setTopBrowserView(item.view)
     item.view.webContents.focus()
     utils.onDispatchEvent(webTabWindow.webContents,  {
         event: 'switch',
@@ -1032,7 +1075,7 @@ function closeWebTab(id) {
     if (webTabView.length === 1) {
         webTabWindow.hide()
     }
-    webTabWindow.removeBrowserView(item.view)
+    webTabWindow.contentView.removeChildView(item.view)
     try {
         item.view.webContents.close()
     } catch (e) {

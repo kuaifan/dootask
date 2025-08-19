@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LOAD FAILED</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #1f2328;
+            --muted: #6a737d;
+            --border: #e1e4e8;
+            --btn: #84c56a;
+            --btn-fg: #ffffff;
+            --btn-outline: #d0e2ff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0D0D0D;
+                --fg: #e6edf3;
+                --muted: #9aa7b2;
+                --border: #30363d;
+                --btn: #84c56a;
+                --btn-fg: #ffffff;
+                --btn-outline: #84c56a44;
+            }
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
+            font: 14px/1.5 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+            display: grid;
+            place-items: center;
+        }
+
+        .card {
+            width: min(680px, calc(100% - 32px));
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: 18px;
+        }
+
+        p {
+            margin: 0 0 12px;
+            color: var(--muted);
+        }
+
+        code {
+            background: var(--btn-outline);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .row {
+            display: flex;
+            margin-bottom: 8px;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .url {
+            overflow-wrap: anywhere;
+        }
+
+        .actions {
+            margin-top: 14px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            appearance: none;
+            border: 1px solid var(--btn);
+            background: var(--btn);
+            color: var(--btn-fg);
+            padding: 8px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button.secondary {
+            background: transparent;
+            color: var(--fg);
+            border-color: var(--border);
+        }
+    </style>
+    <script>
+        function qs(key) {
+            return new URLSearchParams(location.search).get(key) || ''
+        }
+
+        function setText(id, text) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.textContent = text
+            }
+        }
+
+        function retry() {
+            var u = qs('url');
+            if (u) {
+                location.href = u
+            }
+        }
+
+        function closeTab() {
+            window.close()
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            setText('url', qs('url'))
+            setText('code', qs('code'))
+            setText('desc', qs('desc'))
+        })
+    </script>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';">
+    <meta name="color-scheme" content="light dark">
+    <meta name="referrer" content="no-referrer">
+    <meta name="robots" content="noindex">
+    <meta name="format-detection" content="telephone=no,email=no,address=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#00000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Load Error">
+</head>
+
+<body>
+<div class="card">
+    <h1>LOAD FAILED</h1>
+    <div class="row">URL: <span id="url" class="url"></span></div>
+    <div class="row">Error code: <code id="code"></code></div>
+    <p id="desc"></p>
+    <div class="actions">
+        <button onclick="retry()">Retry</button>
+        <button class="secondary" onclick="closeTab()">Close</button>
+    </div>
+</div>
+</body>
+
+</html>

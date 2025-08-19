@@ -159,8 +159,8 @@ body {
 .tab-icon {
     display: inline-block;
     flex-shrink: 0;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     background-size: cover;
 }
 
@@ -207,8 +207,7 @@ body {
 .tab-title {
     display: inline-block;
     flex: 1;
-    margin-right: 8px;
-    margin-left: 6px;
+    margin: 0 8px;
     overflow: hidden;
     line-height: 150%;
     text-overflow: ellipsis;
