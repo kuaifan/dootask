@@ -19,7 +19,7 @@
             tag="ul"
             item-key="id"
             draggable="li:not(.pinned)"
-            handle=".project-item"
+            handle=".item-sort"
             @scroll.native="onScroll"
             @touchstart.native="onTouchStart"
             v-longpress="handleLongpress"
@@ -56,7 +56,7 @@
                             <span v-else class="percent-text">{{item.task_percent}}%</span>
                         </iCircle>
                     </div>
-                    <div v-show="isDragging && !projectKeyValue" class="item-sort">
+                    <div v-show="isDragging && !projectKeyValue && !item.top_at" class="item-sort" @click.stop="handleDragTip">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 18h18"/><path d="M3 6h18"/></svg>
                     </div>
                 </div>
@@ -88,7 +88,7 @@
                     <DropdownItem @click.native="handleChatClick">
                         {{ $L('项目讨论') }}
                     </DropdownItem>
-                    <DropdownItem v-if="!projectKeyValue" @click.native="isDragging=!isDragging">
+                    <DropdownItem v-if="!projectKeyValue && !operateItem.top_at" @click.native="isDragging=!isDragging">
                         {{ $L(isDragging ? '退出排序' : '调整排序') }}
                     </DropdownItem>
                 </DropdownMenu>
@@ -172,6 +172,13 @@ export default {
                 this.projectKeyLoading--;
             }, 600);
         },
+        projectDragging(val) {
+            if (val) {
+                this.$el.parentElement.style.overflow = 'hidden'
+            } else {
+                this.$el.parentElement.style.overflow = null
+            }
+        },
     },
 
     methods: {
@@ -244,7 +251,14 @@ export default {
             });
         },
 
+        handleDragTip() {
+            $A.modalAlert("请按住图标进行拖动排序")
+        },
+
         handleLongpress(event) {
+            if (event.target.classList.contains('item-sort')) {
+                return; // 不处理排序手柄的长按事件
+            }
             const {type, data, element} = this.longpressData;
             this.$store.commit("longpress/clear")
             //

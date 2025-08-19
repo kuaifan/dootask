@@ -190,13 +190,16 @@
                 }
                 .item-sort {
                     flex-shrink: 0;
-                    padding-left: 16px;
                     display: flex;
                     align-items: center;
-                    justify-content: flex-end;
+                    justify-content: center;
+                    width: 52px;
+                    height: 44px;
+                    margin-right: -12px;
                     > svg {
                         width: 20px;
                         height: 20px;
+                        pointer-events: none;
                     }
                 }
             }
