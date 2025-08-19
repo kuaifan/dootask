@@ -910,6 +910,7 @@ function createWebTabWindow(args) {
             event: 'stop-loading',
             id: browserView.webContents.id,
         }).then(_ => { })
+        
         // 加载完成暗黑模式下把窗口背景色改成白色，避免透明网站背景色穿透
         if (nativeTheme.shouldUseDarkColors) {
             browserView.setBackgroundColor('#FFFFFF')
@@ -1317,6 +1318,99 @@ ipcMain.on('webTabDestroyAll', (event) => {
     if (webTabWindow) {
         webTabWindow.destroy()
     }
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 后退
+ */
+ipcMain.on('webTabGoBack', (event) => {
+    const item = currentWebTab()
+    if (!item) {
+        return
+    }
+    if (item.view.webContents.canGoBack()) {
+        item.view.webContents.goBack()
+        // 导航后更新状态
+        setTimeout(() => {
+            utils.onDispatchEvent(webTabWindow.webContents, {
+                event: 'navigation-state',
+                id: item.id,
+                canGoBack: item.view.webContents.canGoBack(),
+                canGoForward: item.view.webContents.canGoForward()
+            }).then(_ => { })
+        }, 100)
+    }
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 前进
+ */
+ipcMain.on('webTabGoForward', (event) => {
+    const item = currentWebTab()
+    if (!item) {
+        return
+    }
+    if (item.view.webContents.canGoForward()) {
+        item.view.webContents.goForward()
+        // 导航后更新状态
+        setTimeout(() => {
+            utils.onDispatchEvent(webTabWindow.webContents, {
+                event: 'navigation-state',
+                id: item.id,
+                canGoBack: item.view.webContents.canGoBack(),
+                canGoForward: item.view.webContents.canGoForward()
+            }).then(_ => { })
+        }, 100)
+    }
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 刷新
+ */
+ipcMain.on('webTabReload', (event) => {
+    const item = currentWebTab()
+    if (!item) {
+        return
+    }
+    item.view.webContents.reload()
+    // 刷新完成后会触发 did-stop-loading 事件，在那里会更新导航状态
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 停止加载
+ */
+ipcMain.on('webTabStop', (event) => {
+    const item = currentWebTab()
+    if (!item) {
+        return
+    }
+    item.view.webContents.stop()
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 获取导航状态
+ */
+ipcMain.on('webTabGetNavigationState', (event) => {
+    const item = currentWebTab()
+    if (!item) {
+        return
+    }
+    
+    const canGoBack = item.view.webContents.canGoBack()
+    const canGoForward = item.view.webContents.canGoForward()
+    
+    utils.onDispatchEvent(webTabWindow.webContents, {
+        event: 'navigation-state',
+        id: item.id,
+        canGoBack,
+        canGoForward
+    }).then(_ => { })
+    
     event.returnValue = "ok"
 })
 

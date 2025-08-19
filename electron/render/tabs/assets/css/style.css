@@ -2,7 +2,7 @@
     --tab-font-family: -apple-system, 'Segoe UI', roboto, oxygen-sans, ubuntu, cantarell, 'Helvetica Neue', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     --tab-font-size: 12px;
     --tab-transition: background-color 200ms ease-out, color 200ms ease-out;
-    --tab-cursor: pointer; /* 设置鼠标指针为手型 */
+    --tab-cursor: pointer;
     --tab-color: #7f8792;
     --tab-background: #EFF0F4;
     --tab-active-color: #222529;
@@ -15,7 +15,8 @@
     padding: 0;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
     font-family: 'Roboto', sans-serif;
@@ -39,8 +40,43 @@ html, body {
     -webkit-app-region: drag;
 }
 
-.nav ul {
+/* 导航按钮 */
+.nav-controls {
     display: flex;
+    align-items: center;
+    margin-right: 12px;
+    -webkit-app-region: none;
+}
+
+.nav-controls div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+}
+
+.nav-controls svg {
+    width: 16px;
+    height: 16px;
+    color: var(--tab-active-color);
+}
+
+.nav-controls .disabled {
+    cursor: not-allowed !important;
+}
+
+.nav-controls .disabled svg {
+    opacity: 0.3;
+}
+
+/* 标签 */
+.nav-tabs {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    gap: 8px;
     height: 35px;
     margin-top: 5px;
     user-select: none;
@@ -48,18 +84,17 @@ html, body {
     overflow-y: hidden;
 }
 
-.nav ul::-webkit-scrollbar {
+.nav-tabs::-webkit-scrollbar {
     display: none;
 }
 
-.nav ul li {
+.nav-tabs li {
     display: inline-flex;
     position: relative;
     box-sizing: border-box;
     align-items: center;
     height: calc(100% - 5px);
     padding: 7px 8px;
-    margin: 0 8px 0 0;
     min-width: 100px;
     max-width: 240px;
     scroll-margin: 12px;
@@ -70,24 +105,23 @@ html, body {
     -webkit-app-region: none;
 }
 
-.nav ul li:first-child {
-    margin-left: 8px;
+.nav-tabs li:first-child {
     border-left: none;
 }
 
 
-.nav ul li.active {
+.nav-tabs li.active {
     color: var(--tab-active-color);
     background: var(--tab-active-background);
     border-radius: 4px;
 }
 
-.nav ul li.active .tab-icon.background {
+.nav-tabs li.active .tab-icon.background {
     background-image: url(../image/link_normal_selected_icon.png);
 }
 
 
-.nav ul li:not(.active)::after {
+.nav-tabs li:not(.active)::after {
     position: absolute;
     right: 0;
     width: 1px;
@@ -96,22 +130,24 @@ html, body {
     content: '';
 }
 
-.nav ul li:not(.active):last-child::after {
+.nav-tabs li:not(.active):last-child::after {
     content: none;
 }
 
 /* 浏览器打开 */
-.browser {
+.nav-browser {
     flex-shrink: 0;
     display: flex;
     align-items: center;
     height: 40px;
     padding: 0 14px;
+    margin: 0 2px;
     cursor: pointer;
     background-color: var(--tab-background);
     -webkit-app-region: none;
 }
-.browser span {
+
+.nav-browser span {
     display: inline-block;
     width: 18px;
     height: 18px;
@@ -161,6 +197,7 @@ html, body {
     0% {
         transform: scale(0.8) rotate(0deg);
     }
+
     100% {
         transform: scale(0.8) rotate(360deg);
     }
@@ -205,18 +242,17 @@ html, body {
 }
 
 /* 不同平台样式 */
-body.win32 .nav ul {
-    margin-left: 8px;
-    margin-right: 186px;
+body.win32 .nav {
+    padding-left: 8px;
+    padding-right: 186px;
 }
-body.win32 .browser {
-    right: 140px;
+
+body.darwin .nav {
+    padding-left: 76px;
 }
-body.darwin .nav ul {
-    margin-left: 76px;
-}
-body.darwin.full-screen .nav ul {
-    margin-left: 8px;
+
+body.darwin.full-screen .nav {
+    padding-left: 8px;
 }
 
 /* 暗黑模式 */
@@ -229,11 +265,11 @@ body.darwin.full-screen .nav ul {
         --tab-close-color: #E3E3E3;
     }
 
-    .nav ul li.active .tab-icon.background {
+    .nav-tabs li.active .tab-icon.background {
         background-image: url(../image/dark/link_normal_selected_icon.png);
     }
 
-    .browser span {
+    .nav-browser span {
         background-image: url(../image/dark/link_normal_selected_icon.png);
     }
 

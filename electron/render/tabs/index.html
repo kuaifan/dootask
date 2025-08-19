@@ -9,7 +9,19 @@
 <body>
 <div id="app" class="app">
     <div class="nav">
-        <ul>
+        <div class="nav-controls">
+            <div class="nav-back" :class="{disabled: !canGoBack}" @click="goBack">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </div>
+            <div class="nav-forward" :class="{disabled: !canGoForward}" @click="goForward">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </div>
+            <div class="nav-refresh" @click="loadingState ? stop() : refresh()">
+                <svg v-if="loadingState" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" style="transform:scale(0.99)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+            </div>
+        </div>
+        <ul class="nav-tabs">
             <li v-for="item in tabs" :data-id="item.id" :class="{active: activeId === item.id}" @click="onSwitch(item)">
                 <div v-if="item.state === 'loading'" class="tab-icon loading">
                     <div class="tab-icon-loading"></div>
@@ -19,9 +31,9 @@
                 <div class="tab-close" @click.stop="onClose(item)"></div>
             </li>
         </ul>
-    </div>
-    <div v-if="canBrowser" class="browser" @click="onBrowser">
-        <span></span>
+        <div v-if="canBrowser" class="nav-browser" @click="onBrowser">
+            <span></span>
+        </div>
     </div>
 </div>
 
@@ -29,10 +41,20 @@
     const App = {
         data() {
             return {
+                // 当前激活的标签页ID
                 activeId: 0,
+
+                // 标签页列表
                 tabs: [],
 
+                // 停止定时器
                 stopTimer: null,
+                
+                // 是否可以后退
+                canGoBack: false,
+
+                // 是否可以前进
+                canGoForward: false,
             }
         },
         beforeCreate() {
@@ -42,6 +64,7 @@
             window.__onDispatchEvent = (detail) => {
                 const {id, event} = detail
                 switch (event) {
+                    // 创建标签页
                     case 'create':
                         this.tabs.push(Object.assign({
                             id,
@@ -52,6 +75,7 @@
                         }, detail))
                         break
 
+                    // 关闭标签页
                     case 'close':
                         const closeIndex = this.tabs.findIndex(item => item.id === id)
                         if (closeIndex > -1) {
@@ -59,11 +83,14 @@
                         }
                         break
 
+                    // 切换标签页
                     case 'switch':
                         this.activeId = id
                         this.scrollTabActive()
+                        this.updateNavigationState()
                         break
 
+                    // 页面标题
                     case 'title':
                         if (["HitoseaTask", "DooTask", "about:blank"].includes(detail.title)) {
                             return
@@ -75,6 +102,7 @@
                         }
                         break
 
+                    // 页面图标
                     case 'favicon':
                         const faviconItem = this.tabs.find(item => item.id === id)
                         if (faviconItem) {
@@ -88,6 +116,7 @@
                         }
                         break
 
+                    // 开始加载
                     case 'start-loading':
                         const startItem = this.tabs.find(item => item.id === id)
                         if (startItem) {
@@ -96,19 +125,33 @@
                         }
                         break
 
+                    // 停止加载
                     case 'stop-loading':
                         this.stopTimer = setTimeout(_ => {
                             const stopItem = this.tabs.find(item => item.id === id)
                             if (stopItem) {
                                 stopItem.state = 'loaded'
                             }
+                            if (id === this.activeId) {
+                                this.updateNavigationState()
+                            }
                         }, 300)
                         break
 
+                    // 导航状态
+                    case 'navigation-state':
+                        if (id === this.activeId) {
+                            this.canGoBack = detail.canGoBack
+                            this.canGoForward = detail.canGoForward
+                        }
+                        break
+
+                    // 进入全屏
                     case 'enter-full-screen':
                         document.body.classList.add('full-screen')
                         break
 
+                    // 离开全屏
                     case 'leave-full-screen':
                         document.body.classList.remove('full-screen')
                         break
@@ -119,41 +162,85 @@
             }
         },
         computed: {
+            /**
+             * 获取当前激活的标签页
+             * @returns {object|null}
+             */
             activeItem() {
                 if (this.tabs.length === 0) {
                     return null
                 }
                 return this.tabs.find(item => item.id === this.activeId)
             },
+            /**
+             * 获取页面标题
+             * @returns {string}
+             */
             pageTitle() {
                 return this.activeItem ? this.activeItem.title : 'Untitled'
             },
+            /**
+             * 是否可以打开浏览器
+             * @returns {boolean}
+             */
             canBrowser() {
                 return !(this.activeItem && this.isLocalHost(this.activeItem.url))
+            },
+            /**
+             * 获取加载状态
+             * @returns {boolean}
+             */
+            loadingState() {
+                return this.activeItem ? this.activeItem.state === 'loading' : false
             }
         },
         watch: {
+            /**
+             * 监听页面标题
+             * @param title
+             */
             pageTitle(title) {
                 document.title = title;
             },
         },
         methods: {
+            /**
+             * 切换标签页
+             * @param item
+             */
             onSwitch(item) {
                 this.sendMessage('webTabActivate', item.id)
             },
 
+            /**
+             * 关闭标签页
+             * @param item
+             */
             onClose(item) {
                 this.sendMessage('webTabClose', item.id);
             },
 
+            /**
+             * 打开浏览器
+             */
             onBrowser() {
                 this.sendMessage('webTabExternal')
             },
 
+            /**
+             * 获取标签页图标样式
+             * @param item
+             * @returns {string}
+             */
             iconStyle(item) {
                 return item.icon ? `background-image: url(${item.icon})` : ''
             },
 
+            /**
+             * 获取标签页标题
+             * @param item
+             * @returns {string}
+             */
             tabTitle(item) {
                 if (item.title) {
                     return item.title
@@ -166,10 +253,13 @@
                 }
             },
 
+            /**
+             * 滚动到当前激活的标签页
+             */
             scrollTabActive() {
                 setTimeout(() => {
                     try {
-                        const child = document.querySelector(`.nav ul li[data-id=${this.activeId}]`)
+                        const child = document.querySelector(`.nav-tabs li[data-id="${this.activeId}"]`)
                         if (child) {
                             child.scrollIntoView({behavior: 'smooth', block: 'nearest'})
                         }
@@ -179,8 +269,50 @@
                 }, 0)
             },
 
+            /**
+             * 发送消息
+             * @param event
+             * @param args
+             */
             sendMessage(event, args) {
                 electron?.sendMessage(event, args)
+            },
+
+            /**
+             * 后退
+             */
+            goBack() {
+                if (!this.canGoBack) return
+                this.sendMessage('webTabGoBack')
+            },
+
+            /**
+             * 前进
+             */
+            goForward() {
+                if (!this.canGoForward) return
+                this.sendMessage('webTabGoForward')
+            },
+
+            /**
+             * 停止
+             */
+            stop() {
+                this.sendMessage('webTabStop')
+            },
+
+            /**
+             * 刷新
+             */
+            refresh() {
+                this.sendMessage('webTabReload')
+            },
+
+            /**
+             * 更新导航状态
+             */
+            updateNavigationState() {
+                this.sendMessage('webTabGetNavigationState')
             },
 
             /**
