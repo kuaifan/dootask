@@ -15,11 +15,11 @@
         <Draggable
             :list="projectDraggableList"
             :animation="150"
-            :disabled="!!projectKeyValue"
+            :disabled="!(isDragging && !projectKeyValue)"
             tag="ul"
             item-key="id"
             draggable="li:not(.pinned)"
-            handle=".project-h1"
+            handle=".project-item"
             @scroll.native="onScroll"
             @touchstart.native="onTouchStart"
             v-longpress="handleLongpress"
@@ -56,6 +56,9 @@
                             <span v-else class="percent-text">{{item.task_percent}}%</span>
                         </iCircle>
                     </div>
+                    <div v-show="isDragging && !projectKeyValue" class="item-sort">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 18h18"/><path d="M3 6h18"/></svg>
+                    </div>
                 </div>
             </li>
             <template v-if="projectLists.length === 0">
@@ -85,6 +88,9 @@
                     <DropdownItem @click.native="handleChatClick">
                         {{ $L('项目讨论') }}
                     </DropdownItem>
+                    <DropdownItem v-if="!projectKeyValue" @click.native="isDragging=!isDragging">
+                        {{ $L(isDragging ? '退出排序' : '调整排序') }}
+                    </DropdownItem>
                 </DropdownMenu>
             </Dropdown>
         </div>
@@ -111,6 +117,7 @@ export default {
             operateVisible: false,
             operateItem: {},
 
+            isDragging: false,
             projectDraggableList: [],
             projectDragging: false,
         }
@@ -182,6 +189,7 @@ export default {
                     list: nonPinnedItems.map(item => item.id)
                 },
                 method: 'post',
+                spinner: 2000
             }).then(({msg}) => {
                 $A.messageSuccess(msg)
             }).catch(({msg}) => {

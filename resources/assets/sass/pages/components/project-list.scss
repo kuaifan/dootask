@@ -188,6 +188,17 @@
                         }
                     }
                 }
+                .item-sort {
+                    flex-shrink: 0;
+                    padding-left: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    > svg {
+                        width: 20px;
+                        height: 20px;
+                    }
+                }
             }
         }
     }

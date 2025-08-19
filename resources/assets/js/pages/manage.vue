@@ -1073,6 +1073,7 @@ export default {
                     list: nonPinnedItems.map(item => item.id)
                 },
                 method: 'post',
+                spinner: 2000
             }).then(({msg}) => {
                 $A.messageSuccess(msg)
             }).catch(({msg}) => {
