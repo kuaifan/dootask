@@ -6,21 +6,21 @@ export default {
             start: e => {
                 e.preventDefault();
                 isTouch = true;
-                binding.value("down", e);
+                binding.value("down", e, el);
             },
             move: e => {
                 if (isTouch) {
-                    binding.value("move", e);
+                    binding.value("move", e, el);
                 }
             },
-            end: _ => {
+            end: e => {
                 if (isTouch) {
                     isTouch = false;
-                    binding.value("up");
+                    binding.value("up", e, el);
                 }
             },
             click: e => {
-                binding.value("click", e);
+                binding.value("click", e, el);
             }
         };
         if (isSupportTouch) {

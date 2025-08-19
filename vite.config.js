@@ -87,6 +87,18 @@ export default defineConfig(({command, mode}) => {
             host,
             port,
             strictPort: false,
+            watch: {
+                ignored: [
+                    '**/node_modules/**',
+                    '**/storage/**',
+                    '**/public/uploads/**',
+                    '**/database/**',
+                    '**/docker/**',
+                    '**/tests/**',
+                    '**/language/**',
+                    '**/electron/**',
+                ]
+            }
         },
         resolve: {
             alias: {
