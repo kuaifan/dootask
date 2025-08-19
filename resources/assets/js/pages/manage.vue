@@ -128,12 +128,22 @@
                     </ul>
                 </div>
                 <div ref="menuProject" class="menu-project">
-                    <ul v-longpress="handleLongpress">
+                    <Draggable
+                        :list="projectDraggableList"
+                        :animation="150"
+                        :disabled="$isEEUIApp || windowTouch || !!projectKeyValue"
+                        tag="ul"
+                        item-key="id"
+                        draggable="li:not(.pinned)"
+                        handle=".project-h1"
+                        v-longpress="handleLongpress"
+                        @start="projectDragging = true"
+                        @end="onProjectSortEnd">
                         <li
-                            v-for="(item, key) in projectLists"
+                            v-for="item in projectDraggableList"
                             :ref="`project_${item.id}`"
-                            :key="key"
-                            :class="classNameProject(item)"
+                            :key="item.id"
+                            :class="[classNameProject(item), item.top_at ? 'pinned' : '']"
                             :data-id="item.id"
                             @pointerdown="handleOperation"
                             @click="toggleRoute('project', {projectId: item.id})">
@@ -157,7 +167,7 @@
                             </div>
                         </li>
                         <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
-                    </ul>
+                    </Draggable>
                 </div>
             </Scrollbar>
             <div
@@ -393,6 +403,7 @@ import emitter from "../store/events";
 import SearchBox from "../components/SearchBox.vue";
 import transformEmojiToHtml from "../utils/emoji";
 import {languageName} from "../language";
+import Draggable from 'vuedraggable'
 
 export default {
     components: {
@@ -414,7 +425,8 @@ export default {
         TeamManagement,
         ProjectArchived,
         MicroApps,
-        ComplaintManagement
+        ComplaintManagement,
+        Draggable
     },
     directives: {longpress, TransferDom},
     data() {
@@ -449,6 +461,9 @@ export default {
             projectKeyValue: '',
             projectKeyLoading: 0,
             projectSearchShow: false,
+
+            projectDraggableList: [],
+            projectDragging: false,
 
             openMenu: {},
             visibleMenu: false,
@@ -675,9 +690,15 @@ export default {
         projectLists() {
             const {projectKeyValue, cacheProjects} = this;
             const data = $A.cloneJSON(cacheProjects).sort((a, b) => {
-                if (a.top_at || b.top_at) {
+                // 置顶优先
+                if (a.top_at !== b.top_at && (a.top_at || b.top_at)) {
                     return $A.sortDay(b.top_at, a.top_at);
                 }
+                // 自定义排序
+                const as = typeof a.sort === 'number' ? a.sort : Number.MAX_SAFE_INTEGER;
+                const bs = typeof b.sort === 'number' ? b.sort : Number.MAX_SAFE_INTEGER;
+                if (as !== bs) return as - bs;
+                // 兜底：按ID倒序
                 return b.id - a.id;
             });
             if (projectKeyValue) {
@@ -757,6 +778,15 @@ export default {
                     }
                     this.projectSearchShow = false
                 })
+            },
+            immediate: true
+        },
+
+        projectLists: {
+            handler(val) {
+                if (!this.projectDragging) {
+                    this.projectDraggableList = val
+                }
             },
             immediate: true
         },
@@ -1030,6 +1060,28 @@ export default {
             }
         },
 
+        onProjectSortEnd() {
+            // 只对非置顶项进行排序更新
+            const nonPinnedItems = this.projectDraggableList.filter(item => !item.top_at)
+            nonPinnedItems.forEach((item, index) => {
+                this.$store.dispatch("saveProject", {id: item.id, sort: index})
+            })
+            // 提交服务端保存
+            this.$store.dispatch("call", {
+                url: 'project/user/sort',
+                data: {
+                    list: nonPinnedItems.map(item => item.id)
+                },
+                method: 'post',
+            }).then(({msg}) => {
+                $A.messageSuccess(msg)
+            }).catch(({msg}) => {
+                $A.modalError(msg)
+            }).finally(() => {
+                this.projectDragging = false
+            })
+        },
+
         onAddTask(params) {
             this.addTaskShow = true
             this.$nextTick(_ => {
@@ -1194,6 +1246,7 @@ export default {
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveProject", data);
+                this.projectDraggableList = this.projectLists
                 this.$nextTick(() => {
                     const active = this.$refs.menuProject.querySelector(".active")
                     if (active) {

@@ -169,7 +169,11 @@ class ProjectController extends AbstractController
             $builder->where('projects.updated_at', '>', $timerange->updated);
         }
         //
-        $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(100, 50));
+        $list = $builder
+            ->orderByDesc('project_users.top_at')
+            ->orderBy('project_users.sort')
+            ->orderByDesc('projects.id')
+            ->paginate(Base::getPaginate(100, 50));
         $list->transform(function (Project $project) use ($getstatistics, $getuserid, $user) {
             $array = $project->toArray();
             if ($getuserid == 'yes') {
@@ -641,6 +645,39 @@ class ProjectController extends AbstractController
         }
         $project->pushMsg('sort');
         return Base::retSuccess('调整成功');
+    }
+
+    /**
+     * @api {post} api/project/user/sort          47. 项目列表排序
+     *
+     * @apiDescription 需要token身份，按当前用户对项目进行拖动排序，仅影响本人
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName user__sort
+     *
+     * @apiParam {Array} list   排序后的项目ID列表，如：[12,5,9]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function user__sort()
+    {
+        $user = User::auth();
+        $list = Base::json2array(Request::input('list'));
+        if (!is_array($list)) {
+            return Base::retError('参数错误');
+        }
+        $index = 0;
+        foreach ($list as $projectId) {
+            $projectId = intval($projectId);
+            if ($projectId <= 0) continue;
+            ProjectUser::whereUserid($user->userid)
+                ->whereProjectId($projectId)
+                ->update(['sort' => $index]);
+            $index++;
+        }
+        return Base::retSuccess('排序已保存');
     }
 
     /**

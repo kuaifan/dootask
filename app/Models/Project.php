@@ -129,6 +129,7 @@ class Project extends AbstractModel
                 'projects.*',
                 'project_users.owner',
                 'project_users.top_at',
+                'project_users.sort',
             ])
             ->leftJoin('project_users', function ($leftJoin) use ($userid) {
                 $leftJoin
@@ -153,6 +154,7 @@ class Project extends AbstractModel
                 'projects.*',
                 'project_users.owner',
                 'project_users.top_at',
+                'project_users.sort',
             ])
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('project_users.userid', $userid);

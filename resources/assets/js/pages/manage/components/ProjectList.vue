@@ -12,21 +12,24 @@
                 </Form>
             </div>
         </div>
-        <ul
-            @scroll="onScroll"
-            @touchstart="onTouchStart"
-            v-longpress="handleLongpress">
-            <template v-if="projectLists.length === 0">
-                <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
-                <li v-else class="nothing">
-                    {{$L(projectKeyValue ? `没有任何与"${projectKeyValue}"相关的结果` : `没有任何项目`)}}
-                </li>
-            </template>
+        <Draggable
+            :list="projectDraggableList"
+            :animation="150"
+            :disabled="!!projectKeyValue"
+            tag="ul"
+            item-key="id"
+            draggable="li:not(.pinned)"
+            handle=".project-h1"
+            @scroll.native="onScroll"
+            @touchstart.native="onTouchStart"
+            v-longpress="handleLongpress"
+            @start="projectDragging = true"
+            @end="onProjectSortEnd">
             <li
-                v-for="(item, key) in projectLists"
-                :key="key"
+                v-for="item in projectDraggableList"
+                :key="item.id"
                 :data-id="item.id"
-                :class="{operate: item.id == operateItem.id && operateVisible}"
+                :class="[{operate: item.id == operateItem.id && operateVisible}, item.top_at ? 'pinned' : '']"
                 @pointerdown="handleOperation"
                 @click="toggleRoute('project', {projectId: item.id})">
                 <div class="project-item">
@@ -55,7 +58,13 @@
                     </div>
                 </div>
             </li>
-        </ul>
+            <template v-if="projectLists.length === 0">
+                <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
+                <li v-else class="nothing">
+                    {{$L(projectKeyValue ? `没有任何与"${projectKeyValue}"相关的结果` : `没有任何项目`)}}
+                </li>
+            </template>
+        </Draggable>
         <div
             v-transfer-dom
             :data-transfer="true"
@@ -84,12 +93,14 @@
 
 <script>
 import {mapState} from "vuex";
+import Draggable from 'vuedraggable'
 import longpress from "../../../directives/longpress";
 import TransferDom from "../../../directives/transfer-dom";
 import transformEmojiToHtml from "../../../utils/emoji";
 
 export default {
     name: "ProjectList",
+    components: {Draggable},
     directives: {longpress, TransferDom},
     data() {
         return {
@@ -99,6 +110,9 @@ export default {
             operateStyles: {},
             operateVisible: false,
             operateItem: {},
+
+            projectDraggableList: [],
+            projectDragging: false,
         }
     },
 
@@ -108,9 +122,15 @@ export default {
         projectLists() {
             const {projectKeyValue, cacheProjects} = this;
             const data = $A.cloneJSON(cacheProjects).sort((a, b) => {
-                if (a.top_at || b.top_at) {
+                // 置顶优先
+                if (a.top_at !== b.top_at && (a.top_at || b.top_at)) {
                     return $A.sortDay(b.top_at, a.top_at);
                 }
+                // 自定义排序
+                const as = typeof a.sort === 'number' ? a.sort : Number.MAX_SAFE_INTEGER;
+                const bs = typeof b.sort === 'number' ? b.sort : Number.MAX_SAFE_INTEGER;
+                if (as !== bs) return as - bs;
+                // 兜底：按ID倒序
                 return b.id - a.id;
             });
             if (projectKeyValue) {
@@ -121,6 +141,14 @@ export default {
     },
 
     watch: {
+        projectLists: {
+            handler(val) {
+                if (!this.projectDragging) {
+                    this.projectDraggableList = val
+                }
+            },
+            immediate: true
+        },
         projectKeyValue(val) {
             if (val == '') {
                 return;
@@ -141,6 +169,27 @@ export default {
 
     methods: {
         transformEmojiToHtml,
+        onProjectSortEnd() {
+            // 只对非置顶项进行排序更新
+            const nonPinnedItems = this.projectDraggableList.filter(item => !item.top_at)
+            nonPinnedItems.forEach((item, index) => {
+                this.$store.dispatch("saveProject", {id: item.id, sort: index})
+            })
+            // 提交服务端保存
+            this.$store.dispatch("call", {
+                url: 'project/user/sort',
+                data: {
+                    list: nonPinnedItems.map(item => item.id)
+                },
+                method: 'post',
+            }).then(({msg}) => {
+                $A.messageSuccess(msg)
+            }).catch(({msg}) => {
+                $A.modalError(msg)
+            }).finally(() => {
+                this.projectDragging = false
+            })
+        },
         searchProject() {
             this.projectKeyLoading++;
             this.$store.dispatch("getProjects", {
