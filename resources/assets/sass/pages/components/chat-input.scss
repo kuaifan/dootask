@@ -81,6 +81,16 @@
         z-index: -1;
     }
 
+    .chat-input-toolbar {
+        position: absolute;
+        top: 4px;
+        left: 24px;
+        width: 0;
+        height: 0;
+        visibility: hidden;
+        z-index: -1;
+    }
+
     .chat-input-wrapper {
         position: relative;
         display: inline-block;
@@ -249,23 +259,6 @@
                     > span {
                         margin: 0 2px;
                     }
-                }
-            }
-        }
-
-        .ql-bubble {
-            .ql-tooltip {
-                z-index: 1;
-                button {
-                    &.ql-active {
-                        position: relative;
-                        background: #3d3d3d;
-                        border-radius: 6px;
-                    }
-                }
-                .ql-formats {
-                    display: flex;
-                    align-items: center;
                 }
             }
         }
@@ -726,7 +719,37 @@
         }
     }
 }
-
+.chat-input-toolbar-popover {
+    border: 0;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.9);
+}
+.chat-input-toolbar-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    > li {
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        &:hover {
+            > i {
+                color: $primary-color;
+            }
+        }
+        > i {
+            font-size: 14px;
+            color: #555;
+            transition: color 0.3s ease;
+        }
+    }
+}
 .chat-input-more-popover {
     min-width: 100px;
     padding: 8px;
@@ -1045,6 +1068,11 @@
                 > li {
                     opacity: 1;
                     cursor: pointer;
+                    &:hover {
+                        > i {
+                            color: $primary-color;
+                        }
+                    }
                     &:active {
                         background-color: #eee;
                     }
@@ -1065,6 +1093,7 @@
                 > i {
                     color: #555;
                     font-size: 16px;
+                    transition: color 0.3s ease;
                 }
                 @media screen and (max-width: 320px) {
                     height: 52px;

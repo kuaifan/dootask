@@ -24,6 +24,29 @@
             </EPopover>
         </div>
 
+        <!-- 工具栏 -->
+        <div class="chat-input-toolbar">
+            <EPopover
+                ref="toolbarRef"
+                v-model="selectedText"
+                :visibleArrow="false"
+                transition=""
+                placement="top-start"
+                popperClass="chat-input-toolbar-popover">
+                <div slot="reference"></div>
+                <ul class="chat-input-toolbar-menu">
+                    <li
+                        v-for="(item, index) in tools"
+                        :key="index"
+                        :data-label="item.label"
+                        :data-type="item.type"
+                        v-touchmouse="onMenu">
+                        <i class="taskfont" v-html="item.icon"></i>
+                    </li>
+                </ul>
+            </EPopover>
+        </div>
+
         <div ref="inputWrapper" class="chat-input-wrapper">
             <!-- 回复、修改 -->
             <div v-if="quoteData" class="chat-quote">
@@ -275,16 +298,18 @@
             footer-hide
             fullscreen>
             <div class="chat-input-box" :style="chatInputBoxStyle">
+                <!-- 输入区域 -->
                 <div class="chat-input-wrapper">
                     <div ref="editorFull" class="no-dark-content"></div>
                 </div>
-                <ul class="chat-input-menu" :class="{activation: fullSelection.length > 0}">
+                <!-- 工具栏 -->
+                <ul class="chat-input-menu" :class="{activation: fullSelected}">
                     <li
-                        v-for="(item, index) in fullTools"
+                        v-for="(item, index) in tools"
                         :key="index"
-                        @touchstart.prevent=""
-                        @touchend.prevent="onFullMenu(item.label, item.type)"
-                        @click="onFullMenu(item.label, item.type)">
+                        :data-label="item.label"
+                        :data-type="item.type"
+                        v-touchmouse="onMenu">
                         <i class="taskfont" v-html="item.icon"></i>
                     </li>
                 </ul>
@@ -299,6 +324,7 @@ import {mapGetters, mapState} from "vuex";
 import Quill from 'quill-hi';
 import {Delta} from "quill-hi/core";
 import "quill-mention-hi";
+import "./selection-plugin";
 import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
 import touchclick from "../../../../directives/touchclick";
@@ -442,11 +468,14 @@ export default {
             moreTimer: null,
             selectTimer: null,
             selectRange: null,
+            selectedText: false,
 
             fullInput: false,
             fullQuill: null,
-            fullSelection: {index: 0, length: 0},
-            fullTools: [
+            fullSelected: false,
+            fullSelection: null,
+
+            tools: [
                 {
                     label: 'bold',
                     type: '',
@@ -937,7 +966,7 @@ export default {
                 readOnly: false,
                 placeholder: this.placeholder,
                 modules: {
-                    toolbar: this.$isEEUIApp || this.windowTouch ? false : this.toolbar,
+                    toolbar: false,
                     keyboard: this.simpleMode ? {} : {
                         bindings: {
                             'short enter': {
@@ -973,6 +1002,17 @@ export default {
                                     return true;
                                 }
                             }
+                        }
+                    },
+                    selectionPlugin: {
+                        onTextSelected: (selectedText) => {
+                            if (this.$isEEUIApp || this.windowTouch) {
+                                return
+                            }
+                            this.selectedText = !!selectedText.trim()
+                        },
+                        onSelectionCleared: () => {
+                            this.selectedText = false
                         }
                     },
                     mention: this.quillMention()
@@ -1786,6 +1826,14 @@ export default {
                         placeholder: this.placeholder,
                         modules: {
                             toolbar: false,
+                            selectionPlugin: {
+                                onTextSelected: (selectedText) => {
+                                    this.fullSelected = !!selectedText.trim()
+                                },
+                                onSelectionCleared: () => {
+                                    this.fullSelected = false
+                                }
+                            },
                             mention: this.quillMention()
                         }
                     }, this.options))
@@ -1799,9 +1847,6 @@ export default {
                                 this.fullQuill.setSelection(this.fullSelection.index, this.fullSelection.length)
                             }, 100)
                         }
-                    })
-                    this.fullQuill.on('text-change', _ => {
-                        this.fullSelection = this.fullQuill.getSelection()
                     })
                     this.fullQuill.enable(true)
                     this.$refs.editorFull.firstChild.innerHTML = this.$refs.editor.firstChild.innerHTML
@@ -1822,31 +1867,36 @@ export default {
             })
         },
 
-        onFullMenu(action, type) {
-            const {length} = this.fullQuill.getSelection(true);
+        onMenu(action, _, el) {
+            if (action !== 'up') {
+                return;
+            }
+            const quill = this.getEditor();
+            const {length} = quill.getSelection(true);
             if (length === 0) {
                 $A.messageWarning("请选择文字后再操作")
                 return
             }
-            switch (action) {
+            const label = el.getAttribute('data-label');
+            switch (label) {
                 case 'bold':
-                    this.fullQuill.format('bold', !this.fullQuill.getFormat().bold);
+                    quill.format('bold', !quill.getFormat().bold);
                     break;
                 case 'strike':
-                    this.fullQuill.format('strike', !this.fullQuill.getFormat().strike);
+                    quill.format('strike', !quill.getFormat().strike);
                     break;
                 case 'italic':
-                    this.fullQuill.format('italic', !this.fullQuill.getFormat().italic);
+                    quill.format('italic', !quill.getFormat().italic);
                     break;
                 case 'underline':
-                    this.fullQuill.format('underline', !this.fullQuill.getFormat().underline);
+                    quill.format('underline', !quill.getFormat().underline);
                     break;
                 case 'blockquote':
-                    this.fullQuill.format('blockquote', !this.fullQuill.getFormat().blockquote);
+                    quill.format('blockquote', !quill.getFormat().blockquote);
                     break;
                 case 'link':
-                    if (this.fullQuill.getFormat().link) {
-                        this.fullQuill.format('link', false);
+                    if (quill.getFormat().link) {
+                        quill.format('link', false);
                         return
                     }
                     $A.modalInput({
@@ -1856,12 +1906,13 @@ export default {
                             if (!link) {
                                 return false;
                             }
-                            this.fullQuill.format('link', link);
+                            quill.format('link', link);
                         }
                     })
                     break;
                 case 'list':
-                    this.fullQuill.format('list', this.fullQuill.getFormat().list === type ? false : type);
+                    const type = el.getAttribute('data-type') || '';
+                    quill.format('list', quill.getFormat().list === type ? false : type);
                     break;
             }
         },
