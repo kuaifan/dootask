@@ -785,7 +785,7 @@ export default {
         projectLists: {
             handler(val) {
                 if (!this.projectDragging) {
-                    this.projectDraggableList = val
+                    this.projectDraggableList = $A.cloneJSON(val)
                 }
             },
             immediate: true
@@ -1061,12 +1061,7 @@ export default {
         },
 
         onProjectSortEnd() {
-            // 只对非置顶项进行排序更新
             const nonPinnedItems = this.projectDraggableList.filter(item => !item.top_at)
-            nonPinnedItems.forEach((item, index) => {
-                this.$store.dispatch("saveProject", {id: item.id, sort: index})
-            })
-            // 提交服务端保存
             this.$store.dispatch("call", {
                 url: 'project/user/sort',
                 data: {
@@ -1075,8 +1070,12 @@ export default {
                 method: 'post',
                 spinner: 2000
             }).then(({msg}) => {
+                nonPinnedItems.forEach((item, index) => {
+                    this.$store.dispatch("saveProject", {id: item.id, sort: index})
+                })
                 $A.messageSuccess(msg)
             }).catch(({msg}) => {
+                this.projectDraggableList = $A.cloneJSON(this.projectLists)
                 $A.modalError(msg)
             }).finally(() => {
                 this.projectDragging = false
@@ -1247,7 +1246,6 @@ export default {
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveProject", data);
-                this.projectDraggableList = this.projectLists
                 this.$nextTick(() => {
                     const active = this.$refs.menuProject.querySelector(".active")
                     if (active) {
