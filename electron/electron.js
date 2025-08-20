@@ -27,6 +27,10 @@ const {
     BrowserWindow
 } = require('electron')
 
+// 禁用渲染器后台化
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+
 // Electron 扩展和工具
 const {autoUpdater} = require("electron-updater")
 const Store = require("electron-store");
@@ -143,16 +147,16 @@ async function startWebServer(force = false) {
 
     return new Promise((resolve, reject) => {
         // 创建Express应用
-        const app = express();
+        const expressApp = express();
 
         // 健康检查
-        app.head('/health', (req, res) => {
+        expressApp.head('/health', (req, res) => {
             res.status(200).send('OK');
         });
 
         // 使用express.static中间件提供静态文件服务
         // Express内置了全面的MIME类型支持，无需手动配置
-        app.use(express.static(serverPublicDir, {
+        expressApp.use(express.static(serverPublicDir, {
             // 设置默认文件
             index: ['index.html', 'index.htm'],
             // 启用etag缓存
@@ -174,12 +178,12 @@ async function startWebServer(force = false) {
         }));
 
         // 404处理中间件
-        app.use((req, res) => {
+        expressApp.use((req, res) => {
             res.status(404).send('File not found');
         });
 
         // 错误处理中间件
-        app.use((err, req, res, next) => {
+        expressApp.use((err, req, res, next) => {
             // 不是ENOENT错误，记录error级别日志
             if (err.code !== 'ENOENT') {
                 loger.error('Server error:', err);
@@ -242,7 +246,7 @@ async function startWebServer(force = false) {
         });
 
         // 启动服务器
-        const server = app.listen(serverPort, 'localhost', () => {
+        const server = expressApp.listen(serverPort, 'localhost', () => {
             loger.info(`Express static file server running at http://localhost:${serverPort}/`);
             loger.info(`Serving files from: ${serverPublicDir}`);
             serverUrl = `http://localhost:${serverPort}/`;
