@@ -1377,10 +1377,12 @@ export default {
             if ($A.isIos() && list.length !== historyLength && this.$refs.scroller) {
                 // 隐藏区域，让iOS断触
                 const scrollEl = this.$refs.scroller.$el
-                scrollEl.style.visibility = 'hidden'
+                scrollEl.style.overflowY = 'hidden'
+                scrollEl.style.webkitOverflowScrolling = 'auto'
                 this.allMsgs = list;
-                this.$nextTick(_ => {
-                    scrollEl.style.visibility = 'visible'
+                requestAnimationFrame(_ => {
+                    scrollEl.style.overflowY = 'auto'
+                    scrollEl.style.webkitOverflowScrolling = 'touch'
                 })
             } else {
                 this.allMsgs = list;

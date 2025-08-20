@@ -243,7 +243,7 @@ body {
 /* 不同平台样式 */
 body.win32 .nav {
     padding-left: 8px;
-    padding-right: 186px;
+    padding-right: 140px;
 }
 
 body.darwin .nav {
