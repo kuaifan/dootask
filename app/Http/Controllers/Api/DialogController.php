@@ -2571,8 +2571,9 @@ class DialogController extends AbstractController
             $avatar = $avatar ? Base::unFillUrl(is_array($avatar) ? $avatar[0]['path'] : $avatar) : '';
             $data['avatar'] = Base::fillUrl($array['avatar'] = $avatar);
         }
-        if (Request::exists('chat_name') && $dialog->group_type === 'user') {
-            $chatName = trim(Request::input('chat_name'));
+        $existName = Request::exists('chat_name') || Request::exists('name');
+        if ($existName && $dialog->group_type === 'user') {
+            $chatName = trim(Request::input('chat_name') ?: Request::input('name'));
             if (mb_strlen($chatName) < 2) {
                 return Base::retError('群名称至少2个字');
             }
@@ -2845,7 +2846,7 @@ class DialogController extends AbstractController
             ->orderByDesc('u.top_at')
             ->orderByDesc('u.last_at')
             ->paginate(Base::getPaginate(100, 20));
-        
+
         // 处理分页数据，与getDialogList保持一致的处理方式
         $list->transform(function ($item) use ($user) {
             return WebSocketDialog::synthesizeData($item, $user->userid);
