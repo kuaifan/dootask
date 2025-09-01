@@ -30910,5 +30910,65 @@
         "fr": "Télécharger le contenu",
         "id": "Unduh konten",
         "ru": "Скачать содержимое"
+    },
+    {
+        "key": "退出排序",
+        "zh": "",
+        "zh-CHT": "退出排序",
+        "en": "Exit sorting",
+        "ko": "정렬 종료",
+        "ja": "並び替えを終了",
+        "de": "Sortierung verlassen",
+        "fr": "Quitter le tri",
+        "id": "Keluar dari penyortiran",
+        "ru": "Выйти из сортировки"
+    },
+    {
+        "key": "调整排序",
+        "zh": "",
+        "zh-CHT": "調整排序",
+        "en": "Adjust sorting",
+        "ko": "정렬 조정",
+        "ja": "並び替えを調整",
+        "de": "Sortierung anpassen",
+        "fr": "Ajuster le tri",
+        "id": "Sesuaikan penyortiran",
+        "ru": "Изменить сортировку"
+    },
+    {
+        "key": "解散",
+        "zh": "",
+        "zh-CHT": "解散",
+        "en": "Disband",
+        "ko": "해산",
+        "ja": "解散",
+        "de": "Auflösen",
+        "fr": "Dissoudre",
+        "id": "Bubarkan",
+        "ru": "Расформировать"
+    },
+    {
+        "key": "你确定要解散【(%T1)】群组吗？",
+        "zh": "",
+        "zh-CHT": "你確定要解散【(%T1)】群組嗎？",
+        "en": "Are you sure you want to disband the 【(%T1)】 group?",
+        "ko": "정말로 【(%T1)】 그룹을 해산하시겠습니까?",
+        "ja": "【(%T1)】グループを解散してもよろしいですか？",
+        "de": "Möchten Sie die Gruppe 【(%T1)】 wirklich auflösen?",
+        "fr": "Êtes-vous sûr de vouloir dissoudre le groupe 【(%T1)】 ?",
+        "id": "Apakah Anda yakin ingin membubarkan grup 【(%T1)】?",
+        "ru": "Вы действительно хотите расформировать группу 【(%T1)】?"
+    },
+    {
+        "key": "排序已保存",
+        "zh": "",
+        "zh-CHT": "排序已保存",
+        "en": "Sorting saved",
+        "ko": "정렬이 저장되었습니다",
+        "ja": "並び順が保存されました",
+        "de": "Sortierung gespeichert",
+        "fr": "Tri enregistré",
+        "id": "Penyortiran telah disimpan",
+        "ru": "Сортировка сохранена"
     }
 ]

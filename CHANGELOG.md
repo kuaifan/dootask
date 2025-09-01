@@ -2,10 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.49]
+
+### Bug Fixes
+
+- 无法修改群组名称的问题
+- 修复甘特图时间轴计算错误
+
+### Features
+
+- 添加内置浏览器导航功能
+- 添加查看共同的群
+
+### Performance
+
+- 支持项目调整排序
+- 优化错误页
+- 优化输入框工具栏
+- 优化任务模板、任务标签
+
 ## [1.2.21]
 
 ### Bug Fixes
 
+- 修复 supervisor crontab 运行状态错误
 - 修复应用加载中无法点击胶囊
 
 ### Performance
