@@ -3919,7 +3919,11 @@ export default {
             //
             const current = $A.thumbRestore(currentUrl)
             if (!list.find(item => $A.thumbRestore(item.src) == current)) {
-                return false
+                list.unshift({
+                    src: currentUrl,
+                    width: 0,
+                    height: 0,
+                })
             }
             //
             this.$store.dispatch("previewImage", {index: currentUrl, list})
