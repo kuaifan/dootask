@@ -73,6 +73,8 @@ class FileController extends AbstractController
         $id = Request::input('id');
         //
         $permission = 0;
+        $isGuestAccess = false;
+        
         if (Base::isNumber($id)) {
             $user = User::auth();
             $file = File::permissionFind(intval($id), $user, 0, $permission);
@@ -87,6 +89,40 @@ class FileController extends AbstractController
                 }
                 return Base::retError($msg, $data);
             }
+            
+            // 检查游客访问权限
+            $isGuestAccess = true;
+            
+            // 尝试获取当前用户，如果未登录则为null
+            $user = null;
+            $token = Base::token();
+            if ($token) {
+                try {
+                    $user = User::auth();
+                } catch (\Exception $e) {
+                    $user = null;
+                }
+            }
+            
+            // 如果文件不允许游客访问且用户未登录，抛出登录异常
+            if (!$file->guest_access && !$user) {
+                throw new ApiException('请登录后继续...', [], -1);
+            }
+            
+            // 如果用户已登录，检查用户是否有权限访问该文件
+            if ($user) {
+                try {
+                    File::permissionFind($file->id, $user, 0, $permission);
+                } catch (\Exception $e) {
+                    // 如果用户没有权限且文件不允许游客访问，抛出登录异常
+                    if (!$file->guest_access) {
+                        throw new ApiException('请登录后继续...', [], -1);
+                    }
+                    // 否则作为游客访问
+                    $permission = 0;
+                }
+            }
+            
             $fileLink->increment("num");
         } else {
             return Base::retError('参数错误');
@@ -94,6 +130,7 @@ class FileController extends AbstractController
         //
         $array = $file->toArray();
         $array['permission'] = $permission;
+        $array['is_guest_access'] = $isGuestAccess;
         return Base::retSuccess('success', $array);
     }
 
@@ -627,7 +664,7 @@ class FileController extends AbstractController
     /**
      * @api {get} api/file/office/token          10. 获取token
      *
-     * @apiDescription 需要token身份
+     * @apiDescription 用于生成office在线编辑的token
      * @apiVersion 1.0.0
      * @apiGroup file
      * @apiName office__token
@@ -640,8 +677,6 @@ class FileController extends AbstractController
      */
     public function office__token()
     {
-        User::auth();
-        //
         File::isNeedInstallApp('office');
         //
         $config = Request::input('config');
@@ -981,6 +1016,9 @@ class FileController extends AbstractController
      * @apiParam {String} refresh           刷新链接
      * - no: 只获取（默认）
      * - yes: 刷新链接，之前的将失效
+     * @apiParam {String} guest_access      是否允许游客访问
+     * - no: 不允许（默认）
+     * - yes: 允许游客访问
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -992,9 +1030,16 @@ class FileController extends AbstractController
         //
         $id = intval(Request::input('id'));
         $refresh = Request::input('refresh', 'no');
+        $guestAccess = Request::input('guest_access', 'no');
         //
         $file = File::permissionFind($id, $user);
+        
+        // 更新文件的游客访问权限
+        $file->guest_access = $guestAccess === 'yes' ? 1 : 0;
+        $file->save();
+        
         $fileLink = $file->getShareLink($user->userid, $refresh == 'yes');
+        $fileLink['guest_access'] = $file->guest_access;
         //
         return Base::retSuccess('success', $fileLink);
     }

@@ -99,7 +99,19 @@
             :mask-closable="false">
             <div>
                 <div style="margin:-10px 0 8px">{{$L('文件名称')}}: {{linkData.name}}</div>
-                <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="3" @on-focus="linkFocus" readonly/>
+                <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="2" @on-focus="linkFocus" readonly/>
+                
+                <!-- 游客访问权限控制 -->
+                <div style="margin:12px 0">
+                    <Checkbox v-model="linkData.guest_access" @on-change="onGuestAccessChange">
+                        {{$L('允许游客访问此链接')}}
+                    </Checkbox>
+                    <div v-if="linkData.guest_access" style="color: #ff9900; margin-top: 6px;">
+                        <Icon type="ios-warning" />
+                        {{$L('警告：任何人都可通过此链接访问文件')}}
+                    </div>
+                </div>
+                
                 <div class="form-tip" style="padding-top:6px">
                     {{$L('可通过此链接浏览文件。')}}
                     <Poptip
@@ -171,7 +183,9 @@ export default {
             loadPreview: true,
 
             linkShow: false,
-            linkData: {},
+            linkData: {
+                guest_access: false  // 默认不允许游客访问
+            },
             linkLoad: 0,
 
             historyShow: false,
@@ -385,7 +399,8 @@ export default {
                 case "link":
                     this.linkData = {
                         id: this.fileId,
-                        name: this.file.name
+                        name: this.file.name,
+                        guest_access: Boolean(this.file.guest_access)  // 从文件对象获取实际的游客访问权限
                     };
                     this.linkShow = true;
                     this.linkGet()
@@ -471,20 +486,39 @@ export default {
                 url: 'file/link',
                 data: {
                     id: this.linkData.id,
-                    refresh: refresh === true ? 'yes' : 'no'
+                    refresh: refresh === true ? 'yes' : 'no',
+                    guest_access: this.linkData.guest_access ? 'yes' : 'no'
                 },
             }).then(({data}) => {
                 this.linkData = Object.assign(data, {
                     id: this.linkData.id,
                     name: this.linkData.name,
+                    guest_access: Boolean(data.guest_access || this.linkData.guest_access)  // 确保是布尔值
                 });
-                this.linkCopy();
+                // 根据不同情况处理
+                if (refresh === true) {
+                    // 刷新链接时复制
+                    this.linkCopy();
+                } else if (refresh === false) {
+                    // 权限修改时只提示成功
+                    $A.messageSuccess('修改成功');
+                } else {
+                    // 首次获取链接时复制
+                    this.linkCopy();
+                }
             }).catch(({msg}) => {
                 this.linkShow = false
                 $A.modalError(msg);
             }).finally(_ => {
                 this.linkLoad--;
             });
+        },
+
+        onGuestAccessChange(value) {
+            // 当游客访问权限改变时，需要重新获取链接
+            if (this.linkData.url) {
+                this.linkGet(false);
+            }
         },
 
         linkCopy() {
