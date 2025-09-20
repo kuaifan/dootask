@@ -3,8 +3,6 @@
 </template>
 
 <script>
-import {languageName} from "../language";
-
 export default {
     data() {
         return {}
