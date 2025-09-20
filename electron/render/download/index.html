@@ -35,7 +35,7 @@
 
     <div class="content">
         <div class="tab-content all-tasks">
-            <div v-if="list.length === 0" class="empty-state">
+            <div v-if="list.length === 0 && waiting === false" class="empty-state">
                 <div class="empty-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
                         <path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>
@@ -44,6 +44,28 @@
                 <div class="empty-text">{{ query ? lang.noSearchResult : lang.noItems }}</div>
             </div>
             <div v-else class="task-list">
+                <!-- 骨架条目 -->
+                <div v-if="waiting" class="task-item skeleton-item">
+                    <div class="task-icon">
+                        <div class="skeleton-file-icon"></div>
+                    </div>
+                    <div class="task-info">
+                        <div class="task-name">
+                            <div class="skeleton-name"></div>
+                        </div>
+                        <div class="task-meta">
+                            <span class="skeleton-size"></span>
+                            <span class="skeleton-time"></span>
+                            <span class="skeleton-status"></span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <div class="skeleton-btn"></div>
+                        <div class="skeleton-btn"></div>
+                        <div class="skeleton-btn"></div>
+                    </div>
+                </div>
+                <!-- 任务列表 -->
                 <div
                     v-for="(item, index) in list"
                     :key="index"
@@ -60,7 +82,7 @@
                         <div class="task-meta">
                             <!-- 大小 -->
                             <span v-if="item.state === 'progressing'" class="file-size">
-                                {{ formatBytes(item.received) }}<template v-if="item.total > 0"> / {{ formatBytes(item.total) }}</template> ({{ item.percent }}%)
+                                {{ formatBytes(item.received) }}<template v-if="item.total > 0"> / {{ formatBytes(item.total) }}</template><template v-if="item.percent >= 0"> ({{ item.percent }}%)</template>
                             </span>
                             <span v-else class="file-size">
                                 {{ formatBytes(item.total) }}
@@ -135,7 +157,10 @@
         data() {
             return {
                 query: '',
+
                 items: [],
+                waiting: false,
+
                 lang: {
                     // 语言设置
                     locale: 'zh-CN',
@@ -193,8 +218,9 @@
             this.getList();
 
             // 监听下载任务列表
-            electron?.listener('download-items', (items) => {
+            electron?.listener('download-items', ({items, waiting}) => {
                 this.items = items
+                this.waiting = waiting
             });
 
             // 接收主题
@@ -251,6 +277,7 @@
                 try {
                     const data = await this.sendAsync('get');
                     this.items = data.items || [];
+                    this.waiting = data.waiting || false;
                 } catch (e) {
                     console.error('加载下载任务失败:', e);
                 }

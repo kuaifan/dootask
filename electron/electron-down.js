@@ -2,16 +2,17 @@ const {BrowserWindow, screen, shell, ipcMain} = require('electron')
 const fs = require('fs');
 const path = require('path');
 const loger = require("electron-log");
-const {default: electronDl, download} = require("@dootask/electron-dl");
+const {default: electronDl, download, CancelError} = require("@dootask/electron-dl");
 const utils = require("./lib/utils");
 const {DownloadManager, DownloadStore} = require("./lib/download-manager");
 
 const downloadManager = new DownloadManager();
 
 let downloadWindow = null,
-    downloadLanguageCode = 'zh';
+    downloadLanguageCode = 'zh',
+    downloadWaiting = false;
 
-function initialize(onStarted= null) {
+function initialize(onStarted = null) {
     // 下载配置
     electronDl({
         showBadge: false,
@@ -19,6 +20,7 @@ function initialize(onStarted= null) {
 
         onStarted: (item) => {
             downloadManager.add(item);
+            downloadWaiting = false;
             syncDownloadItems();
             if (typeof onStarted === 'function') {
                 onStarted(item)
@@ -55,7 +57,8 @@ function initialize(onStarted= null) {
         switch (action) {
             case "get": {
                 return {
-                    items: downloadManager.get()
+                    items: downloadManager.get(),
+                    waiting: downloadWaiting,
                 };
             }
 
@@ -107,10 +110,32 @@ function initialize(onStarted= null) {
     });
 }
 
+async function createDownload(window_, url, options = {}) {
+    downloadWaiting = true;
+    syncDownloadItems();
+    try {
+        return await download(window_, url, options);
+    } catch (error) {
+        // electron-dl rejects with CancelError when a download is cancelled; treat it as expected.
+        const isCancelError = (typeof CancelError === 'function' && error instanceof CancelError)
+            || error?.name === 'CancelError';
+        if (!isCancelError) {
+            throw error;
+        }
+        return null;
+    } finally {
+        downloadWaiting = false;
+        syncDownloadItems();
+    }
+}
+
 function syncDownloadItems() {
     // 同步下载项到渲染进程
     if (downloadWindow) {
-        downloadWindow.webContents.send('download-items', downloadManager.get());
+        downloadWindow.webContents.send('download-items', {
+            items: downloadManager.get(),
+            waiting: downloadWaiting,
+        });
     }
 }
 
@@ -654,7 +679,7 @@ async function updateWindow(language, theme) {
 
 module.exports = {
     initialize,
-    download,
+    createDownload,
     open,
     close,
     destroy,

@@ -2947,7 +2947,7 @@ ipcMain.on("rendererReq", async (event, args) => {
                 ret = await electronDown.updateWindow(args.language, args.theme);
                 break;
             case 'createDownload':
-                ret = await electronDown.download(mainWindow, args.url, args.options || {});
+                ret = await electronDown.createDownload(mainWindow, args.url, args.options || {});
                 break;
             case 'watchFile':
                 ret = await watchFile(args.path);

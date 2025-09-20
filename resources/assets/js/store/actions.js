@@ -466,6 +466,11 @@ export default {
         }
         if ($A.Electron) {
             $A.Electron.request({
+                action: 'openDownloadWindow',
+                language: languageName,
+                theme: state.themeName,
+            });
+            $A.Electron.request({
                 action: 'createDownload',
                 url
             });
