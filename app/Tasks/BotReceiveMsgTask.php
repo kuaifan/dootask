@@ -505,8 +505,24 @@ class BotReceiveMsgTask extends AbstractTask
                 }
                 $this->generateSystemPromptForAI($msg->userid, $dialog, $extras);
                 // 转换提及格式
-                $sendText = self::convertMentionForAI($sendText);
-                $replyText = self::convertMentionForAI($replyText);
+                try {
+                    $sendText = self::convertMentionForAI($sendText);
+                    $replyText = self::convertMentionForAI($replyText);
+                } catch (Exception $e) {
+                    // 判断会话在聊天状态中，抛出错误消息
+                    $stateUrl = "http://nginx/ai/chat_state";
+                    $data = [
+                        'dialog_id' => $dialog->id,
+                        'dialog_type' => $dialog->type,
+                        'extras' => Base::array2json($extras)
+                    ];
+                    $result = Ihttp::ihttp_post($stateUrl, $data, 30);
+                    if ($result['data'] && $data = Base::json2array($result['data'])) {
+                        if ($data['code'] === 200) {
+                            throw $e;
+                        }
+                    }
+                }
                 if ($replyText) {
                     $sendText = <<<EOF
                         <quoted_content>
