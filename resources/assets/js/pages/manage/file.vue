@@ -253,7 +253,7 @@
                         </AutoTip>
                         <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !== 1" class="file-error">{{item.response.msg}}</AutoTip>
                         <Progress v-else :percent="uploadPercentageParse(item.percentage)" :stroke-width="5" />
-                        <Icon class="file-close" type="ios-close-circle-outline" @click="uploadList.splice(index, 1)"/>
+                        <Icon class="file-close" type="ios-close-circle-outline" @click.stop="uploadList.splice(index, 1)"/>
                     </li>
                 </ul>
                 <Icon class="close" type="md-close" @click="uploadShow=false"/>
@@ -310,6 +310,7 @@
             :headers="headers"
             :multiple="true"
             :webkitdirectory="true"
+            :max-concurrent-uploads="2"
             :format="uploadFormat"
             :accept="uploadAccept"
             :show-upload-list="false"
