@@ -1227,6 +1227,8 @@ export default {
                 //
                 window.localStorage.removeItem('__cache:vote__')
                 window.localStorage.removeItem('__cache:unfoldWordChain__')
+                //
+                this.handlerMsgTransfer()
             },
             immediate: true
         },
@@ -1325,23 +1327,8 @@ export default {
         },
 
         dialogMsgTransfer: {
-            handler({time, msgFile, msgRecord, msgText, sendType, dialogId}) {
-                if (time < $A.dayjs().unix()) {
-                    return
-                }
-                if (dialogId != this.dialogId) {
-                    return;
-                }
-                this.$store.state.dialogMsgTransfer.time = 0;
-                this.$nextTick(() => {
-                    if ($A.isArray(msgFile) && msgFile.length > 0) {
-                        this.sendFileMsg(msgFile);
-                    } else if ($A.isJson(msgRecord) && msgRecord.duration > 0) {
-                        this.sendRecord(msgRecord);
-                    } else if (msgText) {
-                        this.sendMsg(msgText, sendType);
-                    }
-                });
+            handler() {
+                this.handlerMsgTransfer();
             },
             immediate: true
         },
@@ -4467,6 +4454,29 @@ export default {
                 }
                 this.$store.dispatch("scrollBottom", this.$refs.footer)
             }, 500)
+        },
+
+        handlerMsgTransfer() {
+            const {time, msgFile, msgRecord, msgText, sendType, dialogId} = this.dialogMsgTransfer || {}
+            if (!/^\d+$/.test(time) || !/^\d+$/.test(dialogId)) {
+                return
+            }
+            if (time < $A.dayjs().unix()) {
+                return
+            }
+            if (dialogId != this.dialogId) {
+                return
+            }
+            this.$store.state.dialogMsgTransfer.time = 0;
+            this.$nextTick(() => {
+                if ($A.isArray(msgFile) && msgFile.length > 0) {
+                    this.sendFileMsg(msgFile);
+                } else if ($A.isJson(msgRecord) && msgRecord.duration > 0) {
+                    this.sendRecord(msgRecord);
+                } else if (msgText) {
+                    this.sendMsg(msgText, sendType);
+                }
+            });
         }
     }
 }

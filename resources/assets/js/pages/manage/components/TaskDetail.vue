@@ -265,7 +265,6 @@
                                 </DatePicker>
                             </li>
                         </ul>
-
                     </FormItem>
                     <FormItem v-if="(taskDetail.loop && taskDetail.loop != 'never') || loopForce">
                         <div class="item-label" slot="label">
@@ -1691,7 +1690,7 @@ export default {
 
         openDialogBefore(dialogId, sendType) {
             if (sendType !== true) {
-                const transferData = {
+                this.$store.state.dialogMsgTransfer = {
                     time: $A.dayjs().unix() + 10,
                     msgRecord: this.msgRecord,
                     msgFile: this.msgFile,
@@ -1702,7 +1701,6 @@ export default {
                 this.msgRecord = {};
                 this.msgFile = [];
                 this.msgText = "";
-                this.$store.state.dialogMsgTransfer = transferData
                 this.$store.dispatch("saveDialogDraft", {id: `t_${this.taskId}`, content: ""})
             }
 
