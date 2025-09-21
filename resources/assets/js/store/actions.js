@@ -1076,7 +1076,6 @@ export default {
                 cacheProjectParameter: await $A.IDBArray("cacheProjectParameter"),
                 cacheLoginEmail: await $A.IDBString("cacheLoginEmail"),
                 cacheFileSort: await $A.IDBJson("cacheFileSort"),
-                cacheTaskBrowse: await $A.IDBArray("cacheTaskBrowse"),
                 cacheTranslationLanguage: await $A.IDBString("cacheTranslationLanguage"),
                 cacheTranscriptionLanguage: await $A.IDBString("cacheTranscriptionLanguage"),
                 cacheTranslations: await $A.IDBArray("cacheTranslations"),
@@ -1124,7 +1123,6 @@ export default {
                     'cacheColumns',
                     'cacheTasks',
                     'cacheProjectParameter',
-                    'cacheTaskBrowse',
                     'cacheTranslations',
                     'dialogMsgs',
                     'dialogDrafts',
@@ -2746,23 +2744,38 @@ export default {
 
     /**
      * 保存任务浏览记录
-     * @param state
+     * @param dispatch
      * @param task_id
      */
-    saveTaskBrowse({state}, task_id) {
-        const index = state.cacheTaskBrowse.findIndex(({id}) => id == task_id)
-        if (index > -1) {
-            state.cacheTaskBrowse.splice(index, 1)
-        }
-        state.cacheTaskBrowse.unshift({
-            id: task_id,
-            userid: state.userId
-        })
-        if (state.cacheTaskBrowse.length > 200) {
-            state.cacheTaskBrowse.splice(200);
-        }
-        //
-        $A.IDBSave("cacheTaskBrowse", state.cacheTaskBrowse);
+    saveTaskBrowse({dispatch}, task_id) {
+        // 直接调用API保存到远程，不维护本地缓存
+        dispatch('call', {
+            url: 'users/task/browse_save',
+            data: {
+                task_id: task_id
+            },
+            method: 'post',
+            spinner: 0, // 静默调用，不显示loading
+        }).catch(error => {
+            console.warn('保存任务浏览历史失败:', error);
+            // API失败时不影响用户体验，只记录错误
+        });
+    },
+
+    /**
+     * 获取任务浏览历史
+     * @param dispatch
+     * @param limit
+     */
+    getTaskBrowseHistory({dispatch}, limit = 20) {
+        return dispatch('call', {
+            url: 'users/task/browse',
+            data: {
+                limit: limit
+            },
+            method: 'get',
+            spinner: 0, // 静默调用
+        });
     },
 
     /**

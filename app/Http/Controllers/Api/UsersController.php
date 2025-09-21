@@ -15,6 +15,7 @@ use App\Module\Timer;
 use App\Ldap\LdapUser;
 use App\Models\Meeting;
 use App\Models\Project;
+use App\Models\ProjectTask;
 use App\Models\UserBot;
 use App\Models\WebSocket;
 use App\Models\UmengAlias;
@@ -28,6 +29,7 @@ use App\Models\UserDepartment;
 use App\Models\WebSocketDialog;
 use App\Models\UserCheckinRecord;
 use App\Models\WebSocketDialogMsg;
+use App\Models\UserTaskBrowse;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserEmailVerification;
 use App\Module\AgoraIO\AgoraTokenGenerator;
@@ -2717,5 +2719,110 @@ class UsersController extends AbstractController
         $row->save();
         //
         return Base::retSuccess('保存成功');
+    }
+
+    /**
+     * @api {get} api/users/task/browse          43. 获取任务浏览历史
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName task__browse
+     *
+     * @apiParam {Number} [limit=20]            获取数量限制，最大50
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__browse()
+    {
+        $user = User::auth();
+        //
+        $limit = min(intval(Request::input('limit', 20)), 50);
+        //
+        $browseHistory = UserTaskBrowse::getUserBrowseHistory($user->userid, $limit);
+
+        $data = [];
+        foreach ($browseHistory as $browse) {
+            if ($browse->task) {
+                // 解析 flow_item_name 字段（格式：status|name|color）
+                $flowItemParts = explode('|', $browse->task->flow_item_name ?: '');
+                $flowItemStatus = $flowItemParts[0] ?? '';
+                $flowItemName = $flowItemParts[1] ?? $browse->task->flow_item_name;
+                $flowItemColor = $flowItemParts[2] ?? '';
+                
+                $data[] = [
+                    'id' => $browse->task->id,
+                    'name' => $browse->task->name,
+                    'project_id' => $browse->task->project_id,
+                    'column_id' => $browse->task->column_id,
+                    'parent_id' => $browse->task->parent_id,
+                    'flow_item_id' => $browse->task->flow_item_id,
+                    'flow_item_name' => $flowItemName,
+                    'flow_item_status' => $flowItemStatus,
+                    'flow_item_color' => $flowItemColor,
+                    'complete_at' => $browse->task->complete_at,
+                    'browsed_at' => $browse->browsed_at,
+                ];
+            }
+        }
+        //
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {post} api/users/task/browse_save          44. 记录任务浏览历史
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName task__browse_save
+     *
+     * @apiParam {Number} task_id               任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__browse_save()
+    {
+        $user = User::auth();
+        //
+        $task_id = intval(Request::input('task_id'));
+        if ($task_id <= 0) {
+            return Base::retError('参数错误');
+        }
+        //
+        ProjectTask::userTask($task_id, null, null);
+        //
+        UserTaskBrowse::recordBrowse($user->userid, $task_id);
+        //
+        return Base::retSuccess('记录成功');
+    }
+
+    /**
+     * @api {post} api/users/task/browse_clean          45. 清理任务浏览历史
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName task__browse_clean
+     *
+     * @apiParam {Number} [keep_count=100]      保留记录数量，0表示全部清理
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__browse_clean()
+    {
+        $user = User::auth();
+        //
+        $keepCount = intval(Request::input('keep_count', 100));
+        //
+        $deletedCount = UserTaskBrowse::cleanUserBrowseHistory($user->userid, $keepCount);
+        //
+        return Base::retSuccess('清理完成', ['deleted_count' => $deletedCount]);
     }
 }

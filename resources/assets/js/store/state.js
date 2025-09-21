@@ -102,7 +102,6 @@ export default {
     cacheColumns: [],
     cacheTasks: [],
     cacheProjectParameter: [],
-    cacheTaskBrowse: [],
 
     // Emoji
     cacheEmojis: [],

@@ -487,6 +487,9 @@ export default {
             approveShow: false,
             approveDetails: {id: 0},
             approveDetailsShow: false,
+            
+            taskBrowseLoading: false,
+            taskBrowseHistory: [], // 存储任务浏览历史
         }
     },
 
@@ -537,7 +540,6 @@ export default {
             'columnTemplate',
 
             'clientNewVersion',
-            'cacheTaskBrowse',
 
             'reportUnreadNumber',
             'approveUnreadNumber',
@@ -708,10 +710,8 @@ export default {
         },
 
         taskBrowseLists() {
-            const {cacheTasks, cacheTaskBrowse, userId} = this;
-            return cacheTaskBrowse.filter(({userid}) => userid === userId).map(({id}) => {
-                return cacheTasks.find(task => task.id === id) || {}
-            });
+            // 直接使用组件内的响应式数据
+            return this.taskBrowseHistory.slice(0, 10); // 只显示前10个
         },
     },
 
@@ -912,6 +912,10 @@ export default {
 
         menuVisibleChange(visible) {
             this.visibleMenu = visible
+            // 当菜单展开时，获取最新的浏览历史
+            if (visible && !this.taskBrowseLoading) {
+                this.loadTaskBrowseHistory()
+            }
         },
 
         classNameRoute(path) {
@@ -1386,6 +1390,24 @@ export default {
                     $A.modalError(msg)
                 });
             }
+        },
+
+        /**
+         * 加载任务浏览历史
+         */
+        loadTaskBrowseHistory() {
+            if (this.taskBrowseLoading) return
+            
+            this.taskBrowseLoading = true
+            this.$store.dispatch("getTaskBrowseHistory", 20).then(({data}) => {
+                // 更新组件内的浏览历史数据
+                this.taskBrowseHistory = data || []
+            }).catch(error => {
+                console.warn('获取任务浏览历史失败:', error)
+                // 失败时保持当前数据不变
+            }).finally(() => {
+                this.taskBrowseLoading = false
+            })
         },
     }
 }
