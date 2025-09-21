@@ -171,6 +171,26 @@ class UserDepartment extends AbstractModel
     }
 
     /**
+     * 递归获取所有子部门ID
+     * @param int $departmentId
+     * @return array
+     */
+    public static function getAllSubDepartmentIds($departmentId)
+    {
+        $subIds = [];
+        $directSubs = self::whereParentId($departmentId)->pluck('id')->toArray();
+        
+        foreach ($directSubs as $subId) {
+            $subIds[] = $subId;
+            // 递归获取子部门的子部门
+            $subSubIds = self::getAllSubDepartmentIds($subId);
+            $subIds = array_merge($subIds, $subSubIds);
+        }
+        
+        return array_unique($subIds);
+    }
+
+    /**
      * 获取部门基本信息（缓存时间1小时）
      * @param int|array $ids
      * @return \Illuminate\Support\Collection|static|null

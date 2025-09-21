@@ -1792,7 +1792,94 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/checkin/get          29. 获取签到设置
+     * @api {get} api/users/department/sync          29. 同步部门成员（限管理员）
+     *
+     * @apiDescription 需要token身份，将子部门成员同步到当前部门
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName department__sync
+     *
+     * @apiParam {Number} id             部门id
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function department__sync()
+    {
+        User::auth('admin');
+        //
+        $id = intval(Request::input('id'));
+        //
+        $userDepartment = UserDepartment::find($id);
+        if (empty($userDepartment)) {
+            return Base::retError('部门不存在或已被删除');
+        }
+
+        // 获取所有子部门（递归）
+        $subDepartmentIds = UserDepartment::getAllSubDepartmentIds($id);
+        if (empty($subDepartmentIds)) {
+            return Base::retSuccess('同步完成，子部门中没有成员需要同步', [
+                'synced_count' => 0,
+                'already_in_dept_count' => 0,
+                'sub_department_ids' => $subDepartmentIds
+            ]);
+        }
+
+        // 获取子部门中的所有成员
+        $subDepartmentMembers = [];
+        foreach ($subDepartmentIds as $subId) {
+            $users = User::where("department", "like", "%,{$subId},%")->get();
+            foreach ($users as $user) {
+                if (!in_array($user->userid, $subDepartmentMembers)) {
+                    $subDepartmentMembers[] = $user->userid;
+                }
+            }
+        }
+
+        if (empty($subDepartmentMembers)) {
+            return Base::retSuccess('同步完成，子部门中没有成员需要同步', [
+                'synced_count' => 0,
+                'already_in_dept_count' => 0,
+                'sub_department_ids' => $subDepartmentIds
+            ]);
+        }
+
+        // 将子部门成员添加到当前部门
+        $syncedCount = 0;
+        $alreadyInDeptCount = 0;
+
+        AbstractModel::transaction(function () use ($id, $subDepartmentMembers, &$syncedCount, &$alreadyInDeptCount) {
+            foreach ($subDepartmentMembers as $userid) {
+                $user = User::find($userid);
+                if ($user) {
+                    $userDepartments = $user->department;
+                    if (!in_array($id, $userDepartments)) {
+                        $userDepartments[] = $id;
+                        $user->department = Base::arrayImplode($userDepartments);
+                        $user->save();
+                        $syncedCount++;
+                    } else {
+                        $alreadyInDeptCount++;
+                    }
+                }
+            }
+        });
+
+        $message = "同步完成，共同步 {$syncedCount} 个成员";
+        if ($alreadyInDeptCount > 0) {
+            $message .= "，其中 {$alreadyInDeptCount} 个成员已在当前部门";
+        }
+
+        return Base::retSuccess($message, [
+            'synced_count' => $syncedCount,
+            'already_in_dept_count' => $alreadyInDeptCount,
+            'sub_department_ids' => $subDepartmentIds
+        ]);
+    }
+
+    /**
+     * @api {get} api/users/checkin/get          30. 获取签到设置
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

@@ -54,6 +54,9 @@
                                 <EDropdownItem v-if="item.dialog_id" :command="`dialog_${item.dialog_id}`">
                                     <div>{{$L('部门交流群')}}</div>
                                 </EDropdownItem>
+                                <EDropdownItem :command="`sync_${item.id}`">
+                                    <div>{{$L('同步部门成员')}}</div>
+                                </EDropdownItem>
                                 <EDropdownItem :command="`edit_${item.id}`">
                                     <div>{{$L('编辑')}}</div>
                                 </EDropdownItem>
@@ -1333,6 +1336,43 @@ export default {
                 this.$store.dispatch("openDialog", dialogId).catch(({msg}) => {
                     $A.modalError(msg || this.$L('打开会话失败'))
                 })
+                return;
+            }
+
+            if ($A.leftExists(val, 'sync_')) {
+                const departmentId = parseInt(val.substr(5));
+                
+                // 前端先检查是否有子部门
+                const hasSubDepartments = this.departmentList.some(dept => dept.parent_id === departmentId);
+                if (!hasSubDepartments) {
+                    $A.modalWarning({
+                        title: this.$L('同步部门成员'),
+                        content: this.$L('当前部门没有子部门，无需同步'),
+                    });
+                    return;
+                }
+                
+                $A.modalConfirm({
+                    title: this.$L('同步部门成员'),
+                    content: `<div>${this.$L(`你确定要同步部门成员吗？`)}</div><div style="color:#f00;font-weight:600">${this.$L(`注：此操作会同步子部门成员到当前部门`)}</div>`,
+                    language: false,
+                    loading: true,
+                    onOk: () => {
+                        return new Promise((resolve, reject) => {
+                            this.$store.dispatch("call", {
+                                url: 'users/department/sync',
+                                data: {
+                                    id: departmentId
+                                },
+                            }).then(({msg}) => {
+                                this.getLists();
+                                resolve(msg);
+                            }).catch(({msg}) => {
+                                reject(msg);
+                            });
+                        });
+                    }
+                });
                 return;
             }
 
