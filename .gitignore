@@ -1,32 +1,58 @@
+# Dependencies
 /node_modules
+/vendor
+
+# Build and temporary files
+/build
 /public/hot
 /public/tmp
+/tmp
+
+# Uploads and user-generated content
 /public/summary
 /public/uploads/*
 /public/.well-known
 /public/.user.ini
-/storage/*.key
+
+# Storage and configuration
 /config/LICENSE
-/vendor
-/build
-/tmp
-._*
+/storage/*.key
+
+# Environment and configuration
 .env
+vars.yaml
+
+# IDE and editor files
 .idea
 .vscode
-.vagrant
 .windsurfrules
-.phpunit.result.cache
+
+# Development tools
+.vagrant
 Homestead.json
 Homestead.yaml
+
+# Testing
+.phpunit.result.cache
+test.*
+
+# Logs and debug files
 npm-debug.log
 yarn-error.log
-test.*
+
+# Lock files
+dootask.lock
 package-lock.json
+
+# Laravel/Swoole specific
 laravels-timer-process.pid
-.DS_Store
-vars.yaml
 laravels.conf
 laravels.pid
+
+# System files
+._*
+.DS_Store
+
+# Documentation
+AGENTS.md
 README_LOCAL.md
-dootask.lock
