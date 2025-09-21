@@ -134,11 +134,6 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
 
-        // 如果是群聊，@别人但是没有@自己，则不处理
-        if ($dialog->type === 'group' && $this->mentionOther && !$this->mention) {
-            return;
-        }
-
         // 推送Webhook
         $this->handleWebhookRequest($sendText, $replyText, $msg, $dialog, $botUser);
 
@@ -436,14 +431,19 @@ class BotReceiveMsgTask extends AbstractTask
 
         try {
             if ($botUser->isAiBot($type)) {
-                // AI机器人
+                // AI机器人，不处理带有留言的转发消息，因为他要处理那条留言消息
                 if (Base::val($msg->msg, 'forward_data.leave')) {
-                    // AI机器人不处理带有留言的转发消息，因为他要处理那条留言消息
                     return;
                 }
+                // 如果是群聊，没有@自己，则不处理
+                if ($dialog->type === 'group' && !$this->mention) {
+                    return;
+                }
+                // 检查客户端版本
                 if (in_array($this->client['platform'], ['win', 'mac', 'web']) && !Base::judgeClientVersion("0.41.11", $this->client['version'])) {
                     throw new Exception('当前客户端版本低（所需版本≥v0.41.11）。');
                 }
+                // 判断AI应用是否安装
                 if (!Apps::isInstalled('ai')) {
                     throw new Exception('应用「AI Robot」未安装');
                 }
@@ -492,6 +492,10 @@ class BotReceiveMsgTask extends AbstractTask
                 if ($type === 'wenxin') {
                     $extras['api_key'] .= ':' . $setting['wenxin_secret'];
                 }
+                // 群聊清理上下文（群聊不使用上下文）
+                if ($dialog->type === 'group') {
+                    $extras['before_clear'] = 1;
+                }
                 if ($type === 'ollama') {
                     if (empty($extras['base_url'])) {
                         throw new Exception('机器人未启用。');
@@ -505,24 +509,8 @@ class BotReceiveMsgTask extends AbstractTask
                 }
                 $this->generateSystemPromptForAI($msg->userid, $dialog, $extras);
                 // 转换提及格式
-                try {
-                    $sendText = self::convertMentionForAI($sendText);
-                    $replyText = self::convertMentionForAI($replyText);
-                } catch (Exception $e) {
-                    // 判断会话在聊天状态中，抛出错误消息
-                    $stateUrl = "http://nginx/ai/chat_state";
-                    $data = [
-                        'dialog_id' => $dialog->id,
-                        'dialog_type' => $dialog->type,
-                        'extras' => Base::array2json($extras)
-                    ];
-                    $result = Ihttp::ihttp_post($stateUrl, $data, 30);
-                    if ($result['data'] && $data = Base::json2array($result['data'])) {
-                        if ($data['code'] === 200) {
-                            throw $e;
-                        }
-                    }
-                }
+                $sendText = self::convertMentionForAI($sendText);
+                $replyText = self::convertMentionForAI($replyText);
                 if ($replyText) {
                     $sendText = <<<EOF
                         <quoted_content>
@@ -810,7 +798,19 @@ class BotReceiveMsgTask extends AbstractTask
      */
     private function generateSystemPromptForAI($userid, WebSocketDialog $dialog, array &$extras)
     {
-        $system_messages = [];
+        // 构建结构化的系统提示词
+        $sections = [];
+
+        // 基础角色设定（如果有）
+        if (!empty($extras['system_message'])) {
+            $sections[] = <<<EOF
+                <role_setting>
+                {$extras['system_message']}
+                </role_setting>
+                EOF;
+        }
+        
+        // 上下文信息（项目、任务、部门等）+ 操作指令
         switch ($dialog->type) {
             // 用户对话
             case "user":
@@ -820,26 +820,33 @@ class BotReceiveMsgTask extends AbstractTask
                     'type' => 'ai_prompt',
                 ])->value('value');
                 if ($aiPrompt) {
-                    $extras['system_message'] = $aiPrompt;
+                    return $aiPrompt;
                 }
                 break;
+
             // 群组对话
             case "group":
                 switch ($dialog->group_type) {
                     // 用户群
                     case 'user':
                         break;
+
                     // 项目群
                     case 'project':
                         $projectInfo = Project::whereDialogId($dialog->id)->first();
                         if ($projectInfo) {
                             $projectDesc = $projectInfo->desc ?: "-";
                             $projectStatus = $projectInfo->archived_at ? '已归档' : '正在进行中';
-                            $system_messages[] = <<<EOF
+                            $sections[] = <<<EOF
+                                <context_info>
                                 当前我在项目【{$projectInfo->name}】中
                                 项目描述：{$projectDesc}
                                 项目状态：{$projectStatus}
-
+                                </context_info>
+                                EOF;
+                            
+                            $sections[] = <<<EOF
+                                <instructions>
                                 如果你判断我想要或需要添加任务，请按照以下格式回复：
 
                                 ::: create-task-list
@@ -849,49 +856,139 @@ class BotReceiveMsgTask extends AbstractTask
                                 title: 任务标题2
                                 desc: 任务描述2
                                 :::
+                                </instructions>
                                 EOF;
                         }
                         break;
+
                     // 任务群
                     case 'task':
                         $taskInfo = ProjectTask::with(['content'])->whereDialogId($dialog->id)->first();
                         if ($taskInfo) {
                             $taskContext = implode("\n", $taskInfo->AIContext());
-                            $system_messages[] = <<<EOF
+                            $sections[] = <<<EOF
+                                <context_info>
                                 当前我在任务【{$taskInfo->name}】中
                                 当前时间：{$taskInfo->updated_at}
                                 任务ID：{$taskInfo->id}
                                 {$taskContext}
-
+                                </context_info>
+                                EOF;
+                            
+                            $sections[] = <<<EOF
+                                <instructions>
                                 如果你判断我想要或需要添加子任务，请按照以下格式回复：
 
                                 ::: create-subtask-list
                                 title: 子任务标题1
                                 title: 子任务标题2
                                 :::
+                                </instructions>
                                 EOF;
                         }
                         break;
+
                     // 部门群
                     case 'department':
                         $userDepartment = UserDepartment::whereDialogId($dialog->id)->first();
                         if ($userDepartment) {
-                            $system_messages[] = "当前我在【{$userDepartment->name}】的部门群聊中";
+                            $sections[] = <<<EOF
+                                <context_info>
+                                当前我在【{$userDepartment->name}】的部门群聊中
+                                </context_info>
+                                EOF;
                         }
                         break;
+
                     // 全体成员群
                     case 'all':
-                        $system_messages[] = "当前我在【全体成员】的群聊中";
+                        $sections[] = <<<EOF
+                            <context_info>
+                            当前我在【全体成员】的群聊中
+                            </context_info>
+                            EOF;
                         break;
+                }
+                
+                // 聊天历史
+                if ($dialog->type === 'group') {
+                    $chatHistory = $this->getRecentChatHistory($dialog, 10);
+                    if ($chatHistory) {
+                        $sections[] = <<<EOF
+                            <chat_history>
+                            {$chatHistory}
+                            </chat_history>
+                            EOF;
+                    }
                 }
                 break;
         }
-        if ($extras['system_message']) {
-            array_unshift($system_messages, $extras['system_message']);
+        
+        // 更新系统提示词
+        if (!empty($sections)) {
+            $extras['system_message'] = implode("\n\n", $sections);
         }
-        if ($system_messages) {
-            $extras['system_message'] = implode("\n\n----------------\n\n", Base::newTrim($system_messages));
+
+        // 添加标签说明
+        $tagDescs = [
+            'role_setting' => '你的基础角色和行为定义',
+            'instructions' => '特定功能的操作指令',
+            'context_info' => '当前环境和状态信息',
+            'chat_history' => '最近的对话历史记录',
+        ];
+        $useTags = [];
+        foreach ($tagDescs as $tag => $desc) {
+            if (str_contains($extras['system_message'], '<' . $tag . '>')) {
+                $useTags[] = '- <' . $tag . '>: ' . $desc;
+            }
         }
+        if (!empty($useTags)) {
+            $extras['system_message'] = "以下信息按标签组织：\n" . implode("\n", $useTags) . "\n\n" . $extras['system_message'];
+        }
+    }
+
+    /**
+     * 获取最近的聊天记录
+     * @param WebSocketDialog $dialog 对话对象
+     * @param int $limit 获取的聊天记录条数
+     * @return string|null 格式化后的聊天记录字符串，无记录时返回null
+     */
+    private function getRecentChatHistory(WebSocketDialog $dialog, $limit = 10): ?string
+    {
+        // 构建查询条件
+        $conditions = [
+            ['dialog_id', '=', $dialog->id],
+            ['id', '<', $this->msgId],
+        ];
+
+        // 如果有会话ID，添加会话过滤条件
+        if ($dialog->session_id > 0) {
+            $conditions[] = ['session_id', '=', $dialog->session_id];
+        }
+
+        // 查询最近$limit条消息并格式化
+        $chatMessages = WebSocketDialogMsg::with(['user'])
+            ->where($conditions)
+            ->orderByDesc('id')
+            ->take($limit)
+            ->get()
+            ->map(function (WebSocketDialogMsg $message) {
+                $userName = $message->user?->nickname ?? '未知用户';
+                $content = $this->extractMessageContent($message);
+                if (!$content) {
+                    return null;
+                }
+                // 使用XML标签格式，确保AI能清晰识别边界
+                // 对用户名进行HTML转义，防止特殊字符破坏格式
+                $safeUserName = htmlspecialchars($userName, ENT_QUOTES, 'UTF-8');
+                return "<message user=\"{$safeUserName}\">\n{$content}\n</message>";
+            })
+            ->reverse() // 反转集合，让时间顺序正确（最早的在前）
+            ->filter() // 过滤掉空内容的消息
+            ->values() // 重新索引数组
+            ->toArray();
+
+        return empty($chatMessages) ? null : implode("\n\n", $chatMessages);
     }
 
     /**
