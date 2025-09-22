@@ -58,7 +58,8 @@
                             <EDropdownItem command="workflow">{{$L('工作流设置')}}</EDropdownItem>
                             <EDropdownItem command="user" divided>{{$L('成员管理')}}</EDropdownItem>
                             <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
-                            <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
+                            <EDropdownItem command="favorite" divided>{{$L(projectData.favorited ? '取消收藏' : '收藏项目')}}</EDropdownItem>
+                            <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
                             <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
                             <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
                             <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
@@ -67,7 +68,8 @@
                         </EDropdownMenu>
                         <EDropdownMenu v-else slot="dropdown">
                             <EDropdownItem command="task_tag">{{$L('任务标签')}}</EDropdownItem>
-                            <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
+                            <EDropdownItem command="favorite" divided>{{$L(projectData.favorited ? '取消收藏' : '收藏项目')}}</EDropdownItem>
+                            <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
                             <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
                             <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
                             <EDropdownItem command="exit" divided style="color:#f40">{{$L('退出项目')}}</EDropdownItem>
@@ -1066,8 +1068,12 @@ export default {
         windowWidth() {
             this.handleColumnDebounce(100);
         },
-        projectData() {
+        projectData(newData, oldData) {
             this.sortData = this.getSort();
+            // 当项目数据改变时，检查收藏状态（避免重复调用）
+            if (newData && newData.id && (!oldData || newData.id !== oldData.id)) {
+                this.checkProjectFavoriteStatus();
+            }
         },
         projectLoad(n) {
             this._loadTimeout && clearTimeout(this._loadTimeout)
@@ -1435,6 +1441,10 @@ export default {
 
         projectDropdown(name) {
             switch (name) {
+                case "favorite":
+                    this.toggleProjectFavorite();
+                    break;
+
                 case "setting":
                     Object.assign(this.settingData, {
                         name: this.projectData.name,
@@ -1876,6 +1886,50 @@ export default {
                     await this.$nextTick();
                 }
             }
+        },
+
+        /**
+         * 切换项目收藏状态
+         */
+        toggleProjectFavorite() {
+            if (!this.projectData.id) return;
+            
+            this.$store.dispatch("call", {
+                url: 'users/favorite/toggle',
+                data: {
+                    type: 'project',
+                    id: this.projectData.id
+                },
+                method: 'post',
+            }).then(({data, msg}) => {
+                // 更新项目的收藏状态
+                this.$set(this.projectData, 'favorited', data.favorited);
+                $A.messageSuccess(msg);
+            }).catch(({msg}) => {
+                $A.modalError(msg || this.$L('操作失败'));
+            });
+        },
+
+        /**
+         * 检查项目收藏状态
+         */
+        checkProjectFavoriteStatus() {
+            if (!this.projectData.id) return;
+            
+            this.$store.dispatch("call", {
+                url: 'users/favorite/check',
+                data: {
+                    type: 'project',
+                    id: this.projectData.id
+                },
+                method: 'get',
+                spinner: 0, // 静默调用
+            }).then(({data}) => {
+                this.$set(this.projectData, 'favorited', data.favorited || false);
+            }).catch(() => {
+                // 出错时默认为未收藏状态
+                this.$set(this.projectData, 'favorited', false);
+            });
         },
     }
 }

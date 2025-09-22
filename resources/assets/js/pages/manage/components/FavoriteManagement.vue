@@ -282,6 +282,7 @@ export default {
                             name: file.name,
                             ext: file.ext,
                             size: file.size,
+                            pid: file.pid,
                             favorited_at: file.favorited_at,
                         });
                     });
@@ -334,7 +335,18 @@ export default {
                     this.$emit('on-close');
                     break;
                 case 'file':
-                    this.$router.push({name: 'manage-file'});
+                    this.$router.push({
+                        name: 'manage-file', 
+                        params: {
+                            folderId: item.pid || 0, 
+                            fileId: null, 
+                            shakeId: item.id
+                        }
+                    });
+                    this.$store.state.fileShakeId = item.id;
+                    setTimeout(() => {
+                        this.$store.state.fileShakeId = 0;
+                    }, 600);
                     this.$emit('on-close');
                     break;
             }

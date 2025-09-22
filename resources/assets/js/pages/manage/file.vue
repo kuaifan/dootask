@@ -218,6 +218,7 @@
 
                             <DropdownItem v-if="contextMenuItem.userid == userId" name="share" divided>{{$L('共享')}}</DropdownItem>
                             <DropdownItem v-else-if="contextMenuItem.share" name="outshare" divided>{{$L('退出共享')}}</DropdownItem>
+                            <DropdownItem name="favorite" :disabled="contextMenuItem.type == 'folder'">{{$L(contextMenuItem.favorited ? '取消收藏' : '收藏')}}</DropdownItem>
                             <DropdownItem name="send" :disabled="contextMenuItem.type == 'folder'">{{$L('发送')}}</DropdownItem>
                             <DropdownItem name="link" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
                             <DropdownItem name="download" :disabled="contextMenuItem.ext == '' || (contextMenuItem.userid != userId && contextMenuItem.permission == 0)">{{$L('下载')}}</DropdownItem>
@@ -1011,6 +1012,7 @@ export default {
                 this.loadIng--;
                 this.openFileJudge()
                 this.shakeFile(this.$route.params.shakeId);
+                this.checkFileFavoriteStatus(this.fileList);
                 await $A.IDBSet("fileFolderId", this.pid)
             }).catch(({msg}) => {
                 this.loadIng--;
@@ -1300,6 +1302,10 @@ export default {
                 case 'send':
                     this.sendFileId = item.id;
                     this.$refs.forwarder.onSelection()
+                    break;
+
+                case 'favorite':
+                    this.toggleFileFavorite(item);
                     break;
 
                 case 'share':
@@ -2072,6 +2078,69 @@ export default {
         handleUploadNext() {
             this.uploadShow = true;
             this.packShow = false;
+        },
+
+        /**
+         * 切换文件收藏状态
+         */
+        toggleFileFavorite(item) {
+            if (!item.id || item.type === 'folder') return;
+            
+            this.$store.dispatch("call", {
+                url: 'users/favorite/toggle',
+                data: {
+                    type: 'file',
+                    id: item.id
+                },
+                method: 'post',
+            }).then(({data, msg}) => {
+                // 更新文件的收藏状态
+                const fileIndex = this.fileList.findIndex(file => file.id === item.id);
+                if (fileIndex > -1) {
+                    this.$set(this.fileList[fileIndex], 'favorited', data.favorited);
+                }
+                // 同时更新上下文菜单项的状态
+                if (this.contextMenuItem.id === item.id) {
+                    this.$set(this.contextMenuItem, 'favorited', data.favorited);
+                }
+                $A.messageSuccess(msg);
+            }).catch(({msg}) => {
+                $A.modalError(msg || this.$L('操作失败'));
+            });
+        },
+
+        /**
+         * 检查文件收藏状态
+         */
+        checkFileFavoriteStatus(files) {
+            if (!Array.isArray(files) || files.length === 0) return;
+            
+            const fileIds = files.filter(file => file.type !== 'folder').map(file => file.id);
+            if (fileIds.length === 0) return;
+            
+            // 批量检查收藏状态
+            fileIds.forEach(fileId => {
+                this.$store.dispatch("call", {
+                    url: 'users/favorite/check',
+                    data: {
+                        type: 'file',
+                        id: fileId
+                    },
+                    method: 'get',
+                    spinner: 0, // 静默调用
+                }).then(({data}) => {
+                    const fileIndex = this.fileList.findIndex(file => file.id === fileId);
+                    if (fileIndex > -1) {
+                        this.$set(this.fileList[fileIndex], 'favorited', data.favorited || false);
+                    }
+                }).catch(() => {
+                    // 出错时默认为未收藏状态
+                    const fileIndex = this.fileList.findIndex(file => file.id === fileId);
+                    if (fileIndex > -1) {
+                        this.$set(this.fileList[fileIndex], 'favorited', false);
+                    }
+                });
+            });
         }
     }
 }

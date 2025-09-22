@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use App\Models\File;
 
 /**
  * App\Models\UserFavorite
@@ -211,7 +212,7 @@ class UserFavorite extends AbstractModel
 
         if (!empty($fileIds)) {
             $files = File::select([
-                'id', 'name', 'ext', 'size', 'created_at'
+                'id', 'name', 'ext', 'size', 'pid', 'created_at'
             ])->whereIn('id', $fileIds)->get()->keyBy('id');
             
             foreach ($favorites->items() as $favorite) {
@@ -222,6 +223,7 @@ class UserFavorite extends AbstractModel
                         'name' => $file->name,
                         'ext' => $file->ext,
                         'size' => $file->size,
+                        'pid' => $file->pid,
                         'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
                     ];
                 }
