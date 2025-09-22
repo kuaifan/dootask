@@ -1,0 +1,128 @@
+.favorite-management {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+
+    .management-title {
+        color: $primary-title-color;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 1;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+
+        .title-icon {
+            display: flex;
+            align-items: center;
+            width: 14px;
+            height: 14px;
+            margin-left: 4px;
+            margin-top: 2px;
+
+            > i {
+                cursor: pointer;
+            }
+        }
+    }
+
+    .favorite-name {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        color: #2d8cf0;
+
+        &:hover {
+            text-decoration: underline;
+        }
+
+        .ivu-tag {
+            height: 18px;
+            line-height: 18px;
+            padding: 0 4px;
+            transform: scale(0.8);
+            transform-origin: right center;
+            flex-shrink: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+    }
+
+    .table-page-box {
+        flex: 1;
+        height: 0;
+    }
+
+    // 状态标签样式 - 使用项目标准配色
+    .favorite-status-tag {
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+        display: inline-block;
+        line-height: 1.2;
+        border: 1px solid;
+        
+        // 已完成/正常状态 - 绿色
+        &.favorite-status-success {
+            background-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+            border-color: var(--flow-item-custom-color-30, rgba($flow-status-end-color, 0.3));
+            color: var(--flow-item-custom-color-100, $flow-status-end-color);
+        }
+        
+        // 进行中状态 - 橙色
+        &.favorite-status-processing {
+            background-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+            border-color: var(--flow-item-custom-color-30, rgba($flow-status-progress-color, 0.3));
+            color: var(--flow-item-custom-color-100, $flow-status-progress-color);
+        }
+        
+        // 已归档/错误状态 - 灰色
+        &.favorite-status-error {
+            background-color: var(--flow-item-custom-color-10, rgba($flow-status-archived-color, 0.1));
+            border-color: var(--flow-item-custom-color-30, rgba($flow-status-archived-color, 0.3));
+            color: var(--flow-item-custom-color-100, $flow-status-archived-color);
+        }
+    }
+
+    // 工作流状态样式 - 与项目面板保持一致
+    .flow-name {
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+        display: inline-block;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        
+        &.start {
+            background-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+            border-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+            color: var(--flow-item-custom-color-100, $flow-status-start-color);
+        }
+        &.progress {
+            background-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+            border-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+            color: var(--flow-item-custom-color-100, $flow-status-progress-color);
+        }
+        &.test {
+            background-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+            border-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+            color: var(--flow-item-custom-color-100, $flow-status-test-color);
+        }
+        &.end {
+            background-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+            border-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+            color: var(--flow-item-custom-color-100, $flow-status-end-color);
+        }
+        &.archived {
+            background-color: var(--flow-item-custom-color-10, rgba($flow-status-archived-color, 0.1));
+            border-color: var(--flow-item-custom-color-10, rgba($flow-status-archived-color, 0.1));
+            color: var(--flow-item-custom-color-100, $flow-status-archived-color);
+        }
+    }
+}

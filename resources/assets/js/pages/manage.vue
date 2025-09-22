@@ -18,10 +18,11 @@
                     </div>
                 </div>
                 <DropdownMenu slot="list">
-                    <template v-for="item in menu">
+                    <template v-for="(item, index) in menu">
                         <!--最近打开的任务-->
                         <Dropdown
                             v-if="item.path === 'taskBrowse'"
+                            :key="`taskBrowse-${index}`"
                             transfer
                             transfer-class-name="page-manage-menu-dropdown"
                             placement="right-start">
@@ -32,17 +33,18 @@
                                 </div>
                             </DropdownItem>
                             <DropdownMenu slot="list" v-if="taskBrowseLists.length > 0">
-                                <DropdownItem
-                                    v-for="(item, key) in taskBrowseLists"
-                                    v-if="item.id > 0 && key < 10"
-                                    :key="key"
-                                    :style="$A.generateColorVarStyle(item.flow_item_color, [10], 'flow-item-custom-color')"
-                                    class="task-title"
-                                    @click.native="openTask(item)"
-                                    :name="item.name">
-                                    <span v-if="item.flow_item_name" :class="item.flow_item_status">{{item.flow_item_name}}</span>
-                                    <div class="task-title-text">{{ item.name }}</div>
-                                </DropdownItem>
+                                <template v-for="(item, key) in taskBrowseLists">
+                                    <DropdownItem
+                                        v-if="item.id > 0 && key < 10"
+                                        :key="`task-${key}`"
+                                        :style="$A.generateColorVarStyle(item.flow_item_color, [10], 'flow-item-custom-color')"
+                                        class="task-title"
+                                        @click.native="openTask(item)"
+                                        :name="item.name">
+                                        <span v-if="item.flow_item_name" :class="item.flow_item_status">{{item.flow_item_name}}</span>
+                                        <div class="task-title-text">{{ item.name }}</div>
+                                    </DropdownItem>
+                                </template>
                             </DropdownMenu>
                             <DropdownMenu v-else slot="list">
                                 <DropdownItem style="color:darkgrey">{{ $L('暂无打开记录') }}</DropdownItem>
@@ -51,6 +53,7 @@
                         <!-- 团队管理 -->
                         <Dropdown
                             v-else-if="item.path === 'team'"
+                            :key="`team-${index}`"
                             transfer
                             transfer-class-name="page-manage-menu-dropdown"
                             placement="right-start">
@@ -71,6 +74,7 @@
                         <!-- 其他菜单 -->
                         <DropdownItem
                             v-else-if="item.visible !== false"
+                            :key="`menu-${index}`"
                             :divided="!!item.divided"
                             :name="item.path"
                             :style="item.style || {}">
@@ -324,6 +328,14 @@
             <Report v-if="workReportShow" v-model="workReportTab" @on-read="$store.dispatch('getReportUnread', 1000)" />
         </DrawerOverlay>
 
+        <!--我的收藏-->
+        <DrawerOverlay
+            v-model="favoriteShow"
+            placement="right"
+            :size="1200">
+            <FavoriteManagement v-if="favoriteShow" @on-close="favoriteShow = false"/>
+        </DrawerOverlay>
+
         <!--团队成员管理-->
         <DrawerOverlay
             v-model="allUserShow"
@@ -380,6 +392,7 @@
 import { mapState, mapGetters } from 'vuex'
 import ProjectArchived from "./manage/components/ProjectArchived";
 import TeamManagement from "./manage/components/TeamManagement";
+import FavoriteManagement from "./manage/components/FavoriteManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
 import MobileTabbar from "../components/Mobile/Tabbar";
@@ -423,6 +436,7 @@ export default {
         DrawerOverlay,
         ProjectManagement,
         TeamManagement,
+        FavoriteManagement,
         ProjectArchived,
         MicroApps,
         ComplaintManagement,
@@ -472,6 +486,8 @@ export default {
             allProjectShow: false,
             archivedProjectShow: false,
 
+            favoriteShow: false,
+
             natificationReady: false,
             notificationManage: null,
 
@@ -501,6 +517,7 @@ export default {
         emitter.on('dialogMsgPush', this.addDialogMsg);
         emitter.on('approveDetails', this.openApproveDetails);
         emitter.on('openReport', this.openReport);
+        emitter.on('openFavorite', this.openFavorite);
         //
         document.addEventListener('keydown', this.shortcutEvent);
     },
@@ -518,6 +535,7 @@ export default {
         emitter.off('dialogMsgPush', this.addDialogMsg);
         emitter.off('approveDetails', this.openApproveDetails);
         emitter.off('openReport', this.openReport);
+        emitter.off('openFavorite', this.openFavorite);
         //
         document.removeEventListener('keydown', this.shortcutEvent);
     },
@@ -649,6 +667,7 @@ export default {
             const {userIsAdmin} = this;
             const array = [
                 {path: 'taskBrowse', name: '最近打开的任务'},
+                {path: 'favorite', name: '我的收藏'},
                 {path: 'download', name: '下载内容', visible: !!this.$Electron},
             ];
             if (userIsAdmin) {
@@ -847,6 +866,9 @@ export default {
                     return;
                 case 'workReport':
                     this.openReport(this.reportUnreadNumber > 0 ? 'receive' : 'my');
+                    return;
+                case 'favorite':
+                    this.openFavorite();
                     return;
                 case 'version':
                     emitter.emit('updateNotification', null);
@@ -1206,6 +1228,10 @@ export default {
         openReport(tab) {
             this.workReportTab = tab;
             this.workReportShow = true;
+        },
+
+        openFavorite() {
+            this.favoriteShow = true;
         },
 
         handleLongpress(event) {

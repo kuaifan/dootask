@@ -61,6 +61,14 @@
                         text-overflow: ellipsis;
                         white-space: nowrap;
 
+                        &.favorited {
+                            color: #faad14;
+                            
+                            .ivu-icon {
+                                color: #faad14;
+                            }
+                        }
+
                         .item-prefix {
                             display: flex;
                             align-items: center;

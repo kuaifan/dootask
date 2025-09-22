@@ -47,7 +47,12 @@
 
                         <template v-if="task.parent_id === 0">
                             <template v-if="operationShow">
-                                <EDropdownItem command="send" :divided="turns.length > 0">
+                                <EDropdownItem command="favorite" :divided="turns.length > 0">
+                                    <div class="item" :class="{'favorited': isFavorited}">
+                                        <Icon :type="isFavorited ? 'ios-star' : 'ios-star-outline'" />{{$L(isFavorited ? '取消收藏' : '收藏')}}
+                                    </div>
+                                </EDropdownItem>
+                                <EDropdownItem command="send">
                                     <div class="item">
                                         <i class="taskfont movefont">&#xe629;</i>{{$L('发送')}}
                                     </div>
@@ -140,6 +145,7 @@ export default {
             styles: {},
 
             moveTaskShow: false,
+            isFavorited: false,
         }
     },
     beforeDestroy() {
@@ -201,6 +207,7 @@ export default {
                 this.placement = typeof data.placement === "undefined" ? "bottom" : data.placement;
                 this.projectId = typeof data.projectId === "undefined" ? 0 : data.projectId;
                 this.onUpdate = typeof data.onUpdate === "function" ? data.onUpdate : null;
+                this.checkFavoriteStatus();
                 //
                 this.$refs.icon.focus();
                 this.updatePopper();
@@ -306,6 +313,10 @@ export default {
                     }).catch(() => {
                         completeTemp(true)
                     })
+                    break;
+
+                case 'favorite':
+                    this.toggleFavorite();
                     break;
 
                 case 'send':
@@ -487,6 +498,47 @@ export default {
                     reject();
                 });
             })
+        },
+
+        /**
+         * 检查收藏状态
+         */
+        checkFavoriteStatus() {
+            if (!this.task.id) return;
+            
+            this.$store.dispatch("call", {
+                url: 'users/favorite/check',
+                data: {
+                    type: 'task',
+                    id: this.task.id
+                },
+            }).then(({data}) => {
+                this.isFavorited = data.favorited || false;
+            }).catch(() => {
+                this.isFavorited = false;
+            });
+        },
+
+        /**
+         * 切换收藏状态
+         */
+        toggleFavorite() {
+            if (!this.task.id) return;
+            
+            this.$store.dispatch("call", {
+                url: 'users/favorite/toggle',
+                data: {
+                    type: 'task',
+                    id: this.task.id
+                },
+                method: 'post',
+            }).then(({data, msg}) => {
+                this.isFavorited = data.favorited;
+                this.hide();
+                $A.messageSuccess(msg);
+            }).catch(({msg}) => {
+                $A.messageError(msg || '操作失败');
+            });
         }
     },
 }

@@ -30,6 +30,7 @@ use App\Models\WebSocketDialog;
 use App\Models\UserCheckinRecord;
 use App\Models\WebSocketDialogMsg;
 use App\Models\UserTaskBrowse;
+use App\Models\UserFavorite;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserEmailVerification;
 use App\Module\AgoraIO\AgoraTokenGenerator;
@@ -2824,5 +2825,171 @@ class UsersController extends AbstractController
         $deletedCount = UserTaskBrowse::cleanUserBrowseHistory($user->userid, $keepCount);
         //
         return Base::retSuccess('清理完成', ['deleted_count' => $deletedCount]);
+    }
+
+    /**
+     * @api {get} api/users/favorites          46. 获取用户收藏列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName favorites
+     *
+     * @apiParam {String} [type]               收藏类型过滤 (task/project/file)
+     * @apiParam {Number} [page=1]             页码
+     * @apiParam {Number} [pagesize=20]        每页数量
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function favorites()
+    {
+        $user = User::auth();
+        //
+        $type = Request::input('type');
+        $page = intval(Request::input('page', 1));
+        $pageSize = min(intval(Request::input('pagesize', 20)), 100);
+        //
+        // 验证收藏类型
+        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE];
+        if ($type && !in_array($type, $allowedTypes)) {
+            return Base::retError('无效的收藏类型');
+        }
+        //
+        $result = UserFavorite::getUserFavorites($user->userid, $type, $page, $pageSize);
+        //
+        return Base::retSuccess('success', $result);
+    }
+
+    /**
+     * @api {post} api/users/favorite/toggle          47. 切换收藏状态
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName favorite__toggle
+     *
+     * @apiParam {String} type                  收藏类型 (task/project/file)
+     * @apiParam {Number} id                    收藏对象ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function favorite__toggle()
+    {
+        $user = User::auth();
+        //
+        $type = trim(Request::input('type'));
+        $id = intval(Request::input('id'));
+        //
+        if (!$type || $id <= 0) {
+            return Base::retError('参数错误');
+        }
+        //
+        // 验证收藏类型
+        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE];
+        if (!in_array($type, $allowedTypes)) {
+            return Base::retError('无效的收藏类型');
+        }
+        //
+        // 验证对象是否存在（简化验证，实际应该加上权限检查）
+        switch ($type) {
+            case UserFavorite::TYPE_TASK:
+                $object = ProjectTask::whereId($id)->first();
+                if (!$object) {
+                    return Base::retError('任务不存在');
+                }
+                break;
+            case UserFavorite::TYPE_PROJECT:
+                $object = Project::whereId($id)->first();
+                if (!$object) {
+                    return Base::retError('项目不存在');
+                }
+                break;
+            case UserFavorite::TYPE_FILE:
+                $object = File::whereId($id)->first();
+                if (!$object) {
+                    return Base::retError('文件不存在');
+                }
+                break;
+        }
+        //
+        $result = UserFavorite::toggleFavorite($user->userid, $type, $id);
+        //
+        $message = $result['favorited'] ? '收藏成功' : '取消收藏成功';
+        return Base::retSuccess($message, $result);
+    }
+
+    /**
+     * @api {post} api/users/favorites/clean          48. 清理用户收藏
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName favorites__clean
+     *
+     * @apiParam {String} [type]                收藏类型 (task/project/file)，不传则清理全部
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function favorites__clean()
+    {
+        $user = User::auth();
+        //
+        $type = trim(Request::input('type'));
+        //
+        // 验证收藏类型
+        if ($type) {
+            $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE];
+            if (!in_array($type, $allowedTypes)) {
+                return Base::retError('无效的收藏类型');
+            }
+        }
+        //
+        $deletedCount = UserFavorite::cleanUserFavorites($user->userid, $type);
+        //
+        $message = $type ? "清理{$type}收藏成功" : '清理全部收藏成功';
+        return Base::retSuccess($message, ['deleted_count' => $deletedCount]);
+    }
+
+    /**
+     * @api {get} api/users/favorite/check          49. 检查收藏状态
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName favorite__check
+     *
+     * @apiParam {String} type                  收藏类型 (task/project/file)
+     * @apiParam {Number} id                    收藏对象ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function favorite__check()
+    {
+        $user = User::auth();
+        //
+        $type = trim(Request::input('type'));
+        $id = intval(Request::input('id'));
+        //
+        if (!$type || $id <= 0) {
+            return Base::retError('参数错误');
+        }
+        //
+        // 验证收藏类型
+        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE];
+        if (!in_array($type, $allowedTypes)) {
+            return Base::retError('无效的收藏类型');
+        }
+        //
+        $isFavorited = UserFavorite::isFavorited($user->userid, $type, $id);
+        //
+        return Base::retSuccess('success', ['favorited' => $isFavorited]);
     }
 }

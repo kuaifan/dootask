@@ -1,0 +1,256 @@
+<?php
+
+namespace App\Models;
+
+use Carbon\Carbon;
+
+/**
+ * App\Models\UserFavorite
+ *
+ * @property int $id
+ * @property int $userid 用户ID
+ * @property string $favoritable_type 收藏类型
+ * @property int $favoritable_id 收藏对象ID
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $favoritable
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereFavoritableId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereFavoritableType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereUserid($value)
+ * @mixin \Eloquent
+ */
+class UserFavorite extends AbstractModel
+{
+    const TYPE_TASK = 'task';
+    const TYPE_PROJECT = 'project';
+    const TYPE_FILE = 'file';
+
+    protected $fillable = [
+        'userid',
+        'favoritable_type',
+        'favoritable_id',
+    ];
+
+    /**
+     * 关联用户
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'userid', 'userid');
+    }
+
+    /**
+     * 多态关联
+     */
+    public function favoritable()
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * 切换收藏状态
+     * @param int $userid 用户ID
+     * @param string $type 收藏类型
+     * @param int $id 收藏对象ID
+     * @return array ['favorited' => bool, 'action' => 'added'|'removed']
+     */
+    public static function toggleFavorite($userid, $type, $id)
+    {
+        $favorite = self::whereUserid($userid)
+            ->whereFavoritableType($type)
+            ->whereFavoritableId($id)
+            ->first();
+
+        if ($favorite) {
+            // 取消收藏
+            $favorite->delete();
+            return ['favorited' => false, 'action' => 'removed'];
+        } else {
+            // 添加收藏
+            self::create([
+                'userid' => $userid,
+                'favoritable_type' => $type,
+                'favoritable_id' => $id,
+            ]);
+            return ['favorited' => true, 'action' => 'added'];
+        }
+    }
+
+    /**
+     * 检查是否已收藏
+     * @param int $userid 用户ID
+     * @param string $type 收藏类型
+     * @param int $id 收藏对象ID
+     * @return bool
+     */
+    public static function isFavorited($userid, $type, $id)
+    {
+        return self::whereUserid($userid)
+            ->whereFavoritableType($type)
+            ->whereFavoritableId($id)
+            ->exists();
+    }
+
+    /**
+     * 获取用户收藏列表
+     * @param int $userid 用户ID
+     * @param string|null $type 收藏类型过滤
+     * @param int $page 页码
+     * @param int $pageSize 每页数量
+     * @return array
+     */
+    public static function getUserFavorites($userid, $type = null, $page = 1, $pageSize = 20)
+    {
+        $query = self::whereUserid($userid)->orderByDesc('created_at');
+
+        if ($type) {
+            $query->whereFavoritableType($type);
+        }
+
+        $favorites = $query->paginate($pageSize, ['*'], 'page', $page);
+
+        $data = [
+            'tasks' => [],
+            'projects' => [],
+            'files' => []
+        ];
+
+        // 分组收集ID
+        $taskIds = [];
+        $projectIds = [];
+        $fileIds = [];
+
+        foreach ($favorites->items() as $favorite) {
+            switch ($favorite->favoritable_type) {
+                case self::TYPE_TASK:
+                    $taskIds[] = $favorite->favoritable_id;
+                    break;
+                case self::TYPE_PROJECT:
+                    $projectIds[] = $favorite->favoritable_id;
+                    break;
+                case self::TYPE_FILE:
+                    $fileIds[] = $favorite->favoritable_id;
+                    break;
+            }
+        }
+
+        // 批量查询具体数据
+        if (!empty($taskIds)) {
+            $tasks = ProjectTask::select([
+                'project_tasks.id', 
+                'project_tasks.name', 
+                'project_tasks.project_id', 
+                'project_tasks.complete_at', 
+                'project_tasks.created_at',
+                'project_tasks.flow_item_id',
+                'project_tasks.flow_item_name',
+                'projects.name as project_name'
+            ])
+            ->leftJoin('projects', 'project_tasks.project_id', '=', 'projects.id')
+            ->whereIn('project_tasks.id', $taskIds)
+            ->get()
+            ->keyBy('id');
+            
+            foreach ($favorites->items() as $favorite) {
+                if ($favorite->favoritable_type === self::TYPE_TASK && isset($tasks[$favorite->favoritable_id])) {
+                    $task = $tasks[$favorite->favoritable_id];
+                    
+                    // 解析 flow_item_name 字段（格式：status|name|color）
+                    $flowItemParts = explode('|', $task->flow_item_name ?: '');
+                    $flowItemStatus = $flowItemParts[0] ?? '';
+                    $flowItemName = $flowItemParts[1] ?? $task->flow_item_name;
+                    $flowItemColor = $flowItemParts[2] ?? '';
+                    
+                    $data['tasks'][] = [
+                        'id' => $task->id,
+                        'name' => $task->name,
+                        'project_id' => $task->project_id,
+                        'project_name' => $task->project_name,
+                        'complete_at' => $task->complete_at,
+                        'flow_item_id' => $task->flow_item_id,
+                        'flow_item_name' => $flowItemName,
+                        'flow_item_status' => $flowItemStatus,
+                        'flow_item_color' => $flowItemColor,
+                        'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
+                    ];
+                }
+            }
+        }
+
+        if (!empty($projectIds)) {
+            $projects = Project::select([
+                'id', 'name', 'desc', 'archived_at', 'created_at'
+            ])->whereIn('id', $projectIds)->get()->keyBy('id');
+            
+            foreach ($favorites->items() as $favorite) {
+                if ($favorite->favoritable_type === self::TYPE_PROJECT && isset($projects[$favorite->favoritable_id])) {
+                    $project = $projects[$favorite->favoritable_id];
+                    $data['projects'][] = [
+                        'id' => $project->id,
+                        'name' => $project->name,
+                        'desc' => $project->desc,
+                        'archived_at' => $project->archived_at,
+                        'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
+                    ];
+                }
+            }
+        }
+
+        if (!empty($fileIds)) {
+            $files = File::select([
+                'id', 'name', 'ext', 'size', 'created_at'
+            ])->whereIn('id', $fileIds)->get()->keyBy('id');
+            
+            foreach ($favorites->items() as $favorite) {
+                if ($favorite->favoritable_type === self::TYPE_FILE && isset($files[$favorite->favoritable_id])) {
+                    $file = $files[$favorite->favoritable_id];
+                    $data['files'][] = [
+                        'id' => $file->id,
+                        'name' => $file->name,
+                        'ext' => $file->ext,
+                        'size' => $file->size,
+                        'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
+                    ];
+                }
+            }
+        }
+
+        return [
+            'data' => $data,
+            'total' => $favorites->total(),
+            'current_page' => $favorites->currentPage(),
+            'per_page' => $favorites->perPage(),
+            'last_page' => $favorites->lastPage(),
+        ];
+    }
+
+    /**
+     * 清理用户收藏
+     * @param int $userid 用户ID
+     * @param string|null $type 收藏类型，null表示全部类型
+     * @return int 删除的记录数
+     */
+    public static function cleanUserFavorites($userid, $type = null)
+    {
+        $query = self::whereUserid($userid);
+        
+        if ($type) {
+            $query->whereFavoritableType($type);
+        }
+        
+        return $query->delete();
+    }
+}

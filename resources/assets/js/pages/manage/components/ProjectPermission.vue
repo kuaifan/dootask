@@ -180,7 +180,7 @@ export default {
                 },
             }).then(({data}) => {
                 this.formData = data.permissions;
-                this.$Message.success(this.$L('修改成功'));
+                $A.messageSuccess('修改成功');
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
