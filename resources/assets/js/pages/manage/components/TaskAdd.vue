@@ -625,6 +625,7 @@ export default {
         },
 
         onAI() {
+            let canceled = false;
             $A.modalInput({
                 title: 'AI 生成',
                 placeholder: '请简要描述任务目标、背景或预期交付，AI 将生成标题、详细说明和子任务',
@@ -634,11 +635,18 @@ export default {
                     autosize: { minRows: 2, maxRows: 6 },
                     maxlength: 500,
                 },
+                onCancel: () => {
+                    canceled = true;
+                },
                 onOk: (value) => {
                     if (!value) {
                         return `请输入任务描述`
                     }
                     return new Promise((resolve, reject) => {
+                        if (canceled) {
+                            reject();
+                            return;
+                        }
                         // 获取当前任务模板信息
                         const currentTemplate = this.templateActiveID ? 
                             this.taskTemplateList.find(item => item.id === this.templateActiveID) : null;
@@ -660,6 +668,10 @@ export default {
                             },
                             timeout: 60 * 1000,
                         }).then(({data}) => {
+                            if (canceled) {
+                                resolve();
+                                return;
+                            }
                             this.addData.name = data.title;
                             this.$refs.editorTaskRef.setContent(data.content, {format: 'raw'});
                             if (Array.isArray(data.subtasks) && data.subtasks.length > 0) {
@@ -695,6 +707,10 @@ export default {
                             }
                             resolve();
                         }).catch(({msg}) => {
+                            if (canceled) {
+                                resolve();
+                                return;
+                            }
                             reject(msg);
                         });
                     })

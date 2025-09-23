@@ -250,7 +250,6 @@
                         <div
                             class="project-ai-button"
                             type="text"
-                            :loading="projectAiLoading"
                             @click="onProjectAI">
                             <i class="taskfont">&#xe8a1;</i>
                         </div>
@@ -464,7 +463,6 @@ export default {
                 columns: '',
                 flow: 'open',
             },
-            projectAiLoading: false,
             addRule: {
                 name: [
                     { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
@@ -999,7 +997,6 @@ export default {
 
         onAddShow() {
             this.$store.dispatch("getColumnTemplate").catch(() => {})
-            this.projectAiLoading = false;
             this.addShow = true;
             this.$nextTick(() => {
                 this.$refs.projectName.focus();
@@ -1007,9 +1004,7 @@ export default {
         },
 
         onProjectAI() {
-            if (this.projectAiLoading) {
-                return;
-            }
+            let canceled = false;
             $A.modalInput({
                 title: 'AI 生成',
                 placeholder: '请简要描述项目目标、范围或关键里程碑，AI 将生成名称和任务列表',
@@ -1019,12 +1014,18 @@ export default {
                     autosize: {minRows: 2, maxRows: 6},
                     maxlength: 500,
                 },
+                onCancel: () => {
+                    canceled = true;
+                },
                 onOk: (value) => {
                     if (!value) {
                         return '请输入项目需求';
                     }
                     return new Promise((resolve, reject) => {
-                        this.projectAiLoading = true;
+                        if (canceled) {
+                            reject();
+                            return;
+                        }
                         const parseColumns = (cols) => {
                             if (Array.isArray(cols)) {
                                 return cols;
@@ -1042,10 +1043,6 @@ export default {
                                 columns: parseColumns(item.columns)
                             }));
 
-                        const finish = () => {
-                            this.projectAiLoading = false;
-                        };
-
                         this.$store.dispatch("call", {
                             url: 'project/ai/generate',
                             data: {
@@ -1056,6 +1053,10 @@ export default {
                             },
                             timeout: 45 * 1000,
                         }).then(({data}) => {
+                            if (canceled) {
+                                resolve();
+                                return;
+                            }
                             const columns = Array.isArray(data.columns) ? data.columns : parseColumns(data.columns);
                             this.$set(this.addData, 'name', data.name || '');
                             this.$set(this.addData, 'columns', columns.length > 0 ? columns.join(',') : '');
@@ -1064,10 +1065,12 @@ export default {
                                     this.$refs.projectName.focus();
                                 }
                             });
-                            finish();
                             resolve();
                         }).catch(({msg}) => {
-                            finish();
+                            if (canceled) {
+                                resolve();
+                                return;
+                            }
                             reject(msg);
                         });
                     });

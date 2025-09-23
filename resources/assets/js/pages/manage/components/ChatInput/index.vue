@@ -433,8 +433,6 @@ export default {
             showMore: false,
             showEmoji: false,
 
-            chatAiLoading: false,
-
             emojiQuickShow: false,
             emojiQuickKey: '',
             emojiQuickItems: [],
@@ -1823,13 +1821,14 @@ export default {
         },
 
         onMessageAI() {
-            if (this.disabled || this.chatAiLoading) {
+            if (this.disabled) {
                 return;
             }
             if (!this.dialogId) {
                 $A.messageWarning(this.$L('当前未选择会话'));
                 return;
             }
+            let canceled = false;
             $A.modalInput({
                 title: 'AI 生成',
                 placeholder: '请简要描述消息的主题、语气或要点，AI 将生成完整消息',
@@ -1839,12 +1838,18 @@ export default {
                     autosize: {minRows: 2, maxRows: 6},
                     maxlength: 500,
                 },
+                onCancel: () => {
+                    canceled = true;
+                },
                 onOk: (value) => {
                     if (!value) {
                         return '请输入消息需求';
                     }
                     return new Promise((resolve, reject) => {
-                        this.chatAiLoading = true;
+                        if (canceled) {
+                            reject();
+                            return;
+                        }
                         this.$store.dispatch('call', {
                             url: 'dialog/msg/ai_generate',
                             data: {
@@ -1856,6 +1861,10 @@ export default {
                             timeout: 45 * 1000,
                         }).then(({data}) => {
                             const html = data && (data.html || data.text) ? (data.html || data.text) : '';
+                            if (canceled) {
+                                resolve();
+                                return;
+                            }
                             if (!html) {
                                 reject(this.$L('AI 未生成内容'));
                                 return;
@@ -1864,9 +1873,11 @@ export default {
                             this.$nextTick(() => this.focus());
                             resolve();
                         }).catch(({msg}) => {
+                            if (canceled) {
+                                resolve();
+                                return;
+                            }
                             reject(msg);
-                        }).finally(() => {
-                            this.chatAiLoading = false;
                         });
                     });
                 }
