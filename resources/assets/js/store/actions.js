@@ -1096,6 +1096,9 @@ export default {
             // readCache
             await dispatch("handleReadCache")
 
+            // Reset auth exception flag after successful login flow
+            state.ajaxAuthException = null
+
             resolve()
         });
     },
