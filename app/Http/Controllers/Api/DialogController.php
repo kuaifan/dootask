@@ -28,6 +28,7 @@ use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogMsgTodo;
 use App\Models\WebSocketDialogMsgTranslate;
 use App\Models\WebSocketDialogSession;
+use App\Models\UserRecentItem;
 use App\Module\Table\OnlineData;
 use App\Module\ZincSearch\ZincSearchDialogMsg;
 use App\Tasks\BotReceiveMsgTask;
@@ -244,7 +245,7 @@ class DialogController extends AbstractController
      */
     public function user()
     {
-        User::auth();
+        $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
         $getuser = intval(Request::input('getuser', 0));
@@ -1924,6 +1925,16 @@ class DialogController extends AbstractController
             }
         }
         //
+        if ($dialogMsg->type === 'file') {
+            UserRecentItem::record(
+                $user->userid,
+                UserRecentItem::TYPE_MESSAGE_FILE,
+                $dialogMsg->id,
+                UserRecentItem::SOURCE_DIALOG,
+                $dialogMsg->dialog_id
+            );
+        }
+
         return Base::retSuccess('success', $data);
     }
 

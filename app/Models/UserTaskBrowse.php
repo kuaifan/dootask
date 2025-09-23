@@ -68,7 +68,7 @@ class UserTaskBrowse extends AbstractModel
      */
     public static function recordBrowse($userid, $task_id)
     {
-        return self::updateOrCreate(
+        $record = self::updateOrCreate(
             [
                 'userid' => $userid,
                 'task_id' => $task_id,
@@ -77,6 +77,16 @@ class UserTaskBrowse extends AbstractModel
                 'browsed_at' => Carbon::now(),
             ]
         );
+
+        UserRecentItem::record(
+            $userid,
+            UserRecentItem::TYPE_TASK,
+            $task_id,
+            UserRecentItem::SOURCE_PROJECT,
+            0
+        );
+
+        return $record;
     }
 
     /**

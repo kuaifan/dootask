@@ -2781,6 +2781,15 @@ export default {
         });
     },
 
+    getRecentBrowseHistory({dispatch}, params = {}) {
+        return dispatch('call', {
+            url: 'users/recent/browse',
+            data: params,
+            method: 'get',
+            spinner: 0,
+        });
+    },
+
     /**
      * 任务默认时间
      * @param state
