@@ -29,6 +29,7 @@ use App\Models\UserDepartment;
 use App\Models\WebSocketDialog;
 use App\Models\UserCheckinRecord;
 use App\Models\WebSocketDialogMsg;
+use App\Models\WebSocketDialogUser;
 use App\Models\UserTaskBrowse;
 use App\Models\UserFavorite;
 use Illuminate\Support\Facades\DB;
@@ -1832,10 +1833,12 @@ class UsersController extends AbstractController
         // 获取子部门中的所有成员
         $subDepartmentMembers = [];
         foreach ($subDepartmentIds as $subId) {
-            $users = User::where("department", "like", "%,{$subId},%")->get();
+            $users = User::where("department", "like", "%,{$subId},%")
+                ->whereNull('disable_at')
+                ->get();
             foreach ($users as $user) {
-                if (!in_array($user->userid, $subDepartmentMembers)) {
-                    $subDepartmentMembers[] = $user->userid;
+                if (!isset($subDepartmentMembers[$user->userid])) {
+                    $subDepartmentMembers[$user->userid] = $user->userid;
                 }
             }
         }
@@ -1855,7 +1858,7 @@ class UsersController extends AbstractController
         AbstractModel::transaction(function () use ($id, $subDepartmentMembers, &$syncedCount, &$alreadyInDeptCount) {
             foreach ($subDepartmentMembers as $userid) {
                 $user = User::find($userid);
-                if ($user) {
+                if ($user && $user->disable_at === null) {
                     $userDepartments = $user->department;
                     if (!in_array($id, $userDepartments)) {
                         $userDepartments[] = $id;
@@ -1868,6 +1871,25 @@ class UsersController extends AbstractController
                 }
             }
         });
+
+        if ($userDepartment->dialog_id > 0) {
+            $departmentMemberIds = User::where("department", "like", "%,{$id},%")
+                ->whereNull('disable_at')
+                ->pluck('userid')
+                ->toArray();
+            $departmentMemberIds = array_map('intval', $departmentMemberIds);
+
+            $existingGroupUserIds = WebSocketDialogUser::whereDialogId($userDepartment->dialog_id)
+                ->pluck('userid')
+                ->toArray();
+            $existingGroupUserIds = array_map('intval', $existingGroupUserIds);
+            $missingInGroup = array_values(array_diff($departmentMemberIds, $existingGroupUserIds));
+
+            if (!empty($missingInGroup) && $dialog = WebSocketDialog::find($userDepartment->dialog_id)) {
+                $dialog->joinGroup($missingInGroup, 0, true);
+                $dialog->pushMsg("groupJoin", null, $missingInGroup);
+            }
+        }
 
         $message = "同步完成，共同步 {$syncedCount} 个成员";
         if ($alreadyInDeptCount > 0) {
