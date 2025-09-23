@@ -152,6 +152,10 @@
                                 <em>{{$L('上传文件')}}</em>
                             </div>
                         </template>
+                        <div class="chat-input-popover-item" @click="onToolbar('ai')">
+                            <i class="taskfont">&#xe8a1;</i>
+                            <em>{{$L('AI 生成')}}</em>
+                        </div>
                         <div ref="moreFull" class="chat-input-popover-item" @click="onToolbar('full')">
                             <i class="taskfont">&#xe6a7;</i>
                             <em>{{$L('全屏输入')}}</em>
@@ -428,6 +432,8 @@ export default {
             showMenu: false,
             showMore: false,
             showEmoji: false,
+
+            chatAiLoading: false,
 
             emojiQuickShow: false,
             emojiQuickKey: '',
@@ -1762,6 +1768,10 @@ export default {
                     this.openMenu("#");
                     break;
 
+                case 'ai':
+                    this.onMessageAI();
+                    break;
+
                 case 'maybe-photo':
                     this.$emit('on-file', {
                         type: 'photo',
@@ -1810,6 +1820,57 @@ export default {
                     break;
 
             }
+        },
+
+        onMessageAI() {
+            if (this.disabled || this.chatAiLoading) {
+                return;
+            }
+            if (!this.dialogId) {
+                $A.messageWarning(this.$L('当前未选择会话'));
+                return;
+            }
+            $A.modalInput({
+                title: 'AI 生成',
+                placeholder: '请简要描述消息的主题、语气或要点，AI 将生成完整消息',
+                inputProps: {
+                    type: 'textarea',
+                    rows: 2,
+                    autosize: {minRows: 2, maxRows: 6},
+                    maxlength: 500,
+                },
+                onOk: (value) => {
+                    if (!value) {
+                        return '请输入消息需求';
+                    }
+                    return new Promise((resolve, reject) => {
+                        this.chatAiLoading = true;
+                        this.$store.dispatch('call', {
+                            url: 'dialog/msg/ai_generate',
+                            data: {
+                                dialog_id: this.dialogId,
+                                content: value,
+                                draft: this.value || '',
+                                quote_id: this.quoteData?.id || 0,
+                            },
+                            timeout: 45 * 1000,
+                        }).then(({data}) => {
+                            const html = data && (data.html || data.text) ? (data.html || data.text) : '';
+                            if (!html) {
+                                reject(this.$L('AI 未生成内容'));
+                                return;
+                            }
+                            this.$emit('input', html);
+                            this.$nextTick(() => this.focus());
+                            resolve();
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        }).finally(() => {
+                            this.chatAiLoading = false;
+                        });
+                    });
+                }
+            })
         },
 
         onFullInput() {

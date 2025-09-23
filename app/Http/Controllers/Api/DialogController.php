@@ -990,6 +990,100 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {post} api/dialog/msg/ai_generate          21.1 使用 AI 助手生成消息
+     *
+     * @apiDescription 需要token身份，根据上下文自动生成拟发送的聊天消息
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__ai_generate
+     *
+     * @apiParam {Number} dialog_id             对话ID
+     * @apiParam {String} content               消息需求描述
+     * @apiParam {String} [draft]               当前草稿内容（HTML 格式）
+     * @apiParam {Number} [quote_id]            引用消息ID
+     *
+     * @apiSuccess {Number} ret                 返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg                 返回信息（错误描述）
+     * @apiSuccess {Object} data                返回数据
+     * @apiSuccess {String} data.text           AI 生成的消息文本（Markdown 格式）
+     * @apiSuccess {String} data.html           AI 生成的消息内容（HTML 格式）
+     */
+    public function msg__ai_generate()
+    {
+        $user = User::auth();
+        $user->checkChatInformation();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $content = trim(Request::input('content', ''));
+        if ($dialog_id <= 0) {
+            return Base::retError('参数错误');
+        }
+        if ($content === '') {
+            return Base::retError('消息需求描述不能为空');
+        }
+
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+
+        $context = [
+            'dialog_name' => $dialog->name ?: '',
+            'dialog_type' => $dialog->type ?: '',
+            'group_type' => $dialog->group_type ?: '',
+        ];
+
+        $draft = Request::input('draft', '');
+        if (is_string($draft) && trim($draft) !== '') {
+            $context['current_draft'] = Base::html2markdown($draft);
+        }
+
+        $quote_id = intval(Request::input('quote_id'));
+        if ($quote_id > 0) {
+            $quote = WebSocketDialogMsg::whereDialogId($dialog_id)
+                ->whereId($quote_id)
+                ->with('user')
+                ->first();
+            if ($quote) {
+                $context['quote_summary'] = WebSocketDialogMsg::previewMsg($quote);
+                $context['quote_user'] = $quote->user->nickname ?? '';
+            }
+        }
+
+        $members = WebSocketDialogUser::whereDialogId($dialog_id)
+            ->join('users', 'users.userid', '=', 'web_socket_dialog_users.userid')
+            ->orderBy('web_socket_dialog_users.id')
+            ->limit(10)
+            ->pluck('users.nickname')
+            ->filter()
+            ->values()
+            ->all();
+        if (!empty($members)) {
+            $context['members'] = $members;
+        }
+
+        $recentMessages = WebSocketDialogMsg::whereDialogId($dialog_id)
+            ->orderByDesc('id')
+            ->take(6)
+            ->with('user')
+            ->get();
+        if ($recentMessages->isNotEmpty()) {
+            $context['recent_messages'] = $recentMessages->reverse()->map(function ($msg) {
+                return [
+                    'sender' => $msg->user->nickname ?? ('用户' . $msg->userid),
+                    'summary' => WebSocketDialogMsg::previewMsg($msg),
+                ];
+            })->filter(function ($item) {
+                return !empty($item['summary']);
+            })->values()->all();
+        }
+
+        $result = AI::generateMessage($content, $context);
+        if (Base::isError($result)) {
+            return Base::retError('生成消息失败', $result);
+        }
+
+        return Base::retSuccess('生成消息成功', $result['data']);
+    }
+
+    /**
      * @api {post} api/dialog/msg/sendtext          21. 发送消息
      *
      * @apiDescription 需要token身份

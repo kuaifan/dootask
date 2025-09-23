@@ -552,6 +552,71 @@ class AI
     }
 
     /**
+     * 通过 openAI 生成聊天消息
+     * @param string $text 消息需求描述
+     * @param array $context 上下文信息
+     * @return array
+     */
+    public static function generateMessage($text, $context = [])
+    {
+        $text = trim((string)$text);
+        if ($text === '') {
+            return Base::retError("消息需求不能为空");
+        }
+
+        $contextPrompt = self::buildMessageContextPrompt($context);
+
+        $post = json_encode([
+            "model" => "gpt-5-nano",
+            "messages" => [
+                [
+                    "role" => "system",
+                    "content" => <<<EOF
+                        你是一名专业的沟通助手，协助用户编写得体、清晰且具行动指向的即时消息。
+
+                        写作要求：
+                        1. 根据用户提供的需求与上下文生成完整消息，语气需符合业务沟通场景，保持真诚、礼貌且高效
+                        2. 默认使用简洁的短段落，可使用 Markdown 基础格式（加粗、列表、引用）增强结构，但不要输出代码块或 JSON
+                        3. 如果上下文包含引用信息或草稿，请在消息中自然呼应相关要点
+                        4. 如无特别说明，将消息长度控制在 60-180 字；若需更短或更长，遵循用户描述
+                        5. 如需提出行动或问题，请明确表达，避免含糊
+
+                        输出规范：
+                        - 仅返回可直接发送的消息内容
+                        - 禁止在内容前后添加额外说明、标签或引导语
+                        EOF
+                ],
+                [
+                    "role" => "user",
+                    "content" => ($contextPrompt ? $contextPrompt . "\n\n" : "") . "请根据以上信息，为以下需求生成一条待发送的消息：\n\n" . $text
+                ],
+            ],
+        ]);
+
+        $ai = new self($post);
+        $ai->setTimeout(45);
+
+        $res = $ai->request();
+        if (Base::isError($res)) {
+            return Base::retError("消息生成失败", $res);
+        }
+
+        $content = trim($res['data']);
+        $content = preg_replace('/^\s*```(?:markdown|md|text)?\s*/i', '', $content);
+        $content = preg_replace('/\s*```\s*$/', '', $content);
+        $content = trim($content);
+
+        if ($content === '') {
+            return Base::retError("消息生成结果为空");
+        }
+
+        return Base::retSuccess("success", [
+            'text' => $content,
+            'html' => Base::markdown2html($content),
+        ]);
+    }
+
+    /**
      * 构建任务生成的上下文提示信息
      * @param array $context 上下文信息
      * @return string
@@ -631,6 +696,62 @@ class AI
                 $prompts[] = "- " . $line;
             }
             $prompts[] = "可以借鉴以上结构，但要结合用户需求生成更贴合的方案。";
+        }
+
+        return empty($prompts) ? "" : implode("\n", $prompts);
+    }
+
+    private static function buildMessageContextPrompt($context)
+    {
+        $prompts = [];
+
+        if (!empty($context['dialog_name']) || !empty($context['dialog_type']) || !empty($context['group_type'])) {
+            $prompts[] = "## 会话信息";
+            if (!empty($context['dialog_name'])) {
+                $prompts[] = "名称：" . Base::cutStr($context['dialog_name'], 60);
+            }
+            if (!empty($context['dialog_type'])) {
+                $typeMap = ['group' => '群聊', 'user' => '单聊'];
+                $prompts[] = "类型：" . ($typeMap[$context['dialog_type']] ?? $context['dialog_type']);
+            }
+            if (!empty($context['group_type'])) {
+                $prompts[] = "分类：" . Base::cutStr($context['group_type'], 60);
+            }
+        }
+
+        if (!empty($context['members']) && is_array($context['members'])) {
+            $members = array_slice(array_filter($context['members']), 0, 10);
+            if (!empty($members)) {
+                $prompts[] = "## 会话成员";
+                $prompts[] = implode("，", array_map(fn($name) => Base::cutStr($name, 30), $members));
+            }
+        }
+
+        if (!empty($context['recent_messages']) && is_array($context['recent_messages'])) {
+            $prompts[] = "## 最近消息";
+            foreach ($context['recent_messages'] as $item) {
+                $sender = Base::cutStr(trim($item['sender'] ?? ''), 40) ?: '成员';
+                $summary = Base::cutStr(trim($item['summary'] ?? ''), 120);
+                if ($summary !== '') {
+                    $prompts[] = "- {$sender}：{$summary}";
+                }
+            }
+        }
+
+        if (!empty($context['quote_summary'])) {
+            $prompts[] = "## 引用消息";
+            $quoteUser = Base::cutStr(trim($context['quote_user'] ?? ''), 40);
+            $quoteText = Base::cutStr(trim($context['quote_summary']), 200);
+            if ($quoteUser !== '') {
+                $prompts[] = "{$quoteUser}：{$quoteText}";
+            } else {
+                $prompts[] = $quoteText;
+            }
+        }
+
+        if (!empty($context['current_draft'])) {
+            $prompts[] = "## 当前草稿";
+            $prompts[] = Base::cutStr(trim($context['current_draft']), 200);
         }
 
         return empty($prompts) ? "" : implode("\n", $prompts);
