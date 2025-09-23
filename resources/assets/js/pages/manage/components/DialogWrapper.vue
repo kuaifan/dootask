@@ -376,6 +376,10 @@
                                     <i class="taskfont">&#xe61e;</i>
                                     <span>{{ $L(operateItem.tag ? '取消标注' : '标注') }}</span>
                                 </li>
+                                <li @click="onOperate('favorite')">
+                                    <i class="taskfont">{{ operateItem.favorited ? '&#xe683;' : '&#xe679;' }}</i>
+                                    <span>{{ $L(operateItem.favorited ? '取消收藏' : '收藏') }}</span>
+                                </li>
                                 <li v-if="actionPermission(operateItem, 'newTask')" @click="onOperate('newTask')">
                                     <i class="taskfont">&#xe7b8;</i>
                                     <span>{{ $L('新任务') }}</span>
@@ -3135,6 +3139,9 @@ export default {
                             })
                         }
                     }
+                    if (this.operateVisible) {
+                        this.checkMessageFavoriteStatus(this.operateItem);
+                    }
                     requestAnimationFrame(() => {
                         this.operateItem.clientX = event.clientX
                         this.operateItem.clientY = event.clientY
@@ -3284,6 +3291,10 @@ export default {
 
                     case "tag":
                         this.onTag()
+                        break;
+
+                    case "favorite":
+                        this.onFavorite()
                         break;
 
                     case "newTask":
@@ -4061,6 +4072,47 @@ export default {
                 $A.messageError(msg);
             }).finally(_ => {
                 this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
+            });
+        },
+
+        onFavorite() {
+            if (this.operateVisible) {
+                return
+            }
+            
+            this.$store.dispatch("toggleFavorite", {
+                type: 'message',
+                id: this.operateItem.id
+            }).then(({data, msg}) => {
+                this.$set(this.operateItem, 'favorited', data.favorited);
+                const message = this.dialogMsgs.find(msg => msg.id === this.operateItem.id);
+                if (message) {
+                    this.$set(message, 'favorited', data.favorited);
+                }
+                this.$Message.success(msg);
+            }).catch(({msg}) => {
+                $A.messageError(msg);
+            });
+        },
+
+        checkMessageFavoriteStatus(message) {
+            if (!message.id) return;
+            
+            this.$store.dispatch("checkFavoriteStatus", {
+                type: 'message',
+                id: message.id
+            }).then(({data}) => {
+                this.$set(this.operateItem, 'favorited', data.favorited || false);
+                const msgInList = this.dialogMsgs.find(msg => msg.id === message.id);
+                if (msgInList) {
+                    this.$set(msgInList, 'favorited', data.favorited || false);
+                }
+            }).catch(() => {
+                this.$set(this.operateItem, 'favorited', false);
+                const msgInList = this.dialogMsgs.find(msg => msg.id === message.id);
+                if (msgInList) {
+                    this.$set(msgInList, 'favorited', false);
+                }
             });
         },
 

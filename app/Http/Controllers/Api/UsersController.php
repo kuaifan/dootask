@@ -2835,7 +2835,7 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName favorites
      *
-     * @apiParam {String} [type]               收藏类型过滤 (task/project/file)
+     * @apiParam {String} [type]               收藏类型过滤 (task/project/file/message)
      * @apiParam {Number} [page=1]             页码
      * @apiParam {Number} [pagesize=20]        每页数量
      *
@@ -2852,7 +2852,7 @@ class UsersController extends AbstractController
         $pageSize = min(intval(Request::input('pagesize', 20)), 100);
         //
         // 验证收藏类型
-        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE];
+        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE, UserFavorite::TYPE_MESSAGE];
         if ($type && !in_array($type, $allowedTypes)) {
             return Base::retError('无效的收藏类型');
         }
@@ -2870,7 +2870,7 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName favorite__toggle
      *
-     * @apiParam {String} type                  收藏类型 (task/project/file)
+     * @apiParam {String} type                  收藏类型 (task/project/file/message)
      * @apiParam {Number} id                    收藏对象ID
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -2889,7 +2889,7 @@ class UsersController extends AbstractController
         }
         //
         // 验证收藏类型
-        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE];
+        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE, UserFavorite::TYPE_MESSAGE];
         if (!in_array($type, $allowedTypes)) {
             return Base::retError('无效的收藏类型');
         }
@@ -2914,6 +2914,12 @@ class UsersController extends AbstractController
                     return Base::retError('文件不存在');
                 }
                 break;
+            case UserFavorite::TYPE_MESSAGE:
+                $object = WebSocketDialogMsg::whereId($id)->first();
+                if (!$object) {
+                    return Base::retError('消息不存在');
+                }
+                break;
         }
         //
         $result = UserFavorite::toggleFavorite($user->userid, $type, $id);
@@ -2930,7 +2936,7 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName favorites__clean
      *
-     * @apiParam {String} [type]                收藏类型 (task/project/file)，不传则清理全部
+     * @apiParam {String} [type]                收藏类型 (task/project/file/message)，不传则清理全部
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -2944,7 +2950,7 @@ class UsersController extends AbstractController
         //
         // 验证收藏类型
         if ($type) {
-            $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE];
+            $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE, UserFavorite::TYPE_MESSAGE];
             if (!in_array($type, $allowedTypes)) {
                 return Base::retError('无效的收藏类型');
             }
@@ -2964,7 +2970,7 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName favorite__check
      *
-     * @apiParam {String} type                  收藏类型 (task/project/file)
+     * @apiParam {String} type                  收藏类型 (task/project/file/message)
      * @apiParam {Number} id                    收藏对象ID
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -2983,7 +2989,7 @@ class UsersController extends AbstractController
         }
         //
         // 验证收藏类型
-        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE];
+        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE, UserFavorite::TYPE_MESSAGE];
         if (!in_array($type, $allowedTypes)) {
             return Base::retError('无效的收藏类型');
         }

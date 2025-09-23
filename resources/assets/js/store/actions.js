@@ -2851,7 +2851,7 @@ export default {
     /**
      * 检查收藏状态
      * @param dispatch
-     * @param {object} params {type: 'task|project|file', id: number}
+     * @param {object} params {type: 'task|project|file|message', id: number}
      */
     checkFavoriteStatus({dispatch}, {type, id}) {
         return dispatch('call', {
@@ -2868,7 +2868,7 @@ export default {
     /**
      * 切换收藏状态
      * @param dispatch
-     * @param {object} params {type: 'task|project|file', id: number}
+     * @param {object} params {type: 'task|project|file|message', id: number}
      */
     toggleFavorite({dispatch}, {type, id}) {
         return dispatch('call', {
@@ -2884,7 +2884,7 @@ export default {
     /**
      * 批量检查收藏状态
      * @param dispatch
-     * @param {object} params {type: 'task|project|file', items: array}
+     * @param {object} params {type: 'task|project|file|message', items: array}
      */
     checkFavoritesStatus({dispatch}, {type, items}) {
         if (!Array.isArray(items) || items.length === 0) {

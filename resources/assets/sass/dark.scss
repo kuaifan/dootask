@@ -758,4 +758,11 @@ body.dark-mode-reverse {
             }
         }
     }
+
+    .favorite-type-tag {
+        .ivu-tag-text {
+            -webkit-filter: invert(100%);
+            filter: invert(100%);
+        }
+    }
 }

@@ -18,6 +18,7 @@
                             <Option value="task">{{$L('任务')}}</Option>
                             <Option value="project">{{$L('项目')}}</Option>
                             <Option value="file">{{$L('文件')}}</Option>
+                            <Option value="message">{{$L('消息')}}</Option>
                         </Select>
                     </div>
                 </li>
@@ -85,16 +86,19 @@ export default {
                         const typeMap = {
                             'task': this.$L('任务'),
                             'project': this.$L('项目'),
-                            'file': this.$L('文件')
+                            'file': this.$L('文件'),
+                            'message': this.$L('消息')
                         };
                         const color = {
-                            'task': 'primary',
-                            'project': 'success',
-                            'file': 'warning'
+                            'task': 'success',
+                            'project': '#f87cbd',
+                            'file': 'warning',
+                            'message': 'primary'
                         };
                         return h('Tag', {
+                            class: 'favorite-type-tag',
                             props: {
-                                color: color[row.type] || 'default'
+                                color: color[row.type] || 'primary'
                             }
                         }, typeMap[row.type] || row.type);
                     }
@@ -288,6 +292,21 @@ export default {
                     });
                 }
                 
+                // 处理消息收藏
+                if (data.data.messages) {
+                    data.data.messages.forEach(message => {
+                        this.allData.push({
+                            id: message.id,
+                            type: 'message',
+                            name: message.name,
+                            dialog_id: message.dialog_id,
+                            userid: message.userid,
+                            msg_type: message.type,
+                            favorited_at: message.favorited_at,
+                        });
+                    });
+                }
+                
                 this.total = data.total || this.allData.length;
                 this.filterData();
                 this.noText = '没有相关的收藏';
@@ -348,6 +367,16 @@ export default {
                         this.$store.state.fileShakeId = 0;
                     }, 600);
                     this.$emit('on-close');
+                    break;
+                case 'message':
+                    this.$store.dispatch("openDialog", item.dialog_id).then(() => {
+                        this.$store.state.dialogSearchMsgId = item.id;
+                        if (this.$route.name === 'manage-messenger') {
+                            this.$emit('on-close');
+                        }
+                    }).catch(({msg}) => {
+                        $A.modalError(msg || this.$L('打开会话失败'));
+                    });
                     break;
             }
         },

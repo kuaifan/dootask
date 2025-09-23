@@ -38,6 +38,7 @@ class UserFavorite extends AbstractModel
     const TYPE_TASK = 'task';
     const TYPE_PROJECT = 'project';
     const TYPE_FILE = 'file';
+    const TYPE_MESSAGE = 'message';
 
     protected $fillable = [
         'userid',
@@ -126,13 +127,15 @@ class UserFavorite extends AbstractModel
         $data = [
             'tasks' => [],
             'projects' => [],
-            'files' => []
+            'files' => [],
+            'messages' => []
         ];
 
         // 分组收集ID
         $taskIds = [];
         $projectIds = [];
         $fileIds = [];
+        $messageIds = [];
 
         foreach ($favorites->items() as $favorite) {
             switch ($favorite->favoritable_type) {
@@ -144,6 +147,9 @@ class UserFavorite extends AbstractModel
                     break;
                 case self::TYPE_FILE:
                     $fileIds[] = $favorite->favoritable_id;
+                    break;
+                case self::TYPE_MESSAGE:
+                    $messageIds[] = $favorite->favoritable_id;
                     break;
             }
         }
@@ -224,6 +230,38 @@ class UserFavorite extends AbstractModel
                         'ext' => $file->ext,
                         'size' => $file->size,
                         'pid' => $file->pid,
+                        'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
+                    ];
+                }
+            }
+        }
+
+        if (!empty($messageIds)) {
+            $messages = WebSocketDialogMsg::select([
+                'id', 'dialog_id', 'userid', 'type', 'msg', 'created_at'
+            ])->whereIn('id', $messageIds)->get()->keyBy('id');
+            
+            foreach ($favorites->items() as $favorite) {
+                if ($favorite->favoritable_type === self::TYPE_MESSAGE && isset($messages[$favorite->favoritable_id])) {
+                    $message = $messages[$favorite->favoritable_id];
+                    
+                    // 使用 previewTextMsg 获取消息预览文本
+                    $previewText = '';
+                    if ($message->msg && is_array($message->msg)) {
+                        $previewText = WebSocketDialogMsg::previewTextMsg($message->msg);
+                    }
+                    
+                    // 如果没有预览文本，使用消息类型作为标题
+                    if (empty($previewText)) {
+                        $previewText = '[' . ucfirst($message->type) . ']';
+                    }
+                    
+                    $data['messages'][] = [
+                        'id' => $message->id,
+                        'name' => $previewText,
+                        'dialog_id' => $message->dialog_id,
+                        'userid' => $message->userid,
+                        'type' => $message->type,
                         'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
                     ];
                 }
