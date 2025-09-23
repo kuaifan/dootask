@@ -2845,6 +2845,69 @@ export default {
     },
 
     /** *****************************************************************************************/
+    /** ************************************** 收藏 **********************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 检查收藏状态
+     * @param dispatch
+     * @param {object} params {type: 'task|project|file', id: number}
+     */
+    checkFavoriteStatus({dispatch}, {type, id}) {
+        return dispatch('call', {
+            url: 'users/favorite/check',
+            data: {
+                type: type,
+                id: id
+            },
+            method: 'get',
+            spinner: 0, // 静默调用
+        });
+    },
+
+    /**
+     * 切换收藏状态
+     * @param dispatch
+     * @param {object} params {type: 'task|project|file', id: number}
+     */
+    toggleFavorite({dispatch}, {type, id}) {
+        return dispatch('call', {
+            url: 'users/favorite/toggle',
+            data: {
+                type: type,
+                id: id
+            },
+            method: 'post',
+        });
+    },
+
+    /**
+     * 批量检查收藏状态
+     * @param dispatch
+     * @param {object} params {type: 'task|project|file', items: array}
+     */
+    checkFavoritesStatus({dispatch}, {type, items}) {
+        if (!Array.isArray(items) || items.length === 0) {
+            return Promise.resolve([]);
+        }
+
+        // 批量检查收藏状态
+        const promises = items.map(item => {
+            return dispatch('checkFavoriteStatus', {type, id: item.id})
+                .then(({data}) => ({
+                    id: item.id,
+                    favorited: data.favorited || false
+                }))
+                .catch(() => ({
+                    id: item.id,
+                    favorited: false
+                }));
+        });
+
+        return Promise.all(promises);
+    },
+
+    /** *****************************************************************************************/
     /** ************************************** 会话 **********************************************/
     /** *****************************************************************************************/
 

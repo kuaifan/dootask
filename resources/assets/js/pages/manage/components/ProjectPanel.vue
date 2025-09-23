@@ -1894,13 +1894,9 @@ export default {
         toggleProjectFavorite() {
             if (!this.projectData.id) return;
             
-            this.$store.dispatch("call", {
-                url: 'users/favorite/toggle',
-                data: {
-                    type: 'project',
-                    id: this.projectData.id
-                },
-                method: 'post',
+            this.$store.dispatch("toggleFavorite", {
+                type: 'project',
+                id: this.projectData.id
             }).then(({data, msg}) => {
                 // 更新项目的收藏状态
                 this.$set(this.projectData, 'favorited', data.favorited);
@@ -1916,14 +1912,9 @@ export default {
         checkProjectFavoriteStatus() {
             if (!this.projectData.id) return;
             
-            this.$store.dispatch("call", {
-                url: 'users/favorite/check',
-                data: {
-                    type: 'project',
-                    id: this.projectData.id
-                },
-                method: 'get',
-                spinner: 0, // 静默调用
+            this.$store.dispatch("checkFavoriteStatus", {
+                type: 'project',
+                id: this.projectData.id
             }).then(({data}) => {
                 this.$set(this.projectData, 'favorited', data.favorited || false);
             }).catch(() => {

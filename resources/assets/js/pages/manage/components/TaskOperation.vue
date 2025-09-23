@@ -506,12 +506,9 @@ export default {
         checkFavoriteStatus() {
             if (!this.task.id) return;
             
-            this.$store.dispatch("call", {
-                url: 'users/favorite/check',
-                data: {
-                    type: 'task',
-                    id: this.task.id
-                },
+            this.$store.dispatch("checkFavoriteStatus", {
+                type: 'task',
+                id: this.task.id
             }).then(({data}) => {
                 this.isFavorited = data.favorited || false;
             }).catch(() => {
@@ -525,13 +522,9 @@ export default {
         toggleFavorite() {
             if (!this.task.id) return;
             
-            this.$store.dispatch("call", {
-                url: 'users/favorite/toggle',
-                data: {
-                    type: 'task',
-                    id: this.task.id
-                },
-                method: 'post',
+            this.$store.dispatch("toggleFavorite", {
+                type: 'task',
+                id: this.task.id
             }).then(({data, msg}) => {
                 this.isFavorited = data.favorited;
                 this.hide();

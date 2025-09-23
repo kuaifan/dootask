@@ -1012,7 +1012,6 @@ export default {
                 this.loadIng--;
                 this.openFileJudge()
                 this.shakeFile(this.$route.params.shakeId);
-                this.checkFileFavoriteStatus(this.fileList);
                 await $A.IDBSet("fileFolderId", this.pid)
             }).catch(({msg}) => {
                 this.loadIng--;
@@ -1082,6 +1081,9 @@ export default {
 
         handleRightClick(event, item, isAddButton) {
             this.contextMenuItem = $A.isJson(item) ? item : {};
+            if (this.contextMenuItem.id && this.contextMenuItem.type !== 'folder') {
+                this.checkSingleFileFavoriteStatus(this.contextMenuItem);
+            }
             if (this.contextMenuVisible) {
                 this.handleClickContextMenuOutside();
             }
@@ -2086,13 +2088,9 @@ export default {
         toggleFileFavorite(item) {
             if (!item.id || item.type === 'folder') return;
             
-            this.$store.dispatch("call", {
-                url: 'users/favorite/toggle',
-                data: {
-                    type: 'file',
-                    id: item.id
-                },
-                method: 'post',
+            this.$store.dispatch("toggleFavorite", {
+                type: 'file',
+                id: item.id
             }).then(({data, msg}) => {
                 // 更新文件的收藏状态
                 const fileIndex = this.fileList.findIndex(file => file.id === item.id);
@@ -2112,34 +2110,27 @@ export default {
         /**
          * 检查文件收藏状态
          */
-        checkFileFavoriteStatus(files) {
-            if (!Array.isArray(files) || files.length === 0) return;
+        checkSingleFileFavoriteStatus(file) {
+            if (!file.id || file.type === 'folder') return;
             
-            const fileIds = files.filter(file => file.type !== 'folder').map(file => file.id);
-            if (fileIds.length === 0) return;
-            
-            // 批量检查收藏状态
-            fileIds.forEach(fileId => {
-                this.$store.dispatch("call", {
-                    url: 'users/favorite/check',
-                    data: {
-                        type: 'file',
-                        id: fileId
-                    },
-                    method: 'get',
-                    spinner: 0, // 静默调用
-                }).then(({data}) => {
-                    const fileIndex = this.fileList.findIndex(file => file.id === fileId);
-                    if (fileIndex > -1) {
-                        this.$set(this.fileList[fileIndex], 'favorited', data.favorited || false);
-                    }
-                }).catch(() => {
-                    // 出错时默认为未收藏状态
-                    const fileIndex = this.fileList.findIndex(file => file.id === fileId);
-                    if (fileIndex > -1) {
-                        this.$set(this.fileList[fileIndex], 'favorited', false);
-                    }
-                });
+            this.$store.dispatch("checkFavoriteStatus", {
+                type: 'file',
+                id: file.id
+            }).then(({data}) => {
+                // 更新上下文菜单项的收藏状态
+                this.$set(this.contextMenuItem, 'favorited', data.favorited || false);
+                // 同时更新文件列表中对应文件的收藏状态
+                const fileIndex = this.fileList.findIndex(f => f.id === file.id);
+                if (fileIndex > -1) {
+                    this.$set(this.fileList[fileIndex], 'favorited', data.favorited || false);
+                }
+            }).catch(() => {
+                // 出错时默认为未收藏状态
+                this.$set(this.contextMenuItem, 'favorited', false);
+                const fileIndex = this.fileList.findIndex(f => f.id === file.id);
+                if (fileIndex > -1) {
+                    this.$set(this.fileList[fileIndex], 'favorited', false);
+                }
             });
         }
     }

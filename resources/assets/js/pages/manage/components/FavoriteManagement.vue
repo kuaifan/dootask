@@ -353,13 +353,9 @@ export default {
         },
 
         removeFavorite(item) {
-            this.$store.dispatch("call", {
-                url: 'users/favorite/toggle',
-                data: {
-                    type: item.type,
-                    id: item.id
-                },
-                method: 'post',
+            this.$store.dispatch("toggleFavorite", {
+                type: item.type,
+                id: item.id
             }).then(() => {
                 $A.messageSuccess('取消收藏成功');
                 this.getLists();
