@@ -640,7 +640,7 @@ export default {
                 },
                 onOk: (value) => {
                     if (!value) {
-                        return `请输入任务描述`
+                        return `请输入任务需求`
                     }
                     return new Promise((resolve, reject) => {
                         if (canceled) {
