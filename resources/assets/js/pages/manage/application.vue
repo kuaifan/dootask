@@ -23,7 +23,7 @@
                             :xl="{ span: 6 }"
                             :xxl="{ span: 3 }">
                             <div class="apply-col">
-                                <div @click="applyClick({value: 'microApp'}, item)">
+                                <div class="apply-item" @click="applyClick({value: 'microApp'}, item)">
                                     <div class="logo">
                                         <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${item.icon})`}"></div>
                                     </div>
@@ -41,7 +41,28 @@
                             :xl="{ span: 6 }"
                             :xxl="{ span: 3 }">
                             <div class="apply-col">
-                                <div @click="applyClick(item)">
+                                <template v-if="item.value === 'exportManage'">
+                                    <EPopover
+                                        v-model="exportPopoverShow"
+                                        trigger="click"
+                                        placement="bottom"
+                                        popperClass="apply-export-popover"
+                                        :transfer="true">
+                                        <div slot="reference" class="apply-item">
+                                            <div class="logo">
+                                                <div class="apply-icon no-dark-content" :class="getLogoClass(item.value)"></div>
+                                            </div>
+                                            <p>{{ $L(item.label) }}</p>
+                                        </div>
+                                        <ul class="apply-export-menu">
+                                            <li @click="handleExport('task')">{{ $L('导出任务统计') }}</li>
+                                            <li @click="handleExport('overdue')">{{ $L('导出超期任务') }}</li>
+                                            <li @click="handleExport('approve')">{{ $L('导出审批数据') }}</li>
+                                            <li @click="handleExport('checkin')">{{ $L('导出签到数据') }}</li>
+                                        </ul>
+                                    </EPopover>
+                                </template>
+                                <div v-else class="apply-item" @click="applyClick(item)">
                                     <div class="logo">
                                         <div class="apply-icon no-dark-content" :class="getLogoClass(item.value)"></div>
                                         <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
@@ -361,6 +382,8 @@ export default {
             //
             appPushShow: false,
             //
+            exportPopoverShow: false,
+            //
             scanLoginShow: false,
             scanLoginLoad: false,
             scanLoginCode: '',
@@ -392,6 +415,7 @@ export default {
         applyList() {
             const list = [
                 {value: "approve", label: "审批中心", sort: 30, show: this.microAppsIds.includes('approve')},
+                {value: "favorite", label: "我的收藏", sort: 45},
                 {value: "report", label: "工作报告", sort: 50},
                 {value: "mybot", label: "我的机器人", sort: 55},
                 {value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsIds.includes('ai')},
@@ -419,6 +443,7 @@ export default {
                     {type: 'admin', value: "mail", label: "邮件通知", sort: 170},
                     {type: 'admin', value: "appPush", label: "APP 推送", sort: 180},
                     {type: 'admin', value: "complaint", label: "举报管理", sort: 190},
+                    {type: 'admin', value: "exportManage", label: "数据导出", sort: 195},
                     {type: 'admin', value: "allUser", label: "团队管理", sort: 200},
                 ])
             }
@@ -456,6 +481,9 @@ export default {
                     break;
                 case 'report':
                     emitter.emit('openReport', params == 'badge' ? 'receive' : 'my');
+                    break;
+                case 'favorite':
+                    emitter.emit('openFavorite');
                     break;
                 case 'mybot':
                     this.getMybot();
@@ -505,6 +533,10 @@ export default {
 
             }
             this.$emit("on-click", item.value, params);
+        },
+        handleExport(type) {
+            this.exportPopoverShow = false;
+            emitter.emit('openManageExport', type);
         },
         // 获取我的机器人
         getMybot() {

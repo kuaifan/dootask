@@ -526,6 +526,7 @@ export default {
         emitter.on('approveDetails', this.openApproveDetails);
         emitter.on('openReport', this.openReport);
         emitter.on('openFavorite', this.openFavorite);
+        emitter.on('openManageExport', this.openManageExport);
         //
         document.addEventListener('keydown', this.shortcutEvent);
     },
@@ -544,6 +545,7 @@ export default {
         emitter.off('approveDetails', this.openApproveDetails);
         emitter.off('openReport', this.openReport);
         emitter.off('openFavorite', this.openFavorite);
+        emitter.off('openManageExport', this.openManageExport);
         //
         document.removeEventListener('keydown', this.shortcutEvent);
     },
@@ -1315,6 +1317,23 @@ export default {
 
         openFavorite() {
             this.favoriteShow = true;
+        },
+
+        openManageExport(type) {
+            switch (type) {
+                case 'task':
+                    this.exportTaskShow = true;
+                    break;
+                case 'overdue':
+                    this.exportOverdueTask();
+                    break;
+                case 'approve':
+                    this.exportApproveShow = true;
+                    break;
+                case 'checkin':
+                    this.exportCheckinShow = true;
+                    break;
+            }
         },
 
         handleLongpress(event) {
