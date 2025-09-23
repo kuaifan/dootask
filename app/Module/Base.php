@@ -3052,7 +3052,7 @@ class Base
     {
         try {
             $converter = new CommonMarkConverter();
-            return $converter->convert($markdown);
+            return $converter->convert($markdown)->getContent();
         } catch (\League\CommonMark\Exception\CommonMarkException $e) {
             return $markdown;
         }

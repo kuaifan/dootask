@@ -567,11 +567,11 @@ export default {
             return this.getEditor().getContent();
         },
 
-        setContent(content) {
+        setContent(content, args = {}) {
             if (this.getEditor() === null) {
                 this.content = content;
             } else if (content != this.getEditor().getContent()) {
-                this.getEditor().setContent(content);
+                this.getEditor().setContent(content, args);
             }
         },
 

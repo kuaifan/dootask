@@ -220,8 +220,6 @@ class AI
                         "content" => "请将以下内容翻译为 {$targetLanguage}：\n\n{$text}"
                     ]
                 ],
-                "temperature" => 0.2,
-                "max_tokens" => max(1000, intval(mb_strlen($text) * 1.5))
             ]);
 
             $ai = new self($post);
@@ -289,8 +287,6 @@ class AI
                         "content" => "请为以下内容生成一个合适的标题：\n\n" . $text
                     ]
                 ],
-                "temperature" => 0.3,
-                "max_tokens" => 100
             ]);
 
             $ai = new self($post);
@@ -317,6 +313,185 @@ class AI
         }
 
         return $result;
+    }
+
+    /**
+     * 通过 openAI 生成任务标题和描述
+     * @param string $text 任务描述
+     * @param array $context 上下文信息
+     * @return array
+     */
+    public static function generateTask($text, $context = [])
+    {
+        // 构建上下文提示信息
+        $contextPrompt = self::buildTaskContextPrompt($context);
+
+        $post = json_encode([
+            "model" => "gpt-5-nano",
+            "messages" => [
+                [
+                    "role" => "system",
+                    "content" => <<<EOF
+                        你是一个专业的任务管理专家，擅长将想法和需求转化为清晰、可执行的项目任务。
+
+                        任务生成要求：
+                        1. 根据输入内容分析并生成合适的任务标题和详细描述
+                        2. 标题要简洁明了，准确概括任务核心目标，长度控制在8-30个字符
+                        3. 描述需覆盖任务背景、具体要求、交付标准、风险提示等关键信息
+                        4. 描述内容使用Markdown格式，合理组织标题、列表、加粗等结构
+                        5. 内容需适配项目管理系统，表述专业、逻辑清晰，并与用户输入语言保持一致
+                        6. 优先遵循用户在输入中给出的风格、长度或复杂度要求；默认情况下将详细描述控制在120-200字内，如用户要求简单或简短，则控制在80-120字内
+                        7. 当任务具有多个执行步骤、阶段或协作角色时，请拆解出 2-6 个关键子任务；如无必要，可返回空数组
+                        8. 子任务应聚焦单一可执行动作，名称控制在8-30个字符内，避免重复和含糊表述
+
+                        返回格式要求：
+                        必须严格按照以下 JSON 结构返回，禁止输出额外文字或 Markdown 代码块标记；即使某项为空，也保留对应字段：
+                        {
+                            "title": "任务标题",
+                            "content": "任务的详细描述内容，使用Markdown格式，根据实际情况组织结构",
+                            "subtasks": [
+                                "子任务名称1",
+                                "子任务名称2"
+                            ]
+                        }
+
+                        内容格式建议（非强制）：
+                        - 可以使用标题、列表、加粗等Markdown格式
+                        - 可以包含任务背景、具体要求、验收标准等部分
+                        - 根据任务性质灵活组织内容结构
+                        - 仅在确有必要时生成子任务，并确保每个子任务都是独立、可执行、便于追踪的动作
+                        - 若用户明确要求简洁或简单，保持描述紧凑，避免添加冗余段落或重复信息
+
+                        上下文信息处理指南：
+                        - 如果已有标题和内容，优先考虑优化改进而非完全重写
+                        - 如果使用了任务模板，严格按照模板的结构和格式要求生成
+                        - 如果已设置负责人或时间计划，在任务描述中体现相关要求
+                        - 根据优先级等级调整任务的紧急程度和详细程度
+
+                        注意事项：
+                        - 标题要体现任务的核心动作和目标
+                        - 描述要包含足够的细节让执行者理解任务
+                        - 如果涉及技术开发，要明确技术要求和实现方案
+                        - 如果涉及设计，要说明设计要求和期望效果
+                        - 如果涉及测试，要明确测试范围和验收标准
+                        EOF
+                ],
+                [
+                    "role" => "user",
+                    "content" => $contextPrompt . "\n\n请根据以上上下文和以下用户描述生成一个完整的项目任务（包含标题和详细描述）：\n\n" . $text
+                ]
+            ],
+        ]);
+
+        $ai = new self($post);
+        $ai->setTimeout(60);
+
+        $res = $ai->request();
+        if (Base::isError($res)) {
+            return Base::retError("任务生成失败", $res);
+        }
+
+        // 清理可能的markdown代码块标记
+        $content = $res['data'];
+        $content = preg_replace('/^\s*```json\s*/', '', $content);
+        $content = preg_replace('/\s*```\s*$/', '', $content);
+
+        if (empty($content)) {
+            return Base::retError("任务生成结果为空");
+        }
+
+        // 解析JSON
+        $parsedData = Base::json2array($content);
+        if (!$parsedData || !isset($parsedData['title']) || !isset($parsedData['content'])) {
+            return Base::retError("任务生成格式错误", $content);
+        }
+
+        $title = trim($parsedData['title']);
+        $markdownContent = trim($parsedData['content']);
+        $rawSubtasks = $parsedData['subtasks'] ?? [];
+
+        if (empty($title) || empty($markdownContent)) {
+            return Base::retError("生成的任务标题或内容为空", $parsedData);
+        }
+
+        $subtasks = [];
+        if (is_array($rawSubtasks)) {
+            foreach ($rawSubtasks as $raw) {
+                if (is_array($raw)) {
+                    $name = trim($raw['title'] ?? $raw['name'] ?? '');
+                } else {
+                    $name = trim($raw);
+                }
+
+                if (!empty($name)) {
+                    $subtasks[] = $name;
+                }
+
+                if (count($subtasks) >= 8) {
+                    break;
+                }
+            }
+        }
+
+        return Base::retSuccess("success", [
+            'title' => $title,
+            'content' => Base::markdown2html($markdownContent),  // 将 Markdown 转换为 HTML
+            'subtasks' => $subtasks
+        ]);
+    }
+
+    /**
+     * 构建任务生成的上下文提示信息
+     * @param array $context 上下文信息
+     * @return string
+     */
+    private static function buildTaskContextPrompt($context)
+    {
+        $prompts = [];
+
+        // 当前任务信息
+        if (!empty($context['current_title']) || !empty($context['current_content'])) {
+            $prompts[] = "## 当前任务信息";
+            if (!empty($context['current_title'])) {
+                $prompts[] = "当前标题：" . $context['current_title'];
+            }
+            if (!empty($context['current_content'])) {
+                $prompts[] = "当前内容：" . $context['current_content'];
+            }
+            $prompts[] = "请在此基础上优化改进，而不是完全重写。";
+        }
+
+        // 任务模板信息
+        if (!empty($context['template_name']) || !empty($context['template_content'])) {
+            $prompts[] = "## 任务模板要求";
+            if (!empty($context['template_name'])) {
+                $prompts[] = "模板名称：" . $context['template_name'];
+            }
+            if (!empty($context['template_content'])) {
+                $prompts[] = "模板内容结构：" . $context['template_content'];
+            }
+            $prompts[] = "请严格按照此模板的结构和格式要求生成内容。";
+        }
+
+        // 项目状态信息
+        $statusInfo = [];
+        if (!empty($context['has_owner'])) {
+            $statusInfo[] = "已设置负责人";
+        }
+        if (!empty($context['has_time_plan'])) {
+            $statusInfo[] = "已设置计划时间";
+        }
+        if (!empty($context['priority_level'])) {
+            $statusInfo[] = "优先级：" . $context['priority_level'];
+        }
+
+        if (!empty($statusInfo)) {
+            $prompts[] = "## 任务状态";
+            $prompts[] = implode("，", $statusInfo);
+            $prompts[] = "请在任务描述中体现相应的要求和约束。";
+        }
+
+        return empty($prompts) ? "" : implode("\n", $prompts);
     }
 
     /**
@@ -365,7 +540,6 @@ class AI
                         "content" => "请生成20个职场笑话和20个心灵鸡汤"
                     ]
                 ],
-                "temperature" => 0.8
             ]);
 
             $ai = new self($post);

@@ -39,6 +39,39 @@
 .task-editor {
     position: relative;
     word-break: break-all;
+    ::v-deep .mce-content-body,
+    ::v-deep .task-editor-content {
+        line-height: 1.6;
+    }
+
+    ::v-deep p {
+        margin: 0.3em 0;
+    }
+
+    ::v-deep blockquote,
+    ::v-deep pre,
+    ::v-deep ul,
+    ::v-deep ol {
+        margin: 1em 0;
+    }
+
+    ::v-deep ul,
+    ::v-deep ol {
+        margin-left: 1.5em;
+        padding-left: 1.5em;
+    }
+
+    ::v-deep li {
+        margin: 0.25em 0;
+    }
+
+    ::v-deep h1 {margin: 0.67em 0;}
+    ::v-deep h2 {margin: 0.83em 0;}
+    ::v-deep h3 {margin: 1em 0;}
+    ::v-deep h4 {margin: 1.33em 0;}
+    ::v-deep h5 {margin: 1.67em 0;}
+    ::v-deep h6 {margin: 2.33em 0;}
+
     .task-editor-operate {
         position: absolute;
         top: 0;
@@ -86,7 +119,7 @@ export default {
                 min_height: 200,
                 max_height: 380,
                 contextmenu: 'checklist | bold italic underline forecolor backcolor | link | uploadImages imagePreview | history screenload',
-                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|width],pre[class],code,ol[class],ul[class],li[class]',
+                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,h1,h2,h3,h4,h5,h6,img[src|alt|width],pre[class],code,ol[class],ul[class],li[class]',
                 extended_valid_elements: 'a[href|title|target=_blank]',
                 toolbar: false
             },
@@ -94,9 +127,9 @@ export default {
                 menubar: 'file edit view',
                 removed_menuitems: 'preview,print',
                 contextmenu: 'checklist | bold italic underline forecolor backcolor | link | uploadImages imagePreview | screenload',
-                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|width],pre[class],code,ol[class],ul[class],li[class]',
+                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,h1,h2,h3,h4,h5,h6,img[src|alt|width],pre[class],code,ol[class],ul[class],li[class]',
                 extended_valid_elements: 'a[href|title|target=_blank]',
-                toolbar: 'uploadImages | checklist | bold italic underline | forecolor backcolor',
+                toolbar: 'uploadImages | checklist | bullist numlist | formatselect | bold italic underline | forecolor backcolor',
                 mobile: {
                     menubar: 'file edit view',
                 },
@@ -162,6 +195,10 @@ export default {
 
         updateContent(html) {
             this.content = html
+        },
+
+        setContent(html, args = {}) {
+            this.$refs.desc.setContent(html, args);
         },
 
         onEditing() {

@@ -33,8 +33,12 @@
                     :placeholder="$L('任务描述')"
                     enterkeyhint="done"
                     @on-keydown="onKeydown"/>
+                <div class="ai-btn" @click="onAI">
+                    <i class="taskfont">&#xe8a1;</i>
+                </div>
             </div>
             <TEditorTask
+                ref="editorTaskRef"
                 class="desc"
                 v-model="addData.content"
                 :placeholder="$L(windowLandscape ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
@@ -618,6 +622,84 @@ export default {
             if (defaultTemplate) {
                 this.setTaskTemplate(defaultTemplate);
             }
+        },
+
+        onAI() {
+            $A.modalInput({
+                title: 'AI 生成',
+                placeholder: `请输入任务需求，AI 将自动生成标题和详细描述`,
+                inputProps: {
+                    type: 'textarea',
+                    rows: 2,
+                    autosize: { minRows: 2, maxRows: 6 },
+                    maxlength: 500,
+                },
+                onOk: (value) => {
+                    if (!value) {
+                        return `请输入任务描述`
+                    }
+                    return new Promise((resolve, reject) => {
+                        // 获取当前任务模板信息
+                        const currentTemplate = this.templateActiveID ? 
+                            this.taskTemplateList.find(item => item.id === this.templateActiveID) : null;
+                        
+                        this.$store.dispatch("call", {
+                            url: 'project/task/ai_generate',
+                            data: {
+                                content: value,
+                                // 当前已有的标题和内容作为参考
+                                current_title: this.addData.name || '',
+                                current_content: this.addData.content || '',
+                                // 当前选中的任务模板信息
+                                template_name: currentTemplate ? currentTemplate.name : '',
+                                template_content: currentTemplate ? currentTemplate.content : '',
+                                // 其他上下文信息
+                                has_owner: this.addData.owner && this.addData.owner.length > 0,
+                                has_time_plan: this.addData.times && this.addData.times.length > 0,
+                                priority_level: this.addData.p_name || ''
+                            },
+                            timeout: 60 * 1000,
+                        }).then(({data}) => {
+                            this.addData.name = data.title;
+                            this.$refs.editorTaskRef.setContent(data.content, {format: 'raw'});
+                            if (Array.isArray(data.subtasks) && data.subtasks.length > 0) {
+                                const normalized = data.subtasks
+                                    .map(item => {
+                                        if (typeof item === 'string') {
+                                            return item.trim();
+                                        }
+                                        if (item && typeof item === 'object') {
+                                            const name = item.title || item.name || '';
+                                            return typeof name === 'string' ? name.trim() : '';
+                                        }
+                                        return '';
+                                    })
+                                    .filter(item => item !== '');
+
+                                const unique = Array.from(new Set(normalized)).slice(0, 8);
+
+                                if (unique.length > 0) {
+                                    const mainOwner = Array.isArray(this.addData.owner) && this.addData.owner.length > 0
+                                        ? [this.addData.owner[0]]
+                                        : (this.userId ? [this.userId] : []);
+
+                                    const subtasks = unique.map(name => ({
+                                        name,
+                                        owner: [...mainOwner],
+                                        times: [],
+                                    }));
+
+                                    this.$set(this.addData, 'subtasks', subtasks);
+                                    this.advanced = true;
+                                }
+                            }
+                            resolve();
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
+                }
+            })
         }
     }
 }

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Module\Base;
 use App\Module\Timer;
 use Swoole\Coroutine;
+use App\Module\AI;
 use App\Models\Deleted;
 use App\Models\Project;
 use App\Module\TimeRange;
@@ -2588,6 +2589,66 @@ class ProjectController extends AbstractController
         }
         //
         return Base::retSuccess('移动成功', $data);
+    }
+
+    /**
+     * @api {post} api/project/task/ai_generate          40. 使用 AI 助手生成任务
+     *
+     * @apiDescription 需要token身份，使用AI根据用户输入和上下文信息生成任务标题和详细描述
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__ai_generate
+     * 
+     * @apiParam {String} content               用户输入的任务描述（必填）
+     * @apiParam {String} [current_title]       当前已有的任务标题（用于优化改进）
+     * @apiParam {String} [current_content]     当前已有的任务内容（HTML格式，用于优化改进）
+     * @apiParam {String} [template_name]       选中的任务模板名称
+     * @apiParam {String} [template_content]    选中的任务模板内容（HTML格式）
+     * @apiParam {Boolean} [has_owner]          是否已设置负责人
+     * @apiParam {Boolean} [has_time_plan]      是否已设置计划时间
+     * @apiParam {String} [priority_level]      任务优先级等级名称
+     *
+     * @apiSuccess {Number} ret                 返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg                 返回信息（错误描述）
+     * @apiSuccess {Object} data                返回数据
+     * @apiSuccess {String} data.title          AI 生成的任务标题
+     * @apiSuccess {String} data.content        AI 生成的任务内容（HTML 格式）
+     * @apiSuccess {Array}  data.subtasks       当任务较复杂时生成的子任务名称列表
+     */
+    public function task__ai_generate()
+    {
+        User::auth();
+        
+        // 获取用户输入的任务描述
+        $content = Request::input('content');
+        if (empty($content)) {
+            return Base::retError('任务描述不能为空');
+        }
+        
+        // 获取上下文信息
+        $context = [
+            'current_title' => Request::input('current_title', ''),
+            'current_content' => Request::input('current_content', ''),
+            'template_name' => Request::input('template_name', ''),
+            'template_content' => Request::input('template_content', ''),
+            'has_owner' => boolval(Request::input('has_owner', false)),
+            'has_time_plan' => boolval(Request::input('has_time_plan', false)),
+            'priority_level' => Request::input('priority_level', ''),
+        ];
+        
+        // 如果当前内容是HTML格式，转换为markdown
+        if (!empty($context['current_content'])) {
+            $context['current_content'] = Base::html2markdown($context['current_content']);
+        }
+        if (!empty($context['template_content'])) {
+            $context['template_content'] = Base::html2markdown($context['template_content']);
+        }
+        
+        $result = AI::generateTask($content, $context);
+        if (Base::isError($result)) {
+            return Base::retError('生成任务失败', $result);
+        }
+        return Base::retSuccess('生成任务成功', $result['data']);
     }
 
     /**

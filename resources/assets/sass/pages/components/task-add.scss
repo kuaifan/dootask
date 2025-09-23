@@ -96,15 +96,34 @@
     .task-add-form,
     .task-add-advanced {
         .title {
+            position: relative;
             .ivu-input {
                 font-weight: 500;
                 font-size: 24px;
-                padding: 4px 0;
+                padding: 4px 32px 4px 0;
                 line-height: 1.4;
                 resize: none;
                 border-color: transparent;
                 &:focus {
                     box-shadow: none
+                }
+            }
+            .ai-btn {
+                position: absolute;
+                right: 0;
+                top: 0;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0.8;
+                transition: opacity 0.2s;
+                cursor: pointer;
+                > i {
+                    font-size: 24px;
+                }
+                &:hover {
+                    opacity: 1;
                 }
             }
         }
