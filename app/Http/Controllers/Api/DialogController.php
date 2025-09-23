@@ -1061,14 +1061,14 @@ class DialogController extends AbstractController
 
         $recentMessages = WebSocketDialogMsg::whereDialogId($dialog_id)
             ->orderByDesc('id')
-            ->take(6)
+            ->take(15)
             ->with('user')
             ->get();
         if ($recentMessages->isNotEmpty()) {
             $context['recent_messages'] = $recentMessages->reverse()->map(function ($msg) {
                 return [
                     'sender' => $msg->user->nickname ?? ('用户' . $msg->userid),
-                    'summary' => WebSocketDialogMsg::previewMsg($msg),
+                    'summary' => $msg->extractMessageContent(300),
                 ];
             })->filter(function ($item) {
                 return !empty($item['summary']);

@@ -117,10 +117,10 @@ class BotReceiveMsgTask extends AbstractTask
         }
 
         // 提取指令
-        $sendText = $this->extractMessageContent($msg);
+        $sendText = $msg->extractMessageContent();
         $replyText = null;
         if ($msg->reply_id && $replyMsg = WebSocketDialogMsg::find($msg->reply_id)) {
-            $replyText = $this->extractMessageContent($replyMsg);
+            $replyText = $replyMsg->extractMessageContent();
         }
 
         // 没有提取到指令，则不处理
@@ -595,106 +595,6 @@ class BotReceiveMsgTask extends AbstractTask
     }
 
     /**
-     * 提取消息内容
-     * 根据消息类型（文件、文本等）提取相应的内容文本
-     *
-     * @param WebSocketDialogMsg $msg 消息对象
-     * @return string 提取出的消息文本内容
-     */
-    private function extractMessageContent(WebSocketDialogMsg $msg)
-    {
-        $reserves = [];
-        switch ($msg->type) {
-            case "file":
-                // 提取文件消息
-                $msgData = Base::json2array($msg->getRawOriginal('msg'));
-                $result = $this->convertMentionFormat("path", $msgData['path'], $msgData['name'], $reserves);
-                break;
-
-            case "text":
-                // 提取文本消息
-                $result = $msg->msg['text'] ?: '';
-                if (empty($result)) {
-                    return '';
-                }
-
-                // 提取快捷键
-                if (preg_match("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/span>/is", $result, $match)) {
-                    $command = $match[2] ?? '';
-                    $command = preg_replace("/^%3A\.?/", ":", $command);
-                    $command = trim($command);
-                    if ($command) {
-                        return $command;
-                    }
-                }
-
-                // 提及任务、文件、报告
-                $result = preg_replace_callback_array([
-                    // 用户
-                    "/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/" => function () {
-                        return "";
-                    },
-
-                    // 任务
-                    "/<span class=\"mention task\" data-id=\"(\d+)\">#?(.*?)<\/span>/" => function ($match) use (&$reserves) {
-                        return $this->convertMentionFormat("task", $match[1], $match[2], $reserves);
-                    },
-
-                    // 文件
-                    "/<a class=\"mention file\" href=\"([^\"']+?)\"[^>]*?>~?(.*?)<\/a>/" => function ($match) use (&$reserves) {
-                        if (preg_match("/single\/file\/(.*?)$/", $match[1], $subMatch)) {
-                            return $this->convertMentionFormat("file", $subMatch[1], $match[2], $reserves);
-                        }
-                        return "";
-                    },
-
-                    // 报告
-                    "/<a class=\"mention report\" href=\"([^\"']+?)\"[^>]*?>%?(.*?)<\/a>/" => function ($match) use (&$reserves) {
-                        if (preg_match("/single\/report\/detail\/(.*?)$/", $match[1], $subMatch)) {
-                            return $this->convertMentionFormat("report", $subMatch[1], $match[2], $reserves);
-                        }
-                        return "";
-                    },
-                ], $result);
-
-                // 转成 markdown
-                if ($msg->msg['type'] !== 'md') {
-                    $result = Base::html2markdown($result);
-                }
-                break;
-
-            default:
-                // 其他类型消息不处理
-                return '';
-        }
-
-        // 处理 reserves
-        foreach ($reserves as $rand => $mention) {
-            $result = str_replace($rand, $mention, $result);
-        }
-
-        return $result;
-    }
-
-    /**
-     * 转换提及消息格式
-     * 将提及的任务、文件、报告等转换为统一的格式 [type#key#name]
-     *
-     * @param string $type 提及类型（task、file、report、path）
-     * @param string $key 提及对象的唯一标识
-     * @param string $name 提及对象的显示名称
-     * @return string 格式化后的提及字符串
-     */
-    private function convertMentionFormat($type, $key, $name, &$reserves)
-    {
-        $key = str_replace(['#', '-->'], '', $key);
-        $name = str_replace(['#', '-->'], '', $name);
-        $rand = Base::generatePassword(12);
-        $reserves[$rand] = "<!--{$type}#{$key}#{$name}-->";
-        return $rand;
-    }
-
-    /**
      * 为AI机器人转换提及消息格式
      * 将提及的任务、文件、报告转换为AI可理解的格式，并提取相关内容
      *
@@ -912,7 +812,7 @@ class BotReceiveMsgTask extends AbstractTask
                 
                 // 聊天历史
                 if ($dialog->type === 'group') {
-                    $chatHistory = $this->getRecentChatHistory($dialog, 10);
+                    $chatHistory = $this->getRecentChatHistory($dialog, 15);
                     if ($chatHistory) {
                         $sections[] = <<<EOF
                             <chat_history>
@@ -974,7 +874,7 @@ class BotReceiveMsgTask extends AbstractTask
             ->get()
             ->map(function (WebSocketDialogMsg $message) {
                 $userName = $message->user?->nickname ?? '未知用户';
-                $content = $this->extractMessageContent($message);
+                $content = $message->extractMessageContent(500);
                 if (!$content) {
                     return null;
                 }
