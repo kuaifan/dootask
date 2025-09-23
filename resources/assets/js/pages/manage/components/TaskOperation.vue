@@ -48,8 +48,8 @@
                         <template v-if="task.parent_id === 0">
                             <template v-if="operationShow">
                                 <EDropdownItem command="favorite" :divided="turns.length > 0">
-                                    <div class="item">
-                                        <i class="taskfont movefont" v-html="isFavorited ? '&#xe683;' : '&#xe679;'"></i>{{$L(isFavorited ? '取消收藏' : '收藏')}}
+                                    <div class="item" :class="{favorited: isFavorited}">
+                                        <i class="taskfont movefont">&#xe683;</i>{{$L(isFavorited ? '取消收藏' : '收藏')}}
                                     </div>
                                 </EDropdownItem>
                                 <EDropdownItem command="send">

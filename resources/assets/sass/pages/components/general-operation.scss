@@ -61,6 +61,12 @@
                         text-overflow: ellipsis;
                         white-space: nowrap;
 
+                        &.favorited {
+                            > i {
+                                color: #faad14;
+                            }
+                        }
+
                         .item-prefix {
                             display: flex;
                             align-items: center;
