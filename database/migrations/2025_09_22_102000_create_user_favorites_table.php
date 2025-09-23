@@ -19,7 +19,7 @@ class CreateUserFavoritesTable extends Migration
         Schema::create('user_favorites', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('userid')->index()->nullable()->default(0)->comment('用户ID');
-            $table->string('favoritable_type', 50)->index()->nullable()->default('')->comment('收藏类型(task/project/file)');
+            $table->string('favoritable_type', 50)->index()->nullable()->default('')->comment('收藏类型(比如：task/project/file/message)');
             $table->bigInteger('favoritable_id')->index()->nullable()->default(0)->comment('收藏对象ID');
             $table->timestamps();
 

@@ -2092,12 +2092,10 @@ export default {
                 type: 'file',
                 id: item.id
             }).then(({data, msg}) => {
-                // 更新文件的收藏状态
                 const fileIndex = this.fileList.findIndex(file => file.id === item.id);
                 if (fileIndex > -1) {
                     this.$set(this.fileList[fileIndex], 'favorited', data.favorited);
                 }
-                // 同时更新上下文菜单项的状态
                 if (this.contextMenuItem.id === item.id) {
                     this.$set(this.contextMenuItem, 'favorited', data.favorited);
                 }
@@ -2117,15 +2115,12 @@ export default {
                 type: 'file',
                 id: file.id
             }).then(({data}) => {
-                // 更新上下文菜单项的收藏状态
                 this.$set(this.contextMenuItem, 'favorited', data.favorited || false);
-                // 同时更新文件列表中对应文件的收藏状态
                 const fileIndex = this.fileList.findIndex(f => f.id === file.id);
                 if (fileIndex > -1) {
                     this.$set(this.fileList[fileIndex], 'favorited', data.favorited || false);
                 }
             }).catch(() => {
-                // 出错时默认为未收藏状态
                 this.$set(this.contextMenuItem, 'favorited', false);
                 const fileIndex = this.fileList.findIndex(f => f.id === file.id);
                 if (fileIndex > -1) {

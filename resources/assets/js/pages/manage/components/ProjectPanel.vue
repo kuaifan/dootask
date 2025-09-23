@@ -1070,7 +1070,6 @@ export default {
         },
         projectData(newData, oldData) {
             this.sortData = this.getSort();
-            // 当项目数据改变时，检查收藏状态（避免重复调用）
             if (newData && newData.id && (!oldData || newData.id !== oldData.id)) {
                 this.checkProjectFavoriteStatus();
             }
@@ -1898,7 +1897,6 @@ export default {
                 type: 'project',
                 id: this.projectData.id
             }).then(({data, msg}) => {
-                // 更新项目的收藏状态
                 this.$set(this.projectData, 'favorited', data.favorited);
                 $A.messageSuccess(msg);
             }).catch(({msg}) => {
@@ -1918,7 +1916,6 @@ export default {
             }).then(({data}) => {
                 this.$set(this.projectData, 'favorited', data.favorited || false);
             }).catch(() => {
-                // 出错时默认为未收藏状态
                 this.$set(this.projectData, 'favorited', false);
             });
         },
