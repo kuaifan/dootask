@@ -2652,6 +2652,55 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {post} api/project/ai/generate          41. 使用 AI 助手生成项目
+     *
+     * @apiDescription 需要token身份，根据需求说明自动生成项目名称及任务列表
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName ai__generate
+     *
+     * @apiParam {String} content                   项目需求或背景描述（必填）
+     * @apiParam {String} [current_name]            当前草拟的项目名称
+     * @apiParam {Array|String} [current_columns]   已有任务列表（数组或以逗号/换行分隔的字符串）
+     * @apiParam {Array} [template_examples]        可参考的模板示例，格式：[ {name: 模板名, columns: [列表...] }, ... ]
+     *
+     * @apiSuccess {Number} ret                     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg                     返回信息（错误描述）
+     * @apiSuccess {Object} data                    返回数据
+     * @apiSuccess {String} data.name               AI 生成的项目名称
+     * @apiSuccess {Array}  data.columns            AI 生成的任务列表名称数组
+     */
+    public function ai__generate()
+    {
+        User::auth();
+
+        $content = trim((string)Request::input('content', ''));
+        if ($content === '') {
+            return Base::retError('项目需求描述不能为空');
+        }
+
+        $templateExamples = Request::input('template_examples', []);
+        if (!is_array($templateExamples)) {
+            $templateExamples = [];
+        } else {
+            $templateExamples = array_slice($templateExamples, 0, 6);
+        }
+
+        $context = [
+            'current_name' => Request::input('current_name', ''),
+            'current_columns' => Request::input('current_columns', []),
+            'template_examples' => $templateExamples,
+        ];
+
+        $result = AI::generateProject($content, $context);
+        if (Base::isError($result)) {
+            return Base::retError('生成项目失败', $result);
+        }
+
+        return Base::retSuccess('生成项目成功', $result['data']);
+    }
+
+    /**
      * @api {get} api/project/flow/list          40. 工作流列表
      *
      * @apiDescription 需要token身份

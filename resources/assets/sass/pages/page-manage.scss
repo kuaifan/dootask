@@ -473,6 +473,35 @@
     }
 }
 
+.page-manage-project-ai-wrapper {
+    position: relative;
+
+    .ivu-input-wrapper {
+        flex: 1;
+    }
+
+    .project-ai-button {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        height: 32px;
+        transform: translateY(-50%);
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+        cursor: pointer;
+        .taskfont {
+            font-size: 18px;
+        }
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
 @media (height <= 640px) {
     .page-manage {
         .manage-box-menu {

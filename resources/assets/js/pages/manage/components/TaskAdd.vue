@@ -627,7 +627,7 @@ export default {
         onAI() {
             $A.modalInput({
                 title: 'AI 生成',
-                placeholder: `请输入任务需求，AI 将自动生成标题和详细描述`,
+                placeholder: '请简要描述任务目标、背景或预期交付，AI 将生成标题、详细说明和子任务',
                 inputProps: {
                     type: 'textarea',
                     rows: 2,

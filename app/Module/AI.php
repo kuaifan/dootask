@@ -441,6 +441,117 @@ class AI
     }
 
     /**
+     * 通过 openAI 生成项目名称与任务列表
+     * @param string $text 项目需求或描述
+     * @param array $context 上下文信息
+     * @return array
+     */
+    public static function generateProject($text, $context = [])
+    {
+        $text = trim((string)$text);
+        if ($text === '') {
+            return Base::retError("项目描述不能为空");
+        }
+
+        $context['current_name'] = trim($context['current_name'] ?? '');
+        $context['current_columns'] = self::normalizeProjectColumns($context['current_columns'] ?? []);
+
+        if (!empty($context['template_examples']) && is_array($context['template_examples'])) {
+            $examples = [];
+            foreach ($context['template_examples'] as $item) {
+                $name = trim($item['name'] ?? '');
+                $columns = self::normalizeProjectColumns($item['columns'] ?? []);
+                if (empty($columns)) {
+                    continue;
+                }
+                $examples[] = [
+                    'name' => $name,
+                    'columns' => $columns,
+                ];
+                if (count($examples) >= 6) {
+                    break;
+                }
+            }
+            $context['template_examples'] = $examples;
+        } else {
+            $context['template_examples'] = [];
+        }
+
+        $contextPrompt = self::buildProjectContextPrompt($context);
+
+        $post = json_encode([
+            "model" => "gpt-5-nano",
+            "messages" => [
+                [
+                    "role" => "system",
+                    "content" => <<<EOF
+                        你是一名资深的项目规划顾问，帮助团队快速搭建符合需求的项目。
+
+                        生成要求：
+                        1. 产出一个简洁、有辨识度的项目名称（不超过18个汉字或36个字符）
+                        2. 给出 3 - 8 个项目任务列表，用于看板列或阶段分组
+                        3. 任务列表名称保持 4 - 12 个字符，聚焦阶段或责任划分，避免冗长描述
+                        4. 结合用户描述的业务特征，必要时可包含里程碑或交付节点
+                        5. 尽量参考上下文提供的现有内容或模板，不要与之完全重复
+
+                        输出格式：
+                        必须严格返回 JSON，禁止携带额外说明或 Markdown 代码块，结构如下：
+                        {
+                            "name": "项目名称",
+                            "columns": ["列表1", "列表2", "列表3"]
+                        }
+
+                        校验标准：
+                        - 列表名称应当互不重复且语义明确
+                        - 若上下文包含已有名称或列表，请在此基础上迭代优化
+                        EOF
+                ],
+                [
+                    "role" => "user",
+                    "content" => ($contextPrompt ? $contextPrompt . "\n\n" : "") . "请根据以上信息，为以下需求生成适合的项目名称和任务列表：\n\n" . $text
+                ],
+            ],
+        ]);
+
+        $ai = new self($post);
+        $ai->setTimeout(45);
+
+        $res = $ai->request();
+        if (Base::isError($res)) {
+            return Base::retError("项目生成失败", $res);
+        }
+
+        $content = $res['data'];
+        $content = preg_replace('/^\s*```json\s*/', '', $content);
+        $content = preg_replace('/\s*```\s*$/', '', $content);
+
+        if (empty($content)) {
+            return Base::retError("项目生成结果为空");
+        }
+
+        $parsedData = Base::json2array($content);
+        if (!$parsedData || !isset($parsedData['name'])) {
+            return Base::retError("项目生成格式错误", $content);
+        }
+
+        $name = trim($parsedData['name']);
+        $columns = self::normalizeProjectColumns($parsedData['columns'] ?? []);
+
+        if ($name === '') {
+            return Base::retError("生成的项目名称为空", $parsedData);
+        }
+
+        if (empty($columns)) {
+            $columns = $context['current_columns'];
+        }
+
+        return Base::retSuccess("success", [
+            'name' => $name,
+            'columns' => $columns,
+        ]);
+    }
+
+    /**
      * 构建任务生成的上下文提示信息
      * @param array $context 上下文信息
      * @return string
@@ -492,6 +603,66 @@ class AI
         }
 
         return empty($prompts) ? "" : implode("\n", $prompts);
+    }
+
+    private static function buildProjectContextPrompt($context)
+    {
+        $prompts = [];
+
+        if (!empty($context['current_name']) || !empty($context['current_columns'])) {
+            $prompts[] = "## 当前项目草稿";
+            if (!empty($context['current_name'])) {
+                $prompts[] = "已有名称：" . $context['current_name'];
+            }
+            if (!empty($context['current_columns'])) {
+                $prompts[] = "现有任务列表：" . implode("、", $context['current_columns']);
+            }
+            $prompts[] = "请在此基础上进行优化和补充。";
+        }
+
+        if (!empty($context['template_examples'])) {
+            $prompts[] = "## 常用模板示例";
+            foreach ($context['template_examples'] as $example) {
+                $line = '';
+                if (!empty($example['name'])) {
+                    $line .= $example['name'] . "：";
+                }
+                $line .= implode("、", $example['columns']);
+                $prompts[] = "- " . $line;
+            }
+            $prompts[] = "可以借鉴以上结构，但要结合用户需求生成更贴合的方案。";
+        }
+
+        return empty($prompts) ? "" : implode("\n", $prompts);
+    }
+
+    private static function normalizeProjectColumns($columns)
+    {
+        if (is_string($columns)) {
+            $columns = preg_split('/[\n\r,，;；|]/u', $columns);
+        }
+
+        $normalized = [];
+        if (is_array($columns)) {
+            foreach ($columns as $item) {
+                if (is_array($item)) {
+                    $item = $item['name'] ?? $item['title'] ?? reset($item);
+                }
+                $item = trim((string)$item);
+                if ($item === '') {
+                    continue;
+                }
+                $item = mb_substr($item, 0, 30);
+                if (!in_array($item, $normalized)) {
+                    $normalized[] = $item;
+                }
+                if (count($normalized) >= 8) {
+                    break;
+                }
+            }
+        }
+
+        return $normalized;
     }
 
     /**

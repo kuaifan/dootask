@@ -245,7 +245,16 @@
                 v-bind="formOptions"
                 @submit.native.prevent>
                 <FormItem prop="name" :label="$L('项目名称')">
-                    <Input ref="projectName" type="text" v-model="addData.name"></Input>
+                    <div class="page-manage-project-ai-wrapper">
+                        <Input ref="projectName" type="text" v-model="addData.name"></Input>
+                        <div
+                            class="project-ai-button"
+                            type="text"
+                            :loading="projectAiLoading"
+                            @click="onProjectAI">
+                            <i class="taskfont">&#xe8a1;</i>
+                        </div>
+                    </div>
                 </FormItem>
                 <FormItem v-if="addData.columns" :label="$L('任务列表')">
                     <TagInput v-model="addData.columns"/>
@@ -455,6 +464,7 @@ export default {
                 columns: '',
                 flow: 'open',
             },
+            projectAiLoading: false,
             addRule: {
                 name: [
                     { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
@@ -989,9 +999,79 @@ export default {
 
         onAddShow() {
             this.$store.dispatch("getColumnTemplate").catch(() => {})
+            this.projectAiLoading = false;
             this.addShow = true;
             this.$nextTick(() => {
                 this.$refs.projectName.focus();
+            })
+        },
+
+        onProjectAI() {
+            if (this.projectAiLoading) {
+                return;
+            }
+            $A.modalInput({
+                title: 'AI 生成',
+                placeholder: '请简要描述项目目标、范围或关键里程碑，AI 将生成名称和任务列表',
+                inputProps: {
+                    type: 'textarea',
+                    rows: 2,
+                    autosize: {minRows: 2, maxRows: 6},
+                    maxlength: 500,
+                },
+                onOk: (value) => {
+                    if (!value) {
+                        return '请输入项目需求';
+                    }
+                    return new Promise((resolve, reject) => {
+                        this.projectAiLoading = true;
+                        const parseColumns = (cols) => {
+                            if (Array.isArray(cols)) {
+                                return cols;
+                            }
+                            if (typeof cols === 'string') {
+                                return cols.split(/[\n\r,，;；|]/).map(item => item.trim()).filter(item => item);
+                            }
+                            return [];
+                        };
+                        const templateExamples = this.columns
+                            .filter((item, index) => index > 0 && item && item.columns && String(item.columns).trim() !== '')
+                            .slice(0, 6)
+                            .map(item => ({
+                                name: item.name,
+                                columns: parseColumns(item.columns)
+                            }));
+
+                        const finish = () => {
+                            this.projectAiLoading = false;
+                        };
+
+                        this.$store.dispatch("call", {
+                            url: 'project/ai/generate',
+                            data: {
+                                content: value,
+                                current_name: this.addData.name || '',
+                                current_columns: this.addData.columns || '',
+                                template_examples: templateExamples,
+                            },
+                            timeout: 45 * 1000,
+                        }).then(({data}) => {
+                            const columns = Array.isArray(data.columns) ? data.columns : parseColumns(data.columns);
+                            this.$set(this.addData, 'name', data.name || '');
+                            this.$set(this.addData, 'columns', columns.length > 0 ? columns.join(',') : '');
+                            this.$nextTick(() => {
+                                if (this.$refs.projectName) {
+                                    this.$refs.projectName.focus();
+                                }
+                            });
+                            finish();
+                            resolve();
+                        }).catch(({msg}) => {
+                            finish();
+                            reject(msg);
+                        });
+                    });
+                }
             })
         },
 
