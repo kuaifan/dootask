@@ -7,6 +7,14 @@
                 <Loading v-if="loadIng > 0"/>
             </div>
             <div class="actions">
+                <Button
+                    v-if="templates.length"
+                    :type="sortMode ? 'primary' : 'default'"
+                    :loading="sortLoading"
+                    icon="md-move"
+                    @click="toggleSortMode">
+                    {{$L(sortMode ? '完成排序' : '调整排序')}}
+                </Button>
                 <Button type="primary" icon="md-add" @click="handleAdd">
                     {{$L('新建模板')}}
                 </Button>
@@ -18,31 +26,54 @@
                 <div class="empty-text">{{$L('当前项目暂无任务模板')}}</div>
                 <Button type="primary" icon="md-add" @click="handleAdd">{{$L('新建模板')}}</Button>
             </div>
-            <div v-else class="template-list">
-                <div v-for="item in templates" :key="item.id" class="template-item">
-                    <div class="template-title">
-                        <span>{{ item.name }}</span>
-                        <span v-if="item.is_default" class="default-tag">{{$L('默认')}}</span>
-                    </div>
-                    <div class="template-content">
-                        <div v-if="item.title" class="task-title">{{ item.title }}</div>
-                        <div v-if="item.content" class="task-content">
-                            <VMPreviewNostyle ref="descPreview" :value="item.content"/>
+            <Draggable
+                v-else
+                class="template-list"
+                tag="div"
+                :list="templates"
+                :animation="150"
+                :disabled="!sortMode || sortLoading"
+                item-key="id"
+                handle=".template-drag-handle"
+                @end="handleSortEnd">
+                <div
+                    v-for="item in templates"
+                    :key="item.id"
+                    class="template-item">
+                    <div
+                        :class="['template-item-inner', {'is-sorting': sortMode}]">
+                        <div
+                            v-if="sortMode"
+                            class="template-drag-handle"
+                            :title="$L('拖拽调整排序')">
+                            <Icon type="md-menu" />
+                        </div>
+                        <div class="template-main">
+                            <div class="template-title">
+                                <span>{{ item.name }}</span>
+                                <span v-if="item.is_default" class="default-tag">{{$L('默认')}}</span>
+                            </div>
+                            <div class="template-content">
+                                <div v-if="item.title" class="task-title">{{ item.title }}</div>
+                                <div v-if="item.content" class="task-content">
+                                    <VMPreviewNostyle ref="descPreview" :value="item.content"/>
+                                </div>
+                            </div>
+                            <div class="template-actions">
+                                <Button :disabled="sortMode" @click="handleSetDefault(item)" type="primary" :icon="item.is_default ? 'md-checkmark' : ''">
+                                    {{$L(item.is_default ? '取消默认' : '设为默认')}}
+                                </Button>
+                                <Button :disabled="sortMode" @click="handleEdit(item)" type="primary">
+                                    {{$L('编辑')}}
+                                </Button>
+                                <Button :disabled="sortMode" @click="handleDelete(item)" type="error">
+                                    {{$L('删除')}}
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                    <div class="template-actions">
-                        <Button @click="handleSetDefault(item)" type="primary" :icon="item.is_default ? 'md-checkmark' : ''">
-                            {{$L(item.is_default ? '取消默认' : '设为默认')}}
-                        </Button>
-                        <Button @click="handleEdit(item)" type="primary">
-                            {{$L('编辑')}}
-                        </Button>
-                        <Button @click="handleDelete(item)" type="error">
-                            {{$L('删除')}}
-                        </Button>
-                    </div>
                 </div>
-            </div>
+            </Draggable>
         </div>
 
         <!-- 编辑模板弹窗 -->
@@ -102,13 +133,14 @@
 
 <script>
 import {mapState} from 'vuex'
+import Draggable from 'vuedraggable';
 import VMPreviewNostyle from "../../../../components/VMEditor/nostyle.vue";
 import AllTaskTemplates from "./templates";
 import {languageName} from "../../../../language";
 
 export default {
     name: 'ProjectTaskTemplate',
-    components: {VMPreviewNostyle},
+    components: {VMPreviewNostyle, Draggable},
     props: {
         projectId: {
             type: [Number, String],
@@ -119,6 +151,8 @@ export default {
         return {
             loadIng: 0,
             templates: [],
+            sortMode: false,
+            sortLoading: false,
             showEditModal: false,
             editingTemplate: this.getEmptyTemplate(),
             formRules: {
@@ -161,6 +195,45 @@ export default {
             }
         },
 
+        // 开启/关闭排序模式
+        toggleSortMode() {
+            if (this.sortLoading) return
+            this.sortMode = !this.sortMode
+        },
+
+        // 拖拽排序完成
+        async handleSortEnd(event) {
+            if (!this.sortMode) {
+                return
+            }
+            if (event && event.oldIndex === event.newIndex) {
+                return
+            }
+            const list = this.templates.map(template => template.id)
+            if (!list.length) {
+                return
+            }
+            this.sortLoading = true
+            try {
+                const {msg} = await this.$store.dispatch('call', {
+                    url: 'project/task/template_sort',
+                    method: 'post',
+                    data: {
+                        project_id: this.projectId,
+                        list
+                    },
+                    spinner: 2000
+                })
+                $A.messageSuccess(msg || '排序已保存')
+                await this.loadTemplates()
+            } catch ({msg}) {
+                $A.messageError(msg || '排序保存失败')
+                await this.loadTemplates()
+            } finally {
+                this.sortLoading = false
+            }
+        },
+
         // 加载模板列表
         async loadTemplates() {
             this.loadIng++
@@ -173,6 +246,9 @@ export default {
                     spinner: 3000
                 })
                 this.templates = data || []
+                if (!this.templates.length) {
+                    this.sortMode = false
+                }
             } catch ({msg}) {
                 $A.messageError(msg || '加载模板失败')
             } finally {

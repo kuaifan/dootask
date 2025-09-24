@@ -2997,6 +2997,7 @@ class ProjectController extends AbstractController
             return Base::retError('参数错误');
         }
         $templates = ProjectTaskTemplate::where('project_id', $projectId)
+            ->orderBy('sort')
             ->orderByDesc('id')
             ->get();
         return Base::retSuccess('success', $templates);
@@ -3060,9 +3061,64 @@ class ProjectController extends AbstractController
             if ($templateCount >= 50) {
                 return Base::retError('每个项目最多添加50个模板');
             }
-            $template = ProjectTaskTemplate::create($data);
+            $maxSort = ProjectTaskTemplate::where('project_id', $projectId)->max('sort');
+            $template = ProjectTaskTemplate::create(array_merge($data, [
+                'sort' => is_numeric($maxSort) ? intval($maxSort) + 1 : 0
+            ]));
         }
         return Base::retSuccess('保存成功', $template);
+    }
+
+    /**
+     * @api {post} api/project/task/template_sort          48.1 排序任务模板
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__template_sort
+     *
+     * @apiParam {Number} project_id                项目ID
+     * @apiParam {Array} list                       模板ID列表，按新顺序排列
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__template_sort()
+    {
+        User::auth();
+        $projectId = intval(Request::input('project_id'));
+        $list = Base::json2array(Request::input('list'));
+        if ($projectId <= 0 || !is_array($list)) {
+            return Base::retError('参数错误');
+        }
+        $project = Project::userProject($projectId, true, true);
+        $index = 0;
+        $handled = [];
+        foreach ($list as $templateId) {
+            $templateId = intval($templateId);
+            if ($templateId <= 0) continue;
+            $updated = ProjectTaskTemplate::where('project_id', $projectId)
+                ->where('id', $templateId)
+                ->update(['sort' => $index]);
+            if ($updated) {
+                $handled[] = $templateId;
+                $index++;
+            }
+        }
+        $others = ProjectTaskTemplate::where('project_id', $projectId)
+            ->when(!empty($handled), function ($query) use ($handled) {
+                $query->whereNotIn('id', $handled);
+            })
+            ->orderBy('sort')
+            ->orderByDesc('id')
+            ->pluck('id');
+        foreach ($others as $templateId) {
+            ProjectTaskTemplate::where('id', $templateId)->update(['sort' => $index]);
+            $index++;
+        }
+        $project->addLog('调整模板排序');
+        return Base::retSuccess('排序已保存');
     }
 
     /**
