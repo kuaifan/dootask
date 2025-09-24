@@ -2758,10 +2758,8 @@ export default {
                 task_id: task_id
             },
             method: 'post',
-            spinner: 0, // 静默调用，不显示loading
         }).catch(error => {
             console.warn('保存任务浏览历史失败:', error);
-            // API失败时不影响用户体验，只记录错误
         });
     },
 
@@ -2777,7 +2775,34 @@ export default {
                 limit: limit
             },
             method: 'get',
-            spinner: 0, // 静默调用
+        });
+    },
+
+    /**
+     * 获取最近浏览历史
+     * @param dispatch
+     * @param params
+     * @returns {Promise<unknown>}
+     */
+    getRecentBrowseHistory({dispatch}, params = {}) {
+        return dispatch('call', {
+            url: 'users/recent/browse',
+            data: params,
+            method: 'get',
+        });
+    },
+
+    /**
+     * 删除最近浏览记录
+     * @param dispatch
+     * @param id
+     * @returns {Promise<unknown>}
+     */
+    removeRecentBrowseRecord({dispatch}, id) {
+        return dispatch('call', {
+            url: 'users/recent/delete',
+            data: {id},
+            method: 'post',
         });
     },
 
@@ -2864,7 +2889,6 @@ export default {
                 id: id
             },
             method: 'get',
-            spinner: 0, // 静默调用
         });
     },
 

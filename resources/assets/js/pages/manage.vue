@@ -344,6 +344,14 @@
             <FavoriteManagement v-if="favoriteShow" @on-close="favoriteShow = false"/>
         </DrawerOverlay>
 
+        <!--最近打开-->
+        <DrawerOverlay
+            v-model="recentShow"
+            placement="right"
+            :size="1200">
+            <RecentManagement v-if="recentShow" @on-close="recentShow = false"/>
+        </DrawerOverlay>
+
         <!--团队成员管理-->
         <DrawerOverlay
             v-model="allUserShow"
@@ -401,6 +409,7 @@ import { mapState, mapGetters } from 'vuex'
 import ProjectArchived from "./manage/components/ProjectArchived";
 import TeamManagement from "./manage/components/TeamManagement";
 import FavoriteManagement from "./manage/components/FavoriteManagement";
+import RecentManagement from "./manage/components/RecentManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
 import MobileTabbar from "../components/Mobile/Tabbar";
@@ -445,6 +454,7 @@ export default {
         ProjectManagement,
         TeamManagement,
         FavoriteManagement,
+        RecentManagement,
         ProjectArchived,
         MicroApps,
         ComplaintManagement,
@@ -495,6 +505,7 @@ export default {
             archivedProjectShow: false,
 
             favoriteShow: false,
+            recentShow: false,
 
             natificationReady: false,
             notificationManage: null,
@@ -526,6 +537,7 @@ export default {
         emitter.on('approveDetails', this.openApproveDetails);
         emitter.on('openReport', this.openReport);
         emitter.on('openFavorite', this.openFavorite);
+        emitter.on('openRecent', this.openRecent);
         emitter.on('openManageExport', this.openManageExport);
         //
         document.addEventListener('keydown', this.shortcutEvent);
@@ -545,6 +557,7 @@ export default {
         emitter.off('approveDetails', this.openApproveDetails);
         emitter.off('openReport', this.openReport);
         emitter.off('openFavorite', this.openFavorite);
+        emitter.off('openRecent', this.openRecent);
         emitter.off('openManageExport', this.openManageExport);
         //
         document.removeEventListener('keydown', this.shortcutEvent);
@@ -1317,6 +1330,10 @@ export default {
 
         openFavorite() {
             this.favoriteShow = true;
+        },
+
+        openRecent() {
+            this.recentShow = true;
         },
 
         openManageExport(type) {

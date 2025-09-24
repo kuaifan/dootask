@@ -416,6 +416,7 @@ export default {
             const list = [
                 {value: "approve", label: "审批中心", sort: 30, show: this.microAppsIds.includes('approve')},
                 {value: "favorite", label: "我的收藏", sort: 45},
+                {value: "recent", label: "最近打开", sort: 47},
                 {value: "report", label: "工作报告", sort: 50},
                 {value: "mybot", label: "我的机器人", sort: 55},
                 {value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsIds.includes('ai')},
@@ -484,6 +485,9 @@ export default {
                     break;
                 case 'favorite':
                     emitter.emit('openFavorite');
+                    break;
+                case 'recent':
+                    emitter.emit('openRecent');
                     break;
                 case 'mybot':
                     this.getMybot();

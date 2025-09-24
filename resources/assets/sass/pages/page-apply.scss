@@ -208,6 +208,10 @@
         background-image: url("../images/application/favorite.svg");
     }
 
+    &.recent {
+        background-image: url("../images/application/recent.svg");
+    }
+
     &.export-manage {
         background-image: url("../images/application/export.svg");
     }

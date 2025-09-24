@@ -11,6 +11,7 @@ use App\Models\FileContent;
 use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
+use App\Models\UserRecentItem;
 use App\Module\Base;
 use App\Module\Down;
 use App\Module\Timer;
@@ -560,6 +561,16 @@ class FileController extends AbstractController
             $builder->whereId($history_id);
         }
         $content = $builder->orderByDesc('id')->first();
+        if (isset($user)) {
+            UserRecentItem::record(
+                $user->userid,
+                UserRecentItem::TYPE_FILE,
+                $file->id,
+                UserRecentItem::SOURCE_FILESYSTEM,
+                intval($file->pid)
+            );
+        }
+
         if ($down === 'preview') {
             return Redirect::to(FileContent::formatPreview($file, $content?->content));
         }

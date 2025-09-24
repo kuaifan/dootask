@@ -38,6 +38,7 @@ use App\Models\ProjectPermission;
 use App\Models\ProjectTaskContent;
 use App\Models\WebSocketDialogMsg;
 use App\Module\BillMultipleExport;
+use App\Models\UserRecentItem;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTaskFlowChange;
 use App\Models\ProjectTaskVisibilityUser;
@@ -1908,7 +1909,7 @@ class ProjectController extends AbstractController
      */
     public function task__filedetail()
     {
-        User::auth();
+        $user = User::auth();
         //
         $file_id = intval(Request::input('file_id'));
         $only_update_at = Request::input('only_update_at', 'no');
@@ -1931,6 +1932,14 @@ class ProjectController extends AbstractController
         //
         ProjectTask::userTask($file->task_id, null);
         //
+        UserRecentItem::record(
+            $user->userid,
+            UserRecentItem::TYPE_TASK_FILE,
+            $file->id,
+            UserRecentItem::SOURCE_PROJECT_TASK,
+            $file->task_id
+        );
+
         return Base::retSuccess('success', File::formatFileData($data));
     }
 

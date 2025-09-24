@@ -16,6 +16,7 @@ use App\Ldap\LdapUser;
 use App\Models\Meeting;
 use App\Models\Project;
 use App\Models\ProjectTask;
+use App\Models\ProjectTaskFile;
 use App\Models\UserBot;
 use App\Models\WebSocket;
 use App\Models\UmengAlias;
@@ -32,6 +33,7 @@ use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogUser;
 use App\Models\UserTaskBrowse;
 use App\Models\UserFavorite;
+use App\Models\UserRecentItem;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserEmailVerification;
 use App\Module\AgoraIO\AgoraTokenGenerator;
@@ -2847,6 +2849,242 @@ class UsersController extends AbstractController
         $deletedCount = UserTaskBrowse::cleanUserBrowseHistory($user->userid, $keepCount);
         //
         return Base::retSuccess('清理完成', ['deleted_count' => $deletedCount]);
+    }
+
+    /**
+     * @api {get} api/users/recent/browse          45. 获取最近访问记录
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName recent__browse
+     *
+     * @apiParam {String} [type]                类型过滤 (task/file/task_file/message_file)
+     * @apiParam {Number} [page=1]              页码
+     * @apiParam {Number} [page_size=20]        每页数量，最大100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function recent__browse()
+    {
+        $user = User::auth();
+
+        $type = trim(Request::input('type'));
+        $page = max(1, intval(Request::input('page', 1)));
+        $pageSize = intval(Request::input('page_size', 20));
+        $pageSize = max(1, min(100, $pageSize));
+
+        $query = UserRecentItem::whereUserid($user->userid);
+        if ($type !== '') {
+            $query->where('target_type', $type);
+        }
+
+        $total = (clone $query)->count();
+        $items = $query->orderByDesc('browsed_at')
+            ->skip(($page - 1) * $pageSize)
+            ->take($pageSize)
+            ->get();
+
+        $taskIds = [];
+        $fileIds = [];
+        $taskFileIds = [];
+        $messageIds = [];
+
+        foreach ($items as $item) {
+            switch ($item->target_type) {
+                case UserRecentItem::TYPE_TASK:
+                    $taskIds[] = $item->target_id;
+                    break;
+                case UserRecentItem::TYPE_FILE:
+                    $fileIds[] = $item->target_id;
+                    break;
+                case UserRecentItem::TYPE_TASK_FILE:
+                    $taskFileIds[] = $item->target_id;
+                    break;
+                case UserRecentItem::TYPE_MESSAGE_FILE:
+                    $messageIds[] = $item->target_id;
+                    break;
+            }
+        }
+
+        $tasks = empty($taskIds) ? collect() : ProjectTask::with(['project'])
+            ->whereIn('id', array_unique($taskIds))
+            ->whereNull('archived_at')
+            ->get()
+            ->keyBy('id');
+
+        $files = empty($fileIds) ? collect() : File::whereIn('id', array_unique($fileIds))
+            ->get()
+            ->keyBy('id');
+
+        $taskFiles = empty($taskFileIds) ? collect() : ProjectTaskFile::whereIn('id', array_unique($taskFileIds))
+            ->get()
+            ->keyBy('id');
+
+        $taskFileTaskIds = $taskFiles->pluck('task_id')->filter()->unique()->all();
+        $taskFileTasks = empty($taskFileTaskIds) ? collect() : ProjectTask::whereIn('id', $taskFileTaskIds)
+            ->get()
+            ->keyBy('id');
+
+        $projectIds = $tasks->pluck('project_id')
+            ->merge($taskFiles->pluck('project_id'))
+            ->filter()
+            ->unique()
+            ->all();
+
+        $projects = empty($projectIds) ? collect() : Project::whereIn('id', $projectIds)
+            ->get()
+            ->keyBy('id');
+
+        $messages = empty($messageIds) ? collect() : WebSocketDialogMsg::whereIn('id', array_unique($messageIds))
+            ->get()
+            ->keyBy('id');
+
+        $dialogIds = $messages->pluck('dialog_id')->filter()->unique()->all();
+        $dialogs = empty($dialogIds) ? collect() : WebSocketDialog::whereIn('id', $dialogIds)
+            ->get()
+            ->keyBy('id');
+
+        $result = [];
+        foreach ($items as $item) {
+            $timestamp = $item->browsed_at ?: $item->updated_at;
+            if ($timestamp instanceof Carbon) {
+                $browsedAt = $timestamp->toDateTimeString();
+            } elseif ($timestamp) {
+                $browsedAt = Carbon::parse($timestamp)->toDateTimeString();
+            } else {
+                $browsedAt = Carbon::now()->toDateTimeString();
+            }
+
+            $baseData = [
+                'record_id' => $item->id,
+                'source_type' => $item->source_type,
+                'source_id' => $item->source_id,
+                'browsed_at' => $browsedAt,
+            ];
+
+            switch ($item->target_type) {
+                case UserRecentItem::TYPE_TASK:
+                    $task = $tasks->get($item->target_id);
+                    if (!$task) {
+                        continue 2;
+                    }
+                    $flowItemParts = explode('|', $task->flow_item_name ?: '');
+                    $flowItemName = $flowItemParts[1] ?? $task->flow_item_name;
+                    $flowItemStatus = $flowItemParts[0] ?? '';
+                    $flowItemColor = $flowItemParts[2] ?? '';
+                    $result[] = array_merge($baseData, [
+                        'type' => UserRecentItem::TYPE_TASK,
+                        'id' => $task->id,
+                        'name' => $task->name,
+                        'project_id' => $task->project_id,
+                        'project_name' => $task->project->name ?? '',
+                        'column_id' => $task->column_id,
+                        'flow_item_id' => $task->flow_item_id,
+                        'flow_item_name' => $flowItemName,
+                        'flow_item_status' => $flowItemStatus,
+                        'flow_item_color' => $flowItemColor,
+                        'complete_at' => $task->complete_at,
+                    ]);
+                    break;
+
+                case UserRecentItem::TYPE_FILE:
+                    $file = $files->get($item->target_id);
+                    if (!$file) {
+                        continue 2;
+                    }
+                    $result[] = array_merge($baseData, [
+                        'type' => UserRecentItem::TYPE_FILE,
+                        'id' => $file->id,
+                        'name' => $file->name,
+                        'ext' => $file->ext,
+                        'size' => (int) $file->size,
+                        'file_type' => $file->type,
+                        'folder_id' => (int) $file->pid,
+                    ]);
+                    break;
+
+                case UserRecentItem::TYPE_TASK_FILE:
+                    $taskFile = $taskFiles->get($item->target_id);
+                    if (!$taskFile) {
+                        continue 2;
+                    }
+                    $project = $projects->get($taskFile->project_id);
+                    $taskInfo = $taskFileTasks->get($taskFile->task_id);
+                    $result[] = array_merge($baseData, [
+                        'type' => UserRecentItem::TYPE_TASK_FILE,
+                        'id' => $taskFile->id,
+                        'name' => $taskFile->name,
+                        'ext' => $taskFile->ext,
+                        'size' => (int) $taskFile->size,
+                        'task_id' => $taskFile->task_id,
+                        'task_name' => $taskInfo->name ?? '',
+                        'project_id' => $taskFile->project_id,
+                        'project_name' => $project->name ?? '',
+                    ]);
+                    break;
+
+                case UserRecentItem::TYPE_MESSAGE_FILE:
+                    $message = $messages->get($item->target_id);
+                    if (!$message || $message->type !== 'file') {
+                        continue 2;
+                    }
+                    $msgData = Base::json2array($message->getRawOriginal('msg'));
+                    $dialog = $dialogs->get($message->dialog_id);
+                    $result[] = array_merge($baseData, [
+                        'type' => UserRecentItem::TYPE_MESSAGE_FILE,
+                        'id' => $message->id,
+                        'name' => $msgData['name'] ?? '',
+                        'ext' => $msgData['ext'] ?? '',
+                        'size' => isset($msgData['size']) ? (int) $msgData['size'] : 0,
+                        'dialog_id' => $message->dialog_id,
+                        'dialog_name' => $dialog->name ?? '',
+                    ]);
+                    break;
+            }
+        }
+
+        return Base::retSuccess('success', [
+            'list' => $result,
+            'page' => $page,
+            'page_size' => $pageSize,
+            'total' => $total,
+        ]);
+    }
+
+    /**
+     * @api {post} api/users/recent/delete          45.1 删除最近访问记录
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName recent__delete
+     *
+     * @apiParam {Number} id                      记录ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function recent__delete()
+    {
+        $user = User::auth();
+
+        $id = intval(Request::input('id'));
+        if ($id <= 0) {
+            return Base::retError('参数错误');
+        }
+
+        $record = UserRecentItem::whereUserid($user->userid)->whereId($id)->first();
+        if (!$record) {
+            return Base::retError('记录不存在');
+        }
+
+        $record->delete();
+
+        return Base::retSuccess('删除成功');
     }
 
     /**

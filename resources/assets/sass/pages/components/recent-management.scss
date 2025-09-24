@@ -1,0 +1,67 @@
+.recent-management {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+
+    .management-title {
+        color: $primary-title-color;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 1;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+
+        .title-icon {
+            display: flex;
+            align-items: center;
+            width: 14px;
+            height: 14px;
+            margin-left: 4px;
+            margin-top: 2px;
+        }
+    }
+
+    .recent-name {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        color: #2d8cf0;
+
+        &:hover {
+            text-decoration: underline;
+        }
+
+        .ivu-tag {
+            height: 18px;
+            line-height: 18px;
+            padding: 0 4px;
+            transform: scale(0.8);
+            transform-origin: right center;
+            flex-shrink: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    .recent-type-tag {
+        min-width: 60px;
+        text-align: center;
+        border-radius: 4px;
+        font-size: 12px;
+        line-height: 18px;
+        height: 20px;
+        padding: 0 8px;
+    }
+
+    .table-page-box {
+        flex: 1;
+        height: 0;
+    }
+}
