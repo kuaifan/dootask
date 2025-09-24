@@ -31176,6 +31176,66 @@
         "ru": "Операция не удалась"
     },
     {
+        "key": "最近打开",
+        "zh": "",
+        "zh-CHT": "最近打開",
+        "en": "Recently opened",
+        "ko": "최근 열람",
+        "ja": "最近開いた項目",
+        "de": "Zuletzt geöffnet",
+        "fr": "Ouvert récemment",
+        "id": "Baru-baru ini dibuka",
+        "ru": "Недавно открыто"
+    },
+    {
+        "key": "最近访问时间",
+        "zh": "",
+        "zh-CHT": "最近訪問時間",
+        "en": "Last opened time",
+        "ko": "최근 열람 시간",
+        "ja": "最近のアクセス時間",
+        "de": "Zuletzt geöffnet um",
+        "fr": "Heure de dernière ouverture",
+        "id": "Waktu akses terakhir",
+        "ru": "Время последнего открытия"
+    },
+    {
+        "key": "任务文件",
+        "zh": "",
+        "zh-CHT": "任務文件",
+        "en": "Task file",
+        "ko": "작업 파일",
+        "ja": "タスクファイル",
+        "de": "Aufgabendatei",
+        "fr": "Fichier de tâche",
+        "id": "Berkas tugas",
+        "ru": "Файл задачи"
+    },
+    {
+        "key": "聊天文件",
+        "zh": "",
+        "zh-CHT": "聊天文件",
+        "en": "Chat file",
+        "ko": "채팅 파일",
+        "ja": "チャットファイル",
+        "de": "Chat-Datei",
+        "fr": "Fichier de discussion",
+        "id": "Berkas obrolan",
+        "ru": "Файл чата"
+    },
+    {
+        "key": "文件库",
+        "zh": "",
+        "zh-CHT": "文件庫",
+        "en": "File library",
+        "ko": "파일 라이브러리",
+        "ja": "ファイルライブラリ",
+        "de": "Dateibibliothek",
+        "fr": "Bibliothèque de fichiers",
+        "id": "Pustaka berkas",
+        "ru": "Библиотека файлов"
+    },
+    {
         "key": "AI 生成",
         "zh": "",
         "zh-CHT": "AI 生成",
