@@ -245,10 +245,10 @@ class UserFavorite extends AbstractModel
                 if ($favorite->favoritable_type === self::TYPE_MESSAGE && isset($messages[$favorite->favoritable_id])) {
                     $message = $messages[$favorite->favoritable_id];
                     
-                    // 使用 previewTextMsg 获取消息预览文本
+                    // 使用 previewMsg 获取消息预览文本
                     $previewText = '';
                     if ($message->msg && is_array($message->msg)) {
-                        $previewText = WebSocketDialogMsg::previewTextMsg($message->msg);
+                        $previewText = WebSocketDialogMsg::previewMsg($message);
                     }
                     
                     // 如果没有预览文本，使用消息类型作为标题
