@@ -22,14 +22,6 @@
                         </Select>
                     </div>
                 </li>
-                <li>
-                    <div class="search-label">
-                        {{$L("名称")}}
-                    </div>
-                    <div class="search-content">
-                        <Input v-model="keys.name" clearable :placeholder="$L('搜索收藏名称')"/>
-                    </div>
-                </li>
                 <li class="search-button">
                     <SearchButton
                         :loading="loadIng > 0"
@@ -274,7 +266,7 @@ export default {
     methods: {
         onSearch() {
             this.page = 1;
-            this.filterData();
+            this.getLists();
         },
 
         getLists() {
@@ -360,26 +352,13 @@ export default {
                 }
 
                 this.total = data.total || this.allData.length;
-                this.filterData();
+                this.list = this.allData.slice();
                 this.noText = '没有相关的收藏';
             }).catch(() => {
                 this.noText = '数据加载失败';
             }).finally(_ => {
                 this.loadIng--;
             })
-        },
-
-        filterData() {
-            let filteredData = this.allData;
-
-            // 按名称筛选
-            if (this.keys.name) {
-                filteredData = filteredData.filter(item => {
-                    return item.name && item.name.toLowerCase().includes(this.keys.name.toLowerCase());
-                });
-            }
-
-            this.list = filteredData;
         },
 
         setPage(page) {
