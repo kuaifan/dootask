@@ -392,7 +392,7 @@
             <div>
                 <div style="margin:-10px 0 8px">{{$L('文件名称')}}: {{linkData.name}}</div>
                 <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="2" @on-focus="linkFocus" readonly/>
-                
+
                 <!-- 游客访问权限控制 -->
                 <div style="margin:12px 0">
                     <Checkbox v-model="linkData.guest_access" @on-change="onGuestAccessChange">
@@ -403,7 +403,7 @@
                         {{$L('警告：任何人都可通过此链接访问文件')}}
                     </div>
                 </div>
-                
+
                 <div class="form-tip" style="padding-top:6px">
                     {{$L('可通过此链接浏览文件。')}}
                     <Poptip
@@ -2087,11 +2087,11 @@ export default {
          */
         toggleFileFavorite(item) {
             if (!item.id || item.type === 'folder') return;
-            
+
             this.$store.dispatch("toggleFavorite", {
                 type: 'file',
                 id: item.id
-            }).then(({data, msg}) => {
+            }).then(({data}) => {
                 const fileIndex = this.fileList.findIndex(file => file.id === item.id);
                 if (fileIndex > -1) {
                     this.$set(this.fileList[fileIndex], 'favorited', data.favorited);
@@ -2099,9 +2099,6 @@ export default {
                 if (this.contextMenuItem.id === item.id) {
                     this.$set(this.contextMenuItem, 'favorited', data.favorited);
                 }
-                $A.messageSuccess(msg);
-            }).catch(({msg}) => {
-                $A.modalError(msg || this.$L('操作失败'));
             });
         },
 
@@ -2110,7 +2107,7 @@ export default {
          */
         checkSingleFileFavoriteStatus(file) {
             if (!file.id || file.type === 'folder') return;
-            
+
             this.$store.dispatch("checkFavoriteStatus", {
                 type: 'file',
                 id: file.id

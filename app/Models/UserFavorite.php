@@ -44,6 +44,7 @@ class UserFavorite extends AbstractModel
         'userid',
         'favoritable_type',
         'favoritable_id',
+        'remark',
     ];
 
     /**
@@ -79,16 +80,42 @@ class UserFavorite extends AbstractModel
         if ($favorite) {
             // 取消收藏
             $favorite->delete();
-            return ['favorited' => false, 'action' => 'removed'];
-        } else {
-            // 添加收藏
-            self::create([
-                'userid' => $userid,
-                'favoritable_type' => $type,
-                'favoritable_id' => $id,
-            ]);
-            return ['favorited' => true, 'action' => 'added'];
+            return ['favorited' => false, 'action' => 'removed', 'remark' => ''];
         }
+
+        // 添加收藏
+        $favorite = self::create([
+            'userid' => $userid,
+            'favoritable_type' => $type,
+            'favoritable_id' => $id,
+        ]);
+
+        return ['favorited' => true, 'action' => 'added', 'remark' => $favorite->remark ?? ''];
+    }
+
+    /**
+     * 更新收藏备注
+     * @param int $userid
+     * @param string $type
+     * @param int $id
+     * @param string $remark
+     * @return static|null
+     */
+    public static function updateRemark($userid, $type, $id, $remark)
+    {
+        $favorite = self::whereUserid($userid)
+            ->whereFavoritableType($type)
+            ->whereFavoritableId($id)
+            ->first();
+
+        if (!$favorite) {
+            return null;
+        }
+
+        $favorite->remark = $remark;
+        $favorite->save();
+
+        return $favorite;
     }
 
     /**
@@ -192,6 +219,7 @@ class UserFavorite extends AbstractModel
                         'flow_item_status' => $flowItemStatus,
                         'flow_item_color' => $flowItemColor,
                         'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
+                        'remark' => $favorite->remark,
                     ];
                 }
             }
@@ -211,6 +239,7 @@ class UserFavorite extends AbstractModel
                         'desc' => $project->desc,
                         'archived_at' => $project->archived_at,
                         'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
+                        'remark' => $favorite->remark,
                     ];
                 }
             }
@@ -231,6 +260,7 @@ class UserFavorite extends AbstractModel
                         'size' => $file->size,
                         'pid' => $file->pid,
                         'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
+                        'remark' => $favorite->remark,
                     ];
                 }
             }
@@ -263,6 +293,7 @@ class UserFavorite extends AbstractModel
                         'userid' => $message->userid,
                         'type' => $message->type,
                         'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
+                        'remark' => $favorite->remark,
                     ];
                 }
             }

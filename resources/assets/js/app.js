@@ -108,6 +108,11 @@ router.afterEach(() => {
     store.commit('route/loading', false);
 });
 
+// 消息配置
+ViewUI.Message.config({
+    duration: 2.5
+});
+
 // 加载路由
 Vue.prototype.goForward = function(route, isReplace, autoBroadcast = true) {
     if ($A.Ready && $A.isSubElectron && autoBroadcast) {

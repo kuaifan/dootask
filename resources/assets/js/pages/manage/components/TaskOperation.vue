@@ -505,7 +505,7 @@ export default {
          */
         checkFavoriteStatus() {
             if (!this.task.id) return;
-            
+
             this.$store.dispatch("checkFavoriteStatus", {
                 type: 'task',
                 id: this.task.id
@@ -521,16 +521,13 @@ export default {
          */
         toggleFavorite() {
             if (!this.task.id) return;
-            
+
             this.$store.dispatch("toggleFavorite", {
                 type: 'task',
                 id: this.task.id
-            }).then(({data, msg}) => {
+            }).then(({data}) => {
                 this.isFavorited = data.favorited;
                 this.hide();
-                $A.messageSuccess(msg);
-            }).catch(({msg}) => {
-                $A.messageError(msg || '操作失败');
             });
         }
     },

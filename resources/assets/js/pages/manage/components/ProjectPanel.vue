@@ -1892,15 +1892,12 @@ export default {
          */
         toggleProjectFavorite() {
             if (!this.projectData.id) return;
-            
+
             this.$store.dispatch("toggleFavorite", {
                 type: 'project',
                 id: this.projectData.id
-            }).then(({data, msg}) => {
+            }).then(({data}) => {
                 this.$set(this.projectData, 'favorited', data.favorited);
-                $A.messageSuccess(msg);
-            }).catch(({msg}) => {
-                $A.modalError(msg || this.$L('操作失败'));
             });
         },
 
@@ -1909,7 +1906,7 @@ export default {
          */
         checkProjectFavoriteStatus() {
             if (!this.projectData.id) return;
-            
+
             this.$store.dispatch("checkFavoriteStatus", {
                 type: 'project',
                 id: this.projectData.id

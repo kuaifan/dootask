@@ -2898,13 +2898,72 @@ export default {
      * @param {object} params {type: 'task|project|file|message', id: number}
      */
     toggleFavorite({dispatch}, {type, id}) {
-        return dispatch('call', {
-            url: 'users/favorite/toggle',
-            data: {
-                type: type,
-                id: id
-            },
-            method: 'post',
+        return new Promise((resolve, reject) => {
+            dispatch('call', {
+                url: 'users/favorite/toggle',
+                data: {
+                    type: type,
+                    id: id
+                },
+                method: 'post',
+            }).then(result => {
+                resolve(result)
+                //
+                const {data, msg} = result
+                if (!data.favorited) {
+                    $A.messageSuccess(msg);
+                    return
+                }
+                $A.Message.success({
+                    duration: 5,
+                    render: h => {
+                        return h('span', [
+                            h('span', $A.L(msg)),
+                            h('a', {
+                                style: {
+                                    marginLeft: '8px'
+                                },
+                                on: {
+                                    click: () => {
+                                        const currentRemark = data && typeof data.remark === 'string' ? data.remark : '';
+                                        $A.modalInput({
+                                            title: $A.L('修改备注'),
+                                            placeholder: $A.L('请输入修改备注'),
+                                            okText: $A.L('保存'),
+                                            value: currentRemark,
+                                            onOk: (inputValue) => {
+                                                const remark = typeof inputValue === 'string' ? inputValue.trim() : '';
+                                                if (!remark) {
+                                                    return $A.L('请输入修改备注');
+                                                }
+                                                return new Promise((resolveRemark, rejectRemark) => {
+                                                    dispatch('call', {
+                                                        url: 'users/favorite/remark',
+                                                        data: {
+                                                            type,
+                                                            id,
+                                                            remark,
+                                                        },
+                                                        method: 'post',
+                                                    }).then(({msg}) => {
+                                                        $A.messageSuccess(msg || $A.L('操作成功'));
+                                                        resolveRemark();
+                                                    }).catch(({msg}) => {
+                                                        rejectRemark(msg || $A.L('操作失败'));
+                                                    });
+                                                });
+                                            }
+                                        });
+                                    }
+                                }
+                            }, $A.L('修改备注')),
+                        ])
+                    }
+                });
+            }).catch(({msg}) => {
+                $A.modalError(msg || this.$L('操作失败'));
+                reject()
+            });
         });
     },
 

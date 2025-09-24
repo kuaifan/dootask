@@ -66,10 +66,11 @@
 
 <script>
 import SearchButton from "../../../components/SearchButton.vue";
+import QuickEdit from "../../../components/QuickEdit.vue";
 
 export default {
     name: "FavoriteManagement",
-    components: {SearchButton},
+    components: {SearchButton, QuickEdit},
     data() {
         return {
             loadIng: 0,
@@ -115,6 +116,53 @@ export default {
                             }
                         }, [
                             h('AutoTip', row.name)
+                        ]);
+                    }
+                },
+                {
+                    title: this.$L('备注'),
+                    key: 'remark',
+                    minWidth: 160,
+                    render: (h, {row}) => {
+                        return h('QuickEdit', {
+                            props: {
+                                value: row.remark || '',
+                                attrTitle: row.remark || '',
+                                alwaysIcon: true,
+                            },
+                            on: {
+                                'on-update': (val, cb) => {
+                                    const remark = (val || '').trim();
+                                    if (!remark) {
+                                        $A.messageWarning(this.$L('请输入修改备注'));
+                                        cb();
+                                        return;
+                                    }
+                                    this.$store.dispatch('call', {
+                                        url: 'users/favorite/remark',
+                                        data: {
+                                            type: row.type,
+                                            id: row.id,
+                                            remark,
+                                        },
+                                        method: 'post',
+                                    }).then(({data, msg}) => {
+                                        const newRemark = data && typeof data.remark !== 'undefined' ? data.remark : remark;
+                                        row.remark = newRemark;
+                                        const target = this.allData.find(item => item.id === row.id && item.type === row.type);
+                                        if (target) {
+                                            target.remark = newRemark;
+                                        }
+                                        $A.messageSuccess(msg || this.$L('操作成功'));
+                                        cb();
+                                    }).catch(({msg}) => {
+                                        $A.modalError(msg || this.$L('操作失败'));
+                                        cb();
+                                    });
+                                }
+                            }
+                        }, [
+                            h('AutoTip', row.remark || '-')
                         ]);
                     }
                 },
@@ -232,7 +280,7 @@ export default {
         getLists() {
             this.loadIng++;
             this.keyIs = $A.objImplode(this.keys) != "";
-            
+
             this.$store.dispatch("call", {
                 url: 'users/favorites',
                 data: {
@@ -243,7 +291,7 @@ export default {
             }).then(({data}) => {
                 // 处理返回的数据，将三种类型合并到一个列表中
                 this.allData = [];
-                
+
                 // 处理任务收藏
                 if (data.data.tasks) {
                     data.data.tasks.forEach(task => {
@@ -259,10 +307,11 @@ export default {
                             flow_item_status: task.flow_item_status,
                             flow_item_color: task.flow_item_color,
                             favorited_at: task.favorited_at,
+                            remark: task.remark || '',
                         });
                     });
                 }
-                
+
                 // 处理项目收藏
                 if (data.data.projects) {
                     data.data.projects.forEach(project => {
@@ -273,10 +322,11 @@ export default {
                             desc: project.desc,
                             archived_at: project.archived_at,
                             favorited_at: project.favorited_at,
+                            remark: project.remark || '',
                         });
                     });
                 }
-                
+
                 // 处理文件收藏
                 if (data.data.files) {
                     data.data.files.forEach(file => {
@@ -288,10 +338,11 @@ export default {
                             size: file.size,
                             pid: file.pid,
                             favorited_at: file.favorited_at,
+                            remark: file.remark || '',
                         });
                     });
                 }
-                
+
                 // 处理消息收藏
                 if (data.data.messages) {
                     data.data.messages.forEach(message => {
@@ -303,10 +354,11 @@ export default {
                             userid: message.userid,
                             msg_type: message.type,
                             favorited_at: message.favorited_at,
+                            remark: message.remark || '',
                         });
                     });
                 }
-                
+
                 this.total = data.total || this.allData.length;
                 this.filterData();
                 this.noText = '没有相关的收藏';
@@ -319,14 +371,14 @@ export default {
 
         filterData() {
             let filteredData = this.allData;
-            
+
             // 按名称筛选
             if (this.keys.name) {
                 filteredData = filteredData.filter(item => {
                     return item.name && item.name.toLowerCase().includes(this.keys.name.toLowerCase());
                 });
             }
-            
+
             this.list = filteredData;
         },
 
@@ -355,10 +407,10 @@ export default {
                     break;
                 case 'file':
                     this.$router.push({
-                        name: 'manage-file', 
+                        name: 'manage-file',
                         params: {
-                            folderId: item.pid || 0, 
-                            fileId: null, 
+                            folderId: item.pid || 0,
+                            fileId: null,
                             shakeId: item.id
                         }
                     });
@@ -386,10 +438,7 @@ export default {
                 type: item.type,
                 id: item.id
             }).then(() => {
-                $A.messageSuccess('取消收藏成功');
                 this.getLists();
-            }).catch(({msg}) => {
-                $A.modalError(msg);
             });
         }
     }

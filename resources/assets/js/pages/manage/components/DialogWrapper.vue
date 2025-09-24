@@ -4079,25 +4079,22 @@ export default {
             if (this.operateVisible) {
                 return
             }
-            
+
             this.$store.dispatch("toggleFavorite", {
                 type: 'message',
                 id: this.operateItem.id
-            }).then(({data, msg}) => {
+            }).then(({data}) => {
                 this.$set(this.operateItem, 'favorited', data.favorited);
                 const message = this.dialogMsgs.find(msg => msg.id === this.operateItem.id);
                 if (message) {
                     this.$set(message, 'favorited', data.favorited);
                 }
-                this.$Message.success(msg);
-            }).catch(({msg}) => {
-                $A.messageError(msg);
             });
         },
 
         checkMessageFavoriteStatus(message) {
             if (!message.id) return;
-            
+
             this.$store.dispatch("checkFavoriteStatus", {
                 type: 'message',
                 id: message.id

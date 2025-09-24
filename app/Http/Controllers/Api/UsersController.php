@@ -3189,6 +3189,58 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @api {post} api/users/favorite/remark          47-1. 修改收藏备注
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName favorite__remark
+     *
+     * @apiParam {String} type                  收藏类型 (task/project/file/message)
+     * @apiParam {Number} id                    收藏对象ID
+     * @apiParam {String} remark                收藏备注（<=255个字符）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function favorite__remark()
+    {
+        $user = User::auth();
+        //
+        $type = trim(Request::input('type'));
+        $id = intval(Request::input('id'));
+        $remark = trim(Request::input('remark', ''));
+
+        if (!$type || $id <= 0) {
+            return Base::retError('参数错误');
+        }
+
+        $allowedTypes = [UserFavorite::TYPE_TASK, UserFavorite::TYPE_PROJECT, UserFavorite::TYPE_FILE, UserFavorite::TYPE_MESSAGE];
+        if (!in_array($type, $allowedTypes)) {
+            return Base::retError('无效的收藏类型');
+        }
+
+        if ($remark === '') {
+            return Base::retError('请输入修改备注');
+        }
+
+        if (mb_strlen($remark) > 255) {
+            return Base::retError('备注最多支持255个字符');
+        }
+
+        $favorite = UserFavorite::updateRemark($user->userid, $type, $id, $remark);
+
+        if (!$favorite) {
+            return Base::retError('收藏记录不存在');
+        }
+
+        return Base::retSuccess('修改备注成功', [
+            'remark' => $favorite->remark,
+        ]);
+    }
+
+    /**
      * @api {post} api/users/favorites/clean          48. 清理用户收藏
      *
      * @apiDescription 需要token身份
