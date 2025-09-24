@@ -74,8 +74,6 @@ class FileController extends AbstractController
         $id = Request::input('id');
         //
         $permission = 0;
-        $isGuestAccess = false;
-        
         if (Base::isNumber($id)) {
             $user = User::auth();
             $file = File::permissionFind(intval($id), $user, 0, $permission);
@@ -91,37 +89,9 @@ class FileController extends AbstractController
                 return Base::retError($msg, $data);
             }
             
-            // 检查游客访问权限
-            $isGuestAccess = true;
-            
-            // 尝试获取当前用户，如果未登录则为null
-            $user = null;
-            $token = Base::token();
-            if ($token) {
-                try {
-                    $user = User::auth();
-                } catch (\Exception $e) {
-                    $user = null;
-                }
-            }
-            
-            // 如果文件不允许游客访问且用户未登录，抛出登录异常
-            if (!$file->guest_access && !$user) {
-                throw new ApiException('请登录后继续...', [], -1);
-            }
-            
-            // 如果用户已登录，检查用户是否有权限访问该文件
-            if ($user) {
-                try {
-                    File::permissionFind($file->id, $user, 0, $permission);
-                } catch (\Exception $e) {
-                    // 如果用户没有权限且文件不允许游客访问，抛出登录异常
-                    if (!$file->guest_access) {
-                        throw new ApiException('请登录后继续...', [], -1);
-                    }
-                    // 否则作为游客访问
-                    $permission = 0;
-                }
+            // 如果文件不允许游客访问，则需要登录
+            if (!$file->guest_access) {
+                User::auth();
             }
             
             $fileLink->increment("num");
@@ -131,7 +101,6 @@ class FileController extends AbstractController
         //
         $array = $file->toArray();
         $array['permission'] = $permission;
-        $array['is_guest_access'] = $isGuestAccess;
         return Base::retSuccess('success', $array);
     }
 
