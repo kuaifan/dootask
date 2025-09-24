@@ -69,7 +69,7 @@ export default {
                 task: {label: '任务', color: 'success'},
                 file: {label: '文件库', color: 'warning'},
                 task_file: {label: '任务文件', color: 'primary'},
-                message_file: {label: '聊天文件', color: 'magenta'}
+                message_file: {label: '聊天文件', color: '#f87cbd'}
             }
         },
         typeOptions() {
