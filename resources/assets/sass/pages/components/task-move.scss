@@ -84,6 +84,12 @@
     .ivu-modal-footer {
         padding: 26px 0 22px !important;
     }
+    .ivu-cascader-menu-item {
+        max-width: 300px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 }
 
 body.window-portrait {

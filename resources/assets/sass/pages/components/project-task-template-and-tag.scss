@@ -185,6 +185,10 @@
             cursor: grab;
             flex-shrink: 0;
 
+            &:hover {
+                color: $primary-color;
+            }
+
             .ivu-icon {
                 font-size: 18px;
             }

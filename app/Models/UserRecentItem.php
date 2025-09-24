@@ -42,7 +42,7 @@ class UserRecentItem extends AbstractModel
 
     public static function record(int $userid, string $targetType, int $targetId, string $sourceType = '', int $sourceId = 0): self
     {
-        return tap(self::updateOrCreate(
+        return self::updateOrCreate(
             [
                 'userid' => $userid,
                 'target_type' => $targetType,
@@ -53,6 +53,6 @@ class UserRecentItem extends AbstractModel
             [
                 'browsed_at' => Carbon::now(),
             ]
-        ));
+        );
     }
 }
