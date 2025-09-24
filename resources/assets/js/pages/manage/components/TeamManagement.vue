@@ -344,6 +344,7 @@
                 </FormItem>
                 <FormItem :label="$L('交接人')">
                     <UserSelect v-model="disableData.transfer_userid" :disabled-choice="[disableData.userid]" :multiple-max="1" :title="$L('选择交接人')"/>
+                    <div class="form-tip">{{ $L('可选，留空则不执行迁移') }}</div>
                     <div class="form-tip">{{ $L(`${disableData.nickname} 负责的部门、项目、任务和文件将移交给交接人；同时退出所有群（如果是群主则转让给交接人）`) }}</div>
                 </FormItem>
             </Form>
@@ -787,7 +788,10 @@ export default {
 
             disableShow: false,
             disableLoading: 0,
-            disableData: {},
+            disableData: {
+                transfer_userid: [],
+                disable_time: ''
+            },
             disableOptions: {
                 shortcuts: [
                     {
@@ -1154,6 +1158,8 @@ export default {
                         type: 'setdisable',
                         userid: row.userid,
                         nickname: row.nickname,
+                        transfer_userid: [],
+                        disable_time: ''
                     };
                     this.disableShow = true;
                     break;
@@ -1200,11 +1206,12 @@ export default {
 
         operationUser(data, tipErr) {
             return new Promise((resolve, reject) => {
+                let submitData = data;
                 if (data.type == 'checkin_macs') {
                     this.checkinMacEditLoading++;
                 } else if (data.type == 'checkin_face') {
                     this.checkinFaceEditLoading++;
-                    data = {
+                    submitData = {
                         type: data.type,
                         userid: data.userid,
                         nickname: data.nickname,
@@ -1214,12 +1221,22 @@ export default {
                     this.departmentEditLoading++;
                 } else if (data.type == 'setdisable') {
                     this.disableLoading++;
+                    submitData = Object.assign({}, data);
+                    if (Array.isArray(submitData.transfer_userid)) {
+                        if (submitData.transfer_userid.length > 0) {
+                            submitData.transfer_userid = submitData.transfer_userid[0];
+                        } else {
+                            delete submitData.transfer_userid;
+                        }
+                    } else if (!submitData.transfer_userid) {
+                        delete submitData.transfer_userid;
+                    }
                 } else {
                     this.loadIng++;
                 }
                 this.$store.dispatch("call", {
                     url: 'users/operation',
-                    data,
+                    data: submitData,
                 }).then(({msg}) => {
                     $A.messageSuccess(msg);
                     this.getLists();

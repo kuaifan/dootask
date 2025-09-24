@@ -1029,16 +1029,22 @@ class UsersController extends AbstractController
                 $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
                 $upArray['identity'][] = 'disable';
                 $upArray['disable_at'] = Carbon::parse($data['disable_time']);
-                $transferUserid = is_array($data['transfer_userid']) ? $data['transfer_userid'][0] : $data['transfer_userid'];
-                $transferUser = User::find(intval($transferUserid));
-                if (empty($transferUser)) {
-                    return Base::retError('请选择正确的交接人');
+                $transferUserid = Arr::get($data, 'transfer_userid');
+                if (is_array($transferUserid)) {
+                    $transferUserid = $transferUserid[0] ?? null;
                 }
-                if ($transferUser->userid === $userInfo->userid) {
-                    return Base::retError('不能移交给自己');
-                }
-                if ($transferUser->isDisable()) {
-                    return Base::retError('交接人已离职，请选择另一个交接人');
+                $transferUserid = intval($transferUserid);
+                if ($transferUserid > 0) {
+                    $transferUser = User::find($transferUserid);
+                    if (empty($transferUser)) {
+                        return Base::retError('请选择正确的交接人');
+                    }
+                    if ($transferUser->userid === $userInfo->userid) {
+                        return Base::retError('不能移交给自己');
+                    }
+                    if ($transferUser->isDisable()) {
+                        return Base::retError('交接人已离职，请选择另一个交接人');
+                    }
                 }
                 break;
 
@@ -1145,7 +1151,7 @@ class UsersController extends AbstractController
                             $joinDialog->pushMsg("groupJoin", null, $userids);
                         }
                     }
-                } elseif ($type === 'setdisable') {
+                } elseif ($type === 'setdisable' && $transferUser) {
                     $userTransfer = UserTransfer::createInstance([
                         'original_userid' => $userInfo->userid,
                         'new_userid' => $transferUser->userid,
@@ -2776,7 +2782,7 @@ class UsersController extends AbstractController
                 $flowItemStatus = $flowItemParts[0] ?? '';
                 $flowItemName = $flowItemParts[1] ?? $browse->task->flow_item_name;
                 $flowItemColor = $flowItemParts[2] ?? '';
-                
+
                 $data[] = [
                     'id' => $browse->task->id,
                     'name' => $browse->task->name,
