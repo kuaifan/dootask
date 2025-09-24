@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use DB;
 use Request;
 use Redirect;
+use Cache;
 use Carbon\Carbon;
 use App\Tasks\PushTask;
 use App\Module\AI;
@@ -3599,5 +3600,52 @@ class DialogController extends AbstractController
         $dialog->save();
         //
         return Base::retSuccess('success', $session);
+    }
+
+    /**
+     * @api {post} api/dialog/session/rename          69. AI-重命名会话
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName session_rename
+     *
+     * @apiParam {Number} session_id         会话ID
+     * @apiParam {String} title              会话名称
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function session__rename()
+    {
+        User::auth();
+        //
+        $session_id = intval(Request::input('session_id'));
+        $title = trim((string)Request::input('title'));
+        //
+        if ($session_id <= 0) {
+            return Base::retError('参数错误');
+        }
+        if ($title === '') {
+            return Base::retError('请输入会话名称');
+        }
+        //
+        $session = WebSocketDialogSession::whereId($session_id)->first();
+        if (empty($session)) {
+            return Base::retError('会话不存在或已被删除');
+        }
+        //
+        $dialog = WebSocketDialog::checkDialog($session->dialog_id);
+        if (!$dialog->isSessionDialog()) {
+            return Base::retError('当前对话不支持');
+        }
+        //
+        $session->title = Base::cutStr($title, 100);
+        $session->save();
+        $session->refresh();
+        Cache::forever('dialog_session_title_' . $session->id, true);
+        //
+        return Base::retSuccess('重命名成功', $session);
     }
 }
