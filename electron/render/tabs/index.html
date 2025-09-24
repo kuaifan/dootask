@@ -249,6 +249,9 @@
                     return 'Loading...'
                 }
                 if (item.url) {
+                    if (/localhost:/.test(item.url)) {
+                        return 'Loading...'
+                    }
                     return `${item.url}`.replace(/^https?:\/\//, '')
                 }
             },
