@@ -10,6 +10,7 @@ namespace App\Models;
  * @property string $name 标签名称
  * @property string|null $desc 标签描述
  * @property string|null $color 颜色
+ * @property int $sort 排序
  * @property int $userid 创建人
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -49,6 +50,7 @@ class ProjectTag extends AbstractModel
         'name',
         'desc',
         'color',
+        'sort',
         'userid'
     ];
 

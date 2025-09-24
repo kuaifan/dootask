@@ -3244,9 +3244,63 @@ class ProjectController extends AbstractController
                     'color' => $color
                 ]
             ]);
+            $maxSort = ProjectTag::where('project_id', $projectId)->max('sort');
+            $data['sort'] = is_numeric($maxSort) ? intval($maxSort) + 1 : 0;
             $tag = ProjectTag::create($data);
         }
         return Base::retSuccess('保存成功', $tag);
+    }
+
+    /**
+     * @api {post} api/project/tag/sort          52.1 标签排序
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName tag__sort
+     *
+     * @apiParam {Number} project_id                项目ID
+     * @apiParam {Array} list                       标签ID列表，按新顺序排列
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function tag__sort()
+    {
+        User::auth();
+        $projectId = intval(Request::input('project_id'));
+        $list = Base::json2array(Request::input('list'));
+        if ($projectId <= 0 || !is_array($list)) {
+            return Base::retError('参数错误');
+        }
+        $project = Project::userProject($projectId, true, true);
+        $index = 0;
+        $handled = [];
+        foreach ($list as $tagId) {
+            $tagId = intval($tagId);
+            if ($tagId <= 0) continue;
+            $updated = ProjectTag::where('project_id', $projectId)
+                ->where('id', $tagId)
+                ->update(['sort' => $index]);
+            if ($updated) {
+                $handled[] = $tagId;
+                $index++;
+            }
+        }
+        $others = ProjectTag::where('project_id', $projectId)
+            ->when(!empty($handled), function ($query) use ($handled) {
+                $query->whereNotIn('id', $handled);
+            })
+            ->orderBy('sort')
+            ->orderByDesc('id')
+            ->pluck('id');
+        foreach ($others as $tagId) {
+            ProjectTag::where('id', $tagId)->update(['sort' => $index]);
+            $index++;
+        }
+        $project->addLog("调整标签排序");
+        return Base::retSuccess('排序已保存');
     }
 
     /**
@@ -3329,6 +3383,7 @@ class ProjectController extends AbstractController
             return Base::retError('参数错误');
         }
         $tags = ProjectTag::where('project_id', $projectId)
+            ->orderBy('sort')
             ->orderByDesc('id')
             ->get();
         return Base::retSuccess('success', $tags);

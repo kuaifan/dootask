@@ -31,7 +31,18 @@
         }
 
         .actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin-top: 1px;
+
+            @media (width < 768px) {
+                > button {
+                    > span {
+                        display: none;
+                    }
+                }
+            }
         }
     }
 
@@ -109,6 +120,7 @@
             }
         }
         .tag-item {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -116,6 +128,26 @@
             gap: 16px;
             padding: 16px 0;
             border-top: 1px solid #F4F4F5;
+
+            &.is-sorting {
+                cursor: grab;
+            }
+
+            .tag-drag-handle {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+                height: 24px;
+                color: #b0b3bd;
+                cursor: grab;
+                flex-shrink: 0;
+
+                .ivu-icon {
+                    font-size: 18px;
+                }
+            }
+
             .tag-contents {
                 flex-shrink: 0;
                 display: flex;
@@ -154,6 +186,10 @@
                         > i {
                             margin: 0 -2px;
                         }
+
+                        &[disabled] {
+                            cursor: not-allowed;
+                        }
                     }
                 }
 
@@ -167,6 +203,10 @@
                 }
             }
         }
+        .sortable-drag {
+            border-top-color: transparent;
+        }
+
     }
 }
 
