@@ -2601,7 +2601,133 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/ai_generate          40. 使用 AI 助手生成任务
+     * @api {post} api/project/task/copy          40. 复制任务
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__copy
+     *
+     * @apiParam {Number} task_id               任务ID
+     * @apiParam {Number} project_id            目标项目ID
+     * @apiParam {Number} column_id             目标列表ID
+     * @apiParam {Number} flow_item_id          工作流id
+     * @apiParam {Array} owner                  负责人
+     * @apiParam {Array} assist                 协助人
+     * @apiParam {String} [completed]           是否已完成（仅在没有工作流时生效）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__copy()
+    {
+        User::auth();
+        //
+        $task_id = intval(Request::input('task_id'));
+        $project_id = intval(Request::input('project_id'));
+        $column_id = intval(Request::input('column_id'));
+        $flow_item_id = intval(Request::input('flow_item_id'));
+        $owner = Request::input('owner', []);
+        $assist = Request::input('assist', []);
+        $completed = Request::exists('completed') ? (bool)Request::input('completed') : null;
+        //
+        $task = ProjectTask::userTask($task_id);
+        //
+        $sourceProject = Project::userProject($task->project_id);
+        ProjectPermission::userTaskPermission($sourceProject, ProjectPermission::TASK_MOVE, $task);
+        //
+        $project = Project::userProject($project_id);
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_ADD);
+        //
+        $column = ProjectColumn::whereProjectId($project->id)->whereId($column_id)->first();
+        if (empty($column)) {
+            return Base::retError('列表不存在');
+        }
+        if (ProjectTask::whereProjectId($project->id)
+                ->whereNull('project_tasks.complete_at')
+                ->whereNull('project_tasks.archived_at')
+                ->count() > 2000) {
+            return Base::retError('项目内未完成任务最多不能超过2000个');
+        }
+        if (ProjectTask::whereColumnId($column->id)
+                ->whereNull('project_tasks.complete_at')
+                ->whereNull('project_tasks.archived_at')
+                ->count() > 500) {
+            return Base::retError('单个列表未完成任务最多不能超过500个');
+        }
+        $flowItem = null;
+        if ($flow_item_id) {
+            $flowItem = ProjectFlowItem::whereProjectId($project->id)->whereId($flow_item_id)->first();
+            if (empty($flowItem)) {
+                return Base::retError('任务状态不存在');
+            }
+        } else {
+            if (ProjectFlowItem::whereProjectId($project->id)->count() > 0) {
+                return Base::retError('请选择移动后状态', [], 102);
+            }
+        }
+        //
+        $projectUserIds = ProjectUser::whereProjectId($project->id)->pluck('userid')->toArray();
+        $owner = array_values(array_filter(array_unique(array_map('intval', Arr::wrap($owner)))));
+        $assist = array_values(array_filter(array_unique(array_map('intval', Arr::wrap($assist)))));
+        $owner = array_values(array_intersect($owner, $projectUserIds));
+        $assist = array_values(array_diff(array_intersect($assist, $projectUserIds), $owner));
+        //
+        $newTask = AbstractModel::transaction(function () use ($task, $project, $column, $flowItem, $owner, $assist, $completed) {
+            /** @var ProjectTask $task */
+            $copy = $task->copyTask();
+            $copy->project_id = $project->id;
+            $copy->column_id = $column->id;
+            $copy->sort = intval(ProjectTask::whereColumnId($column->id)->orderByDesc('sort')->value('sort')) + 1;
+            $copy->flow_item_id = 0;
+            $copy->flow_item_name = '';
+            $copy->save();
+            $copy->load(['content', 'taskFile', 'taskTag', 'taskUser']);
+            if ($copy->content) {
+                $copy->content->project_id = $project->id;
+                $copy->content->save();
+            }
+            foreach ($copy->taskFile as $taskFile) {
+                $taskFile->project_id = $project->id;
+                $taskFile->save();
+            }
+            foreach ($copy->taskTag as $taskTag) {
+                $taskTag->project_id = $project->id;
+                $taskTag->save();
+            }
+            ProjectTaskUser::whereTaskId($copy->id)->delete();
+            $copy->setRelation('taskUser', collect());
+            $copy->setRelation('project', $project);
+            $updateData = [
+                'task_id' => $copy->id,
+                'owner' => $owner,
+            ];
+            if ($copy->parent_id === 0) {
+                $updateData['assist'] = $assist;
+            }
+            if ($flowItem) {
+                $updateData['flow_item_id'] = $flowItem->id;
+            } elseif ($completed !== null) {
+                $updateData['complete_at'] = $completed ? Carbon::now()->toDateTimeString() : false;
+            }
+            $updateMarking = [];
+            $copy->updateTask($updateData, $updateMarking);
+            $copy->addLog('复制{任务}', [
+                'copy_from' => $task->id,
+            ]);
+            return $copy;
+        });
+        //
+        $data = ProjectTask::oneTask($newTask->id)->toArray();
+        $data['column_name'] = $column->name;
+        $data['project_name'] = $project->name;
+        //
+        return Base::retSuccess('复制成功', $data);
+    }
+
+    /**
+     * @api {post} api/project/task/ai_generate          41. 使用 AI 助手生成任务
      *
      * @apiDescription 需要token身份，使用AI根据用户输入和上下文信息生成任务标题和详细描述
      * @apiVersion 1.0.0

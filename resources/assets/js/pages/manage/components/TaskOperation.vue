@@ -47,7 +47,7 @@
 
                         <template v-if="task.parent_id === 0">
                             <template v-if="operationShow">
-                                <EDropdownItem command="favorite" :divided="turns.length > 0">
+                                <EDropdownItem command="favorite" divided>
                                     <div class="item" :class="{favorited: isFavorited}">
                                         <i class="taskfont movefont">&#xe683;</i>{{$L(isFavorited ? '取消收藏' : '收藏')}}
                                     </div>
@@ -65,6 +65,11 @@
                                 <EDropdownItem command="move">
                                     <div class="item">
                                         <i class="taskfont movefont">&#xe7fc;</i>{{$L('移动')}}
+                                    </div>
+                                </EDropdownItem>
+                                <EDropdownItem command="copy">
+                                    <div class="item">
+                                        <Icon type="ios-copy" />{{$L('复制')}}
                                     </div>
                                 </EDropdownItem>
                                 <EDropdownItem command="remove">
@@ -102,6 +107,19 @@
             }"
             footer-hide>
             <TaskMove ref="addTask" v-model="moveTaskShow" :task="task"/>
+        </Modal>
+
+        <!--复制任务-->
+        <Modal
+            v-model="copyTaskShow"
+            :title="$L('复制任务')"
+            :mask-closable="false"
+            :styles="{
+                width: '90%',
+                maxWidth: '540px'
+            }"
+            footer-hide>
+            <TaskMove v-model="copyTaskShow" :task="task" type="copy"/>
         </Modal>
 
         <!-- 发送任务 -->
@@ -145,6 +163,7 @@ export default {
             styles: {},
 
             moveTaskShow: false,
+            copyTaskShow: false,
             isFavorited: false,
         }
     },
@@ -330,6 +349,9 @@ export default {
 
                 case 'move':
                     this.moveTaskShow = true;
+                    break;
+                case 'copy':
+                    this.copyTaskShow = true;
                     break;
             }
         },

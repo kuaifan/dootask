@@ -12,7 +12,7 @@
 
         <div class="task-move-content">
             <div class="task-move-content-old">
-                <div class="task-move-title">{{ $L('移动前') }}</div>
+                <div class="task-move-title">{{ beforeTitle }}</div>
                 <div class="task-move-row">
                     <span class="label">{{$L('状态')}}:</span>
                     <div class="flow">
@@ -43,7 +43,7 @@
                 </div>
             </div>
             <div class="task-move-content-new">
-                <div class="task-move-title">{{ $L('移动后') }}</div>
+                <div class="task-move-title">{{ afterTitle }}</div>
                 <div class="task-move-row">
                     <span class="label">{{$L('状态')}}:</span>
                     <TaskMenu
@@ -91,7 +91,7 @@
         <div class="ivu-modal-footer">
             <div class="adaption">
                 <Button type="default" @click="close">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="loadIng > 0" @click="onConfirm">{{$L('确定')}}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="onConfirm">{{confirmText}}</Button>
             </div>
         </div>
     </div>
@@ -116,6 +116,11 @@ export default {
         task: {
             type: Object,
             default: false
+        },
+        type: {
+            type: String,
+            default: "move",
+            validator: value => ["move", "copy"].includes(value)
         },
 
     },
@@ -148,6 +153,18 @@ export default {
 
     computed: {
         ...mapState(['cacheProjects', 'cacheColumns']),
+        isCopy() {
+            return this.type === "copy";
+        },
+        beforeTitle() {
+            return this.$L(this.isCopy ? '复制前' : '移动前');
+        },
+        afterTitle() {
+            return this.$L(this.isCopy ? '复制后' : '移动后');
+        },
+        confirmText() {
+            return this.$L(this.isCopy ? '复制' : '确定');
+        },
     },
 
     watch: {
@@ -251,8 +268,8 @@ export default {
         },
 
         async onConfirm() {
-            if (this.task.project_id == this.cascader[0] && this.task.column_id == this.cascader[1]) {
-                $A.messageError("未变更移动项");
+            if (!this.isCopy && this.task.project_id == this.cascader[0] && this.task.column_id == this.cascader[1]) {
+                $A.messageError(this.$L('未变更移动项'));
                 return;
             }
             this.loadIng++;
@@ -269,7 +286,7 @@ export default {
                 callData.completed = this.updateData.flow.complete_at ? 1 : 0;
             }
             this.$store.dispatch("call", {
-                url: "project/task/move",
+                url: this.isCopy ? "project/task/copy" : "project/task/move",
                 data: callData
             }).then(({data, msg}) => {
                 this.loadIng--;

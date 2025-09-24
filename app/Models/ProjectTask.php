@@ -1143,9 +1143,14 @@ class ProjectTask extends AbstractModel
      */
     public function copyTask()
     {
-        return AbstractModel::transaction(function() {
-            // 复制任务
-            $task = $this->replicate();
+        $source = $this->fresh(['content', 'taskFile', 'taskUser']);
+        if (!$source) {
+            throw new ApiException('任务不存在');
+        }
+
+        return AbstractModel::transaction(function () use ($source) {
+            // 复制任务（使用最新数据，避免复制临时字段）
+            $task = $source->replicate();
             $task->dialog_id = 0;
             $task->archived_at = null;
             $task->archived_userid = 0;
@@ -1154,21 +1159,21 @@ class ProjectTask extends AbstractModel
             $task->created_at = Carbon::now();
             $task->save();
             // 复制任务内容
-            if ($this->content) {
-                $tmp = $this->content->replicate();
+            if ($source->content) {
+                $tmp = $source->content->replicate();
                 $tmp->task_id = $task->id;
                 $tmp->created_at = Carbon::now();
                 $tmp->save();
             }
             // 复制任务附件
-            foreach ($this->taskFile as $taskFile) {
+            foreach ($source->taskFile as $taskFile) {
                 $tmp = $taskFile->replicate();
                 $tmp->task_id = $task->id;
                 $tmp->created_at = Carbon::now();
                 $tmp->save();
             }
             // 复制任务成员
-            foreach ($this->taskUser as $taskUser) {
+            foreach ($source->taskUser as $taskUser) {
                 $tmp = $taskUser->replicate();
                 $tmp->task_id = $task->id;
                 $tmp->task_pid = $task->id;
