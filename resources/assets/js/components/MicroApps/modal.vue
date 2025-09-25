@@ -71,6 +71,10 @@ export default {
             type: Object,
             default: () => ({})
         },
+        windowType: {
+            type: String,
+            default: 'embed',
+        },
         beforeClose: Function
     },
     data() {
@@ -90,6 +94,7 @@ export default {
                 'micro-modal-hidden': !this.open,
                 'no-dark-content': !this.options.auto_dark_theme,
                 'transparent-mode': !!this.options.transparent,
+                [`${this.windowType}-window`]: true,
             }
         },
         transitions() {
@@ -425,6 +430,12 @@ body.dark-mode-reverse {
             --modal-capsule-hov-shadow: 0 4px 16px rgba(180, 180, 180, 0.2);
             --modal-capsule-line-color: rgba(180, 180, 180, 0.6);
 
+            &.no-dark-content {
+                --modal-dark-filter: invert(100%) hue-rotate(180deg) contrast(100%);
+                --modal-body-background-color: #000000;
+            }
+        }
+        &.popout-window {
             &.no-dark-content {
                 --modal-dark-filter: invert(100%) hue-rotate(180deg) contrast(100%);
                 --modal-body-background-color: #000000;

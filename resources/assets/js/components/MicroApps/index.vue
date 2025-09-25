@@ -7,6 +7,7 @@
             :ref="`ref-${app.name}`"
             :size="1200"
             :options="app"
+            :windowType="windowType"
             :beforeClose="onBeforeClose"
             @on-capsule-more="onCapsuleMore"
             @on-popout-window="onPopoutWindow"
@@ -72,8 +73,10 @@
 }
 
 .transparent-mode {
-    .micro-app-loader {
-        background-color: rgba(255, 255, 255, 0.6);
+    &:not(.popout-window) {
+        .micro-app-loader {
+            background-color: rgba(255, 255, 255, 0.6);
+        }
     }
 }
 
