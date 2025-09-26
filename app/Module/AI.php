@@ -319,7 +319,7 @@ class AI
 
     /**
      * 通过 openAI 生成任务标题和描述
-     * @param string $text 任务描述
+     * @param string $text 用户提供的提示词
      * @param array $context 上下文信息
      * @return array
      */
@@ -381,7 +381,7 @@ class AI
                 ],
                 [
                     "role" => "user",
-                    "content" => $contextPrompt . "\n\n请根据以上上下文和以下用户描述生成一个完整的项目任务（包含标题和详细描述）：\n\n" . $text
+                    "content" => $contextPrompt . "\n\n请根据以上上下文并结合以下提示词生成一个完整的项目任务（包含标题和详细描述）：\n\n" . $text
                 ]
             ],
         ]);
@@ -445,7 +445,7 @@ class AI
 
     /**
      * 通过 openAI 生成项目名称与任务列表
-     * @param string $text 项目需求或描述
+     * @param string $text 用户提供的提示词
      * @param array $context 上下文信息
      * @return array
      */
@@ -453,7 +453,7 @@ class AI
     {
         $text = trim((string)$text);
         if ($text === '') {
-            return Base::retError("项目描述不能为空");
+            return Base::retError("项目提示词不能为空");
         }
 
         $context['current_name'] = trim($context['current_name'] ?? '');
@@ -512,7 +512,7 @@ class AI
                 ],
                 [
                     "role" => "user",
-                    "content" => ($contextPrompt ? $contextPrompt . "\n\n" : "") . "请根据以上信息，为以下需求生成适合的项目名称和任务列表：\n\n" . $text
+                    "content" => ($contextPrompt ? $contextPrompt . "\n\n" : "") . "请根据以上信息，并结合以下提示词生成适合的项目名称和任务列表：\n\n" . $text
                 ],
             ],
         ]);
@@ -557,7 +557,7 @@ class AI
 
     /**
      * 通过 openAI 生成聊天消息
-     * @param string $text 消息需求描述
+     * @param string $text 用户提供的提示词
      * @param array $context 上下文信息
      * @return array
      */
@@ -565,7 +565,7 @@ class AI
     {
         $text = trim((string)$text);
         if ($text === '') {
-            return Base::retError("消息需求不能为空");
+            return Base::retError("消息提示词不能为空");
         }
 
         $contextPrompt = self::buildMessageContextPrompt($context);
@@ -593,7 +593,7 @@ class AI
                 ],
                 [
                     "role" => "user",
-                    "content" => ($contextPrompt ? $contextPrompt . "\n\n" : "") . "请根据以上信息，为以下需求生成一条待发送的消息：\n\n" . $text
+                    "content" => ($contextPrompt ? $contextPrompt . "\n\n" : "") . "请根据以上信息，并结合以下提示词生成一条待发送的消息：\n\n" . $text
                 ],
             ],
         ]);
