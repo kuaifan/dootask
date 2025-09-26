@@ -118,7 +118,16 @@
                         <i class="taskfont">&#xe60b;</i>
                         <p>{{$L('没有任何文件')}}</p>
                     </div>
-                    <div v-else class="file-list" @contextmenu.prevent="handleContextmenu">
+                    <div
+                        v-else
+                        class="file-list"
+                        ref="blockFileList"
+                        @contextmenu.prevent="handleContextmenu"
+                        @pointerdown="onFileListPointerDown"
+                        @pointermove="onFileListPointerMove"
+                        @pointerup="onFileListPointerUp"
+                        @pointercancel="onFileListPointerUp"
+                        @pointerleave="onFileListPointerLeave">
                         <ul v-longpress="handleLongpress">
                             <li v-for="item in fileList">
                                 <div
@@ -168,6 +177,10 @@
                                 </div>
                             </li>
                         </ul>
+                        <div
+                            v-if="dragSelecting"
+                            class="file-drag-select"
+                            :style="dragSelectStyle"></div>
                     </div>
                 </template>
                 <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
@@ -574,6 +587,17 @@ export default {
             pasteShow: false,
             pasteFile: [],
             pasteItem: [],
+
+            dragSelecting: false,
+            dragSelectStart: null,
+            dragSelectRect: null,
+            dragSelectStyle: {},
+            dragSelectBase: [],
+            dragSelectPreserve: false,
+            dragSelectContainerSize: null,
+            dragSelectPointerId: null,
+            dragSelectMoved: false,
+            dragSelectPreventClick: false,
         }
     },
 
@@ -785,6 +809,14 @@ export default {
         this.getFileList();
     },
 
+    deactivated() {
+        this.cancelDragSelection();
+    },
+
+    beforeDestroy() {
+        this.cancelDragSelection();
+    },
+
     computed: {
         ...mapState([
             'systemConfig',
@@ -939,6 +971,9 @@ export default {
 
         tableMode(val) {
             $A.IDBSave("fileTableMode", val)
+            if (val === 'table') {
+                this.cancelDragSelection();
+            }
         },
 
         hideShared(val) {
@@ -1071,6 +1106,223 @@ export default {
                 },
                 element: currentTarget
             })
+        },
+
+        onFileListPointerDown(event) {
+            if (this.tableMode === 'table') {
+                return;
+            }
+            const isPrimaryButton = event.button === 0 || event.pointerType === 'touch';
+            if (!isPrimaryButton) {
+                return;
+            }
+            const container = this.$refs.blockFileList;
+            if (!container) {
+                return;
+            }
+            let element = event.target;
+            let onFileItem = false;
+            while (element && element !== container) {
+                if (element.classList) {
+                    if (element.classList.contains('file-menu') || element.classList.contains('file-check') || element.tagName === 'INPUT' || element.tagName === 'BUTTON') {
+                        return;
+                    }
+                }
+                if (element.classList && element.classList.contains('file-item')) {
+                    onFileItem = true;
+                    break;
+                }
+                element = element.parentNode;
+            }
+            if (onFileItem) {
+                return;
+            }
+            this.dragSelectMoved = false;
+            this.dragSelectPreventClick = false;
+            if (this.contextMenuVisible) {
+                this.handleClickContextMenuOutside();
+            }
+            const containerRect = container.getBoundingClientRect();
+            const scrollLeft = container.scrollLeft;
+            const scrollTop = container.scrollTop;
+            const start = {
+                x: event.clientX - containerRect.left + scrollLeft,
+                y: event.clientY - containerRect.top + scrollTop,
+            };
+            this.dragSelecting = true;
+            this.dragSelectStart = start;
+            this.dragSelectRect = {
+                left: start.x,
+                top: start.y,
+                width: 0,
+                height: 0,
+            };
+            this.dragSelectStyle = {
+                left: `${start.x - scrollLeft}px`,
+                top: `${start.y - scrollTop}px`,
+                width: '0px',
+                height: '0px',
+            };
+            this.dragSelectContainerSize = {
+                width: container.scrollWidth,
+                height: container.scrollHeight,
+            };
+            this.dragSelectPreserve = event.ctrlKey || event.metaKey;
+            this.dragSelectBase = this.dragSelectPreserve ? this.selectedItems.map(item => ({...item})) : [];
+            if (!this.dragSelectPreserve && this.selectedItems.length > 0) {
+                this.selectedItems = [];
+            }
+            if (event.pointerId !== undefined) {
+                try {
+                    container.setPointerCapture(event.pointerId);
+                    this.dragSelectPointerId = event.pointerId;
+                } catch (e) {}
+            }
+            event.preventDefault();
+        },
+
+        onFileListPointerMove(event) {
+            if (!this.dragSelecting || !this.dragSelectStart) {
+                return;
+            }
+            event.preventDefault();
+            const container = this.$refs.blockFileList;
+            if (!container) {
+                return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            const scrollLeft = container.scrollLeft;
+            const scrollTop = container.scrollTop;
+            const sizeInfo = this.dragSelectContainerSize || {
+                width: container.scrollWidth,
+                height: container.scrollHeight,
+            };
+            const currentX = Math.min(Math.max(event.clientX - containerRect.left + scrollLeft, 0), sizeInfo.width);
+            const currentY = Math.min(Math.max(event.clientY - containerRect.top + scrollTop, 0), sizeInfo.height);
+            const start = this.dragSelectStart;
+            const left = Math.min(start.x, currentX);
+            const top = Math.min(start.y, currentY);
+            const width = Math.abs(start.x - currentX);
+            const height = Math.abs(start.y - currentY);
+            const rect = {left, top, width, height};
+            this.dragSelectRect = rect;
+            this.dragSelectStyle = {
+                left: `${left - scrollLeft}px`,
+                top: `${top - scrollTop}px`,
+                width: `${width}px`,
+                height: `${height}px`,
+            };
+            if (!this.dragSelectMoved && (width > 3 || height > 3)) {
+                this.dragSelectMoved = true;
+            }
+            this.updateDragSelection(rect);
+        },
+
+        onFileListPointerUp() {
+            if (this.dragSelecting && this.dragSelectRect) {
+                this.updateDragSelection(this.dragSelectRect);
+            }
+            const moved = this.dragSelectMoved;
+            this.cancelDragSelection();
+            if (moved) {
+                this.dragSelectPreventClick = true;
+                setTimeout(() => {
+                    this.dragSelectPreventClick = false;
+                }, 0);
+            }
+        },
+
+        onFileListPointerLeave(event) {
+            if (!this.dragSelecting) {
+                return;
+            }
+            if (event.pointerId !== undefined && this.dragSelectPointerId !== event.pointerId) {
+                return;
+            }
+            this.onFileListPointerUp();
+        },
+
+        updateDragSelection(rect) {
+            const container = this.$refs.blockFileList;
+            if (!container || !rect) {
+                return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            const scrollLeft = container.scrollLeft;
+            const scrollTop = container.scrollTop;
+            const selectionBounds = {
+                left: rect.left,
+                top: rect.top,
+                right: rect.left + rect.width,
+                bottom: rect.top + rect.height,
+            };
+            const fileMap = new Map(this.fileList.map(file => [String(file.id), file]));
+            const next = [];
+            const seen = new Set();
+
+            this.dragSelectBase.forEach(item => {
+                const key = String(item.id);
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    next.push(item);
+                }
+            });
+
+            Array.from(container.querySelectorAll('.file-item')).forEach(el => {
+                const key = el.dataset ? el.dataset.id || el.getAttribute('data-id') : el.getAttribute('data-id');
+                if (!key || seen.has(String(key))) {
+                    return;
+                }
+                const elRect = el.getBoundingClientRect();
+                const bounds = {
+                    left: elRect.left - containerRect.left + scrollLeft,
+                    top: elRect.top - containerRect.top + scrollTop,
+                    right: elRect.right - containerRect.left + scrollLeft,
+                    bottom: elRect.bottom - containerRect.top + scrollTop,
+                };
+                if (!this.rectsIntersect(bounds, selectionBounds)) {
+                    return;
+                }
+                const file = fileMap.get(String(key));
+                if (!file) {
+                    return;
+                }
+                seen.add(String(key));
+                next.push({
+                    id: file.id,
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                });
+            });
+
+            this.selectedItems = next;
+        },
+
+        rectsIntersect(a, b) {
+            if (!a || !b) {
+                return false;
+            }
+            return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+        },
+
+        cancelDragSelection() {
+            this.dragSelecting = false;
+            this.dragSelectStart = null;
+            this.dragSelectRect = null;
+            this.dragSelectStyle = {};
+            this.dragSelectBase = [];
+            this.dragSelectPreserve = false;
+            this.dragSelectContainerSize = null;
+            const container = this.$refs.blockFileList;
+            if (container && this.dragSelectPointerId !== null && container.hasPointerCapture && container.hasPointerCapture(this.dragSelectPointerId)) {
+                try {
+                    container.releasePointerCapture(this.dragSelectPointerId);
+                } catch (e) {}
+            }
+            this.dragSelectPointerId = null;
+            this.dragSelectMoved = false;
+            this.dragSelectPreventClick = false;
         },
 
         handleContextmenu(event) {
@@ -1217,6 +1469,9 @@ export default {
         },
 
         dropFile(item, command) {
+            if (this.dragSelectPreventClick && ['open', 'openCheckMenu', 'select'].includes(command)) {
+                return;
+            }
             switch (command) {
                 case 'open':
                 case 'openCheckMenu':

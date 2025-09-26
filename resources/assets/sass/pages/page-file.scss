@@ -350,6 +350,7 @@
             }
             .file-list {
                 flex: 1;
+                position: relative;
                 padding: 0 20px 20px;
                 margin-top: 16px;
                 overflow: auto;
@@ -486,6 +487,13 @@
                             }
                         }
                     }
+                }
+                .file-drag-select {
+                    position: absolute;
+                    border: 1px dashed #0bc037;
+                    background-color: rgba(10, 191, 56, 0.12);
+                    pointer-events: none;
+                    z-index: 2;
                 }
             }
             .drag-over {
