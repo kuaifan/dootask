@@ -511,6 +511,28 @@
     flex-direction: column;
     position: relative;
 
+    .chat-emoji-delete-btn {
+        position: absolute;
+        right: 12px;
+        bottom: 60px;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: #eee;
+        color: #666;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        outline: none;
+
+        > svg {
+            width: 24px;
+            height: 24px;
+        }
+    }
+
     .chat-emoji-emosearch {
         flex-shrink: 0;
         padding: 8px 8px 0;
@@ -1298,6 +1320,10 @@ body.window-portrait {
                         height: 50px;
                         line-height: 50px;
                         font-size: 28px;
+
+                        &.delete-placeholder {
+                            height: 60px;
+                        }
                     }
                     &.emosearch,
                     &.emoticon {

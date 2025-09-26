@@ -227,7 +227,12 @@
         </div>
 
         <!-- 移动端表情（底部） -->
-        <ChatEmoji v-if="emojiBottom && showEmoji" @on-select="onSelectEmoji" :searchKey="emojiQuickKey"/>
+        <ChatEmoji
+            v-if="emojiBottom && showEmoji"
+            @on-select="onSelectEmoji"
+            @on-delete="onEmojiDelete"
+            :searchKey="emojiQuickKey"
+            showEmojiDelete/>
 
         <!-- 录音浮窗 -->
         <transition name="fade">
@@ -414,6 +419,7 @@ export default {
             quill: null,
             isFocus: false,
             rangeIndex: 0,
+            rangeLength: 0,
             _content: '',
             _options: {},
 
@@ -868,9 +874,13 @@ export default {
                 if (this.quill) {
                     const range = this.quill.selection.savedRange;
                     this.rangeIndex = range ? range.index : 0
+                    this.rangeLength = range ? range.length : 0
                 }
-            } else if (this.rangeIndex > 0) {
-                this.quill.setSelection(this.rangeIndex)
+            } else {
+                this.rangeLength = 0;
+                if (this.rangeIndex > 0) {
+                    this.quill.setSelection(this.rangeIndex)
+                }
             }
         },
 
@@ -1741,6 +1751,8 @@ export default {
             if (item.type === 'emoji') {
                 this.quill.insertText(this.rangeIndex, item.text);
                 this.rangeIndex += item.text.length
+                this.rangeLength = 0;
+                this.quill.setSelection(this.rangeIndex, 0, 'silent');
                 if (this.windowLandscape && !this.isModKey) {
                     this.showEmoji = false;
                 }
@@ -1753,6 +1765,58 @@ export default {
                     this.showEmoji = false;
                 }
             }
+        },
+
+        onEmojiDelete() {
+            if (!this.quill) {
+                return;
+            }
+            const savedRange = this.quill.selection?.savedRange || this.quill.getSelection();
+            if (savedRange && typeof savedRange.index === 'number') {
+                this.rangeIndex = savedRange.index;
+                this.rangeLength = savedRange.length || 0;
+            }
+            if (this.rangeLength > 0) {
+                this.quill.deleteText(this.rangeIndex, this.rangeLength);
+                this.rangeLength = 0;
+            } else if (this.rangeIndex > 0) {
+                const deleteLength = this.getPreviousGraphemeLength(this.rangeIndex);
+                if (deleteLength > 0) {
+                    this.quill.deleteText(this.rangeIndex - deleteLength, deleteLength);
+                    this.rangeIndex -= deleteLength;
+                }
+            }
+            this.quill.setSelection(this.rangeIndex, 0, 'silent');
+        },
+
+        getPreviousGraphemeLength(index) {
+            if (!this.quill || index <= 0) {
+                return 0;
+            }
+            const textBeforeCursor = this.quill.getText(0, index);
+            if (!textBeforeCursor) {
+                return 0;
+            }
+            if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+                if (!this.graphemeSegmenter) {
+                    this.graphemeSegmenter = new Intl.Segmenter(undefined, {granularity: 'grapheme'});
+                }
+                let lastSegment;
+                for (const segment of this.graphemeSegmenter.segment(textBeforeCursor)) {
+                    lastSegment = segment;
+                }
+                if (lastSegment && lastSegment.segment) {
+                    return lastSegment.segment.length;
+                }
+            }
+            const fallbackWindow = Math.min(index, 8);
+            const fallbackText = this.quill.getText(index - fallbackWindow, fallbackWindow);
+            if (!fallbackText) {
+                return 0;
+            }
+            const fallbackGraphemes = Array.from(fallbackText);
+            const lastGrapheme = fallbackGraphemes.pop();
+            return lastGrapheme ? lastGrapheme.length : 0;
         },
 
         onToolbar(action) {

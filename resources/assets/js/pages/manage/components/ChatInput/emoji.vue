@@ -16,12 +16,25 @@
             </div>
             <Scrollbar>
                 <ul :class="[type, 'no-dark-content']">
-                    <li v-for="item in list" @click="onSelect($event, item)">
+                    <li v-for="(item, index) in list" :key="index" @click="onSelect($event, item)">
                         <Imgs v-if="item.type === 'emoticon'" :src="item.src" :title="item.name" :alt="item.name"/>
                         <span v-else v-html="item.html" :title="item.name"></span>
                     </li>
+                    <template v-if="type === 'emoji'">
+                        <li class="delete-placeholder"></li>
+                        <li class="delete-placeholder"></li>
+                    </template>
                 </ul>
             </Scrollbar>
+        </div>
+        <div
+            v-if="showEmojiDelete && type === 'emoji'"
+            class="chat-emoji-delete-btn"
+            @click="onDelete">
+            <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="64" height="64" stroke="currentColor" fill="currentColor">
+                <path d="M889.202 167.878H343.626c-22.574 0-45.15 11.28-60.202 26.322L76.484 457.442c-22.576 30.084-22.576 67.688 0 94.016l206.94 263.236c15.052 18.802 37.628 30.084 60.202 30.084h545.572c41.39 0 75.252-33.842 75.252-75.208V243.092c-0.002-41.37-33.864-75.214-75.248-75.214z m3.76 601.69H347.39l-206.94-263.24 203.176-263.236h549.336v526.476z"></path>
+                <path d="M410.164 641.746c0 11.292 3.764 18.822 11.306 26.352 15.07 11.292 33.918 11.292 45.224 0l113.06-112.934 113.058 112.934c7.536 3.766 11.306 7.526 22.612 7.526s18.842-7.526 22.612-11.292c3.77-7.53 7.536-15.06 7.536-22.588 0-7.53 0-15.06-7.536-22.586l-113.058-112.94 113.058-112.934c3.77-3.766 7.536-11.296 7.536-18.822 0-15.062-15.072-26.352-22.612-30.118l-3.766-3.764h-3.77c-7.536 0-15.076 0-22.612 7.53l-113.058 112.934-116.83-120.466c-3.77-3.766-11.306-7.532-18.842-7.532-11.306 0-18.846 3.766-26.382 11.296-3.766 7.532-7.536 15.056-7.536 22.588 0 11.296 3.764 18.822 7.536 22.588l113.06 120.466-113.06 112.934c-3.766 3.772-7.536 11.298-7.536 18.828z"></path>
+            </svg>
         </div>
         <div v-if="!onlyEmoji" class="chat-emoji-menu-wrap">
             <span v-show="showEmojiMenuScrollLeftBtn" class="left-btn" @click="onEmojiMenuScroll('left')"><i class="taskfont">&#xe72d;</i></span>
@@ -32,7 +45,7 @@
                 <li :class="{active: type === 'emoji'}" @click="type='emoji'">
                     <span class="no-dark-content">&#128512;</span>
                 </li>
-                <li v-for="item in emoticonData" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
+                <li v-for="(item, index) in emoticonData" :key="index" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
                     <Imgs :title="item.name" :alt="item.name" :src="item.src"/>
                 </li>
             </ul>
@@ -50,6 +63,11 @@ export default {
             default: ''
         },
         onlyEmoji: {
+            type: Boolean,
+            default: false
+        },
+        // 是否显示 emoji 删除按钮
+        showEmojiDelete: {
             type: Boolean,
             default: false
         }
@@ -220,6 +238,10 @@ export default {
             } else {
                 this.$emit('on-select', item)
             }
+        },
+
+        onDelete() {
+            this.$emit('on-delete');
         },
 
         onMonitorWheel() {
