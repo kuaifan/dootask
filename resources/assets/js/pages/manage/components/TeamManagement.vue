@@ -962,6 +962,46 @@ export default {
                 });
             },
             immediate: true
+        },
+        'departmentEditData.department': {
+            handler(value, oldValue = []) {
+                if (!Array.isArray(value) || value.length === 0 || this.departmentList.length === 0) {
+                    return;
+                }
+
+                const previous = Array.isArray(oldValue) ? new Set(oldValue) : new Set();
+                const selected = new Set(value);
+
+                const hasNewSelection = Array.from(selected).some(id => !previous.has(id));
+                if (!hasNewSelection) {
+                    return;
+                }
+
+                const departmentMap = this.departmentList.reduce((acc, item) => {
+                    acc[item.id] = item;
+                    return acc;
+                }, {});
+
+                const needAdd = new Set();
+
+                value.forEach((id) => {
+                    let cursor = departmentMap[id];
+                    while (cursor && cursor.parent_id && cursor.parent_id > 0) {
+                        if (!selected.has(cursor.parent_id)) {
+                            needAdd.add(cursor.parent_id);
+                        }
+                        cursor = departmentMap[cursor.parent_id];
+                    }
+                });
+
+                if (needAdd.size > 0) {
+                    const merged = Array.from(new Set([...value, ...needAdd])).sort((a, b) => a - b);
+                    if (merged.length !== value.length || merged.some((id, index) => id !== value[index])) {
+                        this.$set(this.departmentEditData, 'department', merged);
+                    }
+                }
+            },
+            deep: true
         }
     },
     computed: {
