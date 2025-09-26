@@ -79,11 +79,7 @@
                                 :data-id="dialog.id"
                                 data-type="dialog"
                                 :class="dialogClass(dialog)"
-                                @click="openDialog({
-                                    dialog_id: dialog.id,
-                                    dialog_msg_id: dialog.search_msg_id,
-                                    search_msg_id: dialog.search_msg_id,
-                                })"
+                                @click="handleDialogSelect(dialog)"
                                 @pointerdown="handleOperation"
                                 :style="{'background-color':dialog.color}">
                                 <template v-if="dialog.type=='group'">
@@ -310,6 +306,7 @@ export default {
             dialogSearchLoad: 0,
             dialogSearchKey: '',
             dialogSearchList: [],
+            dialogSearchSelectedParams: null,
 
             dialogActive: '',
             dialogMenus: navDatas.menus,
@@ -582,6 +579,7 @@ export default {
             }
             //
             this.dialogSearchList = [];
+            this.dialogSearchSelectedParams = null;
             if (val == '') {
                 return
             }
@@ -620,6 +618,7 @@ export default {
                     } else {
                         this.updateContactsList(1000);
                     }
+                    this.dialogSearchSelectedParams = null;
                 } else {
                     this.updateDialogs(1000);
                     this.scrollToNav();
@@ -639,6 +638,7 @@ export default {
 
         dialogActive(active) {
             this.dialogSearchList = [];
+            this.dialogSearchSelectedParams = null;
             if (active == 'mark' && !this.dialogSearchKey) {
                 this.searchTagDialog()
             }
@@ -729,15 +729,37 @@ export default {
         },
 
         dialogClass(dialog) {
-            if (this.dialogSearchKey) {
-                return null
-            }
+            const selected = this.dialogSearchSelectedParams;
+            const hasSearchSelection = !!selected && (!!this.dialogSearchKey || dialog.is_search);
+            const selectedMsgId = selected ? (typeof selected.search_msg_id === 'undefined' ? null : selected.search_msg_id) : null;
+            const dialogSearchMsgId = typeof dialog.search_msg_id === 'undefined' ? null : dialog.search_msg_id;
+            const matchesSelection = hasSearchSelection && dialog.id == selected.dialog_id && dialogSearchMsgId == selectedMsgId;
+            const openedSelection = matchesSelection && this.dialogId == selected.dialog_id && (selectedMsgId == null || this.dialogMsgId == selectedMsgId);
             return {
-                top: dialog.top_at,
-                active: dialog.id == this.dialogId && (dialog.search_msg_id == this.dialogMsgId || !this.dialogMsgId),
-                operate: this.operateVisible && this.operateType === 'dialog' && dialog.id == this.operateItem.id,
+                top: !this.dialogSearchKey && dialog.top_at,
+                active: hasSearchSelection ? openedSelection : dialog.id == this.dialogId && (dialog.search_msg_id == this.dialogMsgId || !this.dialogMsgId || dialog.is_search),
+                operate: !this.dialogSearchKey && this.operateVisible && this.operateType === 'dialog' && dialog.id == this.operateItem.id,
                 completed: $A.dialogCompleted(dialog)
             }
+        },
+
+        handleDialogSelect(dialog) {
+            if (this.operateVisible) {
+                return
+            }
+            if (this.dialogSearchKey || dialog.is_search) {
+                this.dialogSearchSelectedParams = {
+                    dialog_id: dialog.id,
+                    search_msg_id: typeof dialog.search_msg_id === 'undefined' ? null : dialog.search_msg_id,
+                }
+            } else {
+                this.dialogSearchSelectedParams = null
+            }
+            this.openDialog({
+                dialog_id: dialog.id,
+                dialog_msg_id: dialog.search_msg_id,
+                search_msg_id: dialog.search_msg_id,
+            })
         },
 
         dialogSort(a, b) {
