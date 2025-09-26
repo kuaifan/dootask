@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~element-sea/*": ["node_modules/element-sea/*"],
+      "~quill-hi/*": ["node_modules/quill-hi/*"],
+      "~quill-mention-hi/*": ["node_modules/quill-mention-hi/*"]
+    },
+    "moduleResolution": "node",
+    "module": "ESNext",
+    "target": "ES2019",
+    "allowJs": true,
+    "checkJs": false,
+    "jsx": "preserve",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "types": []
+  },
+  "include": [
+    "resources/assets/js/**/*",
+    "resources/assets/**/*.vue",
+    "resources/assets/sass/**/*",
+    "electron/**/*.js",
+    "types/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "vendor",
+    "storage",
+    "public",
+    "tests",
+    "docker",
+    "language",
+    "database",
+    "bin"
+  ]
+}

@@ -3,7 +3,7 @@
         <p>{{$L(msg.title)}}</p>
         <p>&nbsp;</p>
 
-        <p v-for="item in msg.list">
+        <p v-for="(item, index) in msg.list" :key="index">
             <span class="mention task" :data-id="item.id">#{{item.name}}</span>
         </p>
     </div>
