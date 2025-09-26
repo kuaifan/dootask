@@ -859,6 +859,9 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                                     config.value = val;
                                 },
                                 'on-enter': (e) => {
+                                    if (inputProps.type === 'textarea') {
+                                        return;
+                                    }
                                     $A(e.target).parents(".ivu-modal-body").find(".ivu-btn-primary").click();
                                 }
                             }
