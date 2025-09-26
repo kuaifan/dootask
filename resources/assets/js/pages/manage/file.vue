@@ -146,7 +146,16 @@
                                     <div class="file-menu" @click.stop="handleRightClick($event, item)">
                                         <Icon type="ios-more" />
                                     </div>
-                                    <div :class="`no-dark-before file-icon ${item.type}${item.share ? ' share' : ''}`">
+                                    <div :class="fileBlockIconClasses(item)">
+                                        <div v-if="item._thumbnail && !item._thumbError" class="file-thumb">
+                                            <img
+                                                :src="item._thumbnail.src"
+                                                :width="item._thumbnail.width"
+                                                :height="item._thumbnail.height"
+                                                alt=""
+                                                @load.stop="handleThumbLoad(item)"
+                                                @error.stop="handleThumbError(item)"/>
+                                        </div>
                                         <template v-if="item.share">
                                             <UserAvatarTip v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
                                                 <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
@@ -471,6 +480,7 @@
 <script>
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
+import {isImageFile} from "../../utils/file";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import longpress from "../../directives/longpress";
 import UserSelect from "../../components/UserSelect.vue";
@@ -598,6 +608,8 @@ export default {
             dragSelectPointerId: null,
             dragSelectMoved: false,
             dragSelectPreventClick: false,
+
+            thumbnailErrorMap: {},
         }
     },
 
@@ -874,6 +886,15 @@ export default {
             }));
             return list.map(item => {
                 item._checked = selectedItems.some(({id}) => id === item.id)
+                item._thumbnail = this.createBlockThumbnail(item)
+                if (item._thumbnail) {
+                    item._thumbError = !!this.thumbnailErrorMap[item.id]
+                } else {
+                    if (this.thumbnailErrorMap[item.id]) {
+                        this.$delete(this.thumbnailErrorMap, item.id)
+                    }
+                    item._thumbError = undefined
+                }
                 return item;
             })
         },
@@ -1038,6 +1059,77 @@ export default {
     },
 
     methods: {
+        fileBlockIconClasses(item) {
+            const classes = ['no-dark-before', 'file-icon'];
+            if (item && item.type) {
+                classes.push(item.type);
+            } else {
+                classes.push('file');
+            }
+            if (item && item.share) {
+                classes.push('share');
+            }
+            if (item && item._thumbnail && !item._thumbError) {
+                classes.push('has-thumb');
+            }
+            return classes;
+        },
+
+        createBlockThumbnail(item) {
+            if (!item || item.type === 'folder') {
+                return null;
+            }
+            if (!item.image_url || !isImageFile(item)) {
+                return null;
+            }
+
+            const size = 80;
+            const widthValue = Number(item.image_width || item.width);
+            const heightValue = Number(item.image_height || item.height);
+            const hasValidSize = Number.isFinite(widthValue) && widthValue > 0 && Number.isFinite(heightValue) && heightValue > 0;
+
+            if (!hasValidSize) {
+                return {
+                    src: item.image_url,
+                    width: null,
+                    height: null,
+                };
+            }
+
+            const cropWidth = Math.max(Math.round(size * 3), size);
+            const handled = $A.imageRatioHandle({
+                src: item.image_url,
+                width: widthValue,
+                height: heightValue,
+                crops: {ratio: 1, percentage: `${cropWidth}x0`},
+                scaleSize: size,
+            }) || {};
+
+            return {
+                src: handled.src || item.image_url,
+                width: handled.width || Math.min(widthValue, size),
+                height: handled.height || Math.min(heightValue, size),
+            };
+        },
+
+        handleThumbError(item) {
+            if (!item) {
+                return;
+            }
+            this.$set(this.thumbnailErrorMap, item.id, true);
+            this.$set(item, '_thumbError', true);
+        },
+
+        handleThumbLoad(item) {
+            if (!item) {
+                return;
+            }
+            if (this.thumbnailErrorMap[item.id]) {
+                this.$delete(this.thumbnailErrorMap, item.id);
+            }
+            this.$set(item, '_thumbError', false);
+        },
+
         getFileList() {
             if (this.routeName !== 'manage-file') {
                 return;

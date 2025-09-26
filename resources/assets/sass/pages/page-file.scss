@@ -450,6 +450,33 @@
                                 right: 0;
                                 bottom: 0;
                             }
+                            &.has-thumb {
+                                overflow: hidden;
+                                border-radius: 8px;
+                                &:before {
+                                    display: none;
+                                }
+                            }
+                            .file-thumb {
+                                position: absolute;
+                                top: 50%;
+                                left: 50%;
+                                width: 72%;
+                                height: 72%;
+                                transform: translate(-50%, -50%);
+                                border-radius: 6px;
+                                overflow: hidden;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                img {
+                                    width: 100%;
+                                    height: 100%;
+                                    object-fit: cover;
+                                    border-radius: inherit;
+                                    display: block;
+                                }
+                            }
                             .share-icon,
                             .share-avatar {
                                 position: absolute;
