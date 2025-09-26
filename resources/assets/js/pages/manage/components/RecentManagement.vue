@@ -46,6 +46,7 @@
 
 <script>
 import {mapState} from "vuex";
+import {openFileInClient} from "../../../utils/file";
 
 export default {
     name: "RecentManagement",
@@ -251,45 +252,22 @@ export default {
                     this.$store.dispatch('openTask', row);
                     break;
                 case 'file':
-                    this.openWindow(`/single/file/${row.id}`, row.name, `file-${row.id}`, row.size);
+                    openFileInClient(this, row);
                     break;
                 case 'task_file':
-                    this.openWindow(`/single/file/task/${row.id}`, row.name, `file-task-${row.id}`, row.size);
+                    openFileInClient(this, row, {
+                        path: `/single/file/task/${row.id}`,
+                        windowName: `file-task-${row.id}`,
+                        title: row.name,
+                    });
                     break;
                 case 'message_file':
-                    this.openWindow(`/single/file/msg/${row.id}`, row.name, `file-msg-${row.id}`, row.size);
+                    openFileInClient(this, row, {
+                        path: `/single/file/msg/${row.id}`,
+                        windowName: `file-msg-${row.id}`,
+                        title: row.name,
+                    });
                     break;
-            }
-        },
-        openWindow(path, title, name, size) {
-            const text = title || this.$L('查看');
-            const finalTitle = size ? `${text} (${$A.bytesToSize(size)})` : text;
-            if (this.$Electron) {
-                this.$store.dispatch('openChildWindow', {
-                    name,
-                    path,
-                    userAgent: "/hideenOfficeTitle/",
-                    force: false,
-                    config: {
-                        title: finalTitle,
-                        titleFixed: true,
-                        parent: null,
-                        width: Math.min(window.screen.availWidth, 1440),
-                        height: Math.min(window.screen.availHeight, 900),
-                    },
-                });
-            } else if (this.$isEEUIApp) {
-                this.$store.dispatch('openAppChildPage', {
-                    pageType: 'app',
-                    pageTitle: finalTitle,
-                    url: 'web.js',
-                    params: {
-                        titleFixed: true,
-                        url: $A.urlReplaceHash(path)
-                    },
-                });
-            } else {
-                window.open($A.mainUrl(path.substring(1)));
             }
         },
         removeItem(row) {

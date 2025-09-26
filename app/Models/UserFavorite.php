@@ -253,12 +253,23 @@ class UserFavorite extends AbstractModel
             foreach ($favorites->items() as $favorite) {
                 if ($favorite->favoritable_type === self::TYPE_FILE && isset($files[$favorite->favoritable_id])) {
                     $file = $files[$favorite->favoritable_id];
+                    $fileData = File::handleImageUrl(array_merge(
+                        $file->only(['id', 'ext']),
+                        [
+                            'name' => $file->name,
+                            'size' => $file->size,
+                            'pid' => $file->pid,
+                        ]
+                    ));
                     $data['files'][] = [
                         'id' => $file->id,
                         'name' => $file->name,
                         'ext' => $file->ext,
                         'size' => $file->size,
                         'pid' => $file->pid,
+                        'image_url' => $fileData['image_url'] ?? null,
+                        'image_width' => $fileData['image_width'] ?? null,
+                        'image_height' => $fileData['image_height'] ?? null,
                         'favorited_at' => Carbon::parse($favorite->created_at)->format('Y-m-d H:i:s'),
                         'remark' => $favorite->remark,
                     ];

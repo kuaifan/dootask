@@ -59,6 +59,7 @@
 <script>
 import SearchButton from "../../../components/SearchButton.vue";
 import QuickEdit from "../../../components/QuickEdit.vue";
+import {openFileInClient, previewImageFromList} from "../../../utils/file";
 
 export default {
     name: "FavoriteManagement",
@@ -329,6 +330,9 @@ export default {
                             ext: file.ext,
                             size: file.size,
                             pid: file.pid,
+                            image_url: file.image_url,
+                            image_width: file.image_width,
+                            image_height: file.image_height,
                             favorited_at: file.favorited_at,
                             remark: file.remark || '',
                         });
@@ -385,19 +389,10 @@ export default {
                     this.$emit('on-close');
                     break;
                 case 'file':
-                    this.$router.push({
-                        name: 'manage-file',
-                        params: {
-                            folderId: item.pid || 0,
-                            fileId: null,
-                            shakeId: item.id
-                        }
-                    });
-                    this.$store.state.fileShakeId = item.id;
-                    setTimeout(() => {
-                        this.$store.state.fileShakeId = 0;
-                    }, 600);
-                    this.$emit('on-close');
+                    if (previewImageFromList(this, this.allData, item)) {
+                        break;
+                    }
+                    openFileInClient(this, item);
                     break;
                 case 'message':
                     this.$store.dispatch("openDialog", item.dialog_id).then(() => {
