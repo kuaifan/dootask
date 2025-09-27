@@ -456,14 +456,6 @@ export default {
                                 this.submitNewContent();
                             }
                         });
-                        editor.on('KeyDown', (e) => {
-                            if (e.metaKey || e.ctrlKey) {
-                                if (e.keyCode === 83) {
-                                    e.preventDefault();
-                                    this.$emit('editorSave', e);
-                                }
-                            }
-                        });
                         editor.on('Change', (e) => {
                             if (this.editor !== null) {
                                 if (this.getContent() !== this.value) {
