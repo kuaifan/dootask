@@ -44,6 +44,7 @@ use App\Models\ProjectTaskFlowChange;
 use App\Models\ProjectTaskVisibilityUser;
 use App\Models\ProjectTaskTemplate;
 use App\Models\ProjectTag;
+use App\Models\ProjectTaskRelation;
 
 /**
  * @apiDefine project
@@ -1750,6 +1751,112 @@ class ProjectController extends AbstractController
         $data['column_name'] = $task->projectColumn?->name;
         $data['visibility_appointor'] = $task->visibility == 1 ? [0] : ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid');
         return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/project/task/related          25.1 获取任务关联任务列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__related
+     *
+     * @apiParam {Number} task_id               任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__related()
+    {
+        User::auth();
+        $task_id = intval(Request::input('task_id'));
+        if ($task_id <= 0) {
+            return Base::retError('参数错误', ['task_id' => $task_id]);
+        }
+
+        $task = ProjectTask::userTask($task_id, null);
+
+        $relations = ProjectTaskRelation::whereTaskId($task->id)
+            ->orderByDesc('updated_at')
+            ->limit(100)
+            ->get();
+
+        if ($relations->isEmpty()) {
+            return Base::retSuccess('success', [
+                'task_id' => $task->id,
+                'list' => [],
+            ]);
+        }
+
+        $relatedTaskIds = $relations->pluck('related_task_id')->unique()->values();
+        $relatedTasks = [];
+        foreach ($relatedTaskIds as $relatedId) {
+            try {
+                $relatedTask = ProjectTask::userTask($relatedId, null, true, ['project', 'projectColumn']);
+
+                $flowItemParts = explode('|', $relatedTask->flow_item_name ?: '');
+                $flowItemStatus = $flowItemParts[0] ?? '';
+                $flowItemName = $flowItemParts[1] ?? $relatedTask->flow_item_name;
+                $flowItemColor = $flowItemParts[2] ?? '';
+
+                $relatedTask->flow_item_status = $flowItemStatus;
+                $relatedTask->flow_item_name = $flowItemName;
+                $relatedTask->flow_item_color = $flowItemColor;
+
+                $relatedTasks[$relatedTask->id] = $relatedTask;
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
+
+        $list = [];
+        foreach ($relations as $relation) {
+            $relatedTask = $relatedTasks[$relation->related_task_id] ?? null;
+            if (!$relatedTask) {
+                continue;
+            }
+
+            if (!isset($list[$relation->related_task_id])) {
+                $list[$relation->related_task_id] = [
+                    'task_id' => $relation->task_id,
+                    'related_task_id' => $relation->related_task_id,
+                    'mention' => false,
+                    'mentioned_by' => false,
+                    'latest_msg_id' => $relation->msg_id,
+                    'latest_at' => $relation->updated_at?->toDateTimeString(),
+                    'task' => [
+                        'id' => $relatedTask->id,
+                        'name' => $relatedTask->name,
+                        'project_id' => $relatedTask->project_id,
+                        'project_name' => $relatedTask->project?->name,
+                        'column_id' => $relatedTask->column_id,
+                        'column_name' => $relatedTask->projectColumn?->name,
+                        'complete_at' => $relatedTask->complete_at?->toDateTimeString(),
+                        'archived_at' => $relatedTask->archived_at?->toDateTimeString(),
+                        'flow_item_name' => $relatedTask->flow_item_name,
+                        'flow_item_status' => $relatedTask->flow_item_status,
+                        'flow_item_color' => $relatedTask->flow_item_color,
+                    ],
+                ];
+            }
+
+            if ($relation->direction === ProjectTaskRelation::DIRECTION_MENTION) {
+                $list[$relation->related_task_id]['mention'] = true;
+            } elseif ($relation->direction === ProjectTaskRelation::DIRECTION_MENTIONED_BY) {
+                $list[$relation->related_task_id]['mentioned_by'] = true;
+            }
+
+            if ($relation->updated_at && ($list[$relation->related_task_id]['latest_at'] === null || Carbon::parse($list[$relation->related_task_id]['latest_at'])->lt($relation->updated_at))) {
+                $list[$relation->related_task_id]['latest_at'] = $relation->updated_at->toDateTimeString();
+                $list[$relation->related_task_id]['latest_msg_id'] = $relation->msg_id;
+            }
+        }
+
+        return Base::retSuccess('success', [
+            'task_id' => $task->id,
+            'list' => array_values($list),
+        ]);
     }
 
     /**

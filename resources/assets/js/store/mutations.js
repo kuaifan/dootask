@@ -78,6 +78,27 @@ export default {
         }
     },
 
+    'task/related/save': function(state, {taskId, list, updatedAt = Date.now()}) {
+        const cache = Object.assign({}, state.taskRelatedCache);
+        cache[taskId] = {
+            list,
+            updated_at: updatedAt,
+        };
+        state.taskRelatedCache = cache;
+        $A.IDBSave("taskRelatedCache", state.taskRelatedCache, 600)
+    },
+
+    'task/related/clear': function(state, taskId) {
+        if (typeof taskId === 'number' || typeof taskId === 'string') {
+            const cache = Object.assign({}, state.taskRelatedCache);
+            delete cache[taskId];
+            state.taskRelatedCache = cache;
+        } else {
+            state.taskRelatedCache = {};
+        }
+        $A.IDBSave("taskRelatedCache", state.taskRelatedCache, 600)
+    },
+
     // 对话管理
     'dialog/push': function(state, data) {
         state.cacheDialogs.push(data)

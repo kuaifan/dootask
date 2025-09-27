@@ -1560,8 +1560,9 @@ class ProjectTask extends AbstractModel
      * @param string $action
      * @param array|self $data      发送内容，默认为[id, parent_id, project_id, column_id, dialog_id]
      * @param array $userid         指定会员，默认为项目所有成员
+     * @param bool $ignoreSelf      是否忽略当前连接
      */
-    public function pushMsg($action, $data = null, $userid = null)
+    public function pushMsg($action, $data = null, $userid = null, $ignoreSelf = true)
     {
         if (!$this->project) {
             return;
@@ -1573,6 +1574,7 @@ class ProjectTask extends AbstractModel
                 'project_id' => $this->project_id,
                 'column_id' => $this->column_id,
                 'dialog_id' => $this->dialog_id,
+                'visibility' => $this->visibility,
             ];
         } elseif ($data instanceof self) {
             $data = $data->toArray();
@@ -1583,67 +1585,75 @@ class ProjectTask extends AbstractModel
         } else {
             $userids = is_array($userid) ? $userid : [$userid];
         }
-        //
-        $array = [];
-        if (Arr::exists($data, 'owner') || Arr::exists($data, 'assist')) {
-            $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->get();
-            // 负责人
-            $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();
-            $owners = array_intersect($userids, $owners);
-            if ($owners) {
-                $array[] = [
-                    'userid' => array_values($owners),
-                    'data' => array_merge($data, [
-                        'owner' => 1,
-                        'assist' => 1,
-                    ])
-                ];
-            }
-            // 协助人
-            $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();
-            $assists = array_intersect($userids, $assists);
-            if ($assists) {
-                $array[] = [
-                    'userid' => array_values($assists),
-                    'data' => array_merge($data, [
-                        'owner' => 0,
-                        'assist' => 1,
-                    ])
-                ];
-            }
-            // 其他人
-            switch ($data['visibility']) {
-                case 1:
-                    // 项目人员，除了负责人、协助人项目其他人
-                    $userids = array_diff($userids, $owners, $assists);
-                    break;
-                case 2:
-                    // 任务人员，除了负责人、协助人
-                    $userids = [];
-                    break;
-                case 3:
-                    // 指定成员
-                    $specifys = ProjectTaskVisibilityUser::select(['userid'])->whereTaskId($data['id'])->pluck('userid')->toArray();
-                    $userids = array_diff($specifys, $owners, $assists);
-                    break;
-                default:
-                    $userids = [];
-                    break;
-            }
-            if ($userids) {
-                $array[] = [
-                    'userid' => array_values($userids),
-                    'data' => array_merge($data, [
-                        'owner' => 0,
-                        'assist' => 0,
-                    ])
-                ];
-            }
+        $userids = array_values(array_unique(array_map('intval', $userids)));
+        if (empty($userids)) {
+            return;
         }
-        //
+
+        if (!Arr::exists($data, 'visibility')) {
+            $data['visibility'] = $this->visibility;
+        }
+
+        $visibility = intval($data['visibility']);
+        $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->get();
+        $ownerList = $taskUser->where('owner', 1)->pluck('userid')->toArray();
+        $assistList = $taskUser->where('owner', 0)->pluck('userid')->toArray();
+
+        $ownerUsers = array_values(array_intersect($userids, $ownerList));
+        $assistUsers = array_values(array_diff(array_intersect($userids, $assistList), $ownerUsers));
+
+        $array = [];
+        if ($ownerUsers) {
+            $array[] = [
+                'userid' => $ownerUsers,
+                'data' => array_merge($data, [
+                    'owner' => 1,
+                    'assist' => 1,
+                ])
+            ];
+        }
+
+        if ($assistUsers) {
+            $array[] = [
+                'userid' => $assistUsers,
+                'data' => array_merge($data, [
+                    'owner' => 0,
+                    'assist' => 1,
+                ])
+            ];
+        }
+
+        $otherUsers = [];
+        switch ($visibility) {
+            case 1:
+                $otherUsers = array_diff($userids, $ownerUsers, $assistUsers);
+                break;
+            case 2:
+                $otherUsers = [];
+                break;
+            case 3:
+                $specifys = ProjectTaskVisibilityUser::select(['userid'])->whereTaskId($data['id'])->pluck('userid')->toArray();
+                $otherUsers = array_diff(array_intersect($userids, $specifys), $ownerUsers, $assistUsers);
+                break;
+            default:
+                $otherUsers = array_diff($userids, $ownerUsers, $assistUsers);
+                break;
+        }
+
+        if ($otherUsers) {
+            $array[] = [
+                'userid' => array_values($otherUsers),
+                'data' => $data
+            ];
+        }
+
+        if (empty($array)) {
+            return;
+        }
+
         foreach ($array as $item) {
             $params = [
-                'ignoreFd' => Request::header('fd'),
+                'ignoreFd' => $ignoreSelf ? Request::header('fd') : null,
                 'userid' => $item['userid'],
                 'msg' => [
                     'type' => 'projectTask',

@@ -334,6 +334,51 @@
                             </li>
                         </ul>
                     </FormItem>
+                    <FormItem v-if="relatedTasks.length > 0" className="item-related-task">
+                        <div class="item-label" slot="label">
+                            <i class="taskfont">&#xe7d6;</i>{{$L('关联任务')}}
+                        </div>
+                        <ul class="item-content related-task">
+                            <li
+                                v-for="item in relatedTasks"
+                                :key="item.related_task_id"
+                                class="related-item"
+                                @click="openRelatedTask(item)">
+                                <span class="related-direction" :class="{
+                                    inbound: item.mentioned_by,
+                                    outbound: item.mention,
+                                    mutual: item.mention && item.mentioned_by
+                                }">
+                                    <Icon v-if="item.mention && item.mentioned_by" type="md-swap"/>
+                                    <Icon v-else-if="item.mentioned_by" type="md-arrow-round-back"/>
+                                    <Icon v-else type="md-arrow-round-forward"/>
+                                </span>
+                                <span class="related-main">
+                                    <span class="related-id">#{{item.related_task_id}}</span>
+                                    <span class="related-title">{{item.task.name}}</span>
+                                </span>
+                                <span v-if="item.task.project_name && item.task.project_id != taskDetail.project_id" class="related-project">{{item.task.project_name}}</span>
+                                <span v-if="item.task.column_name" class="related-column">{{item.task.column_name}}</span>
+                                <span
+                                    v-if="item.task.flow_item_name"
+                                    class="related-status"
+                                    :class="item.task.flow_item_status"
+                                    :style="$A.generateColorVarStyle(item.task.flow_item_color, [10], 'flow-item-custom-color')">
+                                    {{item.task.flow_item_name}}
+                                </span>
+                                <span
+                                    v-else-if="item.task.complete_at"
+                                    class="related-status end">
+                                    {{$L('已完成')}}
+                                </span>
+                                <span
+                                    v-else-if="item.task.archived_at"
+                                    class="related-status archived">
+                                    {{$L('已归档')}}
+                                </span>
+                            </li>
+                        </ul>
+                    </FormItem>
                 </Form>
                 <div v-if="menuList.length > 0" class="add">
                     <div class="add-wrap">
@@ -597,6 +642,9 @@ export default {
 
             loopForce: false,
 
+            relatedTasks: [],
+            relatedRequestKey: 0,
+
             keepInterval: null,
             keepIntoTimer: null,
             keepUnix: $A.dayjs().unix(),
@@ -668,12 +716,14 @@ export default {
         }, 1000);
         //
         emitter.on('receiveTask', this.onReceiveShow);
+        emitter.on('taskRelationUpdate', this.onTaskRelationUpdate);
     },
 
     destroyed() {
         clearInterval(this.keepInterval);
         //
         emitter.off('receiveTask', this.onReceiveShow);
+        emitter.off('taskRelationUpdate', this.onTaskRelationUpdate);
     },
 
     computed: {
@@ -967,6 +1017,7 @@ export default {
             handler(id) {
                 if (id > 0) {
                     this.ready = true;
+                    this.loadRelatedTasks();
                 } else {
                     $A.eeuiAppKeyboardHide()
                     this.timeOpen = false;
@@ -978,6 +1029,8 @@ export default {
                     this.addsubForce = false;
                     this.receiveShow = false;
                     this.$refs.chatInput?.hidePopover();
+                    this.relatedRequestKey++;
+                    this.relatedTasks = [];
                 }
             },
             immediate: true
@@ -1506,6 +1559,48 @@ export default {
                 return;
             }
             this.$refs.log.getLists(true);
+        },
+
+        async loadRelatedTasks() {
+            if (!this.taskId) {
+                this.relatedTasks = [];
+                return;
+            }
+            const cacheMap = this.$store.state.taskRelatedCache || {};
+            const cached = cacheMap[this.taskId];
+            if (cached?.list) {
+                this.relatedTasks = cached.list;
+            }
+            const requestKey = ++this.relatedRequestKey;
+            try {
+                const data = await this.$store.dispatch('getTaskRelated', this.taskId);
+                if (requestKey !== this.relatedRequestKey) {
+                    return;
+                }
+                this.relatedTasks = data;
+            } catch (e) {
+                if (requestKey === this.relatedRequestKey) {
+                    this.relatedTasks = [];
+                }
+                console.warn(e);
+            }
+        },
+
+        openRelatedTask(item) {
+            if (!item || !item.related_task_id) {
+                return;
+            }
+            if (item.related_task_id === this.taskId) {
+                return;
+            }
+            this.$store.dispatch('openTask', item.related_task_id);
+        },
+
+        onTaskRelationUpdate(taskId) {
+            if (!taskId || taskId !== this.taskId) {
+                return;
+            }
+            this.loadRelatedTasks();
         },
 
         logLoadChange(load) {

@@ -172,6 +172,7 @@ export default {
     taskFiles: [],
     taskLogs: [],
     taskOperation: {},
+    taskRelatedCache: {},
     taskArchiveView: 0,
     taskTemplates: [],
     taskLatestId: 0,

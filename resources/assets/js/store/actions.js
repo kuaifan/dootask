@@ -1138,7 +1138,8 @@ export default {
                     'microAppsMenus',
                 ],
                 json: [
-                    'userInfo'
+                    'userInfo',
+                    'taskRelatedCache',
                 ]
             };
 
@@ -2455,6 +2456,39 @@ export default {
                 console.warn(e);
                 reject(e);
             });
+        });
+    },
+
+    /**
+     * 获取任务关联列表
+     * @param state
+     * @param dispatch
+     * @param commit
+     * @param taskId
+     * @returns {Promise<unknown>}
+     */
+    getTaskRelated({state, commit, dispatch}, taskId) {
+        taskId = parseInt(taskId, 10);
+        if (!taskId) {
+            return Promise.resolve([]);
+        }
+        return new Promise((resolve, reject) => {
+            dispatch("call", {
+                url: 'project/task/related',
+                data: {task_id: taskId},
+            }).then(({data}) => {
+                const list = (data.list || []).map(item => ({
+                    ...item,
+                    mention: !!item.mention,
+                    mentioned_by: !!item.mentioned_by,
+                }));
+                commit('task/related/save', {
+                    taskId,
+                    list,
+                    updatedAt: Date.now(),
+                });
+                resolve(list);
+            }).catch(reject);
         });
     },
 
@@ -4574,6 +4608,11 @@ export default {
                                     case 'archived':    // 归档
                                     case 'recovery':    // 恢复（归档）
                                         dispatch("saveTask", data)
+                                        break;
+                                    case 'relation':
+                                        if (data?.id) {
+                                            emitter.emit('taskRelationUpdate', data.id)
+                                        }
                                         break;
                                     case 'dialog':
                                         dispatch("saveTask", data)

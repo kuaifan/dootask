@@ -8,6 +8,7 @@ use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Image;
 use App\Tasks\PushTask;
+use App\Models\ProjectTaskRelation;
 use App\Exceptions\ApiException;
 use App\Tasks\WebSocketDialogMsgTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -1332,6 +1333,7 @@ class WebSocketDialogMsg extends AbstractModel
             ];
             $dialogMsg->updateInstance($updateData);
             $dialogMsg->generateKeyAndSave($search_key);
+            ProjectTaskRelation::recordMentionsFromMessage($dialogMsg);
             //
             WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($sender)->whereHide(1)->change([
                 'hide' => 0,    // 修改消息时，显示会话（仅自己）
@@ -1398,6 +1400,7 @@ class WebSocketDialogMsg extends AbstractModel
                     'updated_at' => Carbon::now()->toDateTimeString('millisecond'),
                 ]);
             });
+            ProjectTaskRelation::recordMentionsFromMessage($dialogMsg);
             //
             $task = new WebSocketDialogMsgTask($dialogMsg->id);
             if ($push_self) {

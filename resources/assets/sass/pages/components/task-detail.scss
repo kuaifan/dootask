@@ -547,6 +547,138 @@
                             }
                         }
                     }
+                    &.related-task {
+                        margin-top: 2px;
+                        > li {
+                            position: relative;
+                            display: flex;
+                            flex-wrap: wrap;
+                            align-items: center;
+                            gap: 2px 8px;
+                            padding: 4px 0;
+                            cursor: pointer;
+                            color: $primary-text-color;
+                            transition: color 0.2s ease;
+
+                            &:hover {
+                                color: $primary-title-color;
+
+                                .related-title {
+                                    color: $primary-title-color;
+                                }
+                            }
+
+                            .related-direction {
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                width: 20px;
+                                height: 20px;
+                                border-radius: 50%;
+                                background-color: #f4f5f5;
+                                font-size: 12px;
+                                color: #a0a0a0;
+
+                                .ivu-icon {
+                                    font-size: 14px;
+                                }
+
+                                &.outbound {
+                                    color: $primary-color;
+                                }
+
+                                &.inbound {
+                                    color: #fa8c16;
+                                }
+
+                                &.mutual {
+                                    color: #19be6b;
+                                }
+                            }
+
+                            .related-main {
+                                display: flex;
+                                align-items: center;
+                                flex: 1;
+                                min-width: 120px;
+
+                                .related-id {
+                                    display: none;
+                                    margin-right: 6px;
+                                    font-size: 12px;
+                                    color: #9aa0a6;
+                                }
+
+                                .related-title {
+                                    color: $primary-text-color;
+                                    font-weight: 500;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                }
+                            }
+
+                            .related-project,
+                            .related-column {
+                                flex-shrink: 0;
+                                font-size: 12px;
+                                color: #9aa0a6;
+                                max-width: 160px;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            }
+
+                            .related-status {
+                                margin-left: 6px;
+                                padding: 0 6px;
+                                height: 22px;
+                                line-height: 22px;
+                                border-radius: 4px;
+                                font-size: 12px;
+                                color: var(--flow-item-custom-color-100, $primary-color);
+                                border: 1px solid var(--flow-item-custom-color-10, rgba($primary-color, 0.2));
+                                background-color: var(--flow-item-custom-color-10, rgba($primary-color, 0.1));
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+
+                                &.start {
+                                    color: var(--flow-item-custom-color-100, $flow-status-start-color);
+                                    border-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.2));
+                                    background-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                                }
+
+                                &.progress {
+                                    color: var(--flow-item-custom-color-100, $flow-status-progress-color);
+                                    border-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.2));
+                                    background-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                                }
+
+                                &.test {
+                                    color: var(--flow-item-custom-color-100, $flow-status-test-color);
+                                    border-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.2));
+                                    background-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                                }
+
+                                &.end {
+                                    color: $primary-color;
+                                    border-color: rgba($primary-color, 0.2);
+                                    background-color: rgba($primary-color, 0.08);
+                                }
+
+                                &.archived {
+                                    color: $flow-status-archived-color;
+                                    border-color: rgba($flow-status-archived-color, 0.2);
+                                    background-color: rgba($flow-status-archived-color, 0.1);
+                                }
+                            }
+
+                            .ivu-tag {
+                                margin-left: 8px;
+                            }
+                        }
+                    }
                 }
 
                 .visibility-text {
@@ -974,7 +1106,8 @@ body.window-portrait {
                 }
                 .items {
                     .ivu-form-item {
-                        &.item-subtask {
+                        &.item-subtask,
+                        &.item-related-task {
                             display: flex;
                             flex-direction: column;
                             .ivu-form-item-content {
