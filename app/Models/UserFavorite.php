@@ -9,9 +9,10 @@ use App\Models\File;
  * App\Models\UserFavorite
  *
  * @property int $id
- * @property int $userid 用户ID
- * @property string $favoritable_type 收藏类型
- * @property int $favoritable_id 收藏对象ID
+ * @property int|null $userid 用户ID
+ * @property string|null $favoritable_type 收藏类型(比如：task/project/file/message)
+ * @property int|null $favoritable_id 收藏对象ID
+ * @property string $remark 收藏备注
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $favoritable
@@ -29,6 +30,7 @@ use App\Models\File;
  * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereFavoritableId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereFavoritableType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereRemark($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserFavorite whereUserid($value)
  * @mixin \Eloquent

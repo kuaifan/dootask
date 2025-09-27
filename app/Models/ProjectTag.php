@@ -30,6 +30,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTag whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTag whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTag whereProjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTag whereSort($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTag whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTag whereUserid($value)
  * @mixin \Eloquent

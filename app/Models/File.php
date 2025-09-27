@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $size 大小(B)
  * @property int|null $userid 拥有者ID
  * @property int|null $share 是否共享
+ * @property int|null $guest_access 是否允许游客访问
  * @property int|null $pshare 所属分享ID
  * @property int|null $created_id 创建者
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -44,6 +45,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCreatedId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereExt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|File whereGuestAccess($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File wherePid($value)

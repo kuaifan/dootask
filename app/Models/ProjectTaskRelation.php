@@ -5,6 +5,40 @@ namespace App\Models;
 use App\Module\Base;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * App\Models\ProjectTaskRelation
+ *
+ * @property int $id
+ * @property int $task_id 任务ID
+ * @property int $related_task_id 关联任务ID
+ * @property string $direction 关系方向: mention/mentioned_by
+ * @property int|null $dialog_id 来源会话ID
+ * @property int|null $msg_id 来源消息ID
+ * @property int|null $userid 提及人
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\ProjectTask|null $relatedTask
+ * @property-read \App\Models\ProjectTask|null $task
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation whereDialogId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation whereDirection($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation whereMsgId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation whereRelatedTaskId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation whereTaskId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskRelation whereUserid($value)
+ * @mixin \Eloquent
+ */
 class ProjectTaskRelation extends AbstractModel
 {
     public const DIRECTION_MENTION = 'mention';

@@ -1939,7 +1939,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/checkin/save          30. 保存签到设置
+     * @api {post} api/users/checkin/save          31. 保存签到设置
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2014,7 +2014,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/checkin/list          31. 获取签到数据
+     * @api {get} api/users/checkin/list          32. 获取签到数据
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2061,7 +2061,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/socket/status          32. 获取socket状态
+     * @api {get} api/users/socket/status          33. 获取socket状态
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2084,7 +2084,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/key/client          33. 客户端KEY
+     * @api {get} api/users/key/client          34. 客户端KEY
      *
      * @apiDescription 获取客户端KEY，用于加密数据发送给服务端
      * @apiVersion 1.0.0
@@ -2126,7 +2126,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/bot/list          34. 机器人列表
+     * @api {get} api/users/bot/list          35. 机器人列表
      *
      * @apiDescription 需要token身份，获取我的机器人列表
      * @apiVersion 1.0.0
@@ -2170,7 +2170,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/bot/info          35. 机器人信息
+     * @api {get} api/users/bot/info          36. 机器人信息
      *
      * @apiDescription 需要token身份，获取我的机器人信息
      * @apiVersion 1.0.0
@@ -2221,7 +2221,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/bot/edit          36. 添加、编辑机器人
+     * @api {post} api/users/bot/edit          37. 添加、编辑机器人
      *
      * @apiDescription 需要token身份，编辑 我的机器人 或 管理员修改系统机器人 信息
      * @apiVersion 1.0.0
@@ -2322,7 +2322,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/bot/delete          37. 删除机器人
+     * @api {get} api/users/bot/delete          38. 删除机器人
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2372,7 +2372,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/share/list          38. 获取分享列表
+     * @api {get} api/users/share/list          39. 获取分享列表
      *
      * @apiVersion 1.0.0
      * @apiGroup users
@@ -2491,7 +2491,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/annual/report          39. 年度报告
+     * @api {get} api/users/annual/report          40. 年度报告
      *
      * @apiVersion 1.0.0
      * @apiGroup users
@@ -2660,7 +2660,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/device/list          40. 获取设备列表
+     * @api {get} api/users/device/list          41. 获取设备列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2683,7 +2683,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/device/logout          41. 登出设备（删除设备）
+     * @api {get} api/users/device/logout          42. 登出设备（删除设备）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2714,7 +2714,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/device/edit          42. 编辑设备
+     * @api {get} api/users/device/edit          43. 编辑设备
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2753,7 +2753,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/task/browse          43. 获取任务浏览历史
+     * @api {get} api/users/task/browse          44. 获取任务浏览历史
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2803,7 +2803,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/task/browse_save          44. 记录任务浏览历史
+     * @api {get} api/users/task/browse_save          45. 记录任务浏览历史
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2833,7 +2833,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/task/browse_clean          45. 清理任务浏览历史
+     * @api {post} api/users/task/browse_clean          46. 清理任务浏览历史
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2858,7 +2858,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/recent/browse          45. 获取最近访问记录
+     * @api {get} api/users/recent/browse          47. 获取最近访问记录
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -3061,7 +3061,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/recent/delete          45.1 删除最近访问记录
+     * @api {post} api/users/recent/delete          48. 删除最近访问记录
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -3094,7 +3094,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/favorites          46. 获取用户收藏列表
+     * @api {get} api/users/favorites          49. 获取用户收藏列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -3129,7 +3129,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/favorite/toggle          47. 切换收藏状态
+     * @api {post} api/users/favorite/toggle          50. 切换收藏状态
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -3195,7 +3195,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/favorite/remark          47-1. 修改收藏备注
+     * @api {post} api/users/favorite/remark          51. 修改收藏备注
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -3247,7 +3247,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/favorites/clean          48. 清理用户收藏
+     * @api {post} api/users/favorites/clean          52. 清理用户收藏
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -3281,7 +3281,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/favorite/check          49. 检查收藏状态
+     * @api {get} api/users/favorite/check          53. 检查收藏状态
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

@@ -8,8 +8,8 @@ use Carbon\Carbon;
  * App\Models\UserTaskBrowse
  *
  * @property int $id
- * @property int $userid 用户ID
- * @property int $task_id 任务ID
+ * @property int|null $userid 用户ID
+ * @property int|null $task_id 任务ID
  * @property \Illuminate\Support\Carbon|null $browsed_at 浏览时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
