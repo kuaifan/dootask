@@ -2791,7 +2791,6 @@ export default {
             data: {
                 task_id: task_id
             },
-            method: 'post',
         }).catch(error => {
             console.warn('保存任务浏览历史失败:', error);
         });

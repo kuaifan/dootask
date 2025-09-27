@@ -210,6 +210,7 @@
 <script>
 import ImgView from "../../../components/ImgView";
 import ImgUpload from "../../../components/ImgUpload";
+import emitter from "../../../store/events";
 import {mapState} from "vuex";
 
 export default {
@@ -506,9 +507,7 @@ export default {
             if (!/^\d+$/.test(userid)) {
                 return
             }
-            this.$store.dispatch("openDialogUserid", userid).catch(({msg}) => {
-                $A.modalError(msg)
-            });
+            emitter.emit('openUser', userid);
         }
     }
 }

@@ -2803,7 +2803,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/task/browse_save          44. 记录任务浏览历史
+     * @api {get} api/users/task/browse_save          44. 记录任务浏览历史
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

@@ -24,7 +24,7 @@
                             v-if="item.path === 'taskBrowse'"
                             :key="`taskBrowse-${index}`"
                             transfer
-                            transfer-class-name="page-manage-menu-dropdown"
+                            transfer-class-name="page-manage-menu-dropdown max-h-400"
                             placement="right-start">
                             <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
@@ -45,6 +45,13 @@
                                         <div class="task-title-text">{{ item.name }}</div>
                                     </DropdownItem>
                                 </template>
+                                <DropdownItem
+                                    :key="'task-browse-view-more'"
+                                    class="task-title task-view-more"
+                                    @click.native="openRecent"
+                                    name="taskBrowseViewMore">
+                                    <div class="task-title-text">{{ $L('查看更多...') }}</div>
+                                </DropdownItem>
                             </DropdownMenu>
                             <DropdownMenu v-else slot="list">
                                 <DropdownItem style="color:darkgrey">{{ $L('暂无打开记录') }}</DropdownItem>

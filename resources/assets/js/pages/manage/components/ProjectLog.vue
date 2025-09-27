@@ -254,7 +254,8 @@ export default {
                                 userNode.push(h('UserAvatar', {
                                     props: {
                                         size: 18,
-                                        userid
+                                        userid,
+                                        clickOpenDetail: true
                                     }
                                 }))
                             } else {

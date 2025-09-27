@@ -11,7 +11,7 @@
                         {{ $L("汇报人") }}
                     </div>
                     <div class="report-value">
-                        <UserAvatar :userid="data.userid" :size="28"/>
+                        <UserAvatar :userid="data.userid" :size="28" clickOpenDetail/>
                     </div>
                 </li>
                 <li>
@@ -28,7 +28,9 @@
                     </div>
                     <div class="report-value">
                         <template v-if="data.receives_user && data.receives_user.length === 0">-</template>
-                        <UserAvatar v-else v-for="(item, key) in data.receives_user" :key="key" :userid="item.userid" :size="28"/>
+                        <template v-else>
+                            <UserAvatar v-for="(item, key) in data.receives_user" :key="key" :userid="item.userid" :size="28" clickOpenDetail/>
+                        </template>
                     </div>
                 </li>
                 <li v-if="data.report_link" :title="$L('分享时间') + '：' + data.report_link.created_at">
@@ -36,7 +38,7 @@
                         {{ $L("分享人") }}
                     </div>
                     <div class="report-value">
-                        <UserAvatar :userid="data.report_link.userid" :size="28"/>
+                        <UserAvatar :userid="data.report_link.userid" :size="28" clickOpenDetail/>
                     </div>
                 </li>
             </ul>

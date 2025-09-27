@@ -104,6 +104,10 @@ body {
     .ivu-select-dropdown {
         max-height: 360px;
 
+        &.max-h-400 {
+            max-height: 400px;
+        }
+
         &.select-node {
             .ivu-select-item {
                 display: flex;
