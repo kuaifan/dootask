@@ -1026,17 +1026,20 @@ class DialogController extends AbstractController
 
         $dialog = WebSocketDialog::checkDialog($dialog_id);
 
+        // 基本信息
         $context = [
             'dialog_name' => $dialog->name ?: '',
             'dialog_type' => $dialog->type ?: '',
             'group_type' => $dialog->group_type ?: '',
         ];
 
+        // 当前草稿
         $draft = Request::input('draft', '');
         if (is_string($draft) && trim($draft) !== '') {
             $context['current_draft'] = Base::html2markdown($draft);
         }
 
+        // 引用消息
         $quote_id = intval(Request::input('quote_id'));
         if ($quote_id > 0) {
             $quote = WebSocketDialogMsg::whereDialogId($dialog_id)
@@ -1049,6 +1052,7 @@ class DialogController extends AbstractController
             }
         }
 
+        // 成员列表
         $members = WebSocketDialogUser::whereDialogId($dialog_id)
             ->join('users', 'users.userid', '=', 'web_socket_dialog_users.userid')
             ->orderBy('web_socket_dialog_users.id')
@@ -1061,22 +1065,50 @@ class DialogController extends AbstractController
             $context['members'] = $members;
         }
 
-        $recentMessages = WebSocketDialogMsg::whereDialogId($dialog_id)
+        // 最近消息
+        $recentMessagesQuery = WebSocketDialogMsg::whereDialogId($dialog_id)
             ->orderByDesc('id')
-            ->take(15)
-            ->with('user')
-            ->get();
+            ->with('user');
+
+        $recentMessages = (clone $recentMessagesQuery)->take(15)->get();
         if ($recentMessages->isNotEmpty()) {
-            $context['recent_messages'] = $recentMessages->reverse()->map(function ($msg) {
-                return [
-                    'sender' => $msg->user->nickname ?? ('用户' . $msg->userid),
-                    'summary' => $msg->extractMessageContent(300),
-                ];
-            })->filter(function ($item) {
-                return !empty($item['summary']);
-            })->values()->all();
+            $formatRecentMessages = function ($messages) {
+                return $messages->reverse()->map(function ($msg) {
+                    return [
+                        'sender' => $msg->user->nickname ?? ('用户' . $msg->userid),
+                        'summary' => $msg->extractMessageContent(500),
+                    ];
+                })->filter(function ($item) {
+                    return !empty($item['summary']);
+                })->values();
+            };
+
+            $formattedRecentMessages = $formatRecentMessages($recentMessages);
+            $summaryLength = $formattedRecentMessages->sum(function ($item) {
+                return mb_strlen($item['summary']);
+            });
+
+            if ($summaryLength < 500 && $recentMessages->count() === 15) {
+                $lastMessageId = optional($recentMessages->last())->id;
+                $additionalMessages = collect();
+                if ($lastMessageId) {
+                    $additionalMessages = (clone $recentMessagesQuery)
+                        ->where('id', '<', $lastMessageId)
+                        ->take(10)
+                        ->get();
+                }
+                if ($additionalMessages->isNotEmpty()) {
+                    $recentMessages = $recentMessages->concat($additionalMessages);
+                    $formattedRecentMessages = $formatRecentMessages($recentMessages);
+                }
+            }
+
+            if ($formattedRecentMessages->isNotEmpty()) {
+                $context['recent_messages'] = $formattedRecentMessages->all();
+            }
         }
 
+        // 生成消息
         $result = AI::generateMessage($content, $context);
         if (Base::isError($result)) {
             return Base::retError('生成消息失败', $result);
