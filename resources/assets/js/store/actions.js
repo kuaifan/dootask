@@ -1140,6 +1140,7 @@ export default {
                 json: [
                     'userInfo',
                     'taskRelatedCache',
+                    'dialogCommonCountCache',
                 ]
             };
 

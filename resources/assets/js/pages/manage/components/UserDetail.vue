@@ -107,6 +107,7 @@ export default {
             showModal: false,
 
             commonDialog: {
+                userid: null,
                 total: null,
                 list: [],
                 page: 1,
@@ -182,9 +183,39 @@ export default {
 
         loadCommonDialogCount() {
             const target_userid = this.userData.userid;
-            if (this.commonDialog.userid !== target_userid) {
-                this.commonDialog.total = null;
+            const previousUserId = this.commonDialog.userid;
+            if (!target_userid) {
+                this.commonDialog = {
+                    ...this.commonDialog,
+                    userid: target_userid || null,
+                    total: null,
+                    list: [],
+                    page: 1,
+                    has_more: false,
+                };
+                return;
             }
+
+            if (previousUserId !== target_userid) {
+                this.commonDialog = {
+                    ...this.commonDialog,
+                    userid: target_userid,
+                    total: null,
+                    list: [],
+                    page: 1,
+                    has_more: false,
+                };
+            }
+
+            const cacheMap = this.$store.state.dialogCommonCountCache || {};
+            const cached = cacheMap[String(target_userid)];
+            if (cached && typeof cached.total !== 'undefined') {
+                this.commonDialog = {
+                    ...this.commonDialog,
+                    total: cached.total,
+                };
+            }
+
             this.$store.dispatch('call', {
                 url: 'dialog/common/list',
                 data: {
@@ -195,10 +226,19 @@ export default {
                 if (target_userid !== this.userData.userid) {
                     return
                 }
-                this.commonDialog = Object.assign(data, {
+                const parsedTotal = Number(data.total);
+                const total = Number.isNaN(parsedTotal) ? 0 : parsedTotal;
+                this.commonDialog = {
+                    ...this.commonDialog,
                     userid: target_userid,
+                    total,
                     list: [],
+                    page: 1,
                     has_more: false,
+                };
+                this.$store.commit('common/dialog/count/save', {
+                    userid: target_userid,
+                    total,
                 });
             });
         },

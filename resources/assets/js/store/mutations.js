@@ -30,6 +30,33 @@ export default {
         $A.IDBSave("cacheUserBasic", state.cacheUserBasic, 600)
     },
 
+    // 共同群聊
+    'common/dialog/count/save': function(state, {userid, total, updatedAt = Date.now()}) {
+        if (!userid) {
+            return;
+        }
+        const key = String(userid);
+        const cache = Object.assign({}, state.dialogCommonCountCache);
+        const parsedTotal = Number(total);
+        cache[key] = {
+            total: Number.isNaN(parsedTotal) ? 0 : parsedTotal,
+            updated_at: updatedAt,
+        };
+        state.dialogCommonCountCache = cache;
+        $A.IDBSave("dialogCommonCountCache", state.dialogCommonCountCache, 600);
+    },
+
+    'common/dialog/count/clear': function(state, userid) {
+        if (typeof userid === 'number' || typeof userid === 'string') {
+            const cache = Object.assign({}, state.dialogCommonCountCache);
+            delete cache[String(userid)];
+            state.dialogCommonCountCache = cache;
+        } else {
+            state.dialogCommonCountCache = {};
+        }
+        $A.IDBSave("dialogCommonCountCache", state.dialogCommonCountCache, 600);
+    },
+
     // 消息管理
     'message/push': function(state, data) {
         state.dialogMsgs.push(data)
@@ -65,7 +92,7 @@ export default {
         $A.IDBSave("cacheTasks", state.cacheTasks, 600)
     },
 
-    // taskContents
+    // 任务内容
     'task/content/push': function(state, data) {
         state.taskContents.push(data)
     },
@@ -78,6 +105,7 @@ export default {
         }
     },
 
+    // 任务关联
     'task/related/save': function(state, {taskId, list, updatedAt = Date.now()}) {
         const cache = Object.assign({}, state.taskRelatedCache);
         cache[taskId] = {
