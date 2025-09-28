@@ -213,6 +213,7 @@ class UmengAlias extends AbstractModel
                         'policy' => [
                             'expire_time' => Carbon::now()->addSeconds($seconds)->toDateTimeString(),
                         ],
+                        'category' => 1,
                         'channel_properties' => [
                             'oppo_channel_id' => 'dootask',
                             'vivo_category' => 'IM',
