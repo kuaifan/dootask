@@ -1241,7 +1241,7 @@ export default {
                 x: event.clientX - containerRect.left + scrollLeft,
                 y: event.clientY - containerRect.top + scrollTop,
             };
-            this.dragSelecting = true;
+            this.dragSelecting = this.windowLandscape;
             this.dragSelectStart = start;
             this.dragSelectRect = {
                 left: start.x,
@@ -1249,12 +1249,7 @@ export default {
                 width: 0,
                 height: 0,
             };
-            this.dragSelectStyle = {
-                left: `${start.x - scrollLeft}px`,
-                top: `${start.y - scrollTop}px`,
-                width: '0px',
-                height: '0px',
-            };
+            this.setDragSelectStyle(this.dragSelectRect);
             this.dragSelectContainerSize = {
                 width: container.scrollWidth,
                 height: container.scrollHeight,
@@ -1298,12 +1293,7 @@ export default {
             const height = Math.abs(start.y - currentY);
             const rect = {left, top, width, height};
             this.dragSelectRect = rect;
-            this.dragSelectStyle = {
-                left: `${left - scrollLeft}px`,
-                top: `${top - scrollTop}px`,
-                width: `${width}px`,
-                height: `${height}px`,
-            };
+            this.setDragSelectStyle(rect);
             if (!this.dragSelectMoved && (width > 3 || height > 3)) {
                 this.dragSelectMoved = true;
             }
@@ -1389,6 +1379,19 @@ export default {
             });
 
             this.selectedItems = next;
+        },
+
+        setDragSelectStyle(rect) {
+            if (!rect) {
+                this.dragSelectStyle = {};
+                return;
+            }
+            this.dragSelectStyle = {
+                left: `${rect.left}px`,
+                top: `${rect.top}px`,
+                width: `${rect.width}px`,
+                height: `${rect.height}px`,
+            };
         },
 
         rectsIntersect(a, b) {
