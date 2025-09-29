@@ -617,7 +617,7 @@ handle_update() {
         fi
 
         # 更新依赖
-        exec_judge "container_exec php 'composer update --optimize-autoloader'" "更新PHP依赖失败"
+        exec_judge "container_exec php 'composer install --optimize-autoloader'" "更新PHP依赖失败"
     else
         # 本地更新模式
         echo "执行数据库备份..."
