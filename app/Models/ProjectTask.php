@@ -1579,7 +1579,8 @@ class ProjectTask extends AbstractModel
         } elseif ($data instanceof self) {
             $data = $data->toArray();
         }
-        //
+
+        // 获取接收会员
         if ($userid === null) {
             $userids = $this->project->relationUserids();
         } else {
@@ -1590,11 +1591,7 @@ class ProjectTask extends AbstractModel
             return;
         }
 
-        if (!Arr::exists($data, 'visibility')) {
-            $data['visibility'] = $this->visibility;
-        }
-
-        $visibility = intval($data['visibility']);
+        // 按可见性分组推送
         $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->get();
         $ownerList = $taskUser->where('owner', 1)->pluck('userid')->toArray();
         $assistList = $taskUser->where('owner', 0)->pluck('userid')->toArray();
@@ -1603,16 +1600,19 @@ class ProjectTask extends AbstractModel
         $assistUsers = array_values(array_diff(array_intersect($userids, $assistList), $ownerUsers));
 
         $array = [];
+
+        // 负责人
         if ($ownerUsers) {
             $array[] = [
                 'userid' => $ownerUsers,
                 'data' => array_merge($data, [
                     'owner' => 1,
-                    'assist' => 1,
+                    'assist' => 0,
                 ])
             ];
         }
 
+        // 协助人
         if ($assistUsers) {
             $array[] = [
                 'userid' => $assistUsers,
@@ -1623,27 +1623,31 @@ class ProjectTask extends AbstractModel
             ];
         }
 
+        // 其他人
         $otherUsers = [];
-        switch ($visibility) {
+        switch (intval($data['visibility'])) {
             case 1:
+                // 项目人员：除了负责人、协助人项目其他人
                 $otherUsers = array_diff($userids, $ownerUsers, $assistUsers);
                 break;
             case 2:
-                $otherUsers = [];
+                // 任务人员：除了负责人、协助人
+                // $otherUsers = [];
                 break;
             case 3:
+                // 指定成员
                 $specifys = ProjectTaskVisibilityUser::select(['userid'])->whereTaskId($data['id'])->pluck('userid')->toArray();
                 $otherUsers = array_diff(array_intersect($userids, $specifys), $ownerUsers, $assistUsers);
-                break;
-            default:
-                $otherUsers = array_diff($userids, $ownerUsers, $assistUsers);
                 break;
         }
 
         if ($otherUsers) {
             $array[] = [
                 'userid' => array_values($otherUsers),
-                'data' => $data
+                'data' => array_merge($data, [
+                    'owner' => 0,
+                    'assist' => 0,
+                ])
             ];
         }
 
@@ -1651,6 +1655,7 @@ class ProjectTask extends AbstractModel
             return;
         }
 
+        // 推送
         foreach ($array as $item) {
             $params = [
                 'ignoreFd' => $ignoreSelf ? Request::header('fd') : null,

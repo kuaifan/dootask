@@ -4609,11 +4609,6 @@ export default {
                                     case 'recovery':    // 恢复（归档）
                                         dispatch("saveTask", data)
                                         break;
-                                    case 'relation':
-                                        if (data?.id) {
-                                            emitter.emit('taskRelationUpdate', data.id)
-                                        }
-                                        break;
                                     case 'dialog':
                                         dispatch("saveTask", data)
                                         dispatch("getDialogOne", data.dialog_id).catch(() => {})
@@ -4626,6 +4621,9 @@ export default {
                                         break;
                                     case 'delete':
                                         dispatch("forgetTask", data)
+                                        break;
+                                    case 'relation':
+                                        emitter.emit('taskRelationUpdate', data.id)
                                         break;
                                 }
                             })(msgDetail);

@@ -1991,7 +1991,9 @@ class ProjectController extends AbstractController
             'path' => $file->getRawOriginal('path'),
             'thumb' => $file->getRawOriginal('thumb'),
         ]);
-        $task->pushMsg('filedelete', $file);
+        $task->pushMsg('filedelete', [
+            'id' => $file->id,
+        ]);
         $file->delete();
         //
         return Base::retSuccess('success', $file);
@@ -2840,7 +2842,7 @@ class ProjectController extends AbstractController
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName task__ai_generate
-     * 
+     *
      * @apiParam {String} content               用户输入的任务描述（必填）
      * @apiParam {String} [current_title]       当前已有的任务标题（用于优化改进）
      * @apiParam {String} [current_content]     当前已有的任务内容（HTML格式，用于优化改进）
@@ -2860,13 +2862,13 @@ class ProjectController extends AbstractController
     public function task__ai_generate()
     {
         User::auth();
-        
+
         // 获取用户输入的任务描述
         $content = Request::input('content');
         if (empty($content)) {
             return Base::retError('任务描述不能为空');
         }
-        
+
         // 获取上下文信息
         $context = [
             'current_title' => Request::input('current_title', ''),
@@ -2877,7 +2879,7 @@ class ProjectController extends AbstractController
             'has_time_plan' => boolval(Request::input('has_time_plan', false)),
             'priority_level' => Request::input('priority_level', ''),
         ];
-        
+
         // 如果当前内容是HTML格式，转换为markdown
         if (!empty($context['current_content'])) {
             $context['current_content'] = Base::html2markdown($context['current_content']);
@@ -2885,7 +2887,7 @@ class ProjectController extends AbstractController
         if (!empty($context['template_content'])) {
             $context['template_content'] = Base::html2markdown($context['template_content']);
         }
-        
+
         $result = AI::generateTask($content, $context);
         if (Base::isError($result)) {
             return Base::retError('生成任务失败', $result);
