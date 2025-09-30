@@ -2150,7 +2150,8 @@ class UsersController extends AbstractController
                 'users.nickname',
                 'users.userimg',
                 'user_bots.clear_day',
-                'user_bots.webhook_url'
+                'user_bots.webhook_url',
+                'user_bots.webhook_events'
             ])
             ->orderByDesc('id')
             ->get()
@@ -2160,6 +2161,7 @@ class UsersController extends AbstractController
             $bot['name'] = $bot['nickname'];
             $bot['avatar'] = $bot['userimg'];
             $bot['system_name'] = UserBot::systemBotName($bot['name']);
+            $bot['webhook_events'] = UserBot::normalizeWebhookEvents($bot['webhook_events'] ?? null, empty($bot['webhook_events']));
             unset($bot['userid'], $bot['nickname'], $bot['userimg']);
         }
 
@@ -2211,11 +2213,13 @@ class UsersController extends AbstractController
             'avatar' => $botUser->userimg,
             'clear_day' => 0,
             'webhook_url' => '',
+            'webhook_events' => [UserBot::WEBHOOK_EVENT_MESSAGE],
             'system_name' => UserBot::systemBotName($botUser->email),
         ];
         if ($userBot) {
             $data['clear_day'] = $userBot->clear_day;
             $data['webhook_url'] = $userBot->webhook_url;
+            $data['webhook_events'] = $userBot->webhook_events;
         }
         return Base::retSuccess('success', $data);
     }
@@ -2296,6 +2300,9 @@ class UsersController extends AbstractController
         if (Arr::exists($data, 'webhook_url')) {
             $upBot['webhook_url'] = trim($data['webhook_url']);
         }
+        if (Arr::exists($data, 'webhook_events')) {
+            $upBot['webhook_events'] = UserBot::normalizeWebhookEvents($data['webhook_events'], false);
+        }
         //
         if ($upUser) {
             $botUser->updateInstance($upUser);
@@ -2312,11 +2319,13 @@ class UsersController extends AbstractController
             'avatar' => $botUser->userimg,
             'clear_day' => 0,
             'webhook_url' => '',
+            'webhook_events' => [UserBot::WEBHOOK_EVENT_MESSAGE],
             'system_name' => UserBot::systemBotName($botUser->email),
         ];
         if ($userBot) {
             $data['clear_day'] = $userBot->clear_day;
             $data['webhook_url'] = $userBot->webhook_url;
+            $data['webhook_events'] = $userBot->webhook_events;
         }
         return Base::retSuccess($botId ? '修改成功' : '添加成功', $data);
     }

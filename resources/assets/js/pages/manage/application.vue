@@ -106,6 +106,7 @@
                                     <p><span>ID:</span>{{ item.id }}</p>
                                     <p><span>{{ $L('清理时间') }}:</span>{{ item.clear_day }}</p>
                                     <p><span>Webhook:</span>{{ item.webhook_url || '-' }}</p>
+                                    <p><span>{{ $L('Webhook事件') }}:</span>{{ formatWebhookEvents(item.webhook_events) }}</p>
                                 </div>
                                 <div class="modal-item-btns">
                                     <Button icon="md-chatbubbles" @click="applyClick({value: 'mybot-chat'}, item)">{{ $L('开始聊天') }}</Button>
@@ -139,6 +140,13 @@
                 </FormItem>
                 <FormItem prop="webhook_url" label="Webhook">
                     <Input v-model="mybotModifyData.webhook_url" :maxlength="255" :show-word-limit="0.9" type="textarea" placeholder="Webhook"/>
+                </FormItem>
+                <FormItem prop="webhook_events" :label="$L('Webhook事件')">
+                    <CheckboxGroup v-model="mybotModifyData.webhook_events">
+                        <Checkbox v-for="option in webhookEventOptions" :key="option.value" :label="option.value">
+                            {{ $L(option.label) }}
+                        </Checkbox>
+                    </CheckboxGroup>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -363,6 +371,12 @@ export default {
             mybotModifyShow: false,
             mybotModifyData: {},
             mybotModifyLoad: 0,
+            webhookEventOptions: [
+                {value: 'message', label: '接收消息'},
+                {value: 'dialog_open', label: '打开会话'},
+                {value: 'member_join', label: '成员加入'},
+                {value: 'member_leave', label: '成员退出'},
+            ],
             //
             aibotShow: false,
             aibotList: AIBotList,
@@ -456,6 +470,37 @@ export default {
         }
     },
     methods: {
+        normalizeWebhookEvents(events = [], useFallback = false) {
+            if (!Array.isArray(events)) {
+                events = events ? [events] : [];
+            }
+            const allowed = this.webhookEventOptions.map(item => item.value);
+            const result = events.filter(item => allowed.includes(item));
+            if (result.length) {
+                return Array.from(new Set(result));
+            }
+            return useFallback ? ['message'] : [];
+        },
+        enhanceMybotItem(item = {}) {
+            const data = $A.cloneJSON(item || {});
+            let events = data.webhook_events;
+            if (typeof events === 'undefined' || events === null) {
+                events = ['message'];
+            }
+            events = this.normalizeWebhookEvents(events, false);
+            if (!events.length) {
+                events = [];
+            }
+            data.webhook_events = events;
+            return data;
+        },
+        formatWebhookEvents(events) {
+            const values = this.normalizeWebhookEvents(events, false);
+            const labels = this.webhookEventOptions
+                .filter(option => values.includes(option.value))
+                .map(option => this.$L(option.label));
+            return labels.length ? labels.join('、') : '-';
+        },
         getLogoClass(name) {
             name = name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
             return name
@@ -548,7 +593,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'users/bot/list',
             }).then(({data}) => {
-                this.mybotList = data.list;
+                this.mybotList = (data.list || []).map(item => this.enhanceMybotItem(item));
             }).finally(_ => {
                 this.mybotLoad--
             });
@@ -561,7 +606,7 @@ export default {
         },
         // 添加修改我的机器人
         addMybot(info) {
-            this.mybotModifyData = $A.cloneJSON(info)
+            this.mybotModifyData = this.enhanceMybotItem(info)
             this.mybotModifyShow = true;
         },
         // 删除我的机器人
@@ -600,11 +645,12 @@ export default {
         onMybotModify() {
             this.mybotModifyLoad++
             this.$store.dispatch("editUserBot", this.mybotModifyData).then(({data, msg}) => {
-                const index = this.mybotList.findIndex(item => item.id === data.id);
+                const botData = this.enhanceMybotItem(data);
+                const index = this.mybotList.findIndex(item => item.id === botData.id);
                 if (index > -1) {
-                    this.mybotList.splice(index, 1, data);
+                    this.mybotList.splice(index, 1, botData);
                 } else {
-                    this.mybotList.unshift(data);
+                    this.mybotList.unshift(botData);
                 }
                 this.mybotModifyShow = false;
                 this.mybotModifyData = {};

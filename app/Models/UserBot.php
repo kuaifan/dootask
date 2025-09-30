@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Extranet;
+use App\Module\Ihttp;
 use App\Module\Timer;
 use App\Tasks\JokeSoupTask;
 use Cache;
 use Carbon\Carbon;
+use Throwable;
 
 /**
  * App\Models\UserBot
@@ -20,6 +22,7 @@ use Carbon\Carbon;
  * @property \Illuminate\Support\Carbon|null $clear_at 下一次清理时间
  * @property string|null $webhook_url 消息webhook地址
  * @property int|null $webhook_num 消息webhook请求次数
+ * @property array|null $webhook_events Webhook事件配置
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
@@ -44,6 +47,131 @@ use Carbon\Carbon;
  */
 class UserBot extends AbstractModel
 {
+    public const WEBHOOK_EVENT_MESSAGE = 'message';
+    public const WEBHOOK_EVENT_DIALOG_OPEN = 'dialog_open';
+    public const WEBHOOK_EVENT_MEMBER_JOIN = 'member_join';
+    public const WEBHOOK_EVENT_MEMBER_LEAVE = 'member_leave';
+
+    protected $casts = [
+        'webhook_events' => 'array',
+    ];
+
+    /**
+     * 获取可选的 webhook 事件
+     *
+     * @return string[]
+     */
+    public static function webhookEventOptions(): array
+    {
+        return [
+            self::WEBHOOK_EVENT_MESSAGE,
+            self::WEBHOOK_EVENT_DIALOG_OPEN,
+            self::WEBHOOK_EVENT_MEMBER_JOIN,
+            self::WEBHOOK_EVENT_MEMBER_LEAVE,
+        ];
+    }
+
+    /**
+     * 标准化 webhook 事件配置
+     *
+     * @param mixed $events
+     * @return array
+     */
+    public static function normalizeWebhookEvents(mixed $events, bool $useFallback = true): array
+    {
+        if (is_string($events)) {
+            $events = Base::json2array($events);
+        }
+        if ($events === null) {
+            $events = [];
+        }
+        if (!is_array($events)) {
+            $events = [$events];
+        }
+        $events = array_filter(array_map('strval', $events));
+        $events = array_values(array_intersect($events, self::webhookEventOptions()));
+        return $events ?: ($useFallback ? [self::WEBHOOK_EVENT_MESSAGE] : []);
+    }
+
+    /**
+     * 获取 webhook 事件配置
+     *
+     * @param mixed $value
+     * @return array
+     */
+    public function getWebhookEventsAttribute(mixed $value): array
+    {
+        if ($value === null || $value === '') {
+            return self::normalizeWebhookEvents(null, true);
+        }
+        return self::normalizeWebhookEvents($value, false);
+    }
+
+    /**
+     * 设置 webhook 事件配置
+     *
+     * @param mixed $value
+     * @return void
+     */
+    public function setWebhookEventsAttribute(mixed $value): void
+    {
+        $useFallback = $value === null;
+        $this->attributes['webhook_events'] = Base::array2json(self::normalizeWebhookEvents($value, $useFallback));
+    }
+
+    /**
+     * 判断是否需要触发指定 webhook 事件
+     *
+     * @param string $event
+     * @return bool
+     */
+    public function shouldDispatchWebhook(string $event): bool
+    {
+        if (!$this->webhook_url) {
+            return false;
+        }
+        if (!preg_match('/^https?:\/\//', $this->webhook_url)) {
+            return false;
+        }
+        return in_array($event, $this->webhook_events ?? [], true);
+    }
+
+    /**
+     * 发送 webhook
+     *
+     * @param string $event
+     * @param array $payload
+     * @param int $timeout
+     * @param array $context
+     * @return array|null
+     */
+    public function dispatchWebhook(string $event, array $payload, int $timeout = 30, array $context = []): ?array
+    {
+        if (!$this->shouldDispatchWebhook($event)) {
+            return null;
+        }
+
+        $payload = array_merge([
+            'event' => $event,
+            'timestamp' => time(),
+            'bot_uid' => $this->bot_id,
+            'owner_uid' => $this->userid,
+        ], $payload);
+
+        try {
+            $result = Ihttp::ihttp_post($this->webhook_url, $payload, $timeout);
+            $this->increment('webhook_num');
+            return $result;
+        } catch (Throwable $th) {
+            info(Base::array2json(array_merge($context, [
+                'bot_userid' => $this->bot_id,
+                'event' => $event,
+                'webhook_url' => $this->webhook_url,
+                'error' => $th->getMessage(),
+            ])));
+            return null;
+        }
+    }
 
     /**
      * 判断是否系统机器人

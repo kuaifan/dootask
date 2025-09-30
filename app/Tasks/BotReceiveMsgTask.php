@@ -427,6 +427,7 @@ class BotReceiveMsgTask extends AbstractTask
     private function handleWebhookRequest($sendText, $replyText, WebSocketDialogMsg $msg, WebSocketDialog $dialog, User $botUser)
     {
         $webhookUrl = null;
+        $userBot = null;
         $extras = ['timestamp' => time()];
 
         try {
@@ -530,13 +531,11 @@ class BotReceiveMsgTask extends AbstractTask
                     return;
                 }
                 $userBot = UserBot::whereBotId($botUser->userid)->first();
-                if ($userBot) {
-                    $userBot->webhook_num++;
-                    $userBot->save();
-                    $webhookUrl = $userBot->webhook_url;
+                if (!$userBot || !$userBot->shouldDispatchWebhook(UserBot::WEBHOOK_EVENT_MESSAGE)) {
+                    return;
                 }
             }
-            if (!preg_match("/^https?:\/\//", $webhookUrl)) {
+            if (!$userBot && !preg_match("/^https?:\/\//", $webhookUrl)) {
                 return;
             }
         } catch (\Exception $e) {
@@ -547,50 +546,60 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
         //
-        try {
-            $data = [
-                'text' => $sendText,
-                'reply_text' => $replyText,
-                'token' => User::generateToken($botUser),
-                'session_id' => $dialog->session_id,
-                'dialog_id' => $dialog->id,
-                'dialog_type' => $dialog->type,
-                'msg_id' => $msg->id,
-                'msg_uid' => $msg->userid,
-                'mention' => $this->mention ? 1 : 0,
-                'bot_uid' => $botUser->userid,
-                'version' => Base::getVersion(),
-                'extras' => Base::array2json($extras)
+        $data = [
+            'text' => $sendText,
+            'reply_text' => $replyText,
+            'token' => User::generateToken($botUser),
+            'session_id' => $dialog->session_id,
+            'dialog_id' => $dialog->id,
+            'dialog_type' => $dialog->type,
+            'msg_id' => $msg->id,
+            'msg_uid' => $msg->userid,
+            'mention' => $this->mention ? 1 : 0,
+            'bot_uid' => $botUser->userid,
+            'version' => Base::getVersion(),
+            'extras' => Base::array2json($extras)
+        ];
+        // 添加用户信息
+        $userInfo = User::find($msg->userid);
+        if ($userInfo) {
+            $data['msg_user'] = [
+                'userid' => $userInfo->userid,
+                'email' => $userInfo->email,
+                'nickname' => $userInfo->nickname,
+                'profession' => $userInfo->profession,
+                'lang' => $userInfo->lang,
+                'token' => User::generateTokenNoDevice($userInfo, now()->addHour()),
             ];
-            // 添加用户信息
-            $userInfo = User::find($msg->userid);
-            if ($userInfo) {
-                $data['msg_user'] = [
-                    'userid' => $userInfo->userid,
-                    'email' => $userInfo->email,
-                    'nickname' => $userInfo->nickname,
-                    'profession' => $userInfo->profession,
-                    'lang' => $userInfo->lang,
-                    'token' => User::generateTokenNoDevice($userInfo, now()->addHour()),
-                ];
-            }
-            // 请求Webhook
-            $result = Ihttp::ihttp_post($webhookUrl, $data, 30);
-            if ($result['data'] && $data = Base::json2array($result['data'])) {
-                if ($data['code'] != 200 && $data['message']) {
-                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', [
-                        'text' => $result['data']['message']
-                    ], $botUser->userid, false, false, true);
-                }
-            }
-        } catch (\Throwable $th) {
-            info(Base::array2json([
-                'bot_userid' => $botUser->userid,
+        }
+
+        $result = null;
+        if ($userBot) {
+            $result = $userBot->dispatchWebhook(UserBot::WEBHOOK_EVENT_MESSAGE, $data, 30, [
                 'dialog' => $dialog->id,
                 'msg' => $msg->id,
-                'webhook_url' => $webhookUrl,
-                'error' => $th->getMessage(),
-            ]));
+            ]);
+        } else {
+            try {
+                $result = Ihttp::ihttp_post($webhookUrl, $data, 30);
+            } catch (\Throwable $th) {
+                info(Base::array2json([
+                    'bot_userid' => $botUser->userid,
+                    'dialog' => $dialog->id,
+                    'msg' => $msg->id,
+                    'webhook_url' => $webhookUrl,
+                    'error' => $th->getMessage(),
+                ]));
+            }
+        }
+
+        if ($result && isset($result['data'])) {
+            $responseData = Base::json2array($result['data']);
+            if (($responseData['code'] ?? 0) != 200 && !empty($responseData['message'])) {
+                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', [
+                    'text' => $responseData['message']
+                ], $botUser->userid, false, false, true);
+            }
         }
     }
 

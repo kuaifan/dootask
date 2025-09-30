@@ -462,6 +462,13 @@
                     <FormItem v-if="typeof modifyData.webhook_url !== 'undefined'" prop="webhook_url" label="Webhook">
                         <Input v-model="modifyData.webhook_url" :maxlength="255" />
                     </FormItem>
+                    <FormItem v-if="typeof modifyData.webhook_events !== 'undefined'" prop="webhook_events" :label="$L('Webhook事件')">
+                        <CheckboxGroup v-model="modifyData.webhook_events">
+                            <Checkbox v-for="option in webhookEventOptions" :key="option.value" :label="option.value">
+                                {{$L(option.label)}}
+                            </Checkbox>
+                        </CheckboxGroup>
+                    </FormItem>
                 </template>
             </Form>
             <div slot="footer" class="adaption">
@@ -768,6 +775,12 @@ export default {
             modifyAiShow: false,
             modifyData: {},
             modifyLoad: 0,
+            webhookEventOptions: [
+                {value: 'message', label: '接收消息'},
+                {value: 'dialog_open', label: '打开会话'},
+                {value: 'member_join', label: '成员加入'},
+                {value: 'member_leave', label: '成员退出'},
+            ],
 
             openId: 0,
             errorId: 0,
@@ -1449,6 +1462,28 @@ export default {
 
     methods: {
         transformEmojiToHtml,
+        normalizeWebhookEvents(events = [], useFallback = false) {
+            if (!Array.isArray(events)) {
+                events = events ? [events] : [];
+            }
+            const allowed = this.webhookEventOptions.map(item => item.value);
+            const result = events.filter(item => allowed.includes(item));
+            if (result.length) {
+                return Array.from(new Set(result));
+            }
+            return useFallback ? ['message'] : [];
+        },
+        prepareWebhookEvents(events, useFallback = false) {
+            let value = events;
+            if (typeof value === 'undefined' || value === null) {
+                value = useFallback ? ['message'] : [];
+            }
+            value = this.normalizeWebhookEvents(value, false);
+            if (!value.length && useFallback) {
+                return ['message'];
+            }
+            return value;
+        },
         /**
          * 获取会话基本信息
          * @param dialog_id
@@ -2727,6 +2762,7 @@ export default {
                             clear_day: 0,
                             webhook_url: '',
                             system_name: '',
+                            webhook_events: this.prepareWebhookEvents([], true),
                         })
                         this.modifyLoad++;
                         this.$store.dispatch("call", {
@@ -2738,6 +2774,7 @@ export default {
                             this.modifyData.clear_day = data.clear_day
                             this.modifyData.webhook_url = data.webhook_url
                             this.modifyData.system_name = data.system_name
+                            this.modifyData.webhook_events = this.prepareWebhookEvents(data.webhook_events, true)
                         }).finally(() => {
                             this.modifyLoad--;
                         })
@@ -2892,6 +2929,7 @@ export default {
                     name: this.modifyData.name,
                     clear_day: this.modifyData.clear_day,
                     webhook_url: this.modifyData.webhook_url,
+                    webhook_events: this.normalizeWebhookEvents(this.modifyData.webhook_events, false),
                     dialog_id: this.modifyData.dialog_id
                 }).then(({msg}) => {
                     $A.messageSuccess(msg);
