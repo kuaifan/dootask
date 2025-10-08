@@ -175,7 +175,13 @@ web_build() {
     fi
     if [ "$type" = "dev" ]; then
         echo "<script>window.location.href=window.location.href.replace(/:\d+/, ':' + $(env_get APP_PORT))</script>" > ./index.html
-        env_set APP_DEV_PORT $(rand 20001 30000)
+        if [[ -z "$(env_get APP_DEV_PORT)" ]] || [[ -z "${VSCODE_PROXY_URI:-}" ]]; then
+            env_set APP_DEV_PORT $(rand 20001 30000)
+        fi
+        if [ -n "${VSCODE_PROXY_URI:-}" ]; then
+            VSCODE_PROXY_URI=$(APP_DEV_PORT="$(env_get APP_DEV_PORT)" node -p "process.env.VSCODE_PROXY_URI.replace(/\{\{port\}\}/g, process.env.APP_DEV_PORT || '')")
+        fi
+        env_set VSCODE_PROXY_URI "${VSCODE_PROXY_URI:-}"
     fi
     switch_debug "$type"
     #
@@ -479,7 +485,7 @@ handle_install() {
     for vol in "${volumes[@]}"; do
         tmp_path="${WORK_DIR}/${vol}"
         mkdir -p "${tmp_path}"
-        chmod -R 775 "${tmp_path}"
+        find "${tmp_path}" -type d -exec chmod 775 {} \;
         rm -f "${tmp_path}/dootask.lock"
         cmda="${cmda} -v ${tmp_path}:/usr/share/${vol}"
         cmdb="${cmdb} touch /usr/share/${vol}/dootask.lock &&"

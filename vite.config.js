@@ -22,6 +22,7 @@ export default defineConfig(({command, mode}) => {
     const env = loadEnv(mode, process.cwd(), '')
     const host = "0.0.0.0"
     const port = parseInt(env['APP_DEV_PORT'])
+    const proxy_uri = env['VSCODE_PROXY_URI']
 
     if (command === 'serve') {
         const hotFile = path.resolve(__dirname, 'public/hot')
@@ -80,6 +81,17 @@ export default defineConfig(({command, mode}) => {
         })
     }
 
+    const serverHmr = {}
+    if (/^https?:\/\//i.test(proxy_uri)) {
+        const proxyUri = new URL(proxy_uri)
+        if (proxyUri) {
+            Object.assign(serverHmr, {
+                host: proxyUri.host,
+                clientPort: proxyUri.port || (/^https/.test(proxy_uri) ? 443 : 80)
+            })
+        }
+    }
+
     return {
         base: basePath,
         publicDir: publicPath,
@@ -98,7 +110,8 @@ export default defineConfig(({command, mode}) => {
                     '**/language/**',
                     '**/electron/**',
                 ]
-            }
+            },
+            hmr: serverHmr
         },
         resolve: {
             alias: {
