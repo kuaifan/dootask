@@ -175,7 +175,7 @@ web_build() {
     fi
     if [ "$type" = "dev" ]; then
         echo "<script>window.location.href=window.location.href.replace(/:\d+/, ':' + $(env_get APP_PORT))</script>" > ./index.html
-        if [[ -z "$(env_get APP_DEV_PORT)" ]] || [[ -z "${VSCODE_PROXY_URI:-}" ]]; then
+        if [ -z "$(env_get APP_DEV_PORT)" ]; then
             env_set APP_DEV_PORT $(rand 20001 30000)
         fi
         if [ -n "${VSCODE_PROXY_URI:-}" ]; then

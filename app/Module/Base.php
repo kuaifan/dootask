@@ -3073,4 +3073,61 @@ class Base
             return $html;
         }
     }
+
+    /**
+     * 实时读取 .env 配置（不受配置缓存影响）
+     * @param string $key 配置键名
+     * @param mixed $default 默认值
+     * @return mixed
+     */
+    public static function liveEnv($key, $default = null)
+    {
+        $envFile = base_path('.env');
+        if (!file_exists($envFile)) {
+            return $default;
+        }
+
+        $envContent = file_get_contents($envFile);
+        $lines = explode("\n", $envContent);
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            
+            // 跳过注释和空行
+            if (empty($line) || str_starts_with($line, '#')) {
+                continue;
+            }
+
+            // 解析 KEY=VALUE
+            if (str_contains($line, '=')) {
+                [$envKey, $envValue] = explode('=', $line, 2);
+                $envKey = trim($envKey);
+                
+                if ($envKey === $key) {
+                    $envValue = trim($envValue);
+                    
+                    // 移除引号
+                    if (preg_match('/^(["\'])(.*)\1$/', $envValue, $matches)) {
+                        $envValue = $matches[2];
+                    }
+                    
+                    // 处理布尔值
+                    $lowerValue = strtolower($envValue);
+                    if ($lowerValue === 'true') {
+                        return true;
+                    }
+                    if ($lowerValue === 'false') {
+                        return false;
+                    }
+                    if ($lowerValue === 'null' || $lowerValue === '(null)') {
+                        return null;
+                    }
+                    
+                    return $envValue;
+                }
+            }
+        }
+
+        return $default;
+    }
 }
