@@ -153,10 +153,12 @@
 .setting-item {
     .ivu-input,
     .ivu-select-default,
-    .ivu-date-picker {
+    .ivu-date-picker,
+    .user-tags-preview {
         max-width: 460px;
     }
-    .ivu-date-picker {
+    .ivu-date-picker,
+    .user-tags-preview {
         width: 100%;
     }
     .ivu-form {

@@ -39,23 +39,47 @@
                 <Input
                     v-model="formData.introduction"
                     type="textarea"
-                    :rows="4"
+                    :rows="2"
+                    :autosize="{ minRows: 2, maxRows: 8 }"
                     :maxlength="500"
                     :placeholder="$L('请输入个人简介')"></Input>
+            </FormItem>
+            <FormItem :label="$L('个性标签')">
+                <div class="user-tags-preview" @click="openTagModal">
+                    <template v-if="displayTags.length">
+                        <Tag
+                            v-for="tag in displayTags"
+                            :key="tag.id"
+                            :color="tag.recognized ? 'primary' : 'default'"
+                            class="tag-pill">{{tag.name}}</Tag>
+                    </template>
+                    <span v-else class="tags-empty">{{$L('暂无个性标签')}}</span>
+                    <span v-if="personalTagTotal > displayTags.length" class="tags-total">{{$L('共(*)个', personalTagTotal)}}</span>
+                    <Button type="text" size="small" class="manage-button" @click.stop="openTagModal">
+                        <Icon type="md-create" />
+                        {{$L('管理')}}
+                    </Button>
+                </div>
             </FormItem>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
             <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{$L('重置')}}</Button>
         </div>
+        <UserTagsModal
+            v-if="userInfo.userid"
+            v-model="tagModalVisible"
+            :userid="userInfo.userid"
+            @updated="onTagsUpdated"/>
     </div>
 </template>
 
 <script>
 import ImgUpload from "../../../components/ImgUpload";
+import UserTagsModal from "../components/UserTagsModal.vue";
 import {mapState} from "vuex";
 export default {
-    components: {ImgUpload},
+    components: {ImgUpload, UserTagsModal},
     data() {
         return {
             loadIng: 0,
@@ -84,6 +108,10 @@ export default {
                     {type: 'string', min: 2, message: this.$L('昵称长度至少2位！'), trigger: 'change'}
                 ]
             },
+
+            tagModalVisible: false,
+            personalTags: [],
+            personalTagTotal: 0,
         }
     },
     mounted() {
@@ -91,6 +119,10 @@ export default {
     },
     computed: {
         ...mapState(['userInfo', 'formOptions']),
+
+        displayTags() {
+            return this.personalTags;
+        }
     },
     watch: {
         userInfo() {
@@ -108,6 +140,15 @@ export default {
             this.$set(this.formData, 'address', this.userInfo.address || '');
             this.$set(this.formData, 'introduction', this.userInfo.introduction || '');
             this.formData_bak = $A.cloneJSON(this.formData);
+            this.syncPersonalTags();
+        },
+
+        syncPersonalTags() {
+            const tags = Array.isArray(this.userInfo.personal_tags) ? this.userInfo.personal_tags : [];
+            this.personalTags = tags.slice(0, 10);
+            this.personalTagTotal = typeof this.userInfo.personal_tags_total === 'number'
+                ? this.userInfo.personal_tags_total
+                : this.personalTags.length;
         },
 
         submitForm() {
@@ -133,7 +174,50 @@ export default {
 
         resetForm() {
             this.formData = $A.cloneJSON(this.formData_bak);
+        },
+
+        openTagModal() {
+            if (!this.userInfo.userid) {
+                return;
+            }
+            this.tagModalVisible = true;
+        },
+
+        onTagsUpdated({top, total}) {
+            this.personalTags = Array.isArray(top) ? top : [];
+            this.personalTagTotal = typeof total === 'number' ? total : this.personalTags.length;
         }
     }
 }
 </script>
+
+<style lang="scss" scoped>
+.user-tags-preview {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 32px;
+    cursor: pointer;
+
+    .tag-pill {
+        cursor: pointer;
+    }
+
+    .tags-empty {
+        color: #909399;
+    }
+
+    .tags-total {
+        color: #909399;
+        font-size: 12px;
+    }
+
+    .manage-button {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+}
+</style>
