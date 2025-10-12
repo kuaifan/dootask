@@ -415,6 +415,9 @@ class UsersController extends AbstractController
      * @apiParam {String} [tel]                 电话
      * @apiParam {String} [nickname]            昵称
      * @apiParam {String} [profession]          职位/职称
+     * @apiParam {String} [birthday]            生日（格式：YYYY-MM-DD）
+     * @apiParam {String} [address]             地址
+     * @apiParam {String} [introduction]        个人简介
      * @apiParam {String} [lang]                语言（比如：zh/en）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -477,6 +480,40 @@ class UsersController extends AbstractController
                 $user->profession = $profession;
                 $upLdap['employeeType'] = $profession;
             }
+        }
+        // 生日
+        if (Arr::exists($data, 'birthday')) {
+            $birthday = trim((string) Request::input('birthday'));
+            if ($birthday === '') {
+                $user->birthday = null;
+            } else {
+                try {
+                    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $birthday)) {
+                        $birthdayDate = Carbon::createFromFormat('Y-m-d', $birthday);
+                    } else {
+                        $birthdayDate = Carbon::parse($birthday);
+                    }
+                } catch (\Exception $e) {
+                    return Base::retError('生日格式错误');
+                }
+                $user->birthday = $birthdayDate->format('Y-m-d');
+            }
+        }
+        // 地址
+        if (Arr::exists($data, 'address')) {
+            $address = trim((string) Request::input('address'));
+            if (mb_strlen($address) > 100) {
+                return Base::retError('地址最多只能设置100个字');
+            }
+            $user->address = $address ?: null;
+        }
+        // 个人简介
+        if (Arr::exists($data, 'introduction')) {
+            $introduction = trim((string) Request::input('introduction'));
+            if (mb_strlen($introduction) > 500) {
+                return Base::retError('个人简介最多只能设置500个字');
+            }
+            $user->introduction = $introduction ?: null;
         }
         // 语言
         if (Arr::exists($data, 'lang')) {

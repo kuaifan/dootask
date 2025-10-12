@@ -22,6 +22,9 @@ use Carbon\Carbon;
  * @property string|null $tel 联系电话
  * @property string $nickname 昵称
  * @property string|null $profession 职位/职称
+ * @property \Illuminate\Support\Carbon|null $birthday 生日
+ * @property string|null $address 地址
+ * @property string|null $introduction 个人简介
  * @property string $userimg 头像
  * @property string|null $encrypt
  * @property string|null $password 登录密码
@@ -89,7 +92,7 @@ class User extends AbstractModel
     public static $defaultAvatarMode = 'auto';
 
     // 基本信息的字段
-    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'department', 'userimg', 'bot', 'az', 'pinyin', 'line_at', 'disable_at'];
+    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'birthday', 'address', 'introduction', 'department', 'userimg', 'bot', 'az', 'pinyin', 'line_at', 'disable_at'];
 
     /**
      * 昵称
