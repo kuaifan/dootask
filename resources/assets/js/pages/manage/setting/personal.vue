@@ -22,6 +22,27 @@
             <FormItem :label="$L('职位/职称')" prop="profession">
                 <Input v-model="formData.profession" :maxlength="20" :placeholder="$L('请输入职位/职称')"></Input>
             </FormItem>
+            <FormItem :label="$L('生日')" prop="birthday">
+                <DatePicker
+                    v-model="formData.birthday"
+                    type="date"
+                    format="yyyy-MM-dd"
+                    value-format="yyyy-MM-dd"
+                    :placeholder="$L('请选择生日')"
+                    confirm
+                    transfer/>
+            </FormItem>
+            <FormItem :label="$L('地址')" prop="address">
+                <Input v-model="formData.address" :maxlength="100" :placeholder="$L('请输入地址')"></Input>
+            </FormItem>
+            <FormItem :label="$L('个人简介')" prop="introduction">
+                <Input
+                    v-model="formData.introduction"
+                    type="textarea"
+                    :rows="4"
+                    :maxlength="500"
+                    :placeholder="$L('请输入个人简介')"></Input>
+            </FormItem>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
@@ -44,7 +65,10 @@ export default {
                 email: '',
                 tel: '',
                 nickname: '',
-                profession: ''
+                profession: '',
+                birthday: '',
+                address: '',
+                introduction: ''
             },
 
             ruleData: {
@@ -80,6 +104,9 @@ export default {
             this.$set(this.formData, 'tel', this.userInfo.tel);
             this.$set(this.formData, 'nickname', typeof this.userInfo.nickname_original !== "undefined" ? this.userInfo.nickname_original : this.userInfo.nickname);
             this.$set(this.formData, 'profession', this.userInfo.profession);
+            this.$set(this.formData, 'birthday', this.userInfo.birthday || '');
+            this.$set(this.formData, 'address', this.userInfo.address || '');
+            this.$set(this.formData, 'introduction', this.userInfo.introduction || '');
             this.formData_bak = $A.cloneJSON(this.formData);
         },
 

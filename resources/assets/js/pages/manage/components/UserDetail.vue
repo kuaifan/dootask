@@ -32,6 +32,18 @@
                         {{userData.profession || '-'}}
                     </li>
                     <li>
+                        <span>{{$L('生日')}}: </span>
+                        {{userData.birthday ? ($A.newDateString(userData.birthday, 'YYYY-MM-DD') || userData.birthday) : '-'}}
+                    </li>
+                    <li>
+                        <span>{{$L('地址')}}: </span>
+                        {{userData.address || '-'}}
+                    </li>
+                    <li>
+                        <span>{{$L('个人简介')}}: </span>
+                        {{userData.introduction || '-'}}
+                    </li>
+                    <li>
                         <span>{{$L('最后在线')}}: </span>
                         {{$A.newDateString(userData.line_at, 'YYYY-MM-DD HH:mm') || '-'}}
                     </li>
