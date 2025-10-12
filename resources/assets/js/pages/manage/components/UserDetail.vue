@@ -55,7 +55,10 @@
                     </li>
                 </template>
             </ul>
-            <Button icon="md-chatbubbles" :disabled="!!userData.delete_at" @click="onOpenDialog">{{ $L('开始聊天') }}</Button>
+            <div class="user-detail-actions">
+                <Button icon="md-chatbubbles" :disabled="!!userData.delete_at" @click="onOpenDialog">{{ $L('开始聊天') }}</Button>
+                <Button icon="md-people" :disabled="!!userData.delete_at" @click="onOpenCreateGroup">{{ $L('创建群组') }}</Button>
+            </div>
         </div>
 
         <!-- 共同群组 -->
@@ -191,6 +194,20 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg)
             });
+        },
+
+        onOpenCreateGroup() {
+            const userids = [];
+            if (this.userId) {
+                userids.push(this.userId);
+            }
+            if (this.userData.userid && this.userData.userid !== this.userId) {
+                userids.push(this.userData.userid);
+            }
+            if (userids.length === 0 && this.userData.userid) {
+                userids.push(this.userData.userid);
+            }
+            emitter.emit('createGroup', userids);
         },
 
         loadCommonDialogCount() {
