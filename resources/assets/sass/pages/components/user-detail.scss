@@ -1,87 +1,123 @@
 .common-user-detail-modal {
-    .ivu-modal {
-        max-width: 90%;
-
-        &.ivu-modal-fullscreen {
-            max-width: none;
-
-            .ivu-modal-content {
-                margin-top: calc(var(--status-bar-height) + 46px);
-                margin-bottom: 0;
-                border-top-left-radius: 18px !important;
-                border-top-right-radius: 18px !important;
-
-                .ivu-modal-body {
-                    .user-detail-body {
-                        padding-bottom: var(--navigation-bar-height);
-                    }
+    .ivu-modal-content {
+        border-radius: 16px;
+    }
+    .ivu-modal-body {
+        padding: 0 !important;
+    }
+    .user-detail-body {
+        .profile-header {
+            position: relative;
+            height: 120px;
+            .cover-photo {
+                background: #1a2c47;
+                height: 80px;
+                border-top-left-radius: 16px;
+                border-top-right-radius: 16px;
+            }
+            .profile-avatar {
+                position: absolute;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                border: 4px solid #fff;
+                border-radius: 50%;
+                .user-avatar {
+                    display: block;
                 }
             }
         }
+        .profile-content {
+            padding: 16px 24px 24px;
+            text-align: center;
 
-        .user-detail-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .ivu-modal-content {
-            overflow: hidden;
-
-            .ivu-modal-body {
-                padding: 0 !important;
-                display: flex;
-                flex-direction: column;
-
-                .user-detail-body {
+            .user-info-top {
+                .username {
+                    color: #808695;
+                    font-size: 14px;
+                }
+                .fullname {
+                    font-size: 20px;
+                    font-weight: bold;
+                    margin: 4px 0;
+                }
+                .meta {
                     display: flex;
-                    flex-direction: column;
+                    justify-content: center;
                     align-items: center;
-                    gap: 16px;
-                    padding: 84px 24px;
-
-                    .avatar-wrapper {
-                        cursor: pointer;
+                    color: #808695;
+                    font-size: 12px;
+                    .separator {
+                        margin: 0 8px;
                     }
+                }
+            }
 
-                    > ul {
-                        width: 80%;
+            .profile-actions {
+                margin: 16px 0;
+                display: flex;
+                justify-content: center;
+                gap: 8px;
+            }
 
-                        > li {
-                            list-style: none;
-                            display: flex;
-                            justify-content: center;
-                            margin: 12px auto;
+            .profile-bio {
+                color: #515a6e;
+                line-height: 1.5;
+                margin: 16px 0;
+            }
 
-                            &.user-name {
-                                align-items: center;
-                            }
+            .profile-information {
+                text-align: left;
+                background-color: #f8f8f9;
+                padding: 16px;
+                border-radius: 8px;
 
-                            > em {
-                                font-style: normal;
-                                &.disabled,
-                                &.deleted {
-                                    display: inline-block;
-                                    margin-left: 2px;
-                                    white-space: nowrap;
-                                    font-size: 12px;
-                                    height: 20px;
-                                    line-height: 20px;
-                                    padding: 0 6px;
-                                    border-radius: 3px;
-                                    transform: scale(0.9);
-                                    transform-origin: right center;
-                                    color: #ffffff;
-                                    background-color: #ED4014;
-                                }
-                            }
+                h2 {
+                    font-size: 16px;
+                    margin-bottom: 12px;
+                }
 
-                            > span {
-                                flex-shrink: 0;
-                                opacity: 0.8;
-                                padding-right: 4px;
-                            }
+                ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+
+                    li {
+                        display: flex;
+                        align-items: center;
+                        padding: 8px 0;
+                        font-size: 14px;
+
+                        .ivu-icon {
+                            font-size: 20px;
+                            margin-right: 12px;
+                            color: #808695;
+                        }
+
+                        .label {
+                            color: #515a6e;
+                        }
+
+                        .value {
+                            margin-left: auto;
+                            color: #17233d;
+                            font-weight: 500;
                         }
                     }
+                }
+            }
+
+            .profile-tags {
+                margin-top: 24px;
+                cursor: pointer;
+                .tags-list {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    justify-content: center;
+                }
+                .ivu-tag {
+                    margin: 0;
                 }
             }
         }
