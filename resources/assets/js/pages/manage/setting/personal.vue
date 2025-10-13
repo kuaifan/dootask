@@ -50,7 +50,7 @@
                         <Tag
                             v-for="tag in displayTags"
                             :key="tag.id"
-                            :color="tag.recognized ? 'primary' : 'default'"
+                            :color="tag.recognized ? '#84C56A' : 'default'"
                             class="tag-pill">{{tag.name}}</Tag>
                     </template>
                     <span v-else class="tags-empty">{{$L('暂无个性标签')}}</span>

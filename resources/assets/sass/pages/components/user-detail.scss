@@ -1,6 +1,7 @@
 .common-user-detail-modal {
     .ivu-modal-content {
-        border-radius: 16px;
+        border-radius: 16px !important;
+        margin-top: calc(var(--status-bar-height) + 46px) !important;
     }
     .ivu-modal-body {
         padding: 0 !important;
@@ -8,10 +9,10 @@
     .user-detail-body {
         .profile-header {
             position: relative;
-            height: 120px;
+            height: 140px;
             .cover-photo {
-                background: #1a2c47;
-                height: 80px;
+                background: #84C56A;
+                height: 100px;
                 border-top-left-radius: 16px;
                 border-top-right-radius: 16px;
             }
@@ -64,6 +65,8 @@
                 color: #515a6e;
                 line-height: 1.5;
                 margin: 16px 0;
+                padding: 0 50px;
+                font-size: 12px;
             }
 
             .profile-information {
@@ -84,7 +87,7 @@
 
                     li {
                         display: flex;
-                        align-items: center;
+                        align-items: flex-start; // 避免多行内容导致垂直居中不齐
                         padding: 8px 0;
                         font-size: 14px;
 
@@ -95,26 +98,39 @@
                         }
 
                         .label {
-                            color: #515a6e;
+                            color: #808695;
+                            flex: 0 0 64px; 
+                            flex-shrink: 0;
+                            line-height: 22px;
+                            margin-right: 8px;
                         }
 
                         .value {
-                            margin-left: auto;
                             color: #17233d;
                             font-weight: 500;
+                            flex: 1 1 auto; 
+                            min-width: 0;
+                            margin-left: 0;
+                            text-align: right;
+                            white-space: normal;
+                            word-break: break-word;
+                            overflow-wrap: break-word;
                         }
                     }
                 }
             }
 
             .profile-tags {
-                margin-top: 24px;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid #80869550;
                 cursor: pointer;
                 .tags-list {
                     display: flex;
                     flex-wrap: wrap;
                     gap: 8px;
                     justify-content: center;
+                    position: relative;
                 }
                 .ivu-tag {
                     margin: 0;

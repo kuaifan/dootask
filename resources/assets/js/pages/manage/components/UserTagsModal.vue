@@ -43,7 +43,7 @@
                         :class="{'is-editing': editId === tag.id}">
                         <div class="tag-item-main">
                             <div class="tag-name" v-if="editId !== tag.id">
-                                <Tag :color="tag.recognized ? 'primary' : 'default'" class="tag-pill">{{tag.name}}</Tag>
+                                <Tag :color="tag.recognized ? '#84C56A' : 'default'" class="tag-pill">{{tag.name}}</Tag>
                             </div>
                             <div class="tag-name edit" v-else>
                                 <Input
