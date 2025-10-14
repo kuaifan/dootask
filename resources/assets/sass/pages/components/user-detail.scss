@@ -9,10 +9,10 @@
     .user-detail-body {
         .profile-header {
             position: relative;
-            height: 140px;
+            height: 160px;
             .cover-photo {
-                background: #84C56A;
-                height: 100px;
+                background: $primary-color;
+                height: 120px;
                 border-top-left-radius: 16px;
                 border-top-right-radius: 16px;
             }
@@ -34,7 +34,7 @@
 
             .user-info-top {
                 .username {
-                    color: #808695;
+                    color: $primary-desc-color;
                     font-size: 14px;
                 }
                 .fullname {
@@ -48,6 +48,9 @@
                     align-items: center;
                     color: #808695;
                     font-size: 12px;
+                    .common-dialog {
+                        cursor: pointer;
+                    }
                     .separator {
                         margin: 0 8px;
                     }
@@ -62,7 +65,7 @@
             }
 
             .profile-bio {
-                color: #515a6e;
+                color: $primary-title-color;
                 line-height: 1.5;
                 margin: 16px 0;
                 padding: 0 50px;
@@ -94,7 +97,7 @@
                         .ivu-icon {
                             font-size: 20px;
                             margin-right: 12px;
-                            color: #808695;
+                            color: $primary-desc-color;
                         }
 
                         .label {
@@ -106,7 +109,7 @@
                         }
 
                         .value {
-                            color: #17233d;
+                            color: $primary-title-color;
                             font-weight: 500;
                             flex: 1 1 auto; 
                             min-width: 0;

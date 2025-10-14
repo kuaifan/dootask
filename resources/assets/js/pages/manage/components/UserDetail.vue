@@ -30,6 +30,7 @@
                     <div class="meta">
                         <!-- <span>{{userData.address || 'Bandung'}}</span> -->
                         <span @click="commonDialogShow = true"
+                            class="common-dialog"
                             >{{ $L("共同群组") }}:
                             {{ $L("(*)个", commonDialog.total) }}</span
                         >
@@ -48,7 +49,6 @@
 
                 <div class="profile-actions">
                     <Button
-                        type="primary"
                         icon="md-chatbubbles"
                         @click="onOpenDialog"
                         >{{ $L("开始聊天") }}</Button
@@ -69,11 +69,6 @@
                                 userData.department_name || "-"
                             }}</span>
                         </li>
-                        <!-- <li>
-                            <Icon type="ios-briefcase-outline" />
-                            <span class="label">{{$L('职位/职称')}}</span>
-                            <span class="value">{{ userData.profession || '-' }}</span>
-                        </li> -->
                         <li>
                             <Icon type="ios-mail-outline" />
                             <span class="label">{{ $L("邮箱") }}</span>
@@ -98,6 +93,7 @@
                     <div class="profile-tags" @click.capture="onOpenTagsModal">
                         <div v-if="displayTags.length" class="tags-list">
                             <Button
+                                type="dashed"
                                 class="manage-tags-btn icon"
                                 @click.stop="onOpenTagsModal"
                             >
