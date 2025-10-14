@@ -53,6 +53,11 @@
                         @click="onOpenDialog"
                         >{{ $L("开始聊天") }}</Button
                     >
+                    <Button
+                        icon="md-people"
+                        @click="onCreateGroup"
+                        >{{ $L("创建群组") }}</Button
+                    >
                 </div>
 
                 <div class="profile-bio">
@@ -249,6 +254,15 @@ export default {
                 .catch(({ msg }) => {
                     $A.modalError(msg);
                 });
+        },
+
+        onCreateGroup() {
+            const userids = [this.$store.state.userId];
+            if (this.userData.userid && this.$store.state.userId != this.userData.userid) {
+                userids.push(this.userData.userid);
+            }
+            emitter.emit('createGroup', userids);
+            this.onHide();
         },
 
         ensureTagDefaults() {
