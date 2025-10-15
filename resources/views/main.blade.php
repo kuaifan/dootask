@@ -34,7 +34,7 @@
 <body>
 
 @extends('ie')
-<div id="app" data-preload="false">
+<div id="app" data-preload="init">
     <div class="app-view-loading no-dark-content">
         <div>
             <div>PAGE LOADING</div>

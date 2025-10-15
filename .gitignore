@@ -32,6 +32,9 @@ vars.yaml
 Homestead.json
 Homestead.yaml
 
+# Development file
+/index.html
+
 # Testing
 .phpunit.result.cache
 test.*

@@ -2,6 +2,8 @@ const isElectron = !!(window && window.process && window.process.type && window.
 const isEEUIApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 const isSoftware = isElectron || isEEUIApp;
 
+document.getElementById("app")?.setAttribute("data-preload", "false");
+
 import {languageName, switchLanguage as $L} from "./language";
 import {isLocalHost} from "./components/Replace/utils";
 
