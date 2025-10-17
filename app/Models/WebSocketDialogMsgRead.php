@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * App\Models\WebSocketDialogMsgRead
@@ -76,24 +77,48 @@ class WebSocketDialogMsgRead extends AbstractModel
      */
     public static function onlyMarkRead($list)
     {
-        $dialogMsg = [];
+        if (empty($list)) {
+            return;
+        }
+
+        $collection = collect($list);
+        if ($collection->isEmpty()) {
+            return;
+        }
+
+        $now = Carbon::now();
+        $ids = [];
+        $msgCounts = [];
+
         /** @var WebSocketDialogMsgRead $item */
-        foreach ($list as $item) {
-            $item->read_at = Carbon::now();
-            $item->save();
-            if (isset($dialogMsg[$item->msg_id])) {
-                $dialogMsg[$item->msg_id]['readNum']++;
-            } else {
-                $dialogMsg[$item->msg_id] = [
-                    'dialogMsg' => $item->webSocketDialogMsg,
-                    'readNum' => 1
-                ];
+        foreach ($collection as $item) {
+            $ids[] = $item->id;
+            if ($item->msg_id) {
+                $msgCounts[$item->msg_id] = ($msgCounts[$item->msg_id] ?? 0) + 1;
             }
         }
-        foreach ($dialogMsg as $item) {
-            if ($item['dialogMsg']) {
-                $item['dialogMsg']->increment('read', $item['readNum']);
+
+        if (!empty($ids)) {
+            DB::table((new self())->getTable())
+                ->whereIn('id', $ids)
+                ->whereNull('read_at')
+                ->update(['read_at' => $now]);
+        }
+
+        if (!empty($msgCounts)) {
+            $cases = [];
+            $bindings = [];
+            foreach ($msgCounts as $msgId => $num) {
+                $cases[] = 'WHEN ? THEN ?';
+                $bindings[] = $msgId;
+                $bindings[] = $num;
             }
+            $msgIds = array_keys($msgCounts);
+            $bindings = array_merge($bindings, $msgIds);
+            $placeholders = implode(',', array_fill(0, count($msgIds), '?'));
+            $table = DB::getTablePrefix() . (new WebSocketDialogMsg())->getTable();
+            $sql = "UPDATE {$table} SET `read` = `read` + CASE `id` " . implode(' ', $cases) . " END WHERE `deleted_at` IS NULL AND `id` IN ({$placeholders})";
+            DB::update($sql, $bindings);
         }
     }
 }

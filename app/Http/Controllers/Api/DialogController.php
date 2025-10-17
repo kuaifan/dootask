@@ -2196,7 +2196,10 @@ class DialogController extends AbstractController
         switch ($type) {
             case 'read':
                 // 标记已读
-                $builder = WebSocketDialogMsgRead::whereDialogId($dialog_id)->whereUserid($user->userid)->whereReadAt(null);
+                $builder = WebSocketDialogMsgRead::whereDialogId($dialog_id)
+                    ->whereUserid($user->userid)
+                    ->whereReadAt(null)
+                    ->select(['id', 'msg_id']);
                 if ($after_msg_id > 0) {
                     $builder->where('msg_id', '>=', $after_msg_id);
                 }
