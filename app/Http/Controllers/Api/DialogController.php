@@ -1280,6 +1280,9 @@ class DialogController extends AbstractController
                 if ($model_name) {
                     $msgData['model_name'] = $model_name;
                 }
+                if (User::isBot($user->userid)) {
+                    $msgData['force_webhook'] = true; // 强制使用webhook发送
+                }
                 $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence, $key);
             }
         }

@@ -66,7 +66,7 @@ class BotReceiveMsgTask extends AbstractTask
         }
 
         // 判断消息是否存在
-        $msg = WebSocketDialogMsg::with(['user'])->find($this->msgId);
+        $msg = WebSocketDialogMsg::with(['user', 'webSocketDialog'])->find($this->msgId);
         if (empty($msg)) {
             return;
         }
@@ -75,7 +75,11 @@ class BotReceiveMsgTask extends AbstractTask
         $msg->readSuccess($botUser->userid);
 
         // 判断消息是否是机器人发送的则不处理，避免循环
-        if (!$msg->user || $msg->user->bot) {
+        if ((!$msg->user || $msg->user->bot)) {
+            $msgData = Base::json2array($msg->msg);
+            if (Base::val($msgData, 'force_webhook') && $msg->webSocketDialog) {
+                $this->handleWebhookRequest($msgData['text'], null, $msg, $msg->webSocketDialog, $botUser);
+            }
             return;
         }
 

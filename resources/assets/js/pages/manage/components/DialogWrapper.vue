@@ -463,7 +463,7 @@
                         <Input v-model="modifyData.webhook_url" :maxlength="255" />
                     </FormItem>
                     <FormItem v-if="typeof modifyData.webhook_events !== 'undefined'" prop="webhook_events" :label="$L('Webhook事件')">
-                        <CheckboxGroup v-model="modifyData.webhook_events">
+                        <CheckboxGroup v-model="webhookEvents">
                             <Checkbox v-for="option in webhookEventOptions" :key="option.value" :label="option.value">
                                 {{$L(option.label)}}
                             </Checkbox>
@@ -781,6 +781,7 @@ export default {
                 {value: 'member_join', label: '成员加入'},
                 {value: 'member_leave', label: '成员退出'},
             ],
+            webhookEvents: [],
 
             openId: 0,
             errorId: 0,
@@ -2762,8 +2763,9 @@ export default {
                             clear_day: 0,
                             webhook_url: '',
                             system_name: '',
-                            webhook_events: this.prepareWebhookEvents([], true),
+                            webhook_events: [],
                         })
+                        this.webhookEvents = this.prepareWebhookEvents([], true)
                         this.modifyLoad++;
                         this.$store.dispatch("call", {
                             url: 'users/bot/info',
@@ -2774,7 +2776,7 @@ export default {
                             this.modifyData.clear_day = data.clear_day
                             this.modifyData.webhook_url = data.webhook_url
                             this.modifyData.system_name = data.system_name
-                            this.modifyData.webhook_events = this.prepareWebhookEvents(data.webhook_events, true)
+                            this.webhookEvents = this.prepareWebhookEvents(data.webhook_events, true)
                         }).finally(() => {
                             this.modifyLoad--;
                         })
@@ -2929,7 +2931,7 @@ export default {
                     name: this.modifyData.name,
                     clear_day: this.modifyData.clear_day,
                     webhook_url: this.modifyData.webhook_url,
-                    webhook_events: this.normalizeWebhookEvents(this.modifyData.webhook_events, false),
+                    webhook_events: this.normalizeWebhookEvents(this.webhookEvents),
                     dialog_id: this.modifyData.dialog_id
                 }).then(({msg}) => {
                     $A.messageSuccess(msg);
