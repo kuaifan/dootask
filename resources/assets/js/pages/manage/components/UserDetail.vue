@@ -32,6 +32,35 @@
                         {{userData.profession || '-'}}
                     </li>
                     <li>
+                        <span>{{$L('生日')}}: </span>
+                        {{userData.birthday ? ($A.newDateString(userData.birthday, 'YYYY-MM-DD') || userData.birthday) : '-'}}
+                    </li>
+                    <li>
+                        <span>{{$L('地址')}}: </span>
+                        {{userData.address || '-'}}
+                    </li>
+                    <li>
+                        <span>{{$L('个人简介')}}: </span>
+                        {{userData.introduction || '-'}}
+                    </li>
+                    <li class="user-tags-line">
+                        <span>{{$L('个性标签')}}: </span>
+                        <div class="tags-content" @click="onOpenTagsModal">
+                            <div v-if="displayTags.length" class="tags-list">
+                                <Tag
+                                    v-for="tag in displayTags"
+                                    :key="tag.id"
+                                    :color="tag.recognized ? 'primary' : 'default'"
+                                    class="tag-pill">{{tag.name}}</Tag>
+                            </div>
+                            <span v-else class="tags-empty">{{$L('暂无个性标签')}}</span>
+                            <div class="tags-extra">
+                                <span v-if="personalTagTotal > displayTags.length" class="tags-total">{{$L('共(*)个', personalTagTotal)}}</span>
+                                <Button type="text" size="small" class="manage-button" @click.stop="onOpenTagsModal">{{$L('管理')}}</Button>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
                         <span>{{$L('最后在线')}}: </span>
                         {{$A.newDateString(userData.line_at, 'YYYY-MM-DD HH:mm') || '-'}}
                     </li>
@@ -43,7 +72,10 @@
                     </li>
                 </template>
             </ul>
-            <Button icon="md-chatbubbles" :disabled="!!userData.delete_at" @click="onOpenDialog">{{ $L('开始聊天') }}</Button>
+            <div class="user-detail-actions">
+                <Button icon="md-chatbubbles" :disabled="!!userData.delete_at" @click="onOpenDialog">{{ $L('开始聊天') }}</Button>
+                <Button icon="md-people" :disabled="!!userData.delete_at" @click="onOpenCreateGroup">{{ $L('创建群组') }}</Button>
+            </div>
         </div>
 
         <!-- 共同群组 -->
@@ -87,6 +119,11 @@
                 </div>
             </div>
         </Modal>
+        <UserTagsModal
+            v-if="userData.userid"
+            v-model="tagModalVisible"
+            :userid="userData.userid"
+            @updated="onTagsUpdated"/>
     </ModalAlive>
 </template>
 
@@ -94,9 +131,12 @@
 import emitter from "../../../store/events";
 import transformEmojiToHtml from "../../../utils/emoji";
 import {mapState} from "vuex";
+import UserTagsModal from "./UserTagsModal.vue";
 
 export default {
     name: 'UserDetail',
+
+    components: {UserTagsModal},
 
     data() {
         return {
@@ -105,6 +145,8 @@ export default {
             },
 
             showModal: false,
+
+            tagModalVisible: false,
 
             commonDialog: {
                 userid: null,
@@ -145,6 +187,17 @@ export default {
         commonDialogList() {
             return this.commonDialog.list || [];
         },
+
+        displayTags() {
+            return Array.isArray(this.userData.personal_tags) ? this.userData.personal_tags : [];
+        },
+
+        personalTagTotal() {
+            if (typeof this.userData.personal_tags_total === 'number') {
+                return this.userData.personal_tags_total;
+            }
+            return this.displayTags.length;
+        }
     },
 
     methods: {
@@ -157,6 +210,7 @@ export default {
             this.$store.dispatch("showSpinner", 600)
             this.$store.dispatch('getUserData', userid).then(user => {
                 this.userData = user;
+                this.ensureTagDefaults();
                 this.showModal = true;
                 this.loadCommonDialogCount()
             }).finally(_ => {
@@ -166,7 +220,8 @@ export default {
 
         onHide() {
             this.commonDialogShow = false;
-            this.showModal = false
+            this.showModal = false;
+            this.tagModalVisible = false;
         },
 
         onOpenAvatar() {
@@ -179,6 +234,41 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg)
             });
+        },
+
+        onOpenCreateGroup() {
+            const userids = [];
+            if (this.userId) {
+                userids.push(this.userId);
+            }
+            if (this.userData.userid && this.userData.userid !== this.userId) {
+                userids.push(this.userData.userid);
+            }
+            if (userids.length === 0 && this.userData.userid) {
+                userids.push(this.userData.userid);
+            }
+            emitter.emit('createGroup', userids);
+        },
+
+        ensureTagDefaults() {
+            if (!Array.isArray(this.userData.personal_tags)) {
+                this.$set(this.userData, 'personal_tags', []);
+            }
+            if (typeof this.userData.personal_tags_total !== 'number') {
+                this.$set(this.userData, 'personal_tags_total', this.userData.personal_tags.length);
+            }
+        },
+
+        onOpenTagsModal() {
+            if (!this.userData.userid) {
+                return;
+            }
+            this.tagModalVisible = true;
+        },
+
+        onTagsUpdated({top, total}) {
+            this.$set(this.userData, 'personal_tags', Array.isArray(top) ? top : []);
+            this.$set(this.userData, 'personal_tags_total', typeof total === 'number' ? total : this.userData.personal_tags.length);
         },
 
         loadCommonDialogCount() {
@@ -280,3 +370,52 @@ export default {
     }
 };
 </script>
+
+<style lang="scss" scoped>
+.user-tags-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+
+    span:first-child {
+        flex: 0 0 auto;
+    }
+
+    .tags-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        cursor: pointer;
+    }
+
+    .tags-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+
+        .tag-pill {
+            cursor: pointer;
+        }
+    }
+
+    .tags-empty {
+        color: #909399;
+    }
+
+    .tags-extra {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .tags-total {
+            color: #909399;
+            font-size: 12px;
+        }
+
+        .manage-button {
+            padding: 0;
+        }
+    }
+}
+</style>
