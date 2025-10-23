@@ -901,11 +901,17 @@ export default {
         },
 
         onKeydown(event) {
+            if (event.isComposing || event.key === 'Process') {
+                return;
+            }
             // 按下删除键时，判断是否符合删除条件
             this.backspaceDelete = event.key === 'Backspace' && !this.searchKey && this.selects.length > 0;
         },
 
         onKeyup(event) {
+            if (event.isComposing || event.key === 'Process') {
+                return;
+            }
             if (event.key === 'Backspace' && this.backspaceDelete) {
                 // 从最后一个元素开始向前遍历，找到第一个不是不可取消的元素
                 for (let i = this.selects.length - 1; i >= 0; i--) {
