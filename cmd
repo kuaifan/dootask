@@ -262,25 +262,33 @@ mysql_snapshot() {
         password=$(env_get DB_PASSWORD)
         # 还原数据库
         mkdir -p ${WORK_DIR}/docker/mysql/backup
-        list=`ls -1 "${WORK_DIR}/docker/mysql/backup" | grep ".sql.gz"`
-        if [ -z "$list" ]; then
+        shopt -s nullglob
+        backup_files=("${WORK_DIR}/docker/mysql/backup/"*.sql.gz)
+        shopt -u nullglob
+        if [ ${#backup_files[@]} -eq 0 ]; then
             error "没有备份文件！"
             exit 1
         fi
-        echo "$list"
-        read -rp "请输入备份文件名称还原：" inputname
-        filename="${WORK_DIR}/docker/mysql/backup/${inputname}"
-        if [ ! -f "$filename" ]; then
-            error "备份文件：${inputname} 不存在！"
-            exit 1
-        fi
+        echo "可用备份列表："
+        for idx in "${!backup_files[@]}"; do
+            printf "%2d) %s\n" "$((idx + 1))" "$(basename "${backup_files[$idx]}")"
+        done
+        while true; do
+            read -rp "请输入备份文件编号还原：" selection
+            if [[ "$selection" =~ ^[0-9]+$ ]] && [ "$selection" -ge 1 ] && [ "$selection" -le ${#backup_files[@]} ]; then
+                break
+            fi
+            warning "编号无效，请重新输入。"
+        done
+        filename="${backup_files[$((selection - 1))]}"
+        inputname="$(basename "$filename")"
         container_name=`docker_name mariadb`
         if [ -z "$container_name" ]; then
             error "没有找到 mariadb 容器!"
             exit 1
         fi
-        docker cp $filename ${container_name}:/
-        container_exec mariadb "gunzip < /${inputname} | mysql -u${username} -p${password} $database"
+        docker cp "$filename" "${container_name}:/"
+        container_exec mariadb "gunzip < '/${inputname}' | mysql -u${username} -p${password} $database"
         container_exec php "php artisan migrate"
         judge "还原数据库"
     fi
