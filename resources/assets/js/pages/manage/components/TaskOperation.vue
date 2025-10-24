@@ -86,11 +86,18 @@
                                 </EDropdownItem>
                             </template>
                         </template>
-                        <EDropdownItem v-else-if="operationShow" command="remove" :divided="turns.length > 0">
-                            <div class="item">
-                                <Icon type="md-trash" />{{$L('删除')}}
-                            </div>
-                        </EDropdownItem>
+                        <template v-else-if="operationShow">
+                            <EDropdownItem command="upgrade" :divided="turns.length > 0">
+                                <div class="item">
+                                    <Icon type="md-arrow-round-up" />{{$L('升主任务')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem command="remove">
+                                <div class="item hover-del">
+                                    <Icon type="md-trash" />{{$L('删除')}}
+                                </div>
+                            </EDropdownItem>
+                        </template>
                     </ul>
                 </li>
             </EDropdownMenu>
@@ -342,6 +349,10 @@ export default {
                     this.$refs.forwarder.onSelection()
                     break;
 
+                case 'upgrade':
+                    this.upgradeSubtask();
+                    break;
+
                 case 'archived':
                 case 'remove':
                     this.archivedOrRemoveTask(command);
@@ -389,6 +400,33 @@ export default {
                     reject()
                 });
             })
+        },
+
+        upgradeSubtask() {
+            if (this.loadIng) {
+                return;
+            }
+            $A.modalConfirm({
+                title: '升级为主任务',
+                content: `你确定要将子任务【${this.task.name}】升级为主任务吗？`,
+                loading: true,
+                onOk: () => {
+                    if (this.loadIng) {
+                        return;
+                    }
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("taskConvertToMain", this.task.id).then(({data, msg}) => {
+                            $A.messageSuccess(msg);
+                            this.hide();
+                            this.$store.dispatch("openTask", data?.task?.id || this.task.id);
+                            resolve();
+                        }).catch(({msg}) => {
+                            $A.modalError(msg);
+                            reject();
+                        });
+                    })
+                }
+            });
         },
 
         archivedOrRemoveTask(type) {

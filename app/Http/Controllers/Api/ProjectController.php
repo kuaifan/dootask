@@ -45,6 +45,7 @@ use App\Models\ProjectTaskVisibilityUser;
 use App\Models\ProjectTaskTemplate;
 use App\Models\ProjectTag;
 use App\Models\ProjectTaskRelation;
+use App\Observers\ProjectTaskObserver;
 
 /**
  * @apiDefine project
@@ -2228,6 +2229,131 @@ class ProjectController extends AbstractController
             $task->pushMsg('add', $data, $userId);
         }
         return Base::retSuccess('添加成功', $data);
+    }
+
+    /**
+     * @api {get} api/project/task/upgrade          36. 子任务升级为主任务
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__upgrade
+     *
+     * @apiParam {Number} task_id               子任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__upgrade()
+    {
+        $user = User::auth();
+        //
+        $task_id = intval(Request::input('task_id'));
+        //
+        $task = ProjectTask::userTask($task_id, true, true, ['taskUser']);
+        if ($task->parent_id == 0) {
+            return Base::retError('当前任务已是主任务');
+        }
+        //
+        $project = Project::userProject($task->project_id);
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_MOVE, $task);
+        //
+        $parentTask = ProjectTask::withTrashed()->find($task->parent_id);
+        $visibilityUserids = [];
+        if ($task->visibility == 3) {
+            $visibilityUserids = ProjectTaskVisibilityUser::whereTaskId($task->id)->pluck('userid')->toArray();
+            if (empty($visibilityUserids) && $parentTask) {
+                $visibilityUserids = ProjectTaskVisibilityUser::whereTaskId($parentTask->id)->pluck('userid')->toArray();
+            }
+        }
+        //
+        DB::transaction(function () use ($task, $parentTask, $visibilityUserids) {
+            $task->lockForUpdate();
+            $task->parent_id = 0;
+            if ($parentTask) {
+                $task->p_level = $parentTask->p_level;
+                $task->p_name = $parentTask->p_name;
+                $task->p_color = $parentTask->p_color;
+            }
+            $task->save();
+            ProjectTaskUser::whereTaskId($task->id)->update(['task_pid' => $task->id]);
+            if ($task->visibility == 3 && !empty($visibilityUserids)) {
+                ProjectTaskVisibilityUser::whereTaskId($task->id)->delete();
+                foreach (array_unique($visibilityUserids) as $userid) {
+                    if (!$userid) {
+                        continue;
+                    }
+                    ProjectTaskVisibilityUser::createInstance([
+                        'project_id' => $task->project_id,
+                        'task_id' => $task->id,
+                        'userid' => $userid,
+                    ])->save();
+                }
+            }
+            if ($parentTask) {
+                $parentTask->addLog("子任务升级为主任务", [
+                    'subtask' => [
+                        'id' => $task->id,
+                        'name' => $task->name,
+                    ],
+                ]);
+            }
+            $task->addLog("升级为主任务");
+        });
+        //
+        $task->refresh()->loadMissing(['project', 'taskUser']);
+        if ($task->visibility != 1) {
+            ProjectTaskObserver::visibilityUpdate($task);
+        }
+        $taskData = ProjectTask::oneTask($task->id);
+        $parentData = null;
+        if ($parentTask && !$parentTask->trashed()) {
+            $parentTask->refresh()->loadMissing(['project', 'taskUser']);
+            $parentData = ProjectTask::oneTask($parentTask->id);
+        }
+        //
+        $taskArray = $taskData ? $taskData->toArray() : [];
+        $parentArray = $parentData ? $parentData->toArray() : null;
+        if ($taskArray) {
+            $task->pushMsg('update', $taskArray);
+        }
+        if ($parentArray && $parentTask) {
+            $parentTask->pushMsg('update', $parentArray);
+        }
+        if ($parentTask && !$parentTask->trashed()) {
+            $mentionRelation = ProjectTaskRelation::updateOrCreate(
+                [
+                    'task_id' => $task->id,
+                    'related_task_id' => $parentTask->id,
+                    'direction' => ProjectTaskRelation::DIRECTION_MENTIONED_BY,
+                ],
+                [
+                    'userid' => $user->userid ?? null,
+                ]
+            );
+            $mentionedByRelation = ProjectTaskRelation::updateOrCreate(
+                [
+                    'task_id' => $parentTask->id,
+                    'related_task_id' => $task->id,
+                    'direction' => ProjectTaskRelation::DIRECTION_MENTION,
+                ],
+                [
+                    'userid' => $user->userid ?? null,
+                ]
+            );
+            if ($mentionRelation->wasRecentlyCreated || $mentionRelation->wasChanged()) {
+                $task->pushMsg('relation', null, null, false);
+            }
+            if ($mentionedByRelation->wasRecentlyCreated || $mentionedByRelation->wasChanged()) {
+                $parentTask->pushMsg('relation', null, null, false);
+            }
+        }
+        //
+        return Base::retSuccess('操作成功', [
+            'task' => $taskArray,
+            'parent' => $parentArray,
+        ]);
     }
 
     /**

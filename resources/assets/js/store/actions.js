@@ -2277,6 +2277,47 @@ export default {
     },
 
     /**
+     * 子任务升级为主任务
+     * @param dispatch
+     * @param data Number|JSONObject{task_id}
+     * @returns {Promise<unknown>}
+     */
+    taskConvertToMain({dispatch}, data) {
+        return new Promise(function (resolve, reject) {
+            if (/^\d+$/.test(data)) {
+                data = {task_id: data}
+            }
+            if ($A.runNum(data.task_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
+            dispatch("setLoad", {
+                key: `task-${data.task_id}`,
+                delay: 300
+            })
+            dispatch("call", {
+                url: 'project/task/upgrade',
+                data,
+            }).then(result => {
+                const {task, parent} = result.data || {};
+                if (task) {
+                    dispatch("saveTask", task);
+                }
+                if (parent) {
+                    dispatch("saveTask", parent);
+                }
+                resolve(result)
+            }).catch(e => {
+                console.warn(e);
+                dispatch("getTaskOne", data.task_id).catch(() => {})
+                reject(e)
+            }).finally(_ => {
+                dispatch("cancelLoad", `task-${data.task_id}`)
+            });
+        });
+    },
+
+    /**
      * 获取任务详细描述
      * @param state
      * @param dispatch
