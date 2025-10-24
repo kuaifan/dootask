@@ -634,6 +634,10 @@ class ProjectController extends AbstractController
                 if (!is_array($item['task'])) continue;
                 $index = 0;
                 foreach ($item['task'] as $task_id) {
+                    $task = ProjectTask::find($task_id);
+                    if ($task && intval($task->column_id) !== intval($item['id'])) {
+                        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_MOVE, $task);
+                    }
                     if (ProjectTask::whereId($task_id)->whereProjectId($project->id)->whereCompleteAt(null)->change([
                         'column_id' => $item['id'],
                         'sort' => $index
