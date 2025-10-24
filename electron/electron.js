@@ -46,6 +46,7 @@ const utils = require('./lib/utils');
 const config = require('./package.json');
 const electronDown = require("./electron-down");
 const electronMenu = require("./electron-menu");
+const { startMCPServer } = require("./lib/mcp");
 
 // 实例初始化
 const userConf = new electronConf()
@@ -73,6 +74,7 @@ let enableStoreBkp = true,
 
 // 服务器配置
 let serverPort = 22223,
+    mcpPort = 22224,
     serverPublicDir = path.join(__dirname, 'public'),
     serverUrl = "",
     serverTimer = null;
@@ -1141,11 +1143,11 @@ if (!getTheLock) {
     app.on('ready', async () => {
         isReady = true
         isWin && app.setAppUserModelId(config.appId)
-        // 启动web服务
+        // 启动 Web 服务器
         try {
             await startWebServer()
         } catch (error) {
-            dialog.showErrorBox('启动失败', `服务器启动失败：${error.message}`);
+            dialog.showErrorBox('启动失败', `Web 服务器启动失败：${error.message}`);
             app.quit();
             return;
         }
@@ -1157,6 +1159,8 @@ if (!getTheLock) {
         preCreateChildWindow()
         // 监听主题变化
         monitorThemeChanges()
+        // 启动 MCP 服务器
+        startMCPServer(mainWindow, mcpPort)
         // 创建托盘
         if (['darwin', 'win32'].includes(process.platform) && utils.isJson(config.trayIcon)) {
             mainTray = new Tray(path.join(__dirname, config.trayIcon[isDevelopMode ? 'dev' : 'prod'][process.platform === 'darwin' ? 'mac' : 'win']));
@@ -1217,7 +1221,7 @@ app.on('before-quit', () => {
     willQuitApp = true
 })
 
-app.on("will-quit",function(){
+app.on("will-quit", () => {
     globalShortcut.unregisterAll();
 })
 

@@ -53,10 +53,12 @@
         "electron-store": "^8.2.0",
         "electron-updater": "^6.6.2",
         "express": "^5.1.0",
+        "fastmcp": "^3.21.0",
         "fs-extra": "^11.2.0",
         "pdf-lib": "^1.17.1",
         "request": "^2.88.2",
         "tar": "^7.4.3",
+        "zod": "^3.23.8",
         "yauzl": "^3.2.0"
     },
     "trayIcon": {
