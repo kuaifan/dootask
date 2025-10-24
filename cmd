@@ -483,6 +483,8 @@ EOF
 
 # 安装函数
 handle_install() {
+    check_sudo
+    
     local relock=$(arg_get relock)
     local port=$(arg_get port)
 
@@ -572,6 +574,8 @@ handle_install() {
 
 # 更新函数
 handle_update() {
+    check_sudo
+
     local target_branch=$(arg_get branch)
     local is_local=$(arg_get local)
     local force_update=$(arg_get force)
