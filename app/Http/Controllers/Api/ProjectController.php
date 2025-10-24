@@ -996,7 +996,12 @@ class ProjectController extends AbstractController
      * - 大于0：指定主任务下的子任务
      * - 等于-1：表示仅主任务
      *
-     * @apiParam {Array} [time]              指定时间范围，如：['2020-12-12', '2020-12-30']
+     * @apiParam {String} [time]             指定时间范围，如：today, week, month, year, 2020-12-12,2020-12-30
+     * - today: 今天
+     * - week: 本周
+     * - month: 本月
+     * - year: 今年
+     * - 自定义时间范围，如 (字符串)：2020-12-12,2020-12-30 或 (数组)：['2020-12-12', '2020-12-30']
      * @apiParam {String} [timerange]        时间范围（如：1678248944,1678248944）
      * - 第一个时间: 读取在这个时间之后更新的数据
      * - 第二个时间: 读取在这个时间之后删除的数据ID（第1页附加返回数据: deleted_id）
@@ -1096,7 +1101,29 @@ class ProjectController extends AbstractController
             });
         }
         //
-        if (is_array($time)) {
+        if (is_string($time) && $time) {
+            switch ($time) {
+                case 'today':
+                    $builder->betweenTime(Carbon::now()->startOfDay(), Carbon::now()->endOfDay());
+                    break;
+                case 'week':
+                    $builder->betweenTime(Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek());
+                    break;
+                case 'month':
+                    $builder->betweenTime(Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth());
+                    break;
+                case 'year':
+                    $builder->betweenTime(Carbon::now()->startOfYear(), Carbon::now()->endOfYear());
+                    break;
+                default:
+                    if (str_contains($time, ',')) {
+                        $times = explode(',', $time);
+                        if (Timer::isDateOrTime($times[0]) && Timer::isDateOrTime($times[1])) {
+                            $builder->betweenTime(Carbon::parse($times[0])->startOfDay(), Carbon::parse($times[1])->endOfDay());
+                        }
+                    }
+            }
+        } elseif (is_array($time)) {
             if (Timer::isDateOrTime($time[0]) && Timer::isDateOrTime($time[1])) {
                 $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
             }
