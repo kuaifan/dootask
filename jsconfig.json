@@ -21,7 +21,6 @@
     "resources/assets/js/**/*",
     "resources/assets/**/*.vue",
     "resources/assets/sass/**/*",
-    "electron/**/*.js",
     "types/**/*.d.ts"
   ],
   "exclude": [

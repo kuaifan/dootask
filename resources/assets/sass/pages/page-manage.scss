@@ -337,6 +337,12 @@
     &.main-menu {
         width: 86%;
     }
+    &.ivu-dropdown {
+        .ivu-select-dropdown {
+            max-height: calc(100vh - 120px);
+            overflow: auto;
+        }
+    }
     .ivu-select-dropdown {
         padding: 7px 0;
         .ivu-dropdown-item {
