@@ -4,15 +4,20 @@
  * DooTask 的 Electron 客户端集成了 Model Context Protocol (MCP) 服务，
  * 允许 AI 助手(如 Claude)直接与 DooTask 任务进行交互。
  * 
- * 提供的工具:
- * 1. list_tasks      - 获取任务列表，支持按状态/项目/主任务筛选、搜索、分页
- * 2. get_task        - 获取任务详情，包含负责人、协助人员、标签等完整信息
- * 3. complete_task   - 标记任务完成，自动记录完成时间
- * 4. uncomplete_task - 取消完成任务，将已完成任务改为未完成
- * 5. get_task_content - 获取任务的富文本描述内容
+ * 提供的工具（共 7 个）:
+ * 
+ * === 任务管理 ===
+ * 1. list_tasks       - 获取任务列表，支持按状态/项目/主任务筛选、搜索、分页
+ * 2. get_task         - 获取任务详情，包含完整内容、负责人、协助人员、标签等所有信息
+ * 3. complete_task    - 快速标记任务完成
+ * 4. create_task      - 创建新任务
+ * 5. update_task      - 更新任务，支持修改名称、内容、负责人、时间、状态等所有属性
+ * 
+ * === 项目管理 ===
+ * 6. list_projects    - 获取项目列表，支持按归档状态筛选、搜索
+ * 7. get_project      - 获取项目详情，包含列（看板列）、成员等完整信息
  * 
  * 配置方法:
- * 添加 DooTask MCP 服务器配置:
  *  {
  *    "mcpServers": {
  *      "DooTask": {
@@ -22,9 +27,15 @@
  *  }
  * 
  * 使用示例:
- * - "请帮我查看目前有哪些未完成的任务"
- * - "任务 123 的详细信息是什么?"
- * - "帮我把任务 789 标记为已完成"
+ * - "查看我未完成的任务"
+ * - "搜索包含'报告'的任务"
+ * - "显示任务123的详细信息"
+ * - "标记任务456为已完成"
+ * - "在项目1中创建任务：完成用户手册，负责人100，协助人员101"
+ * - "把任务789的截止时间改为下周五，并分配给用户200"
+ * - "取消任务234的完成状态"
+ * - "我有哪些项目？"
+ * - "查看项目5的详情，包括所有列和成员"
  */
 
 const { FastMCP } = require('fastmcp');
@@ -176,14 +187,20 @@ class DooTaskMCP {
                     throw new Error(result.error);
                 }
 
-                // 格式化返回数据，使其更易读
                 const tasks = result.data.data.map(task => ({
                     id: task.id,
                     name: task.name,
                     status: task.complete_at ? '已完成' : '未完成',
                     complete_at: task.complete_at || '未完成',
+                    end_at: task.end_at || '无截止时间',
                     project_id: task.project_id,
+                    project_name: task.project_name || '',
+                    column_name: task.column_name || '',
                     parent_id: task.parent_id,
+                    owners: task.taskUser?.filter(u => u.owner === 1).map(u => ({
+                        userid: u.userid,
+                        username: u.username || u.nickname || `用户${u.userid}`
+                    })) || [],
                     sub_num: task.sub_num || 0,
                     sub_complete: task.sub_complete || 0,
                     percent: task.percent || 0,
@@ -207,27 +224,44 @@ class DooTaskMCP {
         // 2. 获取任务详情
         this.mcp.addTool({
             name: 'get_task',
-            description: '获取指定任务的详细信息,包括任务描述、负责人、协助人员、标签、时间等完整信息。',
+            description: '获取指定任务的详细信息,包括任务描述、完整内容、负责人、协助人员、标签、时间等所有信息。',
             parameters: z.object({
                 task_id: z.number()
                     .describe('任务ID'),
             }),
             execute: async (params) => {
-                const result = await this.request('GET', 'project/task/one', {
+                const taskResult = await this.request('GET', 'project/task/one', {
                     task_id: params.task_id,
                 });
 
-                if (result.error) {
-                    throw new Error(result.error);
+                if (taskResult.error) {
+                    throw new Error(taskResult.error);
                 }
 
-                const task = result.data;
+                const task = taskResult.data;
 
-                // 格式化任务详情
+                // 获取任务完整内容
+                let fullContent = task.desc || '无描述';
+                try {
+                    const contentResult = await this.request('GET', 'project/task/content', {
+                        task_id: params.task_id,
+                    });
+                    if (contentResult && contentResult.data) {
+                        if (typeof contentResult.data === 'object' && contentResult.data.content) {
+                            fullContent = contentResult.data.content;
+                        } else if (typeof contentResult.data === 'string') {
+                            fullContent = contentResult.data;
+                        }
+                    }
+                } catch (error) {
+                    loger.warn(`Failed to get task content: ${error.message}`);
+                }
+
                 const taskDetail = {
                     id: task.id,
                     name: task.name,
                     desc: task.desc || '无描述',
+                    content: fullContent,
                     status: task.complete_at ? '已完成' : '未完成',
                     complete_at: task.complete_at || '未完成',
                     project_id: task.project_id,
@@ -235,13 +269,19 @@ class DooTaskMCP {
                     column_id: task.column_id,
                     column_name: task.column_name,
                     parent_id: task.parent_id,
-                    start_at: task.start_at,
-                    end_at: task.end_at,
+                    start_at: task.start_at || '无开始时间',
+                    end_at: task.end_at || '无截止时间',
                     flow_item_id: task.flow_item_id,
                     flow_item_name: task.flow_item_name,
                     visibility: task.visibility === 1 ? '公开' : '指定人员',
-                    owners: task.taskUser?.filter(u => u.owner === 1).map(u => u.userid) || [],
-                    assistants: task.taskUser?.filter(u => u.owner === 0).map(u => u.userid) || [],
+                    owners: task.taskUser?.filter(u => u.owner === 1).map(u => ({
+                        userid: u.userid,
+                        username: u.username || u.nickname || `用户${u.userid}`
+                    })) || [],
+                    assistants: task.taskUser?.filter(u => u.owner === 0).map(u => ({
+                        userid: u.userid,
+                        username: u.username || u.nickname || `用户${u.userid}`
+                    })) || [],
                     tags: task.taskTag?.map(t => t.name) || [],
                     created_at: task.created_at,
                     updated_at: task.updated_at,
@@ -259,13 +299,12 @@ class DooTaskMCP {
         // 3. 标记任务完成
         this.mcp.addTool({
             name: 'complete_task',
-            description: '将指定任务标记为已完成。注意:主任务必须在所有子任务完成后才能标记完成。',
+            description: '快速标记任务完成（自动使用当前时间）。如需指定完成时间或取消完成，请使用 update_task。注意:主任务必须在所有子任务完成后才能标记完成。',
             parameters: z.object({
                 task_id: z.number()
                     .describe('要标记完成的任务ID'),
             }),
             execute: async (params) => {
-                // 使用当前时间标记完成
                 const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
                 const result = await this.request('POST', 'project/task/update', {
@@ -291,61 +330,264 @@ class DooTaskMCP {
             }
         });
 
-        // 4. 取消完成任务
+        // 4. 创建任务
         this.mcp.addTool({
-            name: 'uncomplete_task',
-            description: '将已完成的任务标记为未完成。',
+            name: 'create_task',
+            description: '创建新任务。可以指定任务名称、内容、负责人、时间等信息。',
             parameters: z.object({
-                task_id: z.number()
-                    .describe('要标记为未完成的任务ID'),
+                project_id: z.number()
+                    .describe('项目ID'),
+                name: z.string()
+                    .describe('任务名称'),
+                content: z.string()
+                    .optional()
+                    .describe('任务内容描述(支持富文本)'),
+                owner: z.array(z.number())
+                    .optional()
+                    .describe('负责人用户ID数组'),
+                assist: z.array(z.number())
+                    .optional()
+                    .describe('协助人员用户ID数组'),
+                column_id: z.number()
+                    .optional()
+                    .describe('列ID(看板列)'),
+                start_at: z.string()
+                    .optional()
+                    .describe('开始时间，格式: YYYY-MM-DD HH:mm:ss'),
+                end_at: z.string()
+                    .optional()
+                    .describe('结束时间，格式: YYYY-MM-DD HH:mm:ss'),
             }),
             execute: async (params) => {
-                const result = await this.request('POST', 'project/task/update', {
-                    task_id: params.task_id,
-                    complete_at: false,
-                });
+                const requestData = {
+                    project_id: params.project_id,
+                    name: params.name,
+                };
+
+                // 添加可选参数
+                if (params.content) requestData.content = params.content;
+                if (params.owner) requestData.owner = params.owner;
+                if (params.assist) requestData.assist = params.assist;
+                if (params.column_id) requestData.column_id = params.column_id;
+                if (params.start_at) requestData.start_at = params.start_at;
+                if (params.end_at) requestData.end_at = params.end_at;
+
+                const result = await this.request('POST', 'project/task/add', requestData);
 
                 if (result.error) {
                     throw new Error(result.error);
                 }
+
+                const task = result.data;
 
                 return {
                     content: [{
                         type: 'text',
                         text: JSON.stringify({
                             success: true,
-                            message: '任务已标记为未完成',
-                            task_id: params.task_id,
+                            message: '任务创建成功',
+                            task: {
+                                id: task.id,
+                                name: task.name,
+                                project_id: task.project_id,
+                                column_id: task.column_id,
+                                created_at: task.created_at,
+                            }
                         }, null, 2)
                     }]
                 };
             }
         });
 
-        // 5. 获取任务内容详情
+        // 5. 更新任务（完整版）
         this.mcp.addTool({
-            name: 'get_task_content',
-            description: '获取任务的详细内容描述(富文本内容)',
+            name: 'update_task',
+            description: '更新任务信息。可以修改任务名称、内容、负责人、时间、状态等所有属性。',
             parameters: z.object({
                 task_id: z.number()
                     .describe('任务ID'),
+                name: z.string()
+                    .optional()
+                    .describe('任务名称'),
+                content: z.string()
+                    .optional()
+                    .describe('任务内容描述'),
+                owner: z.array(z.number())
+                    .optional()
+                    .describe('负责人用户ID数组'),
+                assist: z.array(z.number())
+                    .optional()
+                    .describe('协助人员用户ID数组'),
+                column_id: z.number()
+                    .optional()
+                    .describe('移动到指定列ID'),
+                start_at: z.string()
+                    .optional()
+                    .describe('开始时间，格式: YYYY-MM-DD HH:mm:ss'),
+                end_at: z.string()
+                    .optional()
+                    .describe('结束时间，格式: YYYY-MM-DD HH:mm:ss'),
+                complete_at: z.union([z.string(), z.boolean()])
+                    .optional()
+                    .describe('完成时间。传时间字符串标记完成，传false标记未完成'),
             }),
             execute: async (params) => {
-                const result = await this.request('GET', 'project/task/content', {
+                const requestData = {
                     task_id: params.task_id,
+                };
+
+                // 添加要更新的字段
+                if (params.name !== undefined) requestData.name = params.name;
+                if (params.content !== undefined) requestData.content = params.content;
+                if (params.owner !== undefined) requestData.owner = params.owner;
+                if (params.assist !== undefined) requestData.assist = params.assist;
+                if (params.column_id !== undefined) requestData.column_id = params.column_id;
+                if (params.start_at !== undefined) requestData.start_at = params.start_at;
+                if (params.end_at !== undefined) requestData.end_at = params.end_at;
+                if (params.complete_at !== undefined) requestData.complete_at = params.complete_at;
+
+                const result = await this.request('POST', 'project/task/update', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const task = result.data;
+
+                // 构建更新摘要
+                const updates = [];
+                if (params.name !== undefined) updates.push('名称');
+                if (params.content !== undefined) updates.push('内容');
+                if (params.owner !== undefined) updates.push('负责人');
+                if (params.assist !== undefined) updates.push('协助人员');
+                if (params.column_id !== undefined) updates.push('列');
+                if (params.start_at !== undefined || params.end_at !== undefined) updates.push('时间');
+                if (params.complete_at !== undefined) updates.push('完成状态');
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            message: `任务已更新: ${updates.join('、')}`,
+                            task: {
+                                id: task.id,
+                                name: task.name,
+                                status: task.complete_at ? '已完成' : '未完成',
+                                complete_at: task.complete_at || '未完成',
+                                updated_at: task.updated_at,
+                            }
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 6. 获取项目列表
+        this.mcp.addTool({
+            name: 'list_projects',
+            description: '获取项目列表。可以按归档状态筛选、搜索项目名称等。',
+            parameters: z.object({
+                archived: z.enum(['no', 'yes', 'all'])
+                    .optional()
+                    .describe('归档状态: no(未归档), yes(已归档), all(全部)，默认no'),
+                search: z.string()
+                    .optional()
+                    .describe('搜索关键词(可搜索项目名称)'),
+                page: z.number()
+                    .optional()
+                    .describe('页码，默认1'),
+                pagesize: z.number()
+                    .optional()
+                    .describe('每页数量，默认20'),
+            }),
+            execute: async (params) => {
+                const requestData = {
+                    archived: params.archived || 'no',
+                    page: params.page || 1,
+                    pagesize: params.pagesize || 20,
+                };
+
+                // 添加搜索参数
+                if (params.search) {
+                    requestData.keys = {
+                        name: params.search
+                    };
+                }
+
+                const result = await this.request('GET', 'project/lists', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const projects = result.data.data.map(project => ({
+                    id: project.id,
+                    name: project.name,
+                    desc: project.desc || '无描述',
+                    archived_at: project.archived_at || '未归档',
+                    owner_userid: project.owner_userid || 0,
+                    created_at: project.created_at,
+                }));
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            total: result.data.total,
+                            page: result.data.current_page,
+                            pagesize: result.data.per_page,
+                            projects: projects,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 7. 获取项目详情
+        this.mcp.addTool({
+            name: 'get_project',
+            description: '获取指定项目的详细信息，包括项目的列（看板列）、成员等完整信息。',
+            parameters: z.object({
+                project_id: z.number()
+                    .describe('项目ID'),
+            }),
+            execute: async (params) => {
+                const result = await this.request('GET', 'project/one', {
+                    project_id: params.project_id,
                 });
 
                 if (result.error) {
                     throw new Error(result.error);
                 }
 
+                const project = result.data;
+
+                const projectDetail = {
+                    id: project.id,
+                    name: project.name,
+                    desc: project.desc || '无描述',
+                    archived_at: project.archived_at || '未归档',
+                    owner_userid: project.owner_userid,
+                    owner_username: project.owner_username,
+                    columns: project.projectColumn?.map(col => ({
+                        id: col.id,
+                        name: col.name,
+                        sort: col.sort,
+                    })) || [],
+                    members: project.projectUser?.map(user => ({
+                        userid: user.userid,
+                        username: user.username,
+                        owner: user.owner === 1 ? '管理员' : '成员',
+                    })) || [],
+                    created_at: project.created_at,
+                    updated_at: project.updated_at,
+                };
+
                 return {
                     content: [{
                         type: 'text',
-                        text: JSON.stringify({
-                            task_id: params.task_id,
-                            content: result.data.content || '无内容',
-                        }, null, 2)
+                        text: JSON.stringify(projectDetail, null, 2)
                     }]
                 };
             }
