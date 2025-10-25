@@ -277,4 +277,7 @@ export default {
     microAppsInstalled: [],
     microAppsIds: [],
     microAppsMenus: [],
+
+    // MCP 服务器状态
+    mcpServerStatus: {running: 'stopped'},
 };

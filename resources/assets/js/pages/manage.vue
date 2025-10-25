@@ -28,7 +28,9 @@
                             placement="right-start">
                             <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
-                                    {{$L(item.name)}}
+                                    <div class="manage-menu-title">
+                                        {{$L(item.name)}}
+                                    </div>
                                     <Icon type="ios-arrow-forward"></Icon>
                                 </div>
                             </DropdownItem>
@@ -66,7 +68,9 @@
                             placement="right-start">
                             <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
-                                    {{$L(item.name)}}
+                                    <div class="manage-menu-title">
+                                        {{$L(item.name)}}
+                                    </div>
                                     <Icon type="ios-arrow-forward"></Icon>
                                 </div>
                             </DropdownItem>
@@ -86,7 +90,12 @@
                             :name="item.path"
                             :style="item.style || {}">
                             <div class="manage-menu-flex">
-                                {{$L(item.name)}}
+                                <div class="manage-menu-title">
+                                    {{$L(item.name)}}
+                                </div>
+                                <Icon
+                                    v-if="item.selected === true"
+                                    type="md-checkmark" />
                                 <Badge
                                     v-if="item.path === 'version'"
                                     class="manage-menu-report-badge"
@@ -317,6 +326,9 @@
             </div>
         </Modal>
 
+        <!--弹出 MCP 服务器信息-->
+        <MCPHelper v-model="mcpHelperShow"/>
+
         <!--导出任务统计-->
         <TaskExport v-model="exportTaskShow"/>
 
@@ -415,6 +427,7 @@
 import { mapState, mapGetters } from 'vuex'
 import ProjectArchived from "./manage/components/ProjectArchived";
 import TeamManagement from "./manage/components/TeamManagement";
+import MCPHelper from "./manage/components/MCPHelper";
 import FavoriteManagement from "./manage/components/FavoriteManagement";
 import RecentManagement from "./manage/components/RecentManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
@@ -460,6 +473,7 @@ export default {
         DrawerOverlay,
         ProjectManagement,
         TeamManagement,
+        MCPHelper,
         FavoriteManagement,
         RecentManagement,
         ProjectArchived,
@@ -529,9 +543,11 @@ export default {
             approveShow: false,
             approveDetails: {id: 0},
             approveDetailsShow: false,
-            
+
             taskBrowseLoading: false,
-            taskBrowseHistory: [], // 存储任务浏览历史
+            taskBrowseHistory: [],
+
+            mcpHelperShow: false,
         }
     },
 
@@ -596,6 +612,8 @@ export default {
             'formOptions',
             'mobileTabbar',
             'longpressData',
+
+            'mcpServerStatus'
         ]),
 
         ...mapGetters(['dashboardTask', "filterMicroAppsMenusMain"]),
@@ -699,6 +717,7 @@ export default {
                 {path: 'taskBrowse', name: '最近打开的任务'},
                 {path: 'favorite', name: '我的收藏'},
                 {path: 'download', name: '下载内容', visible: !!this.$Electron},
+                {path: 'mcpServer', name: '启用桌面 MCP 服务器', visible: !!this.$Electron, selected: this.mcpServerStatus.running === 'running'},
             ];
             if (userIsAdmin) {
                 array.push(...[
@@ -848,6 +867,16 @@ export default {
             },
             immediate: true
         },
+
+        mcpServerStatus: {
+            handler(data) {
+                if (!this.$Electron) {
+                    return;
+                }
+                this.$Electron.sendMessage('mcpServerToggle', data);
+            },
+            immediate: true
+        }
     },
 
     methods: {
@@ -922,6 +951,12 @@ export default {
                         language: languageName,
                         theme: this.themeName,
                     });
+                    return;
+                case 'mcpServer':
+                    if (this.mcpServerStatus.running !== 'running') {
+                        this.mcpHelperShow = true;
+                    }
+                    this.$store.dispatch('toggleMcpServer');
                     return;
                 case 'logout':
                     $A.modalConfirm({
@@ -1549,7 +1584,7 @@ export default {
          */
         loadTaskBrowseHistory() {
             if (this.taskBrowseLoading) return
-            
+
             this.taskBrowseLoading = true
             this.$store.dispatch("getTaskBrowseHistory", 20).then(({data}) => {
                 // 更新组件内的浏览历史数据

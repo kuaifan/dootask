@@ -46,7 +46,7 @@ const utils = require('./lib/utils');
 const config = require('./package.json');
 const electronDown = require("./electron-down");
 const electronMenu = require("./electron-menu");
-const { startMCPServer } = require("./lib/mcp");
+const { startMCPServer, stopMCPServer } = require("./lib/mcp");
 
 // 实例初始化
 const userConf = new electronConf()
@@ -1159,8 +1159,6 @@ if (!getTheLock) {
         preCreateChildWindow()
         // 监听主题变化
         monitorThemeChanges()
-        // 启动 MCP 服务器
-        startMCPServer(mainWindow, mcpPort)
         // 创建托盘
         if (['darwin', 'win32'].includes(process.platform) && utils.isJson(config.trayIcon)) {
             mainTray = new Tray(path.join(__dirname, config.trayIcon[isDevelopMode ? 'dev' : 'prod'][process.platform === 'darwin' ? 'mac' : 'win']));
@@ -1662,6 +1660,19 @@ ipcMain.on('setDockBadge', (event, args) => {
         mainTray.setTitle(text)
     }
     event.returnValue = "ok"
+})
+
+/**
+ * MCP 服务器状态切换
+ * @param args
+ */
+ipcMain.on('mcpServerToggle', (event, args) => {
+    const { running } = args;
+    if (running === 'running') {
+        startMCPServer(mainWindow, mcpPort)
+    } else {
+        stopMCPServer()
+    }
 })
 
 /**

@@ -1081,6 +1081,7 @@ export default {
                 cacheTranslations: await $A.IDBArray("cacheTranslations"),
                 cacheEmojis: await $A.IDBArray("cacheEmojis"),
                 userInfo: await $A.IDBJson("userInfo"),
+                mcpServerStatus: await $A.IDBJson("mcpServerStatus"),
                 cacheVersion: state.cacheVersion,
             };
             await $A.IDBClear();
@@ -1141,6 +1142,7 @@ export default {
                     'userInfo',
                     'taskRelatedCache',
                     'dialogCommonCountCache',
+                    'mcpServerStatus'
                 ]
             };
 
@@ -5044,4 +5046,24 @@ export default {
             commit("microApps/data", data|| [])
         }
     },
+
+    /** *****************************************************************************************/
+    /** *********************************** MCP Server ******************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 切换 MCP 服务器状态
+     * @param state
+     * @param commit
+     */
+    async toggleMcpServer({state, commit}) {
+        if (state.mcpServerStatus.running === 'running') {
+            // 停止 MCP 服务器
+            commit('mcp/server/status', {running: 'stopped'});
+        } else {
+            // 启动 MCP 服务器
+            commit('mcp/server/status', {running: 'running'});
+        }
+    }
+
 }

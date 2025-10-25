@@ -439,4 +439,9 @@ export default {
         $A.IDBSave("microAppsIds", state.microAppsIds = data.map(item => item.id));
         $A.IDBSave("microAppsMenus", state.microAppsMenus = menus);
     },
+
+    // MCP 服务器状态
+    'mcp/server/status': function(state, data) {
+        $A.IDBSave("mcpServerStatus", state.mcpServerStatus = data);
+    },
 }
