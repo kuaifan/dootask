@@ -304,6 +304,7 @@ const $init = async () => {
         template: '<App/>',
     }).$mount('#app');
 
+    $A.apiCall = (...args) => store.dispatch("call", ...args);
     $A.goForward = app.goForward;
     $A.goBack = app.goBack;
     $A.Message = app.$Message;

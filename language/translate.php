@@ -103,7 +103,9 @@ if (count($needs) > 0) {
         // 开始翻译
         print_r("正在翻译：" . (count($keys) + $done) . "/" . count($needs) . "...\n");
         $openAi = new OpenAi(OPEN_AI_KEY);
-        $openAi->setProxy(OPEN_AI_PROXY);
+        if (OPEN_AI_PROXY) {
+            $openAi->setProxy(OPEN_AI_PROXY);
+        }
         $result = $openAi->chat([
             'model' => 'gpt-4.1',
             'messages' => [

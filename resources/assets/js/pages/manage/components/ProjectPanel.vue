@@ -788,6 +788,11 @@ export default {
             })
         },
 
+        parentTask() {
+            const {allTask} = this;
+            return allTask.filter(task => task.parent_id == 0);
+        },
+
         columnList() {
             const {projectId, cacheColumns, allTask} = this;
             const list = $A.cloneJSON(cacheColumns).filter(({project_id}) => {
@@ -1059,7 +1064,7 @@ export default {
         'columnList.length'() {
             this.handleColumnDebounce();
         },
-        'allTask.length'() {
+        'parentTask.length'() {
             this.handleColumnDebounce();
         },
         searchText() {

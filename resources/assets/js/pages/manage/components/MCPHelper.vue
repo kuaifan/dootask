@@ -9,7 +9,7 @@
             </Alert>
 
             <div class="mcp-section">
-                <h3>🔗 {{ $L('接入配置') }}</h3>
+                <h3><span class="emoji-original">🔗</span> {{ $L('接入配置') }}</h3>
                 <p>{{ $L('以接入 Claude 为例，在配置文件中添加以下配置') }}:</p>
                 <div class="mcp-code-block">
                     <pre ref="mcpConfig">{{ mcpConfig }}</pre>
@@ -18,7 +18,7 @@
             </div>
 
             <div class="mcp-section">
-                <h3>💡 {{ $L('使用示例') }}</h3>
+                <h3><span class="emoji-original">💡</span> {{ $L('使用示例') }}</h3>
                 <p>{{ $L('配置生效后，即可通过自然语言使用 MCP 服务') }}:</p>
                 <ul class="mcp-examples">
                     <li>"{{ $L("查看我未完成的任务") }}"</li>
