@@ -1786,6 +1786,38 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {get} api/project/task/subdata          25. 获取子任务数据
+     *
+     * @apiDescription 需要token身份，相对one接口，这个只获取主任务的子任务数据
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__subdata
+     *
+     * @apiParam {Number} task_id            任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__subdata()
+    {
+        User::auth();
+        $task_id = intval(Request::input('task_id'));
+        if ($task_id <= 0) {
+            return Base::retError('参数错误', ['task_id' => $task_id]);
+        }
+        //
+        $task = ProjectTask::userTask($task_id);
+        //
+        return Base::retSuccess('success', [
+            'id' => $task->id,
+            'sub_num' => $task->sub_num,
+            'sub_complete' => $task->sub_complete,
+            'percent' => $task->percent,
+        ]);
+    }
+
+    /**
      * @api {get} api/project/task/related          26. 获取任务关联任务列表
      *
      * @apiDescription 需要token身份

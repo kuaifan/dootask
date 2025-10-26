@@ -2158,6 +2158,32 @@ export default {
     },
 
     /**
+     * 获取任务的子任务数据
+     * @param state
+     * @param dispatch
+     * @param taskId
+     */
+    getTaskSubData({state, dispatch}, taskId) {
+        if (!taskId) {
+            return;
+        }
+        const parentTask = state.cacheTasks.find(({id}) => id == taskId);
+        if (!parentTask) {
+            return;
+        }
+        dispatch("call", {
+            url: 'project/task/subdata',
+            data: {
+                task_id: taskId
+            },
+        }).then(({data}) => {
+            dispatch("saveTask", Object.assign(parentTask, data))
+        }).catch(e => {
+            console.warn(e);
+        });
+    },
+
+    /**
      * 获取Dashboard相关任务
      * @param state
      * @param dispatch
@@ -2569,6 +2595,7 @@ export default {
             delete task.new_column
         }
         dispatch("saveTask", task)
+        dispatch("getTaskSubData", task.parent_id)
         dispatch("getProjectOne", task.project_id).catch(() => {})
     },
 
@@ -2592,6 +2619,7 @@ export default {
                     method: 'post',
                 }).then(result => {
                     dispatch("saveTask", result.data)
+                    dispatch("getTaskSubData", result.data.parent_id)
                     resolve(result)
                 }).catch(e => {
                     console.warn(e);
