@@ -91,7 +91,7 @@ class DooTaskMCP {
                         const result = await $A.apiCall({
                             url: '${path}',
                             data: ${JSON.stringify(data)},
-                            method: '${method}'
+                            method: '${method.toLowerCase()}',
                         });
                         
                         try {
@@ -190,6 +190,8 @@ class DooTaskMCP {
                 const tasks = result.data.data.map(task => ({
                     id: task.id,
                     name: task.name,
+                    desc: task.desc || '无描述',
+                    dialog_id: task.dialog_id,
                     status: task.complete_at ? '已完成' : '未完成',
                     complete_at: task.complete_at || '未完成',
                     end_at: task.end_at || '无截止时间',
@@ -261,6 +263,7 @@ class DooTaskMCP {
                     id: task.id,
                     name: task.name,
                     desc: task.desc || '无描述',
+                    dialog_id: task.dialog_id,
                     content: fullContent,
                     status: task.complete_at ? '已完成' : '未完成',
                     complete_at: task.complete_at || '未完成',
@@ -525,6 +528,7 @@ class DooTaskMCP {
                     id: project.id,
                     name: project.name,
                     desc: project.desc || '无描述',
+                    dialog_id: project.dialog_id,
                     archived_at: project.archived_at || '未归档',
                     owner_userid: project.owner_userid || 0,
                     created_at: project.created_at,
@@ -567,6 +571,7 @@ class DooTaskMCP {
                     id: project.id,
                     name: project.name,
                     desc: project.desc || '无描述',
+                    dialog_id: project.dialog_id,
                     archived_at: project.archived_at || '未归档',
                     owner_userid: project.owner_userid,
                     owner_username: project.owner_username,
