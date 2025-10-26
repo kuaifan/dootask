@@ -4,24 +4,37 @@
  * DooTask 的 Electron 客户端集成了 Model Context Protocol (MCP) 服务，
  * 允许 AI 助手(如 Claude)直接与 DooTask 任务进行交互。
  * 
- * 提供的工具（共 7 个）:
+ * 提供的工具（共 15 个）:
+ * 
+ * === 用户管理 ===
+ * - get_users_basic   - 根据用户ID列表获取基础信息，便于匹配负责人/协助人
+ * - search_user       - 按关键字或项目筛选用户，支持分页与更多过滤项
  * 
  * === 任务管理 ===
- * 1. list_tasks       - 获取任务列表，支持按状态/项目/主任务筛选、搜索、分页
- * 2. get_task         - 获取任务详情，包含完整内容、负责人、协助人员、标签等所有信息
- * 3. complete_task    - 快速标记任务完成
- * 4. create_task      - 创建新任务
- * 5. update_task      - 更新任务，支持修改名称、内容、负责人、时间、状态等所有属性
+ * - list_tasks        - 获取任务列表，支持按状态/项目/主任务筛选、搜索、分页
+ * - get_task          - 获取任务详情，包含完整内容、负责人、协助人员、标签等所有信息
+ * - complete_task     - 快速标记任务完成
+ * - create_task       - 创建新任务
+ * - update_task       - 更新任务，支持修改名称、内容、负责人、时间、状态等所有属性
+ * - create_sub_task   - 为指定主任务创建子任务
+ * - get_task_files    - 获取任务附件列表
+ * - delete_task       - 删除或还原任务
  * 
  * === 项目管理 ===
- * 6. list_projects    - 获取项目列表，支持按归档状态筛选、搜索
- * 7. get_project      - 获取项目详情，包含列（看板列）、成员等完整信息
+ * - list_projects     - 获取项目列表，支持按归档状态筛选、搜索
+ * - get_project       - 获取项目详情，包含列（看板列）、成员等完整信息
+ * - create_project    - 创建新项目
+ * - update_project    - 修改项目信息（名称、描述等）
+ * 
+ * === 消息通知 ===
+ * - send_message_to_user - 给指定用户发送私信
+ * - get_message_list  - 获取对话消息或执行关键词搜索
  * 
  * 配置方法:
  *  {
  *    "mcpServers": {
  *      "DooTask": {
- *        "url": "http://localhost:22224/sse"
+ *        "url": "http://localhost:22224/mcp"
  *      }
  *    }
  *  }
@@ -125,7 +138,161 @@ class DooTaskMCP {
 
     // 设置 MCP 工具
     setupTools() {
-        // 1. 获取任务列表
+        // 用户管理：获取用户基础信息
+        this.mcp.addTool({
+            name: 'get_users_basic',
+            description: '根据用户ID列表获取用户基础信息（昵称、邮箱、头像等），方便在分配任务前确认成员身份。',
+            parameters: z.object({
+                userids: z.array(z.number())
+                    .min(1)
+                    .max(50)
+                    .describe('用户ID数组，至少1个，最多50个'),
+            }),
+            execute: async (params) => {
+                const ids = params.userids;
+                const requestData = {
+                    userid: ids.length === 1 ? ids[0] : JSON.stringify(ids),
+                };
+
+                const result = await this.request('GET', 'users/basic', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const rawList = Array.isArray(result.data)
+                    ? result.data
+                    : (Array.isArray(result.data?.data) ? result.data.data : []);
+
+                const users = rawList.map(user => ({
+                    userid: user.userid,
+                    nickname: user.nickname || '',
+                    email: user.email || '',
+                    avatar: user.avatar || '',
+                    identity: user.identity || '',
+                    department: user.department || '',
+                }));
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            count: users.length,
+                            users: users,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 用户管理：搜索用户
+        this.mcp.addTool({
+            name: 'search_user',
+            description: '按关键词搜索或筛选用户，支持按项目/对话过滤并返回分页结果。',
+            parameters: z.object({
+                keyword: z.string()
+                    .min(1)
+                    .describe('搜索关键词，支持昵称、邮箱、拼音等'),
+                project_id: z.number()
+                    .optional()
+                    .describe('仅返回指定项目的成员'),
+                dialog_id: z.number()
+                    .optional()
+                    .describe('仅返回指定对话的成员'),
+                include_disabled: z.boolean()
+                    .optional()
+                    .describe('是否同时包含已离职/禁用用户'),
+                include_bot: z.boolean()
+                    .optional()
+                    .describe('是否同时包含机器人账号'),
+                with_department: z.boolean()
+                    .optional()
+                    .describe('是否返回部门信息'),
+                page: z.number()
+                    .optional()
+                    .describe('页码，默认1'),
+                pagesize: z.number()
+                    .optional()
+                    .describe('每页数量，默认20，最大100'),
+            }),
+            execute: async (params) => {
+                const page = params.page && params.page > 0 ? params.page : 1;
+                const pagesize = params.pagesize && params.pagesize > 0 ? Math.min(params.pagesize, 100) : 20;
+
+                const keys = {
+                    key: params.keyword,
+                };
+
+                if (params.project_id !== undefined) {
+                    keys.project_id = params.project_id;
+                }
+                if (params.dialog_id !== undefined) {
+                    keys.dialog_id = params.dialog_id;
+                }
+                if (params.include_disabled) {
+                    keys.disable = 2;
+                }
+                if (params.include_bot) {
+                    keys.bot = 2;
+                }
+
+                const requestData = {
+                    page,
+                    pagesize,
+                    keys,
+                };
+
+                if (params.with_department) {
+                    requestData.with_department = 1;
+                }
+
+                const result = await this.request('GET', 'users/search', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const data = result.data || {};
+                let users = [];
+                let total = 0;
+                let perPage = pagesize;
+                let currentPage = page;
+
+                if (Array.isArray(data.data)) {
+                    users = data.data;
+                    total = data.total ?? users.length;
+                    perPage = data.per_page ?? perPage;
+                    currentPage = data.current_page ?? currentPage;
+                } else if (Array.isArray(data)) {
+                    users = data;
+                    total = users.length;
+                }
+
+                const simplified = users.map(user => ({
+                    userid: user.userid,
+                    nickname: user.nickname || '',
+                    email: user.email || '',
+                    tags: user.tags || [],
+                    department: user.department_info || user.department || '',
+                    online: user.online ?? null,
+                    identity: user.identity || '',
+                }));
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            total,
+                            page: currentPage,
+                            pagesize: perPage,
+                            users: simplified,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 获取任务列表
         this.mcp.addTool({
             name: 'list_tasks',
             description: '获取任务列表。可以按状态筛选(已完成/未完成)、搜索任务名称、按时间范围筛选等。',
@@ -223,7 +390,7 @@ class DooTaskMCP {
             }
         });
 
-        // 2. 获取任务详情
+        // 获取任务详情
         this.mcp.addTool({
             name: 'get_task',
             description: '获取指定任务的详细信息,包括任务描述、完整内容、负责人、协助人员、标签、时间等所有信息。',
@@ -299,7 +466,7 @@ class DooTaskMCP {
             }
         });
 
-        // 3. 标记任务完成
+        // 标记任务完成
         this.mcp.addTool({
             name: 'complete_task',
             description: '快速标记任务完成（自动使用当前时间）。如需指定完成时间或取消完成，请使用 update_task。注意:主任务必须在所有子任务完成后才能标记完成。',
@@ -333,7 +500,7 @@ class DooTaskMCP {
             }
         });
 
-        // 4. 创建任务
+        // 创建任务
         this.mcp.addTool({
             name: 'create_task',
             description: '创建新任务。可以指定任务名称、内容、负责人、时间等信息。',
@@ -402,7 +569,7 @@ class DooTaskMCP {
             }
         });
 
-        // 5. 更新任务（完整版）
+        // 更新任务
         this.mcp.addTool({
             name: 'update_task',
             description: '更新任务信息。可以修改任务名称、内容、负责人、时间、状态等所有属性。',
@@ -486,7 +653,131 @@ class DooTaskMCP {
             }
         });
 
-        // 6. 获取项目列表
+        // 创建子任务
+        this.mcp.addTool({
+            name: 'create_sub_task',
+            description: '为指定主任务新增子任务，自动继承主任务所属项目与看板列配置。',
+            parameters: z.object({
+                task_id: z.number()
+                    .describe('主任务ID'),
+                name: z.string()
+                    .min(1)
+                    .describe('子任务名称'),
+            }),
+            execute: async (params) => {
+                const result = await this.request('GET', 'project/task/addsub', {
+                    task_id: params.task_id,
+                    name: params.name,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const subTask = result.data || {};
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            sub_task: {
+                                id: subTask.id,
+                                name: subTask.name,
+                                project_id: subTask.project_id,
+                                parent_id: subTask.parent_id,
+                                column_id: subTask.column_id,
+                                start_at: subTask.start_at,
+                                end_at: subTask.end_at,
+                                created_at: subTask.created_at,
+                            }
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 获取任务附件
+        this.mcp.addTool({
+            name: 'get_task_files',
+            description: '获取指定任务的附件列表，包含文件名称、大小、下载地址等信息。',
+            parameters: z.object({
+                task_id: z.number()
+                    .describe('任务ID'),
+            }),
+            execute: async (params) => {
+                const result = await this.request('GET', 'project/task/files', {
+                    task_id: params.task_id,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const files = Array.isArray(result.data) ? result.data : [];
+
+                const normalized = files.map(file => ({
+                    id: file.id,
+                    name: file.name,
+                    ext: file.ext,
+                    size: file.size,
+                    url: file.path,
+                    thumb: file.thumb,
+                    userid: file.userid,
+                    download: file.download,
+                    created_at: file.created_at,
+                }));
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            task_id: params.task_id,
+                            files: normalized,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 删除或还原任务
+        this.mcp.addTool({
+            name: 'delete_task',
+            description: '删除或还原任务。默认执行删除，可通过 action=recovery 将任务从回收站恢复。',
+            parameters: z.object({
+                task_id: z.number()
+                    .describe('任务ID'),
+                action: z.enum(['delete', 'recovery'])
+                    .optional()
+                    .describe('操作类型：delete(默认) 删除，recovery 还原'),
+            }),
+            execute: async (params) => {
+                const action = params.action || 'delete';
+
+                const result = await this.request('GET', 'project/task/remove', {
+                    task_id: params.task_id,
+                    type: action,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            action: action,
+                            task_id: params.task_id,
+                            data: result.data,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 获取项目列表
         this.mcp.addTool({
             name: 'list_projects',
             description: '获取项目列表。可以按归档状态筛选、搜索项目名称等。',
@@ -548,7 +839,7 @@ class DooTaskMCP {
             }
         });
 
-        // 7. 获取项目详情
+        // 获取项目详情
         this.mcp.addTool({
             name: 'get_project',
             description: '获取指定项目的详细信息，包括项目的列（看板列）、成员等完整信息。',
@@ -597,6 +888,328 @@ class DooTaskMCP {
                 };
             }
         });
+
+        // 创建项目
+        this.mcp.addTool({
+            name: 'create_project',
+            description: '创建新项目，可选设置项目描述、初始化列及流程状态。',
+            parameters: z.object({
+                name: z.string()
+                    .min(2)
+                    .describe('项目名称，至少2个字符'),
+                desc: z.string()
+                    .optional()
+                    .describe('项目描述'),
+                columns: z.union([z.string(), z.array(z.string())])
+                    .optional()
+                    .describe('初始化列名称，字符串使用逗号分隔，也可直接传字符串数组'),
+                flow: z.enum(['open', 'close'])
+                    .optional()
+                    .describe('是否开启流程，open/close，默认close'),
+                personal: z.boolean()
+                    .optional()
+                    .describe('是否创建个人项目，仅支持创建一个个人项目'),
+            }),
+            execute: async (params) => {
+                const requestData = {
+                    name: params.name,
+                };
+
+                if (params.desc !== undefined) {
+                    requestData.desc = params.desc;
+                }
+                if (params.columns !== undefined) {
+                    requestData.columns = Array.isArray(params.columns) ? params.columns.join(',') : params.columns;
+                }
+                if (params.flow !== undefined) {
+                    requestData.flow = params.flow;
+                }
+                if (params.personal !== undefined) {
+                    requestData.personal = params.personal ? 1 : 0;
+                }
+
+                const result = await this.request('GET', 'project/add', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const project = result.data || {};
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            project: {
+                                id: project.id,
+                                name: project.name,
+                                desc: project.desc || '',
+                                columns: project.projectColumn || [],
+                                created_at: project.created_at,
+                            }
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 更新项目
+        this.mcp.addTool({
+            name: 'update_project',
+            description: '修改项目信息（名称、描述、归档策略等）。若未传 name 将自动沿用项目当前名称。',
+            parameters: z.object({
+                project_id: z.number()
+                    .describe('项目ID'),
+                name: z.string()
+                    .optional()
+                    .describe('项目名称'),
+                desc: z.string()
+                    .optional()
+                    .describe('项目描述'),
+                archive_method: z.string()
+                    .optional()
+                    .describe('归档方式'),
+                archive_days: z.number()
+                    .optional()
+                    .describe('自动归档天数'),
+            }),
+            execute: async (params) => {
+                const requestData = {
+                    project_id: params.project_id,
+                };
+
+                if (params.name && params.name.trim().length > 0) {
+                    requestData.name = params.name;
+                } else {
+                    const projectResult = await this.request('GET', 'project/one', {
+                        project_id: params.project_id,
+                    });
+
+                    if (projectResult.error) {
+                        throw new Error(projectResult.error);
+                    }
+
+                    const currentName = projectResult.data?.name;
+                    if (!currentName) {
+                        throw new Error('无法获取项目名称，请手动提供 name 参数');
+                    }
+                    requestData.name = currentName;
+                }
+
+                if (params.desc !== undefined) {
+                    requestData.desc = params.desc;
+                }
+                if (params.archive_method !== undefined) {
+                    requestData.archive_method = params.archive_method;
+                }
+                if (params.archive_days !== undefined) {
+                    requestData.archive_days = params.archive_days;
+                }
+
+                const result = await this.request('GET', 'project/update', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const project = result.data || {};
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            project: {
+                                id: project.id,
+                                name: project.name,
+                                desc: project.desc || '',
+                                archived_at: project.archived_at || null,
+                                archive_method: project.archive_method ?? requestData.archive_method ?? null,
+                                archive_days: project.archive_days ?? requestData.archive_days ?? null,
+                                updated_at: project.updated_at,
+                            }
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 发送消息给用户
+        this.mcp.addTool({
+            name: 'send_message_to_user',
+            description: '给指定用户发送私信，可选择 Markdown 或 HTML 格式，并支持静默发送。',
+            parameters: z.object({
+                user_id: z.number()
+                    .describe('接收方用户ID'),
+                text: z.string()
+                    .min(1)
+                    .describe('消息内容'),
+                text_type: z.enum(['md', 'html'])
+                    .optional()
+                    .describe('消息类型，默认md，可选md/html'),
+                silence: z.boolean()
+                    .optional()
+                    .describe('是否静默发送（不触发提醒）'),
+            }),
+            execute: async (params) => {
+                const dialogResult = await this.request('GET', 'dialog/open/user', {
+                    userid: params.user_id,
+                });
+
+                if (dialogResult.error) {
+                    throw new Error(dialogResult.error);
+                }
+
+                const dialogData = dialogResult.data || {};
+                const dialogId = dialogData.id;
+
+                if (!dialogId) {
+                    throw new Error('未能获取会话ID，无法发送消息');
+                }
+
+                const payload = {
+                    dialog_id: dialogId,
+                    text: params.text,
+                };
+
+                if (params.text_type) {
+                    payload.text_type = params.text_type;
+                } else {
+                    payload.text_type = 'md';
+                }
+                if (params.silence !== undefined) {
+                    payload.silence = params.silence ? 'yes' : 'no';
+                }
+
+                const sendResult = await this.request('POST', 'dialog/msg/sendtext', payload);
+
+                if (sendResult.error) {
+                    throw new Error(sendResult.error);
+                }
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            dialog_id: dialogId,
+                            data: sendResult.data,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 获取消息列表或搜索消息
+        this.mcp.addTool({
+            name: 'get_message_list',
+            description: '获取指定对话的消息列表，或按关键字搜索消息位置/内容。',
+            parameters: z.object({
+                dialog_id: z.number()
+                    .optional()
+                    .describe('对话ID，获取消息列表时必填'),
+                keyword: z.string()
+                    .optional()
+                    .describe('搜索关键词，提供时执行消息搜索'),
+                msg_id: z.number()
+                    .optional()
+                    .describe('围绕某条消息加载相关内容'),
+                position_id: z.number()
+                    .optional()
+                    .describe('以position_id为中心加载消息'),
+                prev_id: z.number()
+                    .optional()
+                    .describe('获取此消息之前的历史'),
+                next_id: z.number()
+                    .optional()
+                    .describe('获取此消息之后的新消息'),
+                msg_type: z.enum(['tag', 'todo', 'link', 'text', 'image', 'file', 'record', 'meeting'])
+                    .optional()
+                    .describe('按消息类型筛选'),
+                take: z.number()
+                    .optional()
+                    .describe('获取条数，列表模式最大100，搜索模式受接口限制'),
+            }),
+            execute: async (params) => {
+                const keyword = params.keyword?.trim();
+
+                if (keyword) {
+                    const searchPayload = {
+                        key: keyword,
+                    };
+                    if (params.dialog_id) {
+                        searchPayload.dialog_id = params.dialog_id;
+                    }
+                    if (params.take && params.take > 0) {
+                        const takeValue = params.take;
+                        searchPayload.take = params.dialog_id
+                            ? Math.min(takeValue, 200)
+                            : Math.min(takeValue, 50);
+                    }
+
+                    const searchResult = await this.request('GET', 'dialog/msg/search', searchPayload);
+
+                    if (searchResult.error) {
+                        throw new Error(searchResult.error);
+                    }
+
+                    return {
+                        content: [{
+                            type: 'text',
+                            text: JSON.stringify({
+                                mode: params.dialog_id ? 'position_search' : 'global_search',
+                                keyword: keyword,
+                                dialog_id: params.dialog_id || null,
+                                data: searchResult.data,
+                            }, null, 2)
+                        }]
+                    };
+                }
+
+                if (!params.dialog_id) {
+                    throw new Error('请提供 dialog_id 以获取消息列表，或提供 keyword 执行搜索');
+                }
+
+                const requestData = {
+                    dialog_id: params.dialog_id,
+                };
+
+                if (params.msg_id !== undefined) requestData.msg_id = params.msg_id;
+                if (params.position_id !== undefined) requestData.position_id = params.position_id;
+                if (params.prev_id !== undefined) requestData.prev_id = params.prev_id;
+                if (params.next_id !== undefined) requestData.next_id = params.next_id;
+                if (params.msg_type !== undefined) requestData.msg_type = params.msg_type;
+                if (params.take !== undefined) {
+                    const takeValue = params.take > 0 ? params.take : 1;
+                    requestData.take = Math.min(takeValue, 100);
+                }
+
+                const result = await this.request('GET', 'dialog/msg/list', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const data = result.data || {};
+                const messages = Array.isArray(data.list) ? data.list : [];
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            dialog_id: params.dialog_id,
+                            count: messages.length,
+                            time: data.time,
+                            dialog: data.dialog,
+                            top: data.top,
+                            todo: data.todo,
+                            messages: messages,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
     }
 
     // 启动 MCP 服务器
@@ -632,7 +1245,8 @@ function startMCPServer(mainWindow, mcpPort) {
 
     mcpServer = new DooTaskMCP(mainWindow);
     mcpServer.start(mcpPort).then(() => {
-        loger.info(`DooTask MCP Server started on http://localhost:${mcpPort}/sse`);
+        loger.info(`MCP Server started on http://localhost:${mcpPort}/mcp`);
+        loger.info(`Legacy SSE endpoint also available at http://localhost:${mcpPort}/sse`);
     }).catch((error) => {
         loger.error('Failed to start MCP server:', error);
         mcpServer = null;

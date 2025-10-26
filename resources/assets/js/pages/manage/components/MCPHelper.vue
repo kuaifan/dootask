@@ -4,7 +4,7 @@
             <Alert type="success" show-icon>
                 {{ $L('MCP 服务器已启动成功！') }}
                 <span slot="desc">
-                    {{ $L('服务地址') }}: <code>http://localhost:22224/sse</code>
+                    {{ $L('服务地址') }}: <code>{{ mcpConfig.mcpServers.DooTask.url }}</code>
                 </span>
             </Alert>
 
@@ -12,7 +12,7 @@
                 <h3><span class="emoji-original">🔗</span> {{ $L('接入配置') }}</h3>
                 <p>{{ $L('以接入 Claude 为例，在配置文件中添加以下配置') }}:</p>
                 <div class="mcp-code-block">
-                    <pre ref="mcpConfig">{{ mcpConfig }}</pre>
+                    <pre ref="mcpConfig">{{ JSON.stringify(mcpConfig, null, 2) }}</pre>
                     <Button size="small" class="mcp-copy-btn" @click="copyMcpConfig">{{ $L('复制配置') }}</Button>
                 </div>
             </div>
@@ -27,6 +27,7 @@
                     <li>"{{ $L("在项目1中创建任务：完成用户手册") }}"</li>
                     <li>"{{ $L("把任务789的截止时间改为下周五") }}"</li>
                     <li>"{{ $L("我有哪些项目？") }}"</li>
+                    <li>"{{ $L("查看项目5的详情，包括所有列和成员") }}"</li>
                 </ul>
             </div>
         </div>
@@ -142,13 +143,13 @@ export default {
     },
     data() {
         return {
-            mcpConfig: `{
-  "mcpServers": {
-    "DooTask": {
-      "url": "http://localhost:22224/sse"
-    }
-  }
-}`
+            mcpConfig: {
+                mcpServers: {
+                    DooTask: {
+                        url: "http://localhost:22224/mcp"
+                    }
+                }
+            }
         }
     },
     computed: {
