@@ -953,10 +953,10 @@ export default {
                     });
                     return;
                 case 'mcpServer':
+                    this.mcpHelperShow = true;
                     if (this.mcpServerStatus.running !== 'running') {
-                        this.mcpHelperShow = true;
+                        this.$store.dispatch('toggleMcpServer');
                     }
-                    this.$store.dispatch('toggleMcpServer');
                     return;
                 case 'logout':
                     $A.modalConfirm({

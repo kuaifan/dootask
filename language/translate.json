@@ -32134,5 +32134,17 @@
         "fr": "Bleu lac",
         "id": "Biru Danau",
         "ru": "Озёрный синий"
+    },
+    {
+        "key": "关闭 MCP 服务器",
+        "zh": "",
+        "zh-CHT": "關閉 MCP 伺服器",
+        "en": "Shut down the MCP server",
+        "ko": "MCP 서버 종료",
+        "ja": "MCPサーバーをシャットダウンする",
+        "de": "MCP-Server herunterfahren",
+        "fr": "Fermer le serveur MCP",
+        "id": "Tutup server MCP",
+        "ru": "Выключить сервер MCP"
     }
 ]

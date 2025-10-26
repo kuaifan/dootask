@@ -32,6 +32,7 @@
         </div>
 
         <div slot="footer" class="adaption">
+            <Button type="default" @click="onCloseMcp">{{$L('关闭 MCP 服务器')}}</Button>
             <Button type="primary" @click="mcpHelperShow = false">{{ $L('我知道了') }}</Button>
         </div>
     </Modal>
@@ -129,6 +130,8 @@
 </style>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
     name: "MCPHelper",
     props: {
@@ -149,6 +152,8 @@ export default {
         }
     },
     computed: {
+        ...mapState(['mcpServerStatus']),
+
         mcpHelperShow: {
             get() {
                 return this.value;
@@ -161,6 +166,13 @@ export default {
     methods: {
         copyMcpConfig() {
             this.copyText(this.$refs.mcpConfig.textContent);
+        },
+
+        onCloseMcp() {
+            if (this.mcpServerStatus.running === 'running') {
+                this.$store.dispatch('toggleMcpServer');
+            }
+            this.mcpHelperShow = false;
         }
     }
 }
