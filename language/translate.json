@@ -32146,5 +32146,17 @@
         "fr": "Fermer le serveur MCP",
         "id": "Tutup server MCP",
         "ru": "Выключить сервер MCP"
+    },
+    {
+        "key": "查看项目5的详情，包括所有列和成员",
+        "zh": "",
+        "zh-CHT": "檢視專案5的詳細資訊，包括所有欄與成員",
+        "en": "View the details of project 5, including all columns and members",
+        "ko": "프로젝트 5의 세부 정보를 확인하고, 모든 열과 멤버를 포함합니다",
+        "ja": "プロジェクト5の詳細を表示し、すべての列とメンバーを含みます",
+        "de": "Details von Projekt 5 anzeigen, einschließlich aller Spalten und Mitglieder",
+        "fr": "Afficher les détails du projet 5, y compris toutes les colonnes et les membres",
+        "id": "Lihat detail proyek 5, termasuk semua kolom dan anggota",
+        "ru": "Просмотреть детали проекта 5, включая все столбцы и участников"
     }
 ]
