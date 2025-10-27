@@ -146,6 +146,7 @@ export default {
             mcpConfig: {
                 mcpServers: {
                     DooTask: {
+                        type: "streamable-http",
                         url: "http://localhost:22224/mcp"
                     }
                 }
