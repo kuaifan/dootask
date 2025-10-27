@@ -414,7 +414,7 @@ export default {
                     if (this.loadIng) {
                         return;
                     }
-                    return new Promise((resolve, reject) => {
+                    return new Promise((resolve) => {
                         this.$store.dispatch("taskConvertToMain", this.task.id).then(({data, msg}) => {
                             $A.messageSuccess(msg);
                             this.hide();
@@ -422,7 +422,7 @@ export default {
                             resolve();
                         }).catch(({msg}) => {
                             $A.modalError(msg);
-                            reject();
+                            resolve();
                         });
                     })
                 }
