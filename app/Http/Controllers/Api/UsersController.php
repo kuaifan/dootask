@@ -290,6 +290,37 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @api {get} api/users/token/expire          查询 token 过期时间
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName token__expire
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {String|null} data.expired_at    token 过期时间（null 表示永久有效）
+     * @apiSuccess {Number|null} data.remaining_seconds    距离过期剩余秒数（负值表示已过期）
+     * @apiSuccess {Boolean} data.expired    token 是否已过期
+     * @apiSuccess {String} data.server_time    当前服务器时间
+     */
+    public function token__expire()
+    {
+        User::auth();
+        $expiredAt = Doo::userExpiredAt();
+        $expired = Doo::userExpired();
+        $expiredAtCarbon = $expiredAt ? Carbon::parse($expiredAt) : null;
+        $data = [
+            'expired_at' => $expiredAtCarbon?->toDateTimeString(),
+            'remaining_seconds' => $expiredAtCarbon ? Carbon::now()->diffInSeconds($expiredAtCarbon, false) : null,
+            'expired' => $expired,
+            'server_time' => Carbon::now()->toDateTimeString(),
+        ];
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
      * @api {get} api/users/reg/needinvite          07. 是否需要邀请码
      *
      * @apiDescription 用于判断注册是否需要邀请码
