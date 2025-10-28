@@ -5,8 +5,76 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Orhanerday\OpenAi\OpenAi;
 
-require_once("config.php");
+// 读取 .env 文件的简单工具函数
+function language_parse_env_file(string $path): array
+{
+    $env = [];
+    $lines = @file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lines === false) {
+        return $env;
+    }
 
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] === '#') {
+            continue;
+        }
+
+        $delimiterPosition = strpos($line, '=');
+        if ($delimiterPosition === false) {
+            continue;
+        }
+
+        $name = trim(substr($line, 0, $delimiterPosition));
+        if (strpos($name, 'export ') === 0) {
+            $name = trim(substr($name, 7));
+        }
+        if ($name === '') {
+            continue;
+        }
+
+        $value = trim(substr($line, $delimiterPosition + 1));
+        $length = strlen($value);
+        if ($length >= 2) {
+            $first = $value[0];
+            $last = $value[$length - 1];
+            if (($first === '"' && $last === '"') || ($first === "'" && $last === "'")) {
+                $value = substr($value, 1, $length - 2);
+            }
+        }
+
+        $env[$name] = $value;
+    }
+
+    return $env;
+}
+
+// 获取环境变量值的简单工具函数
+function language_env_value(string $key, array $env): ?string
+{
+    if (array_key_exists($key, $env)) {
+        return $env[$key];
+    }
+
+    $value = getenv($key);
+    if ($value !== false) {
+        return $value;
+    }
+
+    return null;
+}
+
+// 读取语言环境配置
+$languageEnvFile = dirname(__DIR__) . '/.env';
+$languageEnv = is_readable($languageEnvFile) ? language_parse_env_file($languageEnvFile) : [];
+
+// 优先从 .env 读取 OPENAI 配置，未找到时再次尝试 getenv 覆盖
+$openAiKey = trim(language_env_value('OPENAI_API_KEY', $languageEnv) ?? '');
+if ($openAiKey === '') {
+    fwrite(STDERR, "OPENAI_API_KEY 未设置，请在项目根目录的 .env 中配置。\n");
+    exit(1);
+}
+$openAiProxy = trim(language_env_value('OPENAI_PROXY_URL', $languageEnv) ?? '');
 
 // 读取所有要翻译的内容
 $originals = [];
@@ -41,7 +109,7 @@ foreach ($tmps as $obj) {
     $translations[$originalKey] = $obj;
 
     if (!in_array($originalKey, $originals)) {
-        // 多余的数据
+        unset($translations[$originalKey]);
         $redundants[$originalKey] = $obj;
         continue;
     }
@@ -73,8 +141,7 @@ if (count($regrror) > 0) {
 }
 if (count($redundants) > 0) {
     print_r("多余的数据:\n");
-    print_r($redundants);
-    exit();
+    print_r(implode(", ", array_keys($redundants)) . "\n\n");
 }
 
 // 需要翻译的数据
@@ -102,12 +169,13 @@ if (count($needs) > 0) {
 
         // 开始翻译
         print_r("正在翻译：" . (count($keys) + $done) . "/" . count($needs) . "...\n");
-        $openAi = new OpenAi(OPEN_AI_KEY);
-        if (OPEN_AI_PROXY) {
-            $openAi->setProxy(OPEN_AI_PROXY);
+        $openAi = new OpenAi($openAiKey);
+        if ($openAiProxy !== '') {
+            $openAi->setProxy($openAiProxy);
         }
         $result = $openAi->chat([
-            'model' => 'gpt-4.1',
+            "model" => "gpt-5",
+            "reasoning_effort" => "minimal",
             'messages' => [
                 [
                     "role" => "system",
@@ -154,11 +222,7 @@ if (count($needs) > 0) {
                     "role" => "user",
                     "content" => $content,
                 ],
-            ],
-            'temperature' => 1.0,
-            'max_tokens' => 4000,
-            'frequency_penalty' => 0,
-            'presence_penalty' => 0,
+            ]
         ]);
 
         // 处理结果
