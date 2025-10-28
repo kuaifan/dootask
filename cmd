@@ -805,6 +805,7 @@ case "$1" in
         shift 1
         container_exec php "php app/Http/Controllers/Api/apidoc.php"
         docker run -it --rm -v ${WORK_DIR}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
+        container_exec php "php app/Http/Controllers/Api/apidoc.php restore"
         ;;
     "debug")
         shift 1
