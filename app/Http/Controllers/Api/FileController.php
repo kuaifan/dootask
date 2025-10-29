@@ -31,7 +31,7 @@ use ZipArchive;
 class FileController extends AbstractController
 {
     /**
-     * @api {get} api/file/lists          01. 获取文件列表
+     * @api {get} api/file/lists 获取文件列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -54,7 +54,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/one          02. 获取单条数据
+     * @api {get} api/file/one 获取单条数据
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -105,7 +105,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/search          03. 搜索文件列表
+     * @api {get} api/file/search 搜索文件列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -182,7 +182,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/add          04. 添加、修改文件(夹)
+     * @api {get} api/file/add 添加、修改文件(夹)
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -291,7 +291,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/copy          05. 复制文件(夹)
+     * @api {get} api/file/copy 复制文件(夹)
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -352,7 +352,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/move          06. 移动文件(夹)
+     * @api {get} api/file/move 移动文件(夹)
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -427,7 +427,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/remove          07. 删除文件(夹)
+     * @api {get} api/file/remove 删除文件(夹)
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -466,7 +466,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content          08. 获取文件内容
+     * @api {get} api/file/content 获取文件内容
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -547,7 +547,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content/save          09. 保存文件内容
+     * @api {get} api/file/content/save 保存文件内容
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -642,7 +642,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/office/token          10. 获取token
+     * @api {get} api/file/office/token 获取token
      *
      * @apiDescription 用于生成office在线编辑的token
      * @apiVersion 1.0.0
@@ -667,7 +667,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content/office          11. 保存文件内容（office）
+     * @api {get} api/file/content/office 保存文件内容（office）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -723,7 +723,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content/upload          12. 保存文件内容（上传文件）
+     * @api {get} api/file/content/upload 保存文件内容（上传文件）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -751,7 +751,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content/history          13. 获取内容历史
+     * @api {get} api/file/content/history 获取内容历史
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -783,7 +783,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content/restore          14. 恢复文件历史
+     * @api {get} api/file/content/restore 恢复文件历史
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -825,7 +825,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share          15. 获取共享信息
+     * @api {get} api/file/share 获取共享信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -861,7 +861,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share/update          16. 设置共享
+     * @api {get} api/file/share/update 设置共享
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -951,7 +951,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share/out          17. 退出共享
+     * @api {get} api/file/share/out 退出共享
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -985,7 +985,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/link          18. 获取链接
+     * @api {get} api/file/link 获取链接
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1025,7 +1025,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/download/pack          19. 打包文件
+     * @api {get} api/file/download/pack 打包文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

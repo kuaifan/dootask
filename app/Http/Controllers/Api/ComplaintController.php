@@ -10,18 +10,18 @@ use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 
 /**
- * @apiDefine dialog
+ * @apiDefine complaint
  *
  * 投诉
  */
 class ComplaintController extends AbstractController
 {
     /**
-     * @api {get} api/complaint/lists          01. 获取举报投诉列表
+     * @api {get} api/complaint/lists 获取举报投诉列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup dialog
+     * @apiGroup complaint
      * @apiName lists
      *
      * @apiParam {Number} [type]              类型
@@ -33,6 +33,34 @@ class ComplaintController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
+     *
+     * @apiSuccessExample {json} Success-Response-Data:
+     *  {
+     *      "current_page": 1,
+     *      "data": [
+     *          {
+     *              "id": 1,
+     *              "dialog_id": 100,
+     *              "userid": 1,
+     *              "type": 1,
+     *              "reason": "举报原因",
+     *              "imgs": [],
+     *              "status": 0,
+     *              "created_at": "2025-01-01 00:00:00",
+     *              "updated_at": "2025-01-01 00:00:00"
+     *          }
+     *      ],
+     *      "first_page_url": "http://example.com/api/complaint/lists?page=1",
+     *      "from": 1,
+     *      "last_page": 1,
+     *      "last_page_url": "http://example.com/api/complaint/lists?page=1",
+     *      "next_page_url": null,
+     *      "path": "http://example.com/api/complaint/lists",
+     *      "per_page": 50,
+     *      "prev_page_url": null,
+     *      "to": 1,
+     *      "total": 1
+     *  }
      */
     public function lists()
     {
@@ -56,21 +84,25 @@ class ComplaintController extends AbstractController
     }
 
     /**
-     * @api {get} api/complaint/submit          02. 举报投诉
+     * @api {post} api/complaint/submit 举报投诉
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup dialog
+     * @apiGroup complaint
      * @apiName submit
      *
-     * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {Number} type              类型
-     * @apiParam {String} reason            原因
-     * @apiParam {String} imgs              图片
+     * @apiBody {Number} dialog_id         对话ID
+     * @apiBody {Number} type              类型
+     * @apiBody {String} reason            原因
+     * @apiBody {Object[]} [imgs]          图片数组（可选）
+     * @apiBody {String} imgs.path         图片路径
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
+     *
+     * @apiSuccessExample {json} Success-Response-Data:
+     *  []
      */
     public function submit()
     {
@@ -125,19 +157,22 @@ class ComplaintController extends AbstractController
     }
 
     /**
-     * @api {get} api/complaint/action          03. 举报投诉 - 操作
+     * @api {post} api/complaint/action 举报投诉 - 操作
      *
-     * @apiDescription 需要token身份
+     * @apiDescription 需要token身份（管理员权限）
      * @apiVersion 1.0.0
-     * @apiGroup dialog
+     * @apiGroup complaint
      * @apiName action
      *
-     * @apiParam {Number} id                ID
-     * @apiParam {Number} type              类型
+     * @apiBody {Number} id                投诉ID
+     * @apiBody {String} type              操作类型：handle=已处理，delete=删除
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
+     *
+     * @apiSuccessExample {json} Success-Response-Data:
+     *  []
      */
     public function action()
     {

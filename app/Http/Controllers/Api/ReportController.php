@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Validator;
 class ReportController extends AbstractController
 {
     /**
-     * @api {get} api/report/my          01. 我发送的汇报
+     * @api {get} api/report/my 我发送的汇报
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -75,7 +75,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/receive          02. 我接收的汇报
+     * @api {get} api/report/receive 我接收的汇报
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -143,7 +143,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/store          03. 保存并发送工作汇报
+     * @api {get} api/report/store 保存并发送工作汇报
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -282,7 +282,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/template          04. 生成汇报模板
+     * @api {get} api/report/template 生成汇报模板
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -454,7 +454,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/detail          05. 报告详情
+     * @api {get} api/report/detail 报告详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -505,7 +505,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/mark          06. 标记已读/未读
+     * @api {get} api/report/mark 标记已读/未读
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -548,7 +548,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/share          07. 分享报告到消息
+     * @api {get} api/report/share 分享报告到消息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -610,7 +610,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/last_submitter          08. 获取最后一次提交的接收人
+     * @api {get} api/report/last_submitter 获取最后一次提交的接收人
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -628,7 +628,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/unread          09. 获取未读
+     * @api {get} api/report/unread 获取未读
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -653,7 +653,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/read          10. 标记汇报已读，可批量
+     * @api {get} api/report/read 标记汇报已读，可批量
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

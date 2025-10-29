@@ -41,7 +41,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {get} api/approve/verifyToken          01. 验证APi登录
+     * @api {get} api/approve/verifyToken 验证APi登录
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -63,7 +63,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/procdef/all          02. 查询流程定义
+     * @api {post} api/approve/procdef/all 查询流程定义
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -90,7 +90,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {get} api/approve/procdef/del          03. 删除流程定义
+     * @api {get} api/approve/procdef/del 删除流程定义
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -116,7 +116,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/process/start          04. 启动流程（审批中）
+     * @api {post} api/approve/process/start 启动流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -179,7 +179,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/process/addGlobalComment          05. 添加全局评论
+     * @api {post} api/approve/process/addGlobalComment 添加全局评论
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -224,7 +224,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/task/complete          06. 审批
+     * @api {post} api/approve/task/complete 审批
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -304,7 +304,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/task/withdraw          07. 撤回
+     * @api {post} api/approve/task/withdraw 撤回
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -349,7 +349,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/process/findTask          08. 查询需要我审批的流程（审批中）
+     * @api {post} api/approve/process/findTask 查询需要我审批的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -392,7 +392,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/process/startByMyselfAll          09. 查询我启动的流程（全部）
+     * @api {post} api/approve/process/startByMyselfAll 查询我启动的流程（全部）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -435,7 +435,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/process/startByMyself          10. 查询我启动的流程（审批中）
+     * @api {post} api/approve/process/startByMyself 查询我启动的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -473,7 +473,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/process/findProcNotify          11. 查询抄送我的流程（审批中）
+     * @api {post} api/approve/process/findProcNotify 查询抄送我的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -517,7 +517,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {get} api/approve/identitylink/findParticipant          12. 查询流程实例的参与者（审批中）
+     * @api {get} api/approve/identitylink/findParticipant 查询流程实例的参与者（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -552,7 +552,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/procHistory/findTask          13. 查询需要我审批的流程（已结束）
+     * @api {post} api/approve/procHistory/findTask 查询需要我审批的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -595,7 +595,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/procHistory/startByMyself          14. 查询我启动的流程（已结束）
+     * @api {post} api/approve/procHistory/startByMyself 查询我启动的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -633,7 +633,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/procHistory/findProcNotify          15. 查询抄送我的流程（已结束）
+     * @api {post} api/approve/procHistory/findProcNotify 查询抄送我的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -677,7 +677,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {get} api/approve/identitylinkHistory/findParticipant          16. 查询流程实例的参与者（已结束）
+     * @api {get} api/approve/identitylinkHistory/findParticipant 查询流程实例的参与者（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -712,7 +712,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {get} api/approve/process/detail          17. 根据流程ID查询流程详情
+     * @api {get} api/approve/process/detail 根据流程ID查询流程详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -734,7 +734,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {post} api/approve/export          18. 导出数据
+     * @api {post} api/approve/export 导出数据
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -970,7 +970,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {get} api/approve/down          19. 下载导出的审批数据
+     * @api {get} api/approve/down 下载导出的审批数据
      *
      * @apiVersion 1.0.0
      * @apiGroup approve
@@ -1192,7 +1192,7 @@ class ApproveController extends AbstractController
 
 
     /**
-     * @api {get} api/approve/user/status          20. 获取用户审批状态
+     * @api {get} api/approve/user/status 获取用户审批状态
      *
      * @apiVersion 1.0.0
      * @apiGroup approve
@@ -1212,7 +1212,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {get} api/approve/process/doto          21. 查询需要我审批的流程数量
+     * @api {get} api/approve/process/doto 查询需要我审批的流程数量
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
