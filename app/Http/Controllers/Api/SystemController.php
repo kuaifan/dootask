@@ -158,7 +158,7 @@ class SystemController extends AbstractController
         $setting['server_timezone'] = config('app.timezone');
         $setting['server_version'] = Base::getVersion();
         //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }
 
     /**
@@ -228,7 +228,7 @@ class SystemController extends AbstractController
             $setting = array_intersect_key($setting, array_flip(['reg_verify']));
         }
         //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }
 
     /**
@@ -282,7 +282,7 @@ class SystemController extends AbstractController
             $setting['api_secret'] = substr($setting['api_secret'], 0, 4) . str_repeat('*', strlen($setting['api_secret']) - 8) . substr($setting['api_secret'], -4);
         }
         //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }
 
     /**
@@ -324,7 +324,7 @@ class SystemController extends AbstractController
             $setting = Base::setting('aiSetting');
         }
         //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }
 
     /**
@@ -382,7 +382,7 @@ class SystemController extends AbstractController
             }
         }
         //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }
 
     /**
@@ -572,7 +572,7 @@ class SystemController extends AbstractController
             $setting['cmd'] = base64_encode($setting['cmd']);
         }
         //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }
 
     /**
@@ -617,7 +617,7 @@ class SystemController extends AbstractController
         //
         $setting['push'] = $setting['push'] ?: 'close';
         //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }
 
     /**
@@ -687,7 +687,7 @@ class SystemController extends AbstractController
         $setting['ldap_port'] = intval($setting['ldap_port']) ?: 389;
         $setting['ldap_sync_local'] = $setting['ldap_sync_local'] ?: 'close';
         //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }
 
     /**
@@ -727,7 +727,7 @@ class SystemController extends AbstractController
             $setting = Base::setting('fileSetting');
         }
         //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }
 
     /**
@@ -800,7 +800,7 @@ class SystemController extends AbstractController
             $setting = Base::setting('priority');
         }
         //
-        return Base::retSuccess('success', $setting);
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting);
     }
 
     /**
@@ -847,7 +847,7 @@ class SystemController extends AbstractController
             $setting = Base::setting('columnTemplate');
         }
         //
-        return Base::retSuccess('success', $setting);
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting);
     }
 
     /**
@@ -917,7 +917,7 @@ class SystemController extends AbstractController
             ];
         }
         //
-        return Base::retSuccess('success', $data);
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $data ?: json_decode('{}'));
     }
 
     /**
