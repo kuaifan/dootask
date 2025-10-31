@@ -5,7 +5,7 @@
             class="micro-app-iframe-container"
             :class="{'iframe-immersive': immersive}"
             :src="src"
-            sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-storage-access-by-user-activation allow-downloads allow-downloads-without-user-activation"
+            sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-storage-access-by-user-activation allow-downloads"
             allow="microphone; camera; speaker-selection; geolocation; accelerometer; gyroscope; magnetometer; fullscreen; picture-in-picture; clipboard-read; clipboard-write">
         </iframe>
     </div>
