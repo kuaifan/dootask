@@ -153,7 +153,7 @@ class UmengAlias extends AbstractModel
         $description = $array['description'] ?: 'no description';               // 描述
         $extra = is_array($array['extra']) ? $array['extra'] : [];              // 额外参数
         $seconds = intval($array['seconds']) ?: 86400;                          // 有效时间（单位：秒）
-        $badge = intval($array['badge']) ?: 0;                                  // 角标数（iOS）
+        $badge = intval($array['badge']) ?: 0;                                  // 角标数
         //
         switch ($platform) {
             case 'ios':
@@ -203,6 +203,7 @@ class UmengAlias extends AbstractModel
                                 'title' => $title,
                                 'after_open' => 'go_app',
                                 'play_sound' => true,
+                                'set_badge' => min(99, $badge),
                             ],
                         ], $extra),
                         'type' => 'customizedcast',
@@ -215,12 +216,17 @@ class UmengAlias extends AbstractModel
                         ],
                         'category' => 1,
                         'channel_properties' => [
+                            'main_activity' => 'com.dootask.task.WelcomeActivity',
                             'oppo_channel_id' => 'dootask',
                             'vivo_category' => 'IM',
                             'huawei_channel_importance' => 'NORMAL',
                             'huawei_channel_category' => 'IM',
                             'channel_fcm' => 0,
                         ],
+                        'local_properties' => [
+                            'importance' => 'IMPORTANCE_DEFAULT',
+                            'category' => 'CATEGORY_MESSAGE',
+                        ]
                     ]
                 ]);
                 break;
