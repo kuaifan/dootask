@@ -258,6 +258,7 @@ class IndexController extends InvokeController
         Task::deliver(new DeleteTmpTask('file'));
         Task::deliver(new DeleteTmpTask('tmp_file', 24));
         Task::deliver(new DeleteTmpTask('user_device', 24));
+        Task::deliver(new DeleteTmpTask('umeng_log', 24 * 3));
         // 删除机器人消息
         Task::deliver(new DeleteBotMsgTask());
         // 周期任务

@@ -70,6 +70,9 @@ class UmengAlias extends AbstractModel
             return;
         }
 
+        $instance = null;
+        $responsePayload = null;
+
         try {
             switch ($first['platform']) {
                 case 'ios':
@@ -81,8 +84,11 @@ class UmengAlias extends AbstractModel
                 default:
                     return;
             }
-            $instance->send($first['data']);
+            $responsePayload = $instance->send($first['data']);
         } catch (\Exception $e) {
+            $responsePayload = [
+                'error' => $e->getMessage(),
+            ];
             $first['retry'] = intval($first['retry'] ?? 0) + 1;
             if ($first['retry'] > 3) {
                 info("[PushMsg] fail: " . $e->getMessage());
@@ -91,6 +97,12 @@ class UmengAlias extends AbstractModel
                 self::$waitSend[] = $first;
             }
         } finally {
+            if ($instance !== null) {
+                UmengLog::create([
+                    'request' => Base::array2json($first['data']),
+                    'response' => Base::array2json($responsePayload),
+                ]);
+            }
             self::sendTask();
         }
     }
