@@ -1574,6 +1574,7 @@ const timezone = require("dayjs/plugin/timezone");
                     await localforage.setItem('__test__', $A.dayjs().valueOf())
                 }
                 $A.openLog && console.log('IDBTest OK')
+                return true;
             } catch (error) {
                 if ($A.openLog) {
                     console.error('IDBTest Error: ', error)
@@ -1586,6 +1587,7 @@ const timezone = require("dayjs/plugin/timezone");
                 } else {
                     $A.reloadUrl();
                 }
+                return false;
             }
         },
 

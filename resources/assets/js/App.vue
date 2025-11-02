@@ -650,11 +650,16 @@ export default {
                 this.appActivated && $A.eeuiAppHideWebviewSnapshot()
             }, 500)
             // APP进入前台
-            window.__onAppActive = () => {
+            window.__onAppActive = async () => {
                 this.appActivated = true
+                
+                // IndexedDB 测试失败时会自动刷新页面,这里提前返回防止后续代码执行
+                if (!await $A.IDBTest()) {
+                    return;
+                }
+                
                 this.autoTheme()
                 $A.updateTimezone()
-                $A.IDBTest()
                 $A.eeuiAppHideWebviewSnapshot()
                 this.$store.dispatch("safeAreaInsets")
                 const nowYmd = $A.daytz().format('YYYY-MM-DD')
