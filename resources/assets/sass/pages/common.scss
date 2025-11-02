@@ -1,3 +1,7 @@
+html[data-platform=app] {
+    overscroll-behavior: none;
+}
+
 body {
     overflow: hidden;
 
