@@ -322,18 +322,7 @@ export default {
                                 capsule: config,
                             }
                         })
-                        ;(async () => {
-                            const cache = await $A.IDBJson("microAppsCapsuleCache");
-                            if ($A.isTrue(config.no_cache)) {
-                                if (typeof cache[name] === "undefined") {
-                                    return
-                                }
-                                delete cache[name];
-                            } else {
-                                cache[name] = config;
-                            }
-                            await $A.IDBSet("microAppsCapsuleCache", cache);
-                        })()
+                        this.setCapsuleCache(name, config)
                     },
                     nextZIndex: () => {
                         if (typeof window.modalTransferIndex === 'number') {
@@ -367,6 +356,37 @@ export default {
         },
 
         /**
+         * 设置胶囊缓存
+         * @param name
+         * @param config
+         */
+        async setCapsuleCache(name, config) {
+            const cache = await $A.IDBJson("microAppsCapsuleCache");
+            if ($A.isTrue(config.no_cache)) {
+                if (typeof cache[name] === "undefined") {
+                    return
+                }
+                delete cache[name];
+            } else {
+                cache[name] = config;
+            }
+            await $A.IDBSet("microAppsCapsuleCache", cache);
+        },
+
+        /**
+         * 移除胶囊缓存
+         * @param name
+         */
+        async removeCapsuleCache(name) {
+            const cache = await $A.IDBJson("microAppsCapsuleCache");
+            if (typeof cache[name] === "undefined") {
+                return
+            }
+            delete cache[name];
+            await $A.IDBSet("microAppsCapsuleCache", cache);
+        },
+
+        /**
          * 观察打开微应用
          * @param config
          */
@@ -374,10 +394,12 @@ export default {
             // 备份配置
             this.backupConfigs[config.name] = $A.cloneJSON(config);
 
-            // 如果没有胶囊配置，则从缓存中恢复
-            if (!$A.isHave(config.capsule, true)) {
-                const capsuleCache = await $A.IDBJson("microAppsCapsuleCache");
-                if ($A.isJson(capsuleCache[config.name])) {
+            // 从缓存读取胶囊配置
+            const capsuleCache = await $A.IDBJson("microAppsCapsuleCache");
+            if ($A.isJson(capsuleCache[config.name])) {
+                if ($A.isHave(config.capsule, true)) {
+                    Object.assign(config.capsule, capsuleCache[config.name]);
+                } else {
                     config.capsule = capsuleCache[config.name];
                 }
             }
@@ -648,10 +670,12 @@ export default {
                     break;
 
                 case "restart":
+                    this.removeCapsuleCache(name)
                     this.onRestartApp(name)
                     break;
 
                 case "destroy":
+                    this.removeCapsuleCache(name)
                     this.closeMicroApp(name, true)
                     break;
 
