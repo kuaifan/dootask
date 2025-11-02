@@ -2,7 +2,11 @@
     <div class="mobile-tabbar">
         <NetworkException v-if="windowPortrait" type="alert"/>
         <ul class="tabbar-box">
-            <li v-for="item in navList" @click="toggleRoute(item.name)" :class="{active: activeName === item.name}">
+            <li 
+                v-for="(item, index) in navList" 
+                :key="index"
+                :class="{active: activeName === item.name}"
+                @click="toggleRoute(item.name)">
                 <i class="taskfont" v-html="item.icon"></i>
                 <div class="tabbar-title">{{ $L(item.label) }}</div>
                 <template v-if="item.name === 'dashboard'">
@@ -39,6 +43,14 @@ export default {
                 {icon: '&#xe60c;', name: 'application', label: '应用'},
             ],
         };
+    },
+
+    mounted() {
+        emitter.on('dialogMsgPush', this.updateBadge);
+    },
+
+    beforeDestroy() {
+        emitter.off('dialogMsgPush', this.updateBadge);
     },
 
     computed: {
@@ -149,14 +161,8 @@ export default {
     },
 
     watch: {
-        windowActive(active) {
-            if (active) {
-                return
-            }
-            $A.eeuiAppSendMessage({
-                action: 'setBdageNotify',
-                bdage: this.unreadAndOverdue,
-            });
+        windowActive() {
+            this.updateBadge();
         },
     },
 
@@ -186,6 +192,16 @@ export default {
                     break;
             }
             this.goForward(location);
+        },
+
+        updateBadge() {
+            if (this.windowActive) {
+                return
+            }
+            $A.eeuiAppSendMessage({
+                action: 'setBdageNotify',
+                bdage: this.unreadAndOverdue,
+            });
         },
     },
 };

@@ -4552,9 +4552,7 @@ export default {
                                                         dispatch("saveDialog", newData)
                                                     }
                                                 }
-                                                if (!silence) {
-                                                    emitter.emit('dialogMsgPush', data);
-                                                }
+                                                emitter.emit('dialogMsgPush', {silence, data});
                                             }
                                         }
                                         const saveMsg = (data, count) => {

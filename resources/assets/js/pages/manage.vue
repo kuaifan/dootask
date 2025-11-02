@@ -1293,7 +1293,10 @@ export default {
             });
         },
 
-        addDialogMsg(data) {
+        addDialogMsg({silence, data}) {
+            if (silence) {
+                return; // 静默消息不通知
+            }
             if (!this.natificationReady && !this.$isEEUIApp) {
                 return; // 通知未准备好不通知
             }
