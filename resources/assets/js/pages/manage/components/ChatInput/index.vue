@@ -344,6 +344,7 @@ import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
 import {languageList, languageName} from "../../../../language";
 import {isMarkdownFormat} from "../../../../utils/markdown";
 import emitter from "../../../../store/events";
+import historyMixin from "./history";
 
 const globalRangeIndexs = {};
 
@@ -351,6 +352,7 @@ export default {
     name: 'ChatInput',
     components: {ChatEmoji},
     directives: {touchmouse, touchclick, TransferDom, clickoutside, longpress},
+    mixins: [historyMixin],
     props: {
         value: {
             type: [String, Number],
@@ -541,6 +543,7 @@ export default {
     },
     mounted() {
         this.init();
+        this.refreshHistoryContext();
         //
         this.recordInter = setInterval(_ => {
             if (this.recordState === 'ing') {
@@ -786,6 +789,7 @@ export default {
             this.fileList = {};
             this.reportList = {};
             this.loadInputDraft()
+            this.refreshHistoryContext();
         },
         taskId() {
             this.selectRange = null;
@@ -795,6 +799,7 @@ export default {
             this.fileList = {};
             this.reportList = {};
             this.loadInputDraft()
+            this.refreshHistoryContext();
         },
 
         draftData() {
@@ -983,7 +988,7 @@ export default {
                     toolbar: false,
                     keyboard: this.simpleMode ? {} : {
                         bindings: {
-                            'short enter': {
+                            'enter-short': {
                                 key: "Enter",
                                 shortKey: true,
                                 handler: _ => {
@@ -1015,6 +1020,14 @@ export default {
                                     }
                                     return true;
                                 }
+                            },
+                            'history-up': {
+                                key: 38,
+                                handler: range => this.navigateHistory('up', range)
+                            },
+                            'history-down': {
+                                key: 40,
+                                handler: range => this.navigateHistory('down', range)
                             }
                         }
                     },
@@ -1504,6 +1517,8 @@ export default {
                 if (type === 'normal') {
                     type = ''
                 }
+                const content = this.value;
+                this.persistInputHistory(content);
                 if (type) {
                     this.$emit('on-send', null, type)
                 } else {
