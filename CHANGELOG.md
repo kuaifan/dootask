@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.55]
+
+### Features
+
+- 增加了对应用平台的设置，提升了用户体验。
+- 更新了消息推送逻辑，让您更及时地收到通知。
+- 优化了应用激活流程，提升了稳定性和响应速度。
+- 为支持角标的 Android 设备添加了角标推送功能。
+
+### Bug Fixes
+
+- 修复了任务操作无法点击确定的问题，操作更加顺畅。
+
 ## [1.3.38]
 
 ### Features
