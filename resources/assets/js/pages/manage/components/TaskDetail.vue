@@ -1891,10 +1891,11 @@ export default {
                 title: this.taskDetail.name,
                 titleFixed: true,
                 parent: null,
-                width: Math.min(window.screen.availWidth, this.$el.clientWidth + 72),
-                height: Math.min(window.screen.availHeight, this.$el.clientHeight + 72),
+                width: Math.min(window.screen.availWidth * 0.8, this.$el.clientWidth + 72),
+                height: Math.min(window.screen.availHeight * 0.8, this.$el.clientHeight + 72),
                 minWidth: 600,
                 minHeight: 450,
+                autoZoom: true,
             };
             if (this.hasOpenDialog) {
                 config.minWidth = 800;
@@ -1911,9 +1912,11 @@ export default {
 
         resizeDialog() {
             return new Promise(resolve => {
+                const width = Math.max(1100, this.windowWidth);
+                const height = Math.max(720, Math.min(width * 0.8, this.windowHeight));
                 this.$Electron.sendMessage('windowSize', {
-                    width: Math.max(1100, this.windowWidth),
-                    height: Math.max(720, this.windowHeight),
+                    width,
+                    height,
                     minWidth: 800,
                     minHeight: 600,
                     autoZoom: true,
