@@ -177,7 +177,7 @@ export default {
             if (!state.isFirstPage) {
                 return resolve(null)
             }
-            $A.eeuiAppGetSafeAreaInsets().then(data => {
+            $A.eeuiAppGetSafeAreaInsets().then(async data => {
                 data.top = data.top || state.safeAreaSize?.data?.top || 0
                 data.bottom = data.bottom || state.safeAreaSize?.data?.bottom || 0
                 const proportion = data.height / window.outerHeight

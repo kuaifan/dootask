@@ -362,6 +362,18 @@ import {languageName} from "../language";
                     reject(e);
                 }
             })
+        },
+
+        // 判断是否窗口化
+        eeuiAppIsWindowed() {
+            return new Promise(async resolve => {
+                try {
+                    const eeui = await $A.eeuiModulePromise();
+                    resolve(eeui.isFullscreen() === false || eeui.isFullscreen() === 0);
+                } catch (e) {
+                    resolve(false);
+                }
+            })
         }
     });
 

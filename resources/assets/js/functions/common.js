@@ -467,6 +467,15 @@ const timezone = require("dayjs/plugin/timezone");
         },
 
         /**
+         * 是否iPad
+         * @returns {boolean|string}
+         */
+        isIpad() {
+            let ua = typeof window !== 'undefined' && window.navigator.userAgent.toLowerCase();
+            return ua && /ipad/.test(ua);
+        },
+
+        /**
          * 是否安卓
          * @returns {boolean|string}
          */
