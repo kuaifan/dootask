@@ -40,6 +40,7 @@ body {
     --title-color: #303133;
     --content-bg-color: #ffffff;
     --border-radius: 0px;
+    --body-max-width: 100%;
 
     &.file-drawer {
         --margin-top: 40px;
@@ -62,7 +63,7 @@ body {
         flex-direction: column;
         width: 100%;
         height: 100%;
-        max-width: 100%;
+        max-width: var(--body-max-width);
         max-height: 100%;
         position: relative;
 
@@ -189,16 +190,22 @@ body {
     }
 }
 
+body.window-landscape {
+    // 横屏模式下的抽屉样式
+    .common-drawer {
+        --body-max-width: calc(100% - 80px);
+    }
+    // 横屏模式下的全屏抽屉样式
+    .drawer-fullscreen {
+        --body-max-width: 100%;
+    }
+}
 body.dark-mode-reverse {
     // 暗黑模式下的抽屉样式
     .common-drawer {
         &.file-drawer {
             --close-color: #000000;
         }
-    }
-    // 暗黑模式下的全屏抽屉样式
-    .drawer-fullscreen {
-
     }
 }
 

@@ -239,6 +239,7 @@ export default {
     --modal-resize-display: block;
     --modal-content-left: auto;
     --modal-content-min-width: auto;
+    --modal-content-max-width: 100%;
     --modal-body-margin: 0;
     --modal-body-border-radius: 0;
     --modal-body-background-color: #ffffff;
@@ -380,7 +381,7 @@ export default {
         flex-direction: column;
         height: 100%;
         min-width: var(--modal-content-min-width);
-        max-width: 100%;
+        max-width: var(--modal-content-max-width);
     }
 
     &-body {
@@ -416,6 +417,19 @@ export default {
             transform: var(--modal-slide-transform);
             opacity: 0;
         }
+    }
+}
+
+// 横屏模式适配
+body.window-landscape {
+    .micro-modal {
+        --modal-content-max-width: calc(100% - 80px);
+    }
+    &.transparent-mode {
+        --modal-content-max-width: 100%;
+    }
+    @media (width < 768px) {
+        --modal-content-max-width: 100%;
     }
 }
 
