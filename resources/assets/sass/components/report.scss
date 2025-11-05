@@ -109,62 +109,68 @@
             }
         }
     }
+}
 
-    .report-content {
-        border-top: 1px solid #eeeeee;
-        padding-top: 24px;
-        margin-top: 24px;
+.report-content {
+    border-top: 1px solid #eeeeee;
+    padding-top: 24px;
+    margin-top: 24px;
+    width: 100%;
+
+    &.organize-preview {
+        border-top: none;
+        padding-top: 0;
+        margin-top: 0;
+    }
+
+    ul, ol, li {
+        margin: revert;
+        padding: revert;
+    }
+
+    h2 {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    table {
         width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
 
-        ul, ol, li {
-            margin: revert;
-            padding: revert;
+        th, td {
+            line-height: 20px;
+            padding: 10px;
+            border: 1px solid #e8e8e8;
         }
 
-        h2 {
-            font-size: 20px;
-            margin-bottom: 10px;
+        th {
+            background: #f8f8f8;
+            padding: 10px 16px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            text-align: center;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            border-spacing: 0;
-
-            th, td {
-                line-height: 20px;
-                padding: 10px;
-                border: 1px solid #e8e8e8;
-            }
-
-            th {
-                background: #f8f8f8;
-                padding: 10px 16px;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                text-align: center;
-            }
-
-            td {
-                background: #fff;
-                text-align: left;
-            }
+        td {
+            background: #fff;
+            text-align: left;
         }
+    }
 
-        ol {
-            margin-bottom: 20px;
-            padding-left: 18px;
+    ol {
+        margin-bottom: 20px;
+        padding-left: 18px;
 
-            li {
-                font-size: 14px;
-                line-height: 24px;
-            }
+        li {
+            font-size: 14px;
+            line-height: 24px;
         }
+    }
 
-        img {
-            max-width: 100%;
-        }
+    img {
+        max-width: 100%;
     }
 }
 
@@ -307,6 +313,12 @@
 
     .report-foot {
         margin-bottom: 0;
+    }
+
+    .report-bottoms {
+        display: flex;
+        align-items: center;
+        gap: 12px;
         .report-bottom {
             height: 38px;
             line-height: 36px;

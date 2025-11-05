@@ -619,6 +619,68 @@ class ReportController extends AbstractController
     }
 
     /**
+     * @api {post} api/report/ai_organize 整理工作汇报内容
+     *
+     * @apiDescription 需要token身份，根据当前草稿重新整理工作汇报结构
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName ai_organize
+     *
+     * @apiParam {String} content          汇报内容（HTML）
+     * @apiParam {String} [title]          汇报标题
+     * @apiParam {String} [type]           汇报类型（weekly/daily）
+     * @apiParam {Array|String} [focus]    整理关注点（可选）
+     *
+     * @apiSuccess {Number} ret            返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg            返回信息（错误描述）
+     * @apiSuccess {Object} data           返回数据
+     * @apiSuccess {String} data.html      整理后的内容（HTML）
+     */
+    public function ai_organize(): array
+    {
+        $user = User::auth();
+        $content = trim((string)Request::input("content", ""));
+        if ($content === '') {
+            return Base::retError("汇报内容不能为空");
+        }
+
+        $title = trim((string)Request::input("title", ""));
+        $type = trim((string)Request::input("type", ""));
+
+        $markdown = Base::html2markdown($content);
+        if ($markdown === '') {
+            return Base::retError("汇报内容解析失败");
+        }
+
+        $context = array_filter([
+            'title' => $title,
+            'type' => $type,
+        ]);
+
+        $focus = Request::input('focus');
+        if (is_array($focus)) {
+            $context['focus'] = $focus;
+        } elseif (is_string($focus) && trim($focus) !== '') {
+            $context['focus'] = [trim($focus)];
+        }
+
+        $result = AI::organizeReportContent($markdown, $context);
+        if (Base::isError($result)) {
+            return Base::retError("整理汇报失败", $result);
+        }
+
+        $data = $result['data'];
+        $html = Base::markdown2html($data['text']);
+        if (trim($html) === '') {
+            return Base::retError("整理后的内容为空");
+        }
+
+        return Base::retSuccess("success", [
+            'html' => $html,
+        ]);
+    }
+
+    /**
      * @api {get} api/report/mark 标记已读/未读
      *
      * @apiDescription 需要token身份

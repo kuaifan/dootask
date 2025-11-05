@@ -635,9 +635,8 @@ class AI
             return Base::retError("报告内容为空，无法进行分析");
         }
 
-        $model = "gpt-5-mini";
         $post = json_encode([
-            "model" => $model,
+            "model" => "gpt-5-mini",
             "reasoning_effort" => "minimal",
             "messages" => [
                 [
@@ -679,7 +678,76 @@ class AI
 
         return Base::retSuccess("success", [
             'text' => $content,
-            'model' => $model,
+        ]);
+    }
+
+    /**
+     * 整理优化工作汇报内容
+     * @param string $markdown 用户当前的工作汇报（Markdown）
+     * @param array $context 上下文信息
+     * @return array
+     */
+    public static function organizeReportContent(string $markdown, array $context = [])
+    {
+        $markdown = trim((string)$markdown);
+        if ($markdown === '') {
+            return Base::retError("工作汇报内容不能为空");
+        }
+
+        $prompt = self::buildReportOrganizePrompt($markdown, $context);
+        if ($prompt === '') {
+            return Base::retError("整理内容为空");
+        }
+
+        $post = json_encode([
+            "model" => "gpt-5-mini",
+            "reasoning_effort" => "minimal",
+            "messages" => [
+                [
+                    "role" => "system",
+                    "content" => <<<EOF
+                        你是一名资深的职场写作顾问，擅长根据已有的工作汇报草稿进行整理、结构化和措辞优化。
+
+                        工作任务：
+                        1. 保留草稿中的事实、数据和结论，确保信息准确无误
+                        2. 重新组织结构，让内容清晰分段（如「重点进展」「成果亮点」「问题与风险」「后续计划」等），并按照草稿中的时间范围或类型进行表达
+                        3. 用简洁、专业且积极的语气描述，并突出可复用的要点
+                        4. 支持使用 Markdown 标题、列表、引用、表格等语法增强可读性，但不要返回 HTML 或代码块
+                        5. 若草稿信息不完整，可合理推测缺失项并以占位符提示（如「待补充」），不要臆造细节
+
+                        输出要求：
+                        - 仅返回整理后的 Markdown 正文内容，并用于直接替换原草稿
+                        - 不得输出任何汇报名称、汇报对象、汇报类型或其他元信息，即便草稿或上下文中存在这些字段
+                        - 不加额外说明、指引、总结或前缀后缀
+                        - 内容保持精炼、结构清晰
+                        EOF
+                ],
+                [
+                    "role" => "user",
+                    "content" => $prompt,
+                ],
+            ],
+        ]);
+
+        $ai = new self($post);
+        $ai->setTimeout(60);
+
+        $res = $ai->request();
+        if (Base::isError($res)) {
+            return Base::retError("汇报整理失败", $res);
+        }
+
+        $content = trim($res['data']);
+        $content = preg_replace('/^\s*```(?:markdown|md|text)?\s*/i', '', $content);
+        $content = preg_replace('/\s*```\s*$/', '', $content);
+        $content = trim($content);
+
+        if ($content === '') {
+            return Base::retError("汇报整理结果为空");
+        }
+
+        return Base::retSuccess("success", [
+            'text' => $content,
         ]);
     }
 
@@ -1006,6 +1074,48 @@ class AI
         if ($contentMarkdown !== '') {
             $sections[] = "### 汇报正文\n" . $contentMarkdown;
         }
+
+        return trim(implode("\n\n", array_filter($sections)));
+    }
+
+    /**
+     * 构建工作汇报整理的提示词
+     * @param string $markdown
+     * @param array $context
+     * @return string
+     */
+    private static function buildReportOrganizePrompt(string $markdown, array $context = []): string
+    {
+        $sections = [];
+
+        $infoLines = [];
+        if (!empty($context['title'])) {
+            $infoLines[] = "汇报标题：" . trim($context['title']);
+        }
+        if (!empty($context['type'])) {
+            $typeLabel = match ($context['type']) {
+                Report::WEEKLY => "周报",
+                Report::DAILY => "日报",
+                default => $context['type'],
+            };
+            $infoLines[] = "汇报类型：" . $typeLabel;
+        }
+        if (!empty($context['focus']) && is_array($context['focus'])) {
+            $focusItems = array_filter(array_map('trim', $context['focus']));
+            if (!empty($focusItems)) {
+                $sections[] = "### 需要重点整理的方向\n" . implode("\n", array_map(function ($line) {
+                    return "- " . $line;
+                }, $focusItems));
+            }
+        }
+
+        if (!empty($infoLines)) {
+            $sections[] = "### 汇报背景（仅供参考，请勿写入输出）\n" . implode("\n", array_map(function ($line) {
+                return "- " . $line;
+            }, $infoLines));
+        }
+
+        $sections[] = "### 原始汇报草稿（请整理后仅输出正文内容）\n" . $markdown;
 
         return trim(implode("\n\n", array_filter($sections)));
     }

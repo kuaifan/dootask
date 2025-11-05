@@ -1,50 +1,76 @@
 <template>
-    <Form class="report-edit" v-bind="formOptions" @submit.native.prevent>
-        <FormItem :label="$L('汇报类型')">
-            <RadioGroup
-                type="button"
-                button-style="solid"
-                v-model="reportData.type"
-                @on-change="typeChange"
-                class="report-radiogroup"
-                :readonly="id > 0">
-                <Radio label="weekly" :disabled="id > 0 && reportData.type =='daily'">{{ $L("周报") }}</Radio>
-                <Radio label="daily" :disabled="id > 0 && reportData.type =='weekly'">{{ $L("日报") }}</Radio>
-            </RadioGroup>
-            <ButtonGroup v-if="id === 0" class="report-buttongroup">
-                <ETooltip :disabled="$isEEUIApp || windowTouch" :content="prevCycleText" placement="bottom">
-                    <Button type="primary" @click="prevCycle">
-                        <Icon type="ios-arrow-back" />
+    <div class="report-edit-wrapper">
+        <Form class="report-edit" v-bind="formOptions" @submit.native.prevent>
+            <FormItem :label="$L('汇报类型')">
+                <RadioGroup
+                    type="button"
+                    button-style="solid"
+                    v-model="reportData.type"
+                    @on-change="typeChange"
+                    class="report-radiogroup"
+                    :readonly="id > 0">
+                    <Radio label="weekly" :disabled="id > 0 && reportData.type =='daily'">{{ $L("周报") }}</Radio>
+                    <Radio label="daily" :disabled="id > 0 && reportData.type =='weekly'">{{ $L("日报") }}</Radio>
+                </RadioGroup>
+                <ButtonGroup v-if="id === 0" class="report-buttongroup">
+                    <ETooltip :disabled="$isEEUIApp || windowTouch" :content="prevCycleText" placement="bottom">
+                        <Button type="primary" @click="prevCycle">
+                            <Icon type="ios-arrow-back" />
+                        </Button>
+                    </ETooltip>
+                    <div class="report-buttongroup-vertical"></div>
+                    <ETooltip :disabled="$isEEUIApp || windowTouch || reportData.offset >= 0" :content="nextCycleText" placement="bottom">
+                        <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
+                            <Icon type="ios-arrow-forward" />
+                        </Button>
+                    </ETooltip>
+                </ButtonGroup>
+            </FormItem>
+            <FormItem :label="$L('汇报名称')">
+                <Input v-model="reportData.title" disabled/>
+            </FormItem>
+            <FormItem :label="$L('汇报对象')">
+                <div class="report-users">
+                    <UserSelect v-model="reportData.receive" :disabledChoice="[userId]" :title="$L('选择接收人')"/>
+                    <a class="report-user-link" href="javascript:void(0);" @click="getLastSubmitter">
+                        <Icon v-if="receiveLoad > 0" type="ios-loading" class="icon-loading"/>
+                        <Icon v-else type="ios-share-outline" />
+                        {{ $L("使用我上次的汇报对象") }}
+                    </a>
+                </div>
+            </FormItem>
+            <FormItem :label="$L('汇报内容')" class="report-content-editor">
+                <TEditor v-model="reportData.content" height="100%"/>
+            </FormItem>
+            <FormItem class="report-foot">
+                <div class="report-bottoms">
+                    <Button type="primary" @click="handleSubmit" :loading="loadIng > 0" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
+                    <Button
+                        type="default"
+                        class="report-bottom"
+                        :loading="aiOrganizeLoading"
+                        @click="onOrganize">
+                        <Icon type="md-construct" />
+                        {{ $L("AI 整理汇报") }}
                     </Button>
-                </ETooltip>
-                <div class="report-buttongroup-vertical"></div>
-                <ETooltip :disabled="$isEEUIApp || windowTouch || reportData.offset >= 0" :content="nextCycleText" placement="bottom">
-                    <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
-                        <Icon type="ios-arrow-forward" />
-                    </Button>
-                </ETooltip>
-            </ButtonGroup>
-        </FormItem>
-        <FormItem :label="$L('汇报名称')">
-            <Input v-model="reportData.title" disabled/>
-        </FormItem>
-        <FormItem :label="$L('汇报对象')">
-            <div class="report-users">
-                <UserSelect v-model="reportData.receive" :disabledChoice="[userId]" :title="$L('选择接收人')"/>
-                <a class="report-user-link" href="javascript:void(0);" @click="getLastSubmitter">
-                    <Icon v-if="receiveLoad > 0" type="ios-loading" class="icon-loading"/>
-                    <Icon v-else type="ios-share-outline" />
-                    {{ $L("使用我上次的汇报对象") }}
-                </a>
+                </div>
+            </FormItem>
+        </Form>
+        <Modal
+            v-model="organizePreviewVisible"
+            :title="$L('整理结果预览')"
+            :mask-closable="false"
+            :styles="{
+                width: '90%',
+                maxWidth: '800px'
+            }">
+            <div class="report-content organize-preview user-select-auto" v-html="organizeResult.html"></div>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="closeOrganizePreview">{{ $L("取消") }}</Button>
+                <Button type="primary" @click="applyOrganize" :loading="aiOrganizeLoading">{{ $L("应用到汇报") }}</Button>
             </div>
-        </FormItem>
-        <FormItem :label="$L('汇报内容')" class="report-content-editor">
-            <TEditor v-model="reportData.content" height="100%"/>
-        </FormItem>
-        <FormItem class="report-foot">
-            <Button type="primary" @click="handleSubmit" :loading="loadIng > 0" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
-        </FormItem>
-    </Form>
+        </Modal>
+    </div>
 </template>
 
 <script>
@@ -67,6 +93,12 @@ export default {
         return {
             loadIng: 0,
             receiveLoad: 0,
+            aiOrganizeLoading: false,
+            organizePreviewVisible: false,
+            organizeResult: {
+                html: '',
+                model: '',
+            },
 
             reportData: {
                 sign: "",
@@ -242,6 +274,52 @@ export default {
             this.reportData.content = "";
             this.reportData.receive = [];
             this.reportData.id = 0;
+        },
+
+        onOrganize() {
+            if (!this.reportData.content || !this.reportData.content.trim()) {
+                $A.messageWarning(this.$L("请先填写汇报内容"));
+                return;
+            }
+            if (this.aiOrganizeLoading) {
+                return;
+            }
+            this.aiOrganizeLoading = true;
+            this.$store.dispatch("call", {
+                url: 'report/ai_organize',
+                method: 'post',
+                data: {
+                    content: this.reportData.content,
+                    title: this.reportData.title,
+                    type: this.reportData.type,
+                },
+                timeout: 60 * 1000,
+            }).then(({data}) => {
+                this.organizeResult = data || {html: '', model: ''};
+                if (!this.organizeResult.html) {
+                    $A.messageWarning(this.$L("AI 未返回整理内容"));
+                    return;
+                }
+                this.organizePreviewVisible = true;
+            }).catch(({msg}) => {
+                $A.messageError(msg);
+            }).finally(() => {
+                this.aiOrganizeLoading = false;
+            });
+        },
+
+        closeOrganizePreview() {
+            this.organizePreviewVisible = false;
+        },
+
+        applyOrganize() {
+            if (!this.organizeResult.html) {
+                $A.messageWarning(this.$L("没有可应用的内容"));
+                return;
+            }
+            this.reportData.content = this.organizeResult.html;
+            this.organizePreviewVisible = false;
+            $A.messageSuccess(this.$L("已应用整理结果"));
         }
     }
 }
