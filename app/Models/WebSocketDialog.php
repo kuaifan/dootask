@@ -461,7 +461,8 @@ class WebSocketDialog extends AbstractModel
      */
     public function joinGroup($userid, $inviter, $important = null)
     {
-        AbstractModel::transaction(function () use ($important, $inviter, $userid) {
+        $addedUserIds = [];
+        AbstractModel::transaction(function () use ($important, $inviter, $userid, &$addedUserIds) {
             foreach (is_array($userid) ? $userid : [$userid] as $value) {
                 if ($value > 0) {
                     $updateData = [
@@ -480,6 +481,7 @@ class WebSocketDialog extends AbstractModel
                         ]);
                     }, $isInsert);
                     if ($isInsert) {
+                        $addedUserIds[] = $value;
                         WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', [
                             'notice' => User::userid2nickname($value) . " 已加入群组"
                         ], $inviter, true, true);
@@ -490,6 +492,16 @@ class WebSocketDialog extends AbstractModel
         $data = WebSocketDialog::generatePeople($this->id);
         $data['id'] = $this->id;
         $this->pushMsg("groupUpdate", $data);
+        if ($addedUserIds) {
+            $meta = ['action' => 'join'];
+            if ($inviter > 0) {
+                $actor = $this->getUserSnapshots([$inviter]);
+                if (!empty($actor)) {
+                    $meta['actor'] = $actor[0];
+                }
+            }
+            $this->dispatchMemberWebhook(UserBot::WEBHOOK_EVENT_MEMBER_JOIN, $addedUserIds, $meta);
+        }
         return true;
     }
 
@@ -503,14 +515,15 @@ class WebSocketDialog extends AbstractModel
     public function exitGroup($userid, $type = 'exit', $checkDelete = true, $pushMsg = true)
     {
         $typeDesc = $type === 'remove' ? '移出' : '退出';
-        AbstractModel::transaction(function () use ($pushMsg, $checkDelete, $typeDesc, $type, $userid) {
+        $removedUserIds = [];
+        AbstractModel::transaction(function () use ($pushMsg, $checkDelete, $typeDesc, $type, $userid, &$removedUserIds) {
             $builder = WebSocketDialogUser::whereDialogId($this->id);
             if (is_array($userid)) {
                 $builder->whereIn('userid', $userid);
             } else {
                 $builder->whereUserid($userid);
             }
-            $builder->chunkById(100, function($list) use ($pushMsg, $checkDelete, $typeDesc, $type) {
+            $builder->chunkById(100, function($list) use ($pushMsg, $checkDelete, $typeDesc, $type, &$removedUserIds) {
                 /** @var WebSocketDialogUser $item */
                 foreach ($list as $item) {
                     if ($checkDelete) {
@@ -531,6 +544,7 @@ class WebSocketDialog extends AbstractModel
                     }
                     //
                     $item->delete();
+                    $removedUserIds[] = $item->userid;
                     //
                     if ($pushMsg) {
                         if ($type === 'remove') {
@@ -549,6 +563,87 @@ class WebSocketDialog extends AbstractModel
         $data = WebSocketDialog::generatePeople($this->id);
         $data['id'] = $this->id;
         $this->pushMsg("groupUpdate", $data);
+        if ($removedUserIds) {
+            $meta = ['action' => $type];
+            $operatorId = User::userid();
+            if ($operatorId > 0) {
+                $actor = $this->getUserSnapshots([$operatorId]);
+                if (!empty($actor)) {
+                    $meta['actor'] = $actor[0];
+                }
+            }
+            $this->dispatchMemberWebhook(UserBot::WEBHOOK_EVENT_MEMBER_LEAVE, $removedUserIds, $meta);
+        }
+    }
+
+    /**
+     * 获取用户快照
+     * @param array $userIds
+     * @return array
+     */
+    protected function getUserSnapshots(array $userIds): array
+    {
+        $userIds = array_values(array_unique(array_filter($userIds)));
+        if (empty($userIds)) {
+            return [];
+        }
+        return User::whereIn('userid', $userIds)
+            ->get(['userid', 'nickname', 'email', 'bot'])
+            ->map(function (User $user) {
+                return [
+                    'userid' => $user->userid,
+                    'nickname' => $user->nickname,
+                    'email' => $user->email,
+                    'is_bot' => (bool)$user->bot,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * 推送成员事件到机器人 webhook
+     * @param string $event
+     * @param array $memberIds
+     * @param array $meta
+     * @return void
+     */
+    protected function dispatchMemberWebhook(string $event, array $memberIds, array $meta = []): void
+    {
+        $memberIds = array_values(array_unique(array_filter($memberIds)));
+        if (empty($memberIds)) {
+            return;
+        }
+
+        $botIds = $this->dialogUser()->where('bot', 1)->pluck('userid')->toArray();
+        if (empty($botIds)) {
+            return;
+        }
+
+        $userBots = UserBot::whereIn('bot_id', $botIds)->get();
+        if ($userBots->isEmpty()) {
+            return;
+        }
+
+        $members = $this->getUserSnapshots($memberIds);
+        if (empty($members)) {
+            return;
+        }
+
+        $payload = array_merge([
+            'dialog_id' => $this->id,
+            'dialog_type' => $this->type,
+            'group_type' => $this->group_type,
+            'dialog_name' => $this->getGroupName(),
+            'members' => $members,
+        ], array_filter($meta, fn ($value) => $value !== null));
+
+        foreach ($userBots as $userBot) {
+            $userBot->dispatchWebhook($event, $payload, 10, [
+                'dialog' => $this->id,
+                'event_members' => $memberIds,
+            ]);
+        }
     }
 
     /**

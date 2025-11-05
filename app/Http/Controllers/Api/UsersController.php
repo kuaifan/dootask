@@ -34,6 +34,8 @@ use App\Models\WebSocketDialogUser;
 use App\Models\UserTaskBrowse;
 use App\Models\UserFavorite;
 use App\Models\UserRecentItem;
+use App\Models\UserTag;
+use App\Models\UserTagRecognition;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserEmailVerification;
 use App\Module\AgoraIO\AgoraTokenGenerator;
@@ -386,6 +388,9 @@ class UsersController extends AbstractController
         $data['nickname_original'] = $user->getRawOriginal('nickname');
         $data['department_name'] = $user->getDepartmentName();
         $data['department_owner'] = UserDepartment::where('parent_id',0)->where('owner_userid', $user->userid)->exists(); // 适用默认部门下第1级负责人才能添加部门OKR
+        $tagMeta = UserTag::listWithMeta($user->userid, $user);
+        $data['personal_tags'] = $tagMeta['top'];
+        $data['personal_tags_total'] = $tagMeta['total'];
         return Base::retSuccess('success', $data);
     }
 
@@ -446,6 +451,9 @@ class UsersController extends AbstractController
      * @apiParam {String} [tel]                 电话
      * @apiParam {String} [nickname]            昵称
      * @apiParam {String} [profession]          职位/职称
+     * @apiParam {String} [birthday]            生日（格式：YYYY-MM-DD）
+     * @apiParam {String} [address]             地址
+     * @apiParam {String} [introduction]        个人简介
      * @apiParam {String} [lang]                语言（比如：zh/en）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -508,6 +516,40 @@ class UsersController extends AbstractController
                 $user->profession = $profession;
                 $upLdap['employeeType'] = $profession;
             }
+        }
+        // 生日
+        if (Arr::exists($data, 'birthday')) {
+            $birthday = trim((string) Request::input('birthday'));
+            if ($birthday === '') {
+                $user->birthday = null;
+            } else {
+                try {
+                    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $birthday)) {
+                        $birthdayDate = Carbon::createFromFormat('Y-m-d', $birthday);
+                    } else {
+                        $birthdayDate = Carbon::parse($birthday);
+                    }
+                } catch (\Exception $e) {
+                    return Base::retError('生日格式错误');
+                }
+                $user->birthday = $birthdayDate->format('Y-m-d');
+            }
+        }
+        // 地址
+        if (Arr::exists($data, 'address')) {
+            $address = trim((string) Request::input('address'));
+            if (mb_strlen($address) > 100) {
+                return Base::retError('地址最多只能设置100个字');
+            }
+            $user->address = $address ?: null;
+        }
+        // 个人简介
+        if (Arr::exists($data, 'introduction')) {
+            $introduction = trim((string) Request::input('introduction'));
+            if (mb_strlen($introduction) > 500) {
+                return Base::retError('个人简介最多只能设置500个字');
+            }
+            $user->introduction = $introduction ?: null;
         }
         // 语言
         if (Arr::exists($data, 'lang')) {
@@ -767,8 +809,12 @@ class UsersController extends AbstractController
     public function basic()
     {
         $sharekey = Request::header('sharekey');
-        if (empty($sharekey) || !Meeting::getShareInfo($sharekey)) {
-            User::auth();
+        $shareInfo = $sharekey ? Meeting::getShareInfo($sharekey) : null;
+        $viewer = null;
+        if (empty($shareInfo)) {
+            $viewer = User::auth();
+        } elseif (Doo::userId() > 0) {
+            $viewer = User::whereUserid(Doo::userId())->first();
         }
         //
         $userid = Request::input('userid');
@@ -786,6 +832,9 @@ class UsersController extends AbstractController
                 $basic = UserDelete::userid2basic($id);
             }
             if ($basic) {
+                $tagMeta = UserTag::listWithMeta($basic->userid, $viewer);
+                $basic->personal_tags = $tagMeta['top'];
+                $basic->personal_tags_total = $tagMeta['total'];
                 //
                 $retArray[] = $basic;
             }
@@ -1448,6 +1497,233 @@ class UsersController extends AbstractController
         Meeting::setTouristInfo($data);
         //
         return Base::retSuccess('success', $data);
+    }
+
+    protected function buildUserTagResponse(?User $viewer, int $targetUserId, string $message = 'success')
+    {
+        return Base::retSuccess($message, UserTag::listWithMeta($targetUserId, $viewer));
+    }
+
+    /**
+     * @api {get} api/users/tags/lists          10.1. 获取个性标签列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName tags__lists
+     *
+     * @apiParam {Number} [userid]          会员ID（不传默认为当前用户）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccessExample {json} data:
+    {
+        "list": [
+            {
+                "id": 1,
+                "name": "认真负责",
+                "recognition_total": 3,
+                "recognized": true,
+                "can_edit": true,
+                "can_delete": true
+            }
+        ],
+        "top": [ ],
+        "total": 1
+    }
+     */
+    public function tags__lists()
+    {
+        $viewer = User::auth();
+        $userid = intval(Request::input('userid')) ?: $viewer->userid;
+        $target = User::whereUserid($userid)->first();
+        if (empty($target)) {
+            return Base::retError('会员不存在');
+        }
+        return $this->buildUserTagResponse($viewer, $target->userid);
+    }
+
+    /**
+     * @api {post} api/users/tags/add          10.2. 新增个性标签
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName tags__add
+     *
+     * @apiParam {Number} [userid]          会员ID（不传默认为当前用户）
+     * @apiParam {String} name              标签名称（1-20个字符）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据，同“获取个性标签列表”
+     */
+    public function tags__add()
+    {
+        $viewer = User::auth();
+        $userid = intval(Request::input('userid')) ?: $viewer->userid;
+        $target = User::whereUserid($userid)->first();
+        if (empty($target)) {
+            return Base::retError('会员不存在');
+        }
+
+        $name = trim((string) Request::input('name'));
+        if ($name === '') {
+            return Base::retError('请输入个性标签');
+        }
+        if (mb_strlen($name) > 20) {
+            return Base::retError('标签名称最多只能设置20个字');
+        }
+        if (UserTag::where('user_id', $userid)->where('name', $name)->exists()) {
+            return Base::retError('标签已存在');
+        }
+        if (UserTag::where('user_id', $userid)->count() >= 100) {
+            return Base::retError('每位会员最多添加100个标签');
+        }
+
+        $tag = UserTag::create([
+            'user_id' => $userid,
+            'name' => $name,
+            'created_by' => $viewer->userid,
+            'updated_by' => $viewer->userid,
+        ]);
+        $tag->save();
+
+        return $this->buildUserTagResponse($viewer, $userid, '添加成功');
+    }
+
+    /**
+     * @api {post} api/users/tags/update          10.3. 修改个性标签
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName tags__update
+     *
+     * @apiParam {Number} tag_id           标签ID
+     * @apiParam {String} name             标签名称（1-20个字符）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据，同“获取个性标签列表”
+     */
+    public function tags__update()
+    {
+        $viewer = User::auth();
+        $tagId = intval(Request::input('tag_id'));
+        $name = trim((string) Request::input('name'));
+        if ($tagId <= 0) {
+            return Base::retError('参数错误');
+        }
+        if ($name === '') {
+            return Base::retError('请输入个性标签');
+        }
+        if (mb_strlen($name) > 20) {
+            return Base::retError('标签名称最多只能设置20个字');
+        }
+        $tag = UserTag::find($tagId);
+        if (empty($tag)) {
+            return Base::retError('标签不存在');
+        }
+        if (!$tag->canManage($viewer)) {
+            return Base::retError('无权操作该标签');
+        }
+        if ($name !== $tag->name && UserTag::where('user_id', $tag->user_id)->where('name', $name)->where('id', '!=', $tag->id)->exists()) {
+            return Base::retError('标签已存在');
+        }
+
+        if ($name !== $tag->name) {
+            $tag->updateInstance([
+                'name' => $name,
+                'updated_by' => $viewer->userid,
+            ]);
+        } else {
+            $tag->updateInstance([
+                'updated_by' => $viewer->userid,
+            ]);
+        }
+        $tag->save();
+
+        return $this->buildUserTagResponse($viewer, $tag->user_id, '保存成功');
+    }
+
+    /**
+     * @api {post} api/users/tags/delete          10.4. 删除个性标签
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName tags__delete
+     *
+     * @apiParam {Number} tag_id           标签ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据，同“获取个性标签列表”
+     */
+    public function tags__delete()
+    {
+        $viewer = User::auth();
+        $tagId = intval(Request::input('tag_id'));
+        if ($tagId <= 0) {
+            return Base::retError('参数错误');
+        }
+        $tag = UserTag::find($tagId);
+        if (empty($tag)) {
+            return Base::retError('标签不存在');
+        }
+        if (!$tag->canManage($viewer)) {
+            return Base::retError('无权操作该标签');
+        }
+
+        $userId = $tag->user_id;
+        $tag->delete();
+
+        return $this->buildUserTagResponse($viewer, $userId, '删除成功');
+    }
+
+    /**
+     * @api {post} api/users/tags/recognize          10.5. 认可个性标签
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName tags__recognize
+     *
+     * @apiParam {Number} tag_id           标签ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据，同“获取个性标签列表”
+     */
+    public function tags__recognize()
+    {
+        $viewer = User::auth();
+        $tagId = intval(Request::input('tag_id'));
+        if ($tagId <= 0) {
+            return Base::retError('参数错误');
+        }
+        $tag = UserTag::find($tagId);
+        if (empty($tag)) {
+            return Base::retError('标签不存在');
+        }
+
+        $recognition = UserTagRecognition::where('tag_id', $tagId)
+            ->where('user_id', $viewer->userid)
+            ->first();
+        if ($recognition) {
+            $recognition->delete();
+            $message = '已取消认可';
+        } else {
+            UserTagRecognition::create([
+                'tag_id' => $tagId,
+                'user_id' => $viewer->userid,
+            ]);
+            $message = '认可成功';
+        }
+
+        return $this->buildUserTagResponse($viewer, $tag->user_id, $message);
     }
 
     /**
@@ -2181,7 +2457,8 @@ class UsersController extends AbstractController
                 'users.nickname',
                 'users.userimg',
                 'user_bots.clear_day',
-                'user_bots.webhook_url'
+                'user_bots.webhook_url',
+                'user_bots.webhook_events'
             ])
             ->orderByDesc('id')
             ->get()
@@ -2191,6 +2468,7 @@ class UsersController extends AbstractController
             $bot['name'] = $bot['nickname'];
             $bot['avatar'] = $bot['userimg'];
             $bot['system_name'] = UserBot::systemBotName($bot['name']);
+            $bot['webhook_events'] = UserBot::normalizeWebhookEvents($bot['webhook_events'] ?? null, empty($bot['webhook_events']));
             unset($bot['userid'], $bot['nickname'], $bot['userimg']);
         }
 
@@ -2242,11 +2520,13 @@ class UsersController extends AbstractController
             'avatar' => $botUser->userimg,
             'clear_day' => 0,
             'webhook_url' => '',
+            'webhook_events' => [UserBot::WEBHOOK_EVENT_MESSAGE],
             'system_name' => UserBot::systemBotName($botUser->email),
         ];
         if ($userBot) {
             $data['clear_day'] = $userBot->clear_day;
             $data['webhook_url'] = $userBot->webhook_url;
+            $data['webhook_events'] = $userBot->webhook_events;
         }
         return Base::retSuccess('success', $data);
     }
@@ -2327,6 +2607,9 @@ class UsersController extends AbstractController
         if (Arr::exists($data, 'webhook_url')) {
             $upBot['webhook_url'] = trim($data['webhook_url']);
         }
+        if (Arr::exists($data, 'webhook_events')) {
+            $upBot['webhook_events'] = UserBot::normalizeWebhookEvents($data['webhook_events'], false);
+        }
         //
         if ($upUser) {
             $botUser->updateInstance($upUser);
@@ -2343,11 +2626,13 @@ class UsersController extends AbstractController
             'avatar' => $botUser->userimg,
             'clear_day' => 0,
             'webhook_url' => '',
+            'webhook_events' => [UserBot::WEBHOOK_EVENT_MESSAGE],
             'system_name' => UserBot::systemBotName($botUser->email),
         ];
         if ($userBot) {
             $data['clear_day'] = $userBot->clear_day;
             $data['webhook_url'] = $userBot->webhook_url;
+            $data['webhook_events'] = $userBot->webhook_events;
         }
         return Base::retSuccess($botId ? '修改成功' : '添加成功', $data);
     }

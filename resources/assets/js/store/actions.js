@@ -3470,7 +3470,7 @@ export default {
                 }
                 return item.dialog_user.userid === userid
             });
-            if (dialog) {
+            if (dialog && dialog.bot !== 1) {
                 return dispatch("openDialog", dialog.id).then(resolve).catch(reject)
             }
             dispatch("call", {

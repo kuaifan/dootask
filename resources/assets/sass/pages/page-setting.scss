@@ -152,8 +152,14 @@
 
 .setting-item {
     .ivu-input,
-    .ivu-select-default {
+    .ivu-select-default,
+    .ivu-date-picker,
+    .user-tags-preview {
         max-width: 460px;
+    }
+    .ivu-date-picker,
+    .user-tags-preview {
+        width: 100%;
     }
     .ivu-form {
         overflow: auto;

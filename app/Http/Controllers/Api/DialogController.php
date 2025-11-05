@@ -12,6 +12,7 @@ use App\Module\AI;
 use App\Module\Doo;
 use App\Models\File;
 use App\Models\User;
+use App\Models\UserBot;
 use App\Module\Base;
 use App\Module\Timer;
 use App\Models\Setting;
@@ -443,6 +444,29 @@ class DialogController extends AbstractController
             return Base::retError('打开会话失败');
         }
         $data = WebSocketDialog::synthesizeData($dialog->id, $user->userid);
+
+        if ($userid > 0) {
+            $botTarget = User::whereUserid($userid)->whereBot(1)->first();
+            if ($botTarget) {
+                $userBot = UserBot::whereBotId($botTarget->userid)->first();
+                if ($userBot) {
+                    $userBot->dispatchWebhook(UserBot::WEBHOOK_EVENT_DIALOG_OPEN, [
+                        'dialog_id' => $dialog->id,
+                        'dialog_type' => $dialog->type,
+                        'session_id' => $dialog->session_id,
+                        'dialog_name' => $dialog->getGroupName(),
+                        'user' => [
+                            'userid' => $user->userid,
+                            'email' => $user->email,
+                            'nickname' => $user->nickname,
+                        ],
+                    ], 10, [
+                        'dialog' => $dialog->id,
+                        'operator' => $user->userid,
+                    ]);
+                }
+            }
+        }
         return Base::retSuccess('success', $data);
     }
 
@@ -1255,6 +1279,9 @@ class DialogController extends AbstractController
                 }
                 if ($model_name) {
                     $msgData['model_name'] = $model_name;
+                }
+                if (User::isBot($user->userid)) {
+                    $msgData['force_webhook'] = true; // 强制使用webhook发送
                 }
                 $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence, $key);
             }

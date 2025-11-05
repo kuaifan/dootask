@@ -19,6 +19,11 @@
             }
         }
 
+        .user-detail-actions {
+            display: flex;
+            gap: 10px;
+        }
+
         .ivu-modal-content {
             overflow: hidden;
 
