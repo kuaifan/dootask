@@ -9,9 +9,9 @@
             <div class="block-setting-box">
                 <h3>{{ $L('AI 助手') }}</h3>
                 <div class="form-box">
-                    <Alert type="success">
+                    <Alert type="success" style="padding-right:16px">
                         <ul class="tip-list">
-                            <li>{{$L('此功能并非聊天机器人，而是用于辅助工作。比如：语音转文字、聊天翻译等。')}}</li>
+                            <li>{{$L('此功能并非聊天机器人，而是用于辅助工作。比如：语音转文字、聊天翻译、整理分析工作报告等。')}}</li>
                             <li>{{$L('如果需要聊天机器人，请在「应用」中使用「AI 机器人」插件。')}}</li>
                         </ul>
                     </Alert>

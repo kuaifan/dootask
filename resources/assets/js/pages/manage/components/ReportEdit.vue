@@ -278,7 +278,7 @@ export default {
 
         onOrganize() {
             if (!this.reportData.content || !this.reportData.content.trim()) {
-                $A.messageWarning(this.$L("请先填写汇报内容"));
+                $A.messageWarning("请先填写汇报内容");
                 return;
             }
             if (this.aiOrganizeLoading) {
@@ -297,7 +297,7 @@ export default {
             }).then(({data}) => {
                 this.organizeResult = data || {html: '', model: ''};
                 if (!this.organizeResult.html) {
-                    $A.messageWarning(this.$L("AI 未返回整理内容"));
+                    $A.messageWarning("AI 未返回整理内容");
                     return;
                 }
                 this.organizePreviewVisible = true;
@@ -314,12 +314,12 @@ export default {
 
         applyOrganize() {
             if (!this.organizeResult.html) {
-                $A.messageWarning(this.$L("没有可应用的内容"));
+                $A.messageWarning("没有可应用的内容");
                 return;
             }
             this.reportData.content = this.organizeResult.html;
             this.organizePreviewVisible = false;
-            $A.messageSuccess(this.$L("已应用整理结果"));
+            $A.messageSuccess("已应用整理结果");
         }
     }
 }

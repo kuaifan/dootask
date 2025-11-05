@@ -294,7 +294,7 @@
         </DrawerOverlay>
 
         <!--AI 助手-->
-        <DrawerOverlay v-model="aiAssistantShow" placement="right" :size="700">
+        <DrawerOverlay v-model="aiAssistantShow" placement="right" :size="800">
             <template v-if="aiAssistantShow" #title>
                 {{ $L('AI 助手') }}
             </template>
