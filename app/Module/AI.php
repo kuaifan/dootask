@@ -189,7 +189,7 @@ class AI
 
         $result = Cache::remember($cacheKey, Carbon::now()->addDays(7), function () use ($text, $targetLanguage) {
             $post = json_encode([
-                "model" => "gpt-5-nano",
+                "model" => "gpt-5-mini",
                 "reasoning_effort" => "minimal",
                 "messages" => [
                     [
@@ -263,7 +263,7 @@ class AI
 
         $result = Cache::remember($cacheKey, Carbon::now()->addHours(24), function () use ($text) {
             $post = json_encode([
-                "model" => "gpt-5-nano",
+                "model" => "gpt-5-mini",
                 "reasoning_effort" => "minimal",
                 "messages" => [
                     [
@@ -329,7 +329,7 @@ class AI
         $contextPrompt = self::buildTaskContextPrompt($context);
 
         $post = json_encode([
-            "model" => "gpt-5-nano",
+            "model" => "gpt-5-mini",
             "reasoning_effort" => "minimal",
             "messages" => [
                 [
@@ -483,7 +483,7 @@ class AI
         $contextPrompt = self::buildProjectContextPrompt($context);
 
         $post = json_encode([
-            "model" => "gpt-5-nano",
+            "model" => "gpt-5-mini",
             "reasoning_effort" => "minimal",
             "messages" => [
                 [
@@ -571,7 +571,7 @@ class AI
         $contextPrompt = self::buildMessageContextPrompt($context);
 
         $post = json_encode([
-            "model" => "gpt-5-nano",
+            "model" => "gpt-5-mini",
             "reasoning_effort" => "minimal",
             "messages" => [
                 [
@@ -805,7 +805,7 @@ class AI
 
         $result = Cache::remember($cacheKey, Carbon::now()->addHours(6), function () {
             $post = json_encode([
-                "model" => "gpt-5-nano",
+                "model" => "gpt-5-mini",
                 "reasoning_effort" => "minimal",
                 "messages" => [
                     [
