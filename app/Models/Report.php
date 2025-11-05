@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use JetBrains\PhpStorm\Pure;
 
 /**
@@ -76,6 +77,16 @@ class Report extends AbstractModel
     {
         return $this->belongsToMany(User::class, ReportReceive::class, "rid", "userid")
             ->withPivot("receive_at", "read");
+    }
+
+    public function aiAnalyses(): HasMany
+    {
+        return $this->hasMany(ReportAnalysis::class, 'rid');
+    }
+
+    public function aiAnalysis(): HasOne
+    {
+        return $this->hasOne(ReportAnalysis::class, 'rid');
     }
 
     public function sendUser()

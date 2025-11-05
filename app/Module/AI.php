@@ -2,6 +2,7 @@
 
 namespace App\Module;
 
+use App\Models\Report;
 use App\Models\Setting;
 use Cache;
 use Carbon\Carbon;
@@ -622,6 +623,67 @@ class AI
     }
 
     /**
+     * 对工作汇报内容进行分析
+     * @param Report $report
+     * @param array $context
+     * @return array
+     */
+    public static function analyzeReport(Report $report, array $context = [])
+    {
+        $prompt = self::buildReportAnalysisPrompt($report, $context);
+        if ($prompt === '') {
+            return Base::retError("报告内容为空，无法进行分析");
+        }
+
+        $model = "gpt-5-mini";
+        $post = json_encode([
+            "model" => $model,
+            "reasoning_effort" => "minimal",
+            "messages" => [
+                [
+                    "role" => "system",
+                    "content" => <<<EOF
+                        你是一名经验丰富的团队管理顾问，擅长阅读和分析员工提交的工作汇报，能够快速提炼重点并给出可执行建议。
+
+                        输出要求：
+                        1. 使用简洁的 Markdown 结构（标题、无序列表、引用等），不要使用代码块或 JSON
+                        2. 先给出整体概览，再列出具体亮点、风险或问题，以及明确的改进建议
+                        3. 如有数据或目标，应评估其完成情况和后续跟进要点
+                        4. 语气保持专业、客观，中立，不过度夸赞或批评
+                        5. 控制在 200-400 字之间，必要时可略微增减，但保持紧凑
+                        EOF
+                ],
+                [
+                    "role" => "user",
+                    "content" => $prompt,
+                ],
+            ],
+        ]);
+
+        $ai = new self($post);
+        $ai->setTimeout(60);
+
+        $res = $ai->request();
+        if (Base::isError($res)) {
+            return Base::retError("工作汇报分析失败", $res);
+        }
+
+        $content = trim($res['data']);
+        $content = preg_replace('/^\s*```(?:markdown|md|text)?\s*/i', '', $content);
+        $content = preg_replace('/\s*```\s*$/', '', $content);
+        $content = trim($content);
+
+        if ($content === '') {
+            return Base::retError("工作汇报分析结果为空");
+        }
+
+        return Base::retSuccess("success", [
+            'text' => $content,
+            'model' => $model,
+        ]);
+    }
+
+    /**
      * 构建任务生成的上下文提示信息
      * @param array $context 上下文信息
      * @return string
@@ -888,6 +950,64 @@ class AI
             Cache::forget($cacheKey);
         }
         return $result;
+    }
+
+    /**
+     * 构建工作汇报分析的提示词
+     * @param Report $report
+     * @param array $context
+     * @return string
+     */
+    private static function buildReportAnalysisPrompt(Report $report, array $context = []): string
+    {
+        $sections = [];
+
+        $metaLines = [];
+        $metaLines[] = "标题：" . ($report->title ?: "（未填写）");
+        $metaLines[] = "类型：" . match ($report->type) {
+            Report::WEEKLY => "周报",
+            Report::DAILY => "日报",
+            default => $report->type,
+        };
+        if ($report->created_at) {
+            $createdAt = $report->created_at instanceof Carbon
+                ? $report->created_at->toDateTimeString()
+                : (string)$report->created_at;
+            $metaLines[] = "提交时间：" . $createdAt;
+        }
+        if (!empty($context['viewer_role'])) {
+            $metaLines[] = "查看人角色：" . trim($context['viewer_role']);
+        }
+        if (!empty($context['viewer_name'])) {
+            $metaLines[] = "查看人：" . trim($context['viewer_name']);
+        }
+        if (!empty($metaLines)) {
+            $sections[] = "### 基础信息\n" . implode("\n", array_map(function ($line) {
+                return "- " . $line;
+            }, $metaLines));
+        }
+
+        if (!empty($context['focus']) && is_array($context['focus'])) {
+            $focusItems = array_filter(array_map('trim', $context['focus']));
+            if (!empty($focusItems)) {
+                $sections[] = "### 关注重点\n" . implode("\n", array_map(function ($line) {
+                    return "- " . $line;
+                }, $focusItems));
+            }
+        } elseif (!empty($context['focus_note'])) {
+            $sections[] = "### 关注重点\n- " . trim($context['focus_note']);
+        }
+
+        if (!empty($context['previous_feedback'])) {
+            $sections[] = "### 历史反馈\n" . trim($context['previous_feedback']);
+        }
+
+        $contentMarkdown = trim(Base::html2markdown($report->content));
+        if ($contentMarkdown !== '') {
+            $sections[] = "### 汇报正文\n" . $contentMarkdown;
+        }
+
+        return trim(implode("\n\n", array_filter($sections)));
     }
 
     /**

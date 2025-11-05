@@ -6,10 +6,12 @@ use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
 use App\Models\ProjectTask;
 use App\Models\Report;
+use App\Models\ReportAnalysis;
 use App\Models\ReportLink;
 use App\Models\ReportReceive;
 use App\Models\User;
 use App\Models\WebSocketDialogMsg;
+use App\Module\AI;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Tasks\PushTask;
@@ -501,7 +503,119 @@ class ReportController extends AbstractController
             $one->report_link = $link;
             $link->increment("num");
         }
+        $analysis = ReportAnalysis::query()
+            ->whereRid($one->id)
+            ->whereUserid($user->userid)
+            ->first();
+        if ($analysis) {
+            $updatedAt = $analysis->updated_at ? $analysis->updated_at->toDateTimeString() : null;
+            $one->setAttribute('ai_analysis', [
+                'id' => $analysis->id,
+                'text' => $analysis->analysis_text,
+                'model' => $analysis->model,
+                'updated_at' => $updatedAt,
+            ]);
+        } else {
+            $one->setAttribute('ai_analysis', null);
+        }
+
         return Base::retSuccess("success", $one);
+    }
+
+    /**
+     * @api {post} api/report/ai_analyze 生成工作汇报 AI 分析
+     *
+     * @apiDescription 需要token身份，仅支持报告提交人或接收人发起分析
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName ai_analyze
+     *
+     * @apiParam {Number} id               报告ID
+     * @apiParam {Array|String} [focus]    分析关注点（可选）
+     *
+     * @apiSuccess {Number} ret            返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg            返回信息（错误描述）
+     * @apiSuccess {Object} data           返回数据
+     * @apiSuccess {Number} data.id        分析记录ID
+     * @apiSuccess {String} data.text      分析内容（Markdown）
+     * @apiSuccess {String} data.updated_at 最近更新时间
+     */
+    public function ai_analyze(): array
+    {
+        $user = User::auth();
+        $id = intval(Request::input("id"));
+        if ($id <= 0) {
+            return Base::retError("缺少ID参数");
+        }
+
+        $report = Report::getOne($id);
+
+        if (!$this->userCanAccessReport($report, $user)) {
+            return Base::retError("无权访问该工作汇报");
+        }
+
+        $analysis = ReportAnalysis::query()
+            ->whereRid($report->id)
+            ->whereUserid($user->userid)
+            ->first();
+
+        $context = [
+            'viewer_name' => $user->nickname ?? ('用户' . $user->userid),
+        ];
+        if (!empty($user->profession)) {
+            $context['viewer_role'] = $user->profession;
+        } elseif (is_array($user->identity) && !empty($user->identity)) {
+            $context['viewer_role'] = implode('/', $user->identity);
+        }
+        if ($analysis && $analysis->analysis_text) {
+            $context['previous_feedback'] = $analysis->analysis_text;
+        }
+
+        $focus = Request::input('focus');
+        if (is_array($focus)) {
+            $context['focus'] = $focus;
+        } elseif (is_string($focus) && trim($focus) !== '') {
+            $context['focus_note'] = trim($focus);
+        }
+
+        $result = AI::analyzeReport($report, $context);
+        if (Base::isError($result)) {
+            return Base::retError("生成AI分析失败", $result);
+        }
+        $data = $result['data'];
+
+        if (!$analysis) {
+            $analysis = ReportAnalysis::fillInstance([
+                'rid' => $report->id,
+                'userid' => $user->userid,
+            ]);
+        }
+
+        $meta = array_filter([
+            'viewer_role' => $context['viewer_role'] ?? null,
+            'viewer_name' => $context['viewer_name'] ?? null,
+            'focus' => $context['focus'] ?? null,
+        ], function ($value) {
+            if (is_array($value)) {
+                return !empty($value);
+            }
+            return $value !== null && $value !== '';
+        });
+
+        $analysis->updateInstance([
+            'model' => $data['model'] ?? '',
+            'analysis_text' => $data['text'],
+            'meta' => $meta,
+        ]);
+        $analysis->save();
+
+        $analysis->refresh();
+
+        return Base::retSuccess("success", [
+            'id' => $analysis->id,
+            'text' => $analysis->analysis_text,
+            'updated_at' => $analysis->updated_at ? $analysis->updated_at->toDateTimeString() : null,
+        ]);
     }
 
     /**
@@ -690,5 +804,23 @@ class ReportController extends AbstractController
             }
         }
         return Base::retSuccess("success", $data);
+    }
+
+    /**
+     * 判断当前用户是否有权限查看/分析指定工作汇报
+     * @param Report $report
+     * @param User $user
+     * @return bool
+     */
+    protected function userCanAccessReport(Report $report, User $user): bool
+    {
+        if ($report->userid === $user->userid) {
+            return true;
+        }
+
+        return ReportReceive::query()
+            ->whereRid($report->id)
+            ->whereUserid($user->userid)
+            ->exists();
     }
 }

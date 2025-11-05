@@ -328,3 +328,54 @@
     }
 }
 
+.report-ai-analysis {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    background-color: #fafbff;
+
+    .analysis-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .analysis-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #17233d;
+    }
+
+    .analysis-loading {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #515a6e;
+        font-size: 14px;
+    }
+
+    .analysis-meta {
+        margin-bottom: 12px;
+        font-size: 12px;
+        color: #808695;
+    }
+
+    .analysis-empty {
+        font-size: 14px;
+        color: #808695;
+    }
+
+    .vuepress-markdown-body {
+        h1 {
+            font-size: 1.8em;
+        }
+        h2 {
+            font-size: 1.5em;
+        }
+        h3 {
+            font-size: 1.2em;
+        }
+    }
+}
