@@ -1,87 +1,142 @@
 .common-user-detail-modal {
-    .ivu-modal {
-        max-width: 90%;
-
-        &.ivu-modal-fullscreen {
-            max-width: none;
-
-            .ivu-modal-content {
-                margin-top: calc(var(--status-bar-height) + 46px);
-                margin-bottom: 0;
-                border-top-left-radius: 18px !important;
-                border-top-right-radius: 18px !important;
-
-                .ivu-modal-body {
-                    .user-detail-body {
-                        padding-bottom: var(--navigation-bar-height);
-                    }
+    .ivu-modal-content {
+        border-radius: 16px !important;
+        margin-top: calc(var(--status-bar-height) + 46px) !important;
+    }
+    .ivu-modal-body {
+        padding: 0 !important;
+    }
+    .user-detail-body {
+        .profile-header {
+            position: relative;
+            height: 160px;
+            .cover-photo {
+                background: $primary-color;
+                height: 120px;
+                border-top-left-radius: 16px;
+                border-top-right-radius: 16px;
+            }
+            .profile-avatar {
+                position: absolute;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                border: 4px solid #fff;
+                border-radius: 50%;
+                .user-avatar {
+                    display: block;
                 }
             }
         }
+        .profile-content {
+            padding: 16px 24px 24px;
+            text-align: center;
 
-        .user-detail-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .ivu-modal-content {
-            overflow: hidden;
-
-            .ivu-modal-body {
-                padding: 0 !important;
-                display: flex;
-                flex-direction: column;
-
-                .user-detail-body {
+            .user-info-top {
+                .username {
+                    color: $primary-desc-color;
+                    font-size: 14px;
+                }
+                .fullname {
+                    font-size: 20px;
+                    font-weight: bold;
+                    margin: 4px 0;
+                }
+                .meta {
                     display: flex;
-                    flex-direction: column;
+                    justify-content: center;
                     align-items: center;
-                    gap: 16px;
-                    padding: 84px 24px;
-
-                    .avatar-wrapper {
+                    color: #808695;
+                    font-size: 12px;
+                    .common-dialog {
                         cursor: pointer;
                     }
+                    .separator {
+                        margin: 0 8px;
+                    }
+                }
+            }
 
-                    > ul {
-                        width: 80%;
+            .profile-actions {
+                margin: 16px 0;
+                display: flex;
+                justify-content: center;
+                gap: 8px;
+            }
 
-                        > li {
-                            list-style: none;
-                            display: flex;
-                            justify-content: center;
-                            margin: 12px auto;
+            .profile-bio {
+                color: $primary-title-color;
+                line-height: 1.5;
+                margin: 16px 0;
+                padding: 0 50px;
+                font-size: 12px;
+            }
 
-                            &.user-name {
-                                align-items: center;
-                            }
+            .profile-information {
+                text-align: left;
+                background-color: #f8f8f9;
+                padding: 16px;
+                border-radius: 8px;
 
-                            > em {
-                                font-style: normal;
-                                &.disabled,
-                                &.deleted {
-                                    display: inline-block;
-                                    margin-left: 2px;
-                                    white-space: nowrap;
-                                    font-size: 12px;
-                                    height: 20px;
-                                    line-height: 20px;
-                                    padding: 0 6px;
-                                    border-radius: 3px;
-                                    transform: scale(0.9);
-                                    transform-origin: right center;
-                                    color: #ffffff;
-                                    background-color: #ED4014;
-                                }
-                            }
+                h2 {
+                    font-size: 16px;
+                    margin-bottom: 12px;
+                }
 
-                            > span {
-                                flex-shrink: 0;
-                                opacity: 0.8;
-                                padding-right: 4px;
-                            }
+                ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+
+                    li {
+                        display: flex;
+                        align-items: flex-start; // 避免多行内容导致垂直居中不齐
+                        padding: 8px 0;
+                        font-size: 14px;
+
+                        .ivu-icon {
+                            font-size: 20px;
+                            margin-right: 12px;
+                            color: $primary-desc-color;
+                        }
+
+                        .label {
+                            color: #808695;
+                            flex: 0 0 64px; 
+                            flex-shrink: 0;
+                            line-height: 22px;
+                            margin-right: 8px;
+                        }
+
+                        .value {
+                            color: $primary-title-color;
+                            font-weight: 500;
+                            flex: 1 1 auto; 
+                            min-width: 0;
+                            margin-left: 0;
+                            text-align: right;
+                            white-space: normal;
+                            word-break: break-word;
+                            overflow-wrap: break-word;
                         }
                     }
+                }
+            }
+
+            .profile-tags {
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid #80869550;
+                cursor: pointer;
+                .tags-list {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    justify-content: center;
+                    position: relative;
+                }
+                .ivu-tag {
+                    margin: 0;
                 }
             }
         }
