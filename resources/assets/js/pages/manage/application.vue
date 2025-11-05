@@ -293,6 +293,18 @@
             </div>
         </DrawerOverlay>
 
+        <!--AI 助手-->
+        <DrawerOverlay v-model="aiAssistantShow" placement="right" :size="700">
+            <template v-if="aiAssistantShow" #title>
+                {{ $L('AI 助手') }}
+            </template>
+            <div v-if="aiAssistantShow" class="ivu-modal-wrap-apply">
+                <div class="ivu-modal-wrap-apply-body">
+                    <SystemAiAssistant/>
+                </div>
+            </div>
+        </DrawerOverlay>
+
         <!--扫码登录-->
         <Modal
             v-model="scanLoginShow"
@@ -335,6 +347,7 @@ import SystemMeetingNav from "./setting/components/SystemMeetingNav.vue";
 import SystemThirdAccess from "./setting/components/SystemThirdAccess";
 import SystemEmailSetting from "./setting/components/SystemEmailSetting";
 import SystemAppPush from "./setting/components/SystemAppPush";
+import SystemAiAssistant from "./setting/components/SystemAiAssistant";
 import emitter from "../../store/events";
 import {AIBotList, AIModelNames} from "../../utils/ai";
 import ImgUpload from "../../components/ImgUpload.vue";
@@ -351,7 +364,8 @@ export default {
         SystemMeetingNav,
         SystemThirdAccess,
         SystemEmailSetting,
-        SystemAppPush
+        SystemAppPush,
+        SystemAiAssistant
     },
     data() {
         return {
@@ -381,6 +395,8 @@ export default {
             mailShow: false,
             //
             appPushShow: false,
+            //
+            aiAssistantShow: false,
             //
             exportPopoverShow: false,
             //
@@ -443,6 +459,7 @@ export default {
                     {type: 'admin', value: "ldap", label: "LDAP", sort: 160},
                     {type: 'admin', value: "mail", label: "邮件通知", sort: 170},
                     {type: 'admin', value: "appPush", label: "APP 推送", sort: 180},
+                    {type: 'admin', value: "aiAssistant", label: "AI 助手", sort: 185},
                     {type: 'admin', value: "complaint", label: "举报管理", sort: 190},
                     {type: 'admin', value: "exportManage", label: "数据导出", sort: 195},
                     {type: 'admin', value: "allUser", label: "团队管理", sort: 200},
@@ -524,6 +541,9 @@ export default {
                     break;
                 case 'appPush':
                     this.appPushShow = true;
+                    break;
+                case 'aiAssistant':
+                    this.aiAssistantShow = true;
                     break;
                 case 'scan':
                     $A.eeuiAppScan(this.scanResult);
