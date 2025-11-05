@@ -1,18 +1,32 @@
 .common-user-detail-modal {
+    .ivu-modal-fullscreen {
+        .ivu-modal-content {
+            margin-top: calc(var(--status-bar-height) + 46px) !important;
+        }
+        .ivu-modal-body {
+            border-radius: 16px 16px 0 0;
+        }
+    }
     .ivu-modal-content {
-        border-radius: 16px !important;
-        margin-top: calc(var(--status-bar-height) + 46px) !important;
+        background-color: transparent;
+    }
+    .ivu-modal-close {
+        .ivu-icon-ios-close {
+            color: #ffffff;
+        }
     }
     .ivu-modal-body {
         padding: 0 !important;
+        background-color: #ffffff;
+        border-radius: 16px;
     }
     .user-detail-body {
         .profile-header {
             position: relative;
-            height: 160px;
+            height: 180px;
             .cover-photo {
                 background: $primary-color;
-                height: 120px;
+                height: 130px;
                 border-top-left-radius: 16px;
                 border-top-right-radius: 16px;
             }
@@ -34,45 +48,59 @@
 
             .user-info-top {
                 .username {
-                    color: $primary-desc-color;
-                    font-size: 14px;
-                }
-                .fullname {
                     font-size: 20px;
                     font-weight: bold;
-                    margin: 4px 0;
                 }
                 .meta {
+                    margin-top: 8px;
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     color: #808695;
-                    font-size: 12px;
+                    font-size: 13px;
                     .common-dialog {
                         cursor: pointer;
+                        em {
+                            padding-left: 4px;
+                            font-style: normal;
+                            color: $primary-color;
+                        }
                     }
                     .separator {
                         margin: 0 8px;
+                        opacity: 0.3;
                     }
                 }
             }
 
             .profile-actions {
-                margin: 16px 0;
+                margin-top: 16px;
                 display: flex;
                 justify-content: center;
-                gap: 8px;
+                gap: 12px;
+                .ivu-btn {
+                    border-radius: 6px;
+                    border-color: #ececec;
+                    &:hover {
+                        border-color: #a2d98d;
+                    }
+                    .taskfont {
+                        margin-right: 6px;
+                    }
+                }
             }
 
             .profile-bio {
                 color: $primary-title-color;
-                line-height: 1.5;
-                margin: 16px 0;
+                line-height: 1.6;
+                margin-top: 16px;
                 padding: 0 50px;
                 font-size: 12px;
+                opacity: 0.8;
             }
 
             .profile-information {
+                margin-top: 24px;
                 text-align: left;
                 background-color: #f8f8f9;
                 padding: 16px;
@@ -90,7 +118,7 @@
 
                     li {
                         display: flex;
-                        align-items: flex-start; // 避免多行内容导致垂直居中不齐
+                        align-items: flex-start;
                         padding: 8px 0;
                         font-size: 14px;
 
@@ -118,6 +146,9 @@
                             white-space: normal;
                             word-break: break-word;
                             overflow-wrap: break-word;
+                            &.clickable {
+                                cursor: pointer;
+                            }
                         }
                     }
                 }
@@ -126,14 +157,36 @@
             .profile-tags {
                 margin-top: 12px;
                 padding-top: 12px;
-                border-top: 1px solid #80869550;
-                cursor: pointer;
+                border-top: 1px solid #e5e5e5;
+                display: flex;
                 .tags-list {
                     display: flex;
                     flex-wrap: wrap;
                     gap: 8px;
                     justify-content: center;
                     position: relative;
+                    .recognition-total {
+                        padding-left: 8px;
+                        position: relative;
+                        &:before {
+                            content: '';
+                            position: absolute;
+                            left: 2px;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            width: 2px;
+                            height: 2px;
+                            border-radius: 50%;
+                            background-color: currentColor;
+                        }
+                    }
+                }
+                .ivu-btn {
+                    border-radius: 6px;
+                    &.ivu-btn-primary {
+                        background-color: #ffffff;
+                        color: $primary-color;
+                    }
                 }
                 .ivu-tag {
                     margin: 0;

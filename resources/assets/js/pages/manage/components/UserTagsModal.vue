@@ -2,17 +2,12 @@
     <ModalAlive
         v-model="visible"
         class-name="user-tags-manage-modal"
+        :title="$L('个性标签管理')"
         :mask-closable="false"
         :footer-hide="true"
         width="520"
         :closable="true">
         <div class="tag-modal-container">
-            <div class="tag-modal-header">
-                <h3>{{$L('个性标签管理')}}</h3>
-                <p class="tag-modal-meta">
-                    <span>{{$L('当前共(*)个标签', total)}}</span>
-                </p>
-            </div>
             <div class="tag-modal-form">
                 <Input
                     v-model="newTagName"
@@ -43,7 +38,7 @@
                         :class="{'is-editing': editId === tag.id}">
                         <div class="tag-item-main">
                             <div class="tag-name" v-if="editId !== tag.id">
-                                <Tag :color="tag.recognized ? '#84C56A' : 'default'" class="tag-pill">{{tag.name}}</Tag>
+                                <div class="tag-pill" :class="{'is-recognized': tag.recognized}">{{tag.name}}</div>
                             </div>
                             <div class="tag-name edit" v-else>
                                 <Input
@@ -62,7 +57,7 @@
                                     :loading="isPending(tag.id, 'recognize')"
                                     @click="toggleRecognize(tag)">
                                     <Icon type="md-thumbs-up" />
-                                    <span>{{tag.recognition_total}}</span>
+                                    <span v-if="tag.recognition_total > 0">{{tag.recognition_total}}</span>
                                     <span class="recognize-text">{{$L('认可')}}</span>
                                 </Button>
                                 <template v-if="editId === tag.id">
@@ -92,10 +87,13 @@
                             </div>
                         </div>
                         <div class="tag-meta-info" v-if="tag.created_by_name">
-                            <span>{{$L('由(*)创建', tag.created_by_name)}}</span>
+                            <span>{{$L('由 (*) 创建', tag.created_by_name)}}</span>
                         </div>
                     </li>
                 </ul>
+            </div>
+            <div v-if="total > 0" class="tag-modal-footer">
+                <span>{{$L('当前共(*)个标签', total)}}</span>
             </div>
         </div>
     </ModalAlive>
@@ -364,23 +362,7 @@ export default {
 <style lang="scss" scoped>
 .user-tags-manage-modal {
     .tag-modal-container {
-        padding: 16px 20px 12px;
-    }
-    .tag-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        .tag-modal-meta {
-            margin: 0;
-            color: #909399;
-            font-size: 12px;
-        }
+        padding-bottom: 20px;
     }
     .tag-modal-form {
         margin-bottom: 16px;
@@ -388,6 +370,7 @@ export default {
     .tag-modal-body {
         max-height: 360px;
         overflow-y: auto;
+        margin-bottom: 16px;
     }
     .tag-loading {
         display: flex;
@@ -396,7 +379,7 @@ export default {
     }
     .tag-empty {
         text-align: center;
-        padding: 32px 0;
+        padding: 36px 0 32px;
         color: #909399;
         p {
             margin-top: 8px;
@@ -432,7 +415,16 @@ export default {
                 }
             }
             .tag-pill {
-                cursor: default;
+                padding: 6px 12px;
+                border-radius: 12px;
+                font-size: 13px;
+                line-height: 1;
+                user-select: none;
+                background-color: #f5f5f5;
+                color: #606266;
+                &.is-recognized {
+                    color: #67c23a;
+                }
             }
             .tag-actions {
                 display: flex;
@@ -442,9 +434,12 @@ export default {
                     display: inline-flex;
                     align-items: center;
                     gap: 4px;
+                    .ivu-icon {
+                        transform: translateY(-1px);
+                    }
                     .recognize-text {
+                        padding-left: 4px;
                         font-size: 12px;
-                        color: #606266;
                     }
                 }
             }
@@ -454,6 +449,10 @@ export default {
                 color: #a0a3a6;
             }
         }
+    }
+    .tag-modal-footer {
+        color: #909399;
+        font-size: 12px;
     }
 }
 </style>

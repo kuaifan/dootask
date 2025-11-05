@@ -45,13 +45,17 @@
                     :placeholder="$L('请输入个人简介')"></Input>
             </FormItem>
             <FormItem :label="$L('个性标签')">
-                <div class="user-tags-preview" @click="openTagModal">
+                <div class="user-tags-preview">
                     <template v-if="displayTags.length">
-                        <Tag
+                        <div
                             v-for="tag in displayTags"
                             :key="tag.id"
-                            :color="tag.recognized ? '#84C56A' : 'default'"
-                            class="tag-pill">{{tag.name}}</Tag>
+                            class="tag-pill" 
+                            :class="{'is-recognized': tag.recognized}"
+                            @click="openTagModal">
+                            {{tag.name}}
+                            <span v-if="tag.recognition_total > 0">{{tag.recognition_total}}</span>
+                        </div>
                     </template>
                     <span v-else class="tags-empty">{{$L('暂无个性标签')}}</span>
                     <span v-if="personalTagTotal > displayTags.length" class="tags-total">{{$L('共(*)个', personalTagTotal)}}</span>
@@ -198,10 +202,34 @@ export default {
     flex-wrap: wrap;
     gap: 8px;
     min-height: 32px;
-    cursor: pointer;
 
     .tag-pill {
         cursor: pointer;
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1;
+        user-select: none;
+        background-color: #f5f5f5;
+        color: #606266;
+        &.is-recognized {
+            color: #67c23a;
+        }
+        span {
+            padding-left: 8px;
+            position: relative;
+            &:before {
+                content: '';
+                position: absolute;
+                left: 2px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 2px;
+                height: 2px;
+                border-radius: 50%;
+                background-color: currentColor;
+            }
+        }
     }
 
     .tags-empty {

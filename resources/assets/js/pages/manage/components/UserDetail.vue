@@ -5,7 +5,7 @@
         :fullscreen="isFullscreen"
         :mask-closable="false"
         :footer-hide="true"
-        width="420"
+        width="480"
     >
         <div class="user-detail-body">
             <div class="profile-header">
@@ -13,7 +13,7 @@
                 <div class="profile-avatar">
                     <UserAvatar
                         :userid="userData.userid"
-                        :size="80"
+                        :size="96"
                         :show-state-dot="false"
                         @on-click="onOpenAvatar"
                     />
@@ -21,46 +21,22 @@
             </div>
             <div class="profile-content">
                 <div class="user-info-top">
-                    <span class="username"
-                        >@{{ userData.profession || "管理员" }}</span
-                    >
-                    <h1 class="fullname">
-                        {{ userData.nickname}}
+                    <h1 class="username">
+                        {{ userData.nickname }}
                     </h1>
                     <div class="meta">
-                        <!-- <span>{{userData.address || 'Bandung'}}</span> -->
-                        <span @click="commonDialogShow = true"
-                            class="common-dialog"
-                            >{{ $L("共同群组") }}:
-                            {{ $L("(*)个", commonDialog.total) }}</span
-                        >
+                        <span @click="commonDialogShow = true" class="common-dialog">{{ $L(userId == userData.userid ? "我的群组" : "共同群组") }}:<em>{{ $L("(*)个", commonDialog.total) }}</em></span>
                         <span class="separator">|</span>
-                        <span
-                            >{{ $L("最后在线") }}:
-                            {{
-                                $A.newDateString(
-                                    userData.line_at,
-                                    "YYYY-MM-DD HH:mm"
-                                ) || "-"
-                            }}</span
-                        >
+                        <span>{{ $L("最后在线") }}: {{$A.newDateString( userData.line_at, "YYYY-MM-DD HH:mm") || "-"}}</span>
                     </div>
                 </div>
 
                 <div class="profile-actions">
-                    <Button
-                        icon="md-chatbubbles"
-                        @click="onOpenDialog"
-                        >{{ $L("开始聊天") }}</Button
-                    >
-                    <Button
-                        icon="md-people"
-                        @click="onCreateGroup"
-                        >{{ $L("创建群组") }}</Button
-                    >
+                    <Button @click="onOpenDialog"><i class="taskfont">&#xe6eb;</i>{{ $L("开始聊天") }}</Button>
+                    <Button @click="onCreateGroup"><i class="taskfont">&#xe63f;</i>{{ $L("创建群组") }}</Button>
                 </div>
 
-                <div class="profile-bio">
+                <div v-if="userData.introduction" class="profile-bio">
                     <p>{{ userData.introduction }}</p>
                 </div>
 
@@ -68,57 +44,57 @@
                     <h2>{{ $L("个人信息") }}</h2>
                     <ul>
                         <li>
-                            <Icon type="ios-person-outline" />
+                            <Icon type="ios-briefcase-outline" />
+                            <span class="label">{{ $L("职位/职称") }}</span>
+                            <span class="value">{{userData.profession || "-"}}</span>
+                        </li>
+                        <li>
+                            <Icon type="ios-people-outline" />
                             <span class="label">{{ $L("部门") }}</span>
-                            <span class="value">{{
-                                userData.department_name || "-"
-                            }}</span>
+                            <span class="value">{{userData.department_name || "-"}}</span>
                         </li>
                         <li>
                             <Icon type="ios-mail-outline" />
                             <span class="label">{{ $L("邮箱") }}</span>
-                            <span class="value">{{
-                                userData.email || "-"
-                            }}</span>
+                            <span @click="onOpenEmail" class="value" :class="{ 'clickable': userData.email }">{{userData.email || "-"}}</span>
                         </li>
                         <li>
                             <Icon type="ios-call-outline" />
                             <span class="label">{{ $L("电话") }}</span>
-                            <span class="value">{{ userData.tel || "-" }}</span>
+                            <span @click="onOpenTel" class="value" :class="{ 'clickable': userData.tel }">{{ userData.tel || "-" }}</span>
                         </li>
-                        <li>
+                        <li v-if="userData.birthday">
                             <Icon type="ios-calendar-outline" />
                             <span class="label">{{ $L("生日") }}</span>
-                            <span class="value">{{
-                                userData.birthday || "-"
-                            }}</span>
+                            <span class="value">{{userData.birthday || "-"}}</span>
                         </li>
                     </ul>
 
-                    <div class="profile-tags" @click.capture="onOpenTagsModal">
+                    <div class="profile-tags">
                         <div v-if="displayTags.length" class="tags-list">
-                            <Button
-                                type="dashed"
-                                class="manage-tags-btn icon"
-                                @click.stop="onOpenTagsModal"
-                            >
-                                <Icon type="ios-settings-outline" /> 管理
-                            </Button>
                             <Button
                                 v-for="tag in displayTags"
                                 :key="tag.id"
                                 :type="tag.recognized ? 'primary' : 'default'"
+                                @click="onOpenTagsModal"
                             >
                                 {{ tag.name }}
+                                <span v-if="tag.recognition_total > 0" class="recognition-total">{{tag.recognition_total}}</span>
+                            </Button>
+                            <Button
+                                type="dashed"
+                                class="manage-tags-btn icon"
+                                @click="onOpenTagsModal"
+                            >
+                                <Icon type="ios-settings-outline" /> 管理
                             </Button>
                         </div>
                         <div v-else class="tags-empty">
                             <Button
                                 type="dashed"
-                                size="small"
                                 icon="md-add"
                                 class="add-tag-btn"
-                                @click.stop="onOpenTagsModal"
+                                @click="onOpenTagsModal"
                                 >{{ $L("添加标签") }}</Button
                             >
                         </div>
@@ -407,11 +383,37 @@ export default {
                     $A.modalError(msg);
                 });
         },
+
+        onOpenEmail() {
+            if (!this.userData.email) {
+                return;
+            }
+            $A.modalConfirm({
+                content: `是否发送邮件给 ${this.userData.nickname}？`,
+                onOk: () => {
+                    window.open(`mailto:${this.userData.email}`);
+                }
+            });
+        },
+
+        onOpenTel() {
+            if (!this.userData.tel) {
+                return;
+            }
+            $A.modalConfirm({
+                content: `是否拨打电话给 ${this.userData.nickname}？`,
+                onOk: () => {
+                    if ($A.isEEUIApp()) {
+                        $A.eeuiAppSendMessage({
+                            action: 'callTel',
+                            tel: this.userData.tel
+                        });
+                    } else {
+                        window.open(`tel:${this.userData.tel}`);
+                    }
+                }
+            });
+        },
     },
 };
 </script>
-
-<style lang="scss" scoped>
-// The styles will be moved to the SCSS file as requested.
-// This scoped style block can be removed if not needed for specific overrides.
-</style>
