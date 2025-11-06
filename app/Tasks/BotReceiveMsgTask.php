@@ -66,7 +66,7 @@ class BotReceiveMsgTask extends AbstractTask
         }
 
         // 判断消息是否存在
-        $msg = WebSocketDialogMsg::with(['user', 'webSocketDialog'])->find($this->msgId);
+        $msg = WebSocketDialogMsg::with(['user'])->find($this->msgId);
         if (empty($msg)) {
             return;
         }

@@ -138,11 +138,11 @@ class WebSocketDialogMsgTask extends AbstractTask
                     'dot' => $dot,
                     'updated' => $updated,
                 ];
-            }
-            // 机器人收到消处理
-            $botUser = User::whereUserid($userid)->whereBot(1)->first();
-            if ($botUser) {  // 避免机器人处理自己发送的消息
-                $this->endArray[] = new BotReceiveMsgTask($botUser->userid, $msg->id, $mentions, $this->client);
+                // 机器人收到消处理
+                $botUser = User::whereUserid($userid)->whereBot(1)->first();
+                if ($botUser) {  // 避免机器人处理自己发送的消息
+                    $this->endArray[] = new BotReceiveMsgTask($botUser->userid, $msg->id, $mentions, $this->client);
+                }
             }
         }
         // 更新已发送数量

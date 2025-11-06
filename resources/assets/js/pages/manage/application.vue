@@ -359,6 +359,7 @@ import SystemAiAssistant from "./setting/components/SystemAiAssistant";
 import emitter from "../../store/events";
 import {AIBotList, AIModelNames} from "../../utils/ai";
 import ImgUpload from "../../components/ImgUpload.vue";
+import {webhookEventOptions} from "../../utils/other";
 
 export default {
     components: {
@@ -385,12 +386,7 @@ export default {
             mybotModifyShow: false,
             mybotModifyData: {},
             mybotModifyLoad: 0,
-            webhookEventOptions: [
-                {value: 'message', label: '接收消息'},
-                {value: 'dialog_open', label: '打开会话'},
-                {value: 'member_join', label: '成员加入'},
-                {value: 'member_leave', label: '成员退出'},
-            ],
+            webhookEventOptions,
             //
             aibotShow: false,
             aibotList: AIBotList,
