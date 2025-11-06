@@ -1753,6 +1753,8 @@ export default {
 
         linkGet(refresh) {
             this.linkLoad++;
+            const {id, name} = this.linkData;
+            const previousGuestAccess = this.linkData.guest_access;
             this.$store.dispatch("call", {
                 url: 'file/link',
                 data: {
@@ -1761,11 +1763,21 @@ export default {
                     guest_access: this.linkData.guest_access ? 'yes' : 'no'
                 },
             }).then(({data}) => {
-                this.linkData = Object.assign(data, {
-                    id: this.linkData.id,
-                    name: this.linkData.name,
-                    guest_access: Boolean(data.guest_access || this.linkData.guest_access)  // 确保是布尔值
+                const guestAccess = data.guest_access !== undefined
+                    ? Boolean(data.guest_access)
+                    : previousGuestAccess;
+                this.linkData = Object.assign({}, data, {
+                    id,
+                    name,
+                    guest_access: guestAccess  // 确保是布尔值
                 });
+                this.$store.dispatch("saveFile", {
+                    id,
+                    guest_access: guestAccess ? 1 : 0
+                });
+                if (this.fileInfo && this.fileInfo.id === id) {
+                    this.$set(this.fileInfo, 'guest_access', guestAccess ? 1 : 0);
+                }
                 // 根据不同情况处理
                 if (refresh === true) {
                     // 刷新链接时复制
