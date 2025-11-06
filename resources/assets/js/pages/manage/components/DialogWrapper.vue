@@ -1241,6 +1241,8 @@ export default {
                 this.getDialogBase(dialog_id)
                 this.generateUnreadData(old_id)
                 //
+                this.$store.dispatch('openDialogWebhook', dialog_id)
+                //
                 this.$store.dispatch('closeDialog', {id: old_id})
                 //
                 window.localStorage.removeItem('__cache:vote__')
@@ -1472,16 +1474,16 @@ export default {
             if (result.length) {
                 return Array.from(new Set(result));
             }
-            return useFallback ? ['message'] : [];
+            return [];
         },
         prepareWebhookEvents(events, useFallback = false) {
             let value = events;
             if (typeof value === 'undefined' || value === null) {
-                value = useFallback ? ['message'] : [];
+                value = [];
             }
             value = this.normalizeWebhookEvents(value, false);
             if (!value.length && useFallback) {
-                return ['message'];
+                return [];
             }
             return value;
         },

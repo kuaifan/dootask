@@ -496,13 +496,13 @@ export default {
             if (result.length) {
                 return Array.from(new Set(result));
             }
-            return useFallback ? ['message'] : [];
+            return [];
         },
         enhanceMybotItem(item = {}) {
             const data = $A.cloneJSON(item || {});
             let events = data.webhook_events;
             if (typeof events === 'undefined' || events === null) {
-                events = ['message'];
+                events = [];
             }
             events = this.normalizeWebhookEvents(events, false);
             if (!events.length) {

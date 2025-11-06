@@ -3515,6 +3515,35 @@ export default {
     },
 
     /**
+     * 打开会话（打开机器人会话推送 webhook）
+     * @param state
+     * @param dispatch
+     * @param dialogId
+     * @returns {Promise<unknown>}
+     */
+    openDialogWebhook({state, dispatch}, dialogId) {
+        return new Promise((resolve, reject) => {
+            const dialog = state.cacheDialogs.find(item => {
+                if (item.type !== 'user') {
+                    return false
+                }
+                return item.id === dialogId
+            });
+            if (dialog && dialog.bot === 1) {
+                dispatch("call", {
+                    url: 'dialog/open/webhook',
+                    data: {
+                        dialog_id: dialogId,
+                    },
+                }).catch(e => {
+                    console.warn(e);
+                    reject(e);
+                })
+            }
+        });
+    },
+
+    /**
      * 打开会话（通过会员ID打开个人会话）
      * @param state
      * @param dispatch
@@ -3528,7 +3557,7 @@ export default {
                 }
                 return item.dialog_user.userid === userid
             });
-            if (dialog && dialog.bot !== 1) {
+            if (dialog) {
                 return dispatch("openDialog", dialog.id).then(resolve).catch(reject)
             }
             dispatch("call", {
