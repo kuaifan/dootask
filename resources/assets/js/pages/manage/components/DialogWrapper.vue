@@ -1241,8 +1241,7 @@ export default {
                 this.getDialogBase(dialog_id)
                 this.generateUnreadData(old_id)
                 //
-                this.$store.dispatch('openDialogWebhook', dialog_id)
-                //
+                this.$store.dispatch('openDialogEvent', dialog_id)
                 this.$store.dispatch('closeDialog', {id: old_id})
                 //
                 window.localStorage.removeItem('__cache:vote__')

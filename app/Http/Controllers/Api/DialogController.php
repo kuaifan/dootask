@@ -449,6 +449,39 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/open/event 打开会话事件
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName open__event
+     *
+     * @apiParam {Number} dialog_id         对话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function open__event()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        //
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+        if (empty($dialog)) {
+            return Base::retError('打开会话失败');
+        }
+        //
+        Cache::remember("webhook_dialog_open_{$dialog->id}_{$user->userid}", Carbon::now()->addMinute(), function () use ($dialog, $user) {
+            $dialog->dispatchMemberWebhook(UserBot::WEBHOOK_EVENT_DIALOG_OPEN, $user->userid, $user->userid);
+            return true;
+        });
+        //
+        return Base::retSuccess('success');
+    }
+
+    /**
      * @api {get} api/dialog/msg/list 获取消息列表
      *
      * @apiDescription 需要token身份
@@ -1257,9 +1290,6 @@ class DialogController extends AbstractController
                 }
                 if ($model_name) {
                     $msgData['model_name'] = $model_name;
-                }
-                if (User::isBot($user->userid)) {
-                    $msgData['force_webhook'] = true; // 强制使用webhook发送
                 }
                 $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence, $key);
             }
@@ -3687,62 +3717,5 @@ class DialogController extends AbstractController
         Cache::forever('dialog_session_title_' . $session->id, true);
         //
         return Base::retSuccess('重命名成功', $session);
-    }
-
-    /**
-     * @api {get} api/dialog/open/webhook 打开机器人会话推送 webhook
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup dialog
-     * @apiName open__webhook
-     *
-     * @apiParam {Number} dialog_id         对话ID
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function open__webhook()
-    {
-        $user = User::auth();
-        //
-        $dialog_id = intval(Request::input('dialog_id'));
-        if (empty($dialog_id)) {
-            return Base::retError('错误的会话');
-        }
-        //
-        $dialog = WebSocketDialog::checkDialog($dialog_id);
-        if (empty($dialog)) {
-            return Base::retError('打开会话失败');
-        }
-        $data = WebSocketDialog::synthesizeData($dialog->id, $user->userid);
-        if ($data['bot'] == 1) {
-            $botTarget = User::whereUserid($data['dialog_user']['userid'])->whereBot(1)->first();
-            if ($botTarget) {
-                $userBot = UserBot::whereBotId($botTarget->userid)->first();
-                if ($userBot) {
-                    // 每个机器人1分钟只触发一次 webhook
-                    Cache::remember('webhook_dialog_open_' . $botTarget->userid, 60, function () use ($userBot, $dialog, $user) {
-                        $userBot->dispatchWebhook(UserBot::WEBHOOK_EVENT_DIALOG_OPEN, [
-                            'dialog_id' => $dialog->id,
-                            'dialog_type' => $dialog->type,
-                            'session_id' => $dialog->session_id,
-                            'dialog_name' => $dialog->getGroupName(),
-                            'user' => [
-                                'userid' => $user->userid,
-                                'email' => $user->email,
-                                'nickname' => $user->nickname,
-                            ],
-                        ], 10, [
-                            'dialog' => $dialog->id,
-                            'operator' => $user->userid,
-                        ]);
-                        return true;
-                    });
-                }
-            }
-        }
-        return Base::retSuccess('success');
     }
 }

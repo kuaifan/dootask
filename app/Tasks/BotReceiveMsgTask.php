@@ -75,11 +75,7 @@ class BotReceiveMsgTask extends AbstractTask
         $msg->readSuccess($botUser->userid);
 
         // 判断消息是否是机器人发送的则不处理，避免循环
-        if ((!$msg->user || $msg->user->bot)) {
-            $msgData = Base::json2array($msg->msg);
-            if (Base::val($msgData, 'force_webhook') && $msg->webSocketDialog) {
-                $this->handleWebhookRequest($msgData['text'], null, $msg, $msg->webSocketDialog, $botUser);
-            }
+        if (!$msg->user || $msg->user->bot) {
             return;
         }
 
@@ -539,9 +535,6 @@ class BotReceiveMsgTask extends AbstractTask
                     return;
                 }
             }
-            if (!$userBot && !preg_match("/^https?:\/\//", $webhookUrl)) {
-                return;
-            }
         } catch (\Exception $e) {
             WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
                 'type' => 'content',
@@ -549,8 +542,10 @@ class BotReceiveMsgTask extends AbstractTask
             ], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
             return;
         }
-        //
+
+        // 基本请求数据
         $data = [
+            'event' => UserBot::WEBHOOK_EVENT_MESSAGE,
             'text' => $sendText,
             'reply_text' => $replyText,
             'token' => User::generateToken($botUser),
@@ -561,8 +556,9 @@ class BotReceiveMsgTask extends AbstractTask
             'msg_uid' => $msg->userid,
             'mention' => $this->mention ? 1 : 0,
             'bot_uid' => $botUser->userid,
+            'extras' => Base::array2json($extras),
             'version' => Base::getVersion(),
-            'extras' => Base::array2json($extras)
+            'timestamp' => time(),
         ];
         // 添加用户信息
         $userInfo = User::find($msg->userid);
@@ -579,19 +575,14 @@ class BotReceiveMsgTask extends AbstractTask
 
         $result = null;
         if ($userBot) {
-            $result = $userBot->dispatchWebhook(UserBot::WEBHOOK_EVENT_MESSAGE, $data, 30, [
-                'dialog' => $dialog->id,
-                'msg' => $msg->id,
-            ]);
+            $result = $userBot->dispatchWebhook(UserBot::WEBHOOK_EVENT_MESSAGE, $data);
         } else {
             try {
                 $result = Ihttp::ihttp_post($webhookUrl, $data, 30);
             } catch (\Throwable $th) {
                 info(Base::array2json([
-                    'bot_userid' => $botUser->userid,
-                    'dialog' => $dialog->id,
-                    'msg' => $msg->id,
                     'webhook_url' => $webhookUrl,
+                    'data' => $data,
                     'error' => $th->getMessage(),
                 ]));
             }
@@ -599,7 +590,7 @@ class BotReceiveMsgTask extends AbstractTask
 
         if ($result && isset($result['data'])) {
             $responseData = Base::json2array($result['data']);
-            if (($responseData['code'] ?? 0) != 200 && !empty($responseData['message'])) {
+            if (($responseData['code'] ?? 0) === 200 && !empty($responseData['message'])) {
                 WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', [
                     'text' => $responseData['message']
                 ], $botUser->userid, false, false, true);
@@ -722,7 +713,7 @@ class BotReceiveMsgTask extends AbstractTask
                 </role_setting>
                 EOF;
         }
-        
+
         // 上下文信息（项目、任务、部门等）+ 操作指令
         switch ($dialog->type) {
             // 用户对话
@@ -757,7 +748,7 @@ class BotReceiveMsgTask extends AbstractTask
                                 项目状态：{$projectStatus}
                                 </context_info>
                                 EOF;
-                            
+
                             $sections[] = <<<EOF
                                 <instructions>
                                 如果你判断我想要或需要添加任务，请按照以下格式回复：
@@ -787,7 +778,7 @@ class BotReceiveMsgTask extends AbstractTask
                                 {$taskContext}
                                 </context_info>
                                 EOF;
-                            
+
                             $sections[] = <<<EOF
                                 <instructions>
                                 如果你判断我想要或需要添加子任务，请按照以下格式回复：
@@ -822,7 +813,7 @@ class BotReceiveMsgTask extends AbstractTask
                             EOF;
                         break;
                 }
-                
+
                 // 聊天历史
                 if ($dialog->type === 'group') {
                     $chatHistory = $this->getRecentChatHistory($dialog, 15);
@@ -836,7 +827,7 @@ class BotReceiveMsgTask extends AbstractTask
                 }
                 break;
         }
-        
+
         // 更新系统提示词
         if (!empty($sections)) {
             $extras['system_message'] = implode("\n\n", $sections);

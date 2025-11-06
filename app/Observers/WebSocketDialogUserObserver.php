@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Deleted;
+use App\Models\UserBot;
 use App\Models\WebSocketDialogUser;
 use App\Tasks\ZincSearchSyncTask;
 use Carbon\Carbon;
@@ -31,6 +32,11 @@ class WebSocketDialogUserObserver extends AbstractObserver
         }
         Deleted::forget('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
         self::taskDeliver(new ZincSearchSyncTask('userSync', $webSocketDialogUser->toArray()));
+        //
+        $dialog = $webSocketDialogUser->webSocketDialog;
+        if ($dialog) {
+            $dialog->dispatchMemberWebhook(UserBot::WEBHOOK_EVENT_MEMBER_JOIN, $webSocketDialogUser->userid, intval($webSocketDialogUser->inviter));
+        }
     }
 
     /**
@@ -54,6 +60,12 @@ class WebSocketDialogUserObserver extends AbstractObserver
     {
         Deleted::record('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
         self::taskDeliver(new ZincSearchSyncTask('deleteUser', $webSocketDialogUser->toArray()));
+        //
+        $dialog = $webSocketDialogUser->webSocketDialog;
+        if ($dialog) {
+            $operatorId = $webSocketDialogUser->operator_id ?? 0;
+            $dialog->dispatchMemberWebhook(UserBot::WEBHOOK_EVENT_MEMBER_LEAVE, $webSocketDialogUser->userid, intval($operatorId));
+        }
     }
 
     /**

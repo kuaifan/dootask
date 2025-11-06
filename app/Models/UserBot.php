@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Module\Base;
 use App\Module\Doo;
-use App\Module\Extranet;
 use App\Module\Ihttp;
 use App\Module\Timer;
 use App\Tasks\JokeSoupTask;
@@ -57,43 +56,6 @@ class UserBot extends AbstractModel
     ];
 
     /**
-     * 获取可选的 webhook 事件
-     *
-     * @return string[]
-     */
-    public static function webhookEventOptions(): array
-    {
-        return [
-            self::WEBHOOK_EVENT_MESSAGE,
-            self::WEBHOOK_EVENT_DIALOG_OPEN,
-            self::WEBHOOK_EVENT_MEMBER_JOIN,
-            self::WEBHOOK_EVENT_MEMBER_LEAVE,
-        ];
-    }
-
-    /**
-     * 标准化 webhook 事件配置
-     *
-     * @param mixed $events
-     * @return array
-     */
-    public static function normalizeWebhookEvents(mixed $events, bool $useFallback = true): array
-    {
-        if (is_string($events)) {
-            $events = Base::json2array($events);
-        }
-        if ($events === null) {
-            $events = [];
-        }
-        if (!is_array($events)) {
-            $events = [$events];
-        }
-        $events = array_filter(array_map('strval', $events));
-        $events = array_values(array_intersect($events, self::webhookEventOptions()));
-        return $events ?: ($useFallback ? [self::WEBHOOK_EVENT_MESSAGE] : []);
-    }
-
-    /**
      * 获取 webhook 事件配置
      *
      * @param mixed $value
@@ -140,35 +102,27 @@ class UserBot extends AbstractModel
      * 发送 webhook
      *
      * @param string $event
-     * @param array $payload
+     * @param array $data
      * @param int $timeout
-     * @param array $context
      * @return array|null
      */
-    public function dispatchWebhook(string $event, array $payload, int $timeout = 30, array $context = []): ?array
+    public function dispatchWebhook(string $event, array $data, int $timeout = 30): ?array
     {
         if (!$this->shouldDispatchWebhook($event)) {
             return null;
         }
 
-        $payload = array_merge([
-            'event' => $event,
-            'timestamp' => time(),
-            'bot_uid' => $this->bot_id,
-            'owner_uid' => $this->userid,
-        ], $payload);
-
         try {
-            $result = Ihttp::ihttp_post($this->webhook_url, $payload, $timeout);
+            $data['event'] = $event;
+            $result = Ihttp::ihttp_post($this->webhook_url, $data, $timeout);
             $this->increment('webhook_num');
             return $result;
         } catch (Throwable $th) {
-            info(Base::array2json(array_merge($context, [
-                'bot_userid' => $this->bot_id,
-                'event' => $event,
+            info(Base::array2json([
                 'webhook_url' => $this->webhook_url,
+                'data' => $data,
                 'error' => $th->getMessage(),
-            ])));
+            ]));
             return null;
         }
     }
@@ -606,5 +560,43 @@ class UserBot extends AbstractModel
             ], $data->userid);
         }
         return Base::retSuccess("创建成功。", $data);
+    }
+
+    /**
+     * 获取可选的 webhook 事件
+     *
+     * @return string[]
+     */
+    public static function webhookEventOptions(): array
+    {
+        return [
+            self::WEBHOOK_EVENT_MESSAGE,
+            self::WEBHOOK_EVENT_DIALOG_OPEN,
+            self::WEBHOOK_EVENT_MEMBER_JOIN,
+            self::WEBHOOK_EVENT_MEMBER_LEAVE,
+        ];
+    }
+
+    /**
+     * 标准化 webhook 事件配置
+     *
+     * @param mixed $events
+     * @param bool $useFallback
+     * @return array
+     */
+    public static function normalizeWebhookEvents(mixed $events, bool $useFallback = true): array
+    {
+        if (is_string($events)) {
+            $events = Base::json2array($events);
+        }
+        if ($events === null) {
+            $events = [];
+        }
+        if (!is_array($events)) {
+            $events = [$events];
+        }
+        $events = array_filter(array_map('strval', $events));
+        $events = array_values(array_intersect($events, self::webhookEventOptions()));
+        return $events ?: ($useFallback ? [self::WEBHOOK_EVENT_MESSAGE] : []);
     }
 }
