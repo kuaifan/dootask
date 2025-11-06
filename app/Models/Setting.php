@@ -116,7 +116,7 @@ class Setting extends AbstractModel
     }
 
     /**
-     * 是否开启 AI 助理
+     * 是否开启 AI 助手
      * @return bool
      */
     public static function AIOpen()

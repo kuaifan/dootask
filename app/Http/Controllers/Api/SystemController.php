@@ -107,10 +107,10 @@ class SystemController extends AbstractController
                 }
             }
             if ($all['voice2text'] == 'open' && !Setting::AIOpen()) {
-                return Base::retError('开启语音转文字功能需要先设置 AI 助理。');
+                return Base::retError('开启语音转文字功能需要在应用启用 AI 助手。');
             }
             if ($all['translation'] == 'open' && !Setting::AIOpen()) {
-                return Base::retError('开启翻译功能需要先设置 AI 助理。');
+                return Base::retError('开启翻译功能需要在应用启用 AI 助手。');
             }
             if ($all['system_alias'] == env('APP_NAME')) {
                 $all['system_alias'] = '';

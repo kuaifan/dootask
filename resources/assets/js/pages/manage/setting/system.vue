@@ -2,7 +2,7 @@
     <div class="setting-item submit">
         <Tabs v-model="tabAction">
             <TabPane :label="$L('系统设置')" name="setting">
-                <SystemSetting @on-switch-tab="tabAction = $event"/>
+                <SystemSetting/>
             </TabPane>
             <TabPane :label="$L('任务优先级')" name="taskPriority">
                 <SystemTaskPriority/>

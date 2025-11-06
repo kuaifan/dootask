@@ -1551,11 +1551,6 @@ class UsersController extends AbstractController
         return Base::retSuccess('success', $data);
     }
 
-    protected function buildUserTagResponse(?User $viewer, int $targetUserId, string $message = 'success')
-    {
-        return Base::retSuccess($message, UserTag::listWithMeta($targetUserId, $viewer));
-    }
-
     /**
      * @api {get} api/users/tags/lists          10.1. 获取个性标签列表
      *
@@ -1593,7 +1588,7 @@ class UsersController extends AbstractController
         if (empty($target)) {
             return Base::retError('会员不存在');
         }
-        return $this->buildUserTagResponse($viewer, $target->userid);
+        return Base::retSuccess('success', UserTag::listWithMeta($target->userid, $viewer));
     }
 
     /**
@@ -1642,7 +1637,7 @@ class UsersController extends AbstractController
         ]);
         $tag->save();
 
-        return $this->buildUserTagResponse($viewer, $userid, '添加成功');
+        return Base::retSuccess('添加成功', UserTag::listWithMeta($userid, $viewer));
     }
 
     /**
@@ -1697,7 +1692,7 @@ class UsersController extends AbstractController
         }
         $tag->save();
 
-        return $this->buildUserTagResponse($viewer, $tag->user_id, '保存成功');
+        return Base::retSuccess('保存成功', UserTag::listWithMeta($tag->user_id, $viewer));
     }
 
     /**
@@ -1732,7 +1727,7 @@ class UsersController extends AbstractController
         $userId = $tag->user_id;
         $tag->delete();
 
-        return $this->buildUserTagResponse($viewer, $userId, '删除成功');
+        return Base::retSuccess('删除成功', UserTag::listWithMeta($userId, $viewer));
     }
 
     /**
@@ -1775,7 +1770,7 @@ class UsersController extends AbstractController
             $message = '认可成功';
         }
 
-        return $this->buildUserTagResponse($viewer, $tag->user_id, $message);
+        return Base::retSuccess($message, UserTag::listWithMeta($tag->user_id, $viewer));
     }
 
     /**
