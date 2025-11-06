@@ -388,9 +388,6 @@ class UsersController extends AbstractController
         $data['nickname_original'] = $user->getRawOriginal('nickname');
         $data['department_name'] = $user->getDepartmentName();
         $data['department_owner'] = UserDepartment::where('parent_id',0)->where('owner_userid', $user->userid)->exists(); // 适用默认部门下第1级负责人才能添加部门OKR
-        $tagMeta = UserTag::listWithMeta($user->userid, $user);
-        $data['personal_tags'] = $tagMeta['top'];
-        $data['personal_tags_total'] = $tagMeta['total'];
         return Base::retSuccess('success', $data);
     }
 
@@ -809,12 +806,8 @@ class UsersController extends AbstractController
     public function basic()
     {
         $sharekey = Request::header('sharekey');
-        $shareInfo = $sharekey ? Meeting::getShareInfo($sharekey) : null;
-        $viewer = null;
-        if (empty($shareInfo)) {
-            $viewer = User::auth();
-        } elseif (Doo::userId() > 0) {
-            $viewer = User::whereUserid(Doo::userId())->first();
+        if (empty($sharekey) || !Meeting::getShareInfo($sharekey)) {
+            User::auth();
         }
         //
         $userid = Request::input('userid');
@@ -832,14 +825,73 @@ class UsersController extends AbstractController
                 $basic = UserDelete::userid2basic($id);
             }
             if ($basic) {
-                $tagMeta = UserTag::listWithMeta($basic->userid, $viewer);
-                $basic->personal_tags = $tagMeta['top'];
-                $basic->personal_tags_total = $tagMeta['total'];
-                //
                 $retArray[] = $basic;
             }
         }
         return Base::retSuccess('success', $retArray);
+    }
+
+    /**
+     * @api {get} api/users/extra 获取会员扩展信息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName extra
+     *
+     * @apiParam {Number} [userid]          会员ID（不传默认为当前用户）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function extra()
+    {
+        $user = User::auth();
+        //
+        $userid = intval(Request::input('userid'));
+        if ($userid <= 0) {
+            $userid = $user->userid;
+        }
+        if ($userid <= 0) {
+            return Base::retError('会员不存在');
+        }
+
+        $user = User::query()
+            ->select(['userid', 'birthday', 'address', 'introduction'])
+            ->whereUserid($userid)
+            ->first();
+
+        $birthday = null;
+        $address = null;
+        $introduction = null;
+
+        if ($user) {
+            $birthday = $user->birthday;
+            $address = $user->address;
+            $introduction = $user->introduction;
+        } else {
+            $deleted = UserDelete::whereUserid($userid)->first();
+            if (empty($deleted) || empty($deleted->cache)) {
+                return Base::retError('会员不存在');
+            }
+            $birthday = $deleted->cache['birthday'] ?? null;
+            $address = $deleted->cache['address'] ?? null;
+            $introduction = $deleted->cache['introduction'] ?? null;
+        }
+
+        $tagMeta = UserTag::listWithMeta($userid, $user);
+
+        $data = [
+            'userid' => $userid,
+            'birthday' => $birthday,
+            'address' => $address,
+            'introduction' => $introduction,
+            'personal_tags' => $tagMeta['top'],
+            'personal_tags_total' => $tagMeta['total'],
+        ];
+
+        return Base::retSuccess('success', $data);
     }
 
     /**

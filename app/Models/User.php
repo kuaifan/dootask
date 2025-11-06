@@ -92,7 +92,7 @@ class User extends AbstractModel
     public static $defaultAvatarMode = 'auto';
 
     // 基本信息的字段
-    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'birthday', 'address', 'introduction', 'department', 'userimg', 'bot', 'az', 'pinyin', 'line_at', 'disable_at'];
+    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'department', 'userimg', 'bot', 'az', 'pinyin', 'line_at', 'disable_at'];
 
     /**
      * 昵称

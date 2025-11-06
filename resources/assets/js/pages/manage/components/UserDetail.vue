@@ -198,10 +198,14 @@ export default {
                 return;
             }
             this.$store.dispatch("showSpinner", 600);
-            this.$store
-                .dispatch("getUserData", userid)
-                .then((user) => {
-                    this.userData = user;
+            Promise.all([
+                this.$store.dispatch("getUserData", userid).catch(() => null),
+                this.$store.dispatch("getUserExtra", userid).catch(() => null),
+            ])
+                .then(([user, extra]) => {
+                    const baseData = $A.isJson(user) ? user : {};
+                    const extraData = $A.isJson(extra) ? extra : {};
+                    this.userData = Object.assign({}, baseData, extraData);
                     this.ensureTagDefaults();
                     this.showModal = true;
                     this.loadCommonDialogCount();

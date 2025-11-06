@@ -89,15 +89,19 @@ export default {
             loadIng: 0,
 
             formData: {
+                // 基本信息
                 userimg: '',
                 email: '',
                 tel: '',
                 nickname: '',
                 profession: '',
+                // 拓展信息 生日、地址、个人简介
                 birthday: '',
                 address: '',
                 introduction: ''
             },
+
+            extraInfo: {},
 
             ruleData: {
                 email: [
@@ -120,6 +124,7 @@ export default {
     },
     mounted() {
         this.initData();
+        this.loadUserExtra();
     },
     computed: {
         ...mapState(['userInfo', 'formOptions']),
@@ -131,27 +136,60 @@ export default {
     watch: {
         userInfo() {
             this.initData();
+            this.loadUserExtra();
         }
     },
     methods: {
         initData() {
+            const extra = this.extraInfo || {};
             this.$set(this.formData, 'userimg', $A.strExists(this.userInfo.userimg, '/avatar') ? '' : this.userInfo.userimg);
             this.$set(this.formData, 'email', this.userInfo.email);
             this.$set(this.formData, 'tel', this.userInfo.tel);
             this.$set(this.formData, 'nickname', typeof this.userInfo.nickname_original !== "undefined" ? this.userInfo.nickname_original : this.userInfo.nickname);
             this.$set(this.formData, 'profession', this.userInfo.profession);
-            this.$set(this.formData, 'birthday', this.userInfo.birthday || '');
-            this.$set(this.formData, 'address', this.userInfo.address || '');
-            this.$set(this.formData, 'introduction', this.userInfo.introduction || '');
+            this.$set(this.formData, 'birthday', extra.birthday || '');
+            this.$set(this.formData, 'address', extra.address || '');
+            this.$set(this.formData, 'introduction', extra.introduction || '');
             this.formData_bak = $A.cloneJSON(this.formData);
             this.syncPersonalTags();
         },
 
+        loadUserExtra(force = false) {
+            const userid = this.userInfo?.userid;
+            if (!userid) {
+                this.applyExtraInfo({});
+                return;
+            }
+            const payload = force ? {userid, force: true} : userid;
+            this.$store.dispatch("getUserExtra", payload)
+                .then((data) => {
+                    if ($A.isJson(data)) {
+                        this.applyExtraInfo(data);
+                    }
+                })
+                .catch(() => {
+                    if (!this.extraInfo || Object.keys(this.extraInfo).length === 0) {
+                        this.applyExtraInfo({});
+                    }
+                });
+        },
+
+        applyExtraInfo(extra) {
+            const info = $A.isJson(extra) ? extra : {};
+            this.extraInfo = info;
+            this.$set(this.formData, 'birthday', info.birthday || '');
+            this.$set(this.formData, 'address', info.address || '');
+            this.$set(this.formData, 'introduction', info.introduction || '');
+            this.syncPersonalTags();
+            this.formData_bak = $A.cloneJSON(this.formData);
+        },
+
         syncPersonalTags() {
-            const tags = Array.isArray(this.userInfo.personal_tags) ? this.userInfo.personal_tags : [];
+            const extra = this.extraInfo || {};
+            const tags = Array.isArray(extra.personal_tags) ? extra.personal_tags : [];
             this.personalTags = tags.slice(0, 10);
-            this.personalTagTotal = typeof this.userInfo.personal_tags_total === 'number'
-                ? this.userInfo.personal_tags_total
+            this.personalTagTotal = typeof extra.personal_tags_total === 'number'
+                ? extra.personal_tags_total
                 : this.personalTags.length;
         },
 
@@ -166,7 +204,24 @@ export default {
                         data,
                     }).then(() => {
                         $A.messageSuccess('修改成功');
-                        this.$store.dispatch('getUserInfo').catch(() => {});
+                        const userid = this.userInfo?.userid;
+                        const extraPayload = {
+                            birthday: data.birthday || '',
+                            address: data.address || '',
+                            introduction: data.introduction || ''
+                        };
+                        if (userid) {
+                            this.$store.dispatch('saveUserExtra', {
+                                userid,
+                                data: extraPayload
+                            });
+                        }
+                        this.applyExtraInfo(Object.assign({}, this.extraInfo, extraPayload));
+                        this.$store.dispatch('getUserInfo')
+                            .catch(() => {})
+                            .finally(() => {
+                                this.loadUserExtra(true);
+                            });
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                     }).finally(_ => {
@@ -190,6 +245,10 @@ export default {
         onTagsUpdated({top, total}) {
             this.personalTags = Array.isArray(top) ? top : [];
             this.personalTagTotal = typeof total === 'number' ? total : this.personalTags.length;
+            this.extraInfo = Object.assign({}, this.extraInfo, {
+                personal_tags: this.personalTags,
+                personal_tags_total: this.personalTagTotal
+            });
         }
     }
 }
@@ -205,13 +264,18 @@ export default {
 
     .tag-pill {
         cursor: pointer;
-        padding: 5px 12px;
+        padding: 6px 12px;
         border-radius: 12px;
         font-size: 13px;
-        line-height: 1;
         user-select: none;
         background-color: #f5f5f5;
         color: #606266;
+        line-height: 14px;
+        height: 26px;
+        max-width: 160px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         &.is-recognized {
             color: #67c23a;
         }

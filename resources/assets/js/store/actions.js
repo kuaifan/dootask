@@ -715,6 +715,64 @@ export default {
     },
 
     /**
+     * 获取会员扩展信息
+     * @param state
+     * @param dispatch
+     * @param userid
+     * @returns {Promise<unknown>}
+     */
+    getUserExtra({state, dispatch}, userid) {
+        return new Promise(async (resolve, reject) => {
+            if (!userid) {
+                reject({msg: "userid missing"});
+                return;
+            }
+            const cacheMap = state.cacheUserExtra || {};
+            const cacheItem = cacheMap[`${userid}`];
+            const now = Date.now();
+            if (cacheItem && cacheItem.data && (now - cacheItem.updatedAt) < 30000) {
+                resolve(cacheItem.data);
+                return;
+            }
+            try {
+                const {data} = await dispatch("call", {
+                    url: 'users/extra',
+                    data: {userid},
+                });
+                state.cacheUserExtra = Object.assign({}, cacheMap, {
+                    [`${userid}`]: {
+                        data,
+                        updatedAt: Date.now()
+                    }
+                });
+                resolve(data);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    },
+
+    /**
+     * 缓存会员扩展信息
+     * @param state
+     * @param payload {userid, data}
+     */
+    saveUserExtra({state}, payload) {
+        const userid = $A.runNum(payload?.userid);
+        if (!userid || !$A.isJson(payload?.data)) {
+            return;
+        }
+        const cacheMap = state.cacheUserExtra || {};
+        const current = cacheMap[`${userid}`]?.data || {};
+        state.cacheUserExtra = Object.assign({}, cacheMap, {
+            [`${userid}`]: {
+                data: Object.assign({}, current, payload.data),
+                updatedAt: Date.now()
+            }
+        });
+    },
+
+    /**
      * 更新会员信息
      * @param state
      * @param dispatch
@@ -856,7 +914,7 @@ export default {
                 } catch (_) {}
             }
             if (tempUser) {
-                resolve(tempUser);
+                resolve($A.cloneJSON(tempUser));
             } else {
                 reject();
             }

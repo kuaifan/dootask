@@ -90,6 +90,7 @@ export default {
     // User
     cacheUserWait: [],
     cacheUserBasic: [],
+    cacheUserExtra: {},
 
     // 日历
     cacheCalendarView: null,

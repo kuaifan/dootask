@@ -93,7 +93,7 @@
                 </ul>
             </div>
             <div v-if="total > 0" class="tag-modal-footer">
-                <span>{{$L('当前共(*)个标签', total)}}</span>
+                <span>{{$L('当前共 (*) 个标签', total)}}</span>
             </div>
         </div>
     </ModalAlive>
@@ -213,17 +213,14 @@ export default {
         },
         emitUpdated(payload) {
             this.$emit('updated', payload);
-            if (this.userid === this.$store.state.userInfo.userid) {
-                const info = Object.assign({}, this.$store.state.userInfo, {
-                    personal_tags: payload.top,
-                    personal_tags_total: payload.total
-                });
-                this.$store.dispatch('saveUserInfoBase', info);
-            }
-            this.$store.dispatch('saveUserBasic', {
+            this.$store.dispatch('saveUserExtra', {
                 userid: this.userid,
-                personal_tags: payload.top,
-                personal_tags_total: payload.total
+                data: {
+                    personal_tags: Array.isArray(payload?.top) ? payload.top : [],
+                    personal_tags_total: typeof payload?.total === 'number'
+                        ? payload.total
+                        : (Array.isArray(payload?.top) ? payload.top.length : 0)
+                }
             });
         },
         handleAdd() {
@@ -418,10 +415,15 @@ export default {
                 padding: 6px 12px;
                 border-radius: 12px;
                 font-size: 13px;
-                line-height: 1;
                 user-select: none;
                 background-color: #f5f5f5;
                 color: #606266;
+                line-height: 14px;
+                height: 26px;
+                max-width: 160px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 &.is-recognized {
                     color: #67c23a;
                 }
