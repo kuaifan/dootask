@@ -8,8 +8,8 @@
             <Drawio v-else-if="isType('drawio')" v-model="msgDetail.content" :title="msgDetail.msg.name" readOnly/>
             <Minder v-else-if="isType('mind')" :value="msgDetail.content" readOnly/>
             <template v-else-if="msgDetail.type === 'longtext'">
-                <VMPreview v-if="msgDetail.content.type === 'md'" :value="msgDetail.content.content"/>
-                <div v-else class="view-code" v-html="$A.formatTextMsg(msgDetail.content.content, userId)"></div>
+                <DialogMarkdown v-if="msgDetail.content.type === 'md'" class="view-longtext no-dark-content" :text="msgDetail.content.content"/>
+                <div v-else class="view-longtext" v-html="$A.formatTextMsg(msgDetail.content.content, userId)"></div>
             </template>
             <template v-else-if="isType('code')">
                 <div v-if="isLongText(msgDetail.msg.name)" class="view-code" v-html="$A.formatTextMsg(msgDetail.content.content, userId)"></div>
@@ -31,7 +31,8 @@
     .vmpreview-wrapper,
     .teditor-wrapper,
     .no-support,
-    .view-code {
+    .view-code,
+    .view-longtext {
         position: absolute;
         top: 0;
         left: 0;
@@ -60,6 +61,9 @@
         word-wrap: break-word;
         overflow: auto;
     }
+    .view-longtext {
+        padding: 1rem;
+    }
     .view-editor,
     .no-support {
         display: flex;
@@ -73,6 +77,7 @@ import {mapState} from "vuex";
 import IFrame from "../manage/components/IFrame";
 
 const VMPreview = () => import('../../components/VMEditor/preview');
+const DialogMarkdown = () => import('../manage/components/DialogMarkdown');
 const TEditor = () => import('../../components/TEditor');
 const AceEditor = () => import('../../components/AceEditor');
 const OnlyOffice = () => import('../../components/OnlyOffice');
@@ -80,7 +85,7 @@ const Drawio = () => import('../../components/Drawio');
 const Minder = () => import('../../components/Minder');
 
 export default {
-    components: {IFrame, AceEditor, TEditor, VMPreview, OnlyOffice, Drawio, Minder},
+    components: {IFrame, AceEditor, TEditor, VMPreview, DialogMarkdown, OnlyOffice, Drawio, Minder},
     data() {
         return {
             loadIng: 0,
