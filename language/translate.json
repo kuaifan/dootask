@@ -18432,18 +18432,6 @@
         "ru": "Просмотр списка интерфейсов"
     },
     {
-        "key": "发送文本消息",
-        "zh": "",
-        "zh-CHT": "發送文本消息",
-        "en": "Send Text Message",
-        "ko": "텍스트 메시지 보내기",
-        "ja": "テキストメッセージを送信",
-        "de": "Textnachricht senden",
-        "fr": "Envoyer un message texte",
-        "id": "Kirim Pesan Teks",
-        "ru": "Отправить текстовое сообщение"
-    },
-    {
         "key": "对话ID",
         "zh": "",
         "zh-CHT": "對話ID",
@@ -18468,30 +18456,6 @@
         "ru": "Содержание сообщения"
     },
     {
-        "key": "回复指定消息ID",
-        "zh": "",
-        "zh-CHT": "回覆指定消息ID",
-        "en": "Reply to Specific Message ID",
-        "ko": "특정 메시지 ID에 답장",
-        "ja": "特定のメッセージIDに返信",
-        "de": "Auf bestimmte Nachrichten-ID antworten",
-        "fr": "Répondre à un ID de message spécifique",
-        "id": "Balas ke ID Pesan Tertentu",
-        "ru": "Ответить на конкретный ID сообщения"
-    },
-    {
-        "key": "对话类型",
-        "zh": "",
-        "zh-CHT": "對話類型",
-        "en": "Conversation Type",
-        "ko": "대화 유형",
-        "ja": "会話タイプ",
-        "de": "Gesprächstyp",
-        "fr": "Type de conversation",
-        "id": "Jenis Percakapan",
-        "ru": "Тип разговора"
-    },
-    {
         "key": "消息ID",
         "zh": "",
         "zh-CHT": "消息ID",
@@ -18504,30 +18468,6 @@
         "ru": "ID сообщения"
     },
     {
-        "key": "消息发送人ID",
-        "zh": "",
-        "zh-CHT": "消息發送人ID",
-        "en": "Message Sender ID",
-        "ko": "메시지 발신자 ID",
-        "ja": "メッセージ送信者ID",
-        "de": "Absender-ID der Nachricht",
-        "fr": "ID de l'expéditeur du message",
-        "id": "ID Pengirim Pesan",
-        "ru": "ID отправителя сообщения"
-    },
-    {
-        "key": "是否被@到",
-        "zh": "",
-        "zh-CHT": "是否被@到",
-        "en": "Is Mentioned",
-        "ko": "멘션 여부",
-        "ja": "メンション有無",
-        "de": "Wurde erwähnt",
-        "fr": "Est mentionné",
-        "id": "Apakah Disebutkan",
-        "ru": "Упомянут ли"
-    },
-    {
         "key": "机器人ID",
         "zh": "",
         "zh-CHT": "機器人ID",
@@ -18538,18 +18478,6 @@
         "fr": "ID du bot",
         "id": "ID Bot",
         "ru": "ID бота"
-    },
-    {
-        "key": "系统版本",
-        "zh": "",
-        "zh-CHT": "系統版本",
-        "en": "System Version",
-        "ko": "시스템 버전",
-        "ja": "システムバージョン",
-        "de": "Systemversion",
-        "fr": "Version du système",
-        "id": "Versi Sistem",
-        "ru": "Версия системы"
     },
     {
         "key": "机器人详情",
@@ -30024,66 +29952,6 @@
         "ru": "Тип робота должен состоять из 6-20 символов."
     },
     {
-        "key": "消息发送人信息",
-        "zh": "",
-        "zh-CHT": "消息發送人資訊",
-        "en": "Sender Information",
-        "ko": "발신자 정보",
-        "ja": "送信者情報",
-        "de": "Absenderinformationen",
-        "fr": "Informations sur l'expéditeur",
-        "id": "Informasi Pengirim",
-        "ru": "Информация об отправителе"
-    },
-    {
-        "key": "API 使用说明",
-        "zh": "",
-        "zh-CHT": "API 使用說明",
-        "en": "API Documentation",
-        "ko": "API 사용 설명서",
-        "ja": "API 使用説明",
-        "de": "API-Anleitung",
-        "fr": "Documentation API",
-        "id": "Dokumentasi API",
-        "ru": "Документация по API"
-    },
-    {
-        "key": "Webhook 消息推送",
-        "zh": "",
-        "zh-CHT": "Webhook 消息推送",
-        "en": "Webhook Message Push",
-        "ko": "Webhook 메시지 푸시",
-        "ja": "Webhook メッセージプッシュ",
-        "de": "Webhook-Nachricht pushen",
-        "fr": "Push de message Webhook",
-        "id": "Push Pesan Webhook",
-        "ru": "Пуш-сообщения Webhook"
-    },
-    {
-        "key": "html 或 md",
-        "zh": "",
-        "zh-CHT": "html 或 md",
-        "en": "html or md",
-        "ko": "html 또는 md",
-        "ja": "html または md",
-        "de": "html oder md",
-        "fr": "html ou md",
-        "id": "html atau md",
-        "ru": "html или md"
-    },
-    {
-        "key": "yes 或 no",
-        "zh": "",
-        "zh-CHT": "yes 或 no",
-        "en": "yes or no",
-        "ko": "예 또는 아니오",
-        "ja": "はい または いいえ",
-        "de": "ja oder nein",
-        "fr": "oui ou non",
-        "id": "ya atau tidak",
-        "ru": "да или нет"
-    },
-    {
         "key": "会话名称",
         "zh": "",
         "zh-CHT": "會話名稱",
@@ -30120,18 +29988,6 @@
         "ru": "Результат"
     },
     {
-        "key": "参数名",
-        "zh": "",
-        "zh-CHT": "參數名",
-        "en": "Parameter Name",
-        "ko": "매개변수 이름",
-        "ja": "パラメータ名",
-        "de": "Parametername",
-        "fr": "Nom du paramètre",
-        "id": "Nama Parameter",
-        "ru": "Имя параметра"
-    },
-    {
         "key": "命令",
         "zh": "",
         "zh-CHT": "命令",
@@ -30144,42 +30000,6 @@
         "ru": "Команда"
     },
     {
-        "key": "回复\/引用的消息文本",
-        "zh": "",
-        "zh-CHT": "回覆\/引用的消息文本",
-        "en": "Reply\/quoted message text",
-        "ko": "답장\/인용된 메시지 텍스트",
-        "ja": "返信\/引用されたメッセージのテキスト",
-        "de": "Antwort\/zitierter Nachrichtentext",
-        "fr": "Texte du message de réponse\/citation",
-        "id": "Balasan\/kutipan teks pesan",
-        "ru": "Текст ответа\/цитируемого сообщения"
-    },
-    {
-        "key": "开发者可以通过此接口调用机器人向指定对话发送文本消息。",
-        "zh": "",
-        "zh-CHT": "開發者可以通過此介面調用機器人向指定對話發送文本消息。",
-        "en": "Developers can use this interface to call the bot to send text messages to a specified conversation.",
-        "ko": "개발자는 이 인터페이스를 통해 지정된 대화에 텍스트 메시지를 보내도록 봇을 호출할 수 있습니다.",
-        "ja": "開発者は、このインターフェースを使用して、指定された会話にテキストメッセージを送信するためにボットを呼び出すことができます。",
-        "de": "Entwickler können diese Schnittstelle verwenden, um den Bot aufzurufen und Textnachrichten an ein angegebenes Gespräch zu senden.",
-        "fr": "Les développeurs peuvent utiliser cette interface pour appeler le bot afin d'envoyer des messages texte à une conversation spécifiée.",
-        "id": "Pengembang dapat menggunakan antarmuka ini untuk menghubungi bot untuk mengirim pesan teks ke percakapan yang ditentukan.",
-        "ru": "Разработчики могут использовать этот интерфейс для вызова бота для отправки текстовых сообщений в указанную беседу."
-    },
-    {
-        "key": "接口信息",
-        "zh": "",
-        "zh-CHT": "介面信息",
-        "en": "Interface information",
-        "ko": "인터페이스 정보",
-        "ja": "インターフェース情報",
-        "de": "Schnittstelleninformation",
-        "fr": "Informations d'interface",
-        "id": "Informasi antarmuka",
-        "ru": "Информация об интерфейсе"
-    },
-    {
         "key": "接口地址",
         "zh": "",
         "zh-CHT": "介面地址",
@@ -30190,90 +30010,6 @@
         "fr": "Adresse de l'interface",
         "id": "Alamat antarmuka",
         "ru": "Адрес интерфейса"
-    },
-    {
-        "key": "推送参数",
-        "zh": "",
-        "zh-CHT": "推送參數",
-        "en": "Push parameters",
-        "ko": "푸시 매개변수",
-        "ja": "プッシュパラメータ",
-        "de": "Push-Parameter",
-        "fr": "Paramètres de poussée",
-        "id": "Parameter dorong",
-        "ru": "Параметры пуша"
-    },
-    {
-        "key": "搜索词",
-        "zh": "",
-        "zh-CHT": "搜索詞",
-        "en": "Search term",
-        "ko": "검색어",
-        "ja": "検索用語",
-        "de": "Suchbegriff",
-        "fr": "Terme de recherche",
-        "id": "Istilah pencarian",
-        "ru": "Поисковый запрос"
-    },
-    {
-        "key": "文本类型",
-        "zh": "",
-        "zh-CHT": "文本類型",
-        "en": "Text type",
-        "ko": "텍스트 유형",
-        "ja": "テキストタイプ",
-        "de": "Texttyp",
-        "fr": "Type de texte",
-        "id": "Jenis teks",
-        "ru": "Тип текста"
-    },
-    {
-        "key": "机器人收到消息后会自动POST推送到配置的Webhook地址，请求超时为10秒。",
-        "zh": "",
-        "zh-CHT": "機器人收到消息後會自動POST推送到配置的Webhook地址，請求超時為10秒。",
-        "en": "Once the bot receives the message, it will automatically POST to the configured Webhook address, with a request timeout of 10 seconds.",
-        "ko": "봇이 메시지를 수신하면 구성된 웹훅 주소로 자동으로 POST를 전송하며, 요청 시간 초과는 10초입니다.",
-        "ja": "ボットがメッセージを受信すると、自動的に設定されたWebhookアドレスにPOSTし、要求のタイムアウトは10秒です。",
-        "de": "Sobald der Bot die Nachricht erhält, wird automatisch ein POST an die konfigurierte Webhook-Adresse gesendet, mit einer Anforderungszeitüberschreitung von 10 Sekunden.",
-        "fr": "Une fois que le bot reçoit le message, il enverra automatiquement un POST à l'adresse Webhook configurée, avec une expiration de requête de 10 secondes.",
-        "id": "Setelah bot menerima pesan tersebut, bot akan secara otomatis mengirimkan POST ke alamat Webhook yang dikonfigurasi, dengan waktu habis permintaan 10 detik.",
-        "ru": "Как только бот получает сообщение, он автоматически отправляет POST на сконфигурированный адрес Webhook, с временем ожидания запроса 10 секунд."
-    },
-    {
-        "key": "消息文本内容",
-        "zh": "",
-        "zh-CHT": "消息文本內容",
-        "en": "Message text content",
-        "ko": "메시지 텍스트 내용",
-        "ja": "メッセージテキスト内容",
-        "de": "Nachrichtentextinhalt",
-        "fr": "Contenu du texte du message",
-        "id": "Konten teks pesan",
-        "ru": "Содержимое текста сообщения"
-    },
-    {
-        "key": "留空自动生成",
-        "zh": "",
-        "zh-CHT": "留空自動生成",
-        "en": "Leave blank to auto-generate",
-        "ko": "자동 생성하려면 비워 두세요",
-        "ja": "空白にして自動生成",
-        "de": "Leer lassen, um automatisch zu generieren",
-        "fr": "Laisser vide pour générer automatiquement",
-        "id": "Biarkan kosong untuk menghasilkan otomatis",
-        "ru": "Оставьте пустым для автоматической генерации"
-    },
-    {
-        "key": "示例值",
-        "zh": "",
-        "zh-CHT": "示例值",
-        "en": "Example Value",
-        "ko": "예시 값",
-        "ja": "サンプル値",
-        "de": "Beispielwert",
-        "fr": "Valeur d'exemple",
-        "id": "Nilai contoh",
-        "ru": "Пример значения"
     },
     {
         "key": "该机器人不支持",
@@ -30298,66 +30034,6 @@
         "fr": "Description",
         "id": "Deskripsi",
         "ru": "Описание"
-    },
-    {
-        "key": "请求参数",
-        "zh": "",
-        "zh-CHT": "請求參數",
-        "en": "Request Parameters",
-        "ko": "요청 매개변수",
-        "ja": "リクエストパラメータ",
-        "de": "Anforderungsparameter",
-        "fr": "Paramètres de requête",
-        "id": "Parameter permintaan",
-        "ru": "Параметры запроса"
-    },
-    {
-        "key": "请求头",
-        "zh": "",
-        "zh-CHT": "請求頭",
-        "en": "Request Headers",
-        "ko": "요청 헤더",
-        "ja": "リクエストヘッダー",
-        "de": "Anforderungsheader",
-        "fr": "En-têtes de requête",
-        "id": "Header permintaan",
-        "ru": "Заголовки запроса"
-    },
-    {
-        "key": "请求方式",
-        "zh": "",
-        "zh-CHT": "請求方式",
-        "en": "Request Method",
-        "ko": "요청 방법",
-        "ja": "リクエスト方法",
-        "de": "Anforderungsmethode",
-        "fr": "Méthode de requête",
-        "id": "Metode permintaan",
-        "ru": "Метод запроса"
-    },
-    {
-        "key": "通过机器人向指定对话发送文本消息",
-        "zh": "",
-        "zh-CHT": "通過機器人向指定對話發送文本消息",
-        "en": "Send a text message to a specific conversation through the bot",
-        "ko": "봇을 통해 특정 대화에 텍스트 메시지 보내기",
-        "ja": "ボットを通じて指定された会話にテキストメッセージを送信",
-        "de": "Senden Sie eine Textnachricht an ein bestimmtes Gespräch über den Bot",
-        "fr": "Envoyer un message texte à une conversation spécifique via le bot",
-        "id": "Kirim pesan teks ke percakapan tertentu melalui bot",
-        "ru": "Отправить текстовое сообщение в определенный разговор через бота"
-    },
-    {
-        "key": "静默模式",
-        "zh": "",
-        "zh-CHT": "靜默模式",
-        "en": "Silent Mode",
-        "ko": "무음 모드",
-        "ja": "サイレントモード",
-        "de": "Lautlos-Modus",
-        "fr": "Mode silencieux",
-        "id": "Mode senyap",
-        "ru": "Тихий режим"
     },
     {
         "key": "属性",

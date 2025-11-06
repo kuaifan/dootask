@@ -24,7 +24,7 @@ import {languageName} from "../../../language";
 import zhCN from '@kangc/v-md-editor/lib/lang/zh-CN';
 import enUS from '@kangc/v-md-editor/lib/lang/en-US';
 
-if (languageName === "zh" || languageName === "zh-CHT") {
+if (/^zh/.test(languageName)) {
     VMdPreview.lang.use('zh-CN', zhCN);
 } else {
     VMdPreview.lang.use('en-US', enUS);

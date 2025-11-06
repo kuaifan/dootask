@@ -1175,7 +1175,7 @@ export default {
 
             // Load recorder
             if (!this.disabledRecord) {
-                const i18nLang = languageName === "zh" || languageName === "zh-CHT" ? "zh-CN" : "en-US";
+                const i18nLang = /^zh/.test(languageName) ? "zh-CN" : "en-US";
                 $A.loadScriptS([
                     'js/recorder/recorder.mp3.min.js',
                     'js/recorder/lib.fft.js',
