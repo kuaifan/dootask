@@ -195,6 +195,10 @@ body.window-landscape {
     .common-drawer {
         --body-max-width: calc(100% - 80px);
     }
+    // 底部抽屉样式
+    .drawer-bottom {
+        --body-max-width: 100%;
+    }
     // 横屏模式下的全屏抽屉样式
     .drawer-fullscreen {
         --body-max-width: 100%;
