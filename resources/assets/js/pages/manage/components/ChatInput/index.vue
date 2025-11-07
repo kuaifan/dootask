@@ -1914,17 +1914,17 @@ export default {
                         return sendData;
                     }
                     try {
-                        const {data: extraData} = await this.$store.dispatch('call', {
-                            url: 'dialog/msg/aiprompt',
+                        const {data: promptData} = await this.$store.dispatch('call', {
+                            url: 'assistant/dialog/prompt',
                             data: {
                                 dialog_id: this.dialogId,
-                                content: sendData.text,
+                                content: sendData.prompt,
                                 draft: this.value || '',
                                 quote_id: this.quoteData?.id || 0,
                             },
                         });
-                        if ($A.isJson(extraData)) {
-                            sendData.extra_data = extraData;
+                        if ($A.isJson(promptData)) {
+                            Object.assign(sendData, promptData);
                         }
                         return sendData;
                     } catch (error) {

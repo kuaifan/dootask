@@ -4220,10 +4220,8 @@ export default {
                     const data = $A.jsonParse(e.data);
                     dispatch("streamMsgData", {
                         type,
-                        id: e.lastEventId,              // 消息ID
-                        text: data.c || data.content,   // 消息内容
-                        reply_id: data.r || 0,          // 回应的消息ID
-                        dialog_id: data.d || 0,         // 会话ID
+                        id: e.lastEventId,
+                        text: data.content
                     })
                     break;
 

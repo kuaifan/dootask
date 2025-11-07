@@ -37,7 +37,7 @@
                                 </Button>
                             </template>
                             <template v-else>
-                                <Icon type="ios-sync" class="ai-assistant-output-icon ai-spin"/>
+                                <Icon type="ios-sync" class="ai-assistant-output-icon icon-loading"/>
                                 <span class="ai-assistant-output-status">{{ $L('生成中...') }}</span>
                             </template>
                         </div>
@@ -93,8 +93,8 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
 import emitter from "../store/events";
+import {SSEClient} from "../utils";
 import {AIBotList, AIModelNames} from "../utils/ai";
 import DialogMarkdown from "../pages/manage/components/DialogMarkdown.vue";
 
@@ -145,24 +145,20 @@ export default {
 
             // 响应渲染
             responses: [],
-            pendingResponses: [],
             responseSeed: 1,
             maxResponses: 5,
+            activeStreams: [],
         }
     },
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
-        emitter.on('streamMsgData', this.onStreamMsgData);
         this.initModelCache();
     },
     beforeDestroy() {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
-        emitter.off('streamMsgData', this.onStreamMsgData);
+        this.clearActiveStreams();
     },
     computed: {
-        ...mapState([
-            'cacheDialogs',
-        ]),
         selectedModelOption({modelMap, inputModel}) {
             return modelMap[inputModel] || null;
         },
@@ -190,8 +186,8 @@ export default {
                 this.inputOnBeforeSend = params.onBeforeSend || null;
             }
             this.responses = [];
-            this.pendingResponses = [];
             this.showModal = true;
+            this.clearActiveStreams();
         },
 
         /**
@@ -235,8 +231,7 @@ export default {
                 });
                 this.normalizeModelOptions(data);
             } catch (error) {
-                const msg = error?.msg || error?.message || error || this.$L('获取模型列表失败');
-                $A.modalError(msg);
+                $A.modalError(error?.msg || error || '获取模型列表失败');
             } finally {
                 this.modelsLoading = false;
             }
@@ -346,39 +341,38 @@ export default {
                 return;
             }
             const rawValue = this.inputValue || '';
-            const content = rawValue.trim();
-            if (!content) {
-                $A.messageWarning(this.$L('请输入你的问题'));
-                return;
-            }
             const modelOption = this.selectedModelOption;
             if (!modelOption) {
-                $A.messageWarning(this.$L('请选择模型'));
+                $A.messageWarning('请选择模型');
                 return;
             }
 
             this.loadIng++;
             let responseEntry = null;
             try {
-                const {dialogId, userid} = await this.ensureAiDialog(modelOption.type);
-                if (this.shouldCreateNewSession) {
-                    await this.createAiSession(dialogId);
-                }
+                const preparedPayload = await this.buildPayloadData({
+                    prompt: rawValue,
+                    model_type: modelOption.type,
+                    model_name: modelOption.value,
+                }) || {};
+                const context = this.buildContextMessages(preparedPayload);
+
                 responseEntry = this.createResponseEntry({
                     modelOption,
-                    dialogId,
                     prompt: rawValue,
                 });
                 this.scrollResponsesToBottom();
-                const message = await this.sendAiMessage(dialogId, rawValue, modelOption.value);
-                if (responseEntry) {
-                    responseEntry.userid = userid;
-                    responseEntry.message = message;
-                    responseEntry.messageId = message?.id || 0;
-                }
+
+                const streamKey = await this.fetchStreamKey({
+                    model_type: modelOption.type,
+                    model_name: modelOption.value,
+                    context,
+                });
+
                 this.inputValue = '';
+                this.startStream(streamKey, responseEntry);
             } catch (error) {
-                const msg = error?.msg || error?.message || error || this.$L('发送失败');
+                const msg = error?.msg || error || '发送失败';
                 if (responseEntry) {
                     this.markResponseError(responseEntry, msg);
                 }
@@ -386,113 +380,6 @@ export default {
             } finally {
                 this.loadIng--;
             }
-        },
-
-        /**
-         * 生成AI机器人邮箱
-         */
-        getAiEmail(type) {
-            return `ai-${type}@bot.system`;
-        },
-
-        /**
-         * 在缓存会话里查找AI
-         */
-        findAiDialog({type, userid}) {
-            const email = this.getAiEmail(type);
-            return this.cacheDialogs.find(dialog => {
-                if (!dialog) {
-                    return false;
-                }
-                if (userid && dialog.dialog_user && dialog.dialog_user.userid === userid) {
-                    return true;
-                }
-                if (dialog.dialog_user && dialog.dialog_user.email === email) {
-                    return true;
-                }
-                if (dialog.email === email) {
-                    return true;
-                }
-                return false;
-            });
-        },
-
-        /**
-         * 确保能够打开AI会话
-         */
-        async ensureAiDialog(type) {
-            let dialog = this.findAiDialog({type});
-            let userid = dialog?.dialog_user?.userid || dialog?.userid || 0;
-            if (dialog) {
-                return {
-                    dialogId: dialog.id,
-                    userid,
-                };
-            }
-            const {data} = await this.$store.dispatch("call", {
-                url: 'users/search/ai',
-                data: {type},
-            });
-            userid = data?.userid;
-            if (!userid) {
-                throw new Error(this.$L('未找到AI机器人'));
-            }
-            const dialogResult = await this.$store.dispatch("call", {
-                url: 'dialog/open/user',
-                data: {userid},
-                method: 'get',
-            });
-            dialog = dialogResult?.data || null;
-            if (dialog) {
-                this.$store.dispatch("saveDialog", dialog);
-            }
-            if (!dialog) {
-                throw new Error(this.$L('AI对话打开失败'));
-            }
-            return {
-                dialogId: dialog.id,
-                userid,
-            };
-        },
-
-        /**
-         * 创建新的AI会话session
-         */
-        async createAiSession(dialogId) {
-            if (!dialogId) {
-                return;
-            }
-            await this.$store.dispatch("call", {
-                url: 'dialog/session/create',
-                data: {dialog_id: dialogId},
-            });
-            await this.$store.dispatch("clearDialogMsgs", {
-                id: dialogId,
-            });
-        },
-
-        /**
-         * 发送文本消息
-         */
-        async sendAiMessage(dialogId, text, model) {
-            const {data} = await this.$store.dispatch("call", {
-                url: 'dialog/msg/sendtext',
-                method: 'post',
-                data: await this.buildPayloadData({
-                    dialog_id: dialogId,
-                    text,
-                    model_name: model,
-                }),
-            });
-            if (data) {
-                this.$store.dispatch("saveDialogMsg", data);
-                this.$store.dispatch("increaseTaskMsgNum", {id: data.dialog_id});
-                if (data.reply_id) {
-                    this.$store.dispatch("increaseMsgReplyNum", {id: data.reply_id});
-                }
-                this.$store.dispatch("updateDialogLastMsg", data);
-            }
-            return data;
         },
 
         /**
@@ -519,13 +406,172 @@ export default {
         },
 
         /**
+         * 组装上下文
+         */
+        buildContextMessages({prompt, system_prompt, context_prompt}) {
+            const context = [];
+            const pushContext = (role, value) => {
+                if (typeof value === 'undefined' || value === null) {
+                    return;
+                }
+                const content = String(value).trim();
+                if (!content) {
+                    return;
+                }
+                const lastEntry = context[context.length - 1];
+                if (lastEntry && lastEntry[0] === role) {
+                    lastEntry[1] = lastEntry[1] ? `${lastEntry[1]}\n${content}` : content;
+                    return;
+                }
+                context.push([role, content]);
+            };
+            if (system_prompt) {
+                pushContext('system', String(system_prompt));
+            }
+            if (context_prompt) {
+                pushContext('human', String(context_prompt));
+            }
+            this.responses.forEach(item => {
+                if (item.prompt) {
+                    pushContext('human', item.prompt);
+                }
+                if (item.text) {
+                    pushContext('assistant', item.text);
+                }
+            });
+            if (prompt && prompt.trim()) {
+                pushContext('human', prompt.trim());
+            }
+            return context;
+        },
+
+        /**
+         * 请求 stream_key
+         */
+        async fetchStreamKey({model_type, model_name, context}) {
+            const payload = {
+                model_type,
+                model_name,
+                context: JSON.stringify(context || []),
+            };
+            const {data} = await this.$store.dispatch("call", {
+                url: 'assistant/auth',
+                method: 'post',
+                data: payload,
+            });
+            const streamKey = data?.stream_key || '';
+            if (!streamKey) {
+                throw new Error('获取 stream_key 失败');
+            }
+            return streamKey;
+        },
+
+        /**
+         * 启动 SSE 订阅
+         */
+        startStream(streamKey, responseEntry) {
+            if (!streamKey) {
+                throw new Error('获取 stream_key 失败');
+            }
+            const sse = new SSEClient($A.mainUrl(`ai/invoke/stream/${streamKey}`));
+            this.registerStream(sse);
+            sse.subscribe(['append', 'replace', 'done'], (type, event) => {
+                switch (type) {
+                    case 'append':
+                    case 'replace':
+                        this.handleStreamChunk(responseEntry, type, event);
+                        break;
+                    case 'done':
+                        if (responseEntry && responseEntry.status !== 'error' && responseEntry.text) {
+                            responseEntry.status = 'completed';
+                        }
+                        this.releaseStream(sse);
+                        break;
+                }
+            });
+            return sse;
+        },
+
+        /**
+         * 处理 SSE 片段
+         */
+        handleStreamChunk(responseEntry, type, event) {
+            if (!responseEntry) {
+                return;
+            }
+            const payload = this.parseStreamPayload(event);
+            const chunk = this.resolveStreamContent(payload);
+            if (type === 'replace') {
+                responseEntry.text = chunk;
+            } else {
+                responseEntry.text += chunk;
+            }
+            responseEntry.status = 'streaming';
+            this.scrollResponsesToBottom();
+        },
+
+        /**
+         * 解析 SSE 数据
+         */
+        parseStreamPayload(event) {
+            if (!event || !event.data) {
+                return {};
+            }
+            try {
+                return JSON.parse(event.data);
+            } catch (e) {
+                return {};
+            }
+        },
+
+        /**
+         * 获取 SSE 文本
+         */
+        resolveStreamContent(payload) {
+            if (!payload || typeof payload !== 'object') {
+                return '';
+            }
+            if (typeof payload.content === 'string') {
+                return payload.content;
+            }
+            if (typeof payload.c === 'string') {
+                return payload.c;
+            }
+            return '';
+        },
+
+        registerStream(sse) {
+            if (!sse) {
+                return;
+            }
+            this.activeStreams.push(sse);
+        },
+
+        releaseStream(sse) {
+            const index = this.activeStreams.indexOf(sse);
+            if (index > -1) {
+                this.activeStreams.splice(index, 1);
+            }
+            sse.unsunscribe();
+        },
+
+        clearActiveStreams() {
+            this.activeStreams.forEach(sse => {
+                try {
+                    sse.unsunscribe();
+                } catch (e) {
+                }
+            });
+            this.activeStreams = [];
+        },
+
+        /**
          * 新建响应卡片
          */
-        createResponseEntry({modelOption, dialogId, prompt}) {
+        createResponseEntry({modelOption, prompt}) {
             const entry = {
                 localId: this.responseSeed++,
                 id: null,
-                dialogId,
                 model: modelOption.value,
                 modelLabel: modelOption.label,
                 type: modelOption.type,
@@ -533,56 +579,13 @@ export default {
                 text: '',
                 status: 'waiting',
                 error: '',
-                userid: 0,
-                message: null,
-                messageId: 0,
                 applyLoading: false,
             };
             this.responses.push(entry);
-            this.pendingResponses.push(entry);
             if (this.responses.length > this.maxResponses) {
-                const removed = this.responses.shift();
-                this.pendingResponses = this.pendingResponses.filter(item => item !== removed);
+                this.responses.shift();
             }
             return entry;
-        },
-
-        /**
-         * 处理流式输出
-         */
-        onStreamMsgData(data) {
-            if (!data || !data.id) {
-                return;
-            }
-            let response = this.responses.find(item => item.id === data.id);
-            if (!response && data.reply_id) {
-                response = this.responses.find(item => item.messageId === data.reply_id);
-            }
-            if (!response) {
-                const index = this.pendingResponses.findIndex(item => {
-                    if (data.reply_id && item.messageId) {
-                        return item.messageId === data.reply_id;
-                    }
-                    if (data.dialog_id && item.dialogId) {
-                        return item.dialogId === data.dialog_id;
-                    }
-                    return true;
-                });
-                if (index === -1) {
-                    return;
-                }
-                response = this.pendingResponses.splice(index, 1)[0];
-                response.id = data.id;
-            }
-            const chunk = typeof data.text === 'string' ? data.text : '';
-            if (data.type === 'replace') {
-                response.text = chunk;
-                response.status = 'completed';
-            } else {
-                response.text += chunk;
-                response.status = 'streaming';
-            }
-            this.scrollResponsesToBottom();
         },
 
         /**
@@ -591,7 +594,6 @@ export default {
         markResponseError(response, msg) {
             response.status = 'error';
             response.error = msg;
-            this.pendingResponses = this.pendingResponses.filter(item => item !== response);
         },
 
         /**
@@ -602,7 +604,7 @@ export default {
                 return;
             }
             if (!response.text) {
-                $A.messageWarning(this.$L('暂无可用内容'));
+                $A.messageWarning('暂无可用内容');
                 return;
             }
             if (typeof this.inputOnOk !== 'function') {
@@ -611,12 +613,9 @@ export default {
             }
             response.applyLoading = true;
             const payload = {
-                dialogId: response.dialogId,
-                userid: response.userid,
                 model: response.model,
                 type: response.type,
                 content: response.prompt,
-                message: response.message,
                 aiContent: response.text,
             };
             try {
@@ -625,8 +624,7 @@ export default {
                     result.then(() => {
                         this.closeAssistant();
                     }).catch(error => {
-                        const msg = error?.msg || error?.message || error || this.$L('应用失败');
-                        $A.modalError(msg);
+                        $A.modalError(error?.msg || error || '应用失败');
                     }).finally(() => {
                         response.applyLoading = false;
                     });
@@ -636,8 +634,7 @@ export default {
                 }
             } catch (error) {
                 response.applyLoading = false;
-                const msg = error?.msg || error?.message || error || this.$L('应用失败');
-                $A.modalError(msg);
+                $A.modalError(error?.msg || error || '应用错误');
             }
         },
 
@@ -651,7 +648,7 @@ export default {
             this.closing = true;
             this.showModal = false;
             this.responses = [];
-            this.pendingResponses = [];
+            this.clearActiveStreams();
             setTimeout(() => {
                 this.closing = false;
             }, 300);
@@ -675,6 +672,7 @@ export default {
 <style lang="scss">
 .ai-assistant-modal {
     .ivu-modal {
+        transition: max-width 0.3s ease;
         .ivu-modal-header {
             padding-left: 30px !important;
             padding-right: 30px !important;
@@ -814,18 +812,5 @@ export default {
             gap: 12px;
         }
     }
-}
-
-@keyframes ai-assistant-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.ai-spin {
-    animation: ai-assistant-spin 1s linear infinite;
 }
 </style>
