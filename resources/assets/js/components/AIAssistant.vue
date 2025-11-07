@@ -133,6 +133,7 @@ export default {
             inputAutosize: this.defaultInputAutosize,
             inputMaxlength: this.defaultInputMaxlength,
             inputOnOk: null,
+            inputOnBeforeSend: null,
 
             // 模型选择
             inputModel: '',
@@ -186,6 +187,7 @@ export default {
                 this.inputAutosize = params.autosize || this.defaultInputAutosize;
                 this.inputMaxlength = params.maxlength || this.defaultInputMaxlength;
                 this.inputOnOk = params.onOk || null;
+                this.inputOnBeforeSend = params.onBeforeSend || null;
             }
             this.responses = [];
             this.pendingResponses = [];
@@ -368,7 +370,7 @@ export default {
                     prompt: rawValue,
                 });
                 this.scrollResponsesToBottom();
-                const message = await this.sendAiMessage(dialogId, this.formatPlainText(rawValue), modelOption.value);
+                const message = await this.sendAiMessage(dialogId, rawValue, modelOption.value);
                 if (responseEntry) {
                     responseEntry.userid = userid;
                     responseEntry.message = message;
@@ -476,11 +478,11 @@ export default {
             const {data} = await this.$store.dispatch("call", {
                 url: 'dialog/msg/sendtext',
                 method: 'post',
-                data: {
+                data: await this.buildPayloadData({
                     dialog_id: dialogId,
                     text,
                     model_name: model,
-                },
+                }),
             });
             if (data) {
                 this.$store.dispatch("saveDialogMsg", data);
@@ -494,15 +496,26 @@ export default {
         },
 
         /**
-         * 将纯文本转换成HTML
+         * 构建最终发送的数据
          */
-        formatPlainText(text) {
-            const escaped = `${text}`
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/\n/g, '<br/>');
-            return `<p>${escaped}</p>`;
+        async buildPayloadData(data) {
+            if (typeof this.inputOnBeforeSend !== 'function') {
+                return data;
+            }
+            try {
+                const result = this.inputOnBeforeSend(data);
+                if (result && typeof result.then === 'function') {
+                    const resolved = await result;
+                    if ($A.isJson(resolved)) {
+                        return resolved;
+                    }
+                } else if ($A.isJson(result)) {
+                    return result;
+                }
+            } catch (e) {
+                console.warn('[AIAssistant] onBeforeSend error:', e);
+            }
+            return data;
         },
 
         /**
@@ -681,16 +694,19 @@ export default {
         display: flex;
         flex-direction: column;
         gap: 16px;
+        max-height: calc(100vh - 344px);
+        @media (height <= 900px) {
+            max-height: calc(100vh - 214px);
+        }
+
         .ai-assistant-output {
+            flex: 1;
+            min-height: 0;
             padding: 12px;
             border-radius: 8px;
             background: #f8f9fb;
             border: 1px solid rgba(0, 0, 0, 0.04);
-            max-height: calc(100vh - 390px);
             overflow-y: auto;
-            @media (height <= 900px) {
-                max-height: calc(100vh - 260px);
-            }
         }
 
         .ai-assistant-output-item + .ai-assistant-output-item {

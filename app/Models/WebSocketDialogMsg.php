@@ -43,6 +43,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int|mixed $percentage
  * @property-read \App\Models\User|null $user
+ * @property-read \App\Models\WebSocketDialogMsgExtra|null $extra
  * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
@@ -109,6 +110,14 @@ class WebSocketDialogMsg extends AbstractModel
     public function user(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(User::class, 'userid', 'userid');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function extra(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(WebSocketDialogMsgExtra::class, 'msg_id', 'id');
     }
 
     /**
@@ -1233,9 +1242,10 @@ class WebSocketDialogMsg extends AbstractModel
      * @param bool|null $push_silence   推送-静默
      * - type = [text|file|record|meeting]  默认为：false
      * @param string|null $search_key   搜索关键词（用于搜索，留空则自动生成）
+     * @param array|null $extra_data    额外数据（仅在发送消息时有效）
      * @return array
      */
-    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = null, $push_self = false, $push_retry = false, $push_silence = null, $search_key = null)
+    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = null, $push_self = false, $push_retry = false, $push_silence = null, $search_key = null, $extra_data = null)
     {
         $link = 0;
         $mtype = $type;
@@ -1380,9 +1390,16 @@ class WebSocketDialogMsg extends AbstractModel
                 'msg' => $msg,
                 'read' => 0,
             ]);
-            AbstractModel::transaction(function () use ($search_key, $dialogMsg) {
+            AbstractModel::transaction(function () use ($search_key, $dialogMsg, $extra_data) {
                 $dialogMsg->send = 1;
                 $dialogMsg->generateKeyAndSave($search_key);
+                //
+                if ($extra_data) {
+                    WebSocketDialogMsgExtra::createInstance([
+                        'msg_id' => $dialogMsg->id,
+                        'data' => Base::array2json($extra_data),
+                    ])->save();
+                }
                 //
                 WebSocketDialogSession::updateTitle($dialogMsg->session_id, $dialogMsg);
                 //

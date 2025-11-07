@@ -66,7 +66,7 @@ class BotReceiveMsgTask extends AbstractTask
         }
 
         // 判断消息是否存在
-        $msg = WebSocketDialogMsg::with(['user'])->find($this->msgId);
+        $msg = WebSocketDialogMsg::with(['user', 'extra'])->find($this->msgId);
         if (empty($msg)) {
             return;
         }
@@ -522,6 +522,16 @@ class BotReceiveMsgTask extends AbstractTask
 
                         {$sendText}
                         EOF;
+                }
+                // 处理额外数据
+                if ($msg->extra && $msg->extra->data) {
+                    $extraData = $msg->extra->data;
+                    if ($extraData['system_prompt']) {
+                        $extras['system_message'] = $extraData['system_prompt'];
+                    }
+                    if ($extraData['context_prompt']) {
+                        $sendText = $extraData['context_prompt'] . $sendText;
+                    }
                 }
                 $webhookUrl = "http://nginx/ai/chat";
             } else {

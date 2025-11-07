@@ -342,7 +342,7 @@ import clickoutside from "../../../../directives/clickoutside";
 import longpress from "../../../../directives/longpress";
 import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
 import {languageList, languageName} from "../../../../language";
-import {isMarkdownFormat} from "../../../../utils/markdown";
+import {isMarkdownFormat, MarkdownConver} from "../../../../utils/markdown";
 import emitter from "../../../../store/events";
 import historyMixin from "./history";
 
@@ -1904,63 +1904,45 @@ export default {
                 return;
             }
             if (!this.dialogId) {
-                $A.messageWarning(this.$L('当前未选择会话'));
+                $A.messageWarning('当前未选择会话');
                 return;
             }
-            let canceled = false;
-            $A.modalInput({
-                title: 'AI 生成',
-                placeholder: '请简要描述消息的主题、语气或要点，AI 将生成完整消息',
-                inputProps: {
-                    type: 'textarea',
-                    rows: 2,
-                    autosize: {minRows: 2, maxRows: 6},
-                    maxlength: 500,
-                },
-                onCancel: () => {
-                    canceled = true;
-                },
-                onOk: (value) => {
-                    if (!value) {
-                        return '请输入消息需求';
+            emitter.emit('openAIAssistant', {
+                placeholder: this.$L('请简要描述消息的主题、语气或要点，AI 将生成完整消息'),
+                onBeforeSend: async (sendData) => {
+                    if (!sendData) {
+                        return sendData;
                     }
-                    return new Promise((resolve, reject) => {
-                        if (canceled) {
-                            reject();
-                            return;
-                        }
-                        this.$store.dispatch('call', {
-                            url: 'dialog/msg/ai_generate',
+                    try {
+                        const {data: extraData} = await this.$store.dispatch('call', {
+                            url: 'dialog/msg/aiprompt',
                             data: {
                                 dialog_id: this.dialogId,
-                                content: value,
+                                content: sendData.text,
                                 draft: this.value || '',
                                 quote_id: this.quoteData?.id || 0,
                             },
-                            timeout: 45 * 1000,
-                        }).then(({data}) => {
-                            const html = data && (data.html || data.text) ? (data.html || data.text) : '';
-                            if (canceled) {
-                                resolve();
-                                return;
-                            }
-                            if (!html) {
-                                reject(this.$L('AI 未生成内容'));
-                                return;
-                            }
-                            this.$emit('input', html);
-                            this.$nextTick(() => this.focus());
-                            resolve();
-                        }).catch(({msg}) => {
-                            if (canceled) {
-                                resolve();
-                                return;
-                            }
-                            reject(msg);
                         });
-                    });
-                }
-            })
+                        if ($A.isJson(extraData)) {
+                            sendData.extra_data = extraData;
+                        }
+                        return sendData;
+                    } catch (error) {
+                        const msg = error?.msg || 'AI 提示生成失败';
+                        $A.modalError(msg);
+                        throw error;
+                    }
+                },
+                onOk: ({aiContent}) => {
+                    if (!aiContent) {
+                        $A.messageWarning('AI 未生成内容');
+                        return;
+                    }
+                    const html = MarkdownConver(aiContent);
+                    this.$emit('input', html);
+                    this.$nextTick(() => this.focus());
+                },
+            });
         },
 
         onFullInput() {

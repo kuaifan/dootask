@@ -557,72 +557,6 @@ class AI
     }
 
     /**
-     * 通过 openAI 生成聊天消息
-     * @param string $text 用户提供的提示词
-     * @param array $context 上下文信息
-     * @return array
-     */
-    public static function generateMessage($text, $context = [])
-    {
-        $text = trim((string)$text);
-        if ($text === '') {
-            return Base::retError("消息提示词不能为空");
-        }
-
-        $contextPrompt = self::buildMessageContextPrompt($context);
-
-        $post = json_encode([
-            "model" => "gpt-5-mini",
-            "reasoning_effort" => "minimal",
-            "messages" => [
-                [
-                    "role" => "system",
-                    "content" => <<<EOF
-                        你是一名专业的沟通助手，协助用户编写得体、清晰且具行动指向的即时消息。
-
-                        写作要求：
-                        1. 根据用户提供的需求与上下文生成完整消息，语气需符合业务沟通场景，保持真诚、礼貌且高效
-                        2. 默认使用简洁的短段落，可使用 Markdown 基础格式（加粗、列表、引用）增强结构，但不要输出代码块或 JSON
-                        3. 如果上下文包含引用信息或草稿，请在消息中自然呼应相关要点
-                        4. 如无特别说明，将消息长度控制在 60-180 字；若需更短或更长，遵循用户描述
-                        5. 如需提出行动或问题，请明确表达，避免含糊
-
-                        输出规范：
-                        - 仅返回可直接发送的消息内容
-                        - 禁止在内容前后添加额外说明、标签或引导语
-                        EOF
-                ],
-                [
-                    "role" => "user",
-                    "content" => ($contextPrompt ? $contextPrompt . "\n\n" : "") . "请根据以上信息，并结合以下提示词生成一条待发送的消息：\n\n" . $text
-                ],
-            ],
-        ]);
-
-        $ai = new self($post);
-        $ai->setTimeout(45);
-
-        $res = $ai->request();
-        if (Base::isError($res)) {
-            return Base::retError("消息生成失败", $res);
-        }
-
-        $content = trim($res['data']);
-        $content = preg_replace('/^\s*```(?:markdown|md|text)?\s*/i', '', $content);
-        $content = preg_replace('/\s*```\s*$/', '', $content);
-        $content = trim($content);
-
-        if ($content === '') {
-            return Base::retError("消息生成结果为空");
-        }
-
-        return Base::retSuccess("success", [
-            'text' => $content,
-            'html' => Base::markdown2html($content),
-        ]);
-    }
-
-    /**
      * 对工作汇报内容进行分析
      * @param Report $report
      * @param array $context
@@ -836,7 +770,25 @@ class AI
         return empty($prompts) ? "" : implode("\n", $prompts);
     }
 
-    private static function buildMessageContextPrompt($context)
+    public static function messageSystemPrompt()
+    {
+        return <<<EOF
+            你是一名专业的沟通助手，协助用户编写得体、清晰且具行动指向的即时消息。
+
+            写作要求：
+            1. 根据用户提供的需求与上下文生成完整消息，语气需符合业务沟通场景，保持真诚、礼貌且高效
+            2. 默认使用简洁的短段落，可使用 Markdown 基础格式（加粗、列表、引用）增强结构，但不要输出代码块或 JSON
+            3. 如果上下文包含引用信息或草稿，请在消息中自然呼应相关要点
+            4. 如无特别说明，将消息长度控制在 60-180 字；若需更短或更长，遵循用户描述
+            5. 如需提出行动或问题，请明确表达，避免含糊
+
+            输出规范：
+            - 仅返回可直接发送的消息内容
+            - 禁止在内容前后添加额外说明、标签或引导语
+            EOF;
+    }
+
+    public static function buildMessageContextPrompt($context)
     {
         $prompts = [];
 

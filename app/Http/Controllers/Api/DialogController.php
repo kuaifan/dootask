@@ -1027,25 +1027,25 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/ai_generate 使用 AI 助手生成消息
+     * @api {post} api/dialog/msg/aiprompt AI 提示词助手
      *
-     * @apiDescription 需要token身份，根据上下文自动生成拟发送的聊天消息
+     * @apiDescription 需要token身份，整理当前会话的系统提示词与上下文信息
      * @apiVersion 1.0.0
      * @apiGroup dialog
-     * @apiName msg__ai_generate
+     * @apiName msg__aiprompt
      *
      * @apiParam {Number} dialog_id             对话ID
-     * @apiParam {String} content               消息需求描述
+     * @apiParam {String} content               消息需求描述（用于提示词整理，可为空）
      * @apiParam {String} [draft]               当前草稿内容（HTML 格式）
      * @apiParam {Number} [quote_id]            引用消息ID
      *
      * @apiSuccess {Number} ret                 返回状态码（1正确、0错误）
      * @apiSuccess {String} msg                 返回信息（错误描述）
      * @apiSuccess {Object} data                返回数据
-     * @apiSuccess {String} data.text           AI 生成的消息文本（Markdown 格式）
-     * @apiSuccess {String} data.html           AI 生成的消息内容（HTML 格式）
+     * @apiSuccess {String} data.system_prompt  AI 使用的系统提示词
+     * @apiSuccess {String} data.context_prompt AI 使用的上下文提示词
      */
-    public function msg__ai_generate()
+    public function msg__aiprompt()
     {
         $user = User::auth();
         $user->checkChatInformation();
@@ -1054,9 +1054,6 @@ class DialogController extends AbstractController
         $content = trim(Request::input('content', ''));
         if ($dialog_id <= 0) {
             return Base::retError('参数错误');
-        }
-        if ($content === '') {
-            return Base::retError('消息需求描述不能为空');
         }
 
         $dialog = WebSocketDialog::checkDialog($dialog_id);
@@ -1144,12 +1141,16 @@ class DialogController extends AbstractController
         }
 
         // 生成消息
-        $result = AI::generateMessage($content, $context);
-        if (Base::isError($result)) {
-            return Base::retError('生成消息失败', $result);
+        $systemPrompt = AI::messageSystemPrompt();
+        $contextPrompt = AI::buildMessageContextPrompt($context);
+        if ($content) {
+            $contextPrompt .= "\n\n请根据以上信息，结合提示词生成一条待发送的消息：\n\n";
         }
 
-        return Base::retSuccess('生成消息成功', $result['data']);
+        return Base::retSuccess('success', [
+            'system_prompt' => $systemPrompt,
+            'context_prompt' => $contextPrompt,
+        ]);
     }
 
     /**
@@ -1179,6 +1180,7 @@ class DialogController extends AbstractController
      * - no: 正常发送（默认）
      * - yes: 静默发送
      * @apiParam {String} [model_name]      模型名称（仅AI机器人支持）
+     * @apiParam {Object} [extra_data]      附加数据（保存到附加表）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1200,6 +1202,7 @@ class DialogController extends AbstractController
         $text_type = strtolower(trim(Request::input('text_type')));
         $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
         $model_name = trim(Request::input('model_name'));
+        $extra_data = Request::input('extra_data');
         $markdown = in_array($text_type, ['md', 'markdown']);
         //
         $result = [];
@@ -1233,14 +1236,14 @@ class DialogController extends AbstractController
                 $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
             }
             $strlen = mb_strlen($text);
-            $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
+            $reallen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
             if ($strlen < 1) {
                 return Base::retError('消息内容不能为空');
             }
-            if ($noimglen > 200000) {
+            if ($reallen > 200000) {
                 return Base::retError('消息内容最大不能超过200000字');
             }
-            if ($noimglen > 5000) {
+            if ($reallen > 5000) {
                 // 内容过长转成文件发送
                 $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
                 Base::makeDir(public_path($path));
@@ -1282,7 +1285,7 @@ class DialogController extends AbstractController
                 if ($model_name) {
                     $msgData['model_name'] = $model_name;
                 }
-                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'longtext', $msgData, $user->userid, false, false, $silence, $key);
+                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'longtext', $msgData, $user->userid, false, false, $silence, $key, $extra_data);
             } else {
                 $msgData = ['text' => $text];
                 if ($markdown) {
@@ -1291,7 +1294,7 @@ class DialogController extends AbstractController
                 if ($model_name) {
                     $msgData['model_name'] = $model_name;
                 }
-                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence, $key);
+                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence, $key, $extra_data);
             }
         }
         return $result;
@@ -3134,11 +3137,11 @@ class DialogController extends AbstractController
         //
         WebSocketDialog::checkDialog($dialog_id);
         $strlen = mb_strlen($text);
-        $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
+        $reallen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
         if ($strlen < 1 || empty($list)) {
             return Base::retError('内容不能为空');
         }
-        if ($noimglen > 200000) {
+        if ($reallen > 200000) {
             return Base::retError('内容最大不能超过200000字');
         }
         //
@@ -3283,11 +3286,11 @@ class DialogController extends AbstractController
             });
         } else {
             $strlen = mb_strlen($text);
-            $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
+            $reallen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
             if ($strlen < 1) {
                 return Base::retError('内容不能为空');
             }
-            if ($noimglen > 200000) {
+            if ($reallen > 200000) {
                 return Base::retError('内容最大不能超过200000字');
             }
             $msgData = [
