@@ -6,10 +6,52 @@
         :closable="false"
         :styles="{
             width: '90%',
-            maxWidth: '420px'
+            maxWidth: shouldCreateNewSession ? '420px' : '600px',
         }"
         class-name="ai-assistant-modal">
         <div class="ai-assistant-content">
+            <div
+                v-if="responses.length"
+                ref="responseContainer"
+                class="ai-assistant-output">
+                <div
+                    v-for="response in responses"
+                    :key="response.id || response.localId"
+                    class="ai-assistant-output-item">
+                    <div class="ai-assistant-output-meta">
+                        <div class="ai-assistant-output-meta-left">
+                            <span class="ai-assistant-output-model">{{ response.modelLabel || response.model }}</span>
+                        </div>
+                        <div class="ai-assistant-output-meta-right">
+                            <template v-if="response.status === 'error'">
+                                <span class="ai-assistant-output-error">{{ response.error || $L('发送失败') }}</span>
+                            </template>
+                            <template v-else-if="response.text">
+                                <Button
+                                    type="primary"
+                                    size="small"
+                                    :loading="response.applyLoading"
+                                    class="ai-assistant-apply-btn"
+                                    @click="applyResponse(response)">
+                                    {{ $L('应用此内容') }}
+                                </Button>
+                            </template>
+                            <template v-else>
+                                <Icon type="ios-sync" class="ai-assistant-output-icon ai-spin"/>
+                                <span class="ai-assistant-output-status">{{ $L('生成中...') }}</span>
+                            </template>
+                        </div>
+                    </div>
+                    <div v-if="response.prompt" class="ai-assistant-output-question">{{ response.prompt }}</div>
+                    <DialogMarkdown
+                        v-if="response.text"
+                        class="ai-assistant-output-markdown no-dark-content"
+                        :text="response.text"/>
+                    <div v-else class="ai-assistant-output-placeholder">
+                        {{ response.status === 'error' ? (response.error || $L('发送失败')) : $L('等待 AI 回复...') }}
+                    </div>
+                </div>
+            </div>
             <div class="ai-assistant-input">
                 <Input 
                     v-model="inputValue" 
@@ -54,9 +96,11 @@
 import {mapState} from "vuex";
 import emitter from "../store/events";
 import {AIBotList, AIModelNames} from "../utils/ai";
+import DialogMarkdown from "../pages/manage/components/DialogMarkdown.vue";
 
 export default {
     name: 'AIAssistant',
+    components: {DialogMarkdown},
     props: {
         defaultPlaceholder: {
             type: String,
@@ -64,11 +108,11 @@ export default {
         },
         defaultInputRows: {
             type: Number,
-            default: 1,
+            default: 2,
         },
         defaultInputAutosize: {
             type: Object,
-            default: () => ({minRows:1, maxRows:6}),
+            default: () => ({minRows:2, maxRows:6}),
         },
         defaultInputMaxlength: {
             type: Number,
@@ -77,28 +121,42 @@ export default {
     },
     data() {
         return {
+            // 弹窗状态
             showModal: false,
+            closing: false,
             loadIng: 0,
-            
+
+            // 输入配置
             inputValue: '',
-            inputModel: '',
-            modelGroups: [],
-            modelMap: {},
-            modelsLoading: false,
             inputPlaceholder: this.defaultPlaceholder,
             inputRows: this.defaultInputRows,
             inputAutosize: this.defaultInputAutosize,
             inputMaxlength: this.defaultInputMaxlength,
             inputOnOk: null,
+
+            // 模型选择
+            inputModel: '',
+            modelGroups: [],
+            modelMap: {},
+            modelsLoading: false,
+            modelCacheKey: 'aiAssistant.model',
+            cachedModelId: '',
+
+            // 响应渲染
+            responses: [],
+            pendingResponses: [],
+            responseSeed: 1,
+            maxResponses: 5,
         }
     },
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
-        this.onOpenAIAssistant({})
-        this.fetchModelOptions();
+        emitter.on('streamMsgData', this.onStreamMsgData);
+        this.initModelCache();
     },
     beforeDestroy() {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
+        emitter.off('streamMsgData', this.onStreamMsgData);
     },
     computed: {
         ...mapState([
@@ -107,8 +165,19 @@ export default {
         selectedModelOption({modelMap, inputModel}) {
             return modelMap[inputModel] || null;
         },
+        shouldCreateNewSession() {
+            return this.responses.length === 0;
+        },
+    },
+    watch: {
+        inputModel(value) {
+            this.saveModelCache(value);
+        },
     },
     methods: {
+        /**
+         * 打开助手弹窗并应用参数
+         */
         onOpenAIAssistant(params) {
             if ($A.isJson(params)) {
                 this.inputValue = params.value || '';
@@ -118,9 +187,44 @@ export default {
                 this.inputMaxlength = params.maxlength || this.defaultInputMaxlength;
                 this.inputOnOk = params.onOk || null;
             }
+            this.responses = [];
+            this.pendingResponses = [];
             this.showModal = true;
         },
 
+        /**
+         * 初始化模型缓存与下拉数据
+         */
+        async initModelCache() {
+            await this.loadCachedModel();
+            this.fetchModelOptions();
+        },
+
+        /**
+         * 读取缓存的模型ID
+         */
+        async loadCachedModel() {
+            try {
+                this.cachedModelId = await $A.IDBString(this.modelCacheKey) || '';
+            } catch (e) {
+                this.cachedModelId = '';
+            }
+        },
+
+        /**
+         * 持久化模型选择
+         */
+        saveModelCache(value) {
+            if (!value) {
+                return;
+            }
+            $A.IDBSave(this.modelCacheKey, value);
+            this.cachedModelId = value;
+        },
+
+        /**
+         * 拉取模型配置
+         */
         async fetchModelOptions() {
             this.modelsLoading = true;
             try {
@@ -136,6 +240,9 @@ export default {
             }
         },
 
+        /**
+         * 解析模型列表
+         */
         normalizeModelOptions(data) {
             const groups = [];
             const map = {};
@@ -201,8 +308,15 @@ export default {
             this.ensureSelectedModel();
         },
 
+        /**
+         * 应用默认或缓存的模型
+         */
         ensureSelectedModel() {
             if (this.inputModel && this.modelMap[this.inputModel]) {
+                return;
+            }
+            if (this.cachedModelId && this.modelMap[this.cachedModelId]) {
+                this.inputModel = this.cachedModelId;
                 return;
             }
             for (const group of this.modelGroups) {
@@ -222,11 +336,15 @@ export default {
             }
         },
 
+        /**
+         * 发送提问并推入响应
+         */
         async onSubmit() {
             if (this.loadIng > 0) {
                 return;
             }
-            const content = (this.inputValue || '').trim();
+            const rawValue = this.inputValue || '';
+            const content = rawValue.trim();
             if (!content) {
                 $A.messageWarning(this.$L('请输入你的问题'));
                 return;
@@ -238,34 +356,46 @@ export default {
             }
 
             this.loadIng++;
+            let responseEntry = null;
             try {
                 const {dialogId, userid} = await this.ensureAiDialog(modelOption.type);
-                await this.createAiSession(dialogId);
-                const message = await this.sendAiMessage(dialogId, this.formatPlainText(this.inputValue), modelOption.value);
-                if (typeof this.inputOnOk === 'function') {
-                    this.inputOnOk({
-                        dialogId,
-                        userid,
-                        model: modelOption.value,
-                        type: modelOption.type,
-                        content: this.inputValue,
-                        message,
-                    });
+                if (this.shouldCreateNewSession) {
+                    await this.createAiSession(dialogId);
                 }
-                this.showModal = false;
+                responseEntry = this.createResponseEntry({
+                    modelOption,
+                    dialogId,
+                    prompt: rawValue,
+                });
+                this.scrollResponsesToBottom();
+                const message = await this.sendAiMessage(dialogId, this.formatPlainText(rawValue), modelOption.value);
+                if (responseEntry) {
+                    responseEntry.userid = userid;
+                    responseEntry.message = message;
+                    responseEntry.messageId = message?.id || 0;
+                }
                 this.inputValue = '';
             } catch (error) {
                 const msg = error?.msg || error?.message || error || this.$L('发送失败');
+                if (responseEntry) {
+                    this.markResponseError(responseEntry, msg);
+                }
                 $A.modalError(msg);
             } finally {
                 this.loadIng--;
             }
         },
 
+        /**
+         * 生成AI机器人邮箱
+         */
         getAiEmail(type) {
             return `ai-${type}@bot.system`;
         },
 
+        /**
+         * 在缓存会话里查找AI
+         */
         findAiDialog({type, userid}) {
             const email = this.getAiEmail(type);
             return this.cacheDialogs.find(dialog => {
@@ -285,35 +415,34 @@ export default {
             });
         },
 
-        sleep(ms = 150) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        },
-
+        /**
+         * 确保能够打开AI会话
+         */
         async ensureAiDialog(type) {
             let dialog = this.findAiDialog({type});
+            let userid = dialog?.dialog_user?.userid || dialog?.userid || 0;
             if (dialog) {
-                await this.$store.dispatch("openDialog", dialog.id);
                 return {
                     dialogId: dialog.id,
-                    userid: dialog.dialog_user?.userid || dialog.userid || 0,
+                    userid,
                 };
             }
             const {data} = await this.$store.dispatch("call", {
                 url: 'users/search/ai',
                 data: {type},
             });
-            const userid = data?.userid;
+            userid = data?.userid;
             if (!userid) {
                 throw new Error(this.$L('未找到AI机器人'));
             }
-            await this.$store.dispatch("openDialogUserid", userid);
-            const retries = 5;
-            for (let i = 0; i < retries; i++) {
-                dialog = this.findAiDialog({type, userid});
-                if (dialog) {
-                    break;
-                }
-                await this.sleep();
+            const dialogResult = await this.$store.dispatch("call", {
+                url: 'dialog/open/user',
+                data: {userid},
+                method: 'get',
+            });
+            dialog = dialogResult?.data || null;
+            if (dialog) {
+                this.$store.dispatch("saveDialog", dialog);
             }
             if (!dialog) {
                 throw new Error(this.$L('AI对话打开失败'));
@@ -324,6 +453,9 @@ export default {
             };
         },
 
+        /**
+         * 创建新的AI会话session
+         */
         async createAiSession(dialogId) {
             if (!dialogId) {
                 return;
@@ -337,6 +469,9 @@ export default {
             });
         },
 
+        /**
+         * 发送文本消息
+         */
         async sendAiMessage(dialogId, text, model) {
             const {data} = await this.$store.dispatch("call", {
                 url: 'dialog/msg/sendtext',
@@ -358,6 +493,9 @@ export default {
             return data;
         },
 
+        /**
+         * 将纯文本转换成HTML
+         */
         formatPlainText(text) {
             const escaped = `${text}`
                 .replace(/&/g, '&amp;')
@@ -365,6 +503,157 @@ export default {
                 .replace(/>/g, '&gt;')
                 .replace(/\n/g, '<br/>');
             return `<p>${escaped}</p>`;
+        },
+
+        /**
+         * 新建响应卡片
+         */
+        createResponseEntry({modelOption, dialogId, prompt}) {
+            const entry = {
+                localId: this.responseSeed++,
+                id: null,
+                dialogId,
+                model: modelOption.value,
+                modelLabel: modelOption.label,
+                type: modelOption.type,
+                prompt: prompt.trim(),
+                text: '',
+                status: 'waiting',
+                error: '',
+                userid: 0,
+                message: null,
+                messageId: 0,
+                applyLoading: false,
+            };
+            this.responses.push(entry);
+            this.pendingResponses.push(entry);
+            if (this.responses.length > this.maxResponses) {
+                const removed = this.responses.shift();
+                this.pendingResponses = this.pendingResponses.filter(item => item !== removed);
+            }
+            return entry;
+        },
+
+        /**
+         * 处理流式输出
+         */
+        onStreamMsgData(data) {
+            if (!data || !data.id) {
+                return;
+            }
+            let response = this.responses.find(item => item.id === data.id);
+            if (!response && data.reply_id) {
+                response = this.responses.find(item => item.messageId === data.reply_id);
+            }
+            if (!response) {
+                const index = this.pendingResponses.findIndex(item => {
+                    if (data.reply_id && item.messageId) {
+                        return item.messageId === data.reply_id;
+                    }
+                    if (data.dialog_id && item.dialogId) {
+                        return item.dialogId === data.dialog_id;
+                    }
+                    return true;
+                });
+                if (index === -1) {
+                    return;
+                }
+                response = this.pendingResponses.splice(index, 1)[0];
+                response.id = data.id;
+            }
+            const chunk = typeof data.text === 'string' ? data.text : '';
+            if (data.type === 'replace') {
+                response.text = chunk;
+                response.status = 'completed';
+            } else {
+                response.text += chunk;
+                response.status = 'streaming';
+            }
+            this.scrollResponsesToBottom();
+        },
+
+        /**
+         * 标记响应失败
+         */
+        markResponseError(response, msg) {
+            response.status = 'error';
+            response.error = msg;
+            this.pendingResponses = this.pendingResponses.filter(item => item !== response);
+        },
+
+        /**
+         * 将AI内容应用到父组件
+         */
+        applyResponse(response) {
+            if (!response || response.applyLoading) {
+                return;
+            }
+            if (!response.text) {
+                $A.messageWarning(this.$L('暂无可用内容'));
+                return;
+            }
+            if (typeof this.inputOnOk !== 'function') {
+                this.closeAssistant();
+                return;
+            }
+            response.applyLoading = true;
+            const payload = {
+                dialogId: response.dialogId,
+                userid: response.userid,
+                model: response.model,
+                type: response.type,
+                content: response.prompt,
+                message: response.message,
+                aiContent: response.text,
+            };
+            try {
+                const result = this.inputOnOk(payload);
+                if (result && typeof result.then === 'function') {
+                    result.then(() => {
+                        this.closeAssistant();
+                    }).catch(error => {
+                        const msg = error?.msg || error?.message || error || this.$L('应用失败');
+                        $A.modalError(msg);
+                    }).finally(() => {
+                        response.applyLoading = false;
+                    });
+                } else {
+                    this.closeAssistant();
+                    response.applyLoading = false;
+                }
+            } catch (error) {
+                response.applyLoading = false;
+                const msg = error?.msg || error?.message || error || this.$L('应用失败');
+                $A.modalError(msg);
+            }
+        },
+
+        /**
+         * 关闭弹窗
+         */
+        closeAssistant() {
+            if (this.closing) {
+                return;
+            }
+            this.closing = true;
+            this.showModal = false;
+            this.responses = [];
+            this.pendingResponses = [];
+            setTimeout(() => {
+                this.closing = false;
+            }, 300);
+        },
+
+        /**
+         * 滚动结果区域到底部
+         */
+        scrollResponsesToBottom() {
+            this.$nextTick(() => {
+                const container = this.$refs.responseContainer;
+                if (container && container.scrollHeight) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            });
         },
     },
 }
@@ -389,7 +678,102 @@ export default {
     }
 
     .ai-assistant-content {
-    
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        .ai-assistant-output {
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8f9fb;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            max-height: calc(100vh - 390px);
+            overflow-y: auto;
+            @media (height <= 900px) {
+                max-height: calc(100vh - 260px);
+            }
+        }
+
+        .ai-assistant-output-item + .ai-assistant-output-item {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .ai-assistant-output-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ai-assistant-output-meta-left {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ai-assistant-output-model {
+            display: inline-flex;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #2f54eb;
+            background: rgba(47, 84, 235, 0.08);
+            border-radius: 4px;
+            padding: 2px 8px;
+        }
+
+        .ai-assistant-output-question {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+            margin-top: 8px;
+        }
+
+        .ai-assistant-output-meta-right {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #999;
+            gap: 4px;
+        }
+
+        .ai-assistant-output-icon {
+            font-size: 16px;
+            color: #2f54eb;
+        }
+
+        .ai-assistant-apply-btn {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-assistant-output-status {
+            color: #52c41a;
+        }
+
+        .ai-assistant-output-error {
+            color: #ff4d4f;
+        }
+
+        .ai-assistant-output-placeholder {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #999;
+            padding: 8px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .ai-assistant-output-markdown {
+            margin-top: 12px;
+            font-size: 13px;
+        }
     }
 
     .ai-assistant-footer {
@@ -414,5 +798,18 @@ export default {
             gap: 12px;
         }
     }
+}
+
+@keyframes ai-assistant-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.ai-spin {
+    animation: ai-assistant-spin 1s linear infinite;
 }
 </style>
