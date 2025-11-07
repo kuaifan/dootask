@@ -347,6 +347,9 @@
         <!--搜索框-->
         <SearchBox ref="searchBox"/>
 
+        <!--AI 助理-->
+        <AIAssistant/>
+
         <!--工作报告-->
         <DrawerOverlay
             v-model="workReportShow"
@@ -451,6 +454,7 @@ import ApproveDetails from "./manage/approve/details.vue";
 import notificationKoro from "notification-koro1";
 import emitter from "../store/events";
 import SearchBox from "../components/SearchBox.vue";
+import AIAssistant from "../components/AIAssistant.vue";
 import transformEmojiToHtml from "../utils/emoji";
 import {languageName} from "../language";
 import Draggable from 'vuedraggable'
@@ -459,6 +463,7 @@ export default {
     components: {
         Approve,
         SearchBox,
+        AIAssistant,
         ApproveDetails,
         ImgUpload,
         UserSelect,
