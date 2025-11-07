@@ -110,6 +110,7 @@
                         @on-select-all-cancel="handleTableSelect"
                         @on-select-all="handleTableSelect"
                         @on-sort-change="handleTableSort"
+                        @on-scroll="onFileListScroll"
                         context-menu
                         stripe/>
                 </div>
@@ -127,7 +128,8 @@
                         @pointermove="onFileListPointerMove"
                         @pointerup="onFileListPointerUp"
                         @pointercancel="onFileListPointerUp"
-                        @pointerleave="onFileListPointerLeave">
+                        @pointerleave="onFileListPointerLeave"
+                        @scroll="onFileListScroll">
                         <ul v-longpress="handleLongpress">
                             <li v-for="item in fileList">
                                 <div
@@ -1181,10 +1183,12 @@ export default {
             this.$store.commit("longpress/clear")
             //
             if (type !== 'file') {
+                !this.windowTouch && this.handleRightClick(event, null)
                 return
             }
             const fileItem = this.fileList.find(item => item.id == data.fileId)
             if (!fileItem) {
+                !this.windowTouch && this.handleRightClick(event, null)
                 return
             }
             this.handleRightClick(event, fileItem)
@@ -1322,6 +1326,10 @@ export default {
                 return;
             }
             this.onFileListPointerUp();
+        },
+
+        onFileListScroll() {
+            this.contextMenuVisible = false;
         },
 
         updateDragSelection(rect) {
