@@ -3582,6 +3582,8 @@ class DialogController extends AbstractController
             return Base::retError('当前对话不支持');
         }
         //
+        $previousSessionId = intval($dialog->session_id);
+        //
         $session = WebSocketDialogSession::whereDialogId($dialog->id)->whereTitle('')->first();
         if ($session) {
             $dialog->session_id = $session->id;
@@ -3595,6 +3597,8 @@ class DialogController extends AbstractController
         $session->save();
         $dialog->session_id = $session->id;
         $dialog->save();
+        //
+        WebSocketDialogMsgRead::markSessionMessagesAsRead($dialog->id, $previousSessionId);
         //
         return Base::retSuccess('success', $session);
     }

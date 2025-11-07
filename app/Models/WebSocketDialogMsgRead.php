@@ -121,4 +121,30 @@ class WebSocketDialogMsgRead extends AbstractModel
             DB::update($sql, $bindings);
         }
     }
+
+    /**
+     * 标记指定会话的历史消息为已读
+     * @param int $dialogId
+     * @param int $sessionId
+     * @param int $chunkSize
+     * @return void
+     */
+    public static function markSessionMessagesAsRead(int $dialogId, int $sessionId, int $chunkSize = 100): void
+    {
+        if ($dialogId <= 0 || $sessionId <= 0) {
+            return;
+        }
+
+        self::whereDialogId($dialogId)
+            ->whereNull('read_at')
+            ->whereIn('msg_id', function ($query) use ($dialogId, $sessionId) {
+                $query->select('id')
+                    ->from((new WebSocketDialogMsg())->getTable())
+                    ->where('dialog_id', $dialogId)
+                    ->where('session_id', $sessionId);
+            })
+            ->chunkById($chunkSize, function ($list) {
+                self::onlyMarkRead($list);
+            });
+    }
 }
