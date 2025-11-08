@@ -343,6 +343,7 @@ import longpress from "../../../../directives/longpress";
 import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
 import {languageList, languageName} from "../../../../language";
 import {isMarkdownFormat, MarkdownConver} from "../../../../utils/markdown";
+import {MESSAGE_AI_SYSTEM_PROMPT} from "../../../../utils/ai";
 import emitter from "../../../../store/events";
 import historyMixin from "./history";
 
@@ -1909,40 +1910,206 @@ export default {
             }
             emitter.emit('openAIAssistant', {
                 placeholder: this.$L('请简要描述消息的主题、语气或要点，AI 将生成完整消息'),
-                onBeforeSend: async (sendData) => {
-                    if (!sendData) {
-                        return sendData;
-                    }
-                    try {
-                        const {data: promptData} = await this.$store.dispatch('call', {
-                            url: 'assistant/dialog/prompt',
-                            data: {
-                                dialog_id: this.dialogId,
-                                content: sendData.prompt,
-                                draft: this.value || '',
-                                quote_id: this.quoteData?.id || 0,
-                            },
-                        });
-                        if ($A.isJson(promptData)) {
-                            Object.assign(sendData, promptData);
-                        }
-                        return sendData;
-                    } catch (error) {
-                        const msg = error?.msg || 'AI 提示生成失败';
-                        $A.modalError(msg);
-                        throw error;
-                    }
-                },
-                onOk: ({aiContent}) => {
-                    if (!aiContent) {
-                        $A.messageWarning('AI 未生成内容');
-                        return;
-                    }
-                    const html = MarkdownConver(aiContent);
-                    this.$emit('input', html);
-                    this.$nextTick(() => this.focus());
-                },
+                onBeforeSend: this.handleMessageAIBeforeSend,
+                onRender: this.handleMessageAIRender,
+                onApply: this.handleMessageAIApply,
             });
+        },
+
+        handleMessageAIBeforeSend(context = []) {
+            const prepared = [
+                ['system', MESSAGE_AI_SYSTEM_PROMPT]
+            ];
+            let assistantContext = this.buildMessageAssistantContext();
+            if (assistantContext) {
+                if ($A.getObject(context, [0,0]) === 'human') {
+                    assistantContext += "\n----\n请根据以上信息，结合以下用户输入的内容生成消息：++++";
+                }
+                prepared.push(['human', assistantContext]);
+            }
+            if (context.length > 0) {
+                prepared.push(...context);
+            }
+            return prepared;
+        },
+
+        handleMessageAIRender({rawOutput}) {
+            return rawOutput || '';
+        },
+
+        handleMessageAIApply({rawOutput}) {
+            if (!rawOutput) {
+                $A.messageWarning('AI 未生成内容');
+                return;
+            }
+            const html = MarkdownConver(rawOutput);
+            this.$emit('input', html);
+            this.$nextTick(() => this.focus());
+        },
+
+        buildMessageAssistantContext() {
+            const sections = [];
+            const infoLines = [];
+            if (this.dialogData?.name) {
+                infoLines.push(`名称：${this.cutText(this.dialogData.name, 60)}`);
+            }
+            if (this.dialogData?.type) {
+                const typeMap = {group: this.$L('群聊'), user: this.$L('单聊')};
+                infoLines.push(`类型：${typeMap[this.dialogData.type] || this.dialogData.type}`);
+            }
+            if (this.dialogData?.group_type) {
+                infoLines.push(`分类：${this.cutText(this.dialogData.group_type, 60)}`);
+            }
+            if (infoLines.length) {
+                sections.push('## 会话信息');
+                sections.push(...infoLines);
+            }
+
+            const memberNames = this.collectDialogMemberNames();
+            if (memberNames.length) {
+                sections.push('## 会话成员');
+                sections.push(memberNames.join('，'));
+            }
+
+            const recentMessages = this.collectRecentMessages();
+            if (recentMessages.length) {
+                sections.push('## 最近消息');
+                recentMessages.forEach(({sender, summary}) => {
+                    if (summary) {
+                        const name = sender || this.$L('成员');
+                        sections.push(`- ${name}：${summary}`);
+                    }
+                });
+            }
+
+            if (this.quoteData) {
+                const quoteSummary = this.getMessageSummaryText(this.quoteData);
+                if (quoteSummary) {
+                    sections.push('## 引用消息');
+                    const quoteUser = this.resolveUserNickname(this.quoteData.userid);
+                    sections.push(quoteUser ? `${quoteUser}：${quoteSummary}` : quoteSummary);
+                }
+            }
+
+            const draftText = this.extractPlainText(this.value);
+            if (draftText) {
+                sections.push('## 当前草稿');
+                sections.push(this.cutText(draftText, 200));
+            }
+
+            return sections.join('\n');
+        },
+
+        collectDialogMemberNames(limit = 10) {
+            if (!this.dialogId) {
+                return [];
+            }
+            const result = [];
+            const seen = new Set();
+            const pushName = (name) => {
+                const clean = this.cutText((name || '').trim(), 30);
+                if (!clean || seen.has(clean)) {
+                    return;
+                }
+                seen.add(clean);
+                result.push(clean);
+            };
+
+            if (this.dialogData?.dialog_user) {
+                pushName(this.dialogData.dialog_user.nickname || this.dialogData.dialog_user.name);
+            }
+
+            const messages = this.dialogMsgs.filter(item => item.dialog_id == this.dialogId);
+            for (let i = messages.length - 1; i >= 0 && result.length < limit; i--) {
+                pushName(this.resolveUserNickname(messages[i].userid));
+            }
+
+            const currentUserId = this.$store?.state?.userInfo?.userid;
+            if (currentUserId) {
+                pushName(this.resolveUserNickname(currentUserId));
+            }
+
+            return result.slice(0, limit);
+        },
+
+        collectRecentMessages(limit = 15) {
+            if (!this.dialogId) {
+                return [];
+            }
+            const messages = this.dialogMsgs.filter(item => item.dialog_id == this.dialogId);
+            if (messages.length === 0) {
+                return [];
+            }
+            const sorted = messages.slice().sort((a, b) => a.id - b.id);
+            const result = [];
+            for (let i = sorted.length - 1; i >= 0 && result.length < limit; i--) {
+                const msg = sorted[i];
+                const summary = this.getMessageSummaryText(msg);
+                if (!summary) {
+                    continue;
+                }
+                result.unshift({
+                    sender: this.resolveUserNickname(msg.userid) || this.$L('成员'),
+                    summary,
+                });
+            }
+            return result;
+        },
+
+        getMessageSummaryText(message) {
+            if (!message) {
+                return '';
+            }
+            try {
+                const preview = $A.getMsgSimpleDesc(message);
+                const plain = this.extractPlainText(preview || '');
+                return this.cutText(plain, 160);
+            } catch (error) {
+                return '';
+            }
+        },
+
+        extractPlainText(content) {
+            if (!content) {
+                return '';
+            }
+            const value = typeof content === 'string' ? content : JSON.stringify(content);
+            if (typeof window === 'undefined' || !window.document) {
+                return value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+            }
+            const div = document.createElement('div');
+            div.innerHTML = value;
+            return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+        },
+
+        cutText(text, limit = 60) {
+            const value = (text || '').trim();
+            if (!value) {
+                return '';
+            }
+            const units = Array.from(value);
+            if (units.length <= limit) {
+                return value;
+            }
+            return units.slice(0, limit).join('') + '…';
+        },
+
+        resolveUserNickname(userid) {
+            if (!userid) {
+                return '';
+            }
+            const currentUser = this.$store?.state?.userInfo;
+            if (currentUser && currentUser.userid == userid) {
+                return currentUser.nickname || currentUser.username || currentUser.name || '';
+            }
+            const cached = this.cacheUserBasic.find(user => user.userid == userid);
+            if (cached) {
+                return cached.nickname || cached.name || cached.username || '';
+            }
+            if (this.dialogData?.dialog_user && this.dialogData.dialog_user.userid == userid) {
+                return this.dialogData.dialog_user.nickname || this.dialogData.dialog_user.name || '';
+            }
+            return '';
         },
 
         onFullInput() {

@@ -195,10 +195,13 @@
 
 <script>
 import {mapState} from "vuex";
+import emitter from "../../../store/events";
 import UserSelect from "../../../components/UserSelect.vue";
 import TaskExistTips from "./TaskExistTips.vue";
 import TEditorTask from "../../../components/TEditorTask.vue";
 import nostyle from "../../../components/VMEditor/engine/nostyle";
+import {MarkdownConver} from "../../../utils/markdown";
+import {TASK_AI_SYSTEM_PROMPT} from "../../../utils/ai";
 
 export default {
     name: "TaskAdd",
@@ -625,97 +628,261 @@ export default {
         },
 
         onAI() {
-            let canceled = false;
-            $A.modalInput({
-                title: 'AI 生成',
-                placeholder: '请简要描述任务目标、背景或预期交付，AI 将生成标题、详细说明和子任务',
-                inputProps: {
-                    type: 'textarea',
-                    rows: 2,
-                    autosize: { minRows: 2, maxRows: 6 },
-                    maxlength: 500,
-                },
-                onCancel: () => {
-                    canceled = true;
-                },
-                onOk: (value) => {
-                    if (!value) {
-                        return `请输入任务需求`
-                    }
-                    return new Promise((resolve, reject) => {
-                        if (canceled) {
-                            reject();
-                            return;
-                        }
-                        // 获取当前任务模板信息
-                        const currentTemplate = this.templateActiveID ? 
-                            this.taskTemplateList.find(item => item.id === this.templateActiveID) : null;
-                        
-                        this.$store.dispatch("call", {
-                            url: 'project/task/ai_generate',
-                            data: {
-                                content: value,
-                                // 当前已有的标题和内容作为参考
-                                current_title: this.addData.name || '',
-                                current_content: this.addData.content || '',
-                                // 当前选中的任务模板信息
-                                template_name: currentTemplate ? currentTemplate.name : '',
-                                template_content: currentTemplate ? currentTemplate.content : '',
-                                // 其他上下文信息
-                                has_owner: this.addData.owner && this.addData.owner.length > 0,
-                                has_time_plan: this.addData.times && this.addData.times.length > 0,
-                                priority_level: this.addData.p_name || ''
-                            },
-                            timeout: 60 * 1000,
-                        }).then(({data}) => {
-                            if (canceled) {
-                                resolve();
-                                return;
-                            }
-                            this.addData.name = data.title;
-                            this.$refs.editorTaskRef.setContent(data.content, {format: 'raw'});
-                            if (Array.isArray(data.subtasks) && data.subtasks.length > 0) {
-                                const normalized = data.subtasks
-                                    .map(item => {
-                                        if (typeof item === 'string') {
-                                            return item.trim();
-                                        }
-                                        if (item && typeof item === 'object') {
-                                            const name = item.title || item.name || '';
-                                            return typeof name === 'string' ? name.trim() : '';
-                                        }
-                                        return '';
-                                    })
-                                    .filter(item => item !== '');
+            emitter.emit('openAIAssistant', {
+                placeholder: this.$L('请简要描述任务目标、背景或预期交付，AI 将生成标题、详细说明和子任务'),
+                onBeforeSend: this.handleTaskAIBeforeSend,
+                onRender: this.handleTaskAIRender,
+                onApply: this.handleTaskAIApply,
+            });
+        },
 
-                                const unique = Array.from(new Set(normalized)).slice(0, 8);
-
-                                if (unique.length > 0) {
-                                    const mainOwner = Array.isArray(this.addData.owner) && this.addData.owner.length > 0
-                                        ? [this.addData.owner[0]]
-                                        : (this.userId ? [this.userId] : []);
-
-                                    const subtasks = unique.map(name => ({
-                                        name,
-                                        owner: [...mainOwner],
-                                        times: [],
-                                    }));
-
-                                    this.$set(this.addData, 'subtasks', subtasks);
-                                    this.advanced = true;
-                                }
-                            }
-                            resolve();
-                        }).catch(({msg}) => {
-                            if (canceled) {
-                                resolve();
-                                return;
-                            }
-                            reject(msg);
-                        });
-                    })
+        buildTaskAIContextData() {
+            const prompts = [];
+            const plainText = (value, limit = 600) => {
+                if (!value || typeof value !== 'string') {
+                    return '';
                 }
-            })
+                return value
+                    .replace(/<[^>]+>/g, ' ')
+                    .replace(/&nbsp;/gi, ' ')
+                    .replace(/\s+/g, ' ')
+                    .slice(0, limit)
+                    .trim();
+            };
+
+            const currentTitle = (this.addData.name || '').trim();
+            const currentContent = plainText(this.addData.content, 600);
+            if (currentTitle || currentContent) {
+                prompts.push('## 当前任务信息');
+                if (currentTitle) {
+                    prompts.push(`当前标题：${currentTitle}`);
+                }
+                if (currentContent) {
+                    prompts.push(`当前内容：${currentContent}`);
+                }
+                prompts.push('请在此基础上优化改进，而不是完全重写。');
+            }
+
+            const currentTemplate = this.templateActiveID
+                ? this.taskTemplateList.find(item => item.id === this.templateActiveID)
+                : null;
+            if (currentTemplate) {
+                const templateName = (currentTemplate.name || currentTemplate.title || '').trim();
+                const templateContent = plainText(nostyle(currentTemplate.content, {sanitize: false}), 800);
+                prompts.push('## 任务模板要求');
+                if (templateName) {
+                    prompts.push(`模板名称：${templateName}`);
+                }
+                if (templateContent) {
+                    prompts.push(`模板内容结构：${templateContent}`);
+                }
+                prompts.push('请严格按照此模板的结构和格式要求生成内容。');
+            }
+
+            const statusInfo = [];
+            if (Array.isArray(this.addData.owner) && this.addData.owner.length > 0) {
+                statusInfo.push('已设置负责人');
+            }
+            if (Array.isArray(this.addData.times) && this.addData.times.length > 0) {
+                statusInfo.push('已设置计划时间');
+            }
+            const priorityName = (this.addData.p_name || '').trim();
+            if (priorityName) {
+                statusInfo.push(`优先级：${priorityName}`);
+            }
+            if (statusInfo.length > 0) {
+                prompts.push('## 任务状态');
+                prompts.push(statusInfo.join('，'));
+                prompts.push('请在任务描述中体现相应的要求和约束。');
+            }
+
+            const projectInfo = this.cacheProjects.find(({id}) => id == this.addData.project_id);
+            const columnInfo = this.cacheColumns.find(({id}) => id == this.addData.column_id);
+            if ((projectInfo && projectInfo.name) || (columnInfo && columnInfo.name)) {
+                prompts.push('## 所属项目');
+                if (projectInfo && projectInfo.name) {
+                    prompts.push(`项目：${projectInfo.name}`);
+                }
+                if (columnInfo && columnInfo.name) {
+                    prompts.push(`任务列表：${columnInfo.name}`);
+                }
+            }
+
+            const subtasks = (this.addData.subtasks || [])
+                .map(item => (item && item.name ? item.name.trim() : ''))
+                .filter(Boolean)
+                .slice(0, 8);
+            if (subtasks.length > 0) {
+                prompts.push('## 当前子任务');
+                subtasks.forEach((name, index) => {
+                    prompts.push(`${index + 1}. ${name}`);
+                });
+            }
+
+            return prompts.join('\n').trim();
+        },
+
+        handleTaskAIBeforeSend(context = []) {
+            const prepared = [
+                ['system', TASK_AI_SYSTEM_PROMPT]
+            ];
+            const contextPrompt = this.buildTaskAIContextData();
+            if (contextPrompt) {
+                let assistantContext = [
+                    '以下是已有的上下文信息，可辅助你理解：',
+                    contextPrompt,
+                ].join('\n');
+                if ($A.getObject(context, [0,0]) === 'human') {
+                    assistantContext += "\n----\n请根据以上信息，结合以下用户输入的内容生成项目任务：++++";
+                }
+                prepared.push(['human', assistantContext]);
+            }
+            if (context.length > 0) {
+                prepared.push(...context);
+            }
+            return prepared;
+        },
+
+        handleTaskAIApply({rawOutput}) {
+            if (!rawOutput) {
+                $A.messageWarning('AI 未生成内容');
+                return;
+            }
+            const parsed = this.parseTaskAIContent(rawOutput);
+            if (!parsed) {
+                $A.modalError('AI 内容解析失败，请重试');
+                return;
+            }
+            if (parsed.title) {
+                this.addData.name = parsed.title;
+                this.$nextTick(() => {
+                    this.$refs.input && this.$refs.input.focus();
+                });
+            }
+            if (parsed.description && this.$refs.editorTaskRef) {
+                const html = MarkdownConver(parsed.description);
+                this.$refs.editorTaskRef.setContent(html, {format: 'raw'});
+            }
+            if (parsed.subtasks.length > 0) {
+                const mainOwner = Array.isArray(this.addData.owner) && this.addData.owner.length > 0
+                    ? [this.addData.owner[0]]
+                    : (this.userId ? [this.userId] : []);
+                const subtasks = parsed.subtasks.map(name => ({
+                    name,
+                    owner: [...mainOwner],
+                    times: [],
+                }));
+                this.$set(this.addData, 'subtasks', subtasks);
+                this.advanced = true;
+            }
+        },
+
+        parseTaskAIContent(content) {
+            const payload = this.normalizeAIJsonContent(content);
+            if (!payload || typeof payload !== 'object') {
+                return null;
+            }
+            const title = this.pickFirstString([payload.title, payload.name, payload.task_title]);
+            const description = this.pickFirstString([
+                payload.description_markdown,
+                payload.description,
+                payload.content_markdown,
+                payload.content,
+                payload.body,
+                payload.detail,
+            ]);
+            const subtasks = this.normalizeAISubtasks(payload.subtasks || payload.tasks || payload.checklist || payload.steps);
+            if (!title && !description && subtasks.length === 0) {
+                return null;
+            }
+            return {
+                title,
+                description,
+                subtasks,
+            };
+        },
+
+        normalizeAIJsonContent(content) {
+            if (!content) {
+                return null;
+            }
+            const raw = String(content).trim();
+            if (!raw) {
+                return null;
+            }
+            const candidates = [raw];
+            const block = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+            if (block && block[1]) {
+                candidates.push(block[1].trim());
+            }
+            const start = raw.indexOf('{');
+            const end = raw.lastIndexOf('}');
+            if (start !== -1 && end !== -1 && end > start) {
+                candidates.push(raw.slice(start, end + 1));
+            }
+            for (const candidate of candidates) {
+                if (!candidate) {
+                    continue;
+                }
+                try {
+                    return JSON.parse(candidate);
+                } catch (e) {
+                    continue;
+                }
+            }
+            return null;
+        },
+
+        normalizeAISubtasks(value) {
+            let raw = [];
+            if (Array.isArray(value)) {
+                raw = value.map(item => {
+                    if (typeof item === 'string') {
+                        return item;
+                    }
+                    if (item && typeof item === 'object') {
+                        return item.title || item.name || item.task || item.content || '';
+                    }
+                    return '';
+                });
+            } else if (typeof value === 'string') {
+                raw = value.split(/[\n\r;；]+/);
+            }
+            const cleaned = raw
+                .map(item => String(item || '').replace(/^[\d\.-]*\s*/, '').replace(/^[•*\-]\s*/, '').trim())
+                .filter(Boolean);
+            return Array.from(new Set(cleaned)).slice(0, 8);
+        },
+
+        pickFirstString(list = []) {
+            for (const item of list) {
+                if (typeof item === 'string' && item.trim()) {
+                    return item.trim();
+                }
+            }
+            return '';
+        },
+
+        handleTaskAIRender({rawOutput}) {
+            if (!rawOutput) {
+                return '';
+            }
+            const parsed = this.parseTaskAIContent(rawOutput);
+            if (!parsed) {
+                return rawOutput;
+            }
+            const blocks = [];
+            if (parsed.title) {
+                blocks.push(`## ${parsed.title}`);
+            }
+            if (parsed.description) {
+                blocks.push(parsed.description);
+            }
+            if (parsed.subtasks.length > 0) {
+                const list = parsed.subtasks.map((name, index) => `${index + 1}. ${name}`);
+                blocks.push(list.join('\n'));
+            }
+            return blocks.join('\n\n').trim() || rawOutput;
         }
     }
 }

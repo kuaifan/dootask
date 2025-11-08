@@ -515,18 +515,30 @@ const timezone = require("dayjs/plugin/timezone");
          * 获取对象
          * @param obj
          * @param keys
+         * @param defaultValue
          * @returns {string|*}
          */
-        getObject(obj, keys) {
-            let object = obj;
-            if (this.count(obj) === 0 || this.count(keys) === 0) {
-                return "";
+        getObject(obj, keys, defaultValue = undefined) {
+            let keyArray;
+            if (typeof keys === 'string') {
+                keyArray = keys.replace(/,/g, "|").replace(/\./g, "|").split("|");
+            } else if (Array.isArray(keys)) {
+                keyArray = keys;
+            } else {
+                return defaultValue;
             }
-            let array = keys.replace(/,/g, "|").replace(/\./g, "|").split("|");
-            array.some(key => {
-                object = typeof object[key] === "undefined" ? "" : object[key];
-            })
-            return object;
+            let result = obj;
+            for (let i = 0; i < keyArray.length; i++) {
+                let key = keyArray[i];
+                if (result == null) {
+                    return defaultValue;
+                }
+                if (typeof key === 'string' && /^\d+$/.test(key)) {
+                    key = parseInt(key, 10);
+                }
+                result = result[key];
+            }
+            return result === undefined ? defaultValue : result;
         },
 
         /**

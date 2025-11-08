@@ -11,71 +11,19 @@ const AIModelNames = (str) => {
     }, []).filter(item => item.value);
 }
 
-const AIBotList = [
-    {
-        value: "openai",
-        label: "ChatGPT",
-        tags: [],
-        src: $A.mainUrl('images/avatar/default_openai.png'),
-        desc: $A.L('我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？')
-    },
-    {
-        value: "claude",
-        label: "Claude",
-        tags: [],
-        src: $A.mainUrl('images/avatar/default_claude.png'),
-        desc: $A.L('我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。')
-    },
-    {
-        value: "deepseek",
-        label: "DeepSeek",
-        tags: [],
-        src: $A.mainUrl('images/avatar/default_deepseek.png'),
-        desc: $A.L('DeepSeek大语言模型算法是北京深度求索人工智能基础技术研究有限公司推出的深度合成服务算法。')
-    },
-    {
-        value: "gemini",
-        label: "Gemini",
-        tags: [],
-        src: $A.mainUrl('images/avatar/default_gemini.png'),
-        desc: `${$A.L('我是由Google开发的生成式人工智能聊天机器人。')}${$A.L('它基于同名的Gemini系列大型语言模型。')}${$A.L('是应对OpenAI公司开发的ChatGPT聊天机器人的崛起而开发的。')}`
-    },
-    {
-        value: "grok",
-        label: "Grok",
-        tags: [],
-        src: $A.mainUrl('images/avatar/default_grok.png'),
-        desc: $A.L('Grok是由xAI开发的生成式人工智能聊天机器人，旨在通过实时回答用户问题来提供帮助。')
-    },
-    {
-        value: "ollama",
-        label: "Ollama",
-        tags: [],
-        src: $A.mainUrl('images/avatar/default_ollama.png'),
-        desc: $A.L('Ollama 是一个轻量级、可扩展的框架，旨在让用户能够在本地机器上构建和运行大型语言模型。')
-    },
-    {
-        value: "zhipu",
-        label: "智谱清言",
-        tags: [],
-        src: $A.mainUrl('images/avatar/default_zhipu.png'),
-        desc: `${$A.L('我是智谱清言，是智谱 AI 公司于2023训练的语言模型。')}${$A.L('我的任务是针对用户的问题和要求提供适当的答复和支持。')}`
-    },
-    {
-        value: "qianwen",
-        label: "通义千问",
-        tags: [],
-        src: $A.mainUrl('avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'),
-        desc: $A.L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。')
-    },
-    {
-        value: "wenxin",
-        label: "文心一言",
-        tags: [],
-        src: $A.mainUrl('avatar/%E6%96%87%E5%BF%83.png'),
-        desc: $A.L('我是文心一言，英文名是ERNIE Bot。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。')
-    },
-]
+const AIBotList = []
+
+const AIBotMap = {
+    openai: "ChatGPT",
+    claude: "Claude",
+    deepseek: "DeepSeek",
+    gemini: "Gemini",
+    grok: "Grok",
+    ollama: "Ollama",
+    zhipu: "智谱清言",
+    qianwen: "通义千问",
+    wenxin: "文心一言",
+}
 
 const AISystemConfig = {
     fields: [
@@ -269,5 +217,88 @@ const AISystemConfig = {
     }
 }
 
+const MESSAGE_AI_SYSTEM_PROMPT = `你是一名专业的沟通助手，协助用户编写得体、清晰且具行动指向的即时消息。
 
-export {AIModelNames, AIBotList, AISystemConfig}
+写作要求：
+1. 根据用户提供的需求与上下文生成完整消息，语气需符合业务沟通场景，保持真诚、礼貌且高效
+2. 默认使用简洁的短段落，可使用 Markdown 基础格式（加粗、列表、引用）增强结构，但不要输出代码块或 JSON
+3. 如果上下文包含引用信息或草稿，请在消息中自然呼应相关要点
+4. 如无特别说明，将消息长度控制在 60-180 字；若需更短或更长，遵循用户描述
+5. 如需提出行动或问题，请明确表达，避免含糊
+
+输出规范：
+- 仅返回可直接发送的消息内容
+- 禁止在内容前后添加额外说明、标签或引导语`;
+
+const TASK_AI_SYSTEM_PROMPT = `你是一个专业的任务管理专家，擅长将想法和需求转化为清晰、可执行的项目任务。
+
+任务生成要求：
+1. 根据输入内容分析并生成合适的任务标题和详细描述
+2. 标题要简洁明了，准确概括任务核心目标，长度控制在8-30个字符
+3. 描述需覆盖任务背景、具体要求、交付标准、风险提示等关键信息
+4. 描述内容使用Markdown格式，合理组织标题、列表、加粗等结构
+5. 内容需适配项目管理系统，表述专业、逻辑清晰，并与用户输入语言保持一致
+6. 优先遵循用户在输入中给出的风格、长度或复杂度要求；默认情况下将详细描述控制在120-200字内，如用户要求简单或简短，则控制在80-120字内
+7. 当任务具有多个执行步骤、阶段或协作角色时，请拆解出 2-6 个关键子任务；如无必要，可返回空数组
+8. 子任务应聚焦单一可执行动作，名称控制在8-30个字符内，避免重复和含糊表述
+
+返回格式要求：
+必须严格按照以下 JSON 结构返回，禁止输出额外文字或 Markdown 代码块标记；即使某项为空，也保留对应字段：
+{
+    "title": "任务标题",
+    "content": "任务的详细描述内容，使用Markdown格式，根据实际情况组织结构",
+    "subtasks": [
+        "子任务名称1",
+        "子任务名称2"
+    ]
+}
+
+内容格式建议（非强制）：
+- 可以使用标题、列表、加粗等Markdown格式
+- 可以包含任务背景、具体要求、验收标准等部分
+- 根据任务性质灵活组织内容结构
+- 仅在确有必要时生成子任务，并确保每个子任务都是独立、可执行、便于追踪的动作
+- 若用户明确要求简洁或简单，保持描述紧凑，避免添加冗余段落或重复信息
+
+上下文信息处理指南：
+- 如果已有标题和内容，优先考虑优化改进而非完全重写
+- 如果使用了任务模板，严格按照模板的结构和格式要求生成
+- 如果已设置负责人或时间计划，在任务描述中体现相关要求
+- 根据优先级等级调整任务的紧急程度和详细程度
+
+注意事项：
+- 标题要体现任务的核心动作和目标
+- 描述要包含足够的细节让执行者理解任务
+- 如果涉及技术开发，要明确技术要求和实现方案
+- 如果涉及设计，要说明设计要求和期望效果
+- 如果涉及测试，要明确测试范围和验收标准`;
+
+const PROJECT_AI_SYSTEM_PROMPT = `你是一名资深的项目规划顾问，帮助团队快速搭建符合需求的项目。
+
+生成要求：
+1. 产出一个简洁、有辨识度的项目名称（不超过18个汉字或36个字符）
+2. 给出 3 - 8 个项目任务列表，用于看板列或阶段分组
+3. 任务列表名称保持 4 - 12 个字符，聚焦阶段或责任划分，避免冗长描述
+4. 结合用户描述的业务特征，必要时可包含里程碑或交付节点
+5. 尽量参考上下文提供的现有内容或模板，不要与之完全重复
+
+输出格式：
+必须严格返回 JSON，禁止携带额外说明或 Markdown 代码块，结构如下：
+{
+    "name": "项目名称",
+    "columns": ["列表1", "列表2", "列表3"]
+}
+
+校验标准：
+- 列表名称应当互不重复且语义明确
+- 若上下文包含已有名称或列表，请在此基础上迭代优化`;
+
+export {
+    AIModelNames,
+    AIBotList,
+    AIBotMap,
+    AISystemConfig,
+    MESSAGE_AI_SYSTEM_PROMPT,
+    TASK_AI_SYSTEM_PROMPT,
+    PROJECT_AI_SYSTEM_PROMPT,
+}

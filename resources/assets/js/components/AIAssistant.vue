@@ -26,7 +26,7 @@
                             <template v-if="response.status === 'error'">
                                 <span class="ai-assistant-output-error">{{ response.error || $L('发送失败') }}</span>
                             </template>
-                            <template v-else-if="response.text">
+                            <template v-else-if="response.rawOutput">
                                 <Button
                                     type="primary"
                                     size="small"
@@ -44,9 +44,9 @@
                     </div>
                     <div v-if="response.prompt" class="ai-assistant-output-question">{{ response.prompt }}</div>
                     <DialogMarkdown
-                        v-if="response.text"
+                        v-if="response.rawOutput"
                         class="ai-assistant-output-markdown no-dark-content"
-                        :text="response.text"/>
+                        :text="response.displayOutput || response.rawOutput"/>
                     <div v-else class="ai-assistant-output-placeholder">
                         {{ response.status === 'error' ? (response.error || $L('发送失败')) : $L('等待 AI 回复...') }}
                     </div>
@@ -95,7 +95,7 @@
 <script>
 import emitter from "../store/events";
 import {SSEClient} from "../utils";
-import {AIBotList, AIModelNames} from "../utils/ai";
+import {AIBotMap, AIModelNames} from "../utils/ai";
 import DialogMarkdown from "../pages/manage/components/DialogMarkdown.vue";
 
 export default {
@@ -132,8 +132,11 @@ export default {
             inputRows: this.defaultInputRows,
             inputAutosize: this.defaultInputAutosize,
             inputMaxlength: this.defaultInputMaxlength,
-            inputOnOk: null,
-            inputOnBeforeSend: null,
+
+            // 回调钩子
+            applyHook: null,
+            beforeSendHook: null,
+            renderHook: null,
 
             // 模型选择
             inputModel: '',
@@ -147,7 +150,7 @@ export default {
             responses: [],
             responseSeed: 1,
             maxResponses: 5,
-            activeStreams: [],
+            activeSSEClients: [],
         }
     },
     mounted() {
@@ -156,7 +159,7 @@ export default {
     },
     beforeDestroy() {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
-        this.clearActiveStreams();
+        this.clearActiveSSEClients();
     },
     computed: {
         selectedModelOption({modelMap, inputModel}) {
@@ -182,12 +185,13 @@ export default {
                 this.inputRows = params.rows || this.defaultInputRows;
                 this.inputAutosize = params.autosize || this.defaultInputAutosize;
                 this.inputMaxlength = params.maxlength || this.defaultInputMaxlength;
-                this.inputOnOk = params.onOk || null;
-                this.inputOnBeforeSend = params.onBeforeSend || null;
+                this.applyHook = params.onApply || null;
+                this.beforeSendHook = params.onBeforeSend || null;
+                this.renderHook = params.onRender || null;
             }
             this.responses = [];
             this.showModal = true;
-            this.clearActiveStreams();
+            this.clearActiveSSEClients();
         },
 
         /**
@@ -243,10 +247,6 @@ export default {
         normalizeModelOptions(data) {
             const groups = [];
             const map = {};
-            const labelMap = AIBotList.reduce((acc, bot) => {
-                acc[bot.value] = bot.label;
-                return acc;
-            }, {});
             if ($A.isJson(data)) {
                 Object.keys(data).forEach(key => {
                     const match = key.match(/^(.*?)_models$/);
@@ -260,7 +260,7 @@ export default {
                         return;
                     }
                     const defaultModel = data[`${type}_model`] || '';
-                    const label = labelMap[type] || type;
+                    const label = AIBotMap[type] || type;
                     const options = list.slice(0, 5);
                     if (defaultModel) {
                         const defaultOption = list.find(option => option.value === defaultModel);
@@ -285,7 +285,7 @@ export default {
                     groups.push(group);
                 });
             }
-            const order = AIBotList.map(bot => bot.value);
+            const order = Object.keys(AIBotMap);
             groups.sort((a, b) => {
                 const indexA = order.indexOf(a.type);
                 const indexB = order.indexOf(b.type);
@@ -350,12 +350,8 @@ export default {
             this.loadIng++;
             let responseEntry = null;
             try {
-                const preparedPayload = await this.buildPayloadData({
-                    prompt: rawValue,
-                    model_type: modelOption.type,
-                    model_name: modelOption.value,
-                }) || {};
-                const context = this.buildContextMessages(preparedPayload);
+                const baseContext = this.collectBaseContext(rawValue);
+                const context = await this.buildPayloadData(baseContext);
 
                 responseEntry = this.createResponseEntry({
                     modelOption,
@@ -385,32 +381,32 @@ export default {
         /**
          * 构建最终发送的数据
          */
-        async buildPayloadData(data) {
-            if (typeof this.inputOnBeforeSend !== 'function') {
-                return data;
+        async buildPayloadData(context) {
+            const baseContext = this.normalizeContextEntries(context);
+            if (typeof this.beforeSendHook !== 'function') {
+                return baseContext;
             }
             try {
-                const result = this.inputOnBeforeSend(data);
-                if (result && typeof result.then === 'function') {
-                    const resolved = await result;
-                    if ($A.isJson(resolved)) {
-                        return resolved;
-                    }
-                } else if ($A.isJson(result)) {
-                    return result;
+                const clonedContext = baseContext.map(entry => entry.slice());
+                const result = this.beforeSendHook(clonedContext);
+                const resolved = result && typeof result.then === 'function'
+                    ? await result
+                    : result;
+                const prepared = this.normalizeContextEntries(resolved);
+                if (prepared.length) {
+                    return prepared;
                 }
             } catch (e) {
                 console.warn('[AIAssistant] onBeforeSend error:', e);
             }
-            return data;
+            return baseContext;
         },
 
         /**
-         * 组装上下文
+         * 汇总当前会话的基础上下文
          */
-        buildContextMessages({prompt, system_prompt, context_prompt}) {
-            const context = [];
-            const pushContext = (role, value) => {
+        collectBaseContext(prompt) {
+            const pushEntry = (context, role, value) => {
                 if (typeof value === 'undefined' || value === null) {
                     return;
                 }
@@ -418,31 +414,56 @@ export default {
                 if (!content) {
                     return;
                 }
-                const lastEntry = context[context.length - 1];
-                if (lastEntry && lastEntry[0] === role) {
-                    lastEntry[1] = lastEntry[1] ? `${lastEntry[1]}\n${content}` : content;
-                    return;
-                }
                 context.push([role, content]);
             };
-            if (system_prompt) {
-                pushContext('system', String(system_prompt));
-            }
-            if (context_prompt) {
-                pushContext('human', String(context_prompt));
-            }
+            const context = [];
             this.responses.forEach(item => {
                 if (item.prompt) {
-                    pushContext('human', item.prompt);
+                    pushEntry(context, 'human', item.prompt);
                 }
-                if (item.text) {
-                    pushContext('assistant', item.text);
+                if (item.rawOutput) {
+                    pushEntry(context, 'assistant', item.rawOutput);
                 }
             });
-            if (prompt && prompt.trim()) {
-                pushContext('human', prompt.trim());
+            if (prompt && String(prompt).trim()) {
+                pushEntry(context, 'human', prompt);
             }
             return context;
+        },
+
+        /**
+         * 归一化上下文结构
+         */
+        normalizeContextEntries(context) {
+            if (!Array.isArray(context)) {
+                return [];
+            }
+            const normalized = [];
+            context.forEach(entry => {
+                if (!Array.isArray(entry) || entry.length < 2) {
+                    return;
+                }
+                const [role, value] = entry;
+                const roleName = typeof role === 'string' ? role.trim() : '';
+                const content = typeof value === 'string'
+                    ? value.trim()
+                    : String(value ?? '').trim();
+                if (!roleName || !content) {
+                    return;
+                }
+                const last = normalized[normalized.length - 1];
+                const canMergeWithLast = last
+                    && last[0] === roleName
+                    && typeof last[1] === 'string'
+                    && last[1].slice(-4) === '++++';
+                if (canMergeWithLast) {
+                    const previousContent = last[1].slice(0, -4);
+                    last[1] = previousContent ? `${previousContent}\n${content}` : content;
+                    return;
+                }
+                normalized.push([roleName, content]);
+            });
+            return normalized;
         },
 
         /**
@@ -474,7 +495,7 @@ export default {
                 throw new Error('获取 stream_key 失败');
             }
             const sse = new SSEClient($A.mainUrl(`ai/invoke/stream/${streamKey}`));
-            this.registerStream(sse);
+            this.registerSSEClient(sse);
             sse.subscribe(['append', 'replace', 'done'], (type, event) => {
                 switch (type) {
                     case 'append':
@@ -482,10 +503,10 @@ export default {
                         this.handleStreamChunk(responseEntry, type, event);
                         break;
                     case 'done':
-                        if (responseEntry && responseEntry.status !== 'error' && responseEntry.text) {
+                        if (responseEntry && responseEntry.status !== 'error' && responseEntry.rawOutput) {
                             responseEntry.status = 'completed';
                         }
-                        this.releaseStream(sse);
+                        this.releaseSSEClient(sse);
                         break;
                 }
             });
@@ -502,10 +523,11 @@ export default {
             const payload = this.parseStreamPayload(event);
             const chunk = this.resolveStreamContent(payload);
             if (type === 'replace') {
-                responseEntry.text = chunk;
+                responseEntry.rawOutput = chunk;
             } else {
-                responseEntry.text += chunk;
+                responseEntry.rawOutput += chunk;
             }
+            this.updateResponseDisplayOutput(responseEntry);
             responseEntry.status = 'streaming';
             this.scrollResponsesToBottom();
         },
@@ -540,29 +562,38 @@ export default {
             return '';
         },
 
-        registerStream(sse) {
+        /**
+         * 将 SSE 客户端加入活跃列表，方便后续清理
+         */
+        registerSSEClient(sse) {
             if (!sse) {
                 return;
             }
-            this.activeStreams.push(sse);
+            this.activeSSEClients.push(sse);
         },
 
-        releaseStream(sse) {
-            const index = this.activeStreams.indexOf(sse);
+        /**
+         * 从活跃列表移除 SSE 客户端并执行注销
+         */
+        releaseSSEClient(sse) {
+            const index = this.activeSSEClients.indexOf(sse);
             if (index > -1) {
-                this.activeStreams.splice(index, 1);
+                this.activeSSEClients.splice(index, 1);
             }
             sse.unsunscribe();
         },
 
-        clearActiveStreams() {
-            this.activeStreams.forEach(sse => {
+        /**
+         * 关闭所有活跃的 SSE 连接
+         */
+        clearActiveSSEClients() {
+            this.activeSSEClients.forEach(sse => {
                 try {
                     sse.unsunscribe();
                 } catch (e) {
                 }
             });
-            this.activeStreams = [];
+            this.activeSSEClients = [];
         },
 
         /**
@@ -576,7 +607,8 @@ export default {
                 modelLabel: modelOption.label,
                 type: modelOption.type,
                 prompt: prompt.trim(),
-                text: '',
+                rawOutput: '',
+                displayOutput: '',
                 status: 'waiting',
                 error: '',
                 applyLoading: false,
@@ -603,23 +635,18 @@ export default {
             if (!response || response.applyLoading) {
                 return;
             }
-            if (!response.text) {
+            if (!response.rawOutput) {
                 $A.messageWarning('暂无可用内容');
                 return;
             }
-            if (typeof this.inputOnOk !== 'function') {
+            if (typeof this.applyHook !== 'function') {
                 this.closeAssistant();
                 return;
             }
             response.applyLoading = true;
-            const payload = {
-                model: response.model,
-                type: response.type,
-                content: response.prompt,
-                aiContent: response.text,
-            };
+            const payload = this.buildResponsePayload(response);
             try {
-                const result = this.inputOnOk(payload);
+                const result = this.applyHook(payload);
                 if (result && typeof result.then === 'function') {
                     result.then(() => {
                         this.closeAssistant();
@@ -639,6 +666,52 @@ export default {
         },
 
         /**
+         * 构造发送给外部回调的统一数据结构
+         */
+        buildResponsePayload(response) {
+            if (!response) {
+                return {
+                    model: '',
+                    type: '',
+                    prompt: '',
+                    rawOutput: '',
+                };
+            }
+            return {
+                model: response.model,
+                type: response.type,
+                prompt: response.prompt,
+                rawOutput: response.rawOutput,
+            };
+        },
+
+        /**
+         * 根据 onRender 回调生成展示文本
+         */
+        updateResponseDisplayOutput(response) {
+            if (!response) {
+                return;
+            }
+            if (typeof this.renderHook !== 'function') {
+                response.displayOutput = response.rawOutput;
+                return;
+            }
+            try {
+                const payload = this.buildResponsePayload(response);
+                const result = this.renderHook(payload);
+                if (result && typeof result.then === 'function') {
+                    console.warn('[AIAssistant] onRender should be synchronous');
+                    response.displayOutput = response.rawOutput;
+                    return;
+                }
+                response.displayOutput = typeof result === 'string' ? result : response.rawOutput;
+            } catch (e) {
+                console.warn('[AIAssistant] onRender error:', e);
+                response.displayOutput = response.rawOutput;
+            }
+        },
+
+        /**
          * 关闭弹窗
          */
         closeAssistant() {
@@ -648,7 +721,7 @@ export default {
             this.closing = true;
             this.showModal = false;
             this.responses = [];
-            this.clearActiveStreams();
+            this.clearActiveSSEClients();
             setTimeout(() => {
                 this.closing = false;
             }, 300);

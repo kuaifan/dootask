@@ -3,12 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
-use App\Module\AI;
 use App\Module\Base;
 use App\Module\Ihttp;
-use App\Models\WebSocketDialog;
-use App\Models\WebSocketDialogMsg;
-use App\Models\WebSocketDialogUser;
 use Request;
 
 /**
@@ -18,133 +14,6 @@ use Request;
  */
 class AssistantController extends AbstractController
 {
-    /**
-     * @api {post} api/assistant/dialog/prompt 生成对话提示词
-     *
-     * @apiDescription 需要token身份，整理当前会话的系统提示词与上下文信息
-     * @apiVersion 1.0.0
-     * @apiGroup assistant
-     * @apiName dialog__prompt
-     *
-     * @apiParam {Number} dialog_id             对话ID
-     * @apiParam {String} [content]             消息需求描述（用于提示词整理，可为空）
-     * @apiParam {String} [draft]               当前草稿内容（HTML 格式）
-     * @apiParam {Number} [quote_id]            引用消息ID
-     *
-     * @apiSuccess {Number} ret                 返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg                 返回信息（错误描述）
-     * @apiSuccess {Object} data                返回数据
-     * @apiSuccess {String} data.system_prompt  AI 使用的系统提示词
-     * @apiSuccess {String} data.context_prompt AI 使用的上下文提示词
-     */
-    public function dialog__prompt()
-    {
-        $user = User::auth();
-        $user->checkChatInformation();
-        //
-        $dialog_id = intval(Request::input('dialog_id'));
-        $content = trim(Request::input('content', ''));
-        if ($dialog_id <= 0) {
-            return Base::retError('参数错误');
-        }
-
-        $dialog = WebSocketDialog::checkDialog($dialog_id);
-
-        // 基本信息
-        $context = [
-            'dialog_name' => $dialog->name ?: '',
-            'dialog_type' => $dialog->type ?: '',
-            'group_type' => $dialog->group_type ?: '',
-        ];
-
-        // 当前草稿
-        $draft = Request::input('draft', '');
-        if (is_string($draft) && trim($draft) !== '') {
-            $context['current_draft'] = Base::html2markdown($draft);
-        }
-
-        // 引用消息
-        $quote_id = intval(Request::input('quote_id'));
-        if ($quote_id > 0) {
-            $quote = WebSocketDialogMsg::whereDialogId($dialog_id)
-                ->whereId($quote_id)
-                ->with('user')
-                ->first();
-            if ($quote) {
-                $context['quote_summary'] = WebSocketDialogMsg::previewMsg($quote);
-                $context['quote_user'] = $quote->user->nickname ?? '';
-            }
-        }
-
-        // 成员列表
-        $members = WebSocketDialogUser::whereDialogId($dialog_id)
-            ->join('users', 'users.userid', '=', 'web_socket_dialog_users.userid')
-            ->orderBy('web_socket_dialog_users.id')
-            ->limit(10)
-            ->pluck('users.nickname')
-            ->filter()
-            ->values()
-            ->all();
-        if (!empty($members)) {
-            $context['members'] = $members;
-        }
-
-        // 最近消息
-        $recentMessagesQuery = WebSocketDialogMsg::whereDialogId($dialog_id)
-            ->orderByDesc('id')
-            ->with('user');
-
-        $recentMessages = (clone $recentMessagesQuery)->take(15)->get();
-        if ($recentMessages->isNotEmpty()) {
-            $formatRecentMessages = function ($messages) {
-                return $messages->reverse()->map(function ($msg) {
-                    return [
-                        'sender' => $msg->user->nickname ?? ('用户' . $msg->userid),
-                        'summary' => $msg->extractMessageContent(500),
-                    ];
-                })->filter(function ($item) {
-                    return !empty($item['summary']);
-                })->values();
-            };
-
-            $formattedRecentMessages = $formatRecentMessages($recentMessages);
-            $summaryLength = $formattedRecentMessages->sum(function ($item) {
-                return mb_strlen($item['summary']);
-            });
-
-            if ($summaryLength < 500 && $recentMessages->count() === 15) {
-                $lastMessageId = optional($recentMessages->last())->id;
-                $additionalMessages = collect();
-                if ($lastMessageId) {
-                    $additionalMessages = (clone $recentMessagesQuery)
-                        ->where('id', '<', $lastMessageId)
-                        ->take(10)
-                        ->get();
-                }
-                if ($additionalMessages->isNotEmpty()) {
-                    $recentMessages = $recentMessages->concat($additionalMessages);
-                    $formattedRecentMessages = $formatRecentMessages($recentMessages);
-                }
-            }
-
-            if ($formattedRecentMessages->isNotEmpty()) {
-                $context['recent_messages'] = $formattedRecentMessages->all();
-            }
-        }
-
-        // 生成消息
-        $systemPrompt = AI::messageSystemPrompt();
-        $contextPrompt = AI::buildMessageContextPrompt($context);
-        if ($content) {
-            $contextPrompt .= "\n\n请根据以上信息，结合提示词生成一条待发送的消息：";
-        }
-
-        return Base::retSuccess('success', [
-            'system_prompt' => $systemPrompt,
-            'context_prompt' => $contextPrompt,
-        ]);
-    }
-
     /**
      * @api {post} api/assistant/auth 生成授权码
      *

@@ -457,6 +457,7 @@ import SearchBox from "../components/SearchBox.vue";
 import AIAssistant from "../components/AIAssistant.vue";
 import transformEmojiToHtml from "../utils/emoji";
 import {languageName} from "../language";
+import {PROJECT_AI_SYSTEM_PROMPT} from "../utils/ai";
 import Draggable from 'vuedraggable'
 
 export default {
@@ -1066,78 +1067,201 @@ export default {
         },
 
         onProjectAI() {
-            let canceled = false;
-            $A.modalInput({
-                title: 'AI 生成',
-                placeholder: '请简要描述项目目标、范围或关键里程碑，AI 将生成名称和任务列表',
-                inputProps: {
-                    type: 'textarea',
-                    rows: 2,
-                    autosize: {minRows: 2, maxRows: 6},
-                    maxlength: 500,
-                },
-                onCancel: () => {
-                    canceled = true;
-                },
-                onOk: (value) => {
-                    if (!value) {
-                        return '请输入项目需求';
-                    }
-                    return new Promise((resolve, reject) => {
-                        if (canceled) {
-                            reject();
-                            return;
-                        }
-                        const parseColumns = (cols) => {
-                            if (Array.isArray(cols)) {
-                                return cols;
-                            }
-                            if (typeof cols === 'string') {
-                                return cols.split(/[\n\r,，;；|]/).map(item => item.trim()).filter(item => item);
-                            }
-                            return [];
-                        };
-                        const templateExamples = this.columns
-                            .filter((item, index) => index > 0 && item && item.columns && String(item.columns).trim() !== '')
-                            .slice(0, 6)
-                            .map(item => ({
-                                name: item.name,
-                                columns: parseColumns(item.columns)
-                            }));
+            emitter.emit('openAIAssistant', {
+                placeholder: this.$L('请简要描述项目目标、范围或关键里程碑，AI 将生成名称和任务列表'),
+                onBeforeSend: this.handleProjectAIBeforeSend,
+                onRender: this.handleProjectAIRender,
+                onApply: this.handleProjectAIApply,
+            });
+        },
 
-                        this.$store.dispatch("call", {
-                            url: 'project/ai/generate',
-                            data: {
-                                content: value,
-                                current_name: this.addData.name || '',
-                                current_columns: this.addData.columns || '',
-                                template_examples: templateExamples,
-                            },
-                            timeout: 45 * 1000,
-                        }).then(({data}) => {
-                            if (canceled) {
-                                resolve();
-                                return;
-                            }
-                            const columns = Array.isArray(data.columns) ? data.columns : parseColumns(data.columns);
-                            this.$set(this.addData, 'name', data.name || '');
-                            this.$set(this.addData, 'columns', columns.length > 0 ? columns.join(',') : '');
-                            this.$nextTick(() => {
-                                if (this.$refs.projectName) {
-                                    this.$refs.projectName.focus();
-                                }
-                            });
-                            resolve();
-                        }).catch(({msg}) => {
-                            if (canceled) {
-                                resolve();
-                                return;
-                            }
-                            reject(msg);
-                        });
-                    });
+        buildProjectAIContextData() {
+            const prompts = [];
+            const currentName = (this.addData.name || '').trim();
+            const currentColumns = this.normalizeAIColumns(this.addData.columns);
+
+            if (currentName || currentColumns.length > 0) {
+                prompts.push('## 当前项目草稿');
+                if (currentName) {
+                    prompts.push(`已有名称：${currentName}`);
                 }
-            })
+                if (currentColumns.length > 0) {
+                    prompts.push(`现有任务列表：${currentColumns.join('、')}`);
+                }
+                prompts.push('请在此基础上进行优化和补充。');
+            }
+
+            const rawTemplates = Array.isArray(this.columns) ? this.columns : [];
+            const templateExamples = rawTemplates
+                .filter((item, index) => index > 0 && item)
+                .map(item => {
+                    const columns = this.normalizeAIColumns(item.columns);
+                    if (columns.length === 0) {
+                        return null;
+                    }
+                    return {
+                        name: (item.name || '').trim(),
+                        columns,
+                    };
+                })
+                .filter(Boolean)
+                .slice(0, 6);
+
+            if (templateExamples.length > 0) {
+                prompts.push('## 常用模板示例');
+                templateExamples.forEach(example => {
+                    const namePrefix = example.name ? `${example.name}：` : '';
+                    prompts.push(`- ${namePrefix}${example.columns.join('、')}`);
+                });
+                prompts.push('可以借鉴以上结构，但要结合用户需求生成更贴合的方案。');
+            }
+
+            return prompts.join('\n').trim();
+        },
+
+        handleProjectAIBeforeSend(context = []) {
+            const prepared = [
+                ['system', PROJECT_AI_SYSTEM_PROMPT]
+            ];
+            const contextPrompt = this.buildProjectAIContextData();
+            if (contextPrompt) {
+                let assistantContext = [
+                    '以下是可用的上下文，请据此生成项目：',
+                    contextPrompt,
+                ].join('\n');
+                if ($A.getObject(context, [0,0]) === 'human') {
+                    assistantContext += "\n----\n请根据以上信息，结合以下用户输入的内容生成项目名称和任务列表：++++";
+                }
+                prepared.push(['human', assistantContext]);
+            }
+            if (context.length > 0) {
+                prepared.push(...context);
+            }
+            return prepared;
+        },
+
+        handleProjectAIApply({rawOutput}) {
+            if (!rawOutput) {
+                $A.messageWarning('AI 未生成内容');
+                return;
+            }
+            const parsed = this.parseProjectAIContent(rawOutput);
+            if (!parsed) {
+                $A.modalError('AI 内容解析失败，请重试');
+                return;
+            }
+            if (parsed.name) {
+                this.$set(this.addData, 'name', parsed.name);
+            }
+            if (parsed.columns.length > 0) {
+                this.$set(this.addData, 'columns', parsed.columns.join(','));
+            }
+            this.$nextTick(() => {
+                if (this.$refs.projectName) {
+                    this.$refs.projectName.focus();
+                }
+            });
+        },
+
+        normalizeAIColumns(value) {
+            if (!value) {
+                return [];
+            }
+            const normalize = (item) => {
+                if (!item) {
+                    return '';
+                }
+                if (typeof item === 'string') {
+                    return item.trim();
+                }
+                if (typeof item === 'object') {
+                    const text = item.name || item.title || item.label || item.value || '';
+                    return typeof text === 'string' ? text.trim() : '';
+                }
+                return String(item).trim();
+            };
+            if (Array.isArray(value)) {
+                return value.map(normalize).filter(Boolean);
+            }
+            if (typeof value === 'string') {
+                return value.split(/[\n\r,，;；|]/).map(item => item.trim()).filter(Boolean);
+            }
+            if (typeof value === 'object') {
+                if (Array.isArray(value.columns)) {
+                    return this.normalizeAIColumns(value.columns);
+                }
+                if (typeof value.columns === 'string') {
+                    return this.normalizeAIColumns(value.columns);
+                }
+            }
+            return [];
+        },
+
+        normalizeAIJsonContent(content) {
+            if (!content) {
+                return null;
+            }
+            const raw = String(content).trim();
+            if (!raw) {
+                return null;
+            }
+            const candidates = [raw];
+            const block = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+            if (block && block[1]) {
+                candidates.push(block[1].trim());
+            }
+            const start = raw.indexOf('{');
+            const end = raw.lastIndexOf('}');
+            if (start !== -1 && end !== -1 && end > start) {
+                candidates.push(raw.slice(start, end + 1));
+            }
+            for (const candidate of candidates) {
+                if (!candidate) {
+                    continue;
+                }
+                try {
+                    return JSON.parse(candidate);
+                } catch (e) {
+                    continue;
+                }
+            }
+            return null;
+        },
+
+        parseProjectAIContent(content) {
+            const payload = this.normalizeAIJsonContent(content);
+            if (!payload || typeof payload !== 'object') {
+                return null;
+            }
+            const nameSource = [payload.name, payload.title, payload.project_name].find(item => typeof item === 'string' && item.trim());
+            const columnsSource = payload.columns || payload.lists || payload.stages || payload.columns_list;
+            const columns = this.normalizeAIColumns(columnsSource);
+            if (!nameSource && columns.length === 0) {
+                return null;
+            }
+            return {
+                name: nameSource ? nameSource.trim() : '',
+                columns,
+            };
+        },
+
+        handleProjectAIRender({rawOutput}) {
+            if (!rawOutput) {
+                return '';
+            }
+            const parsed = this.parseProjectAIContent(rawOutput);
+            if (!parsed) {
+                return rawOutput;
+            }
+            const blocks = [];
+            if (parsed.name) {
+                blocks.push(`## ${parsed.name}`);
+            }
+            if (parsed.columns.length > 0) {
+                const lines = parsed.columns.map((column, index) => `${index + 1}. ${column}`);
+                blocks.push(lines.join('\n'));
+            }
+            return blocks.join('\n\n').trim() || rawOutput;
         },
 
         onAddProject() {
