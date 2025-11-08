@@ -457,7 +457,7 @@ import SearchBox from "../components/SearchBox.vue";
 import AIAssistant from "../components/AIAssistant.vue";
 import transformEmojiToHtml from "../utils/emoji";
 import {languageName} from "../language";
-import {PROJECT_AI_SYSTEM_PROMPT} from "../utils/ai";
+import {AINormalizeJsonContent, PROJECT_AI_SYSTEM_PROMPT} from "../utils/ai";
 import Draggable from 'vuedraggable'
 
 export default {
@@ -1197,39 +1197,8 @@ export default {
             return [];
         },
 
-        normalizeAIJsonContent(content) {
-            if (!content) {
-                return null;
-            }
-            const raw = String(content).trim();
-            if (!raw) {
-                return null;
-            }
-            const candidates = [raw];
-            const block = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
-            if (block && block[1]) {
-                candidates.push(block[1].trim());
-            }
-            const start = raw.indexOf('{');
-            const end = raw.lastIndexOf('}');
-            if (start !== -1 && end !== -1 && end > start) {
-                candidates.push(raw.slice(start, end + 1));
-            }
-            for (const candidate of candidates) {
-                if (!candidate) {
-                    continue;
-                }
-                try {
-                    return JSON.parse(candidate);
-                } catch (e) {
-                    continue;
-                }
-            }
-            return null;
-        },
-
         parseProjectAIContent(content) {
-            const payload = this.normalizeAIJsonContent(content);
+            const payload = AINormalizeJsonContent(content);
             if (!payload || typeof payload !== 'object') {
                 return null;
             }

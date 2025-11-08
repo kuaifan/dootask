@@ -201,7 +201,8 @@ import TaskExistTips from "./TaskExistTips.vue";
 import TEditorTask from "../../../components/TEditorTask.vue";
 import nostyle from "../../../components/VMEditor/engine/nostyle";
 import {MarkdownConver} from "../../../utils/markdown";
-import {TASK_AI_SYSTEM_PROMPT} from "../../../utils/ai";
+import {extractPlainText} from "../../../utils/text";
+import {AINormalizeJsonContent, TASK_AI_SYSTEM_PROMPT} from "../../../utils/ai";
 
 export default {
     name: "TaskAdd",
@@ -639,15 +640,11 @@ export default {
         buildTaskAIContextData() {
             const prompts = [];
             const plainText = (value, limit = 600) => {
-                if (!value || typeof value !== 'string') {
+                const text = extractPlainText(value || '');
+                if (!text) {
                     return '';
                 }
-                return value
-                    .replace(/<[^>]+>/g, ' ')
-                    .replace(/&nbsp;/gi, ' ')
-                    .replace(/\s+/g, ' ')
-                    .slice(0, limit)
-                    .trim();
+                return text.slice(0, limit).trim();
             };
 
             const currentTitle = (this.addData.name || '').trim();
@@ -778,7 +775,7 @@ export default {
         },
 
         parseTaskAIContent(content) {
-            const payload = this.normalizeAIJsonContent(content);
+            const payload = AINormalizeJsonContent(content);
             if (!payload || typeof payload !== 'object') {
                 return null;
             }
@@ -800,37 +797,6 @@ export default {
                 description,
                 subtasks,
             };
-        },
-
-        normalizeAIJsonContent(content) {
-            if (!content) {
-                return null;
-            }
-            const raw = String(content).trim();
-            if (!raw) {
-                return null;
-            }
-            const candidates = [raw];
-            const block = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
-            if (block && block[1]) {
-                candidates.push(block[1].trim());
-            }
-            const start = raw.indexOf('{');
-            const end = raw.lastIndexOf('}');
-            if (start !== -1 && end !== -1 && end > start) {
-                candidates.push(raw.slice(start, end + 1));
-            }
-            for (const candidate of candidates) {
-                if (!candidate) {
-                    continue;
-                }
-                try {
-                    return JSON.parse(candidate);
-                } catch (e) {
-                    continue;
-                }
-            }
-            return null;
         },
 
         normalizeAISubtasks(value) {

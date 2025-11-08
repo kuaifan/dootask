@@ -11,6 +11,37 @@ const AIModelNames = (str) => {
     }, []).filter(item => item.value);
 }
 
+const AINormalizeJsonContent = (content) => {
+    if (!content) {
+        return null;
+    }
+    const raw = String(content).trim();
+    if (!raw) {
+        return null;
+    }
+    const candidates = [raw];
+    const block = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (block && block[1]) {
+        candidates.push(block[1].trim());
+    }
+    const start = raw.indexOf('{');
+    const end = raw.lastIndexOf('}');
+    if (start !== -1 && end !== -1 && end > start) {
+        candidates.push(raw.slice(start, end + 1));
+    }
+    for (const candidate of candidates) {
+        if (!candidate) {
+            continue;
+        }
+        try {
+            return JSON.parse(candidate);
+        } catch (e) {
+            // continue
+        }
+    }
+    return null;
+}
+
 const AIBotList = []
 
 const AIBotMap = {
@@ -295,6 +326,7 @@ const PROJECT_AI_SYSTEM_PROMPT = `你是一名资深的项目规划顾问，帮�
 
 export {
     AIModelNames,
+    AINormalizeJsonContent,
     AIBotList,
     AIBotMap,
     AISystemConfig,

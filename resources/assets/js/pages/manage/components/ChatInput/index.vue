@@ -343,6 +343,7 @@ import longpress from "../../../../directives/longpress";
 import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
 import {languageList, languageName} from "../../../../language";
 import {isMarkdownFormat, MarkdownConver} from "../../../../utils/markdown";
+import {extractPlainText} from "../../../../utils/text";
 import {MESSAGE_AI_SYSTEM_PROMPT} from "../../../../utils/ai";
 import emitter from "../../../../store/events";
 import historyMixin from "./history";
@@ -1911,7 +1912,6 @@ export default {
             emitter.emit('openAIAssistant', {
                 placeholder: this.$L('请简要描述消息的主题、语气或要点，AI 将生成完整消息'),
                 onBeforeSend: this.handleMessageAIBeforeSend,
-                onRender: this.handleMessageAIRender,
                 onApply: this.handleMessageAIApply,
             });
         },
@@ -1931,10 +1931,6 @@ export default {
                 prepared.push(...context);
             }
             return prepared;
-        },
-
-        handleMessageAIRender({rawOutput}) {
-            return rawOutput || '';
         },
 
         handleMessageAIApply({rawOutput}) {
@@ -1991,7 +1987,7 @@ export default {
                 }
             }
 
-            const draftText = this.extractPlainText(this.value);
+            const draftText = extractPlainText(this.value);
             if (draftText) {
                 sections.push('## 当前草稿');
                 sections.push(this.cutText(draftText, 200));
@@ -2062,24 +2058,11 @@ export default {
             }
             try {
                 const preview = $A.getMsgSimpleDesc(message);
-                const plain = this.extractPlainText(preview || '');
+                const plain = extractPlainText(preview || '');
                 return this.cutText(plain, 160);
             } catch (error) {
                 return '';
             }
-        },
-
-        extractPlainText(content) {
-            if (!content) {
-                return '';
-            }
-            const value = typeof content === 'string' ? content : JSON.stringify(content);
-            if (typeof window === 'undefined' || !window.document) {
-                return value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-            }
-            const div = document.createElement('div');
-            div.innerHTML = value;
-            return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
         },
 
         cutText(text, limit = 60) {
