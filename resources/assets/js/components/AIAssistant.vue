@@ -514,6 +514,7 @@ export default {
             if (!responseEntry) {
                 return;
             }
+            const stickToBottom = this.shouldStickToBottom();
             const payload = this.parseStreamPayload(event);
             const chunk = this.resolveStreamContent(payload);
             if (type === 'replace') {
@@ -523,7 +524,9 @@ export default {
             }
             this.updateResponseDisplayOutput(responseEntry);
             responseEntry.status = 'streaming';
-            this.scrollResponsesToBottom();
+            if (stickToBottom) {
+                this.scrollResponsesToBottom();
+            }
         },
 
         /**
@@ -776,6 +779,22 @@ export default {
                     container.scrollTop = container.scrollHeight;
                 }
             });
+        },
+
+        /**
+         * 判断是否需要保持滚动到底部
+         */
+        shouldStickToBottom(threshold = 20) {
+            const container = this.$refs.responseContainer;
+            if (!container) {
+                return true;
+            }
+            const currentBottom = container.scrollTop + container.clientHeight;
+            const distance = container.scrollHeight - currentBottom;
+            if (Number.isNaN(distance)) {
+                return true;
+            }
+            return distance <= threshold;
         },
     },
 }

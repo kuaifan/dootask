@@ -291,12 +291,10 @@ export default {
                 sections.push(...meta);
             }
 
-            const plain = extractPlainText(this.reportData.content || '');
+            const plain = extractPlainText(this.reportData.content, 8000, true);
             if (plain) {
-                const limit = 3200;
-                const slice = plain.slice(0, limit);
                 sections.push('## 当前汇报正文');
-                sections.push(slice + (plain.length > limit ? '...' : ''));
+                sections.push(plain);
             }
 
             return sections.join('\n').trim();

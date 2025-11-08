@@ -168,7 +168,7 @@ export default {
                 $A.messageWarning("当前没有可分析的汇报");
                 return;
             }
-            const plain = extractPlainText(this.currentDetail.content || '');
+            const plain = extractPlainText(this.currentDetail.content, null, true);
             if (!plain) {
                 $A.messageWarning("汇报内容为空，无法分析");
                 return;
@@ -178,6 +178,7 @@ export default {
                 onBeforeSend: this.handleReportAnalysisBeforeSend,
                 onApply: this.handleReportAnalysisApply,
                 autoSubmit: true,
+                applyButtonText: this.$L('保存分析'),
             });
         },
 
@@ -292,14 +293,10 @@ export default {
                 viewerMeta.forEach(line => sections.push(`- ${line}`));
             }
 
-            const bodyText = extractPlainText(detail.content || '');
+            const bodyText = extractPlainText(detail.content, 8000, true);
             if (bodyText) {
-                const limit = 5000;
-                const trimmed = bodyText.length > limit
-                    ? `${bodyText.slice(0, limit)}...`
-                    : bodyText;
                 sections.push('## 汇报正文');
-                sections.push(trimmed);
+                sections.push(bodyText);
             }
 
             const previous = this.aiAnalysis?.text || detail.ai_analysis?.text;

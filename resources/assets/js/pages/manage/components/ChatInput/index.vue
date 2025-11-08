@@ -343,7 +343,7 @@ import longpress from "../../../../directives/longpress";
 import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
 import {languageList, languageName} from "../../../../language";
 import {isMarkdownFormat, MarkdownConver} from "../../../../utils/markdown";
-import {extractPlainText} from "../../../../utils/text";
+import {cutText, extractPlainText} from "../../../../utils/text";
 import {MESSAGE_AI_SYSTEM_PROMPT} from "../../../../utils/ai";
 import emitter from "../../../../store/events";
 import historyMixin from "./history";
@@ -1947,14 +1947,14 @@ export default {
             const sections = [];
             const infoLines = [];
             if (this.dialogData?.name) {
-                infoLines.push(`名称：${this.cutText(this.dialogData.name, 60)}`);
+                infoLines.push(`名称：${cutText(this.dialogData.name, 60)}`);
             }
             if (this.dialogData?.type) {
                 const typeMap = {group: this.$L('群聊'), user: this.$L('单聊')};
                 infoLines.push(`类型：${typeMap[this.dialogData.type] || this.dialogData.type}`);
             }
             if (this.dialogData?.group_type) {
-                infoLines.push(`分类：${this.cutText(this.dialogData.group_type, 60)}`);
+                infoLines.push(`分类：${cutText(this.dialogData.group_type, 60)}`);
             }
             if (infoLines.length) {
                 sections.push('## 会话信息');
@@ -1987,10 +1987,10 @@ export default {
                 }
             }
 
-            const draftText = extractPlainText(this.value);
+            const draftText = extractPlainText(this.value, 500);
             if (draftText) {
                 sections.push('## 当前草稿');
-                sections.push(this.cutText(draftText, 200));
+                sections.push(draftText);
             }
 
             return sections.join('\n');
@@ -2003,7 +2003,7 @@ export default {
             const result = [];
             const seen = new Set();
             const pushName = (name) => {
-                const clean = this.cutText((name || '').trim(), 30);
+                const clean = cutText((name || '').trim(), 30);
                 if (!clean || seen.has(clean)) {
                     return;
                 }
@@ -2058,23 +2058,10 @@ export default {
             }
             try {
                 const preview = $A.getMsgSimpleDesc(message);
-                const plain = extractPlainText(preview || '');
-                return this.cutText(plain, 160);
+                return extractPlainText(preview || '', 300);
             } catch (error) {
                 return '';
             }
-        },
-
-        cutText(text, limit = 60) {
-            const value = (text || '').trim();
-            if (!value) {
-                return '';
-            }
-            const units = Array.from(value);
-            if (units.length <= limit) {
-                return value;
-            }
-            return units.slice(0, limit).join('') + '…';
         },
 
         resolveUserNickname(userid) {

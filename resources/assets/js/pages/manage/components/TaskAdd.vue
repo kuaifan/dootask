@@ -639,16 +639,8 @@ export default {
 
         buildTaskAIContextData() {
             const prompts = [];
-            const plainText = (value, limit = 600) => {
-                const text = extractPlainText(value || '');
-                if (!text) {
-                    return '';
-                }
-                return text.slice(0, limit).trim();
-            };
-
             const currentTitle = (this.addData.name || '').trim();
-            const currentContent = plainText(this.addData.content, 600);
+            const currentContent = extractPlainText(this.addData.content, 2000, true);
             if (currentTitle || currentContent) {
                 prompts.push('## 当前任务信息');
                 if (currentTitle) {
@@ -665,7 +657,7 @@ export default {
                 : null;
             if (currentTemplate) {
                 const templateName = (currentTemplate.name || currentTemplate.title || '').trim();
-                const templateContent = plainText(nostyle(currentTemplate.content, {sanitize: false}), 800);
+                const templateContent = extractPlainText(nostyle(currentTemplate.content, {sanitize: false}), 1200, true);
                 prompts.push('## 任务模板要求');
                 if (templateName) {
                     prompts.push(`模板名称：${templateName}`);
