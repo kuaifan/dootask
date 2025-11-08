@@ -42,8 +42,6 @@ const AINormalizeJsonContent = (content) => {
     return null;
 }
 
-const AIBotList = []
-
 const AIBotMap = {
     openai: "ChatGPT",
     claude: "Claude",
@@ -327,7 +325,6 @@ const PROJECT_AI_SYSTEM_PROMPT = `你是一名资深的项目规划顾问，帮�
 export {
     AIModelNames,
     AINormalizeJsonContent,
-    AIBotList,
     AIBotMap,
     AISystemConfig,
     MESSAGE_AI_SYSTEM_PROMPT,

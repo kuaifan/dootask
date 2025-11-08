@@ -27900,30 +27900,6 @@
         "ru": "Ollama - это легкий, масштабируемый фреймворк, разработанный для того, чтобы пользователи могли создавать и запускать крупные языковые модели на локальных машинах."
     },
     {
-        "key": "AI 列表",
-        "zh": "",
-        "zh-CHT": "AI 列表",
-        "en": "AI List",
-        "ko": "AI 목록",
-        "ja": "AIリスト",
-        "de": "KI-Liste",
-        "fr": "Liste d'IA",
-        "id": "Daftar AI",
-        "ru": "Список AI"
-    },
-    {
-        "key": "AI 设置",
-        "zh": "",
-        "zh-CHT": "AI 設置",
-        "en": "AI Settings",
-        "ko": "AI 설정",
-        "ja": "AI設定",
-        "de": "KI-Einstellungen",
-        "fr": "Paramètres de l'IA",
-        "id": "Pengaturan AI",
-        "ru": "Настройки AI"
-    },
-    {
         "key": "思考中...",
         "zh": "",
         "zh-CHT": "思考中...",

@@ -690,7 +690,7 @@ import emitter from "../../../store/events";
 import Forwarder from "./Forwarder/index.vue";
 import {throttle} from "lodash";
 import transformEmojiToHtml from "../../../utils/emoji";
-import {webhookEventOptions} from "../../../utils/other";
+import {webhookEventOptions} from "../../../utils/webhook";
 
 export default {
     name: "DialogWrapper",

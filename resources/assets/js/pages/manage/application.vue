@@ -155,62 +155,6 @@
             </div>
         </Modal>
 
-        <!--AI BOT-->
-        <DrawerOverlay v-model="aibotShow" placement="right" :size="720">
-            <template v-if="aibotShow" #title>
-                {{ $L('AI 列表') }}
-            </template>
-            <template v-if="aibotShow" #more>
-                <a href="javascript:void(0)" @click="applyClick({value: 'robot-setting'}, 'openai')" v-if="userIsAdmin">{{ $L('机器人设置') }}</a>
-            </template>
-            <div v-if="aibotShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-body full-body">
-                    <ul class="ivu-modal-wrap-ul">
-                        <li v-for="(item, key) in aibotList" :key="key">
-                            <div class="modal-item-img">
-                                <img :src="item.src">
-                            </div>
-                            <div class="modal-item-info">
-                                <div class="modal-item-name">
-                                    <h4>{{ item.label }}</h4>
-                                    <div v-if="item.tag" class="modal-item-tag" @click="applyClick({value: 'robot-setting'}, item.value)">
-                                        {{ item.tag }}
-                                        <em v-if="item.tags.length > 1">+{{ item.tags.length - 1 }}</em>
-                                    </div>
-                                </div>
-                                <p class="modal-item-desc" @click="openDetail(item.desc)">{{ item.desc }}</p>
-                                <div class="modal-item-btns">
-                                    <Button icon="md-chatbubbles" :loading="aibotDialogSearchLoad == item.value" @click="onGoToChat(item.value)">{{ $L('开始聊天') }}</Button>
-                                    <Button v-if="userIsAdmin" icon="md-settings" @click="applyClick({value: 'robot-setting'}, item.value)">{{ $L('设置') }}</Button>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </DrawerOverlay>
-
-        <!--AI BOT 设置-->
-        <DrawerOverlay v-model="aibotSettingShow" placement="right" :size="950">
-            <template v-if="aibotSettingShow" #title>
-                {{ $L('AI 设置') }}
-            </template>
-            <div v-if="aibotSettingShow" class="ivu-modal-wrap-apply">
-                <div class="ivu-modal-wrap-apply-body">
-                    <Tabs v-model="aibotTabAction" :animated="false" class="ai-tabs">
-                        <TabPane v-for="(item, key) in aibotList" :key="key" :label="item.label" :name="item.value">
-                            <div class="aibot-setting">
-                                <SystemAibot
-                                    v-if="aibotTabAction == item.value"
-                                    :type="item.value"
-                                    @on-update-setting="handleAITags"/>
-                            </div>
-                        </TabPane>
-                    </Tabs>
-                </div>
-            </div>
-        </DrawerOverlay>
-
         <!--签到-->
         <DrawerOverlay v-model="signInShow" placement="right" :size="500">
             <template v-if="signInShow" #title>
@@ -347,7 +291,6 @@
 import {mapGetters, mapState} from "vuex";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import UserSelect from "../../components/UserSelect";
-import SystemAibot from "./setting/components/SystemAibot";
 import SystemCheckin from "./setting/components/SystemCheckin";
 import Checkin from "./setting/checkin";
 import SystemMeeting from "./setting/components/SystemMeeting";
@@ -357,16 +300,14 @@ import SystemEmailSetting from "./setting/components/SystemEmailSetting";
 import SystemAppPush from "./setting/components/SystemAppPush";
 import SystemAiAssistant from "./setting/components/SystemAiAssistant";
 import emitter from "../../store/events";
-import {AIBotList, AIModelNames} from "../../utils/ai";
 import ImgUpload from "../../components/ImgUpload.vue";
-import {webhookEventOptions} from "../../utils/other";
+import {webhookEventOptions} from "../../utils/webhook";
 
 export default {
     components: {
         ImgUpload,
         UserSelect,
         DrawerOverlay,
-        SystemAibot,
         SystemCheckin,
         Checkin,
         SystemMeeting,
@@ -387,12 +328,6 @@ export default {
             mybotModifyData: {},
             mybotModifyLoad: 0,
             webhookEventOptions,
-            //
-            aibotShow: false,
-            aibotList: AIBotList,
-            aibotSettingShow: false,
-            aibotTabAction: "openai",
-            aibotDialogSearchLoad: "",
             //
             signInShow: false,
             signInSettingShow: false,
@@ -445,7 +380,6 @@ export default {
                 {value: "recent", label: "最近打开", sort: 47},
                 {value: "report", label: "工作报告", sort: 50},
                 {value: "mybot", label: "我的机器人", sort: 55},
-                {value: "robot", label: "AI 机器人", sort: 60, show: this.microAppsIds.includes('ai')},
                 {value: "signin", label: "签到打卡", sort: 70},
                 {value: "meeting", label: "在线会议", sort: 80},
                 {value: "createGroup", label: "创建群组", sort: 85},
@@ -560,14 +494,6 @@ export default {
                 case 'mybot-del':
                     this.delMybot(params);
                     break;
-                case 'robot':
-                    this.getAITags();
-                    this.aibotShow = true;
-                    break;
-                case 'robot-setting':
-                    this.aibotTabAction = params;
-                    this.aibotSettingShow = true;
-                    break;
                 case 'signin':
                     this.signInShow = true;
                     break;
@@ -675,65 +601,6 @@ export default {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.mybotModifyLoad--;
-            });
-        },
-        // 获取AI标签
-        getAITags() {
-            this.$store.dispatch("call", {
-                url: 'system/setting/aibot_models',
-            }).then(({data}) => {
-                this.handleAITags(data);
-            });
-        },
-        // 处理AI标签
-        handleAITags(data) {
-            for (let key in data) {
-                const match = key.match(/^(.*?)_models$/);
-                if (match) {
-                    const value = match[1];
-                    this.aibotList.map(h => {
-                        if (h.value == value) {
-                            const items = AIModelNames(data[key])
-                            h.tags = items.map(item => item.label);
-                            h.tag = data[key.slice(0, -1)];
-                            items.some(item => {
-                                if (item.value == h.tag) {
-                                    h.tag = item.label;
-                                    return true;
-                                }
-                            })
-                        }
-                    });
-                }
-            }
-        },
-        // 开始聊天
-        onGoToChat(type) {
-            let dialogId = 0;
-            this.cacheDialogs.some(h => {
-                if (h.email == `ai-${type}@bot.system`) {
-                    dialogId = h.id;
-                    return true;
-                }
-            })
-            if (dialogId) {
-                this.$store.dispatch("openDialog", dialogId)
-                return
-            }
-            //
-            this.aibotDialogSearchLoad = type;
-            this.$store.dispatch("call", {
-                url: 'users/search/ai',
-                data: {type},
-            }).then(({data}) => {
-                this.$store.dispatch("openDialogUserid", data.userid).catch(({msg}) => {
-                    $A.modalError(msg)
-                }).finally(_ => {
-                    this.aibotDialogSearchLoad = '';
-                });
-            }).catch(({msg}) => {
-                this.aibotDialogSearchLoad = '';
-                $A.messageError(msg || '机器人暂未开启');
             });
         },
         // 会议
