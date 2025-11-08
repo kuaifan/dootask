@@ -336,6 +336,15 @@ const REPORT_AI_SYSTEM_PROMPT = `你是一名资深团队管理教练，需要�
 - 若原文包含数据或里程碑，保留并突出这些数字
 - 若某一章节没有信息，请输出“暂无”而非留空`;
 
+const REPORT_ANALYSIS_SYSTEM_PROMPT = `你是一名经验丰富的团队管理顾问，擅长阅读和分析员工提交的工作汇报，能够快速提炼重点并给出可执行建议。
+
+输出要求：
+1. 使用简洁的 Markdown 结构（标题、无序列表、引用等），不要使用代码块或 JSON
+2. 先给出整体概览，再列出具体亮点、风险或问题，以及明确的改进建议
+3. 如有数据或目标，应评估其完成情况和后续跟进要点
+4. 语气保持专业、客观、中立，不过度夸赞或批评
+5. 控制在 200-400 字之间，可视内容复杂度略微增减，但保持紧凑`;
+
 export {
     AIModelNames,
     AINormalizeJsonContent,
@@ -345,4 +354,5 @@ export {
     TASK_AI_SYSTEM_PROMPT,
     PROJECT_AI_SYSTEM_PROMPT,
     REPORT_AI_SYSTEM_PROMPT,
+    REPORT_ANALYSIS_SYSTEM_PROMPT,
 }

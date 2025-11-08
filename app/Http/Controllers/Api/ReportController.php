@@ -11,7 +11,6 @@ use App\Models\ReportLink;
 use App\Models\ReportReceive;
 use App\Models\User;
 use App\Models\WebSocketDialogMsg;
-use App\Module\AI;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Tasks\PushTask;
@@ -523,33 +522,38 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {post} api/report/ai_analyze 生成工作汇报 AI 分析
+     * @api {post} api/report/analysave 保存工作汇报 AI 分析
      *
-     * @apiDescription 需要token身份，仅支持报告提交人或接收人发起分析
+     * @apiDescription 需要token身份，仅支持报告提交人或接收人保存分析
      * @apiVersion 1.0.0
      * @apiGroup report
-     * @apiName ai_analyze
+     * @apiName analysave
      *
-     * @apiParam {Number} id               报告ID
-     * @apiParam {Array|String} [focus]    分析关注点（可选）
+     * @apiParam {Number} id            报告ID
+     * @apiParam {String} text          分析内容（Markdown）
+     * @apiParam {String} [model]       分析使用的模型标识（可选）
      *
-     * @apiSuccess {Number} ret            返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg            返回信息（错误描述）
-     * @apiSuccess {Object} data           返回数据
-     * @apiSuccess {Number} data.id        分析记录ID
-     * @apiSuccess {String} data.text      分析内容（Markdown）
+     * @apiSuccess {Number} ret         返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg         返回信息（错误描述）
+     * @apiSuccess {Object} data        返回数据
+     * @apiSuccess {Number} data.id     分析记录ID
+     * @apiSuccess {String} data.text   分析内容（Markdown）
      * @apiSuccess {String} data.updated_at 最近更新时间
      */
-    public function ai_analyze(): array
+    public function analysave(): array
     {
         $user = User::auth();
         $id = intval(Request::input("id"));
         if ($id <= 0) {
             return Base::retError("缺少ID参数");
         }
+        $text = trim((string)Request::input('text', ''));
+        if ($text === '') {
+            return Base::retError("分析内容不能为空");
+        }
+        $model = trim((string)Request::input('model', ''));
 
         $report = Report::getOne($id);
-
         if (!$this->userCanAccessReport($report, $user)) {
             return Base::retError("无权访问该工作汇报");
         }
@@ -559,31 +563,6 @@ class ReportController extends AbstractController
             ->whereUserid($user->userid)
             ->first();
 
-        $context = [
-            'viewer_name' => $user->nickname ?? ('用户' . $user->userid),
-        ];
-        if (!empty($user->profession)) {
-            $context['viewer_role'] = $user->profession;
-        } elseif (is_array($user->identity) && !empty($user->identity)) {
-            $context['viewer_role'] = implode('/', $user->identity);
-        }
-        if ($analysis && $analysis->analysis_text) {
-            $context['previous_feedback'] = $analysis->analysis_text;
-        }
-
-        $focus = Request::input('focus');
-        if (is_array($focus)) {
-            $context['focus'] = $focus;
-        } elseif (is_string($focus) && trim($focus) !== '') {
-            $context['focus_note'] = trim($focus);
-        }
-
-        $result = AI::analyzeReport($report, $context);
-        if (Base::isError($result)) {
-            return Base::retError("生成AI分析失败", $result);
-        }
-        $data = $result['data'];
-
         if (!$analysis) {
             $analysis = ReportAnalysis::fillInstance([
                 'rid' => $report->id,
@@ -591,10 +570,19 @@ class ReportController extends AbstractController
             ]);
         }
 
+        $viewerRole = $user->profession ?: (is_array($user->identity) && !empty($user->identity) ? implode('/', $user->identity) : null);
+        $focusMeta = null;
+        $focus = Request::input('focus');
+        if (is_array($focus)) {
+            $focusMeta = array_filter(array_map('trim', $focus));
+        } elseif (is_string($focus) && trim($focus) !== '') {
+            $focusMeta = [trim($focus)];
+        }
+
         $meta = array_filter([
-            'viewer_role' => $context['viewer_role'] ?? null,
-            'viewer_name' => $context['viewer_name'] ?? null,
-            'focus' => $context['focus'] ?? null,
+            'viewer_role' => $viewerRole,
+            'viewer_name' => $user->nickname ?? null,
+            'focus' => $focusMeta,
         ], function ($value) {
             if (is_array($value)) {
                 return !empty($value);
@@ -603,8 +591,8 @@ class ReportController extends AbstractController
         });
 
         $analysis->updateInstance([
-            'model' => $data['model'] ?? '',
-            'analysis_text' => $data['text'],
+            'model' => $model,
+            'analysis_text' => $text,
             'meta' => $meta,
         ]);
         $analysis->save();
@@ -614,69 +602,8 @@ class ReportController extends AbstractController
         return Base::retSuccess("success", [
             'id' => $analysis->id,
             'text' => $analysis->analysis_text,
+            'model' => $analysis->model,
             'updated_at' => $analysis->updated_at ? $analysis->updated_at->toDateTimeString() : null,
-        ]);
-    }
-
-    /**
-     * @api {post} api/report/ai_organize 整理工作汇报内容
-     *
-     * @apiDescription 需要token身份，根据当前草稿重新整理工作汇报结构
-     * @apiVersion 1.0.0
-     * @apiGroup report
-     * @apiName ai_organize
-     *
-     * @apiParam {String} content          汇报内容（HTML）
-     * @apiParam {String} [title]          汇报标题
-     * @apiParam {String} [type]           汇报类型（weekly/daily）
-     * @apiParam {Array|String} [focus]    整理关注点（可选）
-     *
-     * @apiSuccess {Number} ret            返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg            返回信息（错误描述）
-     * @apiSuccess {Object} data           返回数据
-     * @apiSuccess {String} data.html      整理后的内容（HTML）
-     */
-    public function ai_organize(): array
-    {
-        $user = User::auth();
-        $content = trim((string)Request::input("content", ""));
-        if ($content === '') {
-            return Base::retError("汇报内容不能为空");
-        }
-
-        $title = trim((string)Request::input("title", ""));
-        $type = trim((string)Request::input("type", ""));
-
-        $markdown = Base::html2markdown($content);
-        if ($markdown === '') {
-            return Base::retError("汇报内容解析失败");
-        }
-
-        $context = array_filter([
-            'title' => $title,
-            'type' => $type,
-        ]);
-
-        $focus = Request::input('focus');
-        if (is_array($focus)) {
-            $context['focus'] = $focus;
-        } elseif (is_string($focus) && trim($focus) !== '') {
-            $context['focus'] = [trim($focus)];
-        }
-
-        $result = AI::organizeReportContent($markdown, $context);
-        if (Base::isError($result)) {
-            return Base::retError("整理汇报失败", $result);
-        }
-
-        $data = $result['data'];
-        $html = Base::markdown2html($data['text']);
-        if (trim($html) === '') {
-            return Base::retError("整理后的内容为空");
-        }
-
-        return Base::retSuccess("success", [
-            'html' => $html,
         ]);
     }
 

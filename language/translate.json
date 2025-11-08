@@ -31812,18 +31812,6 @@
         "ru": "Сгенерировать анализ"
     },
     {
-        "key": "AI 正在生成分析...",
-        "zh": "",
-        "zh-CHT": "AI 正在生成分析...",
-        "en": "AI is generating analysis...",
-        "ko": "AI가 분석을 생성하는 중...",
-        "ja": "AIが分析を生成しています...",
-        "de": "KI erstellt die Analyse...",
-        "fr": "L’IA génère l’analyse...",
-        "id": "AI sedang menghasilkan analisis...",
-        "ru": "ИИ формирует анализ..."
-    },
-    {
         "key": "最后更新：",
         "zh": "",
         "zh-CHT": "最後更新：",
