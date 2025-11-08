@@ -125,6 +125,8 @@ export default {
             showModal: false,
             closing: false,
             loadIng: 0,
+            pendingAutoSubmit: false,
+            autoSubmitTimer: null,
 
             // 输入配置
             inputValue: '',
@@ -160,6 +162,7 @@ export default {
     beforeDestroy() {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
         this.clearActiveSSEClients();
+        this.clearAutoSubmitTimer();
     },
     computed: {
         selectedModelOption({modelMap, inputModel}) {
@@ -179,19 +182,26 @@ export default {
          * 打开助手弹窗并应用参数
          */
         onOpenAIAssistant(params) {
-            if ($A.isJson(params)) {
-                this.inputValue = params.value || '';
-                this.inputPlaceholder = params.placeholder || this.defaultPlaceholder || this.$L('请输入你的问题...');
-                this.inputRows = params.rows || this.defaultInputRows;
-                this.inputAutosize = params.autosize || this.defaultInputAutosize;
-                this.inputMaxlength = params.maxlength || this.defaultInputMaxlength;
-                this.applyHook = params.onApply || null;
-                this.beforeSendHook = params.onBeforeSend || null;
-                this.renderHook = params.onRender || null;
+            if (!$A.isJson(params)) {
+                params = {};
             }
+            this.inputValue = params.value || '';
+            this.inputPlaceholder = params.placeholder || this.defaultPlaceholder || this.$L('请输入你的问题...');
+            this.inputRows = params.rows || this.defaultInputRows;
+            this.inputAutosize = params.autosize || this.defaultInputAutosize;
+            this.inputMaxlength = params.maxlength || this.defaultInputMaxlength;
+            this.applyHook = params.onApply || null;
+            this.beforeSendHook = params.onBeforeSend || null;
+            this.renderHook = params.onRender || null;
+            this.pendingAutoSubmit = !!params.autoSubmit;
+            //
             this.responses = [];
             this.showModal = true;
             this.clearActiveSSEClients();
+            this.clearAutoSubmitTimer();
+            this.$nextTick(() => {
+                this.scheduleAutoSubmit();
+            });
         },
 
         /**
@@ -597,6 +607,49 @@ export default {
         },
 
         /**
+         * 清除自动提交定时器
+         */
+        clearAutoSubmitTimer() {
+            if (this.autoSubmitTimer) {
+                clearTimeout(this.autoSubmitTimer);
+                this.autoSubmitTimer = null;
+            }
+        },
+
+        /**
+         * 调度自动提交
+         */
+        scheduleAutoSubmit() {
+            if (!this.pendingAutoSubmit) {
+                return;
+            }
+            const attemptSubmit = () => {
+                if (!this.pendingAutoSubmit) {
+                    return;
+                }
+                if (this.canAutoSubmit()) {
+                    this.pendingAutoSubmit = false;
+                    this.clearAutoSubmitTimer();
+                    this.onSubmit();
+                    return;
+                }
+                this.autoSubmitTimer = setTimeout(attemptSubmit, 200);
+            };
+            this.clearAutoSubmitTimer();
+            this.autoSubmitTimer = setTimeout(attemptSubmit, 0);
+        },
+
+        /**
+         * 检查是否可以自动提交
+         */
+        canAutoSubmit() {
+            return !this.modelsLoading
+                && !!this.selectedModelOption
+                && this.responses.length === 0
+                && this.loadIng === 0;
+        },
+
+        /**
          * 新建响应卡片
          */
         createResponseEntry({modelOption, prompt}) {
@@ -719,9 +772,11 @@ export default {
                 return;
             }
             this.closing = true;
+            this.pendingAutoSubmit = false;
+            this.clearAutoSubmitTimer();
+            this.clearActiveSSEClients();
             this.showModal = false;
             this.responses = [];
-            this.clearActiveSSEClients();
             setTimeout(() => {
                 this.closing = false;
             }, 300);

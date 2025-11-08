@@ -40,7 +40,7 @@
                 </div>
             </FormItem>
             <FormItem :label="$L('汇报内容')" class="report-content-editor">
-                <TEditor v-model="reportData.content" height="100%"/>
+                <TEditor ref="reportEditor" v-model="reportData.content" height="100%"/>
             </FormItem>
             <FormItem class="report-foot">
                 <div class="report-bottoms">
@@ -48,7 +48,6 @@
                     <Button
                         type="default"
                         class="report-bottom"
-                        :loading="aiOrganizeLoading"
                         @click="onOrganize">
                         <Icon type="md-construct" />
                         {{ $L("AI 整理汇报") }}
@@ -56,26 +55,16 @@
                 </div>
             </FormItem>
         </Form>
-        <Modal
-            v-model="organizePreviewVisible"
-            :title="$L('整理结果预览')"
-            :mask-closable="false"
-            :styles="{
-                width: '90%',
-                maxWidth: '800px'
-            }">
-            <div class="report-content organize-preview user-select-auto" v-html="organizeResult.html"></div>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="closeOrganizePreview">{{ $L("取消") }}</Button>
-                <Button type="primary" @click="applyOrganize" :loading="aiOrganizeLoading">{{ $L("应用到汇报") }}</Button>
-            </div>
-        </Modal>
     </div>
 </template>
 
 <script>
 import UserSelect from "../../../components/UserSelect.vue";
 import {mapState} from "vuex";
+import emitter from "../../../store/events";
+import {MarkdownConver} from "../../../utils/markdown";
+import {extractPlainText} from "../../../utils/text";
+import {REPORT_AI_SYSTEM_PROMPT} from "../../../utils/ai";
 
 const TEditor = () => import('../../../components/TEditor');
 export default {
@@ -93,12 +82,6 @@ export default {
         return {
             loadIng: 0,
             receiveLoad: 0,
-            aiOrganizeLoading: false,
-            organizePreviewVisible: false,
-            organizeResult: {
-                html: '',
-                model: '',
-            },
 
             reportData: {
                 sign: "",
@@ -281,44 +264,82 @@ export default {
                 $A.messageWarning("请先填写汇报内容");
                 return;
             }
-            if (this.aiOrganizeLoading) {
-                return;
-            }
-            this.aiOrganizeLoading = true;
-            this.$store.dispatch("call", {
-                url: 'report/ai_organize',
-                method: 'post',
-                data: {
-                    content: this.reportData.content,
-                    title: this.reportData.title,
-                    type: this.reportData.type,
-                },
-                timeout: 60 * 1000,
-            }).then(({data}) => {
-                this.organizeResult = data || {html: '', model: ''};
-                if (!this.organizeResult.html) {
-                    $A.messageWarning("AI 未返回整理内容");
-                    return;
-                }
-                this.organizePreviewVisible = true;
-            }).catch(({msg}) => {
-                $A.messageError(msg);
-            }).finally(() => {
-                this.aiOrganizeLoading = false;
+            emitter.emit('openAIAssistant', {
+                placeholder: this.$L('补充你想强调的重点或特殊说明，AI 将在此基础上整理汇报'),
+                onBeforeSend: this.handleReportAIBeforeSend,
+                onApply: this.handleReportAIApply,
+                autoSubmit: true,
             });
         },
 
-        closeOrganizePreview() {
-            this.organizePreviewVisible = false;
+        buildReportAIContextData() {
+            const sections = [];
+            const meta = [];
+            const title = (this.reportData.title || '').trim();
+            if (title) {
+                meta.push(`标题：${title}`);
+            }
+            if (this.reportData.sign) {
+                meta.push(`周期：${this.reportData.sign}`);
+            }
+            if (this.reportData.type) {
+                const typeMap = {weekly: this.$L('周报'), daily: this.$L('日报')};
+                meta.push(`类型：${typeMap[this.reportData.type] || this.reportData.type}`);
+            }
+            if (meta.length > 0) {
+                sections.push('## 汇报信息');
+                sections.push(...meta);
+            }
+
+            const plain = extractPlainText(this.reportData.content || '');
+            if (plain) {
+                const limit = 3200;
+                const slice = plain.slice(0, limit);
+                sections.push('## 当前汇报正文');
+                sections.push(slice + (plain.length > limit ? '...' : ''));
+            }
+
+            return sections.join('\n').trim();
         },
 
-        applyOrganize() {
-            if (!this.organizeResult.html) {
-                $A.messageWarning("没有可应用的内容");
+        handleReportAIBeforeSend(context = []) {
+            const prepared = [
+                ['system', REPORT_AI_SYSTEM_PROMPT]
+            ];
+            const contextPrompt = this.buildReportAIContextData();
+            if (contextPrompt) {
+                let assistantContext = [
+                    '以下是当前汇报草稿，请在此基础上整理结构、补充要点：',
+                    contextPrompt,
+                ].join('\n');
+                if ($A.getObject(context, [0,0]) === 'human') {
+                    assistantContext += "\n----\n请根据以上背景再结合用户输入给出结果：++++";
+                }
+                prepared.push(['human', assistantContext]);
+            }
+            if (context.length > 0) {
+                prepared.push(...context);
+            }
+            return prepared;
+        },
+
+        handleReportAIApply({rawOutput}) {
+            if (!rawOutput) {
+                $A.messageWarning("AI 未生成内容");
                 return;
             }
-            this.reportData.content = this.organizeResult.html;
-            this.organizePreviewVisible = false;
+            const html = MarkdownConver(rawOutput).trim();
+            if (!html) {
+                $A.modalError("AI 内容解析失败，请重试");
+                return;
+            }
+            this.reportData.content = html;
+            this.$nextTick(() => {
+                const editor = this.$refs.reportEditor;
+                if (editor && typeof editor.focus === 'function') {
+                    editor.focus();
+                }
+            });
             $A.messageSuccess("已应用整理结果");
         }
     }
