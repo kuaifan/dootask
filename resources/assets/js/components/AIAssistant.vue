@@ -18,29 +18,27 @@
                     v-for="response in responses"
                     :key="response.id || response.localId"
                     class="ai-assistant-output-item">
+                    <div class="ai-assistant-output-apply">
+                        <template v-if="response.status === 'error'">
+                            <span class="ai-assistant-output-error">{{ response.error || $L('发送失败') }}</span>
+                        </template>
+                        <template v-else-if="response.rawOutput">
+                            <Button
+                                type="primary"
+                                size="small"
+                                :loading="response.applyLoading"
+                                class="ai-assistant-apply-btn"
+                                @click="applyResponse(response)">
+                                {{ applyButtonText || $L('应用此内容') }}
+                            </Button>
+                        </template>
+                        <template v-else>
+                            <Icon type="ios-sync" class="ai-assistant-output-icon icon-loading"/>
+                            <span class="ai-assistant-output-status">{{ $L('生成中...') }}</span>
+                        </template>
+                    </div>
                     <div class="ai-assistant-output-meta">
-                        <div class="ai-assistant-output-meta-left">
-                            <span class="ai-assistant-output-model">{{ response.modelLabel || response.model }}</span>
-                        </div>
-                        <div class="ai-assistant-output-meta-right">
-                            <template v-if="response.status === 'error'">
-                                <span class="ai-assistant-output-error">{{ response.error || $L('发送失败') }}</span>
-                            </template>
-                            <template v-else-if="response.rawOutput">
-                                <Button
-                                    type="primary"
-                                    size="small"
-                                    :loading="response.applyLoading"
-                                    class="ai-assistant-apply-btn"
-                                    @click="applyResponse(response)">
-                                    {{ $L('应用此内容') }}
-                                </Button>
-                            </template>
-                            <template v-else>
-                                <Icon type="ios-sync" class="ai-assistant-output-icon icon-loading"/>
-                                <span class="ai-assistant-output-status">{{ $L('生成中...') }}</span>
-                            </template>
-                        </div>
+                        <span class="ai-assistant-output-model">{{ response.modelLabel || response.model }}</span>
                     </div>
                     <div v-if="response.prompt" class="ai-assistant-output-question">{{ response.prompt }}</div>
                     <DialogMarkdown
@@ -53,13 +51,13 @@
                 </div>
             </div>
             <div class="ai-assistant-input">
-                <Input 
-                    v-model="inputValue" 
-                    type="textarea" 
-                    :placeholder="inputPlaceholder" 
-                    :rows="inputRows" 
-                    :autosize="inputAutosize" 
-                    :maxlength="inputMaxlength" />
+                <Input
+                    v-model="inputValue"
+                    type="textarea"
+                    :placeholder="inputPlaceholder || $L('请输入你的问题...')"
+                    :rows="inputRows || 2"
+                    :autosize="inputAutosize || {minRows:2, maxRows:6}"
+                    :maxlength="inputMaxlength || 500" />
             </div>
         </div>
         <div slot="footer" class="ai-assistant-footer">
@@ -86,7 +84,7 @@
             </div>
             <div class="ai-assistant-footer-btns">
                 <Button type="text" @click="showModal=false">{{ $L('取消') }}</Button>
-                <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{ $L('确定') }}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{ submitButtonText || $L('确定') }}</Button>
             </div>
         </div>
     </Modal>
@@ -101,24 +99,6 @@ import DialogMarkdown from "../pages/manage/components/DialogMarkdown.vue";
 export default {
     name: 'AIAssistant',
     components: {DialogMarkdown},
-    props: {
-        defaultPlaceholder: {
-            type: String,
-            default: '',
-        },
-        defaultInputRows: {
-            type: Number,
-            default: 2,
-        },
-        defaultInputAutosize: {
-            type: Object,
-            default: () => ({minRows:2, maxRows:6}),
-        },
-        defaultInputMaxlength: {
-            type: Number,
-            default: 500,
-        },
-    },
     data() {
         return {
             // 弹窗状态
@@ -127,13 +107,15 @@ export default {
             loadIng: 0,
             pendingAutoSubmit: false,
             autoSubmitTimer: null,
+            applyButtonText: null,
+            submitButtonText: null,
 
             // 输入配置
             inputValue: '',
-            inputPlaceholder: this.defaultPlaceholder,
-            inputRows: this.defaultInputRows,
-            inputAutosize: this.defaultInputAutosize,
-            inputMaxlength: this.defaultInputMaxlength,
+            inputPlaceholder: null,
+            inputRows: null,
+            inputAutosize: null,
+            inputMaxlength: null,
 
             // 回调钩子
             applyHook: null,
@@ -186,12 +168,14 @@ export default {
                 params = {};
             }
             this.inputValue = params.value || '';
-            this.inputPlaceholder = params.placeholder || this.defaultPlaceholder || this.$L('请输入你的问题...');
-            this.inputRows = params.rows || this.defaultInputRows;
-            this.inputAutosize = params.autosize || this.defaultInputAutosize;
-            this.inputMaxlength = params.maxlength || this.defaultInputMaxlength;
+            this.inputPlaceholder = params.placeholder || null;
+            this.inputRows = params.rows || null;
+            this.inputAutosize = params.autosize || null;
+            this.inputMaxlength = params.maxlength || null;
             this.applyHook = params.onApply || null;
             this.beforeSendHook = params.onBeforeSend || null;
+            this.applyButtonText = params.applyButtonText || null;
+            this.submitButtonText = params.submitButtonText || null;
             this.renderHook = params.onRender || null;
             this.pendingAutoSubmit = !!params.autoSubmit;
             //
@@ -841,21 +825,51 @@ export default {
             border-top: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .ai-assistant-output-meta {
+        .ai-assistant-output-apply {
+            position: sticky;
+            top: 0;
+            right: 0;
+            z-index: 1;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
-            gap: 12px;
+            height: 24px;
+            color: #999;
+            gap: 4px;
         }
 
-        .ai-assistant-output-meta-left {
-            flex: 1;
-            min-width: 0;
+        .ai-assistant-output-icon {
+            font-size: 16px;
+            color: #52c41a;
+        }
+
+        .ai-assistant-apply-btn {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-assistant-output-status {
+            color: #52c41a;
+        }
+
+        .ai-assistant-output-error {
+            color: #ff4d4f;
+        }
+
+        .ai-assistant-output-meta {
+            display: flex;
+            align-items: center;
+            height: 24px;
+            margin-top: -24px;
         }
 
         .ai-assistant-output-model {
-            display: inline-flex;
-            align-items: center;
+            max-width: 50%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             font-size: 12px;
             font-weight: 600;
             color: #2f54eb;
@@ -873,34 +887,6 @@ export default {
             color: #666;
             line-height: 1.4;
             margin-top: 8px;
-        }
-
-        .ai-assistant-output-meta-right {
-            display: flex;
-            align-items: center;
-            font-size: 12px;
-            color: #999;
-            gap: 4px;
-        }
-
-        .ai-assistant-output-icon {
-            font-size: 16px;
-            color: #2f54eb;
-        }
-
-        .ai-assistant-apply-btn {
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ai-assistant-output-status {
-            color: #52c41a;
-        }
-
-        .ai-assistant-output-error {
-            color: #ff4d4f;
         }
 
         .ai-assistant-output-placeholder {
