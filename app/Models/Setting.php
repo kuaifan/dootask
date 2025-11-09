@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Timer;
+use App\Module\AI;
 use Carbon\Carbon;
 
 /**
@@ -65,14 +66,6 @@ class Setting extends AbstractModel
                 $value['permission_pack_userids'] = is_array($value['permission_pack_userids']) ? $value['permission_pack_userids'] : [];
                 break;
 
-            // AI 助手设置
-            case 'aiSetting':
-                $value['ai_provider'] = $value['ai_provider'] ?: 'openai';
-                $value['ai_api_key'] = $value['ai_api_key'] ?: '';
-                $value['ai_api_url'] = $value['ai_api_url'] ?: '';
-                $value['ai_proxy'] = $value['ai_proxy'] ?: '';
-                break;
-
             // AI 机器人设置
             case 'aibotSetting':
                 if ($value['claude_token'] && empty($value['claude_key'])) {
@@ -91,10 +84,7 @@ class Setting extends AbstractModel
                                     $content = explode("\n", $content);
                                     $content = array_filter($content);
                                 }
-                                if (empty($content)) {
-                                    $content = self::AIBotDefaultModels($aiName);
-                                }
-                                $content = implode("\n", $content);
+                                $content = is_array($content) ? implode("\n", $content) : '';
                                 break;
                             case 'model':
                                 $models = Setting::AIBotModels2Array($array[$key . 's'], true);
@@ -121,95 +111,31 @@ class Setting extends AbstractModel
      */
     public static function AIOpen()
     {
-        return !!Base::settingFind('aiSetting', 'ai_api_key');
+        $setting = Base::setting('aibotSetting');
+        if (!is_array($setting) || empty($setting)) {
+            return false;
+        }
+        foreach (AI::TEXT_MODEL_PRIORITY as $vendor) {
+            if (self::isAIBotVendorEnabled($setting, $vendor)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * AI 机器人默认模型
-     * @param string $ai
-     * @return array
+     * 判断 AI 机器人厂商是否启用
+     * @param array $setting
+     * @param string $vendor
+     * @return bool
      */
-    public static function AIBotDefaultModels($ai = 'openai')
+    protected static function isAIBotVendorEnabled(array $setting, string $vendor): bool
     {
-        return match ($ai) {
-            'openai' => [
-                'gpt-4.1 | GPT-4.1',
-                'gpt-4o | GPT-4o',
-                'gpt-4 | GPT-4',
-                'gpt-4o-mini | GPT-4o Mini',
-                'gpt-4-turbo | GPT-4 Turbo',
-                'o3 (thinking) | GPT-o3',
-                'o1 | GPT-o1',
-                'o4-mini | GPT-o4 Mini',
-                'o3-mini | GPT-o3 Mini',
-                'o1-mini | GPT-o1 Mini',
-                'gpt-3.5-turbo | GPT-3.5 Turbo',
-                'gpt-3.5-turbo-16k | GPT-3.5 Turbo 16K',
-                'gpt-3.5-turbo-0125 | GPT-3.5 Turbo 0125',
-                'gpt-3.5-turbo-1106 | GPT-3.5 Turbo 1106'
-            ],
-            'claude' => [
-                'claude-opus-4-0 (thinking) | Claude Opus 4',
-                'claude-sonnet-4-0 (thinking) | Claude Sonnet 4',
-                'claude-3-7-sonnet-latest (thinking) | Claude Sonnet 3.7',
-                'claude-3-5-sonnet-latest | Claude Sonnet 3.5',
-                'claude-3-5-haiku-latest | Claude Haiku 3.5',
-                'claude-3-opus-latest | Claude Opus 3'
-            ],
-            'deepseek' => [
-                'deepseek-chat | DeepSeek V3',
-                'deepseek-reasoner | DeepSeek R1'
-            ],
-            'gemini' => [
-                'gemini-2.5-pro-preview-05-06 (thinking) | Gemini 2.5 Pro Preview',
-                'gemini-2.0-flash | Gemini 2.0 Flash',
-                'gemini-2.0-flash-lite | Gemini 2.0 Flash-Lite',
-                'gemini-1.5-flash | Gemini 1.5 Flash',
-                'gemini-1.5-flash-8b | Gemini 1.5 Flash 8B',
-                'gemini-1.5-pro | Gemini 1.5 Pro',
-                'gemini-1.0-pro | Gemini 1.0 Pro'
-            ],
-            'grok' => [
-                'grok-3-latest | Grok 3',
-                'grok-3-fast-latest | Grok 3 Fast',
-                'grok-3-mini-latest | Grok 3 Mini',
-                'grok-3-mini-fast-latest | Grok 3 Mini Fast',
-                'grok-2-vision-latest | Grok 2 Vision',
-                'grok-2-latest | Grok 2',
-            ],
-            'zhipu' => [
-                'glm-4 | GLM-4',
-                'glm-4-plus | GLM-4 Plus',
-                'glm-4-air | GLM-4 Air',
-                'glm-4-airx | GLM-4 AirX',
-                'glm-4-long | GLM-4 Long',
-                'glm-4-flash | GLM-4 Flash',
-                'glm-4v | GLM-4V',
-                'glm-4v-plus | GLM-4V Plus',
-                'glm-3-turbo | GLM-3 Turbo'
-            ],
-            'qianwen' => [
-                'qwen-max | QWEN Max',
-                'qwen-max-latest | QWEN Max Latest',
-                'qwen-turbo | QWEN Turbo',
-                'qwen-turbo-latest | QWEN Turbo Latest',
-                'qwen-plus | QWEN Plus',
-                'qwen-plus-latest | QWEN Plus Latest',
-                'qwen-long | QWEN Long'
-            ],
-            'wenxin' => [
-                'ernie-4.0-8k | Ernie 4.0 8K',
-                'ernie-4.0-8k-latest | Ernie 4.0 8K Latest',
-                'ernie-4.0-turbo-128k | Ernie 4.0 Turbo 128K',
-                'ernie-4.0-turbo-8k | Ernie 4.0 Turbo 8K',
-                'ernie-3.5-128k | Ernie 3.5 128K',
-                'ernie-3.5-8k | Ernie 3.5 8K',
-                'ernie-speed-128k | Ernie Speed 128K',
-                'ernie-speed-8k | Ernie Speed 8K',
-                'ernie-lite-8k | Ernie Lite 8K',
-                'ernie-tiny-8k | Ernie Tiny 8K'
-            ],
-            default => [],
+        $key = trim((string)($setting[$vendor . '_key'] ?? ''));
+        return match ($vendor) {
+            'ollama' => $key !== '' || !empty($setting['ollama_base_url']),
+            'wenxin' => $key !== '' && !empty($setting['wenxin_secret']),
+            default => $key !== '',
         };
     }
 

@@ -44,7 +44,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'voice2text', 'translation', 'convert_video', 'compress_video', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'system_alias', 'system_welcome', 'image_compress', 'image_quality', 'image_save_local']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'convert_video', 'compress_video', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'system_alias', 'system_welcome', 'image_compress', 'image_quality', 'image_save_local']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -71,8 +71,6 @@ class SystemController extends AbstractController
                     'project_invite',
                     'chat_information',
                     'anon_message',
-                    'voice2text',
-                    'translation',
                     'convert_video',
                     'compress_video',
                     'e2e_message',
@@ -106,12 +104,6 @@ class SystemController extends AbstractController
                     return Base::retError('自动归档时间不可大于100天！');
                 }
             }
-            if ($all['voice2text'] == 'open' && !Setting::AIOpen()) {
-                return Base::retError('开启语音转文字功能需要在应用启用 AI 助手。');
-            }
-            if ($all['translation'] == 'open' && !Setting::AIOpen()) {
-                return Base::retError('开启翻译功能需要在应用启用 AI 助手。');
-            }
             if ($all['system_alias'] == env('APP_NAME')) {
                 $all['system_alias'] = '';
             }
@@ -138,8 +130,6 @@ class SystemController extends AbstractController
         $setting['project_invite'] = $setting['project_invite'] ?: 'open';
         $setting['chat_information'] = $setting['chat_information'] ?: 'optional';
         $setting['anon_message'] = $setting['anon_message'] ?: 'open';
-        $setting['voice2text'] = $setting['voice2text'] ?: 'close';
-        $setting['translation'] = $setting['translation'] ?: 'close';
         $setting['convert_video'] = $setting['convert_video'] ?: 'close';
         $setting['compress_video'] = $setting['compress_video'] ?: 'close';
         $setting['e2e_message'] = $setting['e2e_message'] ?: 'close';
@@ -286,48 +276,6 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/ai AI助手设置（限管理员）
-     *
-     * @apiVersion 1.0.0
-     * @apiGroup system
-     * @apiName setting__ai
-     *
-     * @apiParam {String} type
-     * - get: 获取（默认）
-     * - save: 保存设置（参数：['ai_provider', 'ai_api_key', 'ai_api_url', 'ai_proxy']）
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function setting__ai()
-    {
-        User::auth('admin');
-        //
-        $type = trim(Request::input('type'));
-        if ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
-                return Base::retError('当前环境禁止修改');
-            }
-            $all = Base::newTrim(Request::input());
-            foreach ($all as $key => $value) {
-                if (!in_array($key, [
-                    'ai_provider',
-                    'ai_api_key',
-                    'ai_api_url',
-                    'ai_proxy',
-                ])) {
-                    unset($all[$key]);
-                }
-            }
-            $setting = Base::setting('aiSetting', Base::newTrim($all));
-        } else {
-            $setting = Base::setting('aiSetting');
-        }
-        //
-        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
-    }
-
-    /**
      * @api {get} api/system/setting/aibot 获取AI设置、保存AI机器人设置（限管理员）
      *
      * @apiVersion 1.0.0
@@ -404,44 +352,6 @@ class SystemController extends AbstractController
             return str_ends_with($key, '_models') || str_ends_with($key, '_model');
         }, ARRAY_FILTER_USE_BOTH);
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
-    }
-
-    /**
-     * @api {get} api/system/setting/aibot_defmodels 获取AI默认模型
-     *
-     * @apiDescription 获取AI机器人默认模型
-     * @apiVersion 1.0.0
-     * @apiGroup system
-     * @apiName setting__aibot_defmodels
-     *
-     * @apiParam {String} type          AI类型
-     * @apiParam {String} [base_url]    基础URL（仅 type=ollama 时有效）
-     * @apiParam {String} [key]         Key（仅 type=ollama 时有效）
-     * @apiParam {String} [agency]      使用代理（仅 type=ollama 时有效）
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function setting__aibot_defmodels()
-    {
-        $type = trim(Request::input('type'));
-        if ($type == 'ollama') {
-            $baseUrl = trim(Request::input('base_url'));
-            $key = trim(Request::input('key'));
-            $agency = trim(Request::input('agency'));
-            if (empty($baseUrl)) {
-                return Base::retError('请先填写 Base URL');
-            }
-            return AI::ollamaModels($baseUrl, $key, $agency);
-        }
-        $models = Setting::AIBotDefaultModels($type);
-        if (empty($models)) {
-            return Base::retError('未找到默认模型');
-        }
-        return Base::retSuccess('success', [
-            'models' => $models
-        ]);
     }
 
     /**

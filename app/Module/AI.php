@@ -11,10 +11,24 @@ use Carbon\Carbon;
  */
 class AI
 {
+    public const TEXT_MODEL_PRIORITY = [
+        'openai',
+        'claude',
+        'deepseek',
+        'gemini',
+        'grok',
+        'ollama',
+        'zhipu',
+        'qianwen',
+        'wenxin'
+    ];
+    protected const OPENAI_DEFAULT_MODEL = 'gpt-5-mini';
+
     protected $post = [];
     protected $headers = [];
     protected $urlPath = '';
     protected $timeout = 30;
+    protected $providerConfig = null;
 
     /**
      * 构造函数
@@ -64,29 +78,38 @@ class AI
     }
 
     /**
+     * 指定请求所使用的模型配置
+     * @param array $provider
+     */
+    public function setProvider(array $provider)
+    {
+        $this->providerConfig = $provider;
+    }
+
+    /**
      * 请求 AI 接口
      * @param bool $resRaw 是否返回原始数据
      * @return array
      */
     public function request($resRaw = false)
     {
-        $aiSetting = Base::setting('aiSetting');
-        if (!Setting::AIOpen()) {
-            return Base::retError("AI 助手未开启");
+        $provider = $this->providerConfig ?: self::resolveTextProvider();
+        if (!$provider) {
+            return Base::retError("请先配置 AI 助手");
         }
 
         $headers = [
             'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . $aiSetting['ai_api_key'],
+            'Authorization' => 'Bearer ' . $provider['api_key'],
         ];
-        if ($aiSetting['ai_proxy']) {
-            $headers['CURLOPT_PROXY'] = $aiSetting['ai_proxy'];
-            $headers['CURLOPT_PROXYTYPE'] = str_contains($aiSetting['ai_proxy'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
+        if (!empty($provider['agency'])) {
+            $headers['CURLOPT_PROXY'] = $provider['agency'];
+            $headers['CURLOPT_PROXYTYPE'] = str_contains($provider['agency'], 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
         }
         $headers = array_merge($headers, $this->headers);
 
-        $url = $aiSetting['ai_api_url'] ?: 'https://api.openai.com/v1';
-        $url = $url . ($this->urlPath ?: '/chat/completions');
+        $baseUrl = $provider['base_url'] ?: 'https://api.openai.com/v1';
+        $url = $baseUrl . ($this->urlPath ?: '/chat/completions');
 
         $result = Ihttp::ihttp_request($url, $this->post, $headers, $this->timeout);
         if (Base::isError($result)) {
@@ -125,17 +148,17 @@ class AI
         if (!file_exists($filePath)) {
             return Base::retError("语音文件不存在");
         }
-        $systemSetting = Base::setting('system');
-        if ($systemSetting['voice2text'] !== 'open') {
-            return Base::retError("语音转文字功能未开启");
-        }
-
         $cacheKey = "openAItranscriptions::" . md5($filePath . '_' . Base::array2json($extParams));
         if ($noCache) {
             Cache::forget($cacheKey);
         }
 
-        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function () use ($extParams, $filePath) {
+        $audioProvider = self::resolveOpenAIAudioProvider();
+        if (!$audioProvider) {
+            return Base::retError("请先在 AI 设置中配置 OpenAI 语音模型");
+        }
+
+        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function () use ($extParams, $filePath, $audioProvider) {
             $post = array_merge($extParams, [
                 'file' => new \CURLFile($filePath),
                 'model' => 'whisper-1',
@@ -145,6 +168,7 @@ class AI
             ];
 
             $ai = new self($post, $header);
+            $ai->setProvider($audioProvider);
             $ai->setUrlPath('/audio/transcriptions');
             $ai->setTimeout(15);
 
@@ -177,20 +201,19 @@ class AI
      */
     public static function translations($text, $targetLanguage, $noCache = false)
     {
-        $systemSetting = Base::setting('system');
-        if ($systemSetting['translation'] !== 'open') {
-            return Base::retError("翻译功能未开启");
-        }
-
         $cacheKey = "openAItranslations::" . md5($text . '_' . $targetLanguage);
         if ($noCache) {
             Cache::forget($cacheKey);
         }
 
-        $result = Cache::remember($cacheKey, Carbon::now()->addDays(7), function () use ($text, $targetLanguage) {
-            $post = json_encode([
-                "model" => "gpt-5-mini",
-                "reasoning_effort" => "minimal",
+        $provider = self::resolveTextProvider();
+        if (!$provider) {
+            return Base::retError("请先配置 AI 助手");
+        }
+
+        $result = Cache::remember($cacheKey, Carbon::now()->addDays(7), function () use ($text, $targetLanguage, $provider) {
+            $payload = [
+                "model" => $provider['model'],
                 "messages" => [
                     [
                         "role" => "system",
@@ -221,9 +244,14 @@ class AI
                         "content" => "请将以下内容翻译为 {$targetLanguage}：\n\n{$text}"
                     ]
                 ],
-            ]);
+            ];
+            if (self::shouldSendReasoningEffort($provider)) {
+                $payload['reasoning_effort'] = 'minimal';
+            }
+            $post = json_encode($payload);
 
             $ai = new self($post);
+            $ai->setProvider($provider);
             $ai->setTimeout(60);
 
             $res = $ai->request();
@@ -261,10 +289,14 @@ class AI
             Cache::forget($cacheKey);
         }
 
-        $result = Cache::remember($cacheKey, Carbon::now()->addHours(24), function () use ($text) {
-            $post = json_encode([
-                "model" => "gpt-5-mini",
-                "reasoning_effort" => "minimal",
+        $provider = self::resolveTextProvider();
+        if (!$provider) {
+            return Base::retError("请先配置 AI 助手");
+        }
+
+        $result = Cache::remember($cacheKey, Carbon::now()->addHours(24), function () use ($text, $provider) {
+            $payload = [
+                "model" => $provider['model'],
                 "messages" => [
                     [
                         "role" => "system",
@@ -289,9 +321,14 @@ class AI
                         "content" => "请为以下内容生成一个合适的标题：\n\n" . $text
                     ]
                 ],
-            ]);
+            ];
+            if (self::shouldSendReasoningEffort($provider)) {
+                $payload['reasoning_effort'] = 'minimal';
+            }
+            $post = json_encode($payload);
 
             $ai = new self($post);
+            $ai->setProvider($provider);
             $ai->setTimeout(10);
 
             $res = $ai->request();
@@ -329,10 +366,14 @@ class AI
             Cache::forget($cacheKey);
         }
 
-        $result = Cache::remember($cacheKey, Carbon::now()->addHours(6), function () {
-            $post = json_encode([
-                "model" => "gpt-5-mini",
-                "reasoning_effort" => "minimal",
+        $provider = self::resolveTextProvider();
+        if (!$provider) {
+            return Base::retError("请先配置 AI 助手");
+        }
+
+        $result = Cache::remember($cacheKey, Carbon::now()->addHours(6), function () use ($provider) {
+            $payload = [
+                "model" => $provider['model'],
                 "messages" => [
                     [
                         "role" => "system",
@@ -364,9 +405,14 @@ class AI
                         "content" => "请生成20个职场笑话和20个心灵鸡汤"
                     ]
                 ],
-            ]);
+            ];
+            if (self::shouldSendReasoningEffort($provider)) {
+                $payload['reasoning_effort'] = 'minimal';
+            }
+            $post = json_encode($payload);
 
             $ai = new self($post);
+            $ai->setProvider($provider);
             $ai->setTimeout(120);
 
             $res = $ai->request();
@@ -417,43 +463,137 @@ class AI
     }
 
     /**
-     * 获取 ollama 模型
-     * @param $baseUrl
-     * @param $key
-     * @param $agency
-     * @return array
+     * 选择可用的文本模型配置
+     * @return array|null
      */
-    public static function ollamaModels($baseUrl, $key = null, $agency = null)
+    protected static function resolveTextProvider()
     {
-        $extra = [
-            'Content-Type' => 'application/json',
-        ];
-        if ($key) {
-            $extra['Authorization'] = 'Bearer ' . $key;
+        $setting = Base::setting('aibotSetting');
+        if (!is_array($setting)) {
+            $setting = [];
         }
-        if ($agency) {
-            $extra['CURLOPT_PROXY'] = $agency;
-            $extra['CURLOPT_PROXYTYPE'] = str_contains($agency, 'socks') ? CURLPROXY_SOCKS5 : CURLPROXY_HTTP;
-        }
-        $res = Ihttp::ihttp_request(rtrim($baseUrl, '/') . '/api/tags', [], $extra, 15);
-        if (Base::isError($res)) {
-            return Base::retError("获取失败", $res);
-        }
-        $resData = Base::json2array($res['data']);
-        if (empty($resData['models'])) {
-            return Base::retError("获取失败", $resData);
-        }
-        $models = [];
-        foreach ($resData['models'] as $model) {
-            if ($model['name'] !== $model['model']) {
-                $models[] = "{$model['model']} | {$model['name']}";
-            } else {
-                $models[] = $model['model'];
+        foreach (self::TEXT_MODEL_PRIORITY as $vendor) {
+            $config = self::buildProviderConfig($setting, $vendor);
+            if ($config) {
+                return $config;
             }
         }
-        return Base::retSuccess("success", [
-            'models' => $models,
-            'original' => $resData['models']
-        ]);
+        return null;
+    }
+
+    /**
+     * 构建指定厂商的请求参数
+     * @param array $setting
+     * @param string $vendor
+     * @return array|null
+     */
+    protected static function buildProviderConfig(array $setting, string $vendor)
+    {
+        $key = trim((string)($setting[$vendor . '_key'] ?? ''));
+        $baseUrl = trim((string)($setting[$vendor . '_base_url'] ?? ''));
+        $agency = trim((string)($setting[$vendor . '_agency'] ?? ''));
+
+        switch ($vendor) {
+            case 'openai':
+                if ($key === '') {
+                    return null;
+                }
+                $baseUrl = $baseUrl ?: 'https://api.openai.com/v1';
+                $model = self::resolveOpenAITextModel($setting);
+                break;
+            case 'ollama':
+                if ($baseUrl === '') {
+                    return null;
+                }
+                if ($key === '') {
+                    $key = Base::strRandom(6);
+                }
+                $model = trim((string)($setting[$vendor . '_model'] ?? ''));
+                break;
+            case 'wenxin':
+                $secret = trim((string)($setting['wenxin_secret'] ?? ''));
+                if ($key === '' || $secret === '' || $baseUrl === '') {
+                    return null;
+                }
+                $key = $key . ':' . $secret;
+                $model = trim((string)($setting[$vendor . '_model'] ?? ''));
+                break;
+            default:
+                if ($key === '' || $baseUrl === '') {
+                    return null;
+                }
+                $model = trim((string)($setting[$vendor . '_model'] ?? ''));
+                break;
+        }
+
+        if ($model === '') {
+            return null;
+        }
+
+        return [
+            'vendor' => $vendor,
+            'model' => $model,
+            'api_key' => $key,
+            'base_url' => rtrim($baseUrl, '/'),
+            'agency' => $agency,
+        ];
+    }
+
+    /**
+     * 解析 OpenAI 文本模型
+     * @param array $setting
+     * @return string
+     */
+    protected static function resolveOpenAITextModel(array $setting)
+    {
+        $models = Setting::AIBotModels2Array($setting['openai_models'] ?? '', true);
+        if (in_array(self::OPENAI_DEFAULT_MODEL, $models, true)) {
+            return self::OPENAI_DEFAULT_MODEL;
+        }
+        if (!empty($setting['openai_model'])) {
+            return $setting['openai_model'];
+        }
+        return $models[0] ?? self::OPENAI_DEFAULT_MODEL;
+    }
+
+    /**
+     * OpenAI 语音模型配置
+     * @return array|null
+     */
+    protected static function resolveOpenAIAudioProvider()
+    {
+        $setting = Base::setting('aibotSetting');
+        if (!is_array($setting)) {
+            $setting = [];
+        }
+        $key = trim((string)($setting['openai_key'] ?? ''));
+        if ($key === '') {
+            return null;
+        }
+        $baseUrl = trim((string)($setting['openai_base_url'] ?? ''));
+        $baseUrl = $baseUrl ?: 'https://api.openai.com/v1';
+        $agency = trim((string)($setting['openai_agency'] ?? ''));
+
+        return [
+            'vendor' => 'openai',
+            'model' => 'whisper-1',
+            'api_key' => $key,
+            'base_url' => rtrim($baseUrl, '/'),
+            'agency' => $agency,
+        ];
+    }
+
+    /**
+     * 是否需要附加 reasoning_effort 参数
+     * @param array $provider
+     * @return bool
+     */
+    protected static function shouldSendReasoningEffort(array $provider): bool
+    {
+        if (($provider['vendor'] ?? '') !== 'openai') {
+            return false;
+        }
+        $model = $provider['model'] ?? '';
+        return str_starts_with($model, 'gpt-5');
     }
 }

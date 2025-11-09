@@ -182,22 +182,6 @@
                         <div v-if="formDatum.anon_message == 'open'" class="form-tip">{{$L('允许匿名发送消息给其他成员。')}}</div>
                         <div v-else class="form-tip">{{$L('禁止匿名发送消息。')}}</div>
                     </FormItem>
-                    <FormItem :label="$L('语音转文字')" prop="voice2text">
-                        <RadioGroup v-model="formDatum.voice2text">
-                            <Radio label="open">{{$L('开启')}}</Radio>
-                            <Radio label="close">{{$L('关闭')}}</Radio>
-                        </RadioGroup>
-                        <div v-if="formDatum.voice2text == 'open'" class="form-tip">{{$L('长按语音消息可转换成文字。')}} ({{$L('需要在应用启用 AI 助手')}})</div>
-                        <div v-else class="form-tip">{{$L('关闭语音转文字功能。')}}</div>
-                    </FormItem>
-                    <FormItem :label="$L('翻译消息')" prop="translation">
-                        <RadioGroup v-model="formDatum.translation">
-                            <Radio label="open">{{$L('开启')}}</Radio>
-                            <Radio label="close">{{$L('关闭')}}</Radio>
-                        </RadioGroup>
-                        <div v-if="formDatum.translation == 'open'" class="form-tip">{{$L('长按文本消息可翻译成当前设置的语言。')}} ({{$L('需要在应用启用 AI 助手')}})</div>
-                        <div v-else class="form-tip">{{$L('关闭文本消息翻译功能。')}}</div>
-                    </FormItem>
                     <FormItem :label="$L('视频转换')" prop="convertVideo">
                         <RadioGroup v-model="formDatum.convert_video">
                             <Radio label="open">{{$L('开启')}}</Radio>
