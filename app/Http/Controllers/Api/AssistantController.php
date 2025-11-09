@@ -92,12 +92,35 @@ class AssistantController extends AbstractController
             default => $modelType,
         };
 
-        $authResult = Ihttp::ihttp_post('http://nginx/ai/invoke/auth', [
+        $authParams = [
             'api_key' => $apiKey,
             'model_type' => $remoteModelType,
             'model_name' => $modelName,
             'context' => $contextJson,
-        ], 30);
+        ];
+
+        if ($setting[$modelType . '_base_url']) {
+            $authParams['base_url'] = $setting[$modelType . '_base_url'];
+        }
+        if ($setting[$modelType . '_agency']) {
+            $authParams['agency'] = $setting[$modelType . '_agency'];
+        }
+
+        $thinkPatterns = [
+            "/^(.+?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/",
+            "/^(.+?)\s*\(\s*(think|thinking|reasoning)\s*\)\s*$/"
+        ];
+        $thinkMatch = [];
+        foreach ($thinkPatterns as $pattern) {
+            if (preg_match($pattern, $authParams['model_name'], $thinkMatch)) {
+                break;
+            }
+        }
+        if ($thinkMatch && !empty($thinkMatch[1])) {
+            $authParams['model_name'] = $thinkMatch[1];
+        }
+
+        $authResult = Ihttp::ihttp_post('http://nginx/ai/invoke/auth', $authParams, 30);
 
         if (Base::isError($authResult)) {
             return Base::retError($authResult['msg']);

@@ -328,7 +328,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/aibot 获取会议设置、保存AI机器人设置（限管理员）
+     * @api {get} api/system/setting/aibot 获取AI设置、保存AI机器人设置（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
