@@ -140,10 +140,11 @@ class AI
      * 通过 openAI 语音转文字
      * @param string $filePath 语音文件路径
      * @param array $extParams 扩展参数
+     * @param array $extHeaders 扩展请求头
      * @param bool $noCache 是否禁用缓存
      * @return array
      */
-    public static function transcriptions($filePath, $extParams = [], $noCache = false)
+    public static function transcriptions($filePath, $extParams = [], $extHeaders = [], $noCache = false)
     {
         if (!file_exists($filePath)) {
             return Base::retError("语音文件不存在");
@@ -158,14 +159,14 @@ class AI
             return Base::retError("请先在 AI 设置中配置 OpenAI 语音模型");
         }
 
-        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function () use ($extParams, $filePath, $audioProvider) {
+        $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function () use ($extParams, $extHeaders, $filePath, $audioProvider) {
             $post = array_merge($extParams, [
                 'file' => new \CURLFile($filePath),
                 'model' => 'whisper-1',
             ]);
-            $header = [
+            $header = array_merge($extHeaders, [
                 'Content-Type' => 'multipart/form-data',
-            ];
+            ]);
 
             $ai = new self($post, $header);
             $ai->setProvider($audioProvider);

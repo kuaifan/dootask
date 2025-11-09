@@ -1395,7 +1395,9 @@ class DialogController extends AbstractController
                 'prompt' => "将此语音识别为“" . Doo::getLanguages($language) . "”。",
             ];
         }
-        $result = AI::transcriptions($recordData['file'], $extParams);
+        $result = AI::transcriptions($recordData['file'], $extParams, [
+            'accept-language' => Request::header('Accept-Language', 'zh')
+        ]);
         if (Base::isError($result)) {
             return $result;
         }
@@ -1988,7 +1990,9 @@ class DialogController extends AbstractController
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        $result = AI::transcriptions(public_path($msgData['path']));
+        $result = AI::transcriptions(public_path($msgData['path']), [], [
+            'accept-language' => Request::header('Accept-Language', 'zh')
+        ]);
         if (Base::isError($result)) {
             return $result;
         }
