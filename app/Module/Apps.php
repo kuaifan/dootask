@@ -44,7 +44,7 @@ class Apps
     {
         if (!self::isInstalled($appId)) {
             $name = match ($appId) {
-                'ai' => 'AI Robot',
+                'ai' => 'AI Assistant',
                 'face' => 'Face check-in',
                 'appstore' => 'AppStore',
                 'approve' => 'Approval',

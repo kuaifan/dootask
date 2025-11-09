@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use App\Module\AI;
+use App\Module\Apps;
 use App\Module\Base;
-use App\Module\Ihttp;
 use Request;
 
 /**
@@ -14,6 +15,11 @@ use Request;
  */
 class AssistantController extends AbstractController
 {
+    public function __construct()
+    {
+        Apps::isInstalledThrow('ai');
+    }
+
     /**
      * @api {post} api/assistant/auth 生成授权码
      *
@@ -40,104 +46,28 @@ class AssistantController extends AbstractController
         $modelName = trim(Request::input('model_name', ''));
         $contextInput = Request::input('context', []);
 
-        if ($modelType === '' || $modelName === '') {
-            return Base::retError('参数错误');
-        }
+        return AI::createStreamKey($modelType, $modelName, $contextInput);
+    }
 
-        if (is_string($contextInput)) {
-            $decoded = json_decode($contextInput, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $contextInput = $decoded;
-            }
-        }
-        if (!is_array($contextInput)) {
-            return Base::retError('context 参数格式错误');
-        }
-
-        $context = [];
-        foreach ($contextInput as $item) {
-            if (!is_array($item) || count($item) < 2) {
-                continue;
-            }
-            $role = trim((string)($item[0] ?? ''));
-            $message = trim((string)($item[1] ?? ''));
-            if ($role === '' || $message === '') {
-                continue;
-            }
-            $context[] = [$role, $message];
-        }
-
-        $contextJson = json_encode($context, JSON_UNESCAPED_UNICODE);
-        if ($contextJson === false) {
-            return Base::retError('context 参数格式错误');
-        }
-
+    /**
+     * @api {get} api/assistant/models 获取AI模型
+     *
+     * @apiDescription 获取所有AI机器人模型设置
+     * @apiVersion 1.0.0
+     * @apiGroup assistant
+     * @apiName models
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function models()
+    {
         $setting = Base::setting('aibotSetting');
-        $apiKey = Base::val($setting, $modelType . '_key');
-        if ($modelType === 'wenxin') {
-            $wenxinSecret = Base::val($setting, 'wenxin_secret');
-            if ($wenxinSecret) {
-                $apiKey = trim(($apiKey ?: '') . ':' . $wenxinSecret);
-            }
-        }
-        if ($modelType === 'ollama' && empty($apiKey)) {
-            $apiKey = Base::strRandom(6);
-        }
-        if (empty($apiKey)) {
-            return Base::retError('模型未启用');
-        }
+        $setting = array_filter($setting, function ($value, $key) {
+            return str_ends_with($key, '_models') || str_ends_with($key, '_model');
+        }, ARRAY_FILTER_USE_BOTH);
 
-        $remoteModelType = match ($modelType) {
-            'qianwen' => 'qwen',
-            default => $modelType,
-        };
-
-        $authParams = [
-            'api_key' => $apiKey,
-            'model_type' => $remoteModelType,
-            'model_name' => $modelName,
-            'context' => $contextJson,
-        ];
-
-        if ($setting[$modelType . '_base_url']) {
-            $authParams['base_url'] = $setting[$modelType . '_base_url'];
-        }
-        if ($setting[$modelType . '_agency']) {
-            $authParams['agency'] = $setting[$modelType . '_agency'];
-        }
-
-        $thinkPatterns = [
-            "/^(.+?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/",
-            "/^(.+?)\s*\(\s*(think|thinking|reasoning)\s*\)\s*$/"
-        ];
-        $thinkMatch = [];
-        foreach ($thinkPatterns as $pattern) {
-            if (preg_match($pattern, $authParams['model_name'], $thinkMatch)) {
-                break;
-            }
-        }
-        if ($thinkMatch && !empty($thinkMatch[1])) {
-            $authParams['model_name'] = $thinkMatch[1];
-        }
-
-        $authResult = Ihttp::ihttp_post('http://nginx/ai/invoke/auth', $authParams, 30);
-
-        if (Base::isError($authResult)) {
-            return Base::retError($authResult['msg']);
-        }
-
-        $body = Base::json2array($authResult['data']);
-        if ($body['code'] !== 200) {
-            return Base::retError($body['error'] ?: 'AI 接口返回异常', $body);
-        }
-
-        $streamKey = Base::val($body, 'data.stream_key');
-        if (empty($streamKey)) {
-            return Base::retError('AI 接口返回数据异常');
-        }
-
-        return Base::retSuccess('success', [
-            'stream_key' => $streamKey,
-        ]);
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
 }

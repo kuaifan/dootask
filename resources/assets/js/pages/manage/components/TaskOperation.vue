@@ -108,10 +108,7 @@
             v-model="moveTaskShow"
             :title="$L('移动任务')"
             :mask-closable="false"
-            :styles="{
-                width: '90%',
-                maxWidth: '540px'
-            }"
+            width="540px"
             footer-hide>
             <TaskMove ref="addTask" v-model="moveTaskShow" :task="task"/>
         </Modal>
@@ -121,10 +118,7 @@
             v-model="copyTaskShow"
             :title="$L('复制任务')"
             :mask-closable="false"
-            :styles="{
-                width: '90%',
-                maxWidth: '540px'
-            }"
+            width="540px"
             footer-hide>
             <TaskMove v-model="copyTaskShow" :task="task" type="copy"/>
         </Modal>

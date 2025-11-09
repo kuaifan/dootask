@@ -334,27 +334,6 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/aibot_models 获取AI模型
-     *
-     * @apiDescription 获取所有AI机器人模型设置
-     * @apiVersion 1.0.0
-     * @apiGroup system
-     * @apiName aibot_models
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function setting__aibot_models()
-    {
-        $setting = Base::setting('aibotSetting');
-        $setting = array_filter($setting, function($value, $key) {
-            return str_ends_with($key, '_models') || str_ends_with($key, '_model');
-        }, ARRAY_FILTER_USE_BOTH);
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
-    }
-
-    /**
      * @api {get} api/system/setting/checkin 获取签到设置、保存签到设置（限管理员）
      *
      * @apiVersion 1.0.0

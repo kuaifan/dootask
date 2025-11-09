@@ -132,6 +132,126 @@ class AI
         return Base::retSuccess("success", $result);
     }
 
+    /**
+     * 生成 AI 流式会话凭证
+     * @param string $modelType
+     * @param string $modelName
+     * @param mixed $contextInput
+     * @return array
+     */
+    public static function createStreamKey($modelType, $modelName, $contextInput = [])
+    {
+        $modelType = trim((string)$modelType);
+        $modelName = trim((string)$modelName);
+
+        if ($modelType === '' || $modelName === '') {
+            return Base::retError('参数错误');
+        }
+
+        if (is_string($contextInput)) {
+            $decoded = json_decode($contextInput, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $contextInput = $decoded;
+            }
+        }
+
+        if (!is_array($contextInput)) {
+            return Base::retError('context 参数格式错误');
+        }
+
+        $context = [];
+        foreach ($contextInput as $item) {
+            if (!is_array($item) || count($item) < 2) {
+                continue;
+            }
+            $role = trim((string)($item[0] ?? ''));
+            $message = trim((string)($item[1] ?? ''));
+            if ($role === '' || $message === '') {
+                continue;
+            }
+            $context[] = [$role, $message];
+        }
+
+        $contextJson = json_encode($context, JSON_UNESCAPED_UNICODE);
+        if ($contextJson === false) {
+            return Base::retError('context 参数格式错误');
+        }
+
+        $setting = Base::setting('aibotSetting');
+        if (!is_array($setting)) {
+            $setting = [];
+        }
+
+        $apiKey = Base::val($setting, $modelType . '_key');
+        if ($modelType === 'wenxin') {
+            $wenxinSecret = Base::val($setting, 'wenxin_secret');
+            if ($wenxinSecret) {
+                $apiKey = trim(($apiKey ?: '') . ':' . $wenxinSecret);
+            }
+        }
+        if ($modelType === 'ollama' && empty($apiKey)) {
+            $apiKey = Base::strRandom(6);
+        }
+        if (empty($apiKey)) {
+            return Base::retError('模型未启用');
+        }
+
+        $remoteModelType = match ($modelType) {
+            'qianwen' => 'qwen',
+            default => $modelType,
+        };
+
+        $authParams = [
+            'api_key' => $apiKey,
+            'model_type' => $remoteModelType,
+            'model_name' => $modelName,
+            'context' => $contextJson,
+        ];
+
+        $baseUrl = trim((string)($setting[$modelType . '_base_url'] ?? ''));
+        if ($baseUrl !== '') {
+            $authParams['base_url'] = $baseUrl;
+        }
+
+        $agency = trim((string)($setting[$modelType . '_agency'] ?? ''));
+        if ($agency !== '') {
+            $authParams['agency'] = $agency;
+        }
+
+        $thinkPatterns = [
+            "/^(.+?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/",
+            "/^(.+?)\s*\(\s*(think|thinking|reasoning)\s*\)\s*$/"
+        ];
+        $thinkMatch = [];
+        foreach ($thinkPatterns as $pattern) {
+            if (preg_match($pattern, $authParams['model_name'], $thinkMatch)) {
+                break;
+            }
+        }
+        if ($thinkMatch && !empty($thinkMatch[1])) {
+            $authParams['model_name'] = $thinkMatch[1];
+        }
+
+        $authResult = Ihttp::ihttp_post('http://nginx/ai/invoke/auth', $authParams, 30);
+        if (Base::isError($authResult)) {
+            return Base::retError($authResult['msg']);
+        }
+
+        $body = Base::json2array($authResult['data']);
+        if (($body['code'] ?? null) !== 200) {
+            return Base::retError(($body['error'] ?? '') ?: 'AI 接口返回异常', $body);
+        }
+
+        $streamKey = Base::val($body, 'data.stream_key');
+        if (empty($streamKey)) {
+            return Base::retError('AI 接口返回数据异常');
+        }
+
+        return Base::retSuccess('success', [
+            'stream_key' => $streamKey,
+        ]);
+    }
+
     /** ******************************************************************************************** */
     /** ******************************************************************************************** */
     /** ******************************************************************************************** */
@@ -146,6 +266,8 @@ class AI
      */
     public static function transcriptions($filePath, $extParams = [], $extHeaders = [], $noCache = false)
     {
+        Apps::isInstalledThrow('ai');
+
         if (!file_exists($filePath)) {
             return Base::retError("语音文件不存在");
         }
@@ -202,6 +324,8 @@ class AI
      */
     public static function translations($text, $targetLanguage, $noCache = false)
     {
+        Apps::isInstalledThrow('ai');
+
         $cacheKey = "openAItranslations::" . md5($text . '_' . $targetLanguage);
         if ($noCache) {
             Cache::forget($cacheKey);
@@ -285,6 +409,10 @@ class AI
      */
     public static function generateTitle($text, $noCache = false)
     {
+        if (!Apps::isInstalled('ai')) {
+            return Base::retError('应用「AI Assistant」未安装');
+        }
+
         $cacheKey = "openAIGenerateTitle::" . md5($text);
         if ($noCache) {
             Cache::forget($cacheKey);
@@ -362,6 +490,10 @@ class AI
      */
     public static function generateJokeAndSoup($noCache = false)
     {
+        if (!Apps::isInstalled('ai')) {
+            return Base::retError('应用「AI Assistant」未安装');
+        }
+
         $cacheKey = "openAIJokeAndSoup::" . md5(date('Y-m-d'));
         if ($noCache) {
             Cache::forget($cacheKey);

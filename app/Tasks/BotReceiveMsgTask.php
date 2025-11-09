@@ -446,7 +446,7 @@ class BotReceiveMsgTask extends AbstractTask
                 }
                 // 判断AI应用是否安装
                 if (!Apps::isInstalled('ai')) {
-                    throw new Exception('应用「AI Robot」未安装');
+                    throw new Exception('应用「AI Assistant」未安装');
                 }
                 // 整理机器人参数
                 $setting = Base::setting('aibotSetting');

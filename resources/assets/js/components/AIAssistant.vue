@@ -4,10 +4,7 @@
         :title="$L('AI 助手')"
         :mask-closable="false"
         :closable="false"
-        :styles="{
-            width: '90%',
-            maxWidth: shouldCreateNewSession ? '420px' : '600px',
-        }"
+        :width="shouldCreateNewSession ? '420px' : '600px'"
         class-name="ai-assistant-modal">
         <div class="ai-assistant-content">
             <div
@@ -126,6 +123,7 @@ export default {
             inputModel: '',
             modelGroups: [],
             modelMap: {},
+            modelsFirstLoad: true,
             modelsLoading: false,
             modelCacheKey: 'aiAssistant.model',
             cachedModelId: '',
@@ -139,7 +137,7 @@ export default {
     },
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
-        this.initModelCache();
+        this.loadCachedModel();
     },
     beforeDestroy() {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
@@ -181,19 +179,12 @@ export default {
             //
             this.responses = [];
             this.showModal = true;
+            this.fetchModelOptions();
             this.clearActiveSSEClients();
             this.clearAutoSubmitTimer();
             this.$nextTick(() => {
                 this.scheduleAutoSubmit();
             });
-        },
-
-        /**
-         * 初始化模型缓存与下拉数据
-         */
-        async initModelCache() {
-            await this.loadCachedModel();
-            this.fetchModelOptions();
         },
 
         /**
@@ -222,16 +213,30 @@ export default {
          * 拉取模型配置
          */
         async fetchModelOptions() {
-            this.modelsLoading = true;
+            const needFetch = this.modelsFirstLoad
+            if (needFetch) {
+                this.modelsFirstLoad = false;
+                this.modelsLoading = true;
+            }
             try {
                 const {data} = await this.$store.dispatch("call", {
-                    url: 'system/setting/aibot_models',
+                    url: 'assistant/models',
                 });
                 this.normalizeModelOptions(data);
             } catch (error) {
-                $A.modalError(error?.msg || error || '获取模型列表失败');
+                if (this.modelGroups.length > 0) {
+                    return;
+                }
+                $A.modalError({
+                    content: error?.msg || error || '获取模型列表失败',
+                    onOk: _ => {
+                        this.showModal = false;
+                    },
+                });
             } finally {
-                this.modelsLoading = false;
+                if (needFetch) {
+                    this.modelsLoading = false;
+                }
             }
         },
 
@@ -488,6 +493,7 @@ export default {
             if (!streamKey) {
                 throw new Error('获取 stream_key 失败');
             }
+            this.clearActiveSSEClients();
             const sse = new SSEClient($A.mainUrl(`ai/invoke/stream/${streamKey}`));
             this.registerSSEClient(sse);
             sse.subscribe(['append', 'replace', 'done'], (type, event) => {
@@ -925,10 +931,16 @@ export default {
 
     .ai-assistant-footer {
         display: flex;
-        justify-content: between;
+        justify-content: space-between;
+        flex-wrap: wrap;
         gap: 12px;
         .ai-assistant-footer-models {
             text-align: left;
+            .ivu-select-disabled {
+                .ivu-select-selection {
+                    background-color: transparent;
+                }
+            }
             .ivu-select-selection {
                 border: 0;
                 box-shadow: none;

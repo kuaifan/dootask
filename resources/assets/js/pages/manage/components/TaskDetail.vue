@@ -490,10 +490,7 @@
             v-model="delayTaskShow"
             :title="$L('任务延期')"
             :mask-closable="false"
-            :styles="{
-                width: '90%',
-                maxWidth: '450px'
-            }">
+            width="450px">
             <Form
                 ref="formDelayTaskRef"
                 :model="delayTaskForm"
