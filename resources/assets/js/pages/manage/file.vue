@@ -1205,6 +1205,9 @@ export default {
         },
 
         onFileListPointerDown(event) {
+            if (this.windowTouch) {
+                return;
+            }
             if (this.tableMode === 'table') {
                 return;
             }
@@ -1273,6 +1276,9 @@ export default {
         },
 
         onFileListPointerMove(event) {
+            if (this.windowTouch) {
+                return;
+            }
             if (!this.dragSelecting || !this.dragSelectStart) {
                 return;
             }
@@ -1305,6 +1311,9 @@ export default {
         },
 
         onFileListPointerUp() {
+            if (this.windowTouch) {
+                return;
+            }
             if (this.dragSelecting && this.dragSelectRect) {
                 this.updateDragSelection(this.dragSelectRect);
             }
@@ -1319,6 +1328,9 @@ export default {
         },
 
         onFileListPointerLeave(event) {
+            if (this.windowTouch) {
+                return;
+            }
             if (!this.dragSelecting) {
                 return;
             }
