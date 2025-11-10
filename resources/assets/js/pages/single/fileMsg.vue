@@ -63,6 +63,7 @@
     }
     .view-longtext {
         padding: 1rem;
+        overflow: auto;
     }
     .view-editor,
     .no-support {
