@@ -1,6 +1,6 @@
 import {languageList, languageName} from "../language";
 
-const withLanguagePreferencePrompt = (prompt, extraInstruction = null) => {
+const withLanguagePreferencePrompt = (prompt) => {
     if (typeof prompt !== 'string' || !prompt) {
         return prompt;
     }
@@ -8,8 +8,7 @@ const withLanguagePreferencePrompt = (prompt, extraInstruction = null) => {
     if (!label) {
         return prompt;
     }
-    const instruction = extraInstruction || '除非我在后续输入中明确指定其他语言，否则请使用该语言进行思考并输出所有内容。';
-    return `${prompt}\n\n当前我使用的语言是：${label}，${instruction}`;
+    return `${prompt}\n\n输出语言策略：\n- 默认使用 ${label} 输出。\n- 即使上下文或引用包含其他语言，也保持 ${label} 输出。\n- 仅当我明确指定其他语言时，才切换到该语言。`;
 };
 
 const AIModelNames = (str) => {
