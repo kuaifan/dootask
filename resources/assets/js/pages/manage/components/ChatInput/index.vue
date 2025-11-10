@@ -169,7 +169,7 @@
                     class="chat-send"
                     :class="sendClass"
                     v-touchmouse="clickSend"
-                    v-longpress="{callback: onShowMenu, delay: 300}">
+                    v-longpress="onShowMenu">
                     <EPopover
                         ref="menu"
                         v-model="showMenu"
