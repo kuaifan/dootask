@@ -36,6 +36,7 @@ use App\Models\UserFavorite;
 use App\Models\UserRecentItem;
 use App\Models\UserTag;
 use App\Models\UserTagRecognition;
+use App\Models\UserAppSort;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserEmailVerification;
 use App\Module\AgoraIO\AgoraTokenGenerator;
@@ -3457,6 +3458,51 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @api {get} api/users/appsort 获取个人应用排序
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName appsort
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function appsort()
+    {
+        $user = User::auth();
+        $sorts = UserAppSort::getSorts($user->userid);
+        return Base::retSuccess('success', [
+            'sorts' => $sorts,
+        ]);
+    }
+
+    /**
+     * @api {post} api/users/appsort/save 保存个人应用排序
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName appsort__save
+     *
+     * @apiParam {Object} sorts                排序配置，示例：{"base":["micro:calendar"],"admin":["system:ldap"]}
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function appsort__save()
+    {
+        $user = User::auth();
+        $sorts = UserAppSort::normalizeSorts(Request::input('sorts'));
+        $record = UserAppSort::saveSorts($user->userid, $sorts);
+        return Base::retSuccess('保存成功', [
+            'sorts' => $record->sorts ?? $sorts,
+        ]);
+    }
+
+    /**
      * @api {get} api/users/favorites 获取用户收藏列表
      *
      * @apiDescription 需要token身份
@@ -3679,4 +3725,5 @@ class UsersController extends AbstractController
         //
         return Base::retSuccess('success', ['favorited' => $isFavorited]);
     }
+
 }

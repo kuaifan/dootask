@@ -7,74 +7,116 @@
                 <div class="apply-nav">
                     <h1>{{ $L('应用') }}</h1>
                 </div>
+                <div class="apply-nav-actions">
+                    <Dropdown trigger="click" placement="bottom-end" transfer @on-click="handleActionMenu">
+                        <div class="apply-action-btn">
+                            <Icon type="ios-more"/>
+                        </div>
+                        <DropdownMenu slot="list">
+                            <DropdownItem v-if="!sortingMode" name="sort">{{ $L('调整排序') }}</DropdownItem>
+                            <DropdownItem v-else name="cancelSort">{{ $L('退出排序') }}</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </div>
             </div>
+
+            <div v-if="sortingMode" class="apply-sort-bar">
+                <div class="apply-sort-tip">
+                    <Icon type="md-move"/>
+                    <span>{{ $L('拖动卡片调整顺序，保存后仅自己可见') }}</span>
+                </div>
+                <div class="apply-sort-actions">
+                    <Button @click="exitSortMode">{{ $L('取消') }}</Button>
+                    <Button @click="restoreDefaultSort">{{ $L('恢复默认') }}</Button>
+                    <Button
+                        type="primary"
+                        :disabled="!sortHasChanges"
+                        :loading="appSortSaving"
+                        @click="submitSort">
+                        {{ $L('保存') }}
+                    </Button>
+                </div>
+            </div>
+
             <div class="apply-content">
                 <template v-for="t in applyTypes">
-                    <div v-if="isExistAdminList" class="apply-row-title">
-                        {{ t == 'base' ? $L('常用') : $L('管理员') }}
-                    </div>
-                    <Row :gutter="16">
-                        <Col
-                            v-for="(item, key) in (t == 'base' ? filterMicroAppsMenus : filterMicroAppsMenusAdmin)"
-                            :key="`micro_` + key"
-                            :xs="{ span: 6 }"
-                            :sm="{ span: 6 }"
-                            :lg="{ span: 6 }"
-                            :xl="{ span: 6 }"
-                            :xxl="{ span: 3 }">
-                            <div class="apply-col">
-                                <div class="apply-item" @click="applyClick({value: 'microApp'}, item)">
-                                    <div class="logo">
-                                        <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${item.icon})`}"></div>
-                                    </div>
-                                    <p>{{ item.label }}</p>
-                                </div>
-                            </div>
-                        </Col>
-                        <Col
-                            v-for="(item, key) in applyList"
-                            :key="key"
-                            v-if="((t=='base' && !item.type) || item.type == t) && item.show !== false"
-                            :xs="{ span: 6 }"
-                            :sm="{ span: 6 }"
-                            :lg="{ span: 6 }"
-                            :xl="{ span: 6 }"
-                            :xxl="{ span: 3 }">
-                            <div class="apply-col">
-                                <template v-if="item.value === 'exportManage'">
-                                    <EPopover
-                                        v-model="exportPopoverShow"
-                                        trigger="click"
-                                        placement="bottom"
-                                        popperClass="apply-export-popover"
-                                        :transfer="true">
-                                        <div slot="reference" class="apply-item">
+                    <template v-if="t === 'base' || adminAppItems.length > 0">
+                        <div
+                            v-if="(t === 'base' && isExistAdminList) || t === 'admin'"
+                            class="apply-row-title">
+                            {{ t === 'base' ? $L('常用') : $L('管理员') }}
+                        </div>
+                        <Draggable
+                            v-for="cards in [currentCards(t)]"
+                            :key="`apps_${t}`"
+                            tag="Row"
+                            class="apply-sort-list"
+                            :list="cards"
+                            :disabled="!sortingMode"
+                            :component-data="{ props: { gutter: 16 } }"
+                            :options="getDraggableOptions(t)">
+                            <Col
+                                v-for="card in cards"
+                                :key="card.sortKey"
+                                class="apply-col-wrapper"
+                                :xs="{ span: 6 }"
+                                :sm="{ span: 6 }"
+                                :lg="{ span: 6 }"
+                                :xl="{ span: 6 }"
+                                :xxl="{ span: 3 }">
+                                <div class="apply-col">
+                                    <template v-if="card.category === 'micro'">
+                                        <div class="apply-item" :class="{'is-sorting': sortingMode}" @click="handleCardClick(card)">
                                             <div class="logo">
-                                                <div class="apply-icon no-dark-content" :class="getLogoClass(item.value)"></div>
+                                                <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${card.micro.icon})`}"></div>
                                             </div>
-                                            <p>{{ $L(item.label) }}</p>
+                                            <p>{{ card.micro.label }}</p>
                                         </div>
-                                        <ul class="apply-export-menu">
-                                            <li @click="handleExport('task')">{{ $L('导出任务统计') }}</li>
-                                            <li @click="handleExport('overdue')">{{ $L('导出超期任务') }}</li>
-                                            <li @click="handleExport('approve')">{{ $L('导出审批数据') }}</li>
-                                            <li @click="handleExport('checkin')">{{ $L('导出签到数据') }}</li>
-                                        </ul>
-                                    </EPopover>
-                                </template>
-                                <div v-else class="apply-item" @click="applyClick(item)">
-                                    <div class="logo">
-                                        <div class="apply-icon no-dark-content" :class="getLogoClass(item.value)"></div>
-                                        <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
-                                            <Badge v-if="showBadge(item,'approve')" :overflow-count="999" :count="approveUnreadNumber"/>
-                                            <Badge v-if="showBadge(item,'report')" :overflow-count="999" :count="reportUnreadNumber"/>
+                                    </template>
+                                    <template v-else>
+                                        <template v-if="card.system.value === 'exportManage' && !sortingMode">
+                                            <EPopover
+                                                v-model="exportPopoverShow"
+                                                trigger="click"
+                                                placement="bottom"
+                                                popperClass="apply-export-popover"
+                                                :transfer="true">
+                                                <div slot="reference" class="apply-item" :class="{'is-sorting': sortingMode}">
+                                                    <div class="logo">
+                                                        <div class="apply-icon no-dark-content" :class="getLogoClass(card.system.value)"></div>
+                                                    </div>
+                                                    <p>{{ $L(card.system.label) }}</p>
+                                                </div>
+                                                <ul class="apply-export-menu">
+                                                    <li @click="handleExport('task')">{{ $L('导出任务统计') }}</li>
+                                                    <li @click="handleExport('overdue')">{{ $L('导出超期任务') }}</li>
+                                                    <li @click="handleExport('approve')">{{ $L('导出审批数据') }}</li>
+                                                    <li @click="handleExport('checkin')">{{ $L('导出签到数据') }}</li>
+                                                </ul>
+                                            </EPopover>
+                                        </template>
+                                        <div
+                                            v-else
+                                            class="apply-item"
+                                            :class="{'is-sorting': sortingMode}"
+                                            @click="handleCardClick(card)">
+                                            <div class="logo">
+                                                <div class="apply-icon no-dark-content" :class="getLogoClass(card.system.value)"></div>
+                                                <div
+                                                    v-if="!sortingMode"
+                                                    @click.stop="handleCardClick(card, 'badge')"
+                                                    class="apply-box-top-report">
+                                                    <Badge v-if="showBadge(card.system,'approve')" :overflow-count="999" :count="approveUnreadNumber"/>
+                                                    <Badge v-if="showBadge(card.system,'report')" :overflow-count="999" :count="reportUnreadNumber"/>
+                                                </div>
+                                            </div>
+                                            <p>{{ $L(card.system.label) }}</p>
                                         </div>
-                                    </div>
-                                    <p>{{ $L(item.label) }}</p>
+                                    </template>
                                 </div>
-                            </div>
-                        </Col>
-                    </Row>
+                            </Col>
+                        </Draggable>
+                    </template>
                 </template>
             </div>
         </div>
@@ -289,9 +331,11 @@ import SystemAppPush from "./setting/components/SystemAppPush";
 import emitter from "../../store/events";
 import ImgUpload from "../../components/ImgUpload.vue";
 import {webhookEventOptions} from "../../utils/webhook";
+import Draggable from "vuedraggable";
 
 export default {
     components: {
+        Draggable,
         ImgUpload,
         UserSelect,
         DrawerOverlay,
@@ -306,6 +350,22 @@ export default {
     data() {
         return {
             applyTypes: ['base', 'admin'],
+            sortingMode: false,
+            sortLists: {
+                base: [],
+                admin: [],
+            },
+            sortInitialLists: {
+                base: [],
+                admin: [],
+            },
+            appSorts: {
+                base: [],
+                admin: [],
+            },
+            appSortLoaded: false,
+            appSortLoading: false,
+            appSortSaving: false,
             //
             mybotShow: false,
             mybotList: [],
@@ -337,6 +397,9 @@ export default {
             sendType: '',
         }
     },
+    created() {
+        this.fetchAppSorts();
+    },
     activated() {
         this.$store.dispatch("updateMicroAppsStatus")
     },
@@ -349,6 +412,7 @@ export default {
             'approveUnreadNumber',
             'cacheDialogs',
             'windowOrientation',
+            'windowPortrait',
             'formOptions',
             'routeLoading',
             'microAppsIds'
@@ -359,6 +423,7 @@ export default {
         ]),
         applyList() {
             const list = [
+                // 常用应用
                 {value: "approve", label: "审批中心", sort: 30, show: this.microAppsIds.includes('approve')},
                 {value: "favorite", label: "我的收藏", sort: 45},
                 {value: "recent", label: "最近打开", sort: 47},
@@ -372,6 +437,14 @@ export default {
                 {value: "addProject", label: "创建项目", sort: 110},
                 {value: "addTask", label: "添加任务", sort: 120},
                 {value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUIApp},
+
+                // 管理员应用
+                {type: 'admin', value: "ldap", label: "LDAP", sort: 160, show: this.userIsAdmin},
+                {type: 'admin', value: "mail", label: "邮件通知", sort: 170, show: this.userIsAdmin},
+                {type: 'admin', value: "appPush", label: "APP 推送", sort: 180, show: this.userIsAdmin},
+                {type: 'admin', value: "complaint", label: "举报管理", sort: 190, show: this.userIsAdmin},
+                {type: 'admin', value: "exportManage", label: "数据导出", sort: 195, show: this.userIsAdmin},
+                {type: 'admin', value: "allUser", label: "团队管理", sort: 200, show: this.userIsAdmin},
             ]
             // 竖屏模式
             if (this.windowPortrait) {
@@ -381,25 +454,293 @@ export default {
                     {value: "setting", label: "设置", sort: 140},
                 ])
             }
-            // 管理员
-            if (this.userIsAdmin) {
-                list.push(...[
-                    {type: 'admin', value: "ldap", label: "LDAP", sort: 160},
-                    {type: 'admin', value: "mail", label: "邮件通知", sort: 170},
-                    {type: 'admin', value: "appPush", label: "APP 推送", sort: 180},
-                    {type: 'admin', value: "complaint", label: "举报管理", sort: 190},
-                    {type: 'admin', value: "exportManage", label: "数据导出", sort: 195},
-                    {type: 'admin', value: "allUser", label: "团队管理", sort: 200},
-                ])
-            }
             //
             return list.sort((a, b) => a.sort - b.sort);
         },
         isExistAdminList() {
-            return this.filterMicroAppsMenusAdmin.length > 0 || this.applyList.map(h => h.type).indexOf('admin') !== -1;
+            return this.adminAppItems.length > 0;
+        },
+        baseAppItems() {
+            return this.applySavedSort(this.collectAppItems('base'), 'base');
+        },
+        adminAppItems() {
+            return this.applySavedSort(this.collectAppItems('admin'), 'admin');
+        },
+        sortHasChanges() {
+            if (!this.sortingMode) {
+                return false;
+            }
+            const groups = ['base', 'admin'];
+            return groups.some(group => {
+                const current = (this.sortLists[group] || []).map(item => item.sortKey);
+                const initial = this.sortInitialLists[group] || [];
+                if (current.length !== initial.length) {
+                    return true;
+                }
+                return current.some((key, index) => key !== initial[index]);
+            });
+        }
+    },
+    watch: {
+        sortingMode(val) {
+            if (val) {
+                this.bootstrapSortLists();
+            } else {
+                this.resetSortState();
+            }
+        },
+        baseAppItems() {
+            if (this.sortingMode) {
+                this.mergeSortListWithSource('base');
+            }
+        },
+        adminAppItems() {
+            if (this.sortingMode) {
+                this.mergeSortListWithSource('admin');
+            }
         }
     },
     methods: {
+        handleActionMenu(action) {
+            if (action === 'sort') {
+                this.enterSortMode();
+            } else if (action === 'cancelSort') {
+                this.exitSortMode();
+            }
+        },
+        currentCards(type) {
+            return this.sortingMode ? (this.sortLists[type] || []) : this.getDisplayItems(type);
+        },
+        getDisplayItems(type) {
+            return type === 'admin' ? this.adminAppItems : this.baseAppItems;
+        },
+        collectAppItems(group) {
+            const items = [];
+            const microSource = group === 'admin' ? this.filterMicroAppsMenusAdmin : this.filterMicroAppsMenus;
+            microSource.forEach(menu => {
+                if (!menu || menu.show === false) {
+                    return;
+                }
+                items.push(this.createMicroCard(menu, group));
+            });
+            this.applyList.forEach(item => {
+                if (item.show === false) {
+                    return;
+                }
+                const isAdminItem = item.type === 'admin';
+                if (group === 'admin') {
+                    if (!isAdminItem) {
+                        return;
+                    }
+                } else if (isAdminItem) {
+                    return;
+                }
+                items.push(this.createSystemCard(item, group));
+            });
+            return items;
+        },
+        createMicroCard(menu, group) {
+            const fallback = menu?.id || menu?.value || menu?.url || menu?.label || 'unknown';
+            const key = menu?.name || fallback;
+            return {
+                sortKey: `micro:${key}`,
+                category: 'micro',
+                group,
+                micro: menu,
+            };
+        },
+        createSystemCard(item, group) {
+            return {
+                sortKey: `system:${item.value}`,
+                category: 'system',
+                group,
+                system: item,
+            };
+        },
+        applySavedSort(items, group) {
+            const saved = this.appSorts[group] || [];
+            if (!saved.length) {
+                return items;
+            }
+            const map = {};
+            items.forEach(card => {
+                map[card.sortKey] = card;
+            });
+            const ordered = [];
+            saved.forEach(key => {
+                if (map[key]) {
+                    ordered.push(map[key]);
+                    delete map[key];
+                }
+            });
+            items.forEach(card => {
+                if (map[card.sortKey]) {
+                    ordered.push(card);
+                    delete map[card.sortKey];
+                }
+            });
+            return ordered;
+        },
+        async enterSortMode() {
+            if (this.sortingMode) {
+                return;
+            }
+            if (!this.appSortLoaded && !this.appSortLoading) {
+                await this.fetchAppSorts();
+            }
+            this.sortingMode = true;
+        },
+        exitSortMode() {
+            this.sortingMode = false;
+        },
+        bootstrapSortLists() {
+            const base = this.cloneAppItems(this.baseAppItems);
+            const admin = this.cloneAppItems(this.adminAppItems);
+            this.$set(this.sortLists, 'base', base);
+            this.$set(this.sortLists, 'admin', admin);
+            this.$set(this.sortInitialLists, 'base', base.map(item => item.sortKey));
+            this.$set(this.sortInitialLists, 'admin', admin.map(item => item.sortKey));
+        },
+        resetSortState() {
+            this.$set(this.sortLists, 'base', []);
+            this.$set(this.sortLists, 'admin', []);
+            this.$set(this.sortInitialLists, 'base', []);
+            this.$set(this.sortInitialLists, 'admin', []);
+        },
+        mergeSortListWithSource(group) {
+            const source = this.cloneAppItems(this.getDisplayItems(group));
+            if (!source.length) {
+                this.$set(this.sortLists, group, []);
+                this.$set(this.sortInitialLists, group, []);
+                return;
+            }
+            const sourceMap = new Map(source.map(item => [item.sortKey, item]));
+            const next = [];
+            (this.sortLists[group] || []).forEach(item => {
+                if (sourceMap.has(item.sortKey)) {
+                    next.push(sourceMap.get(item.sortKey));
+                    sourceMap.delete(item.sortKey);
+                }
+            });
+            sourceMap.forEach(item => next.push(item));
+            this.$set(this.sortLists, group, this.cloneAppItems(next));
+            const snapshot = this.sortInitialLists[group] ? [...this.sortInitialLists[group]] : [];
+            next.forEach(item => {
+                if (!snapshot.includes(item.sortKey)) {
+                    snapshot.push(item.sortKey);
+                }
+            });
+            this.$set(this.sortInitialLists, group, snapshot);
+        },
+        cloneAppItems(items = []) {
+            return items.map(item => Object.assign({}, item));
+        },
+        getDraggableOptions(type) {
+            return {
+                animation: 200,
+                draggable: '.apply-col-wrapper',
+                group: {
+                    name: `${type}-apps`,
+                    pull: false,
+                    put: false,
+                }
+            };
+        },
+        async fetchAppSorts() {
+            if (this.appSortLoading) {
+                return;
+            }
+            this.appSortLoading = true;
+            try {
+                const {data} = await this.$store.dispatch("call", {
+                    url: 'users/appsort',
+                    method: 'get',
+                });
+                this.appSorts = this.normalizeSortPayload(data?.sorts);
+            } catch (error) {
+                const msg = error?.msg || error?.message;
+                msg && console.warn(msg);
+            } finally {
+                this.appSortLoading = false;
+                this.appSortLoaded = true;
+            }
+        },
+        normalizeSortPayload(raw) {
+            const result = {base: [], admin: []};
+            if (!raw || typeof raw !== 'object') {
+                return result;
+            }
+            ['base', 'admin'].forEach(group => {
+                const list = Array.isArray(raw[group]) ? raw[group] : [];
+                result[group] = list
+                    .filter(item => typeof item === 'string')
+                    .map(item => item.trim())
+                    .filter(item => item.length > 0);
+            });
+            return result;
+        },
+        submitSort() {
+            if (!this.sortHasChanges) {
+                this.exitSortMode();
+                return;
+            }
+            const payload = this.buildSortPayload();
+            this.appSortSaving = true;
+            this.$store.dispatch("call", {
+                url: 'users/appsort/save',
+                method: 'post',
+                data: {
+                    sorts: payload,
+                }
+            }).then(({data, msg}) => {
+                this.appSorts = this.normalizeSortPayload(data?.sorts || payload);
+                this.exitSortMode();
+                $A.messageSuccess(msg || this.$L('保存成功'));
+            }).catch(({msg}) => {
+                $A.modalError(msg || this.$L('保存失败'));
+            }).finally(() => {
+                this.appSortSaving = false;
+            });
+        },
+        restoreDefaultSort() {
+            if (!this.sortingMode) {
+                return;
+            }
+            ['base', 'admin'].forEach(group => {
+                this.$set(this.sortLists, group, this.cloneAppItems(this.collectAppItems(group)));
+            });
+        },
+        buildSortPayload() {
+            const payload = {base: [], admin: []};
+            ['base', 'admin'].forEach(group => {
+                const keys = (this.sortLists[group] || []).map(item => item.sortKey);
+                const defaults = this.getDefaultSortKeys(group);
+                payload[group] = this.arraysEqual(keys, defaults) ? [] : keys;
+            });
+            return payload;
+        },
+        getDefaultSortKeys(group) {
+            return this.collectAppItems(group).map(item => item.sortKey);
+        },
+        arraysEqual(a = [], b = []) {
+            if (a.length !== b.length) {
+                return false;
+            }
+            return a.every((item, index) => item === b[index]);
+        },
+        handleCardClick(card, params = '') {
+            if (this.sortingMode) {
+                return;
+            }
+            if (!card) {
+                return;
+            }
+            if (card.category === 'micro') {
+                this.applyClick({value: 'microApp'}, card.micro);
+                return;
+            }
+            this.applyClick(card.system, params);
+        },
         normalizeWebhookEvents(events = [], useFallback = false) {
             if (!Array.isArray(events)) {
                 events = events ? [events] : [];

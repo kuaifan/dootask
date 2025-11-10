@@ -30,6 +30,52 @@
                     font-weight: 600;
                 }
             }
+
+            .apply-nav-actions {
+                display: flex;
+                align-items: center;
+
+                .apply-action-btn {
+                    font-size: 26px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 8px;
+                    color: #6f6f6f;
+                    cursor: pointer;
+                    transition: all .2s;
+
+                    &:hover {
+                        color: $primary-title-color;
+                    }
+                }
+            }
+        }
+
+        .apply-sort-bar {
+            margin: 16px 32px 0;
+            padding: 12px 16px;
+            border: 1px dashed rgba($primary-color, 0.4);
+            border-radius: 8px;
+            background-color: mix(#ffffff, $primary-color, 92%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+
+            .apply-sort-tip {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: $primary-color;
+                font-size: 13px;
+            }
+
+            .apply-sort-actions {
+                display: flex;
+                gap: 8px;
+            }
         }
 
         .apply-content {
@@ -39,7 +85,6 @@
 
             .apply-row-title {
                 margin-bottom: 16px;
-
             }
 
             > div.apply-row-title:nth-last-child(2) {
@@ -83,11 +128,23 @@
                         top: -16px;
                         padding: 8px;
                     }
+
+                    &.is-sorting {
+                        border-style: dashed;
+                        border-color: $primary-color;
+                        background: rgba($primary-color, 0.05);
+                    }
                 }
             }
         }
 
         @media (width <= 510px) {
+            .apply-sort-bar {
+                margin: 12px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
             .apply-row-title {
                 margin-bottom: 8px !important;
             }
@@ -531,7 +588,11 @@ body.window-portrait {
             background-color: #FFFFFF;
 
             .apply-head {
-                margin: 24px 24px 0 24px;
+                margin: 24px 24px 0;
+            }
+
+            .apply-sort-bar {
+                margin: 16px 20px 0;
             }
 
             .apply-content {
