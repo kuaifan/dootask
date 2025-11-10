@@ -69,7 +69,7 @@
                     <OptionGroup
                         v-for="group in modelGroups"
                         :key="group.type"
-                        :label="$L(group.label)">
+                        :label="group.label">
                         <Option
                             v-for="option in group.options"
                             :key="option.id"
@@ -690,7 +690,7 @@ export default {
                 return;
             }
             response.applyLoading = true;
-            const payload = this.buildResponsePayload(response);
+            const payload = this.buildResponsePayload(response, true);
             try {
                 const result = this.applyHook(payload);
                 if (result && typeof result.then === 'function') {
@@ -714,7 +714,7 @@ export default {
         /**
          * 构造发送给外部回调的统一数据结构
          */
-        buildResponsePayload(response) {
+        buildResponsePayload(response, removeReasoning = false) {
             if (!response) {
                 return {
                     model: '',
@@ -727,8 +727,18 @@ export default {
                 model: response.model,
                 type: response.type,
                 prompt: response.prompt,
-                rawOutput: response.rawOutput,
+                rawOutput: removeReasoning ? this.removeReasoningSections(response.rawOutput) : response.rawOutput,
             };
+        },
+
+        /**
+         * 从回调中剔除 reasoning block
+         */
+        removeReasoningSections(text) {
+            if (typeof text !== 'string') {
+                return text;
+            }
+            return text.replace(/:::\s*reasoning[\s\S]*?:::/gi, '').trim();
         },
 
         /**
@@ -808,6 +818,7 @@ export default {
 
 <style lang="scss">
 .ai-assistant-modal {
+    --apply-reasoning-before-bg: #e1e1e1;
     .ivu-modal {
         transition: max-width 0.3s ease;
         .ivu-modal-header {
@@ -926,6 +937,35 @@ export default {
         .ai-assistant-output-markdown {
             margin-top: 12px;
             font-size: 13px;
+
+            .apply-reasoning {
+                margin: 0 0 12px 0;
+                padding: 0 0 0 13px;
+                line-height: 26px;
+                position: relative;
+
+                &:before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    bottom: 0;
+                    width: 2px;
+                    background-color: var(--apply-reasoning-before-bg);
+                }
+
+                .reasoning-label {
+                    margin-bottom: 4px;
+                    opacity: 0.9;
+                }
+
+                .reasoning-content {
+                    opacity: 0.5;
+                    > p:last-child {
+                        margin-bottom: 0;
+                    }
+                }
+            }
         }
     }
 
@@ -956,6 +996,11 @@ export default {
             justify-content: flex-end;
             gap: 12px;
         }
+    }
+}
+body.dark-mode-reverse {
+    .ai-assistant-modal {
+        --apply-reasoning-before-bg: #4e4e56;
     }
 }
 </style>
