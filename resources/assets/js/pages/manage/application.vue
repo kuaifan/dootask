@@ -75,25 +75,15 @@
                                     </template>
                                     <template v-else>
                                         <template v-if="card.system.value === 'exportManage' && !sortingMode">
-                                            <EPopover
-                                                v-model="exportPopoverShow"
-                                                trigger="click"
-                                                placement="bottom"
-                                                popperClass="apply-export-popover"
-                                                :transfer="true">
-                                                <div slot="reference" class="apply-item" :class="{'is-sorting': sortingMode}">
-                                                    <div class="logo">
-                                                        <div class="apply-icon no-dark-content" :class="getLogoClass(card.system.value)"></div>
-                                                    </div>
-                                                    <p>{{ $L(card.system.label) }}</p>
+                                            <div
+                                                class="apply-item"
+                                                :class="{'is-sorting': sortingMode}"
+                                                @click="openExportMenu">
+                                                <div class="logo">
+                                                    <div class="apply-icon no-dark-content" :class="getLogoClass(card.system.value)"></div>
                                                 </div>
-                                                <ul class="apply-export-menu">
-                                                    <li @click="handleExport('task')">{{ $L('导出任务统计') }}</li>
-                                                    <li @click="handleExport('overdue')">{{ $L('导出超期任务') }}</li>
-                                                    <li @click="handleExport('approve')">{{ $L('导出审批数据') }}</li>
-                                                    <li @click="handleExport('checkin')">{{ $L('导出签到数据') }}</li>
-                                                </ul>
-                                            </EPopover>
+                                                <p>{{ $L(card.system.label) }}</p>
+                                            </div>
                                         </template>
                                         <div
                                             v-else
@@ -386,8 +376,6 @@ export default {
             mailShow: false,
             //
             appPushShow: false,
-            //
-            exportPopoverShow: false,
             //
             scanLoginShow: false,
             scanLoginLoad: false,
@@ -741,6 +729,32 @@ export default {
             }
             this.applyClick(card.system, params);
         },
+        openExportMenu({currentTarget: target} = {}) {
+            if (this.sortingMode) {
+                return;
+            }
+            if (target && typeof target.stopPropagation === 'function') {
+                target.stopPropagation();
+            }
+            const reference = target && target.target ? target.target : target;
+            const menuEvent = target && target.target ? target : (reference ? {target: reference} : target);
+            const list = [
+                {label: this.$L('导出任务统计'), value: 'task'},
+                {label: this.$L('导出超期任务'), value: 'overdue'},
+                {label: this.$L('导出审批数据'), value: 'approve'},
+                {label: this.$L('导出签到数据'), value: 'checkin'},
+            ];
+            this.$store.commit('menu/operation', {
+                event: menuEvent,
+                list,
+                size: 'large',
+                onUpdate: (type) => {
+                    if (type) {
+                        this.handleExport(type);
+                    }
+                }
+            });
+        },
         normalizeWebhookEvents(events = [], useFallback = false) {
             if (!Array.isArray(events)) {
                 events = events ? [events] : [];
@@ -847,7 +861,6 @@ export default {
             this.$emit("on-click", item.value, params);
         },
         handleExport(type) {
-            this.exportPopoverShow = false;
             emitter.emit('openManageExport', type);
         },
         // 获取我的机器人
