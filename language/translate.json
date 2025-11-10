@@ -17724,42 +17724,6 @@
         "ru": "Преобразовать в текст"
     },
     {
-        "key": "语音转文字",
-        "zh": "",
-        "zh-CHT": "語音轉文字",
-        "en": "Voice to text",
-        "ko": "음성을 텍스트로",
-        "ja": "音声をテキストに",
-        "de": "Sprache zu Text",
-        "fr": "Voix en texte",
-        "id": "Suara ke teks",
-        "ru": "Голос в текст"
-    },
-    {
-        "key": "长按语音消息可转换成文字。",
-        "zh": "",
-        "zh-CHT": "長按語音消息可轉換成文字。",
-        "en": "Long press on voice messages to convert them to text.",
-        "ko": "음성 메시지를 길게 누르면 텍스트로 변환할 수 있습니다.",
-        "ja": "音声メッセージを長押しするとテキストに変換できます。",
-        "de": "Halten Sie Sprachnachrichten lange gedrückt, um sie in Text umzuwandeln.",
-        "fr": "Appuyez longuement sur les messages vocaux pour les convertir en texte.",
-        "id": "Tekan lama pada pesan suara untuk mengubahnya menjadi teks.",
-        "ru": "Длительное нажатие на голосовые сообщения для преобразования их в текст."
-    },
-    {
-        "key": "关闭语音转文字功能。",
-        "zh": "",
-        "zh-CHT": "關閉語音轉文字功能。",
-        "en": "Turn off voice to text function.",
-        "ko": "음성을 텍스트로 변환하는 기능을 끕니다.",
-        "ja": "音声をテキストに変換する機能をオフにします。",
-        "de": "Sprache-zu-Text-Funktion ausschalten.",
-        "fr": "Désactiver la fonction de conversion voix en texte.",
-        "id": "Matikan fungsi suara ke teks.",
-        "ru": "Отключить функцию преобразования голоса в текст."
-    },
-    {
         "key": "你确定要删除文件【(%T1)】吗？",
         "zh": "",
         "zh-CHT": "你確定要刪除文件【(%T1)】嗎？",
@@ -20002,18 +19966,6 @@
         "fr": "Échec de l'enregistrement",
         "id": "Pendaftaran gagal",
         "ru": "Регистрация не удалась"
-    },
-    {
-        "key": "语音转文字功能未开启",
-        "zh": "",
-        "zh-CHT": "語音轉文字功能未開啟",
-        "en": "Voice-to-text feature is not enabled",
-        "ko": "음성을 텍스트로 변환하는 기능이 활성화되지 않았습니다",
-        "ja": "音声からテキストへの変換機能が有効になっていません",
-        "de": "Sprach-zu-Text-Funktion ist nicht aktiviert",
-        "fr": "La fonction de conversion de la voix en texte n'est pas activée",
-        "id": "Fitur suara ke teks tidak diaktifkan",
-        "ru": "Функция преобразования голоса в текст не включена"
     },
     {
         "key": "语音文件不存在",
@@ -24168,18 +24120,6 @@
         "ru": "Содержание сообщения пусто"
     },
     {
-        "key": "翻译功能未开启",
-        "zh": "",
-        "zh-CHT": "翻譯功能未開啟",
-        "en": "Translation feature is not enabled",
-        "ko": "번역 기능이 활성화되지 않았습니다",
-        "ja": "翻訳機能が有効になっていません",
-        "de": "Übersetzungsfunktion ist nicht aktiviert",
-        "fr": "La fonction de traduction n'est pas activée",
-        "id": "Fitur terjemahan tidak diaktifkan",
-        "ru": "Функция перевода не включена"
-    },
-    {
         "key": "翻译失败",
         "zh": "",
         "zh-CHT": "翻譯失敗",
@@ -24202,42 +24142,6 @@
         "fr": "Traduire",
         "id": "Terjemahkan",
         "ru": "Перевести"
-    },
-    {
-        "key": "翻译消息",
-        "zh": "",
-        "zh-CHT": "翻譯消息",
-        "en": "Translate message",
-        "ko": "메시지 번역",
-        "ja": "メッセージを翻訳",
-        "de": "Nachricht übersetzen",
-        "fr": "Traduire le message",
-        "id": "Terjemahkan pesan",
-        "ru": "Перевести сообщение"
-    },
-    {
-        "key": "长按文本消息可翻译成当前设置的语言。",
-        "zh": "",
-        "zh-CHT": "長按文本消息可翻譯成當前設置的語言。",
-        "en": "Long press on a text message to translate it into the currently set language.",
-        "ko": "텍스트 메시지를 길게 누르면 현재 설정된 언어로 번역됩니다.",
-        "ja": "テキストメッセージを長押しすると、現在設定されている言語に翻訳されます。",
-        "de": "Halten Sie eine Textnachricht gedrückt, um sie in die aktuell eingestellte Sprache zu übersetzen.",
-        "fr": "Appuyez longuement sur un message texte pour le traduire dans la langue actuellement définie.",
-        "id": "Tekan lama pada pesan teks untuk menerjemahkannya ke bahasa yang saat ini diatur.",
-        "ru": "Нажмите и удерживайте текстовое сообщение, чтобы перевести его на текущий установленный язык."
-    },
-    {
-        "key": "关闭文本消息翻译功能。",
-        "zh": "",
-        "zh-CHT": "關閉文本消息翻譯功能。",
-        "en": "Turn off text message translation feature.",
-        "ko": "텍스트 메시지 번역 기능을 끕니다.",
-        "ja": "テキストメッセージの翻訳機能をオフにします。",
-        "de": "Deaktivieren Sie die Übersetzungsfunktion für Textnachrichten.",
-        "fr": "Désactiver la fonction de traduction des messages texte.",
-        "id": "Matikan fitur terjemahan pesan teks.",
-        "ru": "Отключить функцию перевода текстовых сообщений."
     },
     {
         "key": "从不",
@@ -31044,102 +30948,6 @@
         "ru": "Успешно очищено всё избранное."
     },
     {
-        "key": "消息需求描述不能为空",
-        "zh": "",
-        "zh-CHT": "訊息需求描述不能為空",
-        "en": "The message requirement description cannot be empty.",
-        "ko": "메시지 요구사항 설명은 비워둘 수 없습니다.",
-        "ja": "メッセージ要件の説明は空にできません。",
-        "de": "Die Beschreibung der Nachrichtenanforderung darf nicht leer sein.",
-        "fr": "La description de la demande de message ne peut pas être vide.",
-        "id": "Deskripsi kebutuhan pesan tidak boleh kosong.",
-        "ru": "Описание требований к сообщению не может быть пустым."
-    },
-    {
-        "key": "生成消息失败",
-        "zh": "",
-        "zh-CHT": "生成訊息失敗",
-        "en": "Failed to generate message.",
-        "ko": "메시지 생성에 실패했습니다.",
-        "ja": "メッセージの生成に失敗しました。",
-        "de": "Nachricht konnte nicht erstellt werden.",
-        "fr": "Échec de la génération du message.",
-        "id": "Gagal menghasilkan pesan.",
-        "ru": "Не удалось сгенерировать сообщение."
-    },
-    {
-        "key": "生成消息成功",
-        "zh": "",
-        "zh-CHT": "生成訊息成功",
-        "en": "Message generated successfully.",
-        "ko": "메시지 생성에 성공했습니다.",
-        "ja": "メッセージの生成に成功しました。",
-        "de": "Nachricht erfolgreich erstellt.",
-        "fr": "Génération du message réussie.",
-        "id": "Berhasil menghasilkan pesan.",
-        "ru": "Сообщение успешно сгенерировано."
-    },
-    {
-        "key": "生成任务失败",
-        "zh": "",
-        "zh-CHT": "生成任務失敗",
-        "en": "Failed to generate task.",
-        "ko": "작업 생성에 실패했습니다.",
-        "ja": "タスクの生成に失敗しました。",
-        "de": "Aufgabe konnte nicht erstellt werden.",
-        "fr": "Échec de la génération de la tâche.",
-        "id": "Gagal menghasilkan tugas.",
-        "ru": "Не удалось сгенерировать задачу."
-    },
-    {
-        "key": "生成任务成功",
-        "zh": "",
-        "zh-CHT": "生成任務成功",
-        "en": "Task generated successfully.",
-        "ko": "작업 생성에 성공했습니다.",
-        "ja": "タスクの生成に成功しました。",
-        "de": "Aufgabe erfolgreich erstellt.",
-        "fr": "Génération de la tâche réussie.",
-        "id": "Berhasil menghasilkan tugas.",
-        "ru": "Задача успешно сгенерирована."
-    },
-    {
-        "key": "项目需求描述不能为空",
-        "zh": "",
-        "zh-CHT": "專案需求描述不能為空",
-        "en": "Project requirement description cannot be empty",
-        "ko": "프로젝트 요구사항 설명은 비워둘 수 없습니다",
-        "ja": "プロジェクトの要件説明は空にできません",
-        "de": "Die Beschreibung der Projektanforderungen darf nicht leer sein",
-        "fr": "La description des exigences du projet ne peut pas être vide",
-        "id": "Deskripsi kebutuhan proyek tidak boleh kosong",
-        "ru": "Описание требований проекта не может быть пустым"
-    },
-    {
-        "key": "生成项目失败",
-        "zh": "",
-        "zh-CHT": "專案生成失敗",
-        "en": "Failed to generate project",
-        "ko": "프로젝트 생성에 실패했습니다",
-        "ja": "プロジェクトの生成に失敗しました",
-        "de": "Die Projekterstellung ist fehlgeschlagen",
-        "fr": "Échec de la génération du projet",
-        "id": "Pembuatan proyek gagal",
-        "ru": "Не удалось сгенерировать проект"
-    },
-    {
-        "key": "生成项目成功",
-        "zh": "",
-        "zh-CHT": "專案生成成功",
-        "en": "Project generated successfully",
-        "ko": "프로젝트가 성공적으로 생성되었습니다",
-        "ja": "プロジェクトの生成に成功しました",
-        "de": "Die Projekterstellung war erfolgreich",
-        "fr": "Le projet a été généré avec succès",
-        "id": "Pembuatan proyek berhasil",
-        "ru": "Проект успешно сгенерирован"
-    },
-    {
         "key": "数据导出",
         "zh": "",
         "zh-CHT": "資料匯出",
@@ -31354,30 +31162,6 @@
         "fr": "Nettoyage terminé",
         "id": "Pembersihan selesai",
         "ru": "Очистка завершена"
-    },
-    {
-        "key": "项目提示词不能为空",
-        "zh": "",
-        "zh-CHT": "項目提示詞不能為空",
-        "en": "Project prompt cannot be empty",
-        "ko": "프로젝트 프롬프트는 비워둘 수 없습니다",
-        "ja": "プロジェクトプロンプトは空欄にできません",
-        "de": "Projekt-Prompt darf nicht leer sein",
-        "fr": "Le mot-clé du projet ne peut pas être vide",
-        "id": "Prompt proyek tidak boleh kosong",
-        "ru": "Подсказка проекта не может быть пустой"
-    },
-    {
-        "key": "消息提示词不能为空",
-        "zh": "",
-        "zh-CHT": "消息提示詞不能為空",
-        "en": "Message prompt cannot be empty",
-        "ko": "메시지 프롬프트는 비워둘 수 없습니다",
-        "ja": "メッセージプロンプトは空欄にできません",
-        "de": "Nachrichten-Prompt darf nicht leer sein",
-        "fr": "Le mot-clé du message ne peut pas être vide",
-        "id": "Prompt pesan tidak boleh kosong",
-        "ru": "Подсказка сообщения не может быть пустой"
     },
     {
         "key": "重命名成功",
@@ -31848,18 +31632,6 @@
         "ru": "AI сводный отчёт"
     },
     {
-        "key": "整理结果预览",
-        "zh": "",
-        "zh-CHT": "整理結果預覽",
-        "en": "Preview of Organized Results",
-        "ko": "정리 결과 미리보기",
-        "ja": "整理結果のプレビュー",
-        "de": "Vorschau der aufbereiteten Ergebnisse",
-        "fr": "Aperçu des résultats organisés",
-        "id": "Pratinjau hasil yang tertata",
-        "ru": "Предпросмотр упорядоченных результатов"
-    },
-    {
         "key": "应用到汇报",
         "zh": "",
         "zh-CHT": "應用到匯報",
@@ -31882,30 +31654,6 @@
         "fr": "Veuillez d’abord remplir le contenu du rapport",
         "id": "Silakan isi konten laporan terlebih dahulu",
         "ru": "Сначала заполните содержимое отчёта"
-    },
-    {
-        "key": "AI 未返回整理内容",
-        "zh": "",
-        "zh-CHT": "AI 未返回整理內容",
-        "en": "AI did not return the organized content",
-        "ko": "AI가 정리된 내용을 반환하지 않았습니다",
-        "ja": "AIが整理済みの内容を返しませんでした",
-        "de": "Die KI hat keine aufbereiteten Inhalte zurückgegeben",
-        "fr": "L’IA n’a pas renvoyé le contenu organisé",
-        "id": "AI tidak mengembalikan konten yang telah dirapikan",
-        "ru": "ИИ не вернул упорядоченный контент"
-    },
-    {
-        "key": "没有可应用的内容",
-        "zh": "",
-        "zh-CHT": "沒有可應用的內容",
-        "en": "No applicable content",
-        "ko": "적용할 수 있는 내용이 없습니다",
-        "ja": "適用できる内容がありません",
-        "de": "Kein anwendbarer Inhalt",
-        "fr": "Aucun contenu applicable",
-        "id": "Tidak ada konten yang dapat diterapkan",
-        "ru": "Нет применимого содержимого"
     },
     {
         "key": "已应用整理结果",
@@ -32076,18 +31824,6 @@
         "ru": "Упорядоченное содержимое пусто"
     },
     {
-        "key": "需要在应用启用 AI 助手",
-        "zh": "",
-        "zh-CHT": "需要在應用啟用 AI 助手",
-        "en": "AI Assistant must be enabled in the app",
-        "ko": "앱에서 AI 도우미를 활성화해야 합니다",
-        "ja": "アプリでAIアシスタントを有効にする必要があります",
-        "de": "Der KI-Assistent muss in der App aktiviert sein",
-        "fr": "L’assistant IA doit être activé dans l’application",
-        "id": "Asisten AI harus diaktifkan di aplikasi",
-        "ru": "Необходимо включить ИИ‑помощника в приложении"
-    },
-    {
         "key": "Webhook事件",
         "zh": "",
         "zh-CHT": "Webhook事件",
@@ -32146,30 +31882,6 @@
         "fr": "Membre parti",
         "id": "Anggota keluar",
         "ru": "Участник вышел"
-    },
-    {
-        "key": "开启语音转文字功能需要在应用启用 AI 助手。",
-        "zh": "",
-        "zh-CHT": "開啟語音轉文字功能需要在應用啟用 AI 助手。",
-        "en": "To enable speech-to-text, the AI Assistant must be enabled in the app.",
-        "ko": "음성→텍스트 기능을 켜려면 앱에서 AI 도우미를 활성화해야 합니다.",
-        "ja": "音声文字変換を有効にするには、アプリでAIアシスタントを有効にする必要があります。",
-        "de": "Um Sprache-zu-Text zu aktivieren, muss der KI-Assistent in der App aktiviert sein.",
-        "fr": "Pour activer la conversion voix en texte, l’assistant IA doit être activé dans l’application.",
-        "id": "Untuk mengaktifkan suara ke teks, Asisten AI harus diaktifkan di aplikasi.",
-        "ru": "Чтобы включить функцию распознавания речи, нужно активировать ИИ‑помощника в приложении."
-    },
-    {
-        "key": "开启翻译功能需要在应用启用 AI 助手。",
-        "zh": "",
-        "zh-CHT": "開啟翻譯功能需要在應用啟用 AI 助手。",
-        "en": "To enable translation, the AI Assistant must be enabled in the app.",
-        "ko": "번역 기능을 켜려면 앱에서 AI 도우미를 활성화해야 합니다.",
-        "ja": "翻訳機能を有効にするには、アプリでAIアシスタントを有効にする必要があります。",
-        "de": "Um die Übersetzungsfunktion zu aktivieren, muss der KI-Assistent in der App aktiviert sein.",
-        "fr": "Pour activer la traduction, l’assistant IA doit être activé dans l’application.",
-        "id": "Untuk mengaktifkan terjemahan, Asisten AI harus diaktifkan di aplikasi.",
-        "ru": "Чтобы включить перевод, нужно активировать ИИ‑помощника в приложении."
     },
     {
         "key": "生日格式错误",
@@ -32470,5 +32182,245 @@
         "fr": "Gérer",
         "id": "Kelola",
         "ru": "Управление"
+    },
+    {
+        "key": "应用此内容",
+        "zh": "",
+        "zh-CHT": "套用此內容",
+        "en": "Apply this content",
+        "ko": "이 내용을 적용",
+        "ja": "この内容を適用",
+        "de": "Diesen Inhalt anwenden",
+        "fr": "Appliquer ce contenu",
+        "id": "Terapkan konten ini",
+        "ru": "Применить этот контент"
+    },
+    {
+        "key": "生成中...",
+        "zh": "",
+        "zh-CHT": "生成中...",
+        "en": "Generating...",
+        "ko": "생성 중...",
+        "ja": "生成中...",
+        "de": "Wird generiert...",
+        "fr": "Génération en cours...",
+        "id": "Sedang menghasilkan...",
+        "ru": "Генерация..."
+    },
+    {
+        "key": "等待 AI 回复...",
+        "zh": "",
+        "zh-CHT": "等待 AI 回覆...",
+        "en": "Waiting for AI response...",
+        "ko": "AI 응답을 기다리는 중...",
+        "ja": "AIの返信を待機中...",
+        "de": "Warten auf die KI-Antwort...",
+        "fr": "En attente de la réponse de l'IA...",
+        "id": "Menunggu respons AI...",
+        "ru": "Ожидание ответа ИИ..."
+    },
+    {
+        "key": "请输入你的问题...",
+        "zh": "",
+        "zh-CHT": "請輸入你的問題...",
+        "en": "Please enter your question...",
+        "ko": "질문을 입력하세요...",
+        "ja": "質問を入力してください...",
+        "de": "Bitte geben Sie Ihre Frage ein...",
+        "fr": "Veuillez saisir votre question...",
+        "id": "Silakan masukkan pertanyaan Anda...",
+        "ru": "Пожалуйста, введите ваш вопрос..."
+    },
+    {
+        "key": "暂无可用模型",
+        "zh": "",
+        "zh-CHT": "暫無可用模型",
+        "en": "No available models",
+        "ko": "사용 가능한 모델이 없습니다",
+        "ja": "利用可能なモデルがありません",
+        "de": "Keine verfügbaren Modelle",
+        "fr": "Aucun modèle disponible",
+        "id": "Tidak ada model yang tersedia",
+        "ru": "Нет доступных моделей"
+    },
+    {
+        "key": "获取模型列表失败",
+        "zh": "",
+        "zh-CHT": "獲取模型列表失敗",
+        "en": "Failed to fetch model list",
+        "ko": "모델 목록을 가져오지 못했습니다",
+        "ja": "モデルリストの取得に失敗しました",
+        "de": "Abrufen der Modellliste fehlgeschlagen",
+        "fr": "Échec de la récupération de la liste des modèles",
+        "id": "Gagal mengambil daftar model",
+        "ru": "Не удалось получить список моделей"
+    },
+    {
+        "key": "请选择模型",
+        "zh": "",
+        "zh-CHT": "請選擇模型",
+        "en": "Please select a model",
+        "ko": "모델을 선택하세요",
+        "ja": "モデルを選択してください",
+        "de": "Bitte wählen Sie ein Modell",
+        "fr": "Veuillez sélectionner un modèle",
+        "id": "Silakan pilih model",
+        "ru": "Пожалуйста, выберите модель"
+    },
+    {
+        "key": "获取 stream_key 失败",
+        "zh": "",
+        "zh-CHT": "獲取 stream_key 失敗",
+        "en": "Failed to obtain stream_key",
+        "ko": "stream_key 가져오기에 실패했습니다",
+        "ja": "stream_key の取得に失敗しました",
+        "de": "Abrufen des stream_key fehlgeschlagen",
+        "fr": "Échec de l’obtention de stream_key",
+        "id": "Gagal mendapatkan stream_key",
+        "ru": "Не удалось получить stream_key"
+    },
+    {
+        "key": "补充你想聚焦的风险、成果或建议，留空直接生成分析",
+        "zh": "",
+        "zh-CHT": "補充你想聚焦的風險、成果或建議，留空直接生成分析",
+        "en": "Add the risks, outcomes, or suggestions you want to focus on, or leave it blank to generate the analysis directly",
+        "ko": "집중하고 싶은 위험, 성과 또는 제안을 추가하거나, 비워두면 바로 분석을 생성합니다",
+        "ja": "重点にしたいリスク・成果・提案を追記するか、空欄のまま分析を直接生成してください",
+        "de": "Fügen Sie die Risiken, Ergebnisse oder Vorschläge hinzu, auf die Sie sich konzentrieren möchten, oder lassen Sie es leer, um die Analyse direkt zu erstellen",
+        "fr": "Ajoutez les risques, résultats ou suggestions sur lesquels vous souhaitez vous concentrer, ou laissez vide pour générer directement l’analyse",
+        "id": "Tambahkan risiko, hasil, atau saran yang ingin Anda fokuskan, atau biarkan kosong untuk langsung menghasilkan analisis",
+        "ru": "Добавьте риски, результаты или рекомендации, на которых хотите сосредоточиться, или оставьте пустым, чтобы сразу сгенерировать анализ"
+    },
+    {
+        "key": "保存分析",
+        "zh": "",
+        "zh-CHT": "保存分析",
+        "en": "Save analysis",
+        "ko": "분석 저장",
+        "ja": "分析を保存",
+        "de": "Analyse speichern",
+        "fr": "Enregistrer l’analyse",
+        "id": "Simpan analisis",
+        "ru": "Сохранить анализ"
+    },
+    {
+        "key": "当前没有可分析的汇报",
+        "zh": "",
+        "zh-CHT": "當前沒有可分析的匯報",
+        "en": "There are no reports available for analysis",
+        "ko": "현재 분석할 보고서가 없습니다",
+        "ja": "現在、分析可能なレポートはありません",
+        "de": "Derzeit sind keine Berichte zur Analyse verfügbar",
+        "fr": "Aucun rapport disponible pour l’analyse pour le moment",
+        "id": "Tidak ada laporan yang dapat dianalisis saat ini",
+        "ru": "В настоящее время нет отчетов для анализа"
+    },
+    {
+        "key": "汇报内容为空，无法分析",
+        "zh": "",
+        "zh-CHT": "匯報內容為空，無法分析",
+        "en": "The report content is empty and cannot be analyzed",
+        "ko": "보고서 내용이 비어 있어 분석할 수 없습니다",
+        "ja": "レポート内容が空のため、分析できません",
+        "de": "Der Berichtsinhalte ist leer und kann nicht analysiert werden",
+        "fr": "Le contenu du rapport est vide et ne peut pas être analysé",
+        "id": "Konten laporan kosong dan tidak dapat dianalisis",
+        "ru": "Содержимое отчета пустое, анализ невозможен"
+    },
+    {
+        "key": "AI 分析已更新",
+        "zh": "",
+        "zh-CHT": "AI 分析已更新",
+        "en": "AI analysis has been updated",
+        "ko": "AI 분석이 업데이트되었습니다",
+        "ja": "AI 分析が更新されました",
+        "de": "KI-Analyse wurde aktualisiert",
+        "fr": "L’analyse IA a été mise à jour",
+        "id": "Analisis AI telah diperbarui",
+        "ru": "Анализ ИИ обновлен"
+    },
+    {
+        "key": "保存 AI 分析失败",
+        "zh": "",
+        "zh-CHT": "保存 AI 分析失敗",
+        "en": "Failed to save AI analysis",
+        "ko": "AI 분석 저장에 실패했습니다",
+        "ja": "AI 分析の保存に失敗しました",
+        "de": "Speichern der KI-Analyse fehlgeschlagen",
+        "fr": "Échec de l’enregistrement de l’analyse IA",
+        "id": "Gagal menyimpan analisis AI",
+        "ru": "Не удалось сохранить анализ ИИ"
+    },
+    {
+        "key": "补充你想强调的重点或特殊说明，AI 将在此基础上整理汇报",
+        "zh": "",
+        "zh-CHT": "補充你想強調的重點或特殊說明，AI 將在此基礎上整理匯報",
+        "en": "Add key points or special notes you want to emphasize, and the AI will organize the report based on them",
+        "ko": "강조하고 싶은 핵심 사항이나 특별한 설명을 추가하면, AI가 이를 바탕으로 보고서를 정리합니다",
+        "ja": "強調したい要点や特記事項を追記すると、AI がそれに基づいてレポートを整理します",
+        "de": "Ergänzen Sie die wichtigsten Punkte oder besondere Hinweise; die KI erstellt darauf basierend den Bericht",
+        "fr": "Ajoutez les points clés ou remarques spéciales que vous souhaitez souligner, et l’IA organisera le rapport en conséquence",
+        "id": "Tambahkan poin penting atau catatan khusus yang ingin Anda tekankan, dan AI akan menyusun laporan berdasarkan itu",
+        "ru": "Добавьте ключевые моменты или особые примечания, которые вы хотите подчеркнуть, и ИИ сформирует отчет на их основе"
+    },
+    {
+        "key": "拖动卡片调整顺序，保存后仅自己可见",
+        "zh": "",
+        "zh-CHT": "拖動卡片調整順序，保存後僅自己可見",
+        "en": "Drag cards to adjust the order; after saving, only you can see it",
+        "ko": "카드를 드래그하여 순서를 조정하세요. 저장 후에는 본인만 볼 수 있습니다",
+        "ja": "カードをドラッグして順序を調整します。保存後は自分にのみ表示されます",
+        "de": "Karten ziehen, um die Reihenfolge anzupassen; nach dem Speichern nur für Sie sichtbar",
+        "fr": "Faites glisser les cartes pour ajuster l’ordre ; après enregistrement, cela n’est visible que par vous",
+        "id": "Seret kartu untuk menyesuaikan urutan; setelah disimpan, hanya Anda yang dapat melihatnya",
+        "ru": "Перетащите карточки, чтобы изменить порядок; после сохранения это будет видно только вам"
+    },
+    {
+        "key": "恢复默认",
+        "zh": "",
+        "zh-CHT": "恢復預設",
+        "en": "Restore default",
+        "ko": "기본값으로 복원",
+        "ja": "デフォルトに戻す",
+        "de": "Standard wiederherstellen",
+        "fr": "Restaurer les paramètres par défaut",
+        "id": "Kembalikan ke default",
+        "ru": "Восстановить по умолчанию"
+    },
+    {
+        "key": "请先配置 AI 助手",
+        "zh": "",
+        "zh-CHT": "請先配置 AI 助手",
+        "en": "Please configure the AI assistant first",
+        "ko": "먼저 AI 도우미를 구성하세요",
+        "ja": "まず AI アシスタントを設定してください",
+        "de": "Bitte richten Sie zuerst den KI-Assistenten ein",
+        "fr": "Veuillez d’abord configurer l’assistant IA",
+        "id": "Harap konfigurasikan asisten AI terlebih dahulu",
+        "ru": "Сначала настроьте AI‑помощника"
+    },
+    {
+        "key": "请先在「AI 助手」设置中配置 OpenAI",
+        "zh": "",
+        "zh-CHT": "請先在「AI 助手」設置中配置 OpenAI",
+        "en": "Please configure OpenAI in the AI Assistant settings first",
+        "ko": "먼저 ‘AI 도우미’ 설정에서 OpenAI를 구성하세요",
+        "ja": "まず「AI アシスタント」の設定で OpenAI を構成してください",
+        "de": "Bitte konfigurieren Sie OpenAI zuerst in den Einstellungen des KI-Assistenten",
+        "fr": "Veuillez d’abord configurer OpenAI dans les paramètres de l’assistant IA",
+        "id": "Silakan konfigurasikan OpenAI terlebih dahulu di pengaturan Asisten AI",
+        "ru": "Сначала настройте OpenAI в параметрах «AI‑помощника»"
+    },
+    {
+        "key": "用户",
+        "zh": "",
+        "zh-CHT": "使用者",
+        "en": "User",
+        "ko": "사용자",
+        "ja": "ユーザー",
+        "de": "Benutzer",
+        "fr": "Utilisateur",
+        "id": "Pengguna",
+        "ru": "Пользователь"
     }
 ]

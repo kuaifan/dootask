@@ -278,7 +278,7 @@ class AI
 
         $audioProvider = self::resolveOpenAIAudioProvider();
         if (!$audioProvider) {
-            return Base::retError("请先在 AI 设置中配置 OpenAI 语音模型");
+            return Base::retError("请先在「AI 助手」设置中配置 OpenAI");
         }
 
         $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function () use ($extParams, $extHeaders, $filePath, $audioProvider) {
