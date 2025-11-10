@@ -344,7 +344,7 @@ import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
 import {languageList, languageName} from "../../../../language";
 import {isMarkdownFormat, MarkdownConver} from "../../../../utils/markdown";
 import {cutText, extractPlainText} from "../../../../utils/text";
-import {MESSAGE_AI_SYSTEM_PROMPT} from "../../../../utils/ai";
+import {MESSAGE_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../../../../utils/ai";
 import emitter from "../../../../store/events";
 import historyMixin from "./history";
 
@@ -1918,7 +1918,7 @@ export default {
 
         handleMessageAIBeforeSend(context = []) {
             const prepared = [
-                ['system', MESSAGE_AI_SYSTEM_PROMPT]
+                ['system', withLanguagePreferencePrompt(MESSAGE_AI_SYSTEM_PROMPT)]
             ];
             let assistantContext = this.buildMessageAssistantContext();
             if (assistantContext) {

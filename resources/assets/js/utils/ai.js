@@ -1,3 +1,17 @@
+import {languageList, languageName} from "../language";
+
+const withLanguagePreferencePrompt = (prompt, extraInstruction = null) => {
+    if (typeof prompt !== 'string' || !prompt) {
+        return prompt;
+    }
+    const label = languageList[languageName] || languageName || '';
+    if (!label) {
+        return prompt;
+    }
+    const instruction = extraInstruction || '除非我在后续输入中明确指定其他语言，否则请使用该语言进行思考并输出所有内容。';
+    return `${prompt}\n\n当前我使用的语言是：${label}，${instruction}`;
+};
+
 const AIModelNames = (str) => {
     const lines = str.split('\n').filter(line => line.trim());
 
@@ -355,4 +369,5 @@ export {
     PROJECT_AI_SYSTEM_PROMPT,
     REPORT_AI_SYSTEM_PROMPT,
     REPORT_ANALYSIS_SYSTEM_PROMPT,
+    withLanguagePreferencePrompt,
 }

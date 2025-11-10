@@ -202,7 +202,7 @@ import TEditorTask from "../../../components/TEditorTask.vue";
 import nostyle from "../../../components/VMEditor/engine/nostyle";
 import {MarkdownConver} from "../../../utils/markdown";
 import {extractPlainText} from "../../../utils/text";
-import {AINormalizeJsonContent, TASK_AI_SYSTEM_PROMPT} from "../../../utils/ai";
+import {AINormalizeJsonContent, TASK_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../../../utils/ai";
 
 export default {
     name: "TaskAdd",
@@ -713,7 +713,7 @@ export default {
 
         handleTaskAIBeforeSend(context = []) {
             const prepared = [
-                ['system', TASK_AI_SYSTEM_PROMPT]
+                ['system', withLanguagePreferencePrompt(TASK_AI_SYSTEM_PROMPT)]
             ];
             const contextPrompt = this.buildTaskAIContextData();
             if (contextPrompt) {

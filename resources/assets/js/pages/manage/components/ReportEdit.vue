@@ -64,7 +64,7 @@ import {mapState} from "vuex";
 import emitter from "../../../store/events";
 import {MarkdownConver} from "../../../utils/markdown";
 import {extractPlainText} from "../../../utils/text";
-import {REPORT_AI_SYSTEM_PROMPT} from "../../../utils/ai";
+import {REPORT_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../../../utils/ai";
 
 const TEditor = () => import('../../../components/TEditor');
 export default {
@@ -302,7 +302,7 @@ export default {
 
         handleReportAIBeforeSend(context = []) {
             const prepared = [
-                ['system', REPORT_AI_SYSTEM_PROMPT]
+                ['system', withLanguagePreferencePrompt(REPORT_AI_SYSTEM_PROMPT)]
             ];
             const contextPrompt = this.buildReportAIContextData();
             if (contextPrompt) {

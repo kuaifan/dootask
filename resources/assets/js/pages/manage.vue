@@ -457,7 +457,7 @@ import SearchBox from "../components/SearchBox.vue";
 import AIAssistant from "../components/AIAssistant.vue";
 import transformEmojiToHtml from "../utils/emoji";
 import {languageName} from "../language";
-import {AINormalizeJsonContent, PROJECT_AI_SYSTEM_PROMPT} from "../utils/ai";
+import {AINormalizeJsonContent, PROJECT_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../utils/ai";
 import Draggable from 'vuedraggable'
 
 export default {
@@ -1121,7 +1121,7 @@ export default {
 
         handleProjectAIBeforeSend(context = []) {
             const prepared = [
-                ['system', PROJECT_AI_SYSTEM_PROMPT]
+                ['system', withLanguagePreferencePrompt(PROJECT_AI_SYSTEM_PROMPT)]
             ];
             const contextPrompt = this.buildProjectAIContextData();
             if (contextPrompt) {

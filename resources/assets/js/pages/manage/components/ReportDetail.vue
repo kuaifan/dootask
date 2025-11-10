@@ -75,7 +75,7 @@ const VMPreview = () => import('../../../components/VMEditor/preview');
 import {mapState} from "vuex";
 import emitter from "../../../store/events";
 import {extractPlainText} from "../../../utils/text";
-import {REPORT_ANALYSIS_SYSTEM_PROMPT} from "../../../utils/ai";
+import {REPORT_ANALYSIS_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../../../utils/ai";
 
 export default {
     name: "ReportDetail",
@@ -184,7 +184,7 @@ export default {
 
         handleReportAnalysisBeforeSend(context = []) {
             const prepared = [
-                ['system', REPORT_ANALYSIS_SYSTEM_PROMPT]
+                ['system', withLanguagePreferencePrompt(REPORT_ANALYSIS_SYSTEM_PROMPT)]
             ];
             const contextPrompt = this.buildReportAnalysisContextData();
             if (contextPrompt) {
