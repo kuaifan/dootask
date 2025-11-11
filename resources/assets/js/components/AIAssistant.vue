@@ -228,7 +228,7 @@ export default {
                     return;
                 }
                 $A.modalError({
-                    content: error?.msg || error || '获取模型列表失败',
+                    content: error?.msg || '获取模型列表失败',
                     onOk: _ => {
                         this.showModal = false;
                     },
@@ -367,7 +367,7 @@ export default {
                 this.inputValue = '';
                 this.startStream(streamKey, responseEntry);
             } catch (error) {
-                const msg = error?.msg || error || '发送失败';
+                const msg = error?.msg || '发送失败';
                 if (responseEntry) {
                     this.markResponseError(responseEntry, msg);
                 }
@@ -697,7 +697,7 @@ export default {
                     result.then(() => {
                         this.closeAssistant();
                     }).catch(error => {
-                        $A.modalError(error?.msg || error || '应用失败');
+                        $A.modalError(error?.msg || '应用失败');
                     }).finally(() => {
                         response.applyLoading = false;
                     });
@@ -707,7 +707,7 @@ export default {
                 }
             } catch (error) {
                 response.applyLoading = false;
-                $A.modalError(error?.msg || error || '应用错误');
+                $A.modalError(error?.msg || '应用错误');
             }
         },
 

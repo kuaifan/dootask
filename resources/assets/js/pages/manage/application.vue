@@ -646,8 +646,7 @@ export default {
                 });
                 this.appSorts = this.normalizeSortPayload(data?.sorts);
             } catch (error) {
-                const msg = error?.msg || error?.message;
-                msg && console.warn(msg);
+                console.warn(error?.msg || error);
             } finally {
                 this.appSortLoading = false;
                 this.appSortLoaded = true;

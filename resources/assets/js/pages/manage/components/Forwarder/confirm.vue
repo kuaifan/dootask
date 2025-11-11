@@ -266,7 +266,7 @@ export default {
                     } catch (error) {
                         $A.modalError({
                             language: false,
-                            content: this.$L("AI开启新会话失败") + `: ${error.msg || error}`,
+                            content: this.$L("AI开启新会话失败") + `: ${error.msg || 'Unknown Error'}`,
                         });
                         reject(error);
                     }
