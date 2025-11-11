@@ -2,6 +2,7 @@
     .ivu-modal-fullscreen {
         .ivu-modal-content {
             margin-top: calc(var(--status-bar-height) + 46px) !important;
+            margin-bottom: 0 !important;
         }
         .ivu-modal-body {
             border-radius: 16px 16px 0 0;
@@ -130,7 +131,7 @@
 
                         .label {
                             color: #808695;
-                            flex: 0 0 64px; 
+                            flex: 0 0 64px;
                             flex-shrink: 0;
                             line-height: 22px;
                             margin-right: 8px;
@@ -139,7 +140,7 @@
                         .value {
                             color: $primary-title-color;
                             font-weight: 500;
-                            flex: 1 1 auto; 
+                            flex: 1 1 auto;
                             min-width: 0;
                             margin-left: 0;
                             text-align: right;
