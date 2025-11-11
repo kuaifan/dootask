@@ -18,6 +18,10 @@
         "type": "git",
         "url": "git+https://github.com/kuaifan/dootask.git"
     },
+    "dependencies": {
+        "marked": "^17.0.0",
+        "turndown": "^7.2.2"
+    },
     "devDependencies": {
         "@chenfengyuan/vue-qrcode": "^1.0.2",
         "@kangc/v-md-editor": "^1.7.12",

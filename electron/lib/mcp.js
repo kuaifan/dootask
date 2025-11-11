@@ -1,15 +1,15 @@
 /**
  * DooTask MCP Server
- * 
+ *
  * DooTask 的 Electron 客户端集成了 Model Context Protocol (MCP) 服务，
  * 允许 AI 助手(如 Claude)直接与 DooTask 任务进行交互。
- * 
- * 提供的工具（共 15 个）:
- * 
+ *
+ * 提供的工具（共 21 个）:
+ *
  * === 用户管理 ===
  * - get_users_basic   - 根据用户ID列表获取基础信息，便于匹配负责人/协助人
  * - search_user       - 按关键字或项目筛选用户，支持分页与更多过滤项
- * 
+ *
  * === 任务管理 ===
  * - list_tasks        - 获取任务列表，支持按状态/项目/主任务筛选、搜索、分页
  * - get_task          - 获取任务详情，包含完整内容、负责人、协助人员、标签等所有信息
@@ -19,17 +19,25 @@
  * - create_sub_task   - 为指定主任务创建子任务
  * - get_task_files    - 获取任务附件列表
  * - delete_task       - 删除或还原任务
- * 
+ *
  * === 项目管理 ===
  * - list_projects     - 获取项目列表，支持按归档状态筛选、搜索
  * - get_project       - 获取项目详情，包含列（看板列）、成员等完整信息
  * - create_project    - 创建新项目
  * - update_project    - 修改项目信息（名称、描述等）
- * 
+ *
+ * === 工作报告 ===
+ * - list_received_reports    - 获取我接收的汇报列表，支持按类型/状态/部门/时间筛选
+ * - get_report_detail        - 获取汇报详情，包括完整内容、汇报人、接收人、AI分析等
+ * - generate_report_template - 基于任务完成情况自动生成汇报模板（已完成/未完成任务）
+ * - create_report            - 创建并提交工作汇报
+ * - list_my_reports          - 获取我发送的汇报列表，支持按类型/时间筛选
+ * - mark_reports_read        - 批量标记汇报为已读或未读状态
+ *
  * === 消息通知 ===
  * - send_message_to_user - 给指定用户发送私信
  * - get_message_list  - 获取对话消息或执行关键词搜索
- * 
+ *
  * 配置方法:
  *  {
  *    "mcpServers": {
@@ -38,24 +46,86 @@
  *      }
  *    }
  *  }
- * 
+ *
  * 使用示例:
+ *
+ * 任务管理：
  * - "查看我未完成的任务"
  * - "搜索包含'报告'的任务"
  * - "显示任务123的详细信息"
  * - "标记任务456为已完成"
  * - "在项目1中创建任务：完成用户手册，负责人100，协助人员101"
  * - "把任务789的截止时间改为下周五，并分配给用户200"
- * - "取消任务234的完成状态"
+ *
+ * 项目管理：
  * - "我有哪些项目？"
  * - "查看项目5的详情，包括所有列和成员"
+ *
+ * 工作报告：
+ * - "查看未读的工作汇报"
+ * - "生成本周周报"
+ * - "查看我上周提交的日报"
+ * - "把周报提交给用户100和200"
+ * - "把所有未读报告标记为已读"
  */
 
 const { FastMCP } = require('fastmcp');
 const { z } = require('zod');
 const loger = require("electron-log");
+const TurndownService = require('turndown');
+const { marked } = require('marked');
 
 let mcpServer = null;
+
+// 初始化 HTML 转 Markdown 工具
+const turndownService = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced',
+    bulletListMarker: '-',
+    emDelimiter: '_',
+    strongDelimiter: '**',
+    linkStyle: 'inlined',
+    preformattedCode: true,
+});
+
+// HTML 转 Markdown
+function htmlToMarkdown(html) {
+    if (!html) {
+        return '';
+    }
+    if (typeof html !== 'string') {
+        loger.warn(`HTML to Markdown: expected string, got ${typeof html}`);
+        return '';
+    }
+    try {
+        const markdown = turndownService.turndown(html);
+        return markdown.trim();
+    } catch (error) {
+        loger.error(`HTML to Markdown conversion failed: ${error.message}`, { html: html.substring(0, 100) });
+        // 返回清理后的纯文本作为降级方案
+        return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+}
+
+// Markdown 转 HTML
+function markdownToHtml(markdown) {
+    if (!markdown) {
+        return '';
+    }
+    if (typeof markdown !== 'string') {
+        loger.warn(`Markdown to HTML: expected string, got ${typeof markdown}`);
+        return '';
+    }
+    try {
+        // marked.parse 在某些版本可能返回 Promise,这里使用同步方法
+        const html = marked.parse(markdown, { async: false });
+        return html;
+    } catch (error) {
+        loger.error(`Markdown to HTML conversion failed: ${error.message}`, { markdown: markdown.substring(0, 100) });
+        // 返回原始 markdown 作为降级方案,至少保留内容
+        return markdown.replace(/\n/g, '<br>');
+    }
+}
 
 class DooTaskMCP {
     constructor(mainWindow) {
@@ -393,7 +463,7 @@ class DooTaskMCP {
         // 获取任务详情
         this.mcp.addTool({
             name: 'get_task',
-            description: '获取指定任务的详细信息,包括任务描述、完整内容、负责人、协助人员、标签、时间等所有信息。',
+            description: '获取指定任务的详细信息,包括任务描述、完整内容、负责人、协助人员、标签、时间等所有信息。返回的 content 字段为 Markdown 格式。',
             parameters: z.object({
                 task_id: z.number()
                     .describe('任务ID'),
@@ -425,6 +495,9 @@ class DooTaskMCP {
                 } catch (error) {
                     loger.warn(`Failed to get task content: ${error.message}`);
                 }
+
+                // 将 HTML 内容转换为 Markdown
+                fullContent = htmlToMarkdown(fullContent);
 
                 const taskDetail = {
                     id: task.id,
@@ -511,7 +584,7 @@ class DooTaskMCP {
                     .describe('任务名称'),
                 content: z.string()
                     .optional()
-                    .describe('任务内容描述(支持富文本)'),
+                    .describe('任务内容描述(Markdown 格式)'),
                 owner: z.array(z.number())
                     .optional()
                     .describe('负责人用户ID数组'),
@@ -534,8 +607,8 @@ class DooTaskMCP {
                     name: params.name,
                 };
 
-                // 添加可选参数
-                if (params.content) requestData.content = params.content;
+                // 添加可选参数，将 Markdown 转换为 HTML
+                if (params.content) requestData.content = markdownToHtml(params.content);
                 if (params.owner) requestData.owner = params.owner;
                 if (params.assist) requestData.assist = params.assist;
                 if (params.column_id) requestData.column_id = params.column_id;
@@ -581,7 +654,7 @@ class DooTaskMCP {
                     .describe('任务名称'),
                 content: z.string()
                     .optional()
-                    .describe('任务内容描述'),
+                    .describe('任务内容描述(Markdown 格式)'),
                 owner: z.array(z.number())
                     .optional()
                     .describe('负责人用户ID数组'),
@@ -606,9 +679,9 @@ class DooTaskMCP {
                     task_id: params.task_id,
                 };
 
-                // 添加要更新的字段
+                // 添加要更新的字段，将 Markdown 转换为 HTML
                 if (params.name !== undefined) requestData.name = params.name;
-                if (params.content !== undefined) requestData.content = params.content;
+                if (params.content !== undefined) requestData.content = markdownToHtml(params.content);
                 if (params.owner !== undefined) requestData.owner = params.owner;
                 if (params.assist !== undefined) requestData.assist = params.assist;
                 if (params.column_id !== undefined) requestData.column_id = params.column_id;
@@ -1205,6 +1278,410 @@ class DooTaskMCP {
                             top: data.top,
                             todo: data.todo,
                             messages: messages,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 工作报告：获取我接收的汇报列表
+        this.mcp.addTool({
+            name: 'list_received_reports',
+            description: '获取我接收的工作汇报列表，支持按类型、已读状态、部门、时间筛选和搜索。适用于管理者查看团队成员提交的工作汇报。',
+            parameters: z.object({
+                search: z.string()
+                    .optional()
+                    .describe('搜索关键词（可搜索标题、汇报人邮箱或用户ID）'),
+                type: z.enum(['weekly', 'daily', 'all'])
+                    .optional()
+                    .describe('汇报类型: weekly(周报), daily(日报), all(全部)，默认all'),
+                status: z.enum(['read', 'unread', 'all'])
+                    .optional()
+                    .describe('已读状态: read(已读), unread(未读), all(全部)，默认all'),
+                department_id: z.number()
+                    .optional()
+                    .describe('部门ID，筛选指定部门的汇报'),
+                created_at_start: z.string()
+                    .optional()
+                    .describe('开始时间，格式: YYYY-MM-DD'),
+                created_at_end: z.string()
+                    .optional()
+                    .describe('结束时间，格式: YYYY-MM-DD'),
+                page: z.number()
+                    .optional()
+                    .describe('页码，默认1'),
+                pagesize: z.number()
+                    .optional()
+                    .describe('每页数量，默认20，最大50'),
+            }),
+            execute: async (params) => {
+                const page = params.page && params.page > 0 ? params.page : 1;
+                const pagesize = params.pagesize && params.pagesize > 0 ? Math.min(params.pagesize, 50) : 20;
+
+                const keys = {};
+                if (params.search) {
+                    keys.key = params.search;
+                }
+                if (params.type && params.type !== 'all') {
+                    keys.type = params.type;
+                }
+                if (params.status && params.status !== 'all') {
+                    keys.status = params.status;
+                }
+                if (params.department_id !== undefined) {
+                    keys.department_id = params.department_id;
+                }
+                if (params.created_at_start || params.created_at_end) {
+                    const dateRange = [];
+                    if (params.created_at_start) {
+                        dateRange.push(new Date(params.created_at_start).getTime());
+                    } else {
+                        dateRange.push(0);
+                    }
+                    if (params.created_at_end) {
+                        dateRange.push(new Date(params.created_at_end).getTime());
+                    } else {
+                        dateRange.push(0);
+                    }
+                    keys.created_at = dateRange;
+                }
+
+                const requestData = {
+                    page,
+                    pagesize,
+                };
+                if (Object.keys(keys).length > 0) {
+                    requestData.keys = keys;
+                }
+
+                const result = await this.request('GET', 'report/receive', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const data = result.data || {};
+                const reports = Array.isArray(data.data) ? data.data : [];
+
+                const simplified = reports.map(report => {
+                    const myReceive = Array.isArray(report.receives_user)
+                        ? report.receives_user.find(u => u.pivot && u.pivot.userid)
+                        : null;
+
+                    return {
+                        id: report.id,
+                        title: report.title,
+                        type: report.type === 'daily' ? '日报' : '周报',
+                        sender_id: report.userid,
+                        sender_name: report.user ? (report.user.nickname || report.user.email) : '',
+                        is_read: myReceive && myReceive.pivot ? (myReceive.pivot.read === 1) : false,
+                        receive_at: report.receive_at || report.created_at,
+                        created_at: report.created_at,
+                    };
+                });
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            total: data.total || reports.length,
+                            page: data.current_page || page,
+                            pagesize: data.per_page || pagesize,
+                            reports: simplified,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 工作报告：获取汇报详情
+        this.mcp.addTool({
+            name: 'get_report_detail',
+            description: '获取指定工作汇报的详细信息，包括完整内容、汇报人、接收人列表、AI分析等。返回的 content 字段为 Markdown 格式。',
+            parameters: z.object({
+                report_id: z.number()
+                    .describe('报告ID'),
+            }),
+            execute: async (params) => {
+                const result = await this.request('GET', 'report/detail', {
+                    id: params.report_id,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const report = result.data;
+
+                // 将 HTML 内容转换为 Markdown
+                const markdownContent = htmlToMarkdown(report.content || '');
+
+                const reportDetail = {
+                    id: report.id,
+                    title: report.title,
+                    type: report.type === 'daily' ? '日报' : '周报',
+                    type_value: report.type_val || report.type,
+                    content: markdownContent,
+                    sender_id: report.userid,
+                    sender_name: report.user ? (report.user.nickname || report.user.email) : '',
+                    receivers: Array.isArray(report.receives_user)
+                        ? report.receives_user.map(u => ({
+                            userid: u.userid,
+                            nickname: u.nickname || u.email,
+                            is_read: u.pivot ? (u.pivot.read === 1) : false,
+                        }))
+                        : [],
+                    ai_analysis: report.ai_analysis || null,
+                    created_at: report.created_at,
+                    updated_at: report.updated_at,
+                };
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify(reportDetail, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 工作报告：生成汇报模板
+        this.mcp.addTool({
+            name: 'generate_report_template',
+            description: '基于用户的任务完成情况自动生成工作汇报模板，包括已完成工作、未完成工作等内容。支持生成当前周期或历史周期的汇报。返回的 content 字段为 Markdown 格式。',
+            parameters: z.object({
+                type: z.enum(['weekly', 'daily'])
+                    .describe('汇报类型: weekly(周报), daily(日报)'),
+                offset: z.number()
+                    .optional()
+                    .describe('时间偏移量，0表示当前周期，-1表示上一周期，-2表示上上周期，以此类推。默认0'),
+            }),
+            execute: async (params) => {
+                const offset = params.offset !== undefined ? Math.abs(params.offset) : 0;
+
+                const result = await this.request('GET', 'report/template', {
+                    type: params.type,
+                    offset: offset,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const template = result.data;
+
+                // 将 HTML 内容转换为 Markdown
+                const markdownContent = htmlToMarkdown(template.content || '');
+
+                const templateData = {
+                    sign: template.sign,
+                    title: template.title,
+                    content: markdownContent,
+                    existing_report_id: template.id || null,
+                    message: template.id
+                        ? '该时间周期已有报告，如需修改请使用 update_report 或在界面中编辑'
+                        : '模板已生成，可以直接使用或编辑 content 字段，然后使用 create_report 提交',
+                };
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify(templateData, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 工作报告：创建汇报
+        this.mcp.addTool({
+            name: 'create_report',
+            description: '创建并提交工作汇报。通常先使用 generate_report_template 生成模板，然后使用此工具提交。',
+            parameters: z.object({
+                type: z.enum(['weekly', 'daily'])
+                    .describe('汇报类型: weekly(周报), daily(日报)'),
+                title: z.string()
+                    .describe('报告标题'),
+                content: z.string()
+                    .describe('报告内容（Markdown 格式），通常从 generate_report_template 返回的 content 字段获取'),
+                receive: z.array(z.number())
+                    .optional()
+                    .describe('接收人用户ID数组，不包含自己'),
+                sign: z.string()
+                    .optional()
+                    .describe('唯一签名，从 generate_report_template 返回的 sign 字段获取'),
+                offset: z.number()
+                    .optional()
+                    .describe('时间偏移量，应与生成模板时保持一致。默认0'),
+            }),
+            execute: async (params) => {
+                const requestData = {
+                    id: 0,
+                    title: params.title,
+                    type: params.type,
+                    content: markdownToHtml(params.content),
+                    offset: params.offset !== undefined ? Math.abs(params.offset) : 0,
+                };
+
+                if (params.receive && Array.isArray(params.receive)) {
+                    requestData.receive = params.receive;
+                }
+                if (params.sign) {
+                    requestData.sign = params.sign;
+                }
+
+                const result = await this.request('POST', 'report/store', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const report = result.data || {};
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            message: '工作汇报创建成功',
+                            report: {
+                                id: report.id,
+                                title: report.title,
+                                type: report.type === 'daily' ? '日报' : '周报',
+                                created_at: report.created_at,
+                            }
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 工作报告：获取我发送的汇报列表
+        this.mcp.addTool({
+            name: 'list_my_reports',
+            description: '获取我发送的工作汇报列表，支持按类型、时间筛选和搜索。适用于查看自己的历史汇报。',
+            parameters: z.object({
+                search: z.string()
+                    .optional()
+                    .describe('搜索关键词（可搜索标题）'),
+                type: z.enum(['weekly', 'daily', 'all'])
+                    .optional()
+                    .describe('汇报类型: weekly(周报), daily(日报), all(全部)，默认all'),
+                created_at_start: z.string()
+                    .optional()
+                    .describe('开始时间，格式: YYYY-MM-DD'),
+                created_at_end: z.string()
+                    .optional()
+                    .describe('结束时间，格式: YYYY-MM-DD'),
+                page: z.number()
+                    .optional()
+                    .describe('页码，默认1'),
+                pagesize: z.number()
+                    .optional()
+                    .describe('每页数量，默认20，最大50'),
+            }),
+            execute: async (params) => {
+                const page = params.page && params.page > 0 ? params.page : 1;
+                const pagesize = params.pagesize && params.pagesize > 0 ? Math.min(params.pagesize, 50) : 20;
+
+                const keys = {};
+                if (params.search) {
+                    keys.key = params.search;
+                }
+                if (params.type && params.type !== 'all') {
+                    keys.type = params.type;
+                }
+                if (params.created_at_start || params.created_at_end) {
+                    const dateRange = [];
+                    if (params.created_at_start) {
+                        dateRange.push(new Date(params.created_at_start).getTime());
+                    } else {
+                        dateRange.push(0);
+                    }
+                    if (params.created_at_end) {
+                        dateRange.push(new Date(params.created_at_end).getTime());
+                    } else {
+                        dateRange.push(0);
+                    }
+                    keys.created_at = dateRange;
+                }
+
+                const requestData = {
+                    page,
+                    pagesize,
+                };
+                if (Object.keys(keys).length > 0) {
+                    requestData.keys = keys;
+                }
+
+                const result = await this.request('GET', 'report/my', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const data = result.data || {};
+                const reports = Array.isArray(data.data) ? data.data : [];
+
+                const simplified = reports.map(report => ({
+                    id: report.id,
+                    title: report.title,
+                    type: report.type === 'daily' ? '日报' : '周报',
+                    receivers: Array.isArray(report.receives) ? report.receives : [],
+                    receiver_count: Array.isArray(report.receives) ? report.receives.length : 0,
+                    created_at: report.created_at,
+                }));
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            total: data.total || reports.length,
+                            page: data.current_page || page,
+                            pagesize: data.per_page || pagesize,
+                            reports: simplified,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 工作报告：标记已读/未读
+        this.mcp.addTool({
+            name: 'mark_reports_read',
+            description: '批量标记工作汇报为已读或未读状态。支持单个或多个报告的状态管理。',
+            parameters: z.object({
+                report_ids: z.union([z.number(), z.array(z.number())])
+                    .describe('报告ID或ID数组，最多100个'),
+                action: z.enum(['read', 'unread'])
+                    .optional()
+                    .describe('操作类型: read(标记已读), unread(标记未读)，默认read'),
+            }),
+            execute: async (params) => {
+                const action = params.action || 'read';
+                const ids = Array.isArray(params.report_ids) ? params.report_ids : [params.report_ids];
+
+                if (ids.length > 100) {
+                    throw new Error('最多只能操作100条数据');
+                }
+
+                const result = await this.request('GET', 'report/mark', {
+                    id: ids,
+                    action: action,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            message: `已将 ${ids.length} 个报告标记为${action === 'read' ? '已读' : '未读'}`,
+                            action: action,
+                            affected_count: ids.length,
+                            report_ids: ids,
                         }, null, 2)
                     }]
                 };
