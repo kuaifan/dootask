@@ -1,0 +1,1 @@
+const e=[{value:"message",label:"\u63A5\u6536\u6D88\u606F"},{value:"dialog_open",label:"\u6253\u5F00\u4F1A\u8BDD"},{value:"member_join",label:"\u6210\u5458\u52A0\u5165"},{value:"member_leave",label:"\u6210\u5458\u9000\u51FA"}];export{e as w};

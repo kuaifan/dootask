@@ -1553,7 +1553,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/tags/lists          10.1. 获取个性标签列表
+     * @api {get} api/users/tags/lists 获取个性标签列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1593,7 +1593,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/tags/add          10.2. 新增个性标签
+     * @api {post} api/users/tags/add 新增个性标签
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1642,7 +1642,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/tags/update          10.3. 修改个性标签
+     * @api {post} api/users/tags/update 修改个性标签
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1697,7 +1697,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/tags/delete          10.4. 删除个性标签
+     * @api {post} api/users/tags/delete 删除个性标签
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1732,7 +1732,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/tags/recognize          10.5. 认可个性标签
+     * @api {post} api/users/tags/recognize 认可个性标签
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
