@@ -834,7 +834,7 @@ class WebSocketDialogMsg extends AbstractModel
         switch ($this->type) {
             case "file":
                 // 提取文件消息
-                $result = " 文件:{$this->msg['name']}、大小:{$this->msg['size']}、下载URL:{$this->msg['path']} ";
+                $result = " 文件：{$this->msg['name']}（大小：{$this->msg['size']}B，URL：{$this->msg['path']}） ";
                 break;
 
             case "text":
@@ -858,30 +858,30 @@ class WebSocketDialogMsg extends AbstractModel
                 $result = preg_replace_callback_array([
                     // 用户
                     "/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/" => function ($match) {
-                        return " 提及用户ID:{$match[1]} ";
+                        return "";
                     },
 
                     // 任务
                     "/<span class=\"mention task\" data-id=\"(\d+)\">#?(.*?)<\/span>/" => function ($match) {
-                        return " 任务:{$match[2]} (任务ID:{$match[1]}) ";
+                        return " 任务：{$match[2]} (任务ID：{$match[1]}) ";
                     },
 
                     // 文件
                     "/<a class=\"mention file\" href=\"([^\"']+?)\"[^>]*?>~?(.*?)<\/a>/" => function ($match) use (&$reserves) {
                         $idOrCode = "";
                         if (preg_match("/single\/file\/(.*?)$/", $match[1], $subMatch)) {
-                            $idOrCode = " (" . (Base::isNumber($subMatch[1]) ? "文件ID:{$subMatch[1]}" : "文件分享码:{$subMatch[1]}") . ")";
+                            $idOrCode = " (" . (Base::isNumber($subMatch[1]) ? "文件ID：{$subMatch[1]}" : "文件分享码：{$subMatch[1]}") . ")";
                         }
-                        return " 文件:{$match[2]}{$idOrCode} ";
+                        return " 文件：{$match[2]}{$idOrCode} ";
                     },
 
                     // 报告
                     "/<a class=\"mention report\" href=\"([^\"']+?)\"[^>]*?>%?(.*?)<\/a>/" => function ($match) use (&$reserves) {
                         $idOrCode = "";
                         if (preg_match("/single\/report\/detail\/(.*?)$/", $match[1], $subMatch)) {
-                            $idOrCode = " (" . (Base::isNumber($subMatch[1]) ? "报告ID:{$subMatch[1]}" : "报告分享码:{$subMatch[1]}") . ")";
+                            $idOrCode = " (" . (Base::isNumber($subMatch[1]) ? "报告ID：{$subMatch[1]}" : "报告分享码：{$subMatch[1]}") . ")";
                         }
-                        return " 工作汇报:{$match[2]}{$idOrCode} ";
+                        return " 工作汇报：{$match[2]}{$idOrCode} ";
                     },
                 ], $result);
 

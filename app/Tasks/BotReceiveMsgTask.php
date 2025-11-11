@@ -508,7 +508,7 @@ class BotReceiveMsgTask extends AbstractTask
                 if (empty($extras['api_key'])) {
                     throw new Exception('机器人未启用。');
                 }
-                $this->generateSystemPromptForAI($msg->userid, $dialog, $extras);
+                $this->generateSystemPromptForAI($msg->userid, $dialog, $botUser, $extras);
                 // 转换提及格式
                 if ($replyText) {
                     $sendText = <<<EOF
@@ -602,134 +602,80 @@ class BotReceiveMsgTask extends AbstractTask
      *
      * @param int|null $userid 用户ID
      * @param WebSocketDialog $dialog 对话对象
+     * @param User $botUser 机器人用户对象
      * @param array $extras 额外参数数组，通过引用传递以修改system_message
      * @return void
      */
-    private function generateSystemPromptForAI($userid, WebSocketDialog $dialog, array &$extras)
+    private function generateSystemPromptForAI($userid, WebSocketDialog $dialog, User $botUser, array &$extras)
     {
-        // 构建结构化的系统提示词
-        $sections = [];
-
-        // 基础角色设定（如果有）
-        if (!empty($extras['system_message'])) {
-            $sections[] = <<<EOF
-                <role_setting>
-                {$extras['system_message']}
-                </role_setting>
-                EOF;
+        // 用户自定义提示词（私聊场景优先使用）
+        $customPrompt = null;
+        if ($dialog->type === 'user') {
+            $customPrompt = WebSocketDialogConfig::where([
+                'dialog_id' => $dialog->id,
+                'userid' => $userid,
+                'type' => 'ai_prompt',
+            ])->value('value');
         }
 
-        // 上下文信息（项目、任务、部门等）+ 操作指令
-        switch ($dialog->type) {
-            // 用户对话
-            case "user":
-                $aiPrompt = WebSocketDialogConfig::where([
-                    'dialog_id' => $dialog->id,
-                    'userid' => $userid,
-                    'type' => 'ai_prompt',
-                ])->value('value');
-                if ($aiPrompt) {
-                    return $aiPrompt;
-                }
-                break;
+        $prompt = [];
 
-            // 群组对话
-            case "group":
-                switch ($dialog->group_type) {
-                    // 用户群
-                    case 'user':
-                        break;
-
-                    // 项目群
-                    case 'project':
-                        $projectInfo = Project::whereDialogId($dialog->id)->first();
-                        if ($projectInfo) {
-                            $currentTime = Carbon::now()->toDateTimeString();
-                            $sections[] = <<<EOF
-                                <context_info>
-                                当前我在项目群聊中
-                                项目ID：{$projectInfo->id}
-                                项目名称：{$projectInfo->name}
-                                当前时间：{$currentTime}
-                                </context_info>
-                                EOF;
-                        }
-                        break;
-
-                    // 任务群
-                    case 'task':
-                        $taskInfo = ProjectTask::with(['content'])->whereDialogId($dialog->id)->first();
-                        if ($taskInfo) {
-                            $currentTime = Carbon::now()->toDateTimeString();
-                            $sections[] = <<<EOF
-                                <context_info>
-                                当前我在任务群聊中
-                                任务ID：{$taskInfo->id}
-                                任务名称：{$taskInfo->name}
-                                当前时间：{$currentTime}
-                                </context_info>
-                                EOF;
-                        }
-                        break;
-
-                    // 部门群
-                    case 'department':
-                        $userDepartment = UserDepartment::whereDialogId($dialog->id)->first();
-                        if ($userDepartment) {
-                            $sections[] = <<<EOF
-                                <context_info>
-                                当前我在部门群聊中
-                                部门ID：{$userDepartment->id}
-                                部门名称：{$userDepartment->name}
-                                </context_info>
-                                EOF;
-                        }
-                        break;
-
-                    // 全体成员群
-                    case 'all':
-                        $sections[] = <<<EOF
-                            <context_info>
-                            当前我在【全体成员】的群聊中
-                            </context_info>
-                            EOF;
-                        break;
-                }
-
-                // 聊天历史
-                if ($dialog->type === 'group') {
-                    $chatHistory = $this->getRecentChatHistory($dialog, 15);
-                    if ($chatHistory) {
-                        $sections[] = <<<EOF
-                            <chat_history>
-                            {$chatHistory}
-                            </chat_history>
-                            EOF;
-                    }
-                }
-                break;
+        // 1. 基础角色（自定义提示词优先）
+        if ($customPrompt) {
+            $prompt[] = $customPrompt;
+        } elseif (!empty($extras['system_message'])) {
+            $prompt[] = $extras['system_message'];
         }
 
-        // 更新系统提示词
-        if (!empty($sections)) {
-            $extras['system_message'] = implode("\n\n", $sections);
-        }
-
-        // 添加标签说明
-        $tagDescs = [
-            'role_setting' => '你的基础角色和行为定义',
-            'context_info' => '当前环境和状态信息',
-            'chat_history' => '最近的对话历史记录',
+        // 2. 上下文信息
+        $currentTime = Carbon::now()->toDateTimeString();
+        $contextLines = [
+            "您是：{$botUser->nickname}（ID: {$botUser->userid}）",
+            "当前对话ID：{$dialog->id}",
+            "当前系统时间：{$currentTime}"
         ];
-        $useTags = [];
-        foreach ($tagDescs as $tag => $desc) {
-            if (str_contains($extras['system_message'], '<' . $tag . '>')) {
-                $useTags[] = '- <' . $tag . '>: ' . $desc;
+
+        if ($dialog->type === 'group') {
+            switch ($dialog->group_type) {
+                case 'project':
+                    $projectInfo = Project::whereDialogId($dialog->id)->first();
+                    if ($projectInfo) {
+                        $contextLines[] = "场景：项目群聊「{$projectInfo->name}」（ID: {$projectInfo->id}）";
+                    }
+                    break;
+
+                case 'task':
+                    $taskInfo = ProjectTask::with(['content'])->whereDialogId($dialog->id)->first();
+                    if ($taskInfo) {
+                        $contextLines[] = "场景：任务群聊「{$taskInfo->name}」（ID: {$taskInfo->id}）";
+                    }
+                    break;
+
+                case 'department':
+                    $userDepartment = UserDepartment::whereDialogId($dialog->id)->first();
+                    if ($userDepartment) {
+                        $contextLines[] = "场景：部门群聊「{$userDepartment->name}」";
+                    }
+                    break;
+
+                case 'all':
+                    $contextLines[] = "场景：全体成员群聊";
+                    break;
             }
+
+            // 3. 聊天历史（仅群聊）
+            $chatHistory = $this->getRecentChatHistory($dialog, 15);
+            if ($chatHistory) {
+                $prompt[] = implode("\n", $contextLines);
+                $prompt[] = "最近的对话记录：\n{$chatHistory}";
+            } else {
+                $prompt[] = implode("\n", $contextLines);
+            }
+        } else {
+            $prompt[] = implode("\n", $contextLines);
         }
-        if (!empty($useTags)) {
-            $extras['system_message'] = "以下信息按标签组织：\n" . implode("\n", $useTags) . "\n\n" . $extras['system_message'];
-        }
+
+        $extras['system_message'] = implode("\n----\n", array_filter($prompt));
     }
 
     /**
@@ -766,14 +712,14 @@ class BotReceiveMsgTask extends AbstractTask
                 // 使用XML标签格式，确保AI能清晰识别边界
                 // 对用户名进行HTML转义，防止特殊字符破坏格式
                 $safeUserName = htmlspecialchars($userName, ENT_QUOTES, 'UTF-8');
-                return "<message user=\"{$safeUserName}\">\n{$content}\n</message>";
+                return "<message userid=\"{$message->userid}\" nickname=\"{$safeUserName}\">\n{$content}\n</message>";
             })
             ->reverse() // 反转集合，让时间顺序正确（最早的在前）
             ->filter() // 过滤掉空内容的消息
             ->values() // 重新索引数组
             ->toArray();
 
-        return empty($chatMessages) ? null : implode("\n\n", $chatMessages);
+        return empty($chatMessages) ? null : implode("\n", $chatMessages);
     }
 
     /**
