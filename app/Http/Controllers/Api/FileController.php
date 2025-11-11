@@ -64,6 +64,9 @@ class FileController extends AbstractController
      * @apiParam {Number|String} id
      * - Number 文件ID（需要登录）
      * - String 链接码（不需要登录，用于预览）
+     * @apiParam {String} [with_url]            是否返回文件访问URL
+     * - no: 不返回（默认）
+     * - yes: 返回content_url字段
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -72,11 +75,12 @@ class FileController extends AbstractController
     public function one()
     {
         $id = Request::input('id');
+        $with_url = Request::input('with_url', 'no');
         //
         $permission = 0;
         if (Base::isNumber($id)) {
             $user = User::auth();
-            $file = File::permissionFind(intval($id), $user, 0, $permission);
+            $file = File::permissionFind(intval($id), $user, $with_url === 'yes' ? 1 : 0, $permission);
         } elseif ($id) {
             $fileLink = FileLink::whereCode($id)->first();
             $file = $fileLink?->file;
@@ -88,12 +92,12 @@ class FileController extends AbstractController
                 }
                 return Base::retError($msg, $data);
             }
-            
+
             // 如果文件不允许游客访问，则需要登录
             if (!$file->guest_access) {
                 User::auth();
             }
-            
+
             $fileLink->increment("num");
         } else {
             return Base::retError('参数错误');
@@ -101,6 +105,12 @@ class FileController extends AbstractController
         //
         $array = $file->toArray();
         $array['permission'] = $permission;
+
+        // 如果请求返回文件URL
+        if ($with_url === 'yes') {
+            $array['content_url'] = FileContent::getFileUrl($file->id);
+        }
+
         return Base::retSuccess('success', $array);
     }
 

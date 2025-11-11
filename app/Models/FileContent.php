@@ -153,6 +153,23 @@ class FileContent extends AbstractModel
     }
 
     /**
+     * 获取文件访问URL
+     * @param int $fileId 文件ID
+     * @return string|null 返回完整的文件URL，如果文件无内容则返回null
+     */
+    public static function getFileUrl($fileId)
+    {
+        $content = self::whereFid($fileId)->orderByDesc('id')->first();
+        if ($content) {
+            $contentData = Base::json2array($content->content ?: []);
+            if (!empty($contentData['url'])) {
+                return Base::fillUrl($contentData['url']);
+            }
+        }
+        return null;
+    }
+
+    /**
      * 获取文件内容
      * @param $id
      * @return self|null

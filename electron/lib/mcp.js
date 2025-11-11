@@ -4,7 +4,7 @@
  * DooTask 的 Electron 客户端集成了 Model Context Protocol (MCP) 服务，
  * 允许 AI 助手(如 Claude)直接与 DooTask 任务进行交互。
  *
- * 提供的工具（共 21 个）:
+ * 提供的工具（共 24 个）:
  *
  * === 用户管理 ===
  * - get_users_basic   - 根据用户ID列表获取基础信息，便于匹配负责人/协助人
@@ -25,6 +25,11 @@
  * - get_project       - 获取项目详情，包含列（看板列）、成员等完整信息
  * - create_project    - 创建新项目
  * - update_project    - 修改项目信息（名称、描述等）
+ *
+ * === 文件管理 ===
+ * - list_files        - 获取项目文件列表，支持按父级文件夹筛选
+ * - search_files      - 按关键词搜索文件，支持搜索文件名称或ID
+ * - get_file_detail   - 获取文件详情，返回 content_url 可配合 WebFetch 读取文件内容
  *
  * === 工作报告 ===
  * - list_received_reports    - 获取我接收的汇报列表，支持按类型/状态/部门/时间筛选
@@ -60,6 +65,12 @@
  * 项目管理：
  * - "我有哪些项目？"
  * - "查看项目5的详情，包括所有列和成员"
+ *
+ * 文件管理：
+ * - "查看我的文件列表"
+ * - "搜索包含'设计稿'的文件"
+ * - "显示文件123的详细信息"
+ * - "帮我分析这个文档的内容"
  *
  * 工作报告：
  * - "查看未读的工作汇报"
@@ -797,7 +808,7 @@ class DooTaskMCP {
                     url: file.path,
                     thumb: file.thumb,
                     userid: file.userid,
-                    download: file.download,
+                    download_count: file.download,
                     created_at: file.created_at,
                 }));
 
@@ -1397,15 +1408,28 @@ class DooTaskMCP {
         // 工作报告：获取汇报详情
         this.mcp.addTool({
             name: 'get_report_detail',
-            description: '获取指定工作汇报的详细信息，包括完整内容、汇报人、接收人列表、AI分析等。返回的 content 字段为 Markdown 格式。',
+            description: '获取指定工作汇报的详细信息，包括完整内容、汇报人、接收人列表、AI分析等。返回的 content 字段为 Markdown 格式。支持通过报告ID或分享码访问。',
             parameters: z.object({
                 report_id: z.number()
+                    .optional()
                     .describe('报告ID'),
+                share_code: z.string()
+                    .optional()
+                    .describe('报告分享码'),
             }),
             execute: async (params) => {
-                const result = await this.request('GET', 'report/detail', {
-                    id: params.report_id,
-                });
+                if (!params.report_id && !params.share_code) {
+                    throw new Error('必须提供 report_id 或 share_code 参数之一');
+                }
+
+                const requestData = {};
+                if (params.report_id) {
+                    requestData.id = params.report_id;
+                } else if (params.share_code) {
+                    requestData.code = params.share_code;
+                }
+
+                const result = await this.request('GET', 'report/detail', requestData);
 
                 if (result.error) {
                     throw new Error(result.error);
@@ -1683,6 +1707,152 @@ class DooTaskMCP {
                             affected_count: ids.length,
                             report_ids: ids,
                         }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 文件管理：获取文件列表
+        this.mcp.addTool({
+            name: 'list_files',
+            description: '获取项目文件列表，支持按父级文件夹筛选。可以浏览文件夹结构，查看所有文件和子文件夹。',
+            parameters: z.object({
+                pid: z.number()
+                    .optional()
+                    .describe('父级文件夹ID，0或不传表示根目录'),
+            }),
+            execute: async (params) => {
+                const pid = params.pid !== undefined ? params.pid : 0;
+
+                const result = await this.request('GET', 'file/lists', {
+                    pid: pid,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const files = Array.isArray(result.data) ? result.data : [];
+
+                const simplified = files.map(file => ({
+                    id: file.id,
+                    name: file.name,
+                    type: file.type,
+                    ext: file.ext || '',
+                    size: file.size || 0,
+                    pid: file.pid,
+                    userid: file.userid,
+                    created_id: file.created_id,
+                    share: file.share ? true : false,
+                    created_at: file.created_at,
+                    updated_at: file.updated_at,
+                }));
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            pid: pid,
+                            total: simplified.length,
+                            files: simplified,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 文件管理：搜索文件
+        this.mcp.addTool({
+            name: 'search_files',
+            description: '按关键词搜索文件，支持搜索文件名称或ID。可以快速定位文件位置。',
+            parameters: z.object({
+                keyword: z.string()
+                    .min(1)
+                    .describe('搜索关键词，支持文件名称或文件ID'),
+                take: z.number()
+                    .optional()
+                    .describe('返回数量，默认50，最大100'),
+            }),
+            execute: async (params) => {
+                const take = params.take && params.take > 0 ? Math.min(params.take, 100) : 50;
+
+                const result = await this.request('GET', 'file/search', {
+                    key: params.keyword,
+                    take: take,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const files = Array.isArray(result.data) ? result.data : [];
+
+                const simplified = files.map(file => ({
+                    id: file.id,
+                    name: file.name,
+                    type: file.type,
+                    ext: file.ext || '',
+                    size: file.size || 0,
+                    pid: file.pid,
+                    userid: file.userid,
+                    created_id: file.created_id,
+                    share: file.share ? true : false,
+                    created_at: file.created_at,
+                    updated_at: file.updated_at,
+                }));
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            keyword: params.keyword,
+                            total: simplified.length,
+                            files: simplified,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 文件管理：获取文件详情
+        this.mcp.addTool({
+            name: 'get_file_detail',
+            description: '获取指定文件的详细信息，包括类型、大小、共享状态、创建者等。返回的 content_url 可以配合 WebFetch 工具读取文件内容进行分析。支持通过文件ID或分享码访问。',
+            parameters: z.object({
+                file_id: z.union([z.number(), z.string()])
+                    .describe('文件ID（数字）或分享码（字符串）'),
+            }),
+            execute: async (params) => {
+                const result = await this.request('GET', 'file/one', {
+                    id: params.file_id,
+                    with_url: 'yes',
+                });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                const file = result.data;
+
+                const fileDetail = {
+                    id: file.id,
+                    name: file.name,
+                    type: file.type,
+                    ext: file.ext || '',
+                    size: file.size || 0,
+                    pid: file.pid,
+                    userid: file.userid,
+                    created_id: file.created_id,
+                    share: file.share ? true : false,
+                    content_url: file.content_url || null,
+                    created_at: file.created_at,
+                    updated_at: file.updated_at,
+                };
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify(fileDetail, null, 2)
                     }]
                 };
             }
