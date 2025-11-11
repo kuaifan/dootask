@@ -175,17 +175,6 @@ const MarkdownUtils = {
 }
 
 const MarkdownPluginUtils = {
-    // 配置选项
-    config: {
-        maxItems: 200,
-        maxTitleLength: 200,
-        maxDescLength: 1000,
-        buttonLabels: {
-            task: '创建任务',
-            subtask: '创建子任务'
-        }
-    },
-
     // HTML转义函数
     escapeHtml(unsafe) {
         return unsafe
@@ -274,120 +263,6 @@ const MarkdownPluginUtils = {
             state.line = nextLine + 1;
             return true;
         });
-    },
-
-    // 修改初始化插件函数（创建任务）
-    initCreateTaskPlugin(md) {
-        md.block.ruler.before('fence', 'create-task', (state, startLine, endLine, silent) => {
-            const start = state.bMarks[startLine] + state.tShift[startLine];
-            const max = state.eMarks[startLine];
-            const firstLine = state.src.slice(start, max).trim();
-
-            // 检查开始标记，并获取status值
-            const match = firstLine.match(/^:::\s*(create-task-list|create-subtask-list)(?:\s+(\S+))?$/);
-            if (!match) {
-                return false;
-            }
-
-            if (silent) {
-                return true;
-            }
-
-            // 获取按钮标题和状态
-            const listType = match[1] === 'create-task-list' ? 'task' : 'subtask';
-            const buttonTitle = this.config.buttonLabels[listType] || '';
-            const status = match[2] || '';
-
-            let nextLine = startLine + 1;
-            let content = [];
-
-            // 查找结束标记
-            while (nextLine < endLine) {
-                const lineStart = state.bMarks[nextLine] + state.tShift[nextLine];
-                const lineMax = state.eMarks[nextLine];
-                const line = state.src.slice(lineStart, lineMax);
-
-                if (line.trim() === ':::') {
-                    break;
-                }
-
-                content.push(line);
-                nextLine++;
-            }
-
-            // 解析任务
-            const tasks = [];
-            let currentTask = null;
-            let isCollectingDesc = false;
-            let descLines = [];
-
-            content.forEach(line => {
-                const titleMatch = line.trim().match(/^title:\s*(.+)$/);
-                const descMatch = line.trim().match(/^desc:\s*(.*)$/);
-
-                if (titleMatch) {
-                    // 如果已经有一个任务在处理中，保存它
-                    if (currentTask) {
-                        if (descLines.length > 0) {
-                            currentTask.desc = descLines.join('\n');
-                        }
-                        tasks.push(currentTask);
-                    }
-
-                    // 开始新的任务
-                    currentTask = {title: titleMatch[1]};
-                    isCollectingDesc = false;
-                    descLines = [];
-                } else if (descMatch) {
-                    isCollectingDesc = true;
-                    if (descMatch[1]) {
-                        descLines.push(descMatch[1]);
-                    }
-                } else if (isCollectingDesc && line.trim() && !line.trim().startsWith('title:')) {
-                    // 收集多行描述，但不包括空行和新的title行
-                    descLines.push(line.trim());
-                }
-            });
-
-            // 处理最后一个任务
-            if (currentTask) {
-                if (descLines.length > 0) {
-                    currentTask.desc = descLines.join('\n');
-                }
-                tasks.push(currentTask);
-            }
-
-            // 生成HTML
-            const showIndex = tasks.length > 1;
-            const taskItems = tasks.slice(0, this.config.maxItems).map((task, index) => [
-                '<li>',
-                showIndex ? `<div class="task-index">${index + 1}.</div>` : '',
-                '<div class="task-item">',
-                `<div class="title">${this.escapeHtml(this.validateInput(task.title, this.config.maxTitleLength))}</div>`,
-                task.desc && match[1] === 'create-task-list' ? `<div class="desc">${this.escapeHtml(this.validateInput(task.desc, this.config.maxDescLength))}</div>` : '',
-                '</div>',
-                '</li>'
-            ].join(''));
-
-            const htmls = [
-                '<div class="apply-create-task">',
-                '<ul>',
-                taskItems.join(''),
-                '</ul>',
-                '<div class="apply-button">',
-                `<div class="apply-create-${listType}-button${status ? ' ' + status : ''}">${$A.L(buttonTitle)}</div>`,
-                '</div>',
-                '</div>'
-            ];
-
-            // 添加token
-            const token = state.push('html_block', '', 0);
-            token.content = htmls.join('');
-            token.map = [startLine, nextLine];
-
-            state.line = nextLine + 1;
-            return true;
-        })
     }
 };
 
@@ -415,7 +290,6 @@ export function MarkdownConver(text) {
         MarkdownUtils.mdi.use(mila, {attrs: {target: '_blank', rel: 'noopener noreferrer'}})
         MarkdownUtils.mdi.use(mdKatex, {blockClass: 'katexmath-block rounded-md p-[10px]', errorColor: ' #cc0000'})
         MarkdownPluginUtils.initReasoningPlugin(MarkdownUtils.mdi);
-        MarkdownPluginUtils.initCreateTaskPlugin(MarkdownUtils.mdi);
     }
     text = MarkdownPluginUtils.clearEmptyReasoning(text);
     text = MarkdownUtils.mdi.render(text);
@@ -426,7 +300,6 @@ export function MarkdownPreview(text) {
     if (MarkdownUtils.mds === null) {
         MarkdownUtils.mds = MarkdownIt()
         MarkdownPluginUtils.initReasoningPlugin(MarkdownUtils.mds);
-        MarkdownPluginUtils.initCreateTaskPlugin(MarkdownUtils.mds);
     }
     text = MarkdownPluginUtils.clearEmptyReasoning(text);
     return MarkdownUtils.mds.render(text)

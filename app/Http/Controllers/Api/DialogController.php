@@ -3246,55 +3246,6 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/applied 标记消息已应用
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup dialog
-     * @apiName msg__applied
-     *
-     * @apiParam {Number} index         索引
-     * @apiParam {Number} msg_id        消息ID
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function msg__applied()
-    {
-        User::auth();
-        //
-        $msg_id = intval(Request::input('msg_id'));
-        $index = intval(Request::input('index'));
-        //
-        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
-        if (empty($msg)) {
-            return Base::retError("消息不存在或已被删除");
-        }
-        WebSocketDialog::checkDialog($msg->dialog_id);
-        //
-        $originalMsg = $msg->getRawOriginal('msg');
-        $pattern = '/:::\s*(create-task-list|create-subtask-list)(?:\s+(\S+))?/';
-        $count = -1;
-        $updatedMsg = preg_replace_callback($pattern, function($matches) use (&$count, $index) {
-            $count++;
-            if ($count === $index || ($index === 0 && $count === 1)) {
-                return "::: {$matches[1]} applied";
-            }
-            return $matches[0];
-        }, $originalMsg);
-
-        if ($count === -1) {
-            return Base::retError("未找到可应用的规则");
-        }
-
-        $msg->msg = $updatedMsg;
-        $msg->save();
-        //
-        return Base::retSuccess("success");
-    }
-
-    /**
      * @api {get} api/dialog/sticker/search 搜索在线表情
      *
      * @apiDescription 需要token身份
