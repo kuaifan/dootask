@@ -510,15 +510,13 @@ class BotReceiveMsgTask extends AbstractTask
                 }
                 $this->generateSystemPromptForAI($msg->userid, $dialog, $extras);
                 // 转换提及格式
-                $sendText = self::convertMentionForAI($sendText);
-                $replyText = self::convertMentionForAI($replyText);
                 if ($replyText) {
                     $sendText = <<<EOF
                         <quoted_content>
                         {$replyText}
                         </quoted_content>
 
-                        The content within the above quoted_content tags is a citation.
+                        上述 quoted_content 标签中的内容为引用。
 
                         {$sendText}
                         EOF;
@@ -599,99 +597,6 @@ class BotReceiveMsgTask extends AbstractTask
     }
 
     /**
-     * 为AI机器人转换提及消息格式
-     * 将提及的任务、文件、报告转换为AI可理解的格式，并提取相关内容
-     *
-     * @param string $original 原始消息文本
-     * @return string 转换后的消息文本，包含相关内容的标签
-     * @throws Exception 当提及的对象不存在或读取失败时抛出异常
-     */
-    public static function convertMentionForAI($original)
-    {
-        $array = [];
-        $original = preg_replace_callback('/<!--(.*?)#(.*?)#(.*?)-->/', function ($match) use (&$array) {
-            // 初始化 tag 内容
-            $pathTag = null;
-            $pathName = null;
-            $pathContent = null;
-
-            // 根据 type 提取 tag 内容
-            switch ($match[1]) {
-                // 任务
-                case 'task':
-                    $taskInfo = ProjectTask::with(['content'])->whereId(intval($match[2]))->first();
-                    if (!$taskInfo) {
-                        throw new Exception("任务不存在或已被删除");
-                    }
-                    $pathTag = "task_content";
-                    $pathName = addslashes($taskInfo->name) . " (ID:{$taskInfo->id})";
-                    $pathContent = implode("\n", $taskInfo->AIContext());
-                    break;
-
-                // 文件
-                case 'file':
-                    $fileInfo = FileContent::idOrCodeToContent($match[2]);
-                    if (!$fileInfo || !isset($fileInfo->content['url'])) {
-                        throw new Exception("文件不存在或已被删除");
-                    }
-                    $urlPath = public_path($fileInfo->content['url']);
-                    if (!file_exists($urlPath)) {
-                        throw new Exception("文件不存在或已被删除");
-                    }
-                    $fileResult = TextExtractor::extractFile($urlPath);
-                    if (Base::isError($fileResult)) {
-                        throw new Exception("文件读取失败：" . $fileResult['msg']);
-                    }
-                    $pathTag = "file_content";
-                    $pathName = addslashes($match[3]) . " (ID:{$fileInfo->id})";
-                    $pathContent = $fileResult['data'];
-                    break;
-
-                // 文件路径
-                case 'path':
-                    $urlPath = public_path($match[2]);
-                    if (!file_exists($urlPath)) {
-                        throw new Exception("文件不存在或已被删除");
-                    }
-                    $fileResult = TextExtractor::extractFile($urlPath);
-                    if (Base::isError($fileResult)) {
-                        throw new Exception("文件读取失败：" . $fileResult['msg']);
-                    }
-                    $pathTag = "file_content";
-                    $pathName = addslashes($match[3]);
-                    $pathContent = $fileResult['data'];
-                    break;
-
-                // 报告
-                case 'report':
-                    $reportInfo = Report::idOrCodeToContent($match[2]);
-                    if (!$reportInfo) {
-                        throw new Exception("报告不存在或已被删除");
-                    }
-                    $pathTag = "report_content";
-                    $pathName = addslashes($match[3]) . " (ID:{$reportInfo->id})";
-                    $pathContent = Base::html2markdown($reportInfo->content);
-                    break;
-            }
-
-            // 如果提取到 tag 内容，则添加到 contents 数组中
-            if ($pathTag) {
-                $array[] = "<{$pathTag} path=\"{$pathName}\">\n{$pathContent}\n</{$pathTag}>";
-                return "`{$pathName}` (see below for {$pathTag} tag)";
-            }
-
-            return "";
-        }, $original);
-
-        // 添加 tag 内容
-        if ($array) {
-            $original .= "\n\n" . implode("\n\n", $array);
-        }
-
-        return $original;
-    }
-
-    /**
      * 为AI机器人生成系统提示词
      * 根据对话类型（用户对话、项目群、任务群、部门群等）生成相应的系统提示词
      *
@@ -739,28 +644,14 @@ class BotReceiveMsgTask extends AbstractTask
                     case 'project':
                         $projectInfo = Project::whereDialogId($dialog->id)->first();
                         if ($projectInfo) {
-                            $projectDesc = $projectInfo->desc ?: "-";
-                            $projectStatus = $projectInfo->archived_at ? '已归档' : '正在进行中';
+                            $currentTime = Carbon::now()->toDateTimeString();
                             $sections[] = <<<EOF
                                 <context_info>
-                                当前我在项目【{$projectInfo->name}】中
-                                项目描述：{$projectDesc}
-                                项目状态：{$projectStatus}
+                                当前我在项目群聊中
+                                项目ID：{$projectInfo->id}
+                                项目名称：{$projectInfo->name}
+                                当前时间：{$currentTime}
                                 </context_info>
-                                EOF;
-
-                            $sections[] = <<<EOF
-                                <instructions>
-                                如果你判断我想要或需要添加任务，请按照以下格式回复：
-
-                                ::: create-task-list
-                                title: 任务标题1
-                                desc: 任务描述1
-
-                                title: 任务标题2
-                                desc: 任务描述2
-                                :::
-                                </instructions>
                                 EOF;
                         }
                         break;
@@ -769,25 +660,14 @@ class BotReceiveMsgTask extends AbstractTask
                     case 'task':
                         $taskInfo = ProjectTask::with(['content'])->whereDialogId($dialog->id)->first();
                         if ($taskInfo) {
-                            $taskContext = implode("\n", $taskInfo->AIContext());
+                            $currentTime = Carbon::now()->toDateTimeString();
                             $sections[] = <<<EOF
                                 <context_info>
-                                当前我在任务【{$taskInfo->name}】中
-                                当前时间：{$taskInfo->updated_at}
+                                当前我在任务群聊中
                                 任务ID：{$taskInfo->id}
-                                {$taskContext}
+                                任务名称：{$taskInfo->name}
+                                当前时间：{$currentTime}
                                 </context_info>
-                                EOF;
-
-                            $sections[] = <<<EOF
-                                <instructions>
-                                如果你判断我想要或需要添加子任务，请按照以下格式回复：
-
-                                ::: create-subtask-list
-                                title: 子任务标题1
-                                title: 子任务标题2
-                                :::
-                                </instructions>
                                 EOF;
                         }
                         break;
@@ -798,7 +678,9 @@ class BotReceiveMsgTask extends AbstractTask
                         if ($userDepartment) {
                             $sections[] = <<<EOF
                                 <context_info>
-                                当前我在【{$userDepartment->name}】的部门群聊中
+                                当前我在部门群聊中
+                                部门ID：{$userDepartment->id}
+                                部门名称：{$userDepartment->name}
                                 </context_info>
                                 EOF;
                         }
@@ -836,7 +718,6 @@ class BotReceiveMsgTask extends AbstractTask
         // 添加标签说明
         $tagDescs = [
             'role_setting' => '你的基础角色和行为定义',
-            'instructions' => '特定功能的操作指令',
             'context_info' => '当前环境和状态信息',
             'chat_history' => '最近的对话历史记录',
         ];

@@ -1949,66 +1949,6 @@ class ProjectTask extends AbstractModel
     }
 
     /**
-     * 生成AI上下文
-     * @return array
-     */
-    public function AIContext()
-    {
-        $contexts = [];
-        if ($this->archived_at) {
-            $contexts[] = "任务状态：已归档";
-            $contexts[] = "归档时间：" . $this->archived_at;
-        } elseif ($this->complete_at) {
-            $contexts[] = "任务状态：已完成";
-            $contexts[] = "完成时间：" . $this->complete_at;
-        } elseif ($this->end_at && Carbon::parse($this->end_at)->lt(Carbon::now())) {
-            $contexts[] = "任务状态：已过期";
-            $contexts[] = "任务截止时间：" . $this->end_at;
-        } else {
-            $contexts[] = "任务状态：进行中";
-            if ($this->start_at) {
-                $contexts[] = "任务开始时间：" . $this->start_at;
-            }
-            if ($this->end_at) {
-                $contexts[] = "任务截止时间：" . $this->end_at;
-            }
-        }
-        $contexts[] = "当前系统时间：" . Carbon::now()->toDateTimeString();
-        if ($this->content) {
-            $taskDesc = $this->content?->getContentInfo();
-            if ($taskDesc) {
-                $descContent = Base::cutStr(Base::html2markdown($taskDesc['content'], ['strip_tags' => true]), 2000);
-                $contexts[] = <<<EOF
-                    任务描述：
-                    ```md
-                    {$descContent}
-                    ```
-                    EOF;
-            }
-        }
-        $subTask = ProjectTask::select(['id', 'name', 'complete_at', 'end_at'])->whereParentId($this->id)->get();
-        if ($subTask->isNotEmpty()) {
-            $subTaskContent = $subTask->map(function($item) {
-                if ($item->complete_at) {
-                    $status = " （已完成）";
-                } elseif ($item->end_at && Carbon::parse($item->end_at)->lt(Carbon::now())) {
-                    $status = " （已过期）";
-                } else {
-                    $status = " （进行中）";
-                }
-                return "  - {$item->name} {$status}";
-            })->join("\n");
-            if ($subTaskContent) {
-                $contexts[] = <<<EOF
-                    子任务列表：
-                    {$subTaskContent}
-                    EOF;
-            }
-        }
-        return $contexts;
-    }
-
-    /**
      * 获取任务
      * @param $task_id
      * @return ProjectTask|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|object|null

@@ -865,8 +865,7 @@ class WebSocketDialogMsg extends AbstractModel
         switch ($this->type) {
             case "file":
                 // 提取文件消息
-                $msgData = Base::json2array($this->getRawOriginal('msg'));
-                $result = $this->convertMentionFormat("path", $msgData['path'], $msgData['name'], $reserves);
+                $result = " 文件:{$this->msg['name']}、大小:{$this->msg['size']}、下载URL:{$this->msg['path']} ";
                 break;
 
             case "text":
@@ -889,29 +888,31 @@ class WebSocketDialogMsg extends AbstractModel
                 // 提及任务、文件、报告
                 $result = preg_replace_callback_array([
                     // 用户
-                    "/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/" => function () {
-                        return "";
+                    "/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/" => function ($match) {
+                        return " 提及用户ID:{$match[1]} ";
                     },
 
                     // 任务
-                    "/<span class=\"mention task\" data-id=\"(\d+)\">#?(.*?)<\/span>/" => function ($match) use (&$reserves) {
-                        return $this->convertMentionFormat("task", $match[1], $match[2], $reserves);
+                    "/<span class=\"mention task\" data-id=\"(\d+)\">#?(.*?)<\/span>/" => function ($match) {
+                        return " 任务:{$match[2]} (任务ID:{$match[1]}) ";
                     },
 
                     // 文件
                     "/<a class=\"mention file\" href=\"([^\"']+?)\"[^>]*?>~?(.*?)<\/a>/" => function ($match) use (&$reserves) {
+                        $idOrCode = "";
                         if (preg_match("/single\/file\/(.*?)$/", $match[1], $subMatch)) {
-                            return $this->convertMentionFormat("file", $subMatch[1], $match[2], $reserves);
+                            $idOrCode = " (" . (Base::isNumber($subMatch[1]) ? "文件ID:{$subMatch[1]}" : "文件分享码:{$subMatch[1]}") . ")";
                         }
-                        return "";
+                        return " 文件:{$match[2]}{$idOrCode} ";
                     },
 
                     // 报告
                     "/<a class=\"mention report\" href=\"([^\"']+?)\"[^>]*?>%?(.*?)<\/a>/" => function ($match) use (&$reserves) {
+                        $idOrCode = "";
                         if (preg_match("/single\/report\/detail\/(.*?)$/", $match[1], $subMatch)) {
-                            return $this->convertMentionFormat("report", $subMatch[1], $match[2], $reserves);
+                            $idOrCode = " (" . (Base::isNumber($subMatch[1]) ? "报告ID:{$subMatch[1]}" : "报告分享码:{$subMatch[1]}") . ")";
                         }
-                        return "";
+                        return " 工作汇报:{$match[2]}{$idOrCode} ";
                     },
                 ], $result);
 
@@ -926,35 +927,12 @@ class WebSocketDialogMsg extends AbstractModel
                 return '';
         }
 
-        // 处理 reserves
-        foreach ($reserves as $rand => $mention) {
-            $result = str_replace($rand, $mention, $result);
-        }
-
         // 截取最大长度
         if ($maxLength > 0 && mb_strlen($result) > $maxLength) {
             $result = mb_substr($result, 0, $maxLength);
         }
 
         return $result;
-    }
-
-    /**
-     * 转换提及消息格式
-     * 将提及的任务、文件、报告等转换为统一的格式 [type#key#name]
-     *
-     * @param string $type 提及类型（task、file、report、path）
-     * @param string $key 提及对象的唯一标识
-     * @param string $name 提及对象的显示名称
-     * @return string 格式化后的提及字符串
-     */
-    private function convertMentionFormat($type, $key, $name, &$reserves)
-    {
-        $key = str_replace(['#', '-->'], '', $key);
-        $name = str_replace(['#', '-->'], '', $name);
-        $rand = Base::generatePassword(12);
-        $reserves[$rand] = "<!--{$type}#{$key}#{$name}-->";
-        return $rand;
     }
 
     /**
