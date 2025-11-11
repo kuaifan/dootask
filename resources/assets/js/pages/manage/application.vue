@@ -982,6 +982,13 @@ export default {
                         url: text
                     },
                 });
+            } else {
+                // 其他文本
+                $A.modalInfo({
+                    title: this.$L('扫描结果'),
+                    content: text,
+                    width: 400,
+                });
             }
         },
         // 扫描登录提交

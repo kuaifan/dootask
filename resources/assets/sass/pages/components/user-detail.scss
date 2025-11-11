@@ -14,6 +14,9 @@
     .ivu-modal-close {
         .ivu-icon-ios-close {
             color: #ffffff;
+            &:hover {
+                color: #ffffff;
+            }
         }
     }
     .ivu-modal-body {
