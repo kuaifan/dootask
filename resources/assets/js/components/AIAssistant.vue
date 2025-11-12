@@ -131,7 +131,8 @@ export default {
             // 响应渲染
             responses: [],
             responseSeed: 1,
-            maxResponses: 5,
+            maxResponses: 50,
+            contextWindowSize: 10,
             activeSSEClients: [],
         }
     },
@@ -416,7 +417,11 @@ export default {
                 context.push([role, content]);
             };
             const context = [];
-            this.responses.forEach(item => {
+            const windowSize = Number(this.contextWindowSize) || 0;
+            const recentResponses = windowSize > 0
+                ? this.responses.slice(-windowSize)
+                : this.responses;
+            recentResponses.forEach(item => {
                 if (item.prompt) {
                     pushEntry(context, 'human', item.prompt);
                 }
