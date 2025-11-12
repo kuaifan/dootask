@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.43]
+
+### Bug Fixes
+
+- 修复登录后出现404的问题
+
 ## [1.4.35]
 
 ### Features
