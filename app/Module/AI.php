@@ -232,7 +232,10 @@ class AI
             $authParams['model_name'] = $thinkMatch[1];
         }
 
-        $authResult = Ihttp::ihttp_post('http://nginx/ai/invoke/auth', $authParams, 30);
+        $authResult = Ihttp::ihttp_request('http://nginx/ai/invoke/auth', $authParams, [
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'Authorization' => 'Bearer ' . Base::token(),
+        ], 30);
         if (Base::isError($authResult)) {
             return Base::retError($authResult['msg']);
         }
