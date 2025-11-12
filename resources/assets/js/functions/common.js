@@ -518,7 +518,7 @@ const timezone = require("dayjs/plugin/timezone");
          * @param defaultValue
          * @returns {string|*}
          */
-        getObject(obj, keys, defaultValue = undefined) {
+        getObject(obj, keys, defaultValue = "") {
             let keyArray;
             if (typeof keys === 'string') {
                 keyArray = keys.replace(/,/g, "|").replace(/\./g, "|").split("|");

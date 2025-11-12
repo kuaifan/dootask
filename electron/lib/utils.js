@@ -274,10 +274,11 @@ const utils = {
      * @param weburl
      * @returns {string|string}
      */
-    getDomain(weburl) {
+    getDomain(weburl, toLowerCase = true) {
         const urlReg = /http(s)?:\/\/([^\/]+)/i;
         const domain = `${weburl}`.match(urlReg);
-        return ((domain != null && domain.length > 0) ? domain[2] : "");
+        const result = ((domain != null && domain.length > 0) ? domain[2] : "");
+        return toLowerCase ? result.toLowerCase() : result;
     },
 
     /**
