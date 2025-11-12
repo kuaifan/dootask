@@ -3025,6 +3025,26 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 使用 AI 助手生成任务
+     *
+     * @deprecated 已废弃方法，仅保留路由占位，后续版本中移除
+     */
+    public function task__ai_generate()
+    {
+        Base::checkClientVersion('1.4.35');
+    }
+
+    /**
+     * 使用 AI 助手生成项目
+     *
+     * @deprecated 已废弃方法，仅保留路由占位，后续版本中移除
+     */
+    public function ai__generate()
+    {
+        Base::checkClientVersion('1.4.35');
+    }
+
+    /**
      * @api {get} api/project/flow/list 工作流列表
      *
      * @apiDescription 需要token身份

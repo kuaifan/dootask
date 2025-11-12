@@ -276,6 +276,16 @@ class SystemController extends AbstractController
     }
 
     /**
+     * AI助手设置（限管理员）
+     *
+     * @deprecated 已废弃方法，仅保留路由占位，后续版本中移除
+     */
+    public function setting__ai()
+    {
+        Base::checkClientVersion('1.4.35');
+    }
+
+    /**
      * @api {get} api/system/setting/aibot 获取AI设置、保存AI机器人设置（限管理员）
      *
      * @apiVersion 1.0.0
@@ -331,6 +341,26 @@ class SystemController extends AbstractController
         }
         //
         return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
+    }
+
+    /**
+     * 获取AI模型
+     *
+     * @deprecated 已废弃方法，仅保留路由占位，后续版本中移除
+     */
+    public function setting__aibot_models()
+    {
+        Base::checkClientVersion('1.4.35');
+    }
+
+    /**
+     * 获取AI默认模型
+     *
+     * @deprecated 已废弃方法，仅保留路由占位，后续版本中移除
+     */
+    public function setting__aibot_defmodels()
+    {
+        Base::checkClientVersion('1.4.35');
     }
 
     /**

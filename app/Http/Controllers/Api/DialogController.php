@@ -1026,6 +1026,16 @@ class DialogController extends AbstractController
     }
 
     /**
+     * 使用 AI 助手生成消息
+     *
+     * @deprecated 已废弃方法，仅保留路由占位，后续版本中移除
+     */
+    public function msg__ai_generate()
+    {
+        Base::checkClientVersion('1.4.35');
+    }
+
+    /**
      * @api {post} api/dialog/msg/sendtext 发送消息
      *
      * @apiDescription 需要token身份
@@ -2494,6 +2504,16 @@ class DialogController extends AbstractController
     }
 
     /**
+     * 转换为AI对话
+     *
+     * @deprecated 已废弃方法，仅保留路由占位，后续版本中移除
+     */
+    public function msg__webhookmsg2ai()
+    {
+        Base::checkClientVersion('1.4.35');
+    }
+
+    /**
      * @api {get} api/dialog/group/add 新增群组
      *
      * @apiDescription  需要token身份
@@ -3243,6 +3263,16 @@ class DialogController extends AbstractController
         $topMsg = WebSocketDialogMsg::whereId($dialog->top_msg_id)->first();
         //
         return Base::retSuccess('success', $topMsg);
+    }
+
+    /**
+     * 标记消息已应用
+     *
+     * @deprecated 已废弃方法，仅保留路由占位，后续版本中移除
+     */
+    public function msg__applied()
+    {
+        Base::checkClientVersion('1.4.35');
     }
 
     /**
