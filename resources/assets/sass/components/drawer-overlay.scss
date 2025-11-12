@@ -51,6 +51,11 @@ body {
         --close-right: 0px;
         --close-color: #ffffff;
         --border-radius: 16px 16px 0 0;
+
+        .file-content,
+        .file-preview {
+            border-radius: 0;
+        }
     }
 
     &.approve-drawer {

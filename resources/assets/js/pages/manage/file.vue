@@ -40,11 +40,13 @@
                         <span>{{$L('全部文件')}}</span>
                     </li>
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
-                    <li v-else v-for="item in navigator" :ref="`nav_${item.id}`" @click="browseFolder(item.id)">
-                        <i v-if="item.share" class="taskfont">&#xe63f;</i>
-                        <span :title="item.name">{{item.name}}</span>
-                        <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
-                    </li>
+                    <template v-else>
+                        <li v-for="item in navigator" :ref="`nav_${item.id}`" @click="browseFolder(item.id)">
+                            <i v-if="item.share" class="taskfont">&#xe63f;</i>
+                            <span :title="item.name">{{item.name}}</span>
+                            <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
+                        </li>
+                    </template>
                 </ul>
                 <template v-if="shearFirst">
                     <Button :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo" :style="{marginLeft: showBtnText ? '12px' : 0}">

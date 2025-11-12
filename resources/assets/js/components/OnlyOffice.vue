@@ -229,7 +229,7 @@ export default {
                         "lang": lang,
                         "user": await this.getUserData(),
                         "customization": {
-                            "uiTheme": this.themeName === 'dark' ? "theme-dark" : "theme-classic-light",
+                            "uiTheme": this.themeName === 'dark' ? "theme-night" : "theme-white",
                             "forcesave": true,
                             "help": false,
                         },
