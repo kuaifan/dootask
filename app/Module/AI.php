@@ -22,7 +22,7 @@ class AI
         'qianwen',
         'wenxin'
     ];
-    protected const OPENAI_DEFAULT_MODEL = 'gpt-5-mini';
+    protected const OPENAI_DEFAULT_MODEL = 'gpt-5.1-mini';
 
     protected $post = [];
     protected $headers = [];
@@ -730,6 +730,12 @@ class AI
             return false;
         }
         $model = $provider['model'] ?? '';
-        return str_starts_with($model, 'gpt-5');
+        
+        // 匹配 gpt- 开头后跟数字的模型名称
+        if (preg_match('/^gpt-(\d+)/', $model, $matches)) {
+            return intval($matches[1]) >= 5;
+        }
+        
+        return false;
     }
 }
