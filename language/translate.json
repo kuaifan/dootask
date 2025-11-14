@@ -32422,5 +32422,65 @@
         "fr": "Utilisateur",
         "id": "Pengguna",
         "ru": "Пользователь"
+    },
+    {
+        "key": "当前列表没有可归档的已完成任务",
+        "zh": "",
+        "zh-CHT": "當前列表沒有可歸檔的已完成任務",
+        "en": "There are no completed tasks in the current list that can be archived",
+        "ko": "현재 목록에는 보관할 수 있는 완료된 작업이 없습니다",
+        "ja": "現在のリストにはアーカイブ可能な完了タスクがありません",
+        "de": "In der aktuellen Liste gibt es keine abgeschlossenen Aufgaben, die archiviert werden können",
+        "fr": "Il n’y a aucune tâche terminée pouvant être archivée dans la liste actuelle",
+        "id": "Tidak ada tugas selesai yang dapat diarsipkan dalam daftar saat ini",
+        "ru": "В текущем списке нет завершённых задач, которые можно архивировать"
+    },
+    {
+        "key": "归档已完成任务",
+        "zh": "",
+        "zh-CHT": "歸檔已完成任務",
+        "en": "Archive completed tasks",
+        "ko": "완료된 작업 보관",
+        "ja": "完了タスクをアーカイブ",
+        "de": "Abgeschlossene Aufgaben archivieren",
+        "fr": "Archiver les tâches terminées",
+        "id": "Arsipkan tugas yang selesai",
+        "ru": "Архивировать завершённые задачи"
+    },
+    {
+        "key": "你确定将列表【（*）】中所有已完成的任务归档吗？",
+        "zh": "",
+        "zh-CHT": "你確定將列表【（*）】中所有已完成的任務歸檔嗎？",
+        "en": "Are you sure you want to archive all completed tasks in the list 【（*）】?",
+        "ko": "목록 【（*）】의 모든 완료된 작업을 정말로 보관하시겠습니까?",
+        "ja": "リスト【（*）】内のすべての完了タスクをアーカイブしてよろしいですか？",
+        "de": "Möchten Sie wirklich alle abgeschlossenen Aufgaben in der Liste 【（*）】 archivieren?",
+        "fr": "Voulez-vous vraiment archiver toutes les tâches terminées de la liste 【（*）】 ?",
+        "id": "Anda yakin ingin mengarsipkan semua tugas yang sudah selesai di daftar 【（*）】?",
+        "ru": "Вы уверены, что хотите архивировать все завершённые задачи в списке 【（*）】?"
+    },
+    {
+        "key": "已归档列表中所有已完成任务",
+        "zh": "",
+        "zh-CHT": "已歸檔列表中所有已完成任務",
+        "en": "All completed tasks in the list have been archived",
+        "ko": "목록의 모든 완료된 작업이 보관되었습니다",
+        "ja": "リスト内のすべての完了タスクをアーカイブしました",
+        "de": "Alle abgeschlossenen Aufgaben in der Liste wurden archiviert",
+        "fr": "Toutes les tâches terminées de la liste ont été archivées",
+        "id": "Semua tugas yang selesai dalam daftar telah diarsipkan",
+        "ru": "Все завершённые задачи в списке были архивированы"
+    },
+    {
+        "key": "归档失败，请稍后再试",
+        "zh": "",
+        "zh-CHT": "歸檔失敗，請稍後再試",
+        "en": "Archiving failed, please try again later",
+        "ko": "보관에 실패했습니다. 나중에 다시 시도해주세요",
+        "ja": "アーカイブに失敗しました。しばらくしてからもう一度お試しください",
+        "de": "Archivierung fehlgeschlagen, bitte versuchen Sie es später erneut",
+        "fr": "Échec de l’archivage, veuillez réessayer plus tard",
+        "id": "Pengarsipan gagal, silakan coba lagi nanti",
+        "ru": "Не удалось выполнить архивирование, повторите попытку позже"
     }
 ]

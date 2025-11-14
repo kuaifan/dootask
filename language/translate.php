@@ -174,8 +174,8 @@ if (count($needs) > 0) {
             $openAi->setProxy($openAiProxy);
         }
         $result = $openAi->chat([
-            "model" => "gpt-5",
-            "reasoning_effort" => "minimal",
+            "model" => "gpt-5.1",
+            "reasoning_effort" => "low",
             'messages' => [
                 [
                     "role" => "system",
