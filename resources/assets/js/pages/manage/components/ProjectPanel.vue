@@ -130,6 +130,7 @@
                             <EDropdown
                                 v-else
                                 trigger="click"
+                                size="medium"
                                 @command="dropColumn(column, $event)">
                                 <Icon type="ios-more" />
                                 <EDropdownMenu slot="dropdown" class="project-panel-more-dropdown-menu">
@@ -138,6 +139,11 @@
                                             <EDropdownItem command="title">
                                                 <div class="item">
                                                     <Icon type="md-create" />{{$L('修改')}}
+                                                </div>
+                                            </EDropdownItem>
+                                            <EDropdownItem command="archive_completed">
+                                                <div class="item">
+                                                    <Icon type="ios-filing" />{{$L('归档')}}
                                                 </div>
                                             </EDropdownItem>
                                             <EDropdownItem command="remove">
@@ -1249,6 +1255,9 @@ export default {
             if (command === 'title') {
                 this.titleColumn(column);
             }
+            else if (command === 'archive_completed') {
+                this.archiveColumnCompletedTasks(column);
+            }
             else if (command === 'remove') {
                 this.removeColumn(column);
             }
@@ -1302,6 +1311,51 @@ export default {
                     reject(msg);
                 });
             })
+        },
+
+        archiveColumnCompletedTasks(column) {
+            const tasks = this.getColumnCompletedTasks(column);
+            if (tasks.length === 0) {
+                $A.messageWarning('当前列表没有可归档的已完成任务');
+                return;
+            }
+            $A.modalConfirm({
+                title: '归档已完成任务',
+                content: `你确定将列表【${column.name}】中所有已完成的任务归档吗？`,
+                loading: true,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.batchArchiveTasks(tasks).then(() => {
+                            $A.messageSuccess('已归档列表中所有已完成任务');
+                            resolve();
+                        }).catch(({msg}) => {
+                            $A.modalError(msg || '归档失败，请稍后再试');
+                            reject();
+                        });
+                    })
+                }
+            });
+        },
+
+        getColumnCompletedTasks(column) {
+            if (!column || !Array.isArray(column.tasks)) {
+                return [];
+            }
+            return column.tasks.filter(task => task && task.complete_at && !task.archived_at);
+        },
+
+        batchArchiveTasks(tasks) {
+            const archive = (index = 0) => {
+                if (index >= tasks.length) {
+                    return Promise.resolve();
+                }
+                const task = tasks[index];
+                return this.$store.dispatch("archivedTask", {task_id: task.id}).then(() => {
+                    this.$store.dispatch("saveTaskBrowse", task.id);
+                    return archive(index + 1);
+                });
+            }
+            return archive();
         },
 
         removeColumn(column) {
