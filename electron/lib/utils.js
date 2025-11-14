@@ -109,6 +109,17 @@ const utils = {
     },
 
     /**
+     * 兜底处理尺寸类数值，确保传入的是有限数字
+     * @param value
+     * @param fallback
+     * @returns {number}
+     */
+    normalizeSize(value, fallback) {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : fallback;
+    },
+
+    /**
      * 随机字符串
      * @param len
      * @returns {string}

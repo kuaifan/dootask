@@ -521,6 +521,11 @@ function createChildWindow(args) {
                 contextIsolation: true,
             }, webPreferences),
         }, config)
+
+        options.width = utils.normalizeSize(options.width, 1280)
+        options.height = utils.normalizeSize(options.height, 800)
+        options.minWidth = utils.normalizeSize(options.minWidth, 360)
+        options.minHeight = utils.normalizeSize(options.minHeight, 360)
         if (!options.webPreferences.contextIsolation) {
             delete options.webPreferences.preload;
         }
