@@ -420,8 +420,8 @@ export default {
         // 更新菜单
         const menus = [];
         data.forEach((item) => {
-            if (item.menu_items) {
-                menus.push(...item.menu_items.map(m => Object.assign(m, {id: item.id})));
+            if (Array.isArray(item.menu_items) && item.menu_items.length > 0) {
+                menus.push(...item.menu_items.map(menu => Object.assign({}, menu, {id: item.id})));
             }
         })
         menus.forEach(item => {

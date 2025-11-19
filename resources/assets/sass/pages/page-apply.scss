@@ -582,6 +582,86 @@
     }
 }
 
+.custom-micro-alert {
+    margin-bottom: 16px;
+}
+
+.custom-micro-loading {
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-micro-body {
+    margin: 0 -24px;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .ivu-collapse {
+        > .ivu-collapse-item {
+            > .ivu-collapse-header {
+                display: flex;
+                align-items: center;
+                height: 60px;
+                padding-left: 0
+            }
+        }
+    }
+}
+
+.custom-micro-empty {
+    text-align: center;
+    color: #909399;
+    padding: 40px 0;
+}
+
+.custom-micro-card {
+    border: 1px solid #e5e6eb;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #fff;
+}
+
+.custom-micro-card__header {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .custom-micro-card__title {
+        font-weight: 600;
+        font-size: 15px;
+        color: #333;
+    }
+
+    .custom-micro-card__actions {
+        display: flex;
+        gap: 8px;
+        
+        .ivu-btn {
+            font-size: 13px;
+            padding: 0 10px;
+            height: 28px;
+        }
+    }
+}
+
+.custom-micro-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin-top: 8px;
+}
+
+.custom-micro-add-btn {
+    flex-shrink: 0;
+    height: 38px;
+}
+
 body.window-portrait {
     .page-apply {
         .apply-wrapper {

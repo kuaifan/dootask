@@ -723,6 +723,47 @@ class SystemController extends AbstractController
     }
 
     /**
+     * @api {post} api/system/microapp_menu 自定义应用菜单
+     *
+     * @apiDescription 获取或保存自定义微应用菜单，仅管理员可配置
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName microapp_menu
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存（限管理员）
+     * @apiParam {Array} list   菜单列表，格式：[{id,name,version,menu_items}]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function microapp_menu()
+    {
+        $type = trim(Request::input('type'));
+        $user = User::auth();
+        if ($type == 'save') {
+            User::auth('admin');
+            $list = Request::input('list');
+            if (empty($list) || !is_array($list)) {
+                $list = [];
+            }
+            $apps = Setting::normalizeCustomMicroApps($list);
+            $setting = Base::setting('microapp_menu', $apps);
+            $setting = Setting::formatCustomMicroAppsForResponse($setting);
+        } else {
+            $setting = Base::setting('microapp_menu');
+            if (!is_array($setting)) {
+                $setting = [];
+            }
+            $setting = Setting::filterCustomMicroAppsForUser($setting, $user);
+            $setting = Setting::formatCustomMicroAppsForResponse($setting);
+        }
+        return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting);
+    }
+
+    /**
      * @api {post} api/system/column/template 创建项目模板
      *
      * @apiDescription 获取创建项目模板、保存创建项目模板

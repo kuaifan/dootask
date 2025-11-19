@@ -15,6 +15,7 @@
                         <DropdownMenu slot="list">
                             <DropdownItem v-if="!sortingMode" name="sort">{{ $L('调整排序') }}</DropdownItem>
                             <DropdownItem v-else name="cancelSort">{{ $L('退出排序') }}</DropdownItem>
+                            <DropdownItem v-if="userIsAdmin" divided name="customMicro">{{ $L('自定义应用菜单') }}</DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
                 </div>
@@ -110,6 +111,114 @@
                 </template>
             </div>
         </div>
+
+        <!--自定义应用菜单-->
+        <Modal
+            v-if="userIsAdmin"
+            v-model="customMicroModalVisible"
+            :title="$L('自定义应用菜单')"
+            :mask-closable="false"
+            width="760">
+            <Alert type="info" show-icon class="custom-micro-alert">
+                {{ $L('仅管理员可配置，保存后会在应用列表中生成对应菜单。') }}
+            </Alert>
+            <div v-if="customMicroLoading" class="custom-micro-loading">
+                <Loading/>
+            </div>
+            <div v-else class="custom-micro-body">
+                <div v-if="!customMicroMenus.length" class="custom-micro-empty">
+                    {{ $L('暂无自定义菜单，请点击下方按钮新增。') }}
+                </div>
+                <Collapse v-else v-model="customMicroCollapsed" accordion simple>
+                    <Panel v-for="(item, index) in customMicroMenus" :key="item.uid" :name="item.uid">
+                        <div class="custom-micro-card__header">
+                            <div class="custom-micro-card__title">
+                                {{ item.id || $L('未命名应用') }}
+                            </div>
+                            <div class="custom-micro-card__actions">
+                                <Button @click.stop="duplicateCustomMenu(index)">{{ $L('复制') }}</Button>
+                                <Button type="error" @click.stop="removeCustomMenu(index)">{{ $L('删除') }}</Button>
+                            </div>
+                        </div>
+                        <div slot="content">
+                            <Form label-position="top">
+                                <Row :gutter="16">
+                                    <Col :sm="12" :xs="24">
+                                        <FormItem :label="$L('应用 ID')" required>
+                                            <Input v-model.trim="item.id" placeholder="custom-okr"/>
+                                        </FormItem>
+                                    </Col>
+                                    <Col :sm="12" :xs="24">
+                                        <FormItem :label="$L('应用名称')">
+                                            <Input v-model.trim="item.name" placeholder="OKR 开发"/>
+                                        </FormItem>
+                                    </Col>
+                                </Row>
+                                <FormItem :label="$L('菜单标题')" required>
+                                    <Input v-model.trim="item.menu.label" placeholder="OKR 开发入口"/>
+                                </FormItem>
+                                <Row :gutter="16">
+                                    <Col :sm="12" :xs="24">
+                                        <FormItem :label="$L('菜单位置')">
+                                            <Select v-model="item.menu.location" transfer>
+                                                <Option value="application">{{ $L('应用中心 - 常用') }}</Option>
+                                                <Option value="application/admin">{{ $L('应用中心 - 管理') }}</Option>
+                                                <Option value="main/menu">{{ $L('主导航') }}</Option>
+                                            </Select>
+                                        </FormItem>
+                                    </Col>
+                                    <Col :sm="12" :xs="24">
+                                        <FormItem :label="$L('可见范围')">
+                                            <Select v-model="item.menu.visible_to" transfer>
+                                                <Option value="admin">{{ $L('仅管理员') }}</Option>
+                                                <Option value="all">{{ $L('所有成员') }}</Option>
+                                            </Select>
+                                        </FormItem>
+                                    </Col>
+                                </Row>
+                                <FormItem :label="$L('图标地址')">
+                                    <Input v-model.trim="item.menu.icon" placeholder="https://example.com/icon.png"/>
+                                </FormItem>
+                                <FormItem :label="$L('菜单 URL')" required>
+                                    <Input v-model.trim="item.menu.url" placeholder="https://example.com/app?token={user_token}"/>
+                                </FormItem>
+                                <Row :gutter="16">
+                                    <Col :sm="12" :xs="24">
+                                        <FormItem :label="$L('URL 类型')">
+                                            <Select v-model="item.menu.url_type" transfer>
+                                                <Option value="iframe">iframe</Option>
+                                                <Option value="iframe_blank">iframe_blank</Option>
+                                                <Option value="inline">inline</Option>
+                                                <Option value="inline_blank">inline_blank</Option>
+                                                <Option value="external">external</Option>
+                                            </Select>
+                                        </FormItem>
+                                    </Col>
+                                    <Col :sm="12" :xs="24">
+                                        <FormItem :label="$L('背景颜色')">
+                                            <Input v-model.trim="item.menu.background" placeholder="#FFFFFF 或 #FFFFFF|#000000"/>
+                                        </FormItem>
+                                    </Col>
+                                </Row>
+                                <div class="custom-micro-checkbox-group">
+                                    <Checkbox v-model="item.menu.keep_alive">{{ $L('保持激活状态 (keep_alive)') }}</Checkbox>
+                                    <Checkbox v-model="item.menu.disable_scope_css">{{ $L('禁用作用域样式') }}</Checkbox>
+                                    <Checkbox v-model="item.menu.transparent">{{ $L('透明背景') }}</Checkbox>
+                                    <Checkbox v-model="item.menu.auto_dark_theme">{{ $L('自动暗黑模式') }}</Checkbox>
+                                </div>
+                            </Form>
+                        </div>
+                    </Panel>
+                </Collapse>
+                <Button class="custom-micro-add-btn" type="dashed" long icon="md-add" @click="addCustomMenu">
+                    {{ $L('新增菜单') }}
+                </Button>
+            </div>
+            <div slot="footer" class="adaption">
+                <Button @click="customMicroModalVisible=false">{{ $L('关闭') }}</Button>
+                <Button type="primary" :loading="customMicroSaving" @click="saveCustomMenus">{{ $L('保存') }}</Button>
+            </div>
+        </Modal>
 
         <!--MY BOT-->
         <DrawerOverlay v-model="mybotShow" placement="right" :size="720">
@@ -323,6 +432,20 @@ import ImgUpload from "../../components/ImgUpload.vue";
 import {webhookEventOptions} from "../../utils/webhook";
 import Draggable from "vuedraggable";
 
+const createCustomMicroMenu = () => ({
+    uid: `custom_${Math.random().toString(36).slice(2, 10)}`,
+    id: '',
+    name: '',
+    version: 'custom',
+    menu: {
+        location: 'application',
+        url_type: 'iframe',
+        visible_to: 'admin',
+        keep_alive: true,
+        auto_dark_theme: true,
+    }
+});
+
 export default {
     components: {
         Draggable,
@@ -383,6 +506,12 @@ export default {
             //
             sendData: [],
             sendType: '',
+            //
+            customMicroModalVisible: false,
+            customMicroMenus: [],
+            customMicroLoading: false,
+            customMicroSaving: false,
+            customMicroCollapsed: '',
         }
     },
     created() {
@@ -494,7 +623,122 @@ export default {
                 this.enterSortMode();
             } else if (action === 'cancelSort') {
                 this.exitSortMode();
+            } else if (action === 'customMicro') {
+                this.openCustomMicroModal();
             }
+        },
+        openCustomMicroModal() {
+            if (!this.userIsAdmin) {
+                return;
+            }
+            this.customMicroModalVisible = true;
+            this.loadCustomMicroMenus();
+        },
+        loadCustomMicroMenus() {
+            this.customMicroLoading = true;
+            this.$store.dispatch("call", {
+                url: 'system/microapp_menu?type=get',
+                method: 'post',
+            }).then(({data}) => {
+                this.customMicroMenus = this.normalizeCustomMenus(data);
+                this.customMicroCollapsed = this.customMicroMenus.length > 0 ? this.customMicroMenus[0].uid : '';
+            }).catch(({msg}) => {
+                if (msg) {
+                    $A.modalError(msg);
+                }
+            }).finally(() => {
+                this.customMicroLoading = false;
+            });
+        },
+        normalizeCustomMenus(list = []) {
+            if (!$A.isArray(list)) {
+                return [];
+            }
+            return list.map(app => {
+                const draft = createCustomMicroMenu();
+                return Object.assign({}, draft, app, {
+                    menu: Object.assign({}, draft.menu, $A.isArray(app.menu_items) && app.menu_items.length > 0 ? app.menu_items[0] : {}),
+                });
+            });
+        },
+        pickCustomMenuLabel(label, fallback = '') {
+            if (typeof label === 'string') {
+                return label || fallback;
+            }
+            if ($A.isJson(label)) {
+                return label.zh || label.en || fallback;
+            }
+            return fallback;
+        },
+        addCustomMenu() {
+            const draft = createCustomMicroMenu();
+            this.customMicroMenus.push(draft);
+            this.customMicroCollapsed = draft.uid;
+        },
+        duplicateCustomMenu(index) {
+            const target = this.customMicroMenus[index];
+            if (!target) {
+                return;
+            }
+            const copy = $A.cloneJSON(target);
+            copy.uid = createCustomMicroMenu().uid;
+            copy.id = copy.id ? `${copy.id}_copy` : '';
+            copy.name = copy.name ? `${copy.name} copy` : '';
+            copy.menu.label = copy.menu.label ? `${copy.menu.label} copy` : '';
+            this.customMicroMenus.splice(index + 1, 0, copy);
+            this.customMicroCollapsed = copy.uid;
+        },
+        removeCustomMenu(index) {
+            this.customMicroMenus.splice(index, 1);
+        },
+        saveCustomMenus() {
+            if (this.customMicroSaving) {
+                return;
+            }
+            const payload = [];
+            for (const item of this.customMicroMenus) {
+                const formatted = this.formatCustomMenuForSave(item);
+                if (!formatted) {
+                    $A.modalWarning({
+                        title: '提示',
+                        content: '请为每个菜单填写应用ID、菜单标题和有效的 URL。',
+                    });
+                    return;
+                }
+                payload.push(formatted);
+            }
+            this.customMicroSaving = true;
+            this.$store.dispatch("call", {
+                url: 'system/microapp_menu?type=save',
+                method: 'post',
+                data: {
+                    list: payload
+                },
+            }).then(_ => {
+                $A.messageSuccess('保存成功');
+                this.loadCustomMicroMenus();
+                this.$store.dispatch("updateMicroAppsStatus");
+            }).catch(({msg}) => {
+                if (msg) {
+                    $A.modalError(msg);
+                }
+            }).finally(() => {
+                this.customMicroSaving = false;
+            });
+        },
+        formatCustomMenuForSave(item) {
+            const id = (item.id || '').trim();
+            const url = (item.menu.url || '').trim();
+            const label = (item.menu.label || item.name || item.id || '').trim();
+            if (!id || !url || !label) {
+                return null;
+            }
+            return {
+                id,
+                name: (item.name || '').trim(),
+                version: item.version || 'custom',
+                menu_items: [Object.assign({}, item.menu, { url, label })],
+            };
         },
         currentCards(type) {
             return this.sortingMode ? (this.sortLists[type] || []) : this.getDisplayItems(type);
@@ -682,9 +926,9 @@ export default {
             }).then(({data, msg}) => {
                 this.appSorts = this.normalizeSortPayload(data?.sorts || payload);
                 this.exitSortMode();
-                $A.messageSuccess(msg || this.$L('保存成功'));
+                $A.messageSuccess(msg || '保存成功');
             }).catch(({msg}) => {
-                $A.modalError(msg || this.$L('保存失败'));
+                $A.modalError(msg || '保存失败');
             }).finally(() => {
                 this.appSortSaving = false;
             });
@@ -876,7 +1120,7 @@ export default {
         // 与我的机器人聊天
         chatMybot(userid) {
             this.$store.dispatch("openDialogUserid", userid).catch(({msg}) => {
-                $A.modalError(msg || this.$L('打开会话失败'))
+                $A.modalError(msg || '打开会话失败')
             });
         },
         // 添加修改我的机器人
@@ -985,7 +1229,7 @@ export default {
             } else {
                 // 其他文本
                 $A.modalInfo({
-                    title: this.$L('扫描结果'),
+                    title: '扫描结果',
                     content: text,
                     width: 400,
                 });

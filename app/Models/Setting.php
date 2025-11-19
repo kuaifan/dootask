@@ -165,6 +165,213 @@ class Setting extends AbstractModel
     }
 
     /**
+     * 规范自定义微应用配置
+     * @param array $list
+     * @return array
+     */
+    public static function normalizeCustomMicroApps($list)
+    {
+        if (!is_array($list)) {
+            return [];
+        }
+        $apps = [];
+        foreach ($list as $item) {
+            $app = self::normalizeCustomMicroAppItem($item);
+            if ($app) {
+                $apps[] = $app;
+            }
+        }
+        return $apps;
+    }
+
+    /**
+     * 根据用户身份过滤可见的自定义微应用
+     * @param array $apps
+     * @param \App\Models\User|null $user
+     * @return array
+     */
+    public static function filterCustomMicroAppsForUser(array $apps, $user)
+    {
+        if (empty($apps)) {
+            return [];
+        }
+        $isAdmin = $user ? $user->isAdmin() : false;
+        $userId = $user ? intval($user->userid) : 0;
+        $filtered = [];
+        foreach ($apps as $app) {
+            $visible = self::normalizeCustomMicroVisible($app['visible_to'] ?? ['admin']);
+            if (!self::isCustomMicroVisibleTo($visible, $isAdmin, $userId)) {
+                continue;
+            }
+            if (empty($app['menu_items']) || !is_array($app['menu_items'])) {
+                continue;
+            }
+            $menus = array_values(array_filter($app['menu_items'], function ($menu) use ($isAdmin, $userId) {
+                if (!isset($menu['visible_to'])) {
+                    return true;
+                }
+                $visible = self::normalizeCustomMicroVisible($menu['visible_to']);
+                return self::isCustomMicroVisibleTo($visible, $isAdmin, $userId);
+            }));
+            if (empty($menus)) {
+                continue;
+            }
+            $app['menu_items'] = $menus;
+            $filtered[] = $app;
+        }
+        return $filtered;
+    }
+
+    /**
+     * 将存储结构转换成 appstore 接口同款格式
+     * @param array $apps
+     * @return array
+     */
+    public static function formatCustomMicroAppsForResponse(array $apps)
+    {
+        return array_values(array_map(function ($app) {
+            unset($app['visible_to']);
+            if (!empty($app['menu_items']) && is_array($app['menu_items'])) {
+                $app['menu_items'] = array_values(array_map(function ($menu) {
+                    $menu['keep_alive'] = isset($menu['keep_alive']) ? (bool)$menu['keep_alive'] : true;
+                    $menu['disable_scope_css'] = (bool)($menu['disable_scope_css'] ?? false);
+                    $menu['auto_dark_theme'] = isset($menu['auto_dark_theme']) ? (bool)$menu['auto_dark_theme'] : true;
+                    $menu['transparent'] = (bool)($menu['transparent'] ?? false);
+                    if (isset($menu['visible_to'])) {
+                        unset($menu['visible_to']);
+                    }
+                    return $menu;
+                }, $app['menu_items']));
+            }
+            return $app;
+        }, $apps));
+    }
+
+    /**
+     * 规范自定义微应用
+     * @param array $item
+     * @return array|null
+     */
+    protected static function normalizeCustomMicroAppItem($item)
+    {
+        if (!is_array($item)) {
+            return null;
+        }
+        $id = trim($item['id'] ?? '');
+        if ($id === '') {
+            return null;
+        }
+        $name = Base::newTrim($item['name'] ?? '');
+        $version = Base::newTrim($item['version'] ?? '') ?: 'custom';
+        $menuItems = [];
+        if (isset($item['menu_items']) && is_array($item['menu_items'])) {
+            $menuItems = $item['menu_items'];
+        } elseif (isset($item['menu']) && is_array($item['menu'])) {
+            $menuItems = [$item['menu']];
+        }
+        if (empty($menuItems)) {
+            return null;
+        }
+        $normalizedMenus = [];
+        foreach ($menuItems as $menu) {
+            $formattedMenu = self::normalizeCustomMicroMenuItem($menu, $name ?: $id);
+            if ($formattedMenu) {
+                $normalizedMenus[] = $formattedMenu;
+            }
+        }
+        if (empty($normalizedMenus)) {
+            return null;
+        }
+        return Base::newTrim([
+            'id' => $id,
+            'name' => $name,
+            'version' => $version,
+            'menu_items' => $normalizedMenus,
+            'visible_to' => self::normalizeCustomMicroVisible($item['visible_to'] ?? 'admin'),
+        ]);
+    }
+
+    /**
+     * 规范自定义微应用菜单项
+     * @param array $menu
+     * @param string $fallbackLabel
+     * @return array|null
+     */
+    protected static function normalizeCustomMicroMenuItem($menu, $fallbackLabel = '')
+    {
+        if (!is_array($menu)) {
+            return null;
+        }
+        $url = trim($menu['url'] ?? '');
+        if ($url === '') {
+            return null;
+        }
+        $location = trim($menu['location'] ?? 'application');
+        $label = trim($menu['label'] ?? $fallbackLabel);
+        $urlType = strtolower(trim($menu['url_type'] ?? 'iframe'));
+        $payload = [
+            'location' => $location,
+            'label' => $label,
+            'icon' => Base::newTrim($menu['icon'] ?? ''),
+            'url' => $url,
+            'url_type' => $urlType,
+            'keep_alive' => isset($menu['keep_alive']) ? (bool)$menu['keep_alive'] : true,
+            'disable_scope_css' => (bool)($menu['disable_scope_css'] ?? false),
+            'auto_dark_theme' => isset($menu['auto_dark_theme']) ? (bool)$menu['auto_dark_theme'] : true,
+            'transparent' => (bool)($menu['transparent'] ?? false),
+        ];
+        if (!empty($menu['background'])) {
+            $payload['background'] = Base::newTrim($menu['background']);
+        }
+        if (!empty($menu['capsule']) && is_array($menu['capsule'])) {
+            $payload['capsule'] = Base::newTrim($menu['capsule']);
+        }
+        return $payload;
+    }
+
+    /**
+     * 规范自定义微应用可见范围
+     * @param mixed $value
+     * @return array
+     */
+    protected static function normalizeCustomMicroVisible($value)
+    {
+        if (is_array($value)) {
+            $list = array_filter(array_map('trim', $value));
+        } else {
+            $list = array_filter(array_map('trim', explode(',', (string)$value)));
+        }
+        if (empty($list)) {
+            return ['admin'];
+        }
+        if (in_array('all', $list)) {
+            return ['all'];
+        }
+        return array_values($list);
+    }
+
+    /**
+     * 判断自定义微应用是否可见
+     * @param array $visible
+     * @param bool $isAdmin
+     * @param int $userId
+     * @return bool
+     */
+    protected static function isCustomMicroVisibleTo(array $visible, bool $isAdmin, int $userId)
+    {
+        if (in_array('all', $visible)) {
+            return true;
+        }
+        if ($isAdmin && in_array('admin', $visible)) {
+            return true;
+        }
+        if ($userId > 0 && in_array((string)$userId, $visible, true)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 验证邮箱地址（过滤忽略地址）
      * @param $array
      * @param \Closure $resultClosure

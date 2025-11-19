@@ -5144,7 +5144,7 @@ export default {
      * @param commit
      * @param dispatch
      */
-    async updateMicroAppsStatus({commit, state}) {
+    async updateMicroAppsStatus({commit, state, dispatch}) {
         const {data: {code, data}} = await axios.get($A.mainUrl('appstore/api/v1/internal/installed'), {
             headers: {
                 Token: state.userToken,
@@ -5152,7 +5152,23 @@ export default {
             }
         })
         if (code === 200) {
-            commit("microApps/data", data|| [])
+            let apps = Array.isArray(data) ? data : [];
+            try {
+                const {data: customData} = await dispatch('call', {
+                    url: 'system/microapp_menu?type=get',
+                });
+                if ($A.isArray(customData) && customData.length > 0) {
+                    customData.forEach(item => {
+                        item.menu_items.forEach(menu => {
+                            menu.icon = menu.icon || $A.mainUrl("images/application/appstore-default.svg");
+                        });
+                    });
+                    apps = apps.concat(customData);
+                }
+            } catch (e) {
+                // 忽略自定义菜单加载失败
+            }
+            commit("microApps/data", apps || [])
         }
     },
 
