@@ -716,7 +716,6 @@ export default {
                 },
             }).then(_ => {
                 $A.messageSuccess('保存成功');
-                this.loadCustomMicroMenus();
                 this.$store.dispatch("updateMicroAppsStatus");
             }).catch(({msg}) => {
                 if (msg) {

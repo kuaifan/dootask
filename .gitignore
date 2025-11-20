@@ -23,6 +23,9 @@
 vars.yaml
 
 # IDE and editor files
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 .idea
 .vscode
 .windsurfrules
