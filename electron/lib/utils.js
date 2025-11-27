@@ -109,14 +109,22 @@ const utils = {
     },
 
     /**
-     * 兜底处理尺寸类数值，确保传入的是有限数字
+     * 兜底处理尺寸类数值，返回四舍五入后的正整数
      * @param value
      * @param fallback
      * @returns {number}
      */
     normalizeSize(value, fallback) {
-        const parsed = Number(value);
-        return Number.isFinite(parsed) ? parsed : fallback;
+        const toPositiveNumber = (candidate) => {
+            const num = Number(candidate);
+            return Number.isFinite(num) && num > 0 ? num : null;
+        };
+
+        const primary = toPositiveNumber(value);
+        const secondary = toPositiveNumber(fallback);
+        const safeValue = primary ?? secondary ?? 1;
+
+        return Math.max(1, Math.round(safeValue));
     },
 
     /**
