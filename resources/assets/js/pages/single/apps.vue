@@ -22,6 +22,7 @@ export default {
         // iframe 测试
         if (name === 'iframe-test') {
             if (!this.userIsAdmin) {
+                $A.modalError("仅管理员可使用此功能")
                 return
             }
             let {url} = this.$route.query;
