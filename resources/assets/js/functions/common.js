@@ -888,6 +888,56 @@ const timezone = require("dayjs/plugin/timezone");
         },
 
         /**
+         * 输入框数字限制
+         * @param object 
+         * @param min 
+         * @param max 
+         * @returns 
+         */
+        inputNumberLimit(object, min = null, max = null) {
+            if (object === null || typeof object !== "object") return;
+            if (object && typeof object.target === "object") {
+                object = object.target;
+            }
+            let eleDom = null;
+            if (object && typeof object.$el === "object") {
+                eleDom = object.$el;
+            } else if (typeof object.length === "number" && object.length > 0) {
+                eleDom = object[0];
+            } else if (object && (object.nodeType === 1 || object.tagName)) {
+                eleDom = object;
+            }
+            if (!eleDom) return;
+
+            let ele = $A(eleDom);
+            if (ele.length === 0) return;
+
+            if (eleDom.tagName != "INPUT" && eleDom.tagName != "TEXTAREA") {
+                if (ele.find("input").length === 0) {
+                    ele = ele.find("textarea");
+                }else{
+                    ele = ele.find("input");
+                }
+            }
+            if (ele.length === 0) return;
+            eleDom = ele[0];
+
+            if (eleDom.tagName != "INPUT" && eleDom.tagName != "TEXTAREA") return;
+
+            let val = parseFloat(ele.val());
+            if (!isNaN(val)) {
+                if (min !== null && val < min) {
+                    val = min;
+                }
+                if (max !== null && val > max) {
+                    val = max;
+                }
+                ele.val(val);
+                eleDom.dispatchEvent(new Event('input'));
+            }
+        },
+
+        /**
          * iOS上虚拟键盘引起的触控错位
          */
         iOSKeyboardFixer() {

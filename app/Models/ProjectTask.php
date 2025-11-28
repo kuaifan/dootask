@@ -396,6 +396,7 @@ class ProjectTask extends AbstractModel
         $userid     = User::userid();
         $visibility = $data['visibility_appoint'] ?? $data['visibility'];
         $visibility_userids = $data['visibility_appointor'] ?: [];
+        $taskUserLimit = intval(Base::settingFind('system', 'task_user_limit'));
         //
         if (ProjectTask::whereProjectId($project_id)
                 ->whereNull('project_tasks.complete_at')
@@ -455,8 +456,8 @@ class ProjectTask extends AbstractModel
             if (ProjectTask::authData($uid)
                     ->whereNull('project_tasks.complete_at')
                     ->whereNull('project_tasks.archived_at')
-                    ->count() > 500) {
-                throw new ApiException(User::userid2nickname($uid) . '负责或参与的未完成任务最多不能超过500个');
+                    ->count() > $taskUserLimit) {
+                throw new ApiException(User::userid2nickname($uid) . '负责或参与的未完成任务最多不能超过' . $taskUserLimit . '个');
             }
             $tmpArray[] = $uid;
         }

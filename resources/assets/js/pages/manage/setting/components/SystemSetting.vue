@@ -124,6 +124,16 @@
                             :placeholder="$L('请选择提醒时间')"
                             transfer/>
                     </FormItem>
+                    <FormItem :label="$L('个人任务上限')" prop="taskUserLimit">
+                        <div style="width: 110px;">
+                            <Input type="number" number v-model="formDatum.task_user_limit" @on-keyup="$A.inputNumberLimit($event, 1, 2000)">
+                                <template #append>
+                                    <span>{{$L('个')}}</span>
+                                </template>
+                            </Input>
+                        </div>
+                        <div class="form-tip">{{$L('负责人或协助人的未完成任务数量上限，最大2000。')}}</div>
+                    </FormItem>
                 </div>
             </div>
             <div class="block-setting-box">

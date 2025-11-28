@@ -55,6 +55,7 @@ class Setting extends AbstractModel
                 $value['image_compress'] = $value['image_compress'] ?: 'open';
                 $value['image_quality'] = min(100, max(0, intval($value['image_quality']) ?: 90));
                 $value['image_save_local'] = $value['image_save_local'] ?: 'open';
+                $value['task_user_limit'] = min(2000, max(1, intval($value['task_user_limit']) ?: 500));
                 if (!is_array($value['task_default_time']) || count($value['task_default_time']) != 2 || !Timer::isTime($value['task_default_time'][0]) || !Timer::isTime($value['task_default_time'][1])) {
                     $value['task_default_time'] = ['09:00', '18:00'];
                 }
