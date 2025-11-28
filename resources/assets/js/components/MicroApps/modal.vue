@@ -231,8 +231,8 @@ export default {
 
 <style lang="scss">
 .micro-modal {
-    width: 100vw;
-    height: 100vh;
+    position: fixed;
+    inset: 0;
     will-change: auto;
 
     --modal-mask-bg: rgba(0, 0, 0, .4);
