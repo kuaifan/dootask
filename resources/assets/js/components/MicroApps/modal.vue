@@ -47,8 +47,10 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import TransferDom from "../../directives/transfer-dom";
 import ResizeLine from "../ResizeLine.vue";
+import { colorReverse } from "../../utils/color";
 
 export default {
     name: 'MicroModal',
@@ -85,6 +87,7 @@ export default {
         }
     },
     computed: {
+        ...mapState(['themeName']),
         shouldRenderInDom() {
             return this.open || !!this.options.keep_alive;
         },
@@ -107,7 +110,7 @@ export default {
             const styleObject = {}
             if (this.options.background) {
                 const colors = `${this.options.background}|`.split('|');
-                styleObject.background = (this.themeName === 'dark' ? colors[1] : null) || colors[0];
+                styleObject.background = (this.themeName === 'dark' ? colorReverse(colors[1]) : null) || colors[0];
             }
             return styleObject;
         },
