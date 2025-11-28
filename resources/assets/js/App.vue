@@ -182,6 +182,8 @@ export default {
 
         rootStyle() {
             return {
+                '--window-width': `${this.windowWidth}px`,
+                '--window-height': `${this.windowHeight}px`,
                 '--window-scroll-y': `${this.windowScrollY}px`,
                 '--status-bar-height': `${this.safeAreaSize.top}px`,
                 '--status-bar-color': this.statusColor || '#ffffff',

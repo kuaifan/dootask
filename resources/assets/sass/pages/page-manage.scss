@@ -339,7 +339,7 @@
     }
     &.ivu-dropdown {
         .ivu-select-dropdown {
-            max-height: calc(100vh - 120px);
+            max-height: calc(var(--window-height, 100vh) - 120px);
             overflow: auto;
         }
     }

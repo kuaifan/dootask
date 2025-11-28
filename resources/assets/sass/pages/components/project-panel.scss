@@ -955,7 +955,7 @@
 }
 
 .project-panel-project-menu-dropdown {
-    max-height: calc(100vh - 120px);
+    max-height: calc(var(--window-height, 100vh) - 120px);
     overflow-y: auto;
 }
 
@@ -963,7 +963,7 @@
     .project-panel-more-dropdown-warp {
         height: 400px;
         min-height: 120px;
-        max-height: calc(100vh - 250px);
+        max-height: calc(var(--window-height, 100vh) - 250px);
         overflow-y: auto;
         list-style: none;
         &::-webkit-scrollbar {
