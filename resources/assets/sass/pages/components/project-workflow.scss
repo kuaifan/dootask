@@ -548,7 +548,7 @@
     .taskflow-config-more-dropdown-warp {
         height: 400px;
         min-height: 180px;
-        max-height: calc(var(--window-height, 100vh) - 250px);
+        max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 250px);
         overflow-y: auto;
         list-style: none;
     }

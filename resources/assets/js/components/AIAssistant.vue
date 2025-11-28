@@ -845,9 +845,9 @@ export default {
         display: flex;
         flex-direction: column;
         gap: 16px;
-        max-height: calc(var(--window-height, 100vh) - 344px);
+        max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 344px);
         @media (height <= 900px) {
-            max-height: calc(var(--window-height, 100vh) - 214px);
+            max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 214px);
         }
 
         .ai-assistant-output {

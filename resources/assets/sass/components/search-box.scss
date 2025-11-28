@@ -194,11 +194,11 @@
 
                     .search-list {
                         overflow: auto;
-                        max-height: calc(var(--window-height, 100vh) - 305px);
+                        max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 305px);
                         overscroll-behavior: contain;
 
                         @media (height <= 900px) {
-                            max-height: calc(var(--window-height, 100vh) - 175px);
+                            max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 175px);
                         }
 
                         > ul {

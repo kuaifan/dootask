@@ -235,10 +235,10 @@
     .dialog-list {
         padding: 0 12px;
         overflow-y: auto;
-        max-height: calc(var(--window-height, 100vh) - 310px);
+        max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 310px);
 
         @media (height <= 900px) {
-            max-height: calc(var(--window-height, 100vh) - 180px);
+            max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 180px);
         }
 
         .dialog-item {
