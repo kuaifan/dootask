@@ -411,8 +411,12 @@ export default {
             .map((app) => ({type: 'uninstall', id: app.id}));
         state.microAppsInstalled.forEach((oldApp) => {
             const newApp = data.find((app) => app.id === oldApp.id);
-            if (newApp && oldApp.version !== newApp.version) {
-                updatedOrUninstalledApps.push({type: 'update', id: oldApp.id});
+            if (newApp) {
+                if (oldApp.version !== newApp.version) {
+                    updatedOrUninstalledApps.push({type: 'update', id: oldApp.id});
+                } else if (oldApp.install_at !== newApp.install_at) {
+                    updatedOrUninstalledApps.push({type: 'reinstall', id: oldApp.id});
+                }
             }
         });
         state.microAppsInstalled = data;
