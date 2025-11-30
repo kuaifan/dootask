@@ -32482,5 +32482,65 @@
         "fr": "Échec de l’archivage, veuillez réessayer plus tard",
         "id": "Pengarsipan gagal, silakan coba lagi nanti",
         "ru": "Не удалось выполнить архивирование, повторите попытку позже"
+    },
+    {
+        "key": "个人任务上限",
+        "zh": "",
+        "zh-CHT": "個人任務上限",
+        "en": "Personal task limit",
+        "ko": "개인 작업 한도",
+        "ja": "個人タスク上限",
+        "de": "Persönliches Aufgabenlimit",
+        "fr": "Limite de tâches personnelles",
+        "id": "Batas tugas pribadi",
+        "ru": "Лимит личных задач"
+    },
+    {
+        "key": "负责人或协助人的未完成任务数量上限，最大2000。",
+        "zh": "",
+        "zh-CHT": "負責人或協助人的未完成任務數量上限，最大 2000。",
+        "en": "Maximum number of incomplete tasks for assignees or collaborators, up to 2000.",
+        "ko": "담당자 또는 협력자의 미완료 작업 최대 개수로, 최대 2000개입니다.",
+        "ja": "担当者または協力者が保有できる未完了タスク数の上限です。最大 2000 件までです。",
+        "de": "Maximale Anzahl offener Aufgaben für Verantwortliche oder Mitwirkende, maximal 2000.",
+        "fr": "Nombre maximal de tâches inachevées pour les responsables ou les collaborateurs, jusqu’à 2000.",
+        "id": "Batas jumlah tugas yang belum selesai untuk penanggung jawab atau kolaborator, maksimum 2000.",
+        "ru": "Предельное количество невыполненных задач для ответственных или соисполнителей — максимум 2000."
+    },
+    {
+        "key": "请输入 URL",
+        "zh": "",
+        "zh-CHT": "請輸入 URL",
+        "en": "Please enter the URL",
+        "ko": "URL을 입력하세요",
+        "ja": "URLを入力してください",
+        "de": "Bitte die URL eingeben",
+        "fr": "Veuillez saisir l’URL",
+        "id": "Silakan masukkan URL",
+        "ru": "Введите URL"
+    },
+    {
+        "key": "URL不能为空",
+        "zh": "",
+        "zh-CHT": "URL 不能為空",
+        "en": "URL cannot be empty",
+        "ko": "URL은 비워 둘 수 없습니다",
+        "ja": "URLを空にすることはできません",
+        "de": "Die URL darf nicht leer sein",
+        "fr": "L’URL ne peut pas être vide",
+        "id": "URL tidak boleh kosong",
+        "ru": "URL не может быть пустым"
+    },
+    {
+        "key": "仅管理员可使用此功能",
+        "zh": "",
+        "zh-CHT": "僅管理員可使用此功能",
+        "en": "Only administrators can use this feature",
+        "ko": "이 기능은 관리자만 사용할 수 있습니다",
+        "ja": "この機能を使用できるのは管理者のみです",
+        "de": "Diese Funktion kann nur von Administratoren verwendet werden",
+        "fr": "Seuls les administrateurs peuvent utiliser cette fonctionnalité",
+        "id": "Fitur ini hanya dapat digunakan oleh administrator",
+        "ru": "Эту функцию могут использовать только администраторы"
     }
 ]
