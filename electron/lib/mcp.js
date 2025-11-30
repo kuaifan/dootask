@@ -80,11 +80,32 @@
  * - "把所有未读报告标记为已读"
  */
 
-const { FastMCP } = require('fastmcp');
+let FastMCP = null;
 const { z } = require('zod');
 const loger = require("electron-log");
 const TurndownService = require('turndown');
 const { marked } = require('marked');
+
+async function loadFastMCP() {
+    if (FastMCP) {
+        return FastMCP;
+    }
+
+    // Prefer require for environments that still support CJS entry, fall back to ESM import when exports block it.
+    try {
+        const maybeModule = require('fastmcp');
+        FastMCP = maybeModule.FastMCP || maybeModule.default || maybeModule;
+        return FastMCP;
+    } catch (error) {
+        if (error.code && !['ERR_PACKAGE_PATH_NOT_EXPORTED', 'ERR_REQUIRE_ESM'].includes(error.code)) {
+            throw error;
+        }
+    }
+
+    const moduleExports = await import('fastmcp');
+    FastMCP = moduleExports.FastMCP || moduleExports.default || moduleExports;
+    return FastMCP;
+}
 
 let mcpServer = null;
 
@@ -141,7 +162,14 @@ function markdownToHtml(markdown) {
 class DooTaskMCP {
     constructor(mainWindow) {
         this.mainWindow = mainWindow;
-        this.mcp = new FastMCP({
+        this.mcp = null;
+        this.readyPromise = this.initMCP();
+    }
+
+    async initMCP() {
+        const FastMCPClass = await loadFastMCP();
+
+        this.mcp = new FastMCPClass({
             name: 'DooTask MCP Server',
             version: '1.0.0',
             description: 'DooTask 任务管理 MCP 接口',
@@ -1862,6 +1890,7 @@ class DooTaskMCP {
     // 启动 MCP 服务器
     async start(port = 22224) {
         try {
+            await this.readyPromise;
             await this.mcp.start({
                 transportType: 'httpStream',
                 httpStream: {
@@ -1875,6 +1904,7 @@ class DooTaskMCP {
 
     // 停止服务器
     async stop() {
+        await this.readyPromise;
         if (this.mcp && typeof this.mcp.stop === 'function') {
             await this.mcp.stop();
         }
