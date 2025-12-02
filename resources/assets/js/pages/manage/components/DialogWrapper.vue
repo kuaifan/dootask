@@ -3639,17 +3639,24 @@ export default {
                 return
             }
 
-            // 打开审批详情
-            let approveElement = target;
-            while (approveElement) {
-                if (approveElement.classList.contains('dialog-scroller')) {
+            // 打开微应用 / 审批详情
+            let clickElement = target;
+            while (clickElement) {
+                if (!clickElement.classList) {
                     break;
                 }
-                if (approveElement.classList.contains('open-approve-details')) {
-                    emitter.emit('approveDetails', approveElement.getAttribute("data-id"));
+                if (clickElement.classList.contains('dialog-head')) {
+                    break;
+                }
+                if (clickElement.classList.contains('open-micro-app')) {
+                    this.handleOpenMicroApp(clickElement);
                     return;
                 }
-                approveElement = approveElement.parentElement;
+                if (clickElement.classList.contains('open-approve-details')) {
+                    emitter.emit('approveDetails', clickElement.getAttribute("data-id"));
+                    return;
+                }
+                clickElement = clickElement.parentElement;
             }
 
             switch (target.nodeName) {
@@ -4420,7 +4427,35 @@ export default {
                     this.sendMsg(msgText, sendType);
                 }
             });
-        }
+        },
+
+        handleOpenMicroApp(element) {
+            const dataset = element && element.dataset ? element.dataset : {};
+            const normalizeKey = key => {
+                const name = key.replace(/^app/, '');
+                return name.replace(/^[A-Z]/, m => m.toLowerCase()).replace(/([A-Z])/g, '_$1').toLowerCase();
+            };
+            let config = $A.jsonParse(dataset.appConfig);
+            Object.entries(dataset).forEach(([key, value]) => {
+                if (!key.startsWith('app') || key === 'appConfig') {
+                    return;
+                }
+                if (value === '' || typeof value === 'undefined') {
+                    return;
+                }
+                const normalizedKey = normalizeKey(key);
+                if (normalizedKey === 'props') {
+                    config.props = Object.assign(config.props || {}, $A.jsonParse(value));
+                    return;
+                }
+                if (value === 'true' || value === 'false') {
+                    config[normalizedKey] = /true/i.test(value);
+                } else {
+                    config[normalizedKey] = value;
+                }
+            });
+            this.$store.dispatch("openMicroApp", config);
+        },
     }
 }
 </script>

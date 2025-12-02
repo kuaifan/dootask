@@ -5109,8 +5109,12 @@ export default {
             props: $A.isJson(data.props) ? data.props : {},
         }
         if (!state.microAppsIds.includes(config.id)) {
-            $A.modalWarning(`应用「${config.id}」未安装`);
-            return;
+            const matchedId = state.microAppsIds.find(item => typeof item === 'string' && item.endsWith(config.id))
+            if (!matchedId) {
+                $A.modalWarning(`应用「${config.id}」未安装`);
+                return;
+            }
+            config.id = matchedId;
         }
         config.url = config.url
             .replace(/\{user_id}/g, state.userId)
