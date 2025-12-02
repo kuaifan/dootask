@@ -389,8 +389,7 @@ export default {
 
     &-body {
         flex: 1;
-        height: 0;
-        overflow: hidden;
+        min-height: 0;
         margin: var(--modal-body-margin);
         border-radius: var(--modal-body-border-radius);
         background-color: var(--modal-body-background-color);
