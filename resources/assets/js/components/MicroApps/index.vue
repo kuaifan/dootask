@@ -540,6 +540,7 @@ export default {
          * @param app
          */
         closeAppState(app) {
+            this.loadings = this.loadings.filter(item => item !== app.name);
             this.closings.push(app.name);
             app.isOpen = false;
             setTimeout(() => {
