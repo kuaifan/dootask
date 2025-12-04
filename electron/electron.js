@@ -497,6 +497,14 @@ function createChildWindow(args) {
     const wind = childWindow.find(item => item.name == name);
     let browser = wind ? wind.browser : null;
     let isPreload = false;
+    // 清理已销毁但仍被引用的窗口，避免对失效对象调用方法
+    if (browser && browser.isDestroyed && browser.isDestroyed()) {
+        const index = childWindow.findIndex(item => item.name == name);
+        if (index > -1) {
+            childWindow.splice(index, 1);
+        }
+        browser = null;
+    }
     if (browser) {
         browser.focus();
         if (args.force === false) {
@@ -533,7 +541,7 @@ function createChildWindow(args) {
             options.parent = mainWindow
         }
 
-        if (preloadWindow && Object.keys(webPreferences).length === 0) {
+        if (preloadWindow && !preloadWindow.isDestroyed?.() && Object.keys(webPreferences).length === 0) {
             // 使用预加载窗口
             browser = preloadWindow;
             preloadWindow = null;
@@ -579,7 +587,7 @@ function createChildWindow(args) {
         })
 
         browser.on('closed', () => {
-            const index = childWindow.findIndex(item => item.name == name);
+            const index = childWindow.findIndex(item => item.browser === browser);
             if (index > -1) {
                 childWindow.splice(index, 1)
             }
