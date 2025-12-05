@@ -1828,6 +1828,19 @@ class Base
     }
 
     /**
+     * 是否是PC端（包括 Electron 桌面端和 Web 浏览器）
+     * @param string|null $platform 平台类型，不传则自动获取
+     * @return bool
+     */
+    public static function isPc($platform = null)
+    {
+        if ($platform === null) {
+            $platform = self::platform();
+        }
+        return in_array($platform, ['win', 'mac', 'web']);
+    }
+
+    /**
      * 是否是App移动端
      * @return bool
      */

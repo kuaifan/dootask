@@ -211,6 +211,10 @@ class WebSocketDialogMsgTask extends AbstractTask
                         'description' => "MID:{$msg->id}",
                         'seconds' => 3600,
                         'badge' => 1,
+                        'extra' => [
+                            'dialog_id' => $msg->dialog_id,
+                            'msg_id' => $msg->id,
+                        ]
                     ];
                     $this->endArray[] = new PushUmengMsg($uids->toArray(), $umengMsg);
                 }

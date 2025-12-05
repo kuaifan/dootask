@@ -64,7 +64,7 @@ class WebSocketService implements WebSocketHandlerInterface
                                 'ud' => $userid,
                             ],
                         ]));
-                        $this->userOn($fd, $userid);
+                        $this->userOn($fd, $userid, $get['platform']);
                     } else {
                         // 用户不存在
                         $server->push($fd, Base::array2json([
@@ -105,6 +105,11 @@ class WebSocketService implements WebSocketHandlerInterface
 
             // 握手信息
             case 'handshake':
+                // 更新 PC 端活跃时间
+                $row = WebSocket::whereFd($frame->fd)->first();
+                if ($row && Base::isPc($row->platform)) {
+                    Cache::put("user_pc_active:{$row->userid}", time(), 60);
+                }
                 break;
 
             // 访问状态
@@ -166,17 +171,27 @@ class WebSocketService implements WebSocketHandlerInterface
      * 用户上线
      * @param $fd
      * @param $userid
+     * @param $platform
      * @return void
      */
-    private function userOn($fd, $userid)
+    private function userOn($fd, $userid, $platform = 'web')
     {
+        // 校验平台类型
+        if (!in_array($platform, ['android', 'ios', 'win', 'mac', 'web'])) {
+            $platform = 'web';
+        }
         WebSocket::updateInsert([
             'key' => md5($fd . '@' . $userid)
         ], [
             'fd' => $fd,
             'userid' => $userid,
+            'platform' => $platform,
         ]);
         OnlineData::online($userid);
+        // PC 端上线时更新活跃时间
+        if (Base::isPc($platform)) {
+            Cache::put("user_pc_active:{$userid}", time(), 60);
+        }
     }
 
     /**

@@ -10,6 +10,7 @@ namespace App\Models;
  * @property string $key
  * @property string|null $fd
  * @property string|null $path
+ * @property string|null $platform 平台类型：android, ios, win, mac, web
  * @property int|null $userid
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -27,6 +28,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket wherePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocket wherePlatform($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereUserid($value)
  * @mixin \Eloquent

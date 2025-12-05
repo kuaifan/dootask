@@ -4,8 +4,10 @@ namespace App\Http\Middleware;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
+use App\Module\Base;
 use App\Module\Doo;
 use App\Services\RequestContext;
+use Cache;
 use Closure;
 
 class WebApi
@@ -28,6 +30,12 @@ class WebApi
 
         // 加载Doo类
         Doo::load();
+
+        // 记录 PC 端活跃时间
+        $userid = Doo::userId();
+        if ($userid > 0 && Base::isPc()) {
+            Cache::put("user_pc_active:{$userid}", time(), 60);
+        }
 
         // 解密请求内容
         $encrypt = Doo::pgpParseStr($request->header('encrypt'));
