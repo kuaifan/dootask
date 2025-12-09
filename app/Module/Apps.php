@@ -3,8 +3,11 @@
 namespace App\Module;
 
 use App\Exceptions\ApiException;
+use App\Models\User;
 use App\Services\RequestContext;
 use Symfony\Component\Yaml\Yaml;
+use App\Module\Base;
+use App\Module\Ihttp;
 
 class Apps
 {
@@ -55,6 +58,45 @@ class Apps
                 default => $appId,
             };
             throw new ApiException("应用「{$name}」未安装", [], 0, false);
+        }
+    }
+
+    /**
+     * Dispatch user lifecycle hook to appstore (onboard/offboard/delete/restore).
+     */
+    public static function dispatchUserHook(User $user, string $action, string $eventType = ''): void
+    {
+        $appKey = env('APP_KEY', '');
+        if (empty($appKey)) {
+            info('[appstore_hook] APP_KEY is empty, skip dispatchUserHook');
+            return;
+        }
+
+        $url = sprintf('http://appstore/api/v1/internal/hooks/%s', $action);
+        $payload = [
+            'user' => [
+                'id' => (string) $user->userid,
+                'email' => (string) $user->email,
+                'name' => (string) $user->nickname,
+                'role' => in_array('admin', $user->identity ?? []) ? 'admin' : 'normal',
+            ],
+        ];
+        if ($eventType !== '') {
+            $payload['event_type'] = $eventType;
+        }
+
+        $headers = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . md5($appKey),
+        ];
+
+        $resp = Ihttp::ihttp_request($url, json_encode($payload, JSON_UNESCAPED_UNICODE), $headers, 5);
+        if (Base::isError($resp)) {
+            info('[appstore_hook] dispatch fail', [
+                'url' => $url,
+                'payload' => $payload,
+                'error' => $resp,
+            ]);
         }
     }
 }

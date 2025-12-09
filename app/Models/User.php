@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Exceptions\ApiException;
 use App\Module\Base;
 use App\Module\Doo;
+use App\Module\Apps;
 use App\Module\Table\OnlineData;
 use App\Services\RequestContext;
 use Cache;
@@ -313,7 +314,7 @@ class User extends AbstractModel
      */
     public function deleteUser($reason)
     {
-        return AbstractModel::transaction(function () use ($reason) {
+        $ret = AbstractModel::transaction(function () use ($reason) {
             // 删除原因
             $userDelete = UserDelete::createInstance([
                 'operator' => User::userid(),
@@ -334,6 +335,10 @@ class User extends AbstractModel
             //
             return $this->delete();
         });
+        if ($ret) {
+            Apps::dispatchUserHook($this, 'user_offboard', 'delete');
+        }
+        return $ret;
     }
 
     /**
@@ -407,7 +412,9 @@ class User extends AbstractModel
                 $dialog?->joinGroup($user->userid, 0);
             }
         }
-        return $user->find($user->userid);
+        $createdUser = $user->find($user->userid);
+        Apps::dispatchUserHook($createdUser, 'user_onboard', 'onboard');
+        return $createdUser;
     }
 
     /**
