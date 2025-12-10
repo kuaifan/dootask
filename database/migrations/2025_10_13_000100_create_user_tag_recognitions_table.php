@@ -13,6 +13,10 @@ class CreateUserTagRecognitionsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('user_tag_recognitions')) {
+            return;
+        }
+        
         Schema::create('user_tag_recognitions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('tag_id')->index()->comment('标签ID');

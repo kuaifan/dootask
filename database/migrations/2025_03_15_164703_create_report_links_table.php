@@ -13,6 +13,10 @@ class CreateReportLinksTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('report_links')) {
+            return;
+        }
+
         Schema::create('report_links', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('rid')->nullable()->default(0)->index()->comment('报告ID');

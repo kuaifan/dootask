@@ -13,6 +13,10 @@ class CreateUserTagsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('user_tags')) {
+            return;
+        }
+        
         Schema::create('user_tags', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('user_id')->index()->comment('被标签用户ID');

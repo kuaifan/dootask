@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('umeng_logs')) {
+            return;
+        }
+        
+
         Schema::create('umeng_logs', function (Blueprint $table) {
             $table->id();
             $table->text('request')->nullable()->comment('请求参数');
