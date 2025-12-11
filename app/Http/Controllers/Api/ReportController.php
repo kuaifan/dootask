@@ -350,7 +350,7 @@ class ReportController extends AbstractController
             Doo::translate('备注'),
         ];
 
-        // 已完成的任务
+        // 已完成的任务（排除取消态）
         $completeDatas = [];
         $complete_task = ProjectTask::query()
             ->whereNotNull("complete_at")
@@ -362,6 +362,10 @@ class ReportController extends AbstractController
             ->get();
         if ($complete_task->isNotEmpty()) {
             foreach ($complete_task as $task) {
+                // 排除取消态任务：工作流状态名称中包含“取消”相关关键字的视为已取消
+                if ($task->flow_item_name && preg_match('/已取消|Cancelled|취소됨|キャンセル済み|Abgebrochen|Annulé|Dibatalkan|Отменено/', $task->flow_item_name)) {
+                    continue;
+                }
                 $complete_at = Carbon::parse($task->complete_at);
                 $remark = $type == Report::WEEKLY ? ('<div style="text-align:center">[' . Doo::translate('周' . ['日', '一', '二', '三', '四', '五', '六'][$complete_at->dayOfWeek]) . ']</div>') : '&nbsp;';
                 $completeDatas[] = [
@@ -381,10 +385,32 @@ class ReportController extends AbstractController
             ->join("projects", "projects.id", "=", "project_tasks.project_id")
             ->whereNull("projects.archived_at")
             ->whereNull("project_tasks.complete_at")
-            ->whereNotNull("project_tasks.start_at")
-            ->where("project_tasks.end_at", "<", $end_time->toDateTimeString())
             ->whereHas("taskUser", function ($query) use ($user) {
                 $query->where("userid", $user->userid);
+            })
+            ->where(function ($query) use ($start_time, $end_time) {
+                // 1) 有计划时间：计划时间与当前周期 [start_time, end_time] 有交集
+                $query->where(function ($q1) use ($start_time, $end_time) {
+                    $q1->whereNotNull('project_tasks.start_at')
+                        ->whereNotNull('project_tasks.end_at')
+                        ->where(function ($q2) use ($start_time, $end_time) {
+                            $q2->whereBetween('project_tasks.start_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
+                                ->orWhereBetween('project_tasks.end_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
+                                ->orWhere(function ($q3) use ($start_time, $end_time) {
+                                    $q3->where('project_tasks.start_at', '<=', $start_time->toDateTimeString())
+                                        ->where('project_tasks.end_at', '>=', $end_time->toDateTimeString());
+                                });
+                        });
+                })
+                // 2) 无计划时间：本周期内新建或有更新
+                ->orWhere(function ($q1) use ($start_time, $end_time) {
+                    $q1->whereNull('project_tasks.start_at')
+                        ->whereNull('project_tasks.end_at')
+                        ->where(function ($q2) use ($start_time, $end_time) {
+                            $q2->whereBetween('project_tasks.created_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
+                                ->orWhereBetween('project_tasks.updated_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()]);
+                        });
+                });
             })
             ->select("project_tasks.*")
             ->orderByDesc("project_tasks.id")
@@ -408,8 +434,10 @@ class ReportController extends AbstractController
         if ($type === Report::WEEKLY) {
             $title = $user->nickname . "的周报[" . $start_time->format("m/d") . "-" . $end_time->format("m/d") . "]";
             $title .= "[" . $start_time->month . "月第" . $start_time->weekOfMonth . "周]";
+            $unfinishedTitle = '本周未完成的工作';
         } else {
             $title = $user->nickname . "的日报[" . $start_time->format("Y/m/d") . "]";
+            $unfinishedTitle = '今日未完成的工作';
         }
         $title = Doo::translate($title);
 
@@ -422,7 +450,7 @@ class ReportController extends AbstractController
         ])->render();
 
         $contents[] = '<p>&nbsp;</p>';
-        $contents[] = '<h2>' . Doo::translate('未完成的工作') . '</h2>';
+        $contents[] = '<h2>' . Doo::translate($unfinishedTitle) . '</h2>';
         $contents[] = view('report', [
             'labels' => $labels,
             'datas' => $unfinishedDatas,
