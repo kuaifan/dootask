@@ -32542,5 +32542,29 @@
         "fr": "Seuls les administrateurs peuvent utiliser cette fonctionnalité",
         "id": "Fitur ini hanya dapat digunakan oleh administrator",
         "ru": "Эту функцию могут использовать только администраторы"
+    },
+    {
+        "key": "今日未完成的工作",
+        "zh": "",
+        "zh-CHT": "今日未完成的工作",
+        "en": "Today's incomplete tasks",
+        "ko": "오늘 미완료된 작업",
+        "ja": "本日未完了のタスク",
+        "de": "Heutige unerledigte Aufgaben",
+        "fr": "Tâches inachevées d’aujourd’hui",
+        "id": "Tugas yang belum selesai hari ini",
+        "ru": "Незавершённые задачи за сегодня"
+    },
+    {
+        "key": "本周未完成的工作",
+        "zh": "",
+        "zh-CHT": "本週未完成的工作",
+        "en": "This week's incomplete tasks",
+        "ko": "이번 주 미완료된 작업",
+        "ja": "今週未完了のタスク",
+        "de": "In dieser Woche unerledigte Aufgaben",
+        "fr": "Tâches inachevées de cette semaine",
+        "id": "Tugas yang belum selesai minggu ini",
+        "ru": "Незавершённые задачи за эту неделю"
     }
 ]
