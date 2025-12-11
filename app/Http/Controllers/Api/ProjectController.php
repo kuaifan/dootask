@@ -1428,15 +1428,17 @@ class ProjectController extends AbstractController
                     }
                     $actualTime = $task->complete_at ? $totalTime : 0; // 实际完成用时
                     $statusText = '未完成';
+                    // 状态判定规则：
+                    // - flow_item_name 以 end| 开头：视为结束态，区分“已取消”和“已完成”
+                    // - 非 end|，但 complete_at 有值：视为已完成（兼容无流程或历史数据）
                     if (str_starts_with($task->flow_item_name, 'end')) {
+                        $statusText = '已完成';
                         if (preg_match('/已取消|Cancelled|취소됨|キャンセル済み|Abgebrochen|Annulé|Dibatalkan|Отменено/', $task->flow_item_name)) {
                             $statusText = '已取消';
                             $actualTime = 0;
                             $testTime = 0;
                             $developTime = 0;
                             $overTime = '-';
-                        } elseif (str_contains($task->flow_item_name, '已完成')) {
-                            $statusText = '已完成';
                         }
                     } elseif ($task->complete_at) {
                         $statusText = '已完成';
@@ -1445,15 +1447,15 @@ class ProjectController extends AbstractController
                         $datas[$task->ownerid] = [
                             'index' => 1,
                             'nickname' => Base::filterEmoji(User::userid2nickname($task->ownerid)),
-                            'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
+                            'styles' => ["A1:Q1" => ["font" => ["bold" => true]]],
                             'data' => [],
                         ];
                     }
                     $datas[$task->ownerid]['index']++;
                     if ($statusText === '未完成') {
-                        $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];  // 未完成
+                        $datas[$task->ownerid]['styles']["Q{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];  // 未完成
                     } elseif ($statusText === '已完成' && $task->end_at && Carbon::parse($task->complete_at)->gt($task->end_at)) {
-                        $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];  // 已完成超期
+                        $datas[$task->ownerid]['styles']["Q{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];  // 已完成超期
                     }
                     $datas[$task->ownerid]['data'][] = [
                         $task->id,
@@ -1495,7 +1497,7 @@ class ProjectController extends AbstractController
             foreach ($userid as $ownerid) {
                 $data = $datas[$ownerid] ?? [
                     'nickname' => Base::filterEmoji(User::userid2nickname($ownerid)),
-                    'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
+                    'styles' => ["A1:Q1" => ["font" => ["bold" => true]]],
                     'data' => [],
                 ];
                 $title = (count($sheets) + 1) . "." . ($data['nickname'] ?: $ownerid);
