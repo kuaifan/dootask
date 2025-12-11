@@ -2010,4 +2010,64 @@ class ProjectTask extends AbstractModel
         //
         return $task;
     }
+
+    /**
+     * 构建指定周期内的未完成任务查询（用于周报/日报等）
+     * @param int $userid
+     * @param Carbon $start_time
+     * @param Carbon $end_time
+     * @param bool $includeUpdatedForNoPlan 无计划时间任务是否按周期内更新时间一并纳入
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function buildUnfinishedTaskQuery(int $userid, Carbon $start_time, Carbon $end_time, bool $includeUpdatedForNoPlan = true)
+    {
+        return self::query()
+            ->join("projects", "projects.id", "=", "project_tasks.project_id")
+            ->whereNull("projects.archived_at")
+            ->whereNull("project_tasks.complete_at")
+            ->whereHas("taskUser", function ($query) use ($userid) {
+                $query->where("userid", $userid);
+            })
+            ->where(function ($query) use ($start_time, $end_time, $includeUpdatedForNoPlan) {
+                // 1) 有计划时间：计划时间与给定周期 [start_time, end_time] 有交集
+                $query->where(function ($q1) use ($start_time, $end_time) {
+                    $q1->whereNotNull('project_tasks.start_at')
+                        ->whereNotNull('project_tasks.end_at')
+                        ->where(function ($q2) use ($start_time, $end_time) {
+                            $q2->whereBetween('project_tasks.start_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
+                                ->orWhereBetween('project_tasks.end_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
+                                ->orWhere(function ($q3) use ($start_time, $end_time) {
+                                    $q3->where('project_tasks.start_at', '<=', $start_time->toDateTimeString())
+                                        ->where('project_tasks.end_at', '>=', $end_time->toDateTimeString());
+                                });
+                        });
+                });
+                // 2) 无计划时间
+                $query->orWhere(function ($q1) use ($start_time, $end_time, $includeUpdatedForNoPlan) {
+                    $q1->whereNull('project_tasks.start_at')
+                        ->whereNull('project_tasks.end_at')
+                        ->where(function ($q2) use ($start_time, $end_time, $includeUpdatedForNoPlan) {
+                            $q2->whereBetween('project_tasks.created_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()]);
+                            if ($includeUpdatedForNoPlan) {
+                                $q2->orWhereBetween('project_tasks.updated_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()]);
+                            }
+                        });
+                });
+            })
+            ->select("project_tasks.*")
+            ->orderByDesc("project_tasks.id");
+    }
+
+    /**
+     * 判断工作流名称是否为取消态（多语言）
+     * @param string|null $flowItemName
+     * @return bool
+     */
+    public static function isCanceledFlowName(?string $flowItemName): bool
+    {
+        if (empty($flowItemName)) {
+            return false;
+        }
+        return preg_match('/已取消|Cancelled|취소됨|キャンセル済み|Abgebrochen|Annulé|Dibatalkan|Отменено/', $flowItemName) === 1;
+    }
 }

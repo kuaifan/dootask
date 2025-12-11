@@ -1433,7 +1433,7 @@ class ProjectController extends AbstractController
                     // - 非 end|，但 complete_at 有值：视为已完成（兼容无流程或历史数据）
                     if (str_starts_with($task->flow_item_name, 'end')) {
                         $statusText = '已完成';
-                        if (preg_match('/已取消|Cancelled|취소됨|キャンセル済み|Abgebrochen|Annulé|Dibatalkan|Отменено/', $task->flow_item_name)) {
+                        if (ProjectTask::isCanceledFlowName($task->flow_item_name)) {
                             $statusText = '已取消';
                             $actualTime = 0;
                             $testTime = 0;

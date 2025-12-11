@@ -327,6 +327,13 @@ class ReportController extends AbstractController
             $start_time->startOfWeek();
             $end_time = Carbon::instance($start_time)->endOfWeek();
         }
+        // 周报时预计算下一周期时间范围（下周）
+        $next_start_time = null;
+        $next_end_time = null;
+        if ($type === Report::WEEKLY) {
+            $next_start_time = Carbon::instance($start_time)->copy()->addWeek();
+            $next_end_time = Carbon::instance($end_time)->copy()->addWeek();
+        }
 
         // 生成唯一标识
         $sign = Report::generateSign($type, 0, Carbon::instance($start_time));
@@ -350,7 +357,7 @@ class ReportController extends AbstractController
             Doo::translate('备注'),
         ];
 
-        // 已完成的任务（排除取消态）
+        // 已完成的任务
         $completeDatas = [];
         $complete_task = ProjectTask::query()
             ->whereNotNull("complete_at")
@@ -362,8 +369,8 @@ class ReportController extends AbstractController
             ->get();
         if ($complete_task->isNotEmpty()) {
             foreach ($complete_task as $task) {
-                // 排除取消态任务：工作流状态名称中包含“取消”相关关键字的视为已取消
-                if ($task->flow_item_name && preg_match('/已取消|Cancelled|취소됨|キャンセル済み|Abgebrochen|Annulé|Dibatalkan|Отменено/', $task->flow_item_name)) {
+                // 排除取消态任务：不将已取消任务计入“已完成工作”
+                if (ProjectTask::isCanceledFlowName($task->flow_item_name)) {
                     continue;
                 }
                 $complete_at = Carbon::parse($task->complete_at);
@@ -381,40 +388,7 @@ class ReportController extends AbstractController
 
         // 未完成的任务
         $unfinishedDatas = [];
-        $unfinished_task = ProjectTask::query()
-            ->join("projects", "projects.id", "=", "project_tasks.project_id")
-            ->whereNull("projects.archived_at")
-            ->whereNull("project_tasks.complete_at")
-            ->whereHas("taskUser", function ($query) use ($user) {
-                $query->where("userid", $user->userid);
-            })
-            ->where(function ($query) use ($start_time, $end_time) {
-                // 1) 有计划时间：计划时间与当前周期 [start_time, end_time] 有交集
-                $query->where(function ($q1) use ($start_time, $end_time) {
-                    $q1->whereNotNull('project_tasks.start_at')
-                        ->whereNotNull('project_tasks.end_at')
-                        ->where(function ($q2) use ($start_time, $end_time) {
-                            $q2->whereBetween('project_tasks.start_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
-                                ->orWhereBetween('project_tasks.end_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
-                                ->orWhere(function ($q3) use ($start_time, $end_time) {
-                                    $q3->where('project_tasks.start_at', '<=', $start_time->toDateTimeString())
-                                        ->where('project_tasks.end_at', '>=', $end_time->toDateTimeString());
-                                });
-                        });
-                })
-                // 2) 无计划时间：本周期内新建或有更新
-                ->orWhere(function ($q1) use ($start_time, $end_time) {
-                    $q1->whereNull('project_tasks.start_at')
-                        ->whereNull('project_tasks.end_at')
-                        ->where(function ($q2) use ($start_time, $end_time) {
-                            $q2->whereBetween('project_tasks.created_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
-                                ->orWhereBetween('project_tasks.updated_at', [$start_time->toDateTimeString(), $end_time->toDateTimeString()]);
-                        });
-                });
-            })
-            ->select("project_tasks.*")
-            ->orderByDesc("project_tasks.id")
-            ->get();
+        $unfinished_task = ProjectTask::buildUnfinishedTaskQuery($user->userid, $start_time, $end_time, true)->get();
         if ($unfinished_task->isNotEmpty()) {
             foreach ($unfinished_task as $task) {
                 empty($task->end_at) || $end_at = Carbon::parse($task->end_at);
@@ -457,15 +431,37 @@ class ReportController extends AbstractController
         ])->render();
 
         if ($type === Report::WEEKLY) {
+            // 下周拟定计划：基于下周时间范围预生成候选任务
+            $nextPlanDatas = [];
+            if ($next_start_time && $next_end_time) {
+                $next_tasks = ProjectTask::buildUnfinishedTaskQuery($user->userid, $next_start_time, $next_end_time, false)->get();
+                if ($next_tasks->isNotEmpty()) {
+                    foreach ($next_tasks as $task) {
+                        $planTime = '-';
+                        if ($task->start_at || $task->end_at) {
+                            $startText = $task->start_at ? Carbon::parse($task->start_at)->format('Y-m-d H:i') : '';
+                            $endText = $task->end_at ? Carbon::parse($task->end_at)->format('Y-m-d H:i') : '';
+                            $planTime = trim($startText . ($endText ? (' ~ ' . $endText) : ''));
+                        }
+                        $nextPlanDatas[] = [
+                            '[' . $task->project->name . '] ' . $task->name,
+                            $planTime,
+                            $task->taskUser->where("owner", 1)->map(function ($item) {
+                                return User::userid2nickname($item->userid);
+                            })->implode(", "),
+                        ];
+                    }
+                }
+            }
             $contents[] = '<p>&nbsp;</p>';
-            $contents[] = "<h2>" . Doo::translate("下周拟定计划") . "[" . $start_time->addWeek()->format("m/d") . "-" . $end_time->addWeek()->format("m/d") . "]</h2>";
+            $contents[] = "<h2>" . Doo::translate("下周拟定计划") . "[" . $next_start_time->format("m/d") . "-" . $next_end_time->format("m/d") . "]</h2>";
             $contents[] = view('report', [
                 'labels' => [
                     Doo::translate('计划描述'),
                     Doo::translate('计划时间'),
                     Doo::translate('负责人'),
                 ],
-                'datas' => [],
+                'datas' => $nextPlanDatas,
             ])->render();
         }
 
