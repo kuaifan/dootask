@@ -1359,11 +1359,30 @@ class ProjectController extends AbstractController
                 'style' => 'font-weight: bold;padding-bottom: 4px;',
             ];
             //
+            $startTime = Carbon::parse($time[0])->startOfDay();
+            $endTime = Carbon::parse($time[1])->endOfDay();
             $builder = ProjectTask::with(['taskTag'])->select(['project_tasks.*', 'project_task_users.userid as ownerid'])
                 ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
                 ->where('project_task_users.owner', 1)
-                ->whereIn('project_task_users.userid', $userid)
-                ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(), $type);
+                ->whereIn('project_task_users.userid', $userid);
+            // 按导出时间类型筛选：
+            // - createdTime：仅按创建时间范围筛选；
+            // - 任务时间（默认）：优先使用任务计划时间筛选，但对“无计划时间”的任务，
+            //   若在考核期内已完成，则按完成时间 complete_at 兜底纳入导出，避免漏掉考核期内完成的任务。
+            if ($type === 'createdTime') {
+                $builder->betweenTime($startTime, $endTime, $type);
+            } else {
+                $builder->where(function ($query) use ($startTime, $endTime) {
+                    $query->betweenTime($startTime, $endTime, 'taskTime')
+                        ->orWhere(function ($q2) use ($startTime, $endTime) {
+                            $q2->where(function ($q3) {
+                                $q3->whereNull('project_tasks.start_at')
+                                    ->orWhereNull('project_tasks.end_at');
+                            })->whereNotNull('project_tasks.complete_at')
+                                ->whereBetween('project_tasks.complete_at', [$startTime, $endTime]);
+                        });
+                });
+            }
             $builder->orderByDesc('project_tasks.id')->chunk(100, function ($tasks) use ($doo, &$datas) {
                 /** @var ProjectTask $task */
                 foreach ($tasks as $task) {
