@@ -88,6 +88,7 @@ class Apps
         $headers = [
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . md5($appKey),
+            'Version' => Base::getVersion(),
         ];
 
         $resp = Ihttp::ihttp_request($url, json_encode($payload, JSON_UNESCAPED_UNICODE), $headers, 5);
