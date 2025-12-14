@@ -1,6 +1,6 @@
 <template>
     <div v-transfer-dom :data-transfer="true">
-        <div :class="className">
+        <div :class="className" :style="wrapStyle">
             <transition :name="transitions[0]">
                 <div v-if="shouldRenderInDom" v-show="open" class="micro-modal-mask" :style="maskStyle"></div>
             </transition>
@@ -113,6 +113,9 @@ export default {
                 styleObject.background = (this.themeName === 'dark' ? colorReverse(colors[1]) : null) || colors[0];
             }
             return styleObject;
+        },
+        wrapStyle({zIndex}) {
+            return {zIndex}
         },
         maskStyle({zIndex}) {
             return {zIndex}
