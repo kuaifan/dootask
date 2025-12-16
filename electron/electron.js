@@ -43,6 +43,7 @@ const PDFDocument = require('pdf-lib').PDFDocument;
 
 // 本地模块和配置
 const utils = require('./lib/utils');
+const navigation = require('./lib/navigation');
 const config = require('./package.json');
 const electronDown = require("./electron-down");
 const electronMenu = require("./electron-menu");
@@ -367,6 +368,9 @@ function createMainWindow() {
     // 设置右键菜单
     electronMenu.webContentsMenu(mainWindow.webContents)
 
+    // 设置导航快捷键（返回/前进）
+    navigation.setup(mainWindow)
+
     // 加载地址
     utils.loadUrl(mainWindow, serverUrl)
 }
@@ -623,6 +627,9 @@ function createChildWindow(args) {
     // 设置右键菜单
     electronMenu.webContentsMenu(browser.webContents)
 
+    // 设置导航快捷键（返回/前进）
+    navigation.setup(browser)
+
     // 加载地址
     const hash = `${args.hash || args.path}`;
     if (/^https?:/i.test(hash)) {
@@ -848,7 +855,18 @@ function createWebTabWindow(args) {
                 webTabClosedByShortcut = true
             } else if (utils.isMetaOrControl(input) && input.shift && input.key.toLowerCase() === 'i') {
                 devToolsWebTab(0)
+            } else {
+                const item = currentWebTab()
+                if (item) {
+                    navigation.handleInput(event, input, item.view.webContents)
+                }
             }
+        })
+
+        // 设置鼠标侧键和触控板手势导航
+        navigation.setupWindowEvents(webTabWindow, () => {
+            const item = currentWebTab()
+            return item ? item.view.webContents : null
         })
 
         webTabWindow.loadFile('./render/tabs/index.html', {}).then(_ => { }).catch(_ => { })
@@ -962,6 +980,8 @@ function createWebTabWindow(args) {
             webTabClosedByShortcut = true
         } else if (utils.isMetaOrControl(input) && input.shift && input.key.toLowerCase() === 'i') {
             browserView.webContents.toggleDevTools()
+        } else {
+            navigation.handleInput(event, input, browserView.webContents)
         }
     })
 
