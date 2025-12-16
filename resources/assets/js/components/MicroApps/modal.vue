@@ -130,7 +130,7 @@ export default {
             }
             const {capsule} = this.options
             if ($A.isJson(capsule)) {
-                if (capsule.visible === false) {
+                if (!this.getCapsuleVisible(capsule.visible)) {
                     styleObject.display = 'none';
                 }
                 if (typeof capsule.top === 'number') {
@@ -230,6 +230,23 @@ export default {
 
         handleClose() {
             this.$emit('on-confirm-close', this.options.name);
+        },
+
+        getCapsuleVisible(visible) {
+            if (typeof visible === 'boolean') {
+                return visible
+            }
+            if ($A.isJson(visible)) {
+                const defaultVisible = typeof visible.default === 'boolean' ? visible.default : true
+                if (this.windowType === 'popout') {
+                    return typeof visible.popout === 'boolean' ? visible.popout : defaultVisible
+                }
+                if (this.windowType === 'embed') {
+                    return typeof visible.embed === 'boolean' ? visible.embed : defaultVisible
+                }
+                return defaultVisible
+            }
+            return true
         }
     }
 }
