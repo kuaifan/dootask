@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.88]
+
+### Features
+
+- 新增导航功能，支持快捷键和鼠标手势，操作更顺手高效
+- 优化顶部胶囊区域的显示逻辑，显示更智能更贴合使用场景
+- 更新内置应用商店版本，带来更稳定的应用安装与更新体验
+
+### Bug Fixes
+
+- 修复部分情况下无法打开微应用的问题，使用更稳定
+
 ## [1.4.81]
 
 ### Features
