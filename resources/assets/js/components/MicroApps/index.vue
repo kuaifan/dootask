@@ -236,6 +236,7 @@ export default {
                     name: app.name,
                     url: app.url,
                     type: app.type,
+                    urlType: app.type, // 兼容旧版本
 
                     userId: this.userId,
                     userToken: this.userToken,
