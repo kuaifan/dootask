@@ -2268,6 +2268,9 @@ export default {
                 if (data.add) {
                     this.sendSuccess(data.add)
                 }
+                if (data.update) {
+                    this.sendSuccess(data.update, 0, true)
+                }
                 if (this.todoList.length === 0) {
                     this.$store.dispatch("getDialogTodo", this.dialogId)
                 }

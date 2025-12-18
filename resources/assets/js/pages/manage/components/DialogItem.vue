@@ -15,10 +15,19 @@
         </div>
         <div v-else-if="source.type === 'todo'" class="dialog-todo" @click="onViewTodo">
             <div class="no-dark-content">
-                <div class="todo-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
+                <div v-if="source.msg.action === 'done' && todoDoneDisplayList(source.msg.data).length > 0" class="todo-users">
+                    <div
+                        v-for="(item, index) in todoDoneDisplayList(source.msg.data)"
+                        :key="`todo-done-${item.type}-${item.value}-${index}`"
+                        class="todo-user">
+                        <UserAvatar v-if="item.type === 'user'" :userid="item.value" :show-name="true" :show-icon="false"/>
+                        <span v-else>{{item.value}}</span>
+                    </div>
+                </div>
+                <div v-else class="todo-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
                 {{$L(source.msg.action === 'remove' ? '取消待办' : (source.msg.action === 'done' ? '完成' : '设待办'))}}
                 "{{$A.getMsgSimpleDesc(source.msg.data)}}"
-                <div v-if="formatTodoUser(source.msg.data).length > 0" class="todo-users">
+                <div v-if="source.msg.action === 'add' && formatTodoUser(source.msg.data).length > 0" class="todo-users">
                     <span>{{$L('给')}}</span>
                     <template v-for="(item, index) in formatTodoUser(source.msg.data)">
                         <div v-if="index < 3" class="todo-user"><UserAvatar :userid="item" :show-name="true" :show-icon="false"/></div>
@@ -198,6 +207,31 @@ export default {
                 }
             }
             return []
+        },
+
+        formatTodoDoneUser(data) {
+            if ($A.isJson(data) && $A.isArray(data.done_userids)) {
+                return data.done_userids
+            }
+            return []
+        },
+
+        todoDoneDisplayList(data) {
+            const userIds = this.formatTodoDoneUser(data)
+            if (userIds.length === 0) {
+                return []
+            }
+            const list = userIds.slice(0, 3).map(userid => ({
+                type: 'user',
+                value: userid,
+            }))
+            if (userIds.length > 3) {
+                list.push({
+                    type: 'extra',
+                    value: `+${userIds.length - 3}`,
+                })
+            }
+            return list
         },
 
         onViewTag() {

@@ -2429,6 +2429,7 @@ class DialogController extends AbstractController
         $id = intval(Request::input("id"));
         //
         $add = [];
+        $update = [];
         $todo = WebSocketDialogMsgTodo::whereId($id)->whereUserid($user->userid)->first();
         if ($todo && empty($todo->done_at)) {
             $todo->done_at = Carbon::now();
@@ -2436,16 +2437,45 @@ class DialogController extends AbstractController
             //
             $msg = WebSocketDialogMsg::find($todo->msg_id);
             if ($msg) {
-                $res = WebSocketDialogMsg::sendMsg(null, $todo->dialog_id, 'todo', [
-                    'action' => 'done',
-                    'data' => [
-                        'id' => $msg->id,
-                        'type' => $msg->type,
-                        'msg' => $msg->quoteTextMsg(),
-                    ]
-                ]);
-                if (Base::isSuccess($res)) {
-                    $add = $res['data'];
+                $doneUserIds = WebSocketDialogMsgTodo::whereMsgId($msg->id)
+                    ->whereNotNull('done_at')
+                    ->orderBy('done_at')
+                    ->orderBy('id')
+                    ->pluck('userid')
+                    ->toArray();
+                //
+                $lastMsg = WebSocketDialogMsg::whereDialogId($todo->dialog_id)->orderByDesc('id')->first();
+                if ($lastMsg && $lastMsg->type === 'todo') {
+                    $lastMsgData = $lastMsg->msg;
+                    $lastData = $lastMsgData['data'] ?? [];
+                    if (($lastMsgData['action'] ?? '') === 'done' && intval($lastData['id'] ?? 0) === $msg->id) {
+                        $lastData['done_userids'] = $doneUserIds;
+                        $lastMsgData['data'] = $lastData;
+                        $lastMsg->updateInstance(['msg' => $lastMsgData]);
+                        $lastMsg->save();
+                        $update = [
+                            'id' => $lastMsg->id,
+                            'dialog_id' => $lastMsg->dialog_id,
+                            'type' => $lastMsg->type,
+                            'msg' => $lastMsgData,
+                        ];
+                        $lastMsg->webSocketDialog?->pushMsg('update', $update);
+                    }
+                }
+                //
+                if (empty($update)) {
+                    $res = WebSocketDialogMsg::sendMsg(null, $todo->dialog_id, 'todo', [
+                        'action' => 'done',
+                        'data' => [
+                            'id' => $msg->id,
+                            'type' => $msg->type,
+                            'msg' => $msg->quoteTextMsg(),
+                            'done_userids' => $doneUserIds,
+                        ]
+                    ]);
+                    if (Base::isSuccess($res)) {
+                        $add = $res['data'];
+                    }
                 }
                 //
                 $msg->webSocketDialog?->pushMsg('update', [
@@ -2458,7 +2488,8 @@ class DialogController extends AbstractController
         }
         //
         return Base::retSuccess("待办已完成", [
-            'add' => $add ?: null
+            'add' => $add ?: null,
+            'update' => $update ?: null,
         ]);
     }
 
