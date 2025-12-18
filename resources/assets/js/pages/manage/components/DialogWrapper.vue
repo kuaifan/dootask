@@ -2669,7 +2669,7 @@ export default {
                 id: 'okr',
                 name: 'okr_details',
                 url: 'apps/okr/#details',
-                props: {type: 'details', id},
+                props: {open_type: 'details', id},
                 keep_alive: false,
                 transparent: true,
             });

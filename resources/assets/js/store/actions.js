@@ -5076,14 +5076,35 @@ export default {
      *  更多说明详见 https://appstore.dootask.com/development/manual
      */
     async openMicroApp({state}, data) {
+        // 参数基础校验：必须是对象且包含 id/name/url
         if (!data || !$A.isJson(data)) {
             return
         }
         if (!data.id || !data.name || !data.url) {
             return
         }
-        const serverLocation = new URL($A.mainUrl(''))
-        data.url = data.url
+
+        // 解析微应用实际 ID（支持传入短 ID）
+        let microAppId = data.id
+        if (!state.microAppsIds.includes(microAppId)) {
+            microAppId = state.microAppsIds.find(item => typeof item === 'string' && item.endsWith(microAppId)) || null
+        }
+        if (!microAppId) {
+            $A.modalWarning(`应用「${data.id}」未安装`)
+            return
+        }
+
+        // 以「匹配到的应用菜单第一个 menu（microAppsMenus 中该应用的第一条记录）」作为基础数据，合并出本次打开的 data
+        if (data.skip_base_menu !== true) {
+            const baseMenu = state.microAppsMenus.find(item => item?.id === microAppId) || null
+            if ($A.isJson(baseMenu)) {
+                data = Object.assign({}, baseMenu, data)
+            }
+        }
+
+        // 处理 url 中的占位符/相对路径（以当前系统 baseUrl 为准）
+        const serverLocation = new URL($A.mainUrl())
+        const url = data.url
             .replace(/^\/+/, '')
             .replace(/^\:(\d+)/ig, (_, port) => {
                 return serverLocation.protocol + '//' + serverLocation.hostname + ':' + port;
@@ -5095,10 +5116,11 @@ export default {
             })
             .replace(/\{system_base_url}/g, serverLocation.origin)
 
+        // 组装打开微应用所需的最终 config（用于 MicroApps 组件渲染/启动）
         const config = {
-            id: data.id,
+            id: microAppId,
             name: data.name,
-            url: $A.mainUrl(data.url),
+            url: $A.mainUrl(url),
             type: data.type || data.url_type,
             background: data.background || null,
             capsule: $A.isJson(data.capsule) ? data.capsule : {},
@@ -5109,14 +5131,8 @@ export default {
             immersive: typeof data.immersive == 'boolean' ? data.immersive : false,
             props: $A.isJson(data.props) ? data.props : {},
         }
-        if (!state.microAppsIds.includes(config.id)) {
-            const matchedId = state.microAppsIds.find(item => typeof item === 'string' && item.endsWith(config.id))
-            if (!matchedId) {
-                $A.modalWarning(`应用「${config.id}」未安装`);
-                return;
-            }
-            config.id = matchedId;
-        }
+
+        // 将运行时变量注入到 url（用户信息/主题/语言等）
         config.url = config.url
             .replace(/\{user_id}/g, state.userId)
             .replace(/\{user_nickname}/g, encodeURIComponent(state.userInfo.nickname))
@@ -5125,6 +5141,8 @@ export default {
             .replace(/\{user_token}/g, encodeURIComponent(state.userToken))
             .replace(/\{system_theme}/g, state.themeName)
             .replace(/\{system_lang}/g, languageName);
+
+        // 通知 MicroApps 容器打开应用
         emitter.emit('observeMicroApp:open', config);
     },
 
