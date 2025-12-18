@@ -103,13 +103,13 @@
                                 <EDropdownItem command="groupInfo">
                                     <div>{{$L('群组设置')}}</div>
                                 </EDropdownItem>
+                                <EDropdownItem v-if="dialogData.owner_id == userId || (dialogData.group_type === 'all' && userIsAdmin)" command="modifyNormal">
+                                    <div>{{$L('修改资料')}}</div>
+                                </EDropdownItem>
                                 <EDropdownItem v-if="dialogData.avatar" command="previewAvatar">
                                     <div>{{$L('查看头像')}}</div>
                                 </EDropdownItem>
                                 <template v-if="dialogData.owner_id != userId">
-                                    <EDropdownItem v-if="dialogData.group_type === 'all' && userIsAdmin" command="modifyAdmin">
-                                        <div>{{$L('修改资料')}}</div>
-                                    </EDropdownItem>
                                     <EDropdownItem command="report">
                                         <div>{{$L('举报投诉')}}</div>
                                     </EDropdownItem>
@@ -118,9 +118,6 @@
                                     </EDropdownItem>
                                 </template>
                                 <template v-else-if="dialogData.group_type === 'user'">
-                                    <EDropdownItem command="modifyNormal">
-                                        <div>{{$L('修改资料')}}</div>
-                                    </EDropdownItem>
                                     <EDropdownItem command="transfer">
                                         <div>{{$L('转让群主')}}</div>
                                     </EDropdownItem>
@@ -451,7 +448,8 @@
                     <ImgUpload v-model="modifyData.avatar" :num="1" :width="512" :height="512" whcut="cover"/>
                 </FormItem>
                 <FormItem v-if="typeof modifyData.name !== 'undefined'" prop="name" :label="$L('名称')">
-                    <Input v-model="modifyData.name" :maxlength="20" />
+                    <Input v-model="modifyData.name" :maxlength="20" :disabled="!canModifyName" />
+                    <div v-if="!canModifyName" class="form-tip">{{$L('仅个人群组可修改名称')}}</div>
                 </FormItem>
                 <template v-if="dialogData.bot == userId">
                     <FormItem v-if="typeof modifyData.clear_day !== 'undefined'" prop="clear_day" :label="$L('消息保留')">
@@ -937,6 +935,15 @@ export default {
                 this.unreadOne = data.unread_one || 0
             }
             return data
+        },
+        canModifyName() {
+            if (typeof this.modifyData.name === 'undefined') {
+                return false
+            }
+            if (this.modifyData.userid) {
+                return true
+            }
+            return this.dialogData.group_type === 'user'
         },
 
         dialogList() {
