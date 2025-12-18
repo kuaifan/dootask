@@ -3,7 +3,14 @@
         <div class="dialog-group-head">
             <div class="group-info-title">{{$L('群名')}}</div>
             <div class="group-info-value">
-                <QuickEdit :value="dialogData.name" :disabled="dialogData.owner_id != userId" @on-update="updateName">{{dialogData.name}}</QuickEdit>
+                <div class="quick-edit">
+                    <div class="quick-text" :title="dialogData.name">{{dialogData.name}}</div>
+                    <Icon
+                        v-if="dialogData.owner_id == userId"
+                        class="quick-icon"
+                        type="ios-create-outline"
+                        @click.stop="onEditName"/>
+                </div>
             </div>
         </div>
 
@@ -173,24 +180,8 @@ export default {
     },
 
     methods: {
-        updateName(val, cb) {
-            if (!val) {
-                cb()
-                return;
-            }
-            this.$store.dispatch("call", {
-                url: 'dialog/group/edit',
-                data: {
-                    dialog_id: this.dialogId,
-                    chat_name: val
-                }
-            }).then(({data}) => {
-                this.$store.dispatch("saveDialog", data);
-                cb()
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                cb()
-            });
+        onEditName() {
+            this.$emit("on-modify")
         },
 
         getDialogUser() {

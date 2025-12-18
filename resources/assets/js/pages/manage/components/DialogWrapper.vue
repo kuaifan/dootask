@@ -555,7 +555,11 @@
             v-model="groupInfoShow"
             placement="right"
             :size="400">
-            <DialogGroupInfo v-if="groupInfoShow" :dialogId="dialogId" @on-close="groupInfoShow=false"/>
+            <DialogGroupInfo
+                v-if="groupInfoShow"
+                :dialogId="dialogId"
+                @on-modify="onDialogMenu('modifyNormal')"
+                @on-close="groupInfoShow=false"/>
         </DrawerOverlay>
 
         <!--举报投诉-->
