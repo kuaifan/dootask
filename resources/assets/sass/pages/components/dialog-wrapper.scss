@@ -638,7 +638,7 @@
                         position: relative;
 
                         &:before {
-                            content: "、";
+                            content: "\3001";
                             position: absolute;
                             left: 0;
                             bottom: 0;
@@ -1609,7 +1609,7 @@
                                         height: 22px;
                                         line-height: 22px;
                                         &:after {
-                                            content: "、";
+                                            content: "\3001";
                                         }
                                         &:last-child {
                                             &:after {
