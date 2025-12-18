@@ -5095,26 +5095,11 @@ export default {
             })
             .replace(/\{system_base_url}/g, serverLocation.origin)
 
-        const resolveType = () => {
-            if (typeof data.type === 'string') {
-                return data.type
-            }
-            if ($A.isJson(data.type)) {
-                const defaultType = typeof data.type.default === 'string' ? data.type.default : 'iframe'
-                const mobileType = typeof data.type.mobile === 'string'
-                    ? data.type.mobile
-                    : (typeof data.type.app === 'string' ? data.type.app : defaultType)
-                const desktopType = typeof data.type.desktop === 'string' ? data.type.desktop : defaultType
-                return $A.platformType() === 'desktop' ? desktopType : mobileType
-            }
-            return 'inline'
-        }
-
         const config = {
             id: data.id,
             name: data.name,
             url: $A.mainUrl(data.url),
-            type: resolveType(),
+            type: data.type || data.url_type,
             background: data.background || null,
             capsule: $A.isJson(data.capsule) ? data.capsule : {},
             transparent: typeof data.transparent == 'boolean' ? data.transparent : false,

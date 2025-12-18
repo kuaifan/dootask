@@ -404,6 +404,9 @@ export default {
                 }
             }
 
+            // 解析 type 字段
+            config.type = this.resolveType(config.type)
+
             // 如果是 blank 链接，则在新窗口打开
             if (/_blank$/i.test(config.type)) {
                 await this.inlineBlank(config)
@@ -769,6 +772,25 @@ export default {
                     this.closeMicroApp(app.name, true)
                 }
             })
+        },
+
+        /**
+         * 解析类型
+         * @param type 
+         */
+        resolveType(type) {
+            if (typeof type === 'string') {
+                return type
+            }
+            if ($A.isJson(type)) {
+                const defaultType = typeof type.default === 'string' ? type.default : 'iframe'
+                const mobileType = typeof type.mobile === 'string'
+                    ? type.mobile
+                    : (typeof type.app === 'string' ? type.app : defaultType)
+                const desktopType = typeof type.desktop === 'string' ? type.desktop : defaultType
+                return $A.platformType() === 'desktop' ? desktopType : mobileType
+            }
+            return 'inline'
         }
     }
 }
