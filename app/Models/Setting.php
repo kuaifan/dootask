@@ -309,13 +309,13 @@ class Setting extends AbstractModel
         }
         $location = trim($menu['location'] ?? 'application');
         $label = trim($menu['label'] ?? $fallbackLabel);
-        $urlType = strtolower(trim($menu['url_type'] ?? 'iframe'));
+        $type = strtolower(trim($menu['type'] ?? 'iframe'));
         $payload = [
             'location' => $location,
             'label' => $label,
             'icon' => Base::newTrim($menu['icon'] ?? ''),
             'url' => $url,
-            'url_type' => $urlType,
+            'type' => $type,
             'keep_alive' => isset($menu['keep_alive']) ? (bool)$menu['keep_alive'] : true,
             'disable_scope_css' => (bool)($menu['disable_scope_css'] ?? false),
             'auto_dark_theme' => isset($menu['auto_dark_theme']) ? (bool)$menu['auto_dark_theme'] : true,

@@ -235,7 +235,7 @@ export default {
 
                     name: app.name,
                     url: app.url,
-                    urlType: app.url_type,
+                    type: app.type,
 
                     userId: this.userId,
                     userToken: this.userToken,
@@ -405,13 +405,13 @@ export default {
             }
 
             // 如果是 blank 链接，则在新窗口打开
-            if (/_blank$/i.test(config.url_type)) {
+            if (/_blank$/i.test(config.type)) {
                 await this.inlineBlank(config)
                 return
             }
 
             // 如果是外部链接，则在新窗口打开
-            if (config.url_type === 'external') {
+            if (config.type === 'external') {
                 await this.externalWindow(config)
                 return
             }
@@ -461,7 +461,7 @@ export default {
                 ...config,
 
                 // 新窗口强制参数
-                url_type: config.url_type.replace(/_blank$/, ''),
+                type: config.type.replace(/_blank$/, ''),
                 transparent: true,
                 keep_alive: false,
             };
@@ -621,7 +621,7 @@ export default {
                     return
                 }
 
-                if (this.isIframe(app.url_type)) {
+                if (this.isIframe(app.type)) {
                     const before = app.onBeforeClose();
                     if (before && before.then) {
                         before.then(() => {
@@ -685,7 +685,7 @@ export default {
                     if (!app) {
                         return
                     }
-                    if (this.isIframe(app.url_type)) {
+                    if (this.isIframe(app.type)) {
                         app.postMessage({
                             type: 'MICRO_APP_MENU_CLICK',
                             message: action
@@ -743,7 +743,7 @@ export default {
          * @returns {boolean}
          */
         shouldRenderIFrame(app) {
-            return app.url && this.isIframe(app.url_type) && (app.isOpen || app.keep_alive);
+            return app.url && this.isIframe(app.type) && (app.isOpen || app.keep_alive);
         },
 
         /**
@@ -752,7 +752,7 @@ export default {
          * @returns {boolean}
          */
         shouldRenderMicro(app) {
-            return app.url && !this.isIframe(app.url_type) && (app.isOpen || this.closings.includes(app.name));
+            return app.url && !this.isIframe(app.type) && (app.isOpen || this.closings.includes(app.name));
         },
 
         /**

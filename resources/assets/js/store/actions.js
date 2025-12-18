@@ -5064,7 +5064,7 @@ export default {
      *  - id                应用ID（必须）
      *  - name              应用名称（必须）
      *  - url               应用地址（必须）
-     *  - url_type          地址类型（可选）
+     *  - type              打开类型（可选，string 或 {mobile,desktop,default}；default 用于补齐 mobile/desktop，缺省为 iframe）
      *  - background        背景颜色（可选）
      *  - capsule           应用胶囊配置（可选）
      *  - transparent       是否透明模式 (true/false)，默认 false
@@ -5094,11 +5094,27 @@ export default {
                 }
             })
             .replace(/\{system_base_url}/g, serverLocation.origin)
+
+        const resolveType = () => {
+            if (typeof data.type === 'string') {
+                return data.type
+            }
+            if ($A.isJson(data.type)) {
+                const defaultType = typeof data.type.default === 'string' ? data.type.default : 'iframe'
+                const mobileType = typeof data.type.mobile === 'string'
+                    ? data.type.mobile
+                    : (typeof data.type.app === 'string' ? data.type.app : defaultType)
+                const desktopType = typeof data.type.desktop === 'string' ? data.type.desktop : defaultType
+                return $A.platformType() === 'desktop' ? desktopType : mobileType
+            }
+            return 'inline'
+        }
+
         const config = {
             id: data.id,
             name: data.name,
             url: $A.mainUrl(data.url),
-            url_type: data.url_type || 'inline',
+            type: resolveType(),
             background: data.background || null,
             capsule: $A.isJson(data.capsule) ? data.capsule : {},
             transparent: typeof data.transparent == 'boolean' ? data.transparent : false,

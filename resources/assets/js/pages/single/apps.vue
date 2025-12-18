@@ -43,7 +43,7 @@ export default {
                 id: 'iframe-test',
                 name: 'iframe-test',
                 url: url,
-                url_type: 'iframe',
+                type: 'iframe',
                 transparent: true,
                 keep_alive: false,
             })

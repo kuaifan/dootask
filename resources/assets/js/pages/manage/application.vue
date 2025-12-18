@@ -184,8 +184,8 @@
                                 </FormItem>
                                 <Row :gutter="16">
                                     <Col :sm="12" :xs="24">
-                                        <FormItem :label="$L('URL 类型')">
-                                            <Select v-model="item.menu.url_type" transfer>
+                                        <FormItem :label="$L('类型')">
+                                            <Select v-model="item.menu.type" transfer>
                                                 <Option value="iframe">iframe</Option>
                                                 <Option value="iframe_blank">iframe_blank</Option>
                                                 <Option value="inline">inline</Option>
@@ -439,7 +439,7 @@ const createCustomMicroMenu = () => ({
     version: 'custom',
     menu: {
         location: 'application',
-        url_type: 'iframe',
+        type: 'iframe',
         visible_to: 'admin',
         keep_alive: true,
         auto_dark_theme: true,
