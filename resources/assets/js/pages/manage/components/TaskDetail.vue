@@ -1563,6 +1563,10 @@ export default {
                 this.relatedTasks = [];
                 return;
             }
+            if (this.isSubTask) {
+                this.relatedTasks = [];
+                return;
+            }
             const cacheMap = this.$store.state.taskRelatedCache || {};
             const cached = cacheMap[this.taskId];
             if (cached?.list) {
@@ -1595,6 +1599,9 @@ export default {
 
         onTaskRelationUpdate(taskId) {
             if (!taskId || taskId !== this.taskId) {
+                return;
+            }
+            if (this.isSubTask) {
                 return;
             }
             this.loadRelatedTasks();
