@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.99]
+
+### Features
+
+- 优化群组资料修改方式，增加权限校验和名称修改提醒，减少误改、改错的情况。
+- 调整群组名称编辑入口，改为更明显的修改按钮，更好理解也更好用。
+- 优化微应用菜单和配置逻辑，兼容旧版本配置，减少升级后菜单不显示或打不开的问题。
+
 ## [1.4.88]
 
 ### Features

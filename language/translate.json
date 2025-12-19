@@ -32566,5 +32566,17 @@
         "fr": "Tâches inachevées de cette semaine",
         "id": "Tugas yang belum selesai minggu ini",
         "ru": "Незавершённые задачи за эту неделю"
+    },
+    {
+        "key": "仅个人群组可修改名称",
+        "zh": "",
+        "zh-CHT": "僅個人群組可修改名稱",
+        "en": "Only personal groups can modify the name",
+        "ko": "개인 그룹만 이름을 변경할 수 있습니다",
+        "ja": "個人グループのみ名前を変更できます",
+        "de": "Nur persönliche Gruppen können den Namen ändern",
+        "fr": "Seuls les groupes personnels peuvent modifier le nom",
+        "id": "Hanya grup pribadi yang dapat mengubah nama",
+        "ru": "Только личные группы могут изменять название"
     }
 ]
