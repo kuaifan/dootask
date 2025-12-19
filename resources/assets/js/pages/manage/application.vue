@@ -201,10 +201,11 @@
                                     </Col>
                                 </Row>
                                 <div class="custom-micro-checkbox-group">
-                                    <Checkbox v-model="item.menu.keep_alive">{{ $L('保持激活状态 (keep_alive)') }}</Checkbox>
-                                    <Checkbox v-model="item.menu.disable_scope_css">{{ $L('禁用作用域样式') }}</Checkbox>
-                                    <Checkbox v-model="item.menu.transparent">{{ $L('透明背景') }}</Checkbox>
+                                    <Checkbox v-model="item.menu.keep_alive">{{ $L('保持激活状态') }}</Checkbox>
                                     <Checkbox v-model="item.menu.auto_dark_theme">{{ $L('自动暗黑模式') }}</Checkbox>
+                                    <Checkbox v-model="item.menu.immersive">{{ $L('沉浸式') }}</Checkbox>
+                                    <Checkbox v-model="item.menu.transparent">{{ $L('透明背景') }}</Checkbox>
+                                    <Checkbox v-model="item.menu.disable_scope_css">{{ $L('禁用作用域样式') }}</Checkbox>
                                 </div>
                             </Form>
                         </div>
@@ -443,6 +444,7 @@ const createCustomMicroMenu = () => ({
         visible_to: 'admin',
         keep_alive: true,
         auto_dark_theme: true,
+        immersive: false,
     }
 });
 
