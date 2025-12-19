@@ -156,7 +156,7 @@ class ProjectTask extends AbstractModel
             return;
         }
         if (!isset($this->appendattrs['sub_num'])) {
-            $builder = self::whereParentId($this->id)->whereNull('archived_at');
+            $builder = self::whereParentId($this->id);
             $this->appendattrs['sub_num'] = $builder->count();
             $this->appendattrs['sub_complete'] = $builder->whereNotNull('complete_at')->count();
             //

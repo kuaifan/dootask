@@ -1184,6 +1184,7 @@ class ProjectController extends AbstractController
         $builder->leftJoinSub(function ($query) {
             $query->select('parent_id', DB::raw('count(*) as sub_num, sum(CASE WHEN complete_at IS NOT NULL THEN 1 ELSE 0 END) sub_complete') )
                 ->from('project_tasks')
+                ->whereNull('deleted_at')
                 ->groupBy('parent_id');
         }, 'sub_task', 'sub_task.parent_id', '=', 'project_tasks.id');
         // 给前缀“_”是为了不触发获取器
