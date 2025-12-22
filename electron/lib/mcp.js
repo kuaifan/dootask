@@ -1216,7 +1216,7 @@ class DooTaskMCP {
         // 获取消息列表或搜索消息
         this.mcp.addTool({
             name: 'get_message_list',
-            description: '两种模式：1）获取指定对话的消息列表（需提供 dialog_id），支持按类型筛选、分页加载；2）按关键词搜索消息（提供 keyword），可在单个对话或全局搜索。',
+            description: '获取对话的消息记录或搜索消息内容。支持两种模式：1）获取指定对话(dialog_id)的完整消息历史，可按类型筛选、分页加载，用于了解对话上下文和历史讨论；2）按关键词(keyword)搜索消息，支持单对话或全局搜索。可用于查看任务讨论、项目沟通、决策背景等信息。',
             parameters: z.object({
                 dialog_id: z.number()
                     .optional()
