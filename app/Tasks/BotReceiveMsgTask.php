@@ -631,8 +631,8 @@ class BotReceiveMsgTask extends AbstractTask
         $currentTime = Carbon::now()->toDateTimeString();
         $contextLines = [
             "您是：{$botUser->nickname}（ID: {$botUser->userid}）",
-            "当前对话ID：{$dialog->id}",
-            "当前系统时间：{$currentTime}"
+            "当前对话ID(dialog_id)：{$dialog->id}",
+            "当前系统时间(now)：{$currentTime}",
         ];
 
         if ($dialog->type === 'group') {
@@ -640,14 +640,14 @@ class BotReceiveMsgTask extends AbstractTask
                 case 'project':
                     $projectInfo = Project::whereDialogId($dialog->id)->first();
                     if ($projectInfo) {
-                        $contextLines[] = "场景：项目群聊「{$projectInfo->name}」（ID: {$projectInfo->id}）";
+                        $contextLines[] = "场景：项目群聊「{$projectInfo->name}」（project_id: {$projectInfo->id}）";
                     }
                     break;
 
                 case 'task':
                     $taskInfo = ProjectTask::with(['content'])->whereDialogId($dialog->id)->first();
                     if ($taskInfo) {
-                        $contextLines[] = "场景：任务群聊「{$taskInfo->name}」（ID: {$taskInfo->id}）";
+                        $contextLines[] = "场景：任务群聊「{$taskInfo->name}」（task_id: {$taskInfo->id}）";
                     }
                     break;
 
