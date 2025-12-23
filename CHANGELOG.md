@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.5]
+
+### Features
+
+- 优化消息列表工具的说明，让你更容易理解和使用相关功能。
+
+### Bug Fixes
+
+- 调整任务与子任务的进度展示方式，让进度显示更加准确一致。
+- 优化子任务相关数据的加载方式，减少不必要的请求，提升使用流畅度。
+- 修复 Android 16 系统返回键不能正常使用的问题，现在返回操作更加顺畅友好。
+
 ## [1.4.99]
 
 ### Features
