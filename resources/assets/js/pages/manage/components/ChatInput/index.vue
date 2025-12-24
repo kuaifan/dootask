@@ -1250,7 +1250,14 @@ export default {
                             this.quill.deleteText(mentionCharPos, cursorPos - mentionCharPos, Quill.sources.USER);
                             this.quill.setSelection(mentionCharPos, 0, Quill.sources.USER);
                         }
-                        this.openMenu(item.tip);
+                        if (["@", "#", "~", "%"].includes(item.tip)) {
+                            this.openMenu(item.tip);
+                        } else {
+                            const insertText = item.tip.endsWith(' ') ? item.tip : `${item.tip} `;
+                            const insertAt = typeof mentionCharPos === 'number' ? mentionCharPos : (this.quill.getSelection(true)?.index || 0);
+                            this.quill.insertText(insertAt, insertText, Quill.sources.USER);
+                            this.quill.setSelection(insertAt + insertText.length, 0, Quill.sources.USER);
+                        }
                         return;
                     }
                     insertItem(item);
@@ -2633,8 +2640,14 @@ export default {
 
                 case "/": // /快捷菜单
                     this.mentionMode = "slash-mention";
-                    resultCallback([{
-                        label: null,
+                    const allowBotCommands = this.isSlashAtLineStart();
+                    const isBotDialog = this.dialogData.type === 'user' && this.dialogData.bot;
+                    const isOwnBot = isBotDialog && this.dialogData.bot == this.userId;
+                    const isBotManager = isBotDialog && this.dialogData.email === 'bot-manager@bot.system';
+                    const showBotCommands = allowBotCommands && (isOwnBot || isBotManager);
+                    const baseLabel = showBotCommands ? [{id: 0, value: this.$L('快捷菜单'), disabled: true}] : null;
+                    const slashLists = [{
+                        label: baseLabel,
                         list: [
                             {
                                 id: 'mention',
@@ -2657,13 +2670,104 @@ export default {
                                 tip: '%',
                             },
                         ]
-                    }])
+                    }];
+                    if (showBotCommands) {
+                        const commandList = [];
+                        if (isBotManager) {
+                            commandList.push(
+                                {
+                                    id: 'list',
+                                    value: this.$L('我的机器人'),
+                                    tip: '/list',
+                                },
+                                {
+                                    id: 'newbot',
+                                    value: this.$L('新建机器人'),
+                                    tip: '/newbot',
+                                }
+                            );
+                        }
+                        commandList.push(
+                            {
+                                id: 'help',
+                                value: this.$L('帮助指令'),
+                                tip: '/help',
+                            },
+                            {
+                                id: 'api',
+                                value: this.$L('API接口文档'),
+                                tip: '/api',
+                            },
+                            {
+                                id: 'info',
+                                value: this.$L('机器人信息'),
+                                tip: '/info',
+                            },
+                            {
+                                id: 'setname',
+                                value: this.$L('设置名称'),
+                                tip: '/setname',
+                            },
+                            {
+                                id: 'deletebot',
+                                value: this.$L('删除机器人'),
+                                tip: '/deletebot',
+                            },
+                            {
+                                id: 'token',
+                                value: this.$L('机器人Token'),
+                                tip: '/token',
+                            },
+                            {
+                                id: 'revoke',
+                                value: this.$L('更新Token'),
+                                tip: '/revoke',
+                            },
+                            {
+                                id: 'clearday',
+                                value: this.$L('设置保留消息时间'),
+                                tip: '/clearday',
+                            },
+                            {
+                                id: 'webhook',
+                                value: this.$L('设置Webhook'),
+                                tip: '/webhook',
+                            },
+                            {
+                                id: 'dialog',
+                                value: this.$L('对话列表'),
+                                tip: '/dialog',
+                            }
+                        );
+                        slashLists.push({
+                            label: [{id: 0, value: this.$L('机器人命令'), disabled: true}],
+                            list: commandList,
+                        });
+                    }
+                    resultCallback(slashLists)
                     break;
 
                 default:
                     resultCallback([])
                     break;
             }
+        },
+
+        isSlashAtLineStart() {
+            const editor = this.getEditor();
+            const mention = editor?.getModule("mention");
+            const mentionCharPos = mention?.mentionCharPos;
+            if (!editor || typeof mentionCharPos !== 'number') {
+                return false;
+            }
+            const textLength = Math.max(0, editor.getLength() - 1);
+            if (textLength > 100) {
+                return false;
+            }
+            const prefixText = editor.getText(0, mentionCharPos) || '';
+            const lastBreak = Math.max(prefixText.lastIndexOf("\n"), prefixText.lastIndexOf("\r"));
+            const linePrefix = lastBreak >= 0 ? prefixText.slice(lastBreak + 1) : prefixText;
+            return linePrefix.trim().length === 0;
         },
 
         getMoreUser(key, existIds) {
