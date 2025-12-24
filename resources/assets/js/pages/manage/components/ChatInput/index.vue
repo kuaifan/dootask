@@ -1219,10 +1219,11 @@ export default {
         quillMention() {
             return {
                 allowedChars: /^\S*$/,
-                mentionDenotationChars: ["@", "#", "~", "%"],
+                mentionDenotationChars: ["@", "#", "~", "%", "/"],
                 defaultMenuOrientation: this.defaultMenuOrientation,
                 isolateCharacter: true,
                 positioningStrategy: 'fixed',
+                dataAttributes: ['tip'],
                 renderItem: (data) => {
                     if (data.disabled === true) {
                         return `<div class="mention-item-disabled">${data.value}</div>`;
@@ -1241,13 +1242,34 @@ export default {
                 renderLoading: () => {
                     return "Loading...";
                 },
+                onSelect: function (item, insertItem) {
+                    if (item.denotationChar === "/" && item.tip) {
+                        const mentionCharPos = this.mentionCharPos;
+                        const cursorPos = this.cursorPos;
+                        if (typeof mentionCharPos === 'number' && typeof cursorPos === 'number' && cursorPos >= mentionCharPos) {
+                            this.quill.deleteText(mentionCharPos, cursorPos - mentionCharPos, Quill.sources.USER);
+                            this.quill.setSelection(mentionCharPos, 0, Quill.sources.USER);
+                        }
+                        this.openMenu(item.tip);
+                        return;
+                    }
+                    insertItem(item);
+                },
                 source: (searchTerm, renderList, mentionChar) => {
-                    const mentionName = mentionChar == "@" ? 'user-mention' : (mentionChar == "#" ? 'task-mention' : 'file-mention');
+                    const mentionMap = {
+                        '@': 'user-mention',
+                        '#': 'task-mention',
+                        '/': 'slash-mention'
+                    };
+                    const mentionName = mentionMap[mentionChar] || 'file-mention';
                     const containers = document.getElementsByClassName("ql-mention-list-container");
                     for (let i = 0; i < containers.length; i++) {
-                        containers[i].classList.remove("user-mention");
-                        containers[i].classList.remove("task-mention");
-                        containers[i].classList.remove("file-mention");
+                        containers[i].classList.remove(
+                            "user-mention", 
+                            "task-mention", 
+                            "file-mention", 
+                            "slash-mention"
+                        );
                         containers[i].classList.add(mentionName);
                     }
                     let mentionSourceCache = null;
@@ -2607,6 +2629,35 @@ export default {
                         }
                         resultCallback(lists)
                     }, 300)
+                    break;
+
+                case "/": // /快捷菜单
+                    this.mentionMode = "slash-mention";
+                    resultCallback([{
+                        label: null,
+                        list: [
+                            {
+                                id: 'mention',
+                                value: this.$L('提及'),
+                                tip: '@',
+                            },
+                            {
+                                id: 'task',
+                                value: this.$L('任务'),
+                                tip: '#',
+                            },
+                            {
+                                id: 'file',
+                                value: this.$L('文件'),
+                                tip: '~',
+                            },
+                            {
+                                id: 'report',
+                                value: this.$L('工作报告'),
+                                tip: '%',
+                            },
+                        ]
+                    }])
                     break;
 
                 default:
