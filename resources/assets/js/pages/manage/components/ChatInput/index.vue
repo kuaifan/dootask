@@ -2766,8 +2766,10 @@ export default {
             }
             const prefixText = editor.getText(0, mentionCharPos) || '';
             const lastBreak = Math.max(prefixText.lastIndexOf("\n"), prefixText.lastIndexOf("\r"));
-            const linePrefix = lastBreak >= 0 ? prefixText.slice(lastBreak + 1) : prefixText;
-            return linePrefix.trim().length === 0;
+            if (lastBreak >= 0) {
+                return false;
+            }
+            return prefixText.trim().length === 0;
         },
 
         getMoreUser(key, existIds) {
