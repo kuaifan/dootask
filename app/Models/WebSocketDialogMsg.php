@@ -901,6 +901,9 @@ class WebSocketDialogMsg extends AbstractModel
             $result = mb_substr($result, 0, $maxLength);
         }
 
+        // 规范以斜杠开头的命令
+        $result = preg_replace('/^\s*\\//', '/', $result);
+
         return $result;
     }
 
