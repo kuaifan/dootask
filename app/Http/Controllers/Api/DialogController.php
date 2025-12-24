@@ -2439,8 +2439,8 @@ class DialogController extends AbstractController
             if ($msg) {
                 $doneUserIds = WebSocketDialogMsgTodo::whereMsgId($msg->id)
                     ->whereNotNull('done_at')
-                    ->orderBy('done_at')
-                    ->orderBy('id')
+                    ->orderByDesc('done_at')
+                    ->orderByDesc('id')
                     ->pluck('userid')
                     ->toArray();
                 //
