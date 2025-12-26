@@ -418,6 +418,22 @@ class ProjectTask extends AbstractModel
         }
         //
         $retPre = $parent_id ? '子任务' : '任务';
+
+        // 优先级：主任务在缺省时按系统默认补齐，并尽量补全 name/color
+        if ($parent_id == 0) {
+            $priorityList = Setting::normalizeTaskPriorityList(Base::setting('priority'));
+            if ($p_level > 0) {
+                $matched = reset(array_filter($priorityList, fn($item) => intval($item['priority']) === $p_level)) ?: null;
+            } else {
+                $matched = Setting::getDefaultTaskPriorityItem($priorityList);
+            }
+            if ($matched) {
+                $p_level = $p_level > 0 ? $p_level : intval($matched['priority']);
+                $p_name = $p_name ?: $matched['name'];
+                $p_color = $p_color ?: $matched['color'];
+            }
+        }
+
         $task = self::createInstance([
             'parent_id' => $parent_id,
             'project_id' => $project_id,

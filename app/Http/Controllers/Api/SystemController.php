@@ -697,27 +697,16 @@ class SystemController extends AbstractController
         if ($type == 'save') {
             User::auth('admin');
             $list = Request::input('list');
-            $array = [];
             if (empty($list) || !is_array($list)) {
                 return Base::retError('参数错误');
             }
-            foreach ($list AS $item) {
-                if (empty($item['name']) || empty($item['color']) || empty($item['priority'])) {
-                    continue;
-                }
-                $array[] = [
-                    'name' => $item['name'],
-                    'color' => $item['color'],
-                    'days' => intval($item['days']),
-                    'priority' => intval($item['priority']),
-                ];
-            }
+            $array = Setting::normalizeTaskPriorityList($list);
             if (empty($array)) {
                 return Base::retError('参数为空');
             }
             $setting = Base::setting('priority', $array);
         } else {
-            $setting = Base::setting('priority');
+            $setting = Setting::normalizeTaskPriorityList(Base::setting('priority'));
         }
         //
         return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting);

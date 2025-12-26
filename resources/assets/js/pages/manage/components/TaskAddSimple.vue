@@ -270,7 +270,8 @@ export default {
             if (this.taskPriority.length === 0 || this.addData.p_name) {
                 return;
             }
-            this.choosePriority(this.taskPriority[0], false);
+            const defaultItem = this.taskPriority.find(item => item.is_default === 1) || this.taskPriority[0];
+            this.choosePriority(defaultItem, false);
         }
     }
 }

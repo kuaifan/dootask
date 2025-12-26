@@ -190,11 +190,35 @@
         }
     }
     .setting-color {
+        min-width: 520px;
         &.color-label-box {
             .el-tooltip {
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 overflow: hidden;
+            }
+        }
+    }
+
+    .system-task-priority {
+        .setting-color {
+            white-space: nowrap;
+            > div:first-child {
+                text-align: center;
+            }
+            > div:nth-child(2) {
+                text-align: left;
+            }
+        }
+
+        .priority-default-col {
+            .ivu-radio-wrapper {
+                margin-right: 0;
+            }
+            .ivu-radio-wrapper {
+                > span:not(.ivu-radio) { 
+                    display: none;
+                }
             }
         }
     }

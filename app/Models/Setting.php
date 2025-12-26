@@ -107,6 +107,70 @@ class Setting extends AbstractModel
     }
 
     /**
+     * 规范任务优先级设置（确保字段完整且仅有一个默认项）
+     * @param mixed $list
+     * @return array<int, array{name:string,color:string,days:int,priority:int,is_default:int}>
+     */
+    public static function normalizeTaskPriorityList($list)
+    {
+        if (!is_array($list)) {
+            return [];
+        }
+        $normalized = [];
+        $defaultIndex = null;
+        foreach ($list as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $name = trim((string)($item['name'] ?? ''));
+            $color = trim((string)($item['color'] ?? ''));
+            $priority = intval($item['priority'] ?? 0);
+            if ($name === '' || $color === '' || $priority <= 0) {
+                continue;
+            }
+            $days = intval($item['days'] ?? 0);
+            $isDefault = !empty($item['is_default']) || !empty($item['default']);
+            if ($defaultIndex === null && $isDefault) {
+                $defaultIndex = count($normalized);
+            }
+            $normalized[] = [
+                'name' => $name,
+                'color' => $color,
+                'days' => $days,
+                'priority' => $priority,
+                'is_default' => $isDefault ? 1 : 0,
+            ];
+        }
+        if (!empty($normalized)) {
+            $defaultIndex = $defaultIndex ?? 0;
+            foreach ($normalized as $i => $row) {
+                $normalized[$i]['is_default'] = $i === $defaultIndex ? 1 : 0;
+            }
+        }
+        return array_values($normalized);
+    }
+
+    /**
+     * 获取默认任务优先级（来自 settings.priority）
+     * @param array|null $list
+     * @return array|null
+     */
+    public static function getDefaultTaskPriorityItem($list = null)
+    {
+        $list = $list ?? Base::setting('priority');
+        $list = self::normalizeTaskPriorityList($list);
+        if (empty($list)) {
+            return null;
+        }
+        foreach ($list as $item) {
+            if (!empty($item['is_default'])) {
+                return $item;
+            }
+        }
+        return $list[0];
+    }
+
+    /**
      * 是否开启 AI 助手
      * @return bool
      */

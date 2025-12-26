@@ -392,7 +392,8 @@ export default {
             }
             // 优先级
             if (this.taskPriority.length > 0) {
-                await this.choosePriority(this.taskPriority[0]);
+                const defaultItem = this.taskPriority.find(item => item.is_default === 1) || this.taskPriority[0];
+                await this.choosePriority(defaultItem);
             }
         },
 
