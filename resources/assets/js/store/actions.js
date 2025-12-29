@@ -3580,6 +3580,9 @@ export default {
      * @returns {Promise<void>}
      */
     openDialogNewWindow({state, dispatch}, dialogId) {
+        if ($A.runNum(dialogId) <= 0) {
+            return
+        }
         const dialogData = state.cacheDialogs.find(({id}) => id === dialogId) || {}
         dispatch('openChildWindow', {
             name: `dialog-${dialogId}`,
