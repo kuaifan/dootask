@@ -152,7 +152,9 @@ class FileController extends AbstractController
         }
         if ($key) {
             if (!$id && Base::isNumber($key)) {
-                $builder->where("id", $key);
+                $builder->where(function ($query) use ($key) {
+                    $query->where("id", $key)->orWhere("name", "like", "%{$key}%");
+                });
             } else {
                 $builder->where("name", "like", "%{$key}%");
             }
@@ -174,7 +176,13 @@ class FileController extends AbstractController
                 $builder->where("id", $id);
             }
             if ($key) {
-                $builder->where("name", "like", "%{$key}%");
+                if (Base::isNumber($key)) {
+                    $builder->where(function ($query) use ($key) {
+                        $query->where("id", $key)->orWhere("name", "like", "%{$key}%");
+                    });
+                } else {
+                    $builder->where("name", "like", "%{$key}%");
+                }
             }
             $list = $builder->take($take)->get();
             if ($list->isNotEmpty()) {

@@ -1132,19 +1132,13 @@
     width: auto;
     overflow: hidden;
 
-    &.task-mention {
-        .ql-mention-list {
-            > li {
-                &:first-child {
-                    margin-top: 0;
-                }
-            }
-        }
+    &.task-mention,
+    &.file-mention,
+    &.report-mention,
+    &.slash-mention {
         .ql-mention-list-item {
-            line-height: 36px;
-            .mention-item-disabled {
-                padding: 8px 4px 0;
-            }
+            line-height: 40px;
+            padding: 0 4px;
         }
     }
 
@@ -1246,6 +1240,7 @@
 
         .mention-item-tip {
             flex-shrink: 0;
+            padding-right: 8px;
             text-align: right;
             color: #8f8f8e;
             font-size: 12px;

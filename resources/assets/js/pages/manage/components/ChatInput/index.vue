@@ -436,8 +436,10 @@ export default {
             userList: null,
             userCache: null,
             taskList: null,
+            taskSearchList: {},
             fileList: {},
             reportList: {},
+            taskSearchKey: '',
 
             showMenu: false,
             showMore: false,
@@ -479,6 +481,7 @@ export default {
             textTimer: null,
             fileTimer: null,
             reportTimer: null,
+            taskSearchTimer: null,
             moreTimer: null,
             selectTimer: null,
             selectRange: null,
@@ -788,6 +791,7 @@ export default {
             this.userList = null;
             this.userCache = null;
             this.taskList = null;
+            this.taskSearchList = {};
             this.fileList = {};
             this.reportList = {};
             this.loadInputDraft()
@@ -798,6 +802,7 @@ export default {
             this.userList = null;
             this.userCache = null;
             this.taskList = null;
+            this.taskSearchList = {};
             this.fileList = {};
             this.reportList = {};
             this.loadInputDraft()
@@ -1266,17 +1271,14 @@ export default {
                     const mentionMap = {
                         '@': 'user-mention',
                         '#': 'task-mention',
+                        '~': 'file-mention',
+                        '%': 'report-mention',
                         '/': 'slash-mention'
                     };
                     const mentionName = mentionMap[mentionChar] || 'file-mention';
                     const containers = document.getElementsByClassName("ql-mention-list-container");
                     for (let i = 0; i < containers.length; i++) {
-                        containers[i].classList.remove(
-                            "user-mention", 
-                            "task-mention", 
-                            "file-mention", 
-                            "slash-mention"
-                        );
+                        containers[i].classList.remove(...Object.values(mentionMap));
                         containers[i].classList.add(mentionName);
                     }
                     let mentionSourceCache = null;
@@ -2472,87 +2474,159 @@ export default {
 
                 case "#": // #任务
                     this.mentionMode = "task-mention";
-                    if (this.taskList !== null) {
-                        resultCallback(this.taskList)
-                        return;
-                    }
-                    const taskCallback = (list) => {
-                        this.taskList = [];
-                        // 项目任务
-                        if (list.length > 0) {
-                            list = list.map(item => {
-                                return {
-                                    id: item.id,
-                                    value: item.name,
-                                    tip: item.complete_at ? this.$L('已完成') : null,
-                                }
-                            }).splice(0, 100)
-                            this.taskList.push({
-                                label: [{id: 0, value: this.$L('项目任务'), disabled: true}],
-                                list,
-                            })
+                    const searchKey = (searchTerm || '').trim();
+                    this.taskSearchKey = searchKey;
+                    const buildOtherTasks = (list) => {
+                        const baseLists = Array.isArray(list) ? list : [];
+                        if (!searchKey) {
+                            return baseLists;
                         }
-                        // 待完成任务
-                        const { overdue, today, todo } = this.$store.getters.dashboardTask;
-                        const combinedTasks = [...overdue, ...today, ...todo];
-                        let allTask = this.$store.getters.transforTasks(combinedTasks);
-                        if (allTask.length > 0) {
-                            allTask = allTask.sort((a, b) => {
-                                return $A.sortDay(a.end_at || "2099-12-31 23:59:59", b.end_at || "2099-12-31 23:59:59");
-                            }).splice(0, 100)
-                            this.taskList.push({
-                                label: [{id: 0, value: this.$L('我的待完成任务'), disabled: true}],
-                                list: allTask.map(item => {
-                                    return {
-                                        id: item.id,
-                                        value: item.name
-                                    }
-                                }),
-                            })
+                        const searchTasks = Array.isArray(this.taskSearchList[searchKey]) ? this.taskSearchList[searchKey] : [];
+                        if (searchTasks.length === 0) {
+                            return baseLists;
                         }
-                        // 我协助的任务
-                        let assistTask = this.$store.getters.assistTask;
-                        if (assistTask.length > 0) {
-                            assistTask = assistTask.sort((a, b) => {
-                                return $A.sortDay(a.end_at || "2099-12-31 23:59:59", b.end_at || "2099-12-31 23:59:59");
-                            }).splice(0, 100)
-                            this.taskList.push({
-                                label: [{id: 0, value: this.$L('我协助的任务'), disabled: true}],
-                                list: assistTask.map(item => {
-                                    return {
-                                        id: item.id,
-                                        value: item.name
-                                    }
-                                }),
-                            })
-                        }
-                        resultCallback(this.taskList)
-                    }
-                    //
-                    const projectId = this.getProjectId();
-                    if (projectId > 0) {
-                        this.$store.dispatch("getTaskForProject", projectId).then(_ => {
-                            const tasks = this.cacheTasks.filter(task => {
-                                if (task.archived_at) {
-                                    return false;
-                                }
-                                return task.project_id == projectId
-                                    && task.parent_id === 0
-                                    && !task.archived_at
-                            }).sort((a, b) => {
-                                return $A.sortDay(b.complete_at || "2099-12-31 23:59:59", a.complete_at || "2099-12-31 23:59:59")
-                            })
-                            if (tasks.length > 0) {
-                                taskCallback(tasks)
-                            } else {
-                                taskCallback([])
+                        const existingIds = new Set();
+                        baseLists.forEach(group => {
+                            (group.list || []).forEach(item => existingIds.add(item.id));
+                        });
+                        const otherTasks = [];
+                        searchTasks.forEach(task => {
+                            if (!existingIds.has(task.id)) {
+                                existingIds.add(task.id);
+                                otherTasks.push({
+                                    id: task.id,
+                                    value: task.name,
+                                    tip: task.complete_at ? this.$L('已完成') : null,
+                                });
                             }
-                        }).catch(_ => {
+                        });
+                        if (otherTasks.length === 0) {
+                            return baseLists;
+                        }
+                        return [
+                            ...baseLists,
+                            {
+                                label: [{id: 0, value: this.$L('其他任务'), className: "sticky-top", disabled: true}],
+                                list: otherTasks,
+                            }
+                        ];
+                    };
+                    const renderTaskList = (list) => resultCallback(buildOtherTasks(list || []))
+                    if (this.taskList !== null) {
+                        renderTaskList(this.taskList)
+                    } else {
+                        const taskCallback = (list) => {
+                            this.taskList = [];
+                            // 项目任务
+                            if (list.length > 0) {
+                                list = list.map(item => {
+                                    return {
+                                        id: item.id,
+                                        value: item.name,
+                                        tip: item.complete_at ? this.$L('已完成') : null,
+                                    }
+                                }).splice(0, 100)
+                                this.taskList.push({
+                                    label: [{id: 0, value: this.$L('项目任务'), className: "sticky-top", disabled: true}],
+                                    list,
+                                })
+                            }
+                            // 待完成任务
+                            const { overdue, today, todo } = this.$store.getters.dashboardTask;
+                            const combinedTasks = [...overdue, ...today, ...todo];
+                            let allTask = this.$store.getters.transforTasks(combinedTasks);
+                            if (allTask.length > 0) {
+                                allTask = allTask.sort((a, b) => {
+                                    return $A.sortDay(a.end_at || "2099-12-31 23:59:59", b.end_at || "2099-12-31 23:59:59");
+                                }).splice(0, 100)
+                                this.taskList.push({
+                                    label: [{id: 0, value: this.$L('我的待完成任务'), className: "sticky-top", disabled: true}],
+                                    list: allTask.map(item => {
+                                        return {
+                                            id: item.id,
+                                            value: item.name
+                                        }
+                                    }),
+                                })
+                            }
+                            // 我协助的任务
+                            let assistTask = this.$store.getters.assistTask;
+                            if (assistTask.length > 0) {
+                                assistTask = assistTask.sort((a, b) => {
+                                    return $A.sortDay(a.end_at || "2099-12-31 23:59:59", b.end_at || "2099-12-31 23:59:59");
+                                }).splice(0, 100)
+                                this.taskList.push({
+                                    label: [{id: 0, value: this.$L('我协助的任务'), className: "sticky-top", disabled: true}],
+                                    list: assistTask.map(item => {
+                                        return {
+                                            id: item.id,
+                                            value: item.name
+                                        }
+                                    }),
+                                })
+                            }
+                            renderTaskList(this.taskList)
+                        }
+                        //
+                        const projectId = this.getProjectId();
+                        if (projectId > 0) {
+                            this.$store.dispatch("getTaskForProject", projectId).then(_ => {
+                                const tasks = this.cacheTasks.filter(task => {
+                                    if (task.archived_at) {
+                                        return false;
+                                    }
+                                    return task.project_id == projectId
+                                        && task.parent_id === 0
+                                        && !task.archived_at
+                                }).sort((a, b) => {
+                                    return $A.sortDay(b.complete_at || "2099-12-31 23:59:59", a.complete_at || "2099-12-31 23:59:59")
+                                })
+                                if (tasks.length > 0) {
+                                    taskCallback(tasks)
+                                } else {
+                                    taskCallback([])
+                                }
+                            }).catch(_ => {
+                                taskCallback([])
+                            })
+                        } else {
                             taskCallback([])
-                        })
-                        return;
+                        }
                     }
-                    taskCallback([])
+                    if (searchKey) {
+                        if (Array.isArray(this.taskSearchList[searchKey])) {
+                            return;
+                        }
+                        this.taskSearchTimer && clearTimeout(this.taskSearchTimer)
+                        this.taskSearchTimer = setTimeout(async _ => {
+                            if (this.taskSearchKey !== searchKey) {
+                                return;
+                            }
+                            const projectId = this.getProjectId();
+                            const data = (await this.$store.dispatch("call", {
+                                url: 'project/task/lists',
+                                data: {
+                                    keys: {
+                                        name: searchKey,
+                                    },
+                                    project_id: projectId > 0 ? projectId : undefined,
+                                    parent_id: -1,
+                                    scope: projectId > 0 ? undefined : 'all_project',
+                                    pagesize: 50,
+                                },
+                            }).catch(_ => {}))?.data;
+                            if (this.taskSearchKey !== searchKey) {
+                                return;
+                            }
+                            const tasks = $A.getObject(data, 'data') || [];
+                            this.taskSearchList[searchKey] = tasks.map(item => ({
+                                id: item.id,
+                                name: item.name,
+                                complete_at: item.complete_at,
+                            }));
+                            renderTaskList(this.taskList)
+                        }, 300)
+                    }
                     break;
 
                 case "~": // ~文件
@@ -2567,7 +2641,7 @@ export default {
                         const data = (await this.$store.dispatch("searchFiles", searchTerm).catch(_ => {}))?.data;
                         if (data) {
                             lists.push({
-                                label: [{id: 0, value: this.$L('文件分享查看'), disabled: true}],
+                                label: [{id: 0, value: this.$L('文件分享查看'), className: "sticky-top", disabled: true}],
                                 list: data.filter(item => item.type !== "folder").map(item => {
                                     return {
                                         id: item.id,
@@ -2601,7 +2675,7 @@ export default {
                         }).catch(_ => {}))?.data;
                         if (myData) {
                             lists.push({
-                                label: [{id: 0, value: this.$L('我的报告'), disabled: true}],
+                                label: [{id: 0, value: this.$L('我的报告'), className: "sticky-top", disabled: true}],
                                 list: myData.data.map(item => {
                                     return {
                                         id: item.id,
@@ -2621,7 +2695,7 @@ export default {
                         }).catch(_ => {}))?.data;
                         if (receiveData) {
                             lists.push({
-                                label: [{id: 0, value: this.$L('收到的报告'), disabled: true}],
+                                label: [{id: 0, value: this.$L('收到的报告'), className: "sticky-top", disabled: true}],
                                 list: receiveData.data.map(item => {
                                     return {
                                         id: item.id,
@@ -2645,7 +2719,7 @@ export default {
                     const isOwnBot = isBotDialog && this.dialogData.bot == this.userId;
                     const isBotManager = isBotDialog && this.dialogData.email === 'bot-manager@bot.system';
                     const showBotCommands = allowBotCommands && (isOwnBot || isBotManager);
-                    const baseLabel = showBotCommands ? [{id: 0, value: this.$L('快捷菜单'), disabled: true}] : null;
+                    const baseLabel = showBotCommands ? [{id: 0, value: this.$L('快捷菜单'), className: "sticky-top", disabled: true}] : null;
                     const slashLists = [{
                         label: baseLabel,
                         list: [
@@ -2740,7 +2814,7 @@ export default {
                             }
                         );
                         slashLists.push({
-                            label: [{id: 0, value: this.$L('机器人命令'), disabled: true}],
+                            label: [{id: 0, value: this.$L('机器人命令'), className: "sticky-top", disabled: true}],
                             list: commandList,
                         });
                     }

@@ -339,6 +339,7 @@ export default {
                 data: {
                     keys: {name: key},
                     archived: 'all',
+                    scope: 'all_project',
                     pagesize: this.action ? 50 : 10,
                 },
             }).then(({data}) => {

@@ -663,7 +663,12 @@ class UsersController extends AbstractController
             if (str_contains($keys['key'], "@")) {
                 $builder->where("email", "like", "%{$keys['key']}%");
             } elseif (Base::isNumber($keys['key'])) {
-                $builder->where("userid", intval($keys['key']));
+                $builder->where(function ($query) use ($keys) {
+                    $query->where("userid", intval($keys['key']))
+                        ->orWhere("nickname", "like", "%{$keys['key']}%")
+                        ->orWhere("pinyin", "like", "%{$keys['key']}%")
+                        ->orWhere("profession", "like", "%{$keys['key']}%");
+                });
             } else {
                 $builder->where(function($query) use ($keys) {
                     $query->where("nickname", "like", "%{$keys['key']}%")

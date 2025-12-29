@@ -59,6 +59,11 @@ class ReportController extends AbstractController
                     $builder->whereHas('sendUser', function ($q2) use ($keys) {
                         $q2->where("users.email", "LIKE", "%{$keys['key']}%");
                     });
+                } elseif (Base::isNumber($keys['key'])) {
+                    $builder->where(function ($query) use ($keys) {
+                        $query->where("id", intval($keys['key']))
+                            ->orWhere("title", "LIKE", "%{$keys['key']}%");
+                    });
                 } else {
                     $builder->where("title", "LIKE", "%{$keys['key']}%");
                 }
@@ -111,7 +116,11 @@ class ReportController extends AbstractController
                         $q2->where("users.email", "LIKE", "%{$keys['key']}%");
                     });
                 } elseif (Base::isNumber($keys['key'])) {
-                    $builder->where("userid", intval($keys['key']));
+                    $builder->where(function ($query) use ($keys) {
+                        $query->where("userid", intval($keys['key']))
+                            ->orWhere("id", intval($keys['key']))
+                            ->orWhere("title", "LIKE", "%{$keys['key']}%");
+                    });
                 } else {
                     $builder->where("title", "LIKE", "%{$keys['key']}%");
                 }
