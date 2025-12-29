@@ -2536,9 +2536,9 @@ export default {
                             const combinedTasks = [...overdue, ...today, ...todo];
                             let allTask = this.$store.getters.transforTasks(combinedTasks);
                             if (allTask.length > 0) {
-                                allTask = allTask.sort((a, b) => {
+                                allTask = [...allTask].sort((a, b) => {
                                     return $A.sortDay(a.end_at || "2099-12-31 23:59:59", b.end_at || "2099-12-31 23:59:59");
-                                }).splice(0, 100)
+                                }).slice(0, 100)
                                 this.taskList.push({
                                     label: [{id: 0, value: this.$L('我的待完成任务'), className: "sticky-top", disabled: true}],
                                     list: allTask.map(item => {
@@ -2550,11 +2550,11 @@ export default {
                                 })
                             }
                             // 我协助的任务
-                            let assistTask = this.$store.getters.assistTask;
+                            let assistTask = this.$store.getters.assistTask || [];
                             if (assistTask.length > 0) {
-                                assistTask = assistTask.sort((a, b) => {
+                                assistTask = [...assistTask].sort((a, b) => {
                                     return $A.sortDay(a.end_at || "2099-12-31 23:59:59", b.end_at || "2099-12-31 23:59:59");
-                                }).splice(0, 100)
+                                }).slice(0, 100)
                                 this.taskList.push({
                                     label: [{id: 0, value: this.$L('我协助的任务'), className: "sticky-top", disabled: true}],
                                     list: assistTask.map(item => {
