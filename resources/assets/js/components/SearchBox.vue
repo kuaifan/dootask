@@ -17,6 +17,10 @@
                 <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
                     <Input type="search" ref="searchKey" v-model="searchKey" :placeholder="$L('请输入关键字')"/>
                 </Form>
+                <div v-if="aiSearchAvailable" class="search-ai" :class="{active: aiSearch}" @click="toggleAiSearch">
+                    <i class="taskfont">&#xe8a1;</i>
+                    <span>{{ $L('AI 搜索') }}</span>
+                </div>
             </div>
             <div class="search-close" @click="onHide">
                 <i class="taskfont">&#xe6e5;</i>
@@ -87,7 +91,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapState, mapGetters} from "vuex";
 import emitter from "../store/events";
 import transformEmojiToHtml from "../utils/emoji";
 
@@ -116,6 +120,8 @@ export default {
                 {type: 'file', name: '文件', icon: '&#xe6f3;'},
             ],
             action: '',
+
+            aiSearch: false,
         }
     },
 
@@ -144,8 +150,15 @@ export default {
     computed: {
         ...mapState([
             'themeName',
-            'keyboardShow'
+            'keyboardShow',
+            'microAppsIds'
         ]),
+
+        aiSearchAvailable() {
+            return this.microAppsIds 
+                && this.microAppsIds.includes('seekdb') 
+                && this.microAppsIds.includes('ai')
+        },
 
         isFullscreen({windowWidth}) {
             return windowWidth < 576
@@ -516,12 +529,20 @@ export default {
 
         searchFile(key) {
             this.loadIng++;
+            const requestData = {
+                key,
+                take: this.action ? 50 : 10,
+            };
+
+            // 如果开启了 AI 搜索（需要同时安装 seekdb 和 ai）
+            if (this.aiSearchAvailable && this.aiSearch) {
+                requestData.search_content = 'yes';
+                requestData.search_type = 'hybrid';
+            }
+
             this.$store.dispatch("call", {
                 url: 'file/search',
-                data: {
-                    key,
-                    take: this.action ? 50 : 10,
-                },
+                data: requestData,
             }).then(({data}) => {
                 const items = data.map(item => {
                     const tags = [];
@@ -529,6 +550,13 @@ export default {
                         tags.push({
                             name: this.$L(item.userid == this.userId ? '已共享' : '共享'),
                             style: 'background-color:#0bc037',
+                        })
+                    }
+                    // 如果有内容预览，显示 AI 搜索标记
+                    if (item.content_preview) {
+                        tags.push({
+                            name: 'AI',
+                            style: 'background-color:#4F46E5',
                         })
                     }
                     return {
@@ -539,7 +567,9 @@ export default {
 
                         id: item.id,
                         title: item.name,
-                        desc: item.type === 'folder' ? '' : $A.bytesToSize(item.size),
+                        desc: item.content_preview
+                            ? this.truncateContent(item.content_preview)
+                            : (item.type === 'folder' ? '' : $A.bytesToSize(item.size)),
                         activity: item.updated_at,
 
                         rawData: item,
@@ -549,6 +579,24 @@ export default {
             }).finally(_ => {
                 this.loadIng--;
             })
+        },
+
+        truncateContent(content) {
+            if (!content) return '';
+            const maxLen = 100;
+            const text = content.replace(/\s+/g, ' ').trim();
+            return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
+        },
+
+        toggleAiSearch() {
+            this.aiSearch = !this.aiSearch;
+            // 如果有搜索内容，重新搜索
+            if (this.searchKey.trim()) {
+                this.searchResults = this.searchResults.filter(item => item.type !== 'file');
+                if (this.action === 'file' || !this.action) {
+                    this.searchFile(this.searchKey);
+                }
+            }
         }
     }
 };

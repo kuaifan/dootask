@@ -84,6 +84,34 @@
                                 }
                             }
                         }
+
+                        .search-ai {
+                            flex-shrink: 0;
+                            display: flex;
+                            align-items: center;
+                            gap: 6px;
+                            padding: 5px 14px;
+                            border-radius: 16px;
+                            cursor: pointer;
+                            font-size: 13px;
+                            font-weight: 500;
+                            color: #666;
+                            background-color: #f0f0f0;
+                            transition: all 0.2s ease;
+
+                            > i {
+                                font-size: 14px;
+                            }
+
+                            &:hover {
+                                background-color: #e8e8e8;
+                            }
+
+                            &.active {
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: #fff;
+                            }
+                        }
                     }
 
                     .search-close {

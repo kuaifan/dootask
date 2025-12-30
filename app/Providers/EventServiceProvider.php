@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\File;
+use App\Models\FileUser;
 use App\Models\Project;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskUser;
@@ -9,6 +11,8 @@ use App\Models\ProjectUser;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogUser;
+use App\Observers\FileObserver;
+use App\Observers\FileUserObserver;
 use App\Observers\ProjectObserver;
 use App\Observers\ProjectTaskObserver;
 use App\Observers\ProjectTaskUserObserver;
@@ -40,6 +44,8 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        File::observe(FileObserver::class);
+        FileUser::observe(FileUserObserver::class);
         Project::observe(ProjectObserver::class);
         ProjectTask::observe(ProjectTaskObserver::class);
         ProjectTaskUser::observe(ProjectTaskUserObserver::class);

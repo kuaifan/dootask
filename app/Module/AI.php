@@ -738,4 +738,137 @@ class AI
         
         return false;
     }
+
+    /**
+     * 通过 OpenAI 兼容接口获取文本的 Embedding 向量
+     *
+     * @param string $text 需要转换的文本
+     * @param bool $noCache 是否禁用缓存
+     * @return array 返回结果，成功时 data 为向量数组
+     */
+    public static function getEmbedding($text, $noCache = false)
+    {
+        if (!Apps::isInstalled('ai')) {
+            return Base::retError('应用「AI Assistant」未安装');
+        }
+
+        if (empty($text)) {
+            return Base::retError('文本内容不能为空');
+        }
+
+        // 截断过长的文本（OpenAI 限制 8191 tokens，约 32K 字符）
+        $text = mb_substr($text, 0, 30000);
+
+        $cacheKey = "openAIEmbedding::" . md5($text);
+        if ($noCache) {
+            Cache::forget($cacheKey);
+        }
+
+        $provider = self::resolveEmbeddingProvider();
+        if (!$provider) {
+            return Base::retError("请先在「AI 助手」设置中配置支持 Embedding 的 AI 服务");
+        }
+
+        $result = Cache::remember($cacheKey, Carbon::now()->addDays(7), function () use ($text, $provider) {
+            $payload = [
+                "model" => $provider['model'],
+                "input" => $text,
+            ];
+            $post = json_encode($payload);
+
+            $ai = new self($post);
+            $ai->setProvider($provider);
+            $ai->setUrlPath('/embeddings');
+            $ai->setTimeout(30);
+
+            $res = $ai->request(true);
+            if (Base::isError($res)) {
+                return Base::retError("Embedding 请求失败", $res);
+            }
+
+            $resData = Base::json2array($res['data']);
+            if (empty($resData['data'][0]['embedding'])) {
+                return Base::retError("Embedding 接口返回数据格式错误", $resData);
+            }
+
+            $embedding = $resData['data'][0]['embedding'];
+            if (!is_array($embedding) || empty($embedding)) {
+                return Base::retError("Embedding 向量为空");
+            }
+
+            return Base::retSuccess("success", $embedding);
+        });
+
+        if (Base::isError($result)) {
+            Cache::forget($cacheKey);
+        }
+
+        return $result;
+    }
+
+    /**
+     * 获取 Embedding 模型配置
+     *
+     * @return array|null
+     */
+    protected static function resolveEmbeddingProvider()
+    {
+        $setting = Base::setting('aibotSetting');
+        if (!is_array($setting)) {
+            $setting = [];
+        }
+
+        // 优先使用 OpenAI（支持 embedding 接口）
+        $key = trim((string)($setting['openai_key'] ?? ''));
+        if ($key !== '') {
+            $baseUrl = trim((string)($setting['openai_base_url'] ?? ''));
+            $baseUrl = $baseUrl ?: 'https://api.openai.com/v1';
+            $agency = trim((string)($setting['openai_agency'] ?? ''));
+
+            return [
+                'vendor' => 'openai',
+                'model' => 'text-embedding-ada-002',
+                'api_key' => $key,
+                'base_url' => rtrim($baseUrl, '/'),
+                'agency' => $agency,
+            ];
+        }
+
+        // 各厂商的默认 baseUrl 和 embedding 模型
+        $vendorDefaults = [
+            'deepseek' => [
+                'base_url' => 'https://api.deepseek.com',
+                'model' => 'deepseek-embedding',
+            ],
+            'zhipu' => [
+                'base_url' => 'https://open.bigmodel.cn/api/paas/v4',
+                'model' => 'embedding-2',
+            ],
+            'qianwen' => [
+                'base_url' => 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+                'model' => 'text-embedding-v3',
+            ],
+        ];
+
+        // 尝试其他支持 embedding 的服务（如 deepseek、zhipu、qianwen 等）
+        foreach ($vendorDefaults as $vendor => $defaults) {
+            $key = trim((string)($setting[$vendor . '_key'] ?? ''));
+
+            if ($key !== '') {
+                $baseUrl = trim((string)($setting[$vendor . '_base_url'] ?? ''));
+                $baseUrl = $baseUrl ?: $defaults['base_url'];  // 使用配置或默认值
+                $agency = trim((string)($setting[$vendor . '_agency'] ?? ''));
+
+                return [
+                    'vendor' => $vendor,
+                    'model' => $defaults['model'],
+                    'api_key' => $key,
+                    'base_url' => rtrim($baseUrl, '/'),
+                    'agency' => $agency,
+                ];
+            }
+        }
+
+        return null;
+    }
 }
