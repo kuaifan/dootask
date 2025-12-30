@@ -69,7 +69,7 @@ class Setting extends AbstractModel
 
             // AI 机器人设置
             case 'aibotSetting':
-                if ($value['claude_token'] && empty($value['claude_key'])) {
+                if (!empty($value['claude_token']) && empty($value['claude_key'])) {
                     $value['claude_key'] = $value['claude_token'];
                 }
                 $array = [];
@@ -78,7 +78,7 @@ class Setting extends AbstractModel
                 foreach ($aiList as $aiName) {
                     foreach ($fieldList as $fieldName) {
                         $key = $aiName . '_' . $fieldName;
-                        $content = $value[$key] ? trim($value[$key]) : '';
+                        $content = !empty($value[$key]) ? trim($value[$key]) : '';
                         switch ($fieldName) {
                             case 'models':
                                 if ($content) {

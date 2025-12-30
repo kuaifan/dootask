@@ -710,7 +710,7 @@ class File extends AbstractModel
     /**
      * code获取文件ID、名称
      * @param $code
-     * @return File
+     * @return File|null
      */
     public static function code2IdName($code) {
         $arr = explode(",", base64_decode($code));
