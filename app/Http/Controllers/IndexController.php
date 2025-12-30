@@ -22,7 +22,7 @@ use App\Tasks\DeleteBotMsgTask;
 use App\Tasks\CheckinRemindTask;
 use App\Tasks\CloseMeetingRoomTask;
 use App\Tasks\ZincSearchSyncTask;
-use App\Tasks\SeekDBFileSyncTask;
+use App\Tasks\SeekDBSyncTask;
 use App\Tasks\UnclaimedTaskRemindTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Laravolt\Avatar\Avatar;
@@ -274,8 +274,8 @@ class IndexController extends InvokeController
         Task::deliver(new CloseMeetingRoomTask());
         // ZincSearch 同步
         Task::deliver(new ZincSearchSyncTask());
-        // SeekDB 文件同步
-        Task::deliver(new SeekDBFileSyncTask());
+        // SeekDB 同步（文件/用户/项目/任务）
+        Task::deliver(new SeekDBSyncTask());
 
         return "success";
     }

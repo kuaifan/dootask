@@ -347,7 +347,16 @@ export default {
 
         searchTask(key) {
             this.loadIng++;
-            this.$store.dispatch("call", {
+            // 如果开启了 AI 搜索，使用新的 AI 搜索接口
+            const useAiSearch = this.aiSearchAvailable && this.aiSearch;
+            const requestConfig = useAiSearch ? {
+                url: 'search/task',
+                data: {
+                    key,
+                    search_type: 'hybrid',
+                    take: this.action ? 50 : 10,
+                },
+            } : {
                 url: 'project/task/lists',
                 data: {
                     keys: {name: key},
@@ -355,10 +364,19 @@ export default {
                     scope: 'all_project',
                     pagesize: this.action ? 50 : 10,
                 },
-            }).then(({data}) => {
+            };
+            this.$store.dispatch("call", requestConfig).then(({data}) => {
                 const nowTime = $A.dayjs().unix()
-                const items = data.data.map(item => {
+                const rawData = useAiSearch ? data : data.data;
+                const items = rawData.map(item => {
                     const tags = [];
+                    // AI 搜索标记
+                    if (useAiSearch && item.content_preview) {
+                        tags.push({
+                            name: 'AI',
+                            style: 'background-color:#4F46E5',
+                        })
+                    }
                     if (item.complete_at) {
                         tags.push({
                             name: this.$L('已完成'),
@@ -389,7 +407,7 @@ export default {
 
                         id: item.id,
                         title: item.name,
-                        desc: item.desc,
+                        desc: item.content_preview ? this.truncateContent(item.content_preview) : item.desc,
                         activity: item.end_at,
 
                         rawData: item,
@@ -403,7 +421,16 @@ export default {
 
         searchProject(key) {
             this.loadIng++;
-            this.$store.dispatch("call", {
+            // 如果开启了 AI 搜索，使用新的 AI 搜索接口
+            const useAiSearch = this.aiSearchAvailable && this.aiSearch;
+            const requestConfig = useAiSearch ? {
+                url: 'search/project',
+                data: {
+                    key,
+                    search_type: 'hybrid',
+                    take: this.action ? 50 : 10,
+                },
+            } : {
                 url: 'project/lists',
                 data: {
                     keys: {
@@ -412,9 +439,18 @@ export default {
                     archived: 'all',
                     pagesize: this.action ? 50 : 10,
                 },
-            }).then(({data}) => {
-                const items = data.data.map(item => {
+            };
+            this.$store.dispatch("call", requestConfig).then(({data}) => {
+                const rawData = useAiSearch ? data : data.data;
+                const items = rawData.map(item => {
                     const tags = [];
+                    // AI 搜索标记
+                    if (useAiSearch && item.desc_preview) {
+                        tags.push({
+                            name: 'AI',
+                            style: 'background-color:#4F46E5',
+                        })
+                    }
                     if (item.owner) {
                         tags.push({
                             name: this.$L('负责人'),
@@ -435,7 +471,7 @@ export default {
 
                         id: item.id,
                         title: item.name,
-                        desc: item.desc || '',
+                        desc: item.desc_preview ? this.truncateContent(item.desc_preview) : (item.desc || ''),
                         activity: item.updated_at,
 
                         rawData: item,
@@ -499,23 +535,43 @@ export default {
 
         searchContact(key) {
             this.loadIng++;
-            this.$store.dispatch("call", {
+            // 如果开启了 AI 搜索，使用新的 AI 搜索接口
+            const useAiSearch = this.aiSearchAvailable && this.aiSearch;
+            const requestConfig = useAiSearch ? {
+                url: 'search/contact',
+                data: {
+                    key,
+                    search_type: 'hybrid',
+                    take: this.action ? 50 : 10,
+                },
+            } : {
                 url: 'users/search',
                 data: {
                     keys: {key},
                     pagesize: this.action ? 50 : 10,
                 },
-            }).then(({data}) => {
+            };
+            this.$store.dispatch("call", requestConfig).then(({data}) => {
                 const items = data.map(item => {
+                    const tags = [];
+                    // AI 搜索标记
+                    if (useAiSearch && item.introduction_preview) {
+                        tags.push({
+                            name: 'AI',
+                            style: 'background-color:#4F46E5',
+                        })
+                    }
                     return {
                         key,
                         type: 'contact',
                         icons: ['user', item.userid],
-                        tags: [],
+                        tags,
 
                         id: item.userid,
                         title: item.nickname,
-                        desc: item.profession || '',
+                        desc: item.introduction_preview 
+                            ? this.truncateContent(item.introduction_preview) 
+                            : (item.profession || ''),
                         activity: item.line_at,
 
                         rawData: item,
@@ -529,21 +585,23 @@ export default {
 
         searchFile(key) {
             this.loadIng++;
-            const requestData = {
-                key,
-                take: this.action ? 50 : 10,
-            };
-
-            // 如果开启了 AI 搜索（需要同时安装 seekdb 和 ai）
-            if (this.aiSearchAvailable && this.aiSearch) {
-                requestData.search_content = 'yes';
-                requestData.search_type = 'hybrid';
-            }
-
-            this.$store.dispatch("call", {
+            // 如果开启了 AI 搜索，使用统一的 AI 搜索接口
+            const useAiSearch = this.aiSearchAvailable && this.aiSearch;
+            const requestConfig = useAiSearch ? {
+                url: 'search/file',
+                data: {
+                    key,
+                    search_type: 'hybrid',
+                    take: this.action ? 50 : 10,
+                },
+            } : {
                 url: 'file/search',
-                data: requestData,
-            }).then(({data}) => {
+                data: {
+                    key,
+                    take: this.action ? 50 : 10,
+                },
+            };
+            this.$store.dispatch("call", requestConfig).then(({data}) => {
                 const items = data.map(item => {
                     const tags = [];
                     if (item.share) {
@@ -552,8 +610,8 @@ export default {
                             style: 'background-color:#0bc037',
                         })
                     }
-                    // 如果有内容预览，显示 AI 搜索标记
-                    if (item.content_preview) {
+                    // AI 搜索标记
+                    if (useAiSearch && item.content_preview) {
                         tags.push({
                             name: 'AI',
                             style: 'background-color:#4F46E5',
@@ -592,9 +650,16 @@ export default {
             this.aiSearch = !this.aiSearch;
             // 如果有搜索内容，重新搜索
             if (this.searchKey.trim()) {
-                this.searchResults = this.searchResults.filter(item => item.type !== 'file');
-                if (this.action === 'file' || !this.action) {
-                    this.searchFile(this.searchKey);
+                // 清除所有支持 AI 搜索的类型的结果
+                const aiSearchTypes = ['file', 'task', 'project', 'contact'];
+                this.searchResults = this.searchResults.filter(item => !aiSearchTypes.includes(item.type));
+                // 重新搜索
+                if (this.action) {
+                    if (aiSearchTypes.includes(this.action)) {
+                        this.distSearch(this.action);
+                    }
+                } else {
+                    aiSearchTypes.forEach(type => this.distSearch(type));
                 }
             }
         }

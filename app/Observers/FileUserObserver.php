@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\FileUser;
-use App\Tasks\SeekDBFileSyncTask;
+use App\Tasks\SeekDBSyncTask;
 
 class FileUserObserver extends AbstractObserver
 {
@@ -15,7 +15,7 @@ class FileUserObserver extends AbstractObserver
      */
     public function created(FileUser $fileUser)
     {
-        self::taskDeliver(new SeekDBFileSyncTask('add_file_user', [
+        self::taskDeliver(new SeekDBSyncTask('file_user_add', [
             'file_id' => $fileUser->file_id,
             'userid' => $fileUser->userid,
             'permission' => $fileUser->permission,
@@ -30,7 +30,7 @@ class FileUserObserver extends AbstractObserver
      */
     public function updated(FileUser $fileUser)
     {
-        self::taskDeliver(new SeekDBFileSyncTask('add_file_user', [
+        self::taskDeliver(new SeekDBSyncTask('file_user_add', [
             'file_id' => $fileUser->file_id,
             'userid' => $fileUser->userid,
             'permission' => $fileUser->permission,
@@ -45,7 +45,7 @@ class FileUserObserver extends AbstractObserver
      */
     public function deleted(FileUser $fileUser)
     {
-        self::taskDeliver(new SeekDBFileSyncTask('remove_file_user', [
+        self::taskDeliver(new SeekDBSyncTask('file_user_remove', [
             'file_id' => $fileUser->file_id,
             'userid' => $fileUser->userid,
         ]));

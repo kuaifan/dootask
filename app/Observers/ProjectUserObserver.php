@@ -4,8 +4,9 @@ namespace App\Observers;
 
 use App\Models\Deleted;
 use App\Models\ProjectUser;
+use App\Tasks\SeekDBSyncTask;
 
-class ProjectUserObserver
+class ProjectUserObserver extends AbstractObserver
 {
     /**
      * Handle the ProjectUser "created" event.
@@ -16,6 +17,10 @@ class ProjectUserObserver
     public function created(ProjectUser $projectUser)
     {
         Deleted::forget('project', $projectUser->project_id, $projectUser->userid);
+        self::taskDeliver(new SeekDBSyncTask('project_user_add', [
+            'project_id' => $projectUser->project_id,
+            'userid' => $projectUser->userid,
+        ]));
     }
 
     /**
@@ -38,6 +43,10 @@ class ProjectUserObserver
     public function deleted(ProjectUser $projectUser)
     {
         Deleted::record('project', $projectUser->project_id, $projectUser->userid);
+        self::taskDeliver(new SeekDBSyncTask('project_user_remove', [
+            'project_id' => $projectUser->project_id,
+            'userid' => $projectUser->userid,
+        ]));
     }
 
     /**

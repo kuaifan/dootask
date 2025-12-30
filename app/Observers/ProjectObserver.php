@@ -5,8 +5,9 @@ namespace App\Observers;
 use App\Models\Deleted;
 use App\Models\Project;
 use App\Models\ProjectUser;
+use App\Tasks\SeekDBSyncTask;
 
-class ProjectObserver
+class ProjectObserver extends AbstractObserver
 {
     /**
      * Handle the Project "created" event.
@@ -16,7 +17,7 @@ class ProjectObserver
      */
     public function created(Project $project)
     {
-        //
+        self::taskDeliver(new SeekDBSyncTask('project_sync', $project->toArray()));
     }
 
     /**
@@ -35,6 +36,24 @@ class ProjectObserver
                 Deleted::forget('project', $project->id, $userids);
             }
         }
+
+        // 检查是否有搜索相关字段变化
+        $searchableFields = ['name', 'desc', 'archived_at'];
+        $isDirty = false;
+        foreach ($searchableFields as $field) {
+            if ($project->isDirty($field)) {
+                $isDirty = true;
+                break;
+            }
+        }
+
+        if ($isDirty) {
+            if ($project->archived_at) {
+                self::taskDeliver(new SeekDBSyncTask('project_delete', ['project_id' => $project->id]));
+            } else {
+                self::taskDeliver(new SeekDBSyncTask('project_sync', $project->toArray()));
+            }
+        }
     }
 
     /**
@@ -46,6 +65,7 @@ class ProjectObserver
     public function deleted(Project $project)
     {
         Deleted::record('project', $project->id, $this->userids($project));
+        self::taskDeliver(new SeekDBSyncTask('project_delete', ['project_id' => $project->id]));
     }
 
     /**
@@ -57,6 +77,7 @@ class ProjectObserver
     public function restored(Project $project)
     {
         Deleted::forget('project', $project->id, $this->userids($project));
+        self::taskDeliver(new SeekDBSyncTask('project_sync', $project->toArray()));
     }
 
     /**
@@ -67,7 +88,7 @@ class ProjectObserver
      */
     public function forceDeleted(Project $project)
     {
-        //
+        self::taskDeliver(new SeekDBSyncTask('project_delete', ['project_id' => $project->id]));
     }
 
     /**

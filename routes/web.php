@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\ApproveController;
 use App\Http\Controllers\Api\AssistantController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ComplaintController;
+use App\Http\Controllers\Api\SearchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +61,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 投诉
     Route::any('complaint/{method}',                ComplaintController::class);
     Route::any('complaint/{method}/{action}',       ComplaintController::class);
+    // 智能搜索
+    Route::any('search/{method}',                   SearchController::class);
+    Route::any('search/{method}/{action}',          SearchController::class);
     // 测试
     Route::any('test/{method}',                     TestController::class);
     Route::any('test/{method}/{action}',            TestController::class);

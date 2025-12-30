@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\File;
-use App\Tasks\SeekDBFileSyncTask;
+use App\Tasks\SeekDBSyncTask;
 
 class FileObserver extends AbstractObserver
 {
@@ -19,7 +19,7 @@ class FileObserver extends AbstractObserver
         if ($file->type === 'folder') {
             return;
         }
-        self::taskDeliver(new SeekDBFileSyncTask('sync', $file->toArray()));
+        self::taskDeliver(new SeekDBSyncTask('file_sync', $file->toArray()));
     }
 
     /**
@@ -41,7 +41,7 @@ class FileObserver extends AbstractObserver
                 ->pluck('id')
                 ->toArray();
             if (!empty($childFileIds)) {
-                self::taskDeliver(new SeekDBFileSyncTask('update_pshare', [
+                self::taskDeliver(new SeekDBSyncTask('file_pshare_update', [
                     'file_ids' => $childFileIds,
                     'pshare' => $newPshare,
                 ]));
@@ -53,7 +53,7 @@ class FileObserver extends AbstractObserver
         if ($file->type === 'folder') {
             return;
         }
-        self::taskDeliver(new SeekDBFileSyncTask('sync', $file->toArray()));
+        self::taskDeliver(new SeekDBSyncTask('file_sync', $file->toArray()));
     }
 
     /**
@@ -64,7 +64,7 @@ class FileObserver extends AbstractObserver
      */
     public function deleted(File $file)
     {
-        self::taskDeliver(new SeekDBFileSyncTask('delete', $file->toArray()));
+        self::taskDeliver(new SeekDBSyncTask('file_delete', $file->toArray()));
     }
 
     /**
@@ -79,7 +79,7 @@ class FileObserver extends AbstractObserver
         if ($file->type === 'folder') {
             return;
         }
-        self::taskDeliver(new SeekDBFileSyncTask('sync', $file->toArray()));
+        self::taskDeliver(new SeekDBSyncTask('file_sync', $file->toArray()));
     }
 
     /**
@@ -90,7 +90,7 @@ class FileObserver extends AbstractObserver
      */
     public function forceDeleted(File $file)
     {
-        self::taskDeliver(new SeekDBFileSyncTask('delete', $file->toArray()));
+        self::taskDeliver(new SeekDBSyncTask('file_delete', $file->toArray()));
     }
 }
 

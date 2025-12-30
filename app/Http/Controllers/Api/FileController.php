@@ -12,7 +12,6 @@ use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
 use App\Models\UserRecentItem;
-use App\Module\Apps;
 use App\Module\Base;
 use App\Module\Down;
 use App\Module\Timer;
@@ -118,7 +117,7 @@ class FileController extends AbstractController
     /**
      * @api {get} api/file/search 搜索文件列表
      *
-     * @apiDescription 需要token身份
+     * @apiDescription 需要token身份（仅搜索文件名，AI 内容搜索请使用 api/search/file）
      * @apiVersion 1.0.0
      * @apiGroup file
      * @apiName search
@@ -126,8 +125,6 @@ class FileController extends AbstractController
      * @apiParam {String} [link]            通过分享地址搜索（如：https://t.hitosea.com/single/file/ODcwOCwzOSxpa0JBS2lmVQ==）
      * @apiParam {String} [key]             关键词
      * @apiParam {Number} [take]            获取数量（默认：50，最大：100）
-     * @apiParam {String} [search_content]  是否搜索文件内容（yes/no，默认：no）
-     * @apiParam {String} [search_type]     搜索类型（text/vector/hybrid，默认：hybrid，仅 search_content=yes 时有效）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -139,8 +136,6 @@ class FileController extends AbstractController
         //
         $link = trim(Request::input('link'));
         $key = trim(Request::input('key'));
-        $searchContent = Request::input('search_content', 'no') === 'yes';
-        $searchType = Request::input('search_type', 'hybrid');
         $id = 0;
         $take = Base::getPaginate(100, 50, 'take');
         if (preg_match("/\/single\/file\/(.*?)$/i", $link, $match)) {
@@ -149,34 +144,6 @@ class FileController extends AbstractController
             if (empty($id)) {
                 return Base::retSuccess('success', []);
             }
-        }
-
-        // 如果需要搜索文件内容且有关键词
-        if ($searchContent && $key && !$id && Apps::isInstalled('seekdb')) {
-            $results = \App\Module\SeekDB\SeekDBFile::search(
-                $user->userid,
-                $key,
-                $searchType,
-                0,
-                $take
-            );
-            // 获取完整的文件信息
-            if (!empty($results)) {
-                $fileIds = array_column($results, 'file_id');
-                $files = File::whereIn('id', $fileIds)->get()->keyBy('id');
-                $array = [];
-                foreach ($results as $result) {
-                    $file = $files->get($result['file_id']);
-                    if ($file) {
-                        $temp = $file->toArray();
-                        $temp['content_preview'] = $result['content_preview'] ?? null;
-                        $temp['relevance'] = $result['relevance'] ?? 0;
-                        $array[] = $temp;
-                    }
-                }
-                return Base::retSuccess('success', $array);
-            }
-            return Base::retSuccess('success', []);
         }
 
         // 搜索自己的

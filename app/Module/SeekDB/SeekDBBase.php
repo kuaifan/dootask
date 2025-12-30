@@ -130,6 +130,95 @@ class SeekDBBase
                 )
             ");
 
+            // 创建用户向量表（联系人搜索）
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS user_vectors (
+                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                    userid BIGINT NOT NULL,
+                    nickname VARCHAR(200),
+                    email VARCHAR(200),
+                    tel VARCHAR(50),
+                    profession VARCHAR(200),
+                    introduction TEXT,
+                    content_vector VECTOR(1536),
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    
+                    UNIQUE KEY uk_userid (userid),
+                    FULLTEXT KEY ft_content (nickname, email, profession, introduction)
+                )
+            ");
+
+            // 创建项目向量表
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS project_vectors (
+                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                    project_id BIGINT NOT NULL,
+                    userid BIGINT NOT NULL,
+                    personal TINYINT DEFAULT 0,
+                    project_name VARCHAR(500),
+                    project_desc TEXT,
+                    content_vector VECTOR(1536),
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    
+                    UNIQUE KEY uk_project_id (project_id),
+                    KEY idx_userid (userid),
+                    FULLTEXT KEY ft_content (project_name, project_desc)
+                )
+            ");
+
+            // 创建项目成员表（用于权限过滤）
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS project_users (
+                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                    project_id BIGINT NOT NULL,
+                    userid BIGINT NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    
+                    UNIQUE KEY uk_project_user (project_id, userid),
+                    KEY idx_project_id (project_id),
+                    KEY idx_userid (userid)
+                )
+            ");
+
+            // 创建任务向量表
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS task_vectors (
+                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                    task_id BIGINT NOT NULL,
+                    project_id BIGINT NOT NULL,
+                    userid BIGINT NOT NULL,
+                    visibility TINYINT DEFAULT 1,
+                    task_name VARCHAR(500),
+                    task_desc TEXT,
+                    task_content LONGTEXT,
+                    content_vector VECTOR(1536),
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    
+                    UNIQUE KEY uk_task_id (task_id),
+                    KEY idx_project_id (project_id),
+                    KEY idx_userid (userid),
+                    KEY idx_visibility (visibility),
+                    FULLTEXT KEY ft_content (task_name, task_desc, task_content)
+                )
+            ");
+
+            // 创建任务成员表（用于 visibility=2,3 的权限过滤）
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS task_users (
+                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                    task_id BIGINT NOT NULL,
+                    userid BIGINT NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    
+                    UNIQUE KEY uk_task_user (task_id, userid),
+                    KEY idx_task_id (task_id),
+                    KEY idx_userid (userid)
+                )
+            ");
+
             Log::info('SeekDB database initialized successfully');
         } catch (PDOException $e) {
             Log::warning('SeekDB initialization warning: ' . $e->getMessage());
@@ -771,6 +860,1044 @@ class SeekDBBase
     {
         $instance = new self();
         return $instance->execute("TRUNCATE TABLE file_users");
+    }
+
+    // ==============================
+    // 用户向量方法（联系人搜索）
+    // ==============================
+
+    /**
+     * 用户全文搜索
+     *
+     * @param string $keyword 关键词
+     * @param int $limit 返回数量
+     * @param int $offset 偏移量
+     * @return array 搜索结果
+     */
+    public static function userFullTextSearch(string $keyword, int $limit = 20, int $offset = 0): array
+    {
+        if (empty($keyword)) {
+            return [];
+        }
+
+        $instance = new self();
+        $likeKeyword = "%{$keyword}%";
+
+        $sql = "
+            SELECT 
+                userid,
+                nickname,
+                email,
+                tel,
+                profession,
+                SUBSTRING(introduction, 1, 200) as introduction_preview,
+                (
+                    CASE WHEN nickname LIKE ? THEN 10 ELSE 0 END +
+                    CASE WHEN email LIKE ? THEN 5 ELSE 0 END +
+                    IFNULL(MATCH(nickname, email, profession, introduction) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
+                ) AS relevance
+            FROM user_vectors
+            WHERE nickname LIKE ? OR email LIKE ? OR profession LIKE ?
+               OR MATCH(nickname, email, profession, introduction) AGAINST(? IN NATURAL LANGUAGE MODE)
+            ORDER BY relevance DESC
+            LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+
+        $params = [$likeKeyword, $likeKeyword, $keyword, $likeKeyword, $likeKeyword, $likeKeyword, $keyword];
+
+        return $instance->query($sql, $params);
+    }
+
+    /**
+     * 用户向量搜索
+     *
+     * @param array $queryVector 查询向量
+     * @param int $limit 返回数量
+     * @return array 搜索结果
+     */
+    public static function userVectorSearch(array $queryVector, int $limit = 20): array
+    {
+        if (empty($queryVector)) {
+            return [];
+        }
+
+        $instance = new self();
+        $vectorStr = '[' . implode(',', $queryVector) . ']';
+
+        $sql = "
+            SELECT 
+                userid,
+                nickname,
+                email,
+                tel,
+                profession,
+                SUBSTRING(introduction, 1, 200) as introduction_preview,
+                COSINE_SIMILARITY(content_vector, ?) AS similarity
+            FROM user_vectors
+            WHERE content_vector IS NOT NULL
+            ORDER BY similarity DESC
+            LIMIT " . (int)$limit;
+
+        return $instance->query($sql, [$vectorStr]);
+    }
+
+    /**
+     * 用户混合搜索
+     *
+     * @param string $keyword 关键词
+     * @param array $queryVector 查询向量
+     * @param int $limit 返回数量
+     * @return array 搜索结果
+     */
+    public static function userHybridSearch(string $keyword, array $queryVector, int $limit = 20): array
+    {
+        $textResults = self::userFullTextSearch($keyword, 50, 0);
+        $vectorResults = !empty($queryVector) ? self::userVectorSearch($queryVector, 50) : [];
+
+        // RRF 融合
+        $scores = [];
+        $items = [];
+        $k = 60;
+
+        foreach ($textResults as $rank => $item) {
+            $id = $item['userid'];
+            $scores[$id] = ($scores[$id] ?? 0) + 0.5 / ($k + $rank + 1);
+            $items[$id] = $item;
+        }
+
+        foreach ($vectorResults as $rank => $item) {
+            $id = $item['userid'];
+            $scores[$id] = ($scores[$id] ?? 0) + 0.5 / ($k + $rank + 1);
+            if (!isset($items[$id])) {
+                $items[$id] = $item;
+            }
+        }
+
+        arsort($scores);
+
+        $results = [];
+        $count = 0;
+        foreach ($scores as $id => $score) {
+            if ($count >= $limit) break;
+            $item = $items[$id];
+            $item['rrf_score'] = $score;
+            $results[] = $item;
+            $count++;
+        }
+
+        return $results;
+    }
+
+    /**
+     * 插入或更新用户向量
+     *
+     * @param array $data 用户数据
+     * @return bool 是否成功
+     */
+    public static function upsertUserVector(array $data): bool
+    {
+        $instance = new self();
+
+        $userid = $data['userid'] ?? 0;
+        if ($userid <= 0) {
+            return false;
+        }
+
+        $existing = $instance->queryOne("SELECT id FROM user_vectors WHERE userid = ?", [$userid]);
+
+        if ($existing) {
+            $sql = "UPDATE user_vectors SET 
+                    nickname = ?,
+                    email = ?,
+                    tel = ?,
+                    profession = ?,
+                    introduction = ?,
+                    content_vector = ?,
+                    updated_at = NOW()
+                WHERE userid = ?";
+
+            $params = [
+                $data['nickname'] ?? '',
+                $data['email'] ?? '',
+                $data['tel'] ?? '',
+                $data['profession'] ?? '',
+                $data['introduction'] ?? '',
+                $data['content_vector'] ?? null,
+                $userid
+            ];
+        } else {
+            $sql = "INSERT INTO user_vectors 
+                    (userid, nickname, email, tel, profession, introduction, content_vector, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
+            $params = [
+                $userid,
+                $data['nickname'] ?? '',
+                $data['email'] ?? '',
+                $data['tel'] ?? '',
+                $data['profession'] ?? '',
+                $data['introduction'] ?? '',
+                $data['content_vector'] ?? null
+            ];
+        }
+
+        return $instance->execute($sql, $params);
+    }
+
+    /**
+     * 删除用户向量
+     *
+     * @param int $userid 用户ID
+     * @return bool 是否成功
+     */
+    public static function deleteUserVector(int $userid): bool
+    {
+        if ($userid <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        return $instance->execute("DELETE FROM user_vectors WHERE userid = ?", [$userid]);
+    }
+
+    /**
+     * 清空所有用户向量
+     *
+     * @return bool 是否成功
+     */
+    public static function clearAllUserVectors(): bool
+    {
+        $instance = new self();
+        return $instance->execute("TRUNCATE TABLE user_vectors");
+    }
+
+    /**
+     * 获取已索引的用户数量
+     *
+     * @return int 用户数量
+     */
+    public static function getIndexedUserCount(): int
+    {
+        $instance = new self();
+        $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM user_vectors");
+        return $result ? (int) $result['cnt'] : 0;
+    }
+
+    // ==============================
+    // 项目向量方法
+    // ==============================
+
+    /**
+     * 项目全文搜索
+     *
+     * @param string $keyword 关键词
+     * @param int $userid 用户ID（权限过滤）
+     * @param int $limit 返回数量
+     * @param int $offset 偏移量
+     * @return array 搜索结果
+     */
+    public static function projectFullTextSearch(string $keyword, int $userid = 0, int $limit = 20, int $offset = 0): array
+    {
+        if (empty($keyword)) {
+            return [];
+        }
+
+        $instance = new self();
+        $likeKeyword = "%{$keyword}%";
+
+        if ($userid > 0) {
+            // 权限过滤：只搜索用户参与的项目
+            $sql = "
+                SELECT DISTINCT
+                    pv.project_id,
+                    pv.userid,
+                    pv.personal,
+                    pv.project_name,
+                    SUBSTRING(pv.project_desc, 1, 300) as project_desc_preview,
+                    (
+                        CASE WHEN pv.project_name LIKE ? THEN 10 ELSE 0 END +
+                        IFNULL(MATCH(pv.project_name, pv.project_desc) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
+                    ) AS relevance
+                FROM project_vectors pv
+                JOIN project_users pu ON pv.project_id = pu.project_id
+                WHERE (pv.project_name LIKE ? OR MATCH(pv.project_name, pv.project_desc) AGAINST(? IN NATURAL LANGUAGE MODE))
+                  AND pu.userid = ?
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+
+            $params = [$likeKeyword, $keyword, $likeKeyword, $keyword, $userid];
+        } else {
+            // 不限制权限
+            $sql = "
+                SELECT 
+                    project_id,
+                    userid,
+                    personal,
+                    project_name,
+                    SUBSTRING(project_desc, 1, 300) as project_desc_preview,
+                    (
+                        CASE WHEN project_name LIKE ? THEN 10 ELSE 0 END +
+                        IFNULL(MATCH(project_name, project_desc) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
+                    ) AS relevance
+                FROM project_vectors
+                WHERE project_name LIKE ? OR MATCH(project_name, project_desc) AGAINST(? IN NATURAL LANGUAGE MODE)
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+
+            $params = [$likeKeyword, $keyword, $likeKeyword, $keyword];
+        }
+
+        return $instance->query($sql, $params);
+    }
+
+    /**
+     * 项目向量搜索
+     *
+     * @param array $queryVector 查询向量
+     * @param int $userid 用户ID（权限过滤）
+     * @param int $limit 返回数量
+     * @return array 搜索结果
+     */
+    public static function projectVectorSearch(array $queryVector, int $userid = 0, int $limit = 20): array
+    {
+        if (empty($queryVector)) {
+            return [];
+        }
+
+        $instance = new self();
+        $vectorStr = '[' . implode(',', $queryVector) . ']';
+
+        if ($userid > 0) {
+            $sql = "
+                SELECT DISTINCT
+                    pv.project_id,
+                    pv.userid,
+                    pv.personal,
+                    pv.project_name,
+                    SUBSTRING(pv.project_desc, 1, 300) as project_desc_preview,
+                    COSINE_SIMILARITY(pv.content_vector, ?) AS similarity
+                FROM project_vectors pv
+                JOIN project_users pu ON pv.project_id = pu.project_id
+                WHERE pv.content_vector IS NOT NULL AND pu.userid = ?
+                ORDER BY similarity DESC
+                LIMIT " . (int)$limit;
+
+            $params = [$vectorStr, $userid];
+        } else {
+            $sql = "
+                SELECT 
+                    project_id,
+                    userid,
+                    personal,
+                    project_name,
+                    SUBSTRING(project_desc, 1, 300) as project_desc_preview,
+                    COSINE_SIMILARITY(content_vector, ?) AS similarity
+                FROM project_vectors
+                WHERE content_vector IS NOT NULL
+                ORDER BY similarity DESC
+                LIMIT " . (int)$limit;
+
+            $params = [$vectorStr];
+        }
+
+        return $instance->query($sql, $params);
+    }
+
+    /**
+     * 项目混合搜索
+     *
+     * @param string $keyword 关键词
+     * @param array $queryVector 查询向量
+     * @param int $userid 用户ID（权限过滤）
+     * @param int $limit 返回数量
+     * @return array 搜索结果
+     */
+    public static function projectHybridSearch(string $keyword, array $queryVector, int $userid = 0, int $limit = 20): array
+    {
+        $textResults = self::projectFullTextSearch($keyword, $userid, 50, 0);
+        $vectorResults = !empty($queryVector) ? self::projectVectorSearch($queryVector, $userid, 50) : [];
+
+        // RRF 融合
+        $scores = [];
+        $items = [];
+        $k = 60;
+
+        foreach ($textResults as $rank => $item) {
+            $id = $item['project_id'];
+            $scores[$id] = ($scores[$id] ?? 0) + 0.5 / ($k + $rank + 1);
+            $items[$id] = $item;
+        }
+
+        foreach ($vectorResults as $rank => $item) {
+            $id = $item['project_id'];
+            $scores[$id] = ($scores[$id] ?? 0) + 0.5 / ($k + $rank + 1);
+            if (!isset($items[$id])) {
+                $items[$id] = $item;
+            }
+        }
+
+        arsort($scores);
+
+        $results = [];
+        $count = 0;
+        foreach ($scores as $id => $score) {
+            if ($count >= $limit) break;
+            $item = $items[$id];
+            $item['rrf_score'] = $score;
+            $results[] = $item;
+            $count++;
+        }
+
+        return $results;
+    }
+
+    /**
+     * 插入或更新项目向量
+     *
+     * @param array $data 项目数据
+     * @return bool 是否成功
+     */
+    public static function upsertProjectVector(array $data): bool
+    {
+        $instance = new self();
+
+        $projectId = $data['project_id'] ?? 0;
+        if ($projectId <= 0) {
+            return false;
+        }
+
+        $existing = $instance->queryOne("SELECT id FROM project_vectors WHERE project_id = ?", [$projectId]);
+
+        if ($existing) {
+            $sql = "UPDATE project_vectors SET 
+                    userid = ?,
+                    personal = ?,
+                    project_name = ?,
+                    project_desc = ?,
+                    content_vector = ?,
+                    updated_at = NOW()
+                WHERE project_id = ?";
+
+            $params = [
+                $data['userid'] ?? 0,
+                $data['personal'] ?? 0,
+                $data['project_name'] ?? '',
+                $data['project_desc'] ?? '',
+                $data['content_vector'] ?? null,
+                $projectId
+            ];
+        } else {
+            $sql = "INSERT INTO project_vectors 
+                    (project_id, userid, personal, project_name, project_desc, content_vector, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
+            $params = [
+                $projectId,
+                $data['userid'] ?? 0,
+                $data['personal'] ?? 0,
+                $data['project_name'] ?? '',
+                $data['project_desc'] ?? '',
+                $data['content_vector'] ?? null
+            ];
+        }
+
+        return $instance->execute($sql, $params);
+    }
+
+    /**
+     * 删除项目向量
+     *
+     * @param int $projectId 项目ID
+     * @return bool 是否成功
+     */
+    public static function deleteProjectVector(int $projectId): bool
+    {
+        if ($projectId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        return $instance->execute("DELETE FROM project_vectors WHERE project_id = ?", [$projectId]);
+    }
+
+    /**
+     * 清空所有项目向量
+     *
+     * @return bool 是否成功
+     */
+    public static function clearAllProjectVectors(): bool
+    {
+        $instance = new self();
+        return $instance->execute("TRUNCATE TABLE project_vectors");
+    }
+
+    /**
+     * 获取已索引的项目数量
+     *
+     * @return int 项目数量
+     */
+    public static function getIndexedProjectCount(): int
+    {
+        $instance = new self();
+        $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM project_vectors");
+        return $result ? (int) $result['cnt'] : 0;
+    }
+
+    // ==============================
+    // 项目成员关系方法
+    // ==============================
+
+    /**
+     * 插入或更新项目成员关系
+     *
+     * @param int $projectId 项目ID
+     * @param int $userid 用户ID
+     * @return bool 是否成功
+     */
+    public static function upsertProjectUser(int $projectId, int $userid): bool
+    {
+        if ($projectId <= 0 || $userid <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+
+        $existing = $instance->queryOne(
+            "SELECT id FROM project_users WHERE project_id = ? AND userid = ?",
+            [$projectId, $userid]
+        );
+
+        if ($existing) {
+            return true; // 已存在
+        }
+
+        return $instance->execute(
+            "INSERT INTO project_users (project_id, userid) VALUES (?, ?)",
+            [$projectId, $userid]
+        );
+    }
+
+    /**
+     * 删除项目成员关系
+     *
+     * @param int $projectId 项目ID
+     * @param int $userid 用户ID
+     * @return bool 是否成功
+     */
+    public static function deleteProjectUser(int $projectId, int $userid): bool
+    {
+        if ($projectId <= 0 || $userid <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        return $instance->execute(
+            "DELETE FROM project_users WHERE project_id = ? AND userid = ?",
+            [$projectId, $userid]
+        );
+    }
+
+    /**
+     * 删除项目的所有成员关系
+     *
+     * @param int $projectId 项目ID
+     * @return bool 是否成功
+     */
+    public static function deleteAllProjectUsers(int $projectId): bool
+    {
+        if ($projectId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        return $instance->execute("DELETE FROM project_users WHERE project_id = ?", [$projectId]);
+    }
+
+    /**
+     * 批量同步项目成员关系
+     *
+     * @param int $projectId 项目ID
+     * @param array $userids 用户ID列表
+     * @return bool 是否成功
+     */
+    public static function syncProjectUsers(int $projectId, array $userids): bool
+    {
+        if ($projectId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+
+        try {
+            $instance->execute("DELETE FROM project_users WHERE project_id = ?", [$projectId]);
+
+            foreach ($userids as $userid) {
+                $instance->execute(
+                    "INSERT INTO project_users (project_id, userid) VALUES (?, ?)",
+                    [$projectId, (int)$userid]
+                );
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('SeekDB syncProjectUsers error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 清空所有项目成员关系
+     *
+     * @return bool 是否成功
+     */
+    public static function clearAllProjectUsers(): bool
+    {
+        $instance = new self();
+        return $instance->execute("TRUNCATE TABLE project_users");
+    }
+
+    /**
+     * 获取项目成员关系数量
+     *
+     * @return int 关系数量
+     */
+    public static function getProjectUserCount(): int
+    {
+        $instance = new self();
+        $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM project_users");
+        return $result ? (int) $result['cnt'] : 0;
+    }
+
+    // ==============================
+    // 任务向量方法
+    // ==============================
+
+    /**
+     * 任务全文搜索
+     *
+     * @param string $keyword 关键词
+     * @param int $userid 用户ID（权限过滤）
+     * @param int $limit 返回数量
+     * @param int $offset 偏移量
+     * @return array 搜索结果
+     */
+    public static function taskFullTextSearch(string $keyword, int $userid = 0, int $limit = 20, int $offset = 0): array
+    {
+        if (empty($keyword)) {
+            return [];
+        }
+
+        $instance = new self();
+        $likeKeyword = "%{$keyword}%";
+
+        if ($userid > 0) {
+            // 复杂权限过滤：
+            // 1. 自己创建的任务
+            // 2. visibility=1 且是项目成员
+            // 3. visibility=2,3 且是任务成员
+            $sql = "
+                SELECT DISTINCT
+                    tv.task_id,
+                    tv.project_id,
+                    tv.userid,
+                    tv.visibility,
+                    tv.task_name,
+                    SUBSTRING(tv.task_desc, 1, 300) as task_desc_preview,
+                    SUBSTRING(tv.task_content, 1, 500) as task_content_preview,
+                    (
+                        CASE WHEN tv.task_name LIKE ? THEN 10 ELSE 0 END +
+                        IFNULL(MATCH(tv.task_name, tv.task_desc, tv.task_content) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
+                    ) AS relevance
+                FROM task_vectors tv
+                LEFT JOIN project_users pu ON tv.project_id = pu.project_id AND pu.userid = ?
+                LEFT JOIN task_users tu ON tv.task_id = tu.task_id AND tu.userid = ?
+                WHERE (tv.task_name LIKE ? OR MATCH(tv.task_name, tv.task_desc, tv.task_content) AGAINST(? IN NATURAL LANGUAGE MODE))
+                  AND (
+                    tv.userid = ?
+                    OR (tv.visibility = 1 AND pu.userid IS NOT NULL)
+                    OR (tv.visibility IN (2, 3) AND tu.userid IS NOT NULL)
+                  )
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+
+            $params = [$likeKeyword, $keyword, $userid, $userid, $likeKeyword, $keyword, $userid];
+        } else {
+            // 不限制权限
+            $sql = "
+                SELECT 
+                    task_id,
+                    project_id,
+                    userid,
+                    visibility,
+                    task_name,
+                    SUBSTRING(task_desc, 1, 300) as task_desc_preview,
+                    SUBSTRING(task_content, 1, 500) as task_content_preview,
+                    (
+                        CASE WHEN task_name LIKE ? THEN 10 ELSE 0 END +
+                        IFNULL(MATCH(task_name, task_desc, task_content) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
+                    ) AS relevance
+                FROM task_vectors
+                WHERE task_name LIKE ? OR MATCH(task_name, task_desc, task_content) AGAINST(? IN NATURAL LANGUAGE MODE)
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+
+            $params = [$likeKeyword, $keyword, $likeKeyword, $keyword];
+        }
+
+        return $instance->query($sql, $params);
+    }
+
+    /**
+     * 任务向量搜索
+     *
+     * @param array $queryVector 查询向量
+     * @param int $userid 用户ID（权限过滤）
+     * @param int $limit 返回数量
+     * @return array 搜索结果
+     */
+    public static function taskVectorSearch(array $queryVector, int $userid = 0, int $limit = 20): array
+    {
+        if (empty($queryVector)) {
+            return [];
+        }
+
+        $instance = new self();
+        $vectorStr = '[' . implode(',', $queryVector) . ']';
+
+        if ($userid > 0) {
+            $sql = "
+                SELECT DISTINCT
+                    tv.task_id,
+                    tv.project_id,
+                    tv.userid,
+                    tv.visibility,
+                    tv.task_name,
+                    SUBSTRING(tv.task_desc, 1, 300) as task_desc_preview,
+                    SUBSTRING(tv.task_content, 1, 500) as task_content_preview,
+                    COSINE_SIMILARITY(tv.content_vector, ?) AS similarity
+                FROM task_vectors tv
+                LEFT JOIN project_users pu ON tv.project_id = pu.project_id AND pu.userid = ?
+                LEFT JOIN task_users tu ON tv.task_id = tu.task_id AND tu.userid = ?
+                WHERE tv.content_vector IS NOT NULL
+                  AND (
+                    tv.userid = ?
+                    OR (tv.visibility = 1 AND pu.userid IS NOT NULL)
+                    OR (tv.visibility IN (2, 3) AND tu.userid IS NOT NULL)
+                  )
+                ORDER BY similarity DESC
+                LIMIT " . (int)$limit;
+
+            $params = [$vectorStr, $userid, $userid, $userid];
+        } else {
+            $sql = "
+                SELECT 
+                    task_id,
+                    project_id,
+                    userid,
+                    visibility,
+                    task_name,
+                    SUBSTRING(task_desc, 1, 300) as task_desc_preview,
+                    SUBSTRING(task_content, 1, 500) as task_content_preview,
+                    COSINE_SIMILARITY(content_vector, ?) AS similarity
+                FROM task_vectors
+                WHERE content_vector IS NOT NULL
+                ORDER BY similarity DESC
+                LIMIT " . (int)$limit;
+
+            $params = [$vectorStr];
+        }
+
+        return $instance->query($sql, $params);
+    }
+
+    /**
+     * 任务混合搜索
+     *
+     * @param string $keyword 关键词
+     * @param array $queryVector 查询向量
+     * @param int $userid 用户ID（权限过滤）
+     * @param int $limit 返回数量
+     * @return array 搜索结果
+     */
+    public static function taskHybridSearch(string $keyword, array $queryVector, int $userid = 0, int $limit = 20): array
+    {
+        $textResults = self::taskFullTextSearch($keyword, $userid, 50, 0);
+        $vectorResults = !empty($queryVector) ? self::taskVectorSearch($queryVector, $userid, 50) : [];
+
+        // RRF 融合
+        $scores = [];
+        $items = [];
+        $k = 60;
+
+        foreach ($textResults as $rank => $item) {
+            $id = $item['task_id'];
+            $scores[$id] = ($scores[$id] ?? 0) + 0.5 / ($k + $rank + 1);
+            $items[$id] = $item;
+        }
+
+        foreach ($vectorResults as $rank => $item) {
+            $id = $item['task_id'];
+            $scores[$id] = ($scores[$id] ?? 0) + 0.5 / ($k + $rank + 1);
+            if (!isset($items[$id])) {
+                $items[$id] = $item;
+            }
+        }
+
+        arsort($scores);
+
+        $results = [];
+        $count = 0;
+        foreach ($scores as $id => $score) {
+            if ($count >= $limit) break;
+            $item = $items[$id];
+            $item['rrf_score'] = $score;
+            $results[] = $item;
+            $count++;
+        }
+
+        return $results;
+    }
+
+    /**
+     * 插入或更新任务向量
+     *
+     * @param array $data 任务数据
+     * @return bool 是否成功
+     */
+    public static function upsertTaskVector(array $data): bool
+    {
+        $instance = new self();
+
+        $taskId = $data['task_id'] ?? 0;
+        if ($taskId <= 0) {
+            return false;
+        }
+
+        $existing = $instance->queryOne("SELECT id FROM task_vectors WHERE task_id = ?", [$taskId]);
+
+        if ($existing) {
+            $sql = "UPDATE task_vectors SET 
+                    project_id = ?,
+                    userid = ?,
+                    visibility = ?,
+                    task_name = ?,
+                    task_desc = ?,
+                    task_content = ?,
+                    content_vector = ?,
+                    updated_at = NOW()
+                WHERE task_id = ?";
+
+            $params = [
+                $data['project_id'] ?? 0,
+                $data['userid'] ?? 0,
+                $data['visibility'] ?? 1,
+                $data['task_name'] ?? '',
+                $data['task_desc'] ?? '',
+                $data['task_content'] ?? '',
+                $data['content_vector'] ?? null,
+                $taskId
+            ];
+        } else {
+            $sql = "INSERT INTO task_vectors 
+                    (task_id, project_id, userid, visibility, task_name, task_desc, task_content, content_vector, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
+            $params = [
+                $taskId,
+                $data['project_id'] ?? 0,
+                $data['userid'] ?? 0,
+                $data['visibility'] ?? 1,
+                $data['task_name'] ?? '',
+                $data['task_desc'] ?? '',
+                $data['task_content'] ?? '',
+                $data['content_vector'] ?? null
+            ];
+        }
+
+        return $instance->execute($sql, $params);
+    }
+
+    /**
+     * 更新任务可见性
+     *
+     * @param int $taskId 任务ID
+     * @param int $visibility 可见性
+     * @return bool 是否成功
+     */
+    public static function updateTaskVisibility(int $taskId, int $visibility): bool
+    {
+        if ($taskId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        return $instance->execute(
+            "UPDATE task_vectors SET visibility = ?, updated_at = NOW() WHERE task_id = ?",
+            [$visibility, $taskId]
+        );
+    }
+
+    /**
+     * 删除任务向量
+     *
+     * @param int $taskId 任务ID
+     * @return bool 是否成功
+     */
+    public static function deleteTaskVector(int $taskId): bool
+    {
+        if ($taskId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        return $instance->execute("DELETE FROM task_vectors WHERE task_id = ?", [$taskId]);
+    }
+
+    /**
+     * 清空所有任务向量
+     *
+     * @return bool 是否成功
+     */
+    public static function clearAllTaskVectors(): bool
+    {
+        $instance = new self();
+        return $instance->execute("TRUNCATE TABLE task_vectors");
+    }
+
+    /**
+     * 获取已索引的任务数量
+     *
+     * @return int 任务数量
+     */
+    public static function getIndexedTaskCount(): int
+    {
+        $instance = new self();
+        $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM task_vectors");
+        return $result ? (int) $result['cnt'] : 0;
+    }
+
+    // ==============================
+    // 任务成员关系方法
+    // ==============================
+
+    /**
+     * 插入或更新任务成员关系
+     *
+     * @param int $taskId 任务ID
+     * @param int $userid 用户ID
+     * @return bool 是否成功
+     */
+    public static function upsertTaskUser(int $taskId, int $userid): bool
+    {
+        if ($taskId <= 0 || $userid <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+
+        $existing = $instance->queryOne(
+            "SELECT id FROM task_users WHERE task_id = ? AND userid = ?",
+            [$taskId, $userid]
+        );
+
+        if ($existing) {
+            return true;
+        }
+
+        return $instance->execute(
+            "INSERT INTO task_users (task_id, userid) VALUES (?, ?)",
+            [$taskId, $userid]
+        );
+    }
+
+    /**
+     * 删除任务成员关系
+     *
+     * @param int $taskId 任务ID
+     * @param int $userid 用户ID
+     * @return bool 是否成功
+     */
+    public static function deleteTaskUser(int $taskId, int $userid): bool
+    {
+        if ($taskId <= 0 || $userid <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        return $instance->execute(
+            "DELETE FROM task_users WHERE task_id = ? AND userid = ?",
+            [$taskId, $userid]
+        );
+    }
+
+    /**
+     * 删除任务的所有成员关系
+     *
+     * @param int $taskId 任务ID
+     * @return bool 是否成功
+     */
+    public static function deleteAllTaskUsers(int $taskId): bool
+    {
+        if ($taskId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        return $instance->execute("DELETE FROM task_users WHERE task_id = ?", [$taskId]);
+    }
+
+    /**
+     * 批量同步任务成员关系
+     *
+     * @param int $taskId 任务ID
+     * @param array $userids 用户ID列表
+     * @return bool 是否成功
+     */
+    public static function syncTaskUsers(int $taskId, array $userids): bool
+    {
+        if ($taskId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+
+        try {
+            $instance->execute("DELETE FROM task_users WHERE task_id = ?", [$taskId]);
+
+            foreach ($userids as $userid) {
+                $instance->execute(
+                    "INSERT INTO task_users (task_id, userid) VALUES (?, ?)",
+                    [$taskId, (int)$userid]
+                );
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('SeekDB syncTaskUsers error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 清空所有任务成员关系
+     *
+     * @return bool 是否成功
+     */
+    public static function clearAllTaskUsers(): bool
+    {
+        $instance = new self();
+        return $instance->execute("TRUNCATE TABLE task_users");
+    }
+
+    /**
+     * 获取任务成员关系数量
+     *
+     * @return int 关系数量
+     */
+    public static function getTaskUserCount(): int
+    {
+        $instance = new self();
+        $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM task_users");
+        return $result ? (int) $result['cnt'] : 0;
     }
 }
 

@@ -7,8 +7,9 @@ use App\Models\ProjectTask;
 use App\Models\ProjectTaskUser;
 use App\Models\ProjectTaskVisibilityUser;
 use App\Models\ProjectUser;
+use App\Tasks\SeekDBSyncTask;
 
-class ProjectTaskObserver
+class ProjectTaskObserver extends AbstractObserver
 {
     /**
      * Handle the ProjectTask "created" event.
@@ -18,7 +19,7 @@ class ProjectTaskObserver
      */
     public function created(ProjectTask $projectTask)
     {
-        //
+        self::taskDeliver(new SeekDBSyncTask('task_sync', $projectTask->toArray()));
     }
 
     /**
@@ -31,12 +32,36 @@ class ProjectTaskObserver
     {
         if ($projectTask->isDirty('visibility')) {
             self::visibilityUpdate($projectTask);
+            // 同步 visibility 变化到 SeekDB
+            self::taskDeliver(new SeekDBSyncTask('task_visibility_update', [
+                'task_id' => $projectTask->id,
+                'visibility' => $projectTask->visibility,
+            ]));
         }
         if ($projectTask->isDirty('archived_at')) {
             if ($projectTask->archived_at) {
                 Deleted::record('projectTask', $projectTask->id, self::userids($projectTask));
             } else {
                 Deleted::forget('projectTask', $projectTask->id, self::userids($projectTask));
+            }
+        }
+
+        // 检查是否有搜索相关字段变化
+        // project_id 变化时也需要同步（任务移动到其他项目）
+        $searchableFields = ['name', 'desc', 'archived_at', 'project_id'];
+        $isDirty = false;
+        foreach ($searchableFields as $field) {
+            if ($projectTask->isDirty($field)) {
+                $isDirty = true;
+                break;
+            }
+        }
+
+        if ($isDirty) {
+            if ($projectTask->archived_at) {
+                self::taskDeliver(new SeekDBSyncTask('task_delete', ['task_id' => $projectTask->id]));
+            } else {
+                self::taskDeliver(new SeekDBSyncTask('task_sync', $projectTask->toArray()));
             }
         }
     }
@@ -50,6 +75,7 @@ class ProjectTaskObserver
     public function deleted(ProjectTask $projectTask)
     {
         Deleted::record('projectTask', $projectTask->id, self::userids($projectTask));
+        self::taskDeliver(new SeekDBSyncTask('task_delete', ['task_id' => $projectTask->id]));
     }
 
     /**
@@ -61,6 +87,7 @@ class ProjectTaskObserver
     public function restored(ProjectTask $projectTask)
     {
         Deleted::forget('projectTask', $projectTask->id, self::userids($projectTask));
+        self::taskDeliver(new SeekDBSyncTask('task_sync', $projectTask->toArray()));
     }
 
     /**
@@ -71,7 +98,7 @@ class ProjectTaskObserver
      */
     public function forceDeleted(ProjectTask $projectTask)
     {
-        //
+        self::taskDeliver(new SeekDBSyncTask('task_delete', ['task_id' => $projectTask->id]));
     }
 
     /**
