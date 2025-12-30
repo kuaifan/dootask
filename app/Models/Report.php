@@ -56,6 +56,15 @@ class Report extends AbstractModel
 
     const WEEKLY = "weekly";
     const DAILY = "daily";
+    public const LIST_FIELDS = [
+        'id',
+        'title',
+        'type',
+        'userid',
+        'sign',
+        'created_at',
+        'updated_at',
+    ];
 
     protected $fillable = [
         "title",

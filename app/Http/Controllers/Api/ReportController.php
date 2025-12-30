@@ -51,7 +51,9 @@ class ReportController extends AbstractController
     {
         $user = User::auth();
         //
-        $builder = Report::with(['receivesUser'])->whereUserid($user->userid);
+        $builder = Report::with(['receivesUser'])
+            ->select(Report::LIST_FIELDS)
+            ->whereUserid($user->userid);
         $keys = Request::input('keys');
         if (is_array($keys)) {
             if ($keys['key']) {
@@ -104,7 +106,8 @@ class ReportController extends AbstractController
     public function receive(): array
     {
         $user = User::auth();
-        $builder = Report::with(['receivesUser']);
+        $builder = Report::with(['receivesUser'])
+            ->select(Report::LIST_FIELDS);
         $builder->whereHas("receivesUser", function ($query) use ($user) {
             $query->where("report_receives.userid", $user->userid);
         });
