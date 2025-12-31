@@ -79,15 +79,27 @@ class SyncFileToSeekDB extends Command
         // 同步文件数据
         $this->syncFiles();
 
-        // 全量同步时，同步文件用户关系
+        // 同步文件用户关系
         if ($this->option('f') || (!$this->option('i') && !$this->option('u'))) {
-            $this->info("\n同步文件用户关系...");
+            // 全量同步：清空后重建
+            $this->info("\n全量同步文件用户关系...");
             $count = SeekDBFile::syncAllFileUsers(function ($count) {
                 if ($count % 1000 === 0) {
                     $this->info("  已同步 {$count} 条关系...");
                 }
             });
             $this->info("文件用户关系同步完成，共 {$count} 条");
+        } elseif ($this->option('i')) {
+            // 增量同步：只同步新增的
+            $this->info("\n增量同步文件用户关系...");
+            $count = SeekDBFile::syncFileUsersIncremental(function ($count) {
+                if ($count % 1000 === 0) {
+                    $this->info("  已同步 {$count} 条关系...");
+                }
+            });
+            if ($count > 0) {
+                $this->info("新增文件用户关系 {$count} 条");
+            }
         }
 
         // 完成

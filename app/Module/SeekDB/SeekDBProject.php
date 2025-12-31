@@ -7,6 +7,7 @@ use App\Models\ProjectUser;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\AI;
+use App\Module\SeekDB\SeekDBKeyValue;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -372,6 +373,51 @@ class SeekDBProject
                 $count++;
                 $lastId = $record->id;
             }
+
+            if ($progressCallback) {
+                $progressCallback($count);
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * 增量同步项目成员关系（只同步新增的）
+     *
+     * @param callable|null $progressCallback 进度回调
+     * @return int 同步数量
+     */
+    public static function syncProjectUsersIncremental(?callable $progressCallback = null): int
+    {
+        if (!Apps::isInstalled("seekdb")) {
+            return 0;
+        }
+
+        $count = 0;
+        $batchSize = 1000;
+        $lastKey = "sync:seekdbProjectUserLastId";
+        $lastId = intval(SeekDBKeyValue::get($lastKey, 0));
+
+        // 分批同步新增的记录
+        while (true) {
+            $records = ProjectUser::where('id', '>', $lastId)
+                ->orderBy('id')
+                ->limit($batchSize)
+                ->get();
+
+            if ($records->isEmpty()) {
+                break;
+            }
+
+            foreach ($records as $record) {
+                SeekDBBase::upsertProjectUser($record->project_id, $record->userid);
+                $count++;
+                $lastId = $record->id;
+            }
+
+            // 保存进度
+            SeekDBKeyValue::set($lastKey, $lastId);
 
             if ($progressCallback) {
                 $progressCallback($count);

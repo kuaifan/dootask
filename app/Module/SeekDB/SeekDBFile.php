@@ -535,5 +535,50 @@ class SeekDBFile
 
         return $count;
     }
+
+    /**
+     * 增量同步文件用户关系（只同步新增的）
+     *
+     * @param callable|null $progressCallback 进度回调
+     * @return int 同步数量
+     */
+    public static function syncFileUsersIncremental(?callable $progressCallback = null): int
+    {
+        if (!Apps::isInstalled("seekdb")) {
+            return 0;
+        }
+
+        $count = 0;
+        $batchSize = 1000;
+        $lastKey = "sync:seekdbFileUserLastId";
+        $lastId = intval(SeekDBKeyValue::get($lastKey, 0));
+
+        // 分批同步新增的记录
+        while (true) {
+            $records = FileUser::where('id', '>', $lastId)
+                ->orderBy('id')
+                ->limit($batchSize)
+                ->get();
+
+            if ($records->isEmpty()) {
+                break;
+            }
+
+            foreach ($records as $record) {
+                SeekDBBase::upsertFileUser($record->file_id, $record->userid, $record->permission);
+                $count++;
+                $lastId = $record->id;
+            }
+
+            // 保存进度
+            SeekDBKeyValue::set($lastKey, $lastId);
+
+            if ($progressCallback) {
+                $progressCallback($count);
+            }
+        }
+
+        return $count;
+    }
 }
 

@@ -76,15 +76,27 @@ class SyncTaskToSeekDB extends Command
         $this->info('开始同步任务数据...');
         $this->syncTasks();
 
-        // 全量同步时，同步任务成员关系
+        // 同步任务成员关系
         if ($this->option('f') || (!$this->option('i') && !$this->option('u'))) {
-            $this->info("\n同步任务成员关系...");
+            // 全量同步：清空后重建
+            $this->info("\n全量同步任务成员关系...");
             $count = SeekDBTask::syncAllTaskUsers(function ($count) {
                 if ($count % 1000 === 0) {
                     $this->info("  已同步 {$count} 条关系...");
                 }
             });
             $this->info("任务成员关系同步完成，共 {$count} 条");
+        } elseif ($this->option('i')) {
+            // 增量同步：只同步新增的
+            $this->info("\n增量同步任务成员关系...");
+            $count = SeekDBTask::syncTaskUsersIncremental(function ($count) {
+                if ($count % 1000 === 0) {
+                    $this->info("  已同步 {$count} 条关系...");
+                }
+            });
+            if ($count > 0) {
+                $this->info("新增任务成员关系 {$count} 条");
+            }
         }
 
         $this->info("\n同步完成");

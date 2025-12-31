@@ -212,6 +212,8 @@ class SeekDBSyncTask extends AbstractTask
 
     /**
      * 增量更新（定时执行）
+     * 使用 --i 参数执行增量同步，会同步新增的向量数据和用户关系数据
+     *
      * @return void
      */
     private function incrementalUpdate()
@@ -225,7 +227,7 @@ class SeekDBSyncTask extends AbstractTask
         // 执行开始
         Cache::put("SeekDBSyncTask:Time", time(), Carbon::now()->addMinutes(60));
 
-        // 执行同步命令（后台运行）
+        // 执行增量同步（同时同步向量表和用户关系表的新增数据）
         @shell_exec("php /var/www/artisan seekdb:sync-files --i 2>&1 &");
         @shell_exec("php /var/www/artisan seekdb:sync-users --i 2>&1 &");
         @shell_exec("php /var/www/artisan seekdb:sync-projects --i 2>&1 &");

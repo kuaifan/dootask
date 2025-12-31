@@ -9,6 +9,7 @@ use App\Models\ProjectTaskVisibilityUser;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\AI;
+use App\Module\SeekDB\SeekDBKeyValue;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -559,6 +560,81 @@ class SeekDBTask
                 $count++;
                 $lastId = $record->id;
             }
+
+            if ($progressCallback) {
+                $progressCallback($count);
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * 增量同步任务成员关系（只同步新增的）
+     *
+     * @param callable|null $progressCallback 进度回调
+     * @return int 同步数量
+     */
+    public static function syncTaskUsersIncremental(?callable $progressCallback = null): int
+    {
+        if (!Apps::isInstalled("seekdb")) {
+            return 0;
+        }
+
+        $count = 0;
+        $batchSize = 1000;
+
+        // 同步 ProjectTaskUser 新增
+        $lastKey1 = "sync:seekdbTaskUserLastId";
+        $lastId1 = intval(SeekDBKeyValue::get($lastKey1, 0));
+
+        while (true) {
+            $records = ProjectTaskUser::where('id', '>', $lastId1)
+                ->orderBy('id')
+                ->limit($batchSize)
+                ->get();
+
+            if ($records->isEmpty()) {
+                break;
+            }
+
+            foreach ($records as $record) {
+                SeekDBBase::upsertTaskUser($record->task_id, $record->userid);
+                if ($record->task_pid) {
+                    SeekDBBase::upsertTaskUser($record->task_pid, $record->userid);
+                }
+                $count++;
+                $lastId1 = $record->id;
+            }
+
+            SeekDBKeyValue::set($lastKey1, $lastId1);
+
+            if ($progressCallback) {
+                $progressCallback($count);
+            }
+        }
+
+        // 同步 ProjectTaskVisibilityUser 新增
+        $lastKey2 = "sync:seekdbTaskVisibilityUserLastId";
+        $lastId2 = intval(SeekDBKeyValue::get($lastKey2, 0));
+
+        while (true) {
+            $records = ProjectTaskVisibilityUser::where('id', '>', $lastId2)
+                ->orderBy('id')
+                ->limit($batchSize)
+                ->get();
+
+            if ($records->isEmpty()) {
+                break;
+            }
+
+            foreach ($records as $record) {
+                SeekDBBase::upsertTaskUser($record->task_id, $record->userid);
+                $count++;
+                $lastId2 = $record->id;
+            }
+
+            SeekDBKeyValue::set($lastKey2, $lastId2);
 
             if ($progressCallback) {
                 $progressCallback($count);
