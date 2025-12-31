@@ -274,7 +274,7 @@ class IndexController extends InvokeController
         Task::deliver(new CloseMeetingRoomTask());
         // ZincSearch 同步
         Task::deliver(new ZincSearchSyncTask());
-        // SeekDB 同步（文件/用户/项目/任务）
+        // SeekDB 同步
         Task::deliver(new SeekDBSyncTask());
 
         return "success";
