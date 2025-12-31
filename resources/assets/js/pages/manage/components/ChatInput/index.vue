@@ -152,7 +152,7 @@
                                 <em>{{$L('上传文件')}}</em>
                             </div>
                         </template>
-                        <div class="chat-input-popover-item" @click="onToolbar('ai')">
+                        <div v-if="dialogId > 0" class="chat-input-popover-item" @click="onToolbar('ai')">
                             <i class="taskfont">&#xe8a1;</i>
                             <em>{{$L('AI 生成')}}</em>
                         </div>
@@ -1941,6 +1941,7 @@ export default {
                 return;
             }
             emitter.emit('openAIAssistant', {
+                sessionKey: 'chat-message',
                 placeholder: this.$L('请简要描述消息的主题、语气或要点，AI 将生成完整消息'),
                 onBeforeSend: this.handleMessageAIBeforeSend,
                 onApply: this.handleMessageAIApply,

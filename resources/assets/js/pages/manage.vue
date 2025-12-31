@@ -1063,6 +1063,7 @@ export default {
 
         onProjectAI() {
             emitter.emit('openAIAssistant', {
+                sessionKey: 'project-create',
                 placeholder: this.$L('请简要描述项目目标、范围或关键里程碑，AI 将生成名称和任务列表'),
                 onBeforeSend: this.handleProjectAIBeforeSend,
                 onRender: this.handleProjectAIRender,

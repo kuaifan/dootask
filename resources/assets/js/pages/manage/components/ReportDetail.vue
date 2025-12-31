@@ -174,6 +174,7 @@ export default {
                 return;
             }
             emitter.emit('openAIAssistant', {
+                sessionKey: 'report-analysis',
                 placeholder: this.$L('补充你想聚焦的风险、成果或建议，留空直接生成分析'),
                 onBeforeSend: this.handleReportAnalysisBeforeSend,
                 onApply: this.handleReportAnalysisApply,

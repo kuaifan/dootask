@@ -265,6 +265,7 @@ export default {
                 return;
             }
             emitter.emit('openAIAssistant', {
+                sessionKey: 'report-edit',
                 placeholder: this.$L('补充你想强调的重点或特殊说明，AI 将在此基础上整理汇报'),
                 onBeforeSend: this.handleReportAIBeforeSend,
                 onApply: this.handleReportAIApply,
