@@ -93,11 +93,13 @@
             <div class="ai-assistant-input">
                 <Input
                     v-model="inputValue"
+                    ref="inputRef"
                     type="textarea"
                     :placeholder="inputPlaceholder || $L('请输入你的问题...')"
                     :rows="inputRows || 1"
                     :autosize="inputAutosize || {minRows:1, maxRows:6}"
-                    :maxlength="inputMaxlength || 500" />
+                    :maxlength="inputMaxlength || 500"
+                    @on-keydown="onInputKeydown" />
                 <div class="ai-assistant-footer">
                     <div class="ai-assistant-footer-models">
                         <Select
@@ -252,6 +254,7 @@ export default {
             this.$nextTick(() => {
                 this.scheduleAutoSubmit();
                 this.scrollResponsesToBottom();
+                this.$refs.inputRef.focus();
             });
         },
 
@@ -397,6 +400,16 @@ export default {
                 this.inputModel = firstGroup.options[0].id;
             } else {
                 this.inputModel = '';
+            }
+        },
+
+        /**
+         * 输入框键盘事件：回车发送，Shift+回车换行
+         */
+        onInputKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.onSubmit();
             }
         },
 
