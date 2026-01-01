@@ -5,7 +5,7 @@ namespace App\Observers;
 use App\Models\Deleted;
 use App\Models\ProjectTaskUser;
 use App\Models\ProjectUser;
-use App\Tasks\SeekDBSyncTask;
+use App\Tasks\ManticoreSyncTask;
 
 class ProjectTaskUserObserver extends AbstractObserver
 {
@@ -22,14 +22,14 @@ class ProjectTaskUserObserver extends AbstractObserver
             Deleted::forget('projectTask', $projectTaskUser->task_pid, $projectTaskUser->userid);
         }
 
-        // 同步任务成员到 SeekDB
-        self::taskDeliver(new SeekDBSyncTask('task_user_add', [
+        // 同步任务成员到 Manticore
+        self::taskDeliver(new ManticoreSyncTask('task_user_add', [
             'task_id' => $projectTaskUser->task_id,
             'userid' => $projectTaskUser->userid,
         ]));
         // 如果是子任务，同时添加到父任务
         if ($projectTaskUser->task_pid) {
-            self::taskDeliver(new SeekDBSyncTask('task_user_add', [
+            self::taskDeliver(new ManticoreSyncTask('task_user_add', [
                 'task_id' => $projectTaskUser->task_pid,
                 'userid' => $projectTaskUser->userid,
             ]));
@@ -59,8 +59,8 @@ class ProjectTaskUserObserver extends AbstractObserver
             Deleted::record('projectTask', $projectTaskUser->task_id, $projectTaskUser->userid);
         }
 
-        // 从 SeekDB 删除任务成员关系
-        self::taskDeliver(new SeekDBSyncTask('task_user_remove', [
+        // 从 Manticore 删除任务成员关系
+        self::taskDeliver(new ManticoreSyncTask('task_user_remove', [
             'task_id' => $projectTaskUser->task_id,
             'userid' => $projectTaskUser->userid,
         ]));

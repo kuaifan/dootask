@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\User;
-use App\Tasks\SeekDBSyncTask;
+use App\Tasks\ManticoreSyncTask;
 
 class UserObserver extends AbstractObserver
 {
@@ -19,7 +19,7 @@ class UserObserver extends AbstractObserver
         if ($user->bot) {
             return;
         }
-        self::taskDeliver(new SeekDBSyncTask('user_sync', $user->toArray()));
+        self::taskDeliver(new ManticoreSyncTask('user_sync', $user->toArray()));
     }
 
     /**
@@ -48,9 +48,9 @@ class UserObserver extends AbstractObserver
         if ($isDirty) {
             // 如果用户被禁用，删除索引；否则更新索引
             if ($user->disable_at) {
-                self::taskDeliver(new SeekDBSyncTask('user_delete', ['userid' => $user->userid]));
+                self::taskDeliver(new ManticoreSyncTask('user_delete', ['userid' => $user->userid]));
             } else {
-                self::taskDeliver(new SeekDBSyncTask('user_sync', $user->toArray()));
+                self::taskDeliver(new ManticoreSyncTask('user_sync', $user->toArray()));
             }
         }
     }
@@ -63,7 +63,7 @@ class UserObserver extends AbstractObserver
      */
     public function deleted(User $user)
     {
-        self::taskDeliver(new SeekDBSyncTask('user_delete', ['userid' => $user->userid]));
+        self::taskDeliver(new ManticoreSyncTask('user_delete', ['userid' => $user->userid]));
     }
 }
 

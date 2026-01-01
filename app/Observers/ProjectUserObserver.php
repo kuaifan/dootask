@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Models\Deleted;
 use App\Models\ProjectUser;
-use App\Tasks\SeekDBSyncTask;
+use App\Tasks\ManticoreSyncTask;
 
 class ProjectUserObserver extends AbstractObserver
 {
@@ -17,7 +17,7 @@ class ProjectUserObserver extends AbstractObserver
     public function created(ProjectUser $projectUser)
     {
         Deleted::forget('project', $projectUser->project_id, $projectUser->userid);
-        self::taskDeliver(new SeekDBSyncTask('project_user_add', [
+        self::taskDeliver(new ManticoreSyncTask('project_user_add', [
             'project_id' => $projectUser->project_id,
             'userid' => $projectUser->userid,
         ]));
@@ -43,7 +43,7 @@ class ProjectUserObserver extends AbstractObserver
     public function deleted(ProjectUser $projectUser)
     {
         Deleted::record('project', $projectUser->project_id, $projectUser->userid);
-        self::taskDeliver(new SeekDBSyncTask('project_user_remove', [
+        self::taskDeliver(new ManticoreSyncTask('project_user_remove', [
             'project_id' => $projectUser->project_id,
             'userid' => $projectUser->userid,
         ]));

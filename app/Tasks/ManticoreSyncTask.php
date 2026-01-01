@@ -7,20 +7,20 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\ProjectTask;
 use App\Module\Apps;
-use App\Module\SeekDB\SeekDBBase;
-use App\Module\SeekDB\SeekDBFile;
-use App\Module\SeekDB\SeekDBUser;
-use App\Module\SeekDB\SeekDBProject;
-use App\Module\SeekDB\SeekDBTask;
+use App\Module\Manticore\ManticoreBase;
+use App\Module\Manticore\ManticoreFile;
+use App\Module\Manticore\ManticoreUser;
+use App\Module\Manticore\ManticoreProject;
+use App\Module\Manticore\ManticoreTask;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * 通用 SeekDB 同步任务
+ * 通用 Manticore Search 同步任务
  *
  * 支持文件、用户、项目、任务的同步操作
  */
-class SeekDBSyncTask extends AbstractTask
+class ManticoreSyncTask extends AbstractTask
 {
     private $action;
 
@@ -35,7 +35,7 @@ class SeekDBSyncTask extends AbstractTask
 
     public function start()
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return;
         }
 
@@ -46,21 +46,21 @@ class SeekDBSyncTask extends AbstractTask
             case 'file_sync':
                 $file = File::find($this->data['id'] ?? 0);
                 if ($file) {
-                    SeekDBFile::sync($file);
+                    ManticoreFile::sync($file);
                 }
                 break;
 
             case 'file_delete':
                 $fileId = $this->data['id'] ?? 0;
                 if ($fileId > 0) {
-                    SeekDBFile::delete($fileId);
+                    ManticoreFile::delete($fileId);
                 }
                 break;
 
             case 'file_user_sync':
                 $fileId = $this->data['file_id'] ?? 0;
                 if ($fileId > 0) {
-                    SeekDBFile::syncFileUsers($fileId);
+                    ManticoreFile::syncFileUsers($fileId);
                 }
                 break;
 
@@ -69,7 +69,7 @@ class SeekDBSyncTask extends AbstractTask
                 $userid = $this->data['userid'] ?? 0;
                 $permission = $this->data['permission'] ?? 0;
                 if ($fileId > 0) {
-                    SeekDBFile::addFileUser($fileId, $userid, $permission);
+                    ManticoreFile::addFileUser($fileId, $userid, $permission);
                 }
                 break;
 
@@ -77,7 +77,7 @@ class SeekDBSyncTask extends AbstractTask
                 $fileId = $this->data['file_id'] ?? 0;
                 $userid = $this->data['userid'] ?? null;
                 if ($fileId > 0) {
-                    SeekDBFile::removeFileUser($fileId, $userid);
+                    ManticoreFile::removeFileUser($fileId, $userid);
                 }
                 break;
 
@@ -85,7 +85,7 @@ class SeekDBSyncTask extends AbstractTask
                 $fileIds = $this->data['file_ids'] ?? [];
                 $pshare = $this->data['pshare'] ?? 0;
                 if (!empty($fileIds)) {
-                    SeekDBBase::batchUpdatePshare($fileIds, $pshare);
+                    ManticoreBase::batchUpdatePshare($fileIds, $pshare);
                 }
                 break;
 
@@ -95,14 +95,14 @@ class SeekDBSyncTask extends AbstractTask
             case 'user_sync':
                 $user = User::find($this->data['userid'] ?? 0);
                 if ($user) {
-                    SeekDBUser::sync($user);
+                    ManticoreUser::sync($user);
                 }
                 break;
 
             case 'user_delete':
                 $userid = $this->data['userid'] ?? 0;
                 if ($userid > 0) {
-                    SeekDBUser::delete($userid);
+                    ManticoreUser::delete($userid);
                 }
                 break;
 
@@ -112,14 +112,14 @@ class SeekDBSyncTask extends AbstractTask
             case 'project_sync':
                 $project = Project::find($this->data['id'] ?? 0);
                 if ($project) {
-                    SeekDBProject::sync($project);
+                    ManticoreProject::sync($project);
                 }
                 break;
 
             case 'project_delete':
                 $projectId = $this->data['project_id'] ?? 0;
                 if ($projectId > 0) {
-                    SeekDBProject::delete($projectId);
+                    ManticoreProject::delete($projectId);
                 }
                 break;
 
@@ -127,7 +127,7 @@ class SeekDBSyncTask extends AbstractTask
                 $projectId = $this->data['project_id'] ?? 0;
                 $userid = $this->data['userid'] ?? 0;
                 if ($projectId > 0 && $userid > 0) {
-                    SeekDBProject::addProjectUser($projectId, $userid);
+                    ManticoreProject::addProjectUser($projectId, $userid);
                 }
                 break;
 
@@ -135,14 +135,14 @@ class SeekDBSyncTask extends AbstractTask
                 $projectId = $this->data['project_id'] ?? 0;
                 $userid = $this->data['userid'] ?? 0;
                 if ($projectId > 0 && $userid > 0) {
-                    SeekDBProject::removeProjectUser($projectId, $userid);
+                    ManticoreProject::removeProjectUser($projectId, $userid);
                 }
                 break;
 
             case 'project_users_sync':
                 $projectId = $this->data['project_id'] ?? 0;
                 if ($projectId > 0) {
-                    SeekDBProject::syncProjectUsers($projectId);
+                    ManticoreProject::syncProjectUsers($projectId);
                 }
                 break;
 
@@ -152,14 +152,14 @@ class SeekDBSyncTask extends AbstractTask
             case 'task_sync':
                 $task = ProjectTask::find($this->data['id'] ?? 0);
                 if ($task) {
-                    SeekDBTask::sync($task);
+                    ManticoreTask::sync($task);
                 }
                 break;
 
             case 'task_delete':
                 $taskId = $this->data['task_id'] ?? 0;
                 if ($taskId > 0) {
-                    SeekDBTask::delete($taskId);
+                    ManticoreTask::delete($taskId);
                 }
                 break;
 
@@ -167,7 +167,7 @@ class SeekDBSyncTask extends AbstractTask
                 $taskId = $this->data['task_id'] ?? 0;
                 $visibility = $this->data['visibility'] ?? 1;
                 if ($taskId > 0) {
-                    SeekDBTask::updateVisibility($taskId, $visibility);
+                    ManticoreTask::updateVisibility($taskId, $visibility);
                 }
                 break;
 
@@ -175,7 +175,7 @@ class SeekDBSyncTask extends AbstractTask
                 $taskId = $this->data['task_id'] ?? 0;
                 $userid = $this->data['userid'] ?? 0;
                 if ($taskId > 0 && $userid > 0) {
-                    SeekDBTask::addTaskUser($taskId, $userid);
+                    ManticoreTask::addTaskUser($taskId, $userid);
                 }
                 break;
 
@@ -183,7 +183,7 @@ class SeekDBSyncTask extends AbstractTask
                 $taskId = $this->data['task_id'] ?? 0;
                 $userid = $this->data['userid'] ?? 0;
                 if ($taskId > 0 && $userid > 0) {
-                    SeekDBTask::removeTaskUser($taskId, $userid);
+                    ManticoreTask::removeTaskUser($taskId, $userid);
                 }
                 break;
 
@@ -192,14 +192,14 @@ class SeekDBSyncTask extends AbstractTask
                 $taskId = $this->data['task_id'] ?? 0;
                 $userid = $this->data['userid'] ?? 0;
                 if ($taskId > 0 && $userid > 0) {
-                    SeekDBTask::removeVisibilityUser($taskId, $userid);
+                    ManticoreTask::removeVisibilityUser($taskId, $userid);
                 }
                 break;
 
             case 'task_users_sync':
                 $taskId = $this->data['task_id'] ?? 0;
                 if ($taskId > 0) {
-                    SeekDBTask::syncTaskUsers($taskId);
+                    ManticoreTask::syncTaskUsers($taskId);
                 }
                 break;
 
@@ -219,22 +219,22 @@ class SeekDBSyncTask extends AbstractTask
     private function incrementalUpdate()
     {
         // 60分钟执行一次
-        $time = intval(Cache::get("SeekDBSyncTask:Time"));
+        $time = intval(Cache::get("ManticoreSyncTask:Time"));
         if (time() - $time < 60 * 60) {
             return;
         }
 
         // 执行开始
-        Cache::put("SeekDBSyncTask:Time", time(), Carbon::now()->addMinutes(60));
+        Cache::put("ManticoreSyncTask:Time", time(), Carbon::now()->addMinutes(60));
 
         // 执行增量同步（同时同步向量表和用户关系表的新增数据）
-        @shell_exec("php /var/www/artisan seekdb:sync-files --i 2>&1 &");
-        @shell_exec("php /var/www/artisan seekdb:sync-users --i 2>&1 &");
-        @shell_exec("php /var/www/artisan seekdb:sync-projects --i 2>&1 &");
-        @shell_exec("php /var/www/artisan seekdb:sync-tasks --i 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-files --i 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-users --i 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-projects --i 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-tasks --i 2>&1 &");
 
         // 执行完成
-        Cache::put("SeekDBSyncTask:Time", time(), Carbon::now()->addMinutes(5));
+        Cache::put("ManticoreSyncTask:Time", time(), Carbon::now()->addMinutes(5));
     }
 
     public function end()

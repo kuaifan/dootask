@@ -4,12 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\File;
 use App\Module\Apps;
-use App\Module\SeekDB\SeekDBFile;
-use App\Module\SeekDB\SeekDBKeyValue;
+use App\Module\Manticore\ManticoreFile;
+use App\Module\Manticore\ManticoreKeyValue;
 use Cache;
 use Illuminate\Console\Command;
 
-class SyncFileToSeekDB extends Command
+class SyncFileToManticore extends Command
 {
     /**
      * 更新数据
@@ -21,16 +21,16 @@ class SyncFileToSeekDB extends Command
      * --c: 清除索引
      */
 
-    protected $signature = 'seekdb:sync-files {--f} {--i} {--c} {--u} {--batch=100}';
-    protected $description = '同步文件内容到 SeekDB';
+    protected $signature = 'manticore:sync-files {--f} {--i} {--c} {--u} {--batch=100}';
+    protected $description = '同步文件内容到 Manticore Search';
 
     /**
      * @return int
      */
     public function handle(): int
     {
-        if (!Apps::isInstalled("seekdb")) {
-            $this->error("应用「SeekDB」未安装");
+        if (!Apps::isInstalled("manticore")) {
+            $this->error("应用「Manticore Search」未安装");
             return 1;
         }
 
@@ -54,8 +54,8 @@ class SyncFileToSeekDB extends Command
         // 清除索引
         if ($this->option('c')) {
             $this->info('清除索引...');
-            SeekDBKeyValue::clear();
-            SeekDBFile::clear();
+            ManticoreKeyValue::clear();
+            ManticoreFile::clear();
             $this->info("索引删除成功");
             $this->releaseLock();
             return 0;
@@ -64,7 +64,7 @@ class SyncFileToSeekDB extends Command
         // 仅同步文件用户关系
         if ($this->option('u')) {
             $this->info('开始同步文件用户关系...');
-            $count = SeekDBFile::syncAllFileUsers(function ($count) {
+            $count = ManticoreFile::syncAllFileUsers(function ($count) {
                 if ($count % 1000 === 0) {
                     $this->info("  已同步 {$count} 条关系...");
                 }
@@ -83,7 +83,7 @@ class SyncFileToSeekDB extends Command
         if ($this->option('f') || (!$this->option('i') && !$this->option('u'))) {
             // 全量同步：清空后重建
             $this->info("\n全量同步文件用户关系...");
-            $count = SeekDBFile::syncAllFileUsers(function ($count) {
+            $count = ManticoreFile::syncAllFileUsers(function ($count) {
                 if ($count % 1000 === 0) {
                     $this->info("  已同步 {$count} 条关系...");
                 }
@@ -92,7 +92,7 @@ class SyncFileToSeekDB extends Command
         } elseif ($this->option('i')) {
             // 增量同步：只同步新增的
             $this->info("\n增量同步文件用户关系...");
-            $count = SeekDBFile::syncFileUsersIncremental(function ($count) {
+            $count = ManticoreFile::syncFileUsersIncremental(function ($count) {
                 if ($count % 1000 === 0) {
                     $this->info("  已同步 {$count} 条关系...");
                 }
@@ -161,8 +161,8 @@ class SyncFileToSeekDB extends Command
     private function syncFiles(): void
     {
         // 获取上次同步的最后ID
-        $lastKey = "sync:seekdbFileLastId";
-        $lastId = $this->option('i') ? intval(SeekDBKeyValue::get($lastKey, 0)) : 0;
+        $lastKey = "sync:manticoreFileLastId";
+        $lastId = $this->option('i') ? intval(ManticoreKeyValue::get($lastKey, 0)) : 0;
 
         if ($lastId > 0) {
             $this->info("\n同步文件数据（{$lastId}）...");
@@ -171,8 +171,8 @@ class SyncFileToSeekDB extends Command
         }
 
         // 查询条件：排除文件夹，使用最大文件限制
-        // 具体的文件类型大小检查在 SeekDBFile::sync 中进行
-        $maxFileSize = SeekDBFile::getMaxFileSize();
+        // 具体的文件类型大小检查在 ManticoreFile::sync 中进行
+        $maxFileSize = ManticoreFile::getMaxFileSize();
         $query = File::where('id', '>', $lastId)
             ->where('type', '!=', 'folder')
             ->where('size', '<=', $maxFileSize);
@@ -208,16 +208,16 @@ class SyncFileToSeekDB extends Command
             $this->setLock();
 
             // 同步数据
-            $lastNum = SeekDBFile::batchSync($files);
+            $lastNum = ManticoreFile::batchSync($files);
             $total += $lastNum;
 
             // 更新最后ID
             $lastId = $files->last()->id;
-            SeekDBKeyValue::set($lastKey, $lastId);
+            ManticoreKeyValue::set($lastKey, $lastId);
         } while (count($files) == $batchSize);
 
         $this->info("同步文件结束 - 最后ID {$lastId}");
-        $this->info("已索引文件数量: " . SeekDBFile::getIndexedCount());
+        $this->info("已索引文件数量: " . ManticoreFile::getIndexedCount());
     }
 }
 

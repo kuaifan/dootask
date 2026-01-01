@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Module\SeekDB;
+namespace App\Module\Manticore;
 
 use App\Models\User;
 use App\Module\Apps;
@@ -9,7 +9,7 @@ use App\Module\AI;
 use Illuminate\Support\Facades\Log;
 
 /**
- * SeekDB 用户搜索类（联系人搜索）
+ * Manticore Search 用户搜索类（联系人搜索）
  *
  * 使用方法:
  *
@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Log;
  * 3. 工具方法
  *    - 清空索引: clear();
  */
-class SeekDBUser
+class ManticoreUser
 {
     /**
      * 搜索用户（支持全文、向量、混合搜索）
@@ -40,7 +40,7 @@ class SeekDBUser
             return [];
         }
 
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return [];
         }
 
@@ -48,29 +48,29 @@ class SeekDBUser
             switch ($searchType) {
                 case 'text':
                     return self::formatSearchResults(
-                        SeekDBBase::userFullTextSearch($keyword, $limit, 0)
+                        ManticoreBase::userFullTextSearch($keyword, $limit, 0)
                     );
 
                 case 'vector':
                     $embedding = self::getEmbedding($keyword);
                     if (empty($embedding)) {
                         return self::formatSearchResults(
-                            SeekDBBase::userFullTextSearch($keyword, $limit, 0)
+                            ManticoreBase::userFullTextSearch($keyword, $limit, 0)
                         );
                     }
                     return self::formatSearchResults(
-                        SeekDBBase::userVectorSearch($embedding, $limit)
+                        ManticoreBase::userVectorSearch($embedding, $limit)
                     );
 
                 case 'hybrid':
                 default:
                     $embedding = self::getEmbedding($keyword);
                     return self::formatSearchResults(
-                        SeekDBBase::userHybridSearch($keyword, $embedding, $limit)
+                        ManticoreBase::userHybridSearch($keyword, $embedding, $limit)
                     );
             }
         } catch (\Exception $e) {
-            Log::error('SeekDB user search error: ' . $e->getMessage());
+            Log::error('Manticore user search error: ' . $e->getMessage());
             return [];
         }
     }
@@ -102,7 +102,7 @@ class SeekDBUser
     /**
      * 格式化搜索结果
      *
-     * @param array $results SeekDB 返回的结果
+     * @param array $results Manticore 返回的结果
      * @return array 格式化后的结果
      */
     private static function formatSearchResults(array $results): array
@@ -127,14 +127,14 @@ class SeekDBUser
     // ==============================
 
     /**
-     * 同步单个用户到 SeekDB
+     * 同步单个用户到 Manticore
      *
      * @param User $user 用户模型
      * @return bool 是否成功
      */
     public static function sync(User $user): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
@@ -161,8 +161,8 @@ class SeekDBUser
                 }
             }
 
-            // 写入 SeekDB
-            $result = SeekDBBase::upsertUserVector([
+            // 写入 Manticore
+            $result = ManticoreBase::upsertUserVector([
                 'userid' => $user->userid,
                 'nickname' => $user->nickname ?? '',
                 'email' => $user->email ?? '',
@@ -174,7 +174,7 @@ class SeekDBUser
 
             return $result;
         } catch (\Exception $e) {
-            Log::error('SeekDB user sync error: ' . $e->getMessage(), [
+            Log::error('Manticore user sync error: ' . $e->getMessage(), [
                 'userid' => $user->userid,
                 'nickname' => $user->nickname,
             ]);
@@ -216,7 +216,7 @@ class SeekDBUser
      */
     public static function batchSync(iterable $users): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
@@ -237,11 +237,11 @@ class SeekDBUser
      */
     public static function delete(int $userid): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
-        return SeekDBBase::deleteUserVector($userid);
+        return ManticoreBase::deleteUserVector($userid);
     }
 
     /**
@@ -251,11 +251,11 @@ class SeekDBUser
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
-        return SeekDBBase::clearAllUserVectors();
+        return ManticoreBase::clearAllUserVectors();
     }
 
     /**
@@ -265,11 +265,11 @@ class SeekDBUser
      */
     public static function getIndexedCount(): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
-        return SeekDBBase::getIndexedUserCount();
+        return ManticoreBase::getIndexedUserCount();
     }
 }
 

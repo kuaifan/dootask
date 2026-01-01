@@ -55,7 +55,7 @@ class Apps
                 'drawio' => 'Drawio',
                 'minder' => 'Minder',
                 'search' => 'ZincSearch',
-                'seekdb' => 'SeekDB',
+                'manticore' => 'Manticore Search',
                 default => $appId,
             };
             throw new ApiException("应用「{$name}」未安装", [], 0, false);

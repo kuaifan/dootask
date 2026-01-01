@@ -5,7 +5,7 @@ namespace App\Observers;
 use App\Models\Deleted;
 use App\Models\Project;
 use App\Models\ProjectUser;
-use App\Tasks\SeekDBSyncTask;
+use App\Tasks\ManticoreSyncTask;
 
 class ProjectObserver extends AbstractObserver
 {
@@ -17,7 +17,7 @@ class ProjectObserver extends AbstractObserver
      */
     public function created(Project $project)
     {
-        self::taskDeliver(new SeekDBSyncTask('project_sync', $project->toArray()));
+        self::taskDeliver(new ManticoreSyncTask('project_sync', $project->toArray()));
     }
 
     /**
@@ -49,9 +49,9 @@ class ProjectObserver extends AbstractObserver
 
         if ($isDirty) {
             if ($project->archived_at) {
-                self::taskDeliver(new SeekDBSyncTask('project_delete', ['project_id' => $project->id]));
+                self::taskDeliver(new ManticoreSyncTask('project_delete', ['project_id' => $project->id]));
             } else {
-                self::taskDeliver(new SeekDBSyncTask('project_sync', $project->toArray()));
+                self::taskDeliver(new ManticoreSyncTask('project_sync', $project->toArray()));
             }
         }
     }
@@ -65,7 +65,7 @@ class ProjectObserver extends AbstractObserver
     public function deleted(Project $project)
     {
         Deleted::record('project', $project->id, $this->userids($project));
-        self::taskDeliver(new SeekDBSyncTask('project_delete', ['project_id' => $project->id]));
+        self::taskDeliver(new ManticoreSyncTask('project_delete', ['project_id' => $project->id]));
     }
 
     /**
@@ -77,7 +77,7 @@ class ProjectObserver extends AbstractObserver
     public function restored(Project $project)
     {
         Deleted::forget('project', $project->id, $this->userids($project));
-        self::taskDeliver(new SeekDBSyncTask('project_sync', $project->toArray()));
+        self::taskDeliver(new ManticoreSyncTask('project_sync', $project->toArray()));
     }
 
     /**
@@ -88,7 +88,7 @@ class ProjectObserver extends AbstractObserver
      */
     public function forceDeleted(Project $project)
     {
-        self::taskDeliver(new SeekDBSyncTask('project_delete', ['project_id' => $project->id]));
+        self::taskDeliver(new ManticoreSyncTask('project_delete', ['project_id' => $project->id]));
     }
 
     /**

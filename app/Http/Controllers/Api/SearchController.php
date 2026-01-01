@@ -7,10 +7,10 @@ use App\Models\File;
 use App\Models\User;
 use App\Module\Base;
 use App\Module\Apps;
-use App\Module\SeekDB\SeekDBFile;
-use App\Module\SeekDB\SeekDBUser;
-use App\Module\SeekDB\SeekDBProject;
-use App\Module\SeekDB\SeekDBTask;
+use App\Module\Manticore\ManticoreFile;
+use App\Module\Manticore\ManticoreUser;
+use App\Module\Manticore\ManticoreProject;
+use App\Module\Manticore\ManticoreTask;
 
 /**
  * @apiDefine search
@@ -22,7 +22,7 @@ class SearchController extends AbstractController
     /**
      * @api {get} api/search/contact          AI 搜索联系人
      *
-     * @apiDescription 需要token身份，需要安装 SeekDB 应用
+     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
      * @apiVersion 1.0.0
      * @apiGroup search
      * @apiName contact
@@ -39,8 +39,8 @@ class SearchController extends AbstractController
     {
         User::auth();
 
-        if (!Apps::isInstalled('seekdb')) {
-            return Base::retError('SeekDB 应用未安装');
+        if (!Apps::isInstalled('manticore')) {
+            return Base::retError('Manticore Search 应用未安装');
         }
 
         $key = trim(Request::input('key'));
@@ -51,7 +51,7 @@ class SearchController extends AbstractController
             return Base::retSuccess('success', []);
         }
 
-        $results = SeekDBUser::search($key, $searchType, $take);
+        $results = ManticoreUser::search($key, $searchType, $take);
 
         // 补充用户完整信息
         $userids = array_column($results, 'userid');
@@ -78,7 +78,7 @@ class SearchController extends AbstractController
     /**
      * @api {get} api/search/project          AI 搜索项目
      *
-     * @apiDescription 需要token身份，需要安装 SeekDB 应用
+     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
      * @apiVersion 1.0.0
      * @apiGroup search
      * @apiName project
@@ -95,8 +95,8 @@ class SearchController extends AbstractController
     {
         $user = User::auth();
 
-        if (!Apps::isInstalled('seekdb')) {
-            return Base::retError('SeekDB 应用未安装');
+        if (!Apps::isInstalled('manticore')) {
+            return Base::retError('Manticore Search 应用未安装');
         }
 
         $key = trim(Request::input('key'));
@@ -107,7 +107,7 @@ class SearchController extends AbstractController
             return Base::retSuccess('success', []);
         }
 
-        $results = SeekDBProject::search($user->userid, $key, $searchType, $take);
+        $results = ManticoreProject::search($user->userid, $key, $searchType, $take);
 
         // 补充项目完整信息
         $projectIds = array_column($results, 'project_id');
@@ -133,7 +133,7 @@ class SearchController extends AbstractController
     /**
      * @api {get} api/search/task             AI 搜索任务
      *
-     * @apiDescription 需要token身份，需要安装 SeekDB 应用
+     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
      * @apiVersion 1.0.0
      * @apiGroup search
      * @apiName task
@@ -150,8 +150,8 @@ class SearchController extends AbstractController
     {
         $user = User::auth();
 
-        if (!Apps::isInstalled('seekdb')) {
-            return Base::retError('SeekDB 应用未安装');
+        if (!Apps::isInstalled('manticore')) {
+            return Base::retError('Manticore Search 应用未安装');
         }
 
         $key = trim(Request::input('key'));
@@ -162,7 +162,7 @@ class SearchController extends AbstractController
             return Base::retSuccess('success', []);
         }
 
-        $results = SeekDBTask::search($user->userid, $key, $searchType, $take);
+        $results = ManticoreTask::search($user->userid, $key, $searchType, $take);
 
         // 补充任务完整信息
         $taskIds = array_column($results, 'task_id');
@@ -189,7 +189,7 @@ class SearchController extends AbstractController
     /**
      * @api {get} api/search/file              AI 搜索文件
      *
-     * @apiDescription 需要token身份，需要安装 SeekDB 应用
+     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
      * @apiVersion 1.0.0
      * @apiGroup search
      * @apiName file
@@ -206,8 +206,8 @@ class SearchController extends AbstractController
     {
         $user = User::auth();
 
-        if (!Apps::isInstalled('seekdb')) {
-            return Base::retError('SeekDB 应用未安装');
+        if (!Apps::isInstalled('manticore')) {
+            return Base::retError('Manticore Search 应用未安装');
         }
 
         $key = trim(Request::input('key'));
@@ -218,7 +218,7 @@ class SearchController extends AbstractController
             return Base::retSuccess('success', []);
         }
 
-        $results = SeekDBFile::search($user->userid, $key, $searchType, 0, $take);
+        $results = ManticoreFile::search($user->userid, $key, $searchType, 0, $take);
 
         // 补充文件完整信息
         $fileIds = array_column($results, 'file_id');

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Module\SeekDB;
+namespace App\Module\Manticore;
 
 use App\Module\Apps;
 use App\Module\Doo;
@@ -9,31 +9,26 @@ use PDOException;
 use Illuminate\Support\Facades\Log;
 
 /**
- * SeekDB 基础类
+ * Manticore Search 基础类
  *
- * SeekDB 兼容 MySQL 协议，可以直接使用 PDO 连接
+ * Manticore Search 兼容 MySQL 协议，可以直接使用 PDO 连接
+ * 默认端口 9306 为 MySQL 协议端口
  */
-class SeekDBBase
+class ManticoreBase
 {
     private static ?PDO $pdo = null;
     private static bool $initialized = false;
 
     private string $host;
     private int $port;
-    private string $user;
-    private string $pass;
-    private string $database;
 
     /**
      * 构造函数
      */
     public function __construct()
     {
-        $this->host = env('SEEKDB_HOST', 'seekdb');
-        $this->port = (int) env('SEEKDB_PORT', 2881);
-        $this->user = env('SEEKDB_USER', 'root');
-        $this->pass = env('SEEKDB_PASSWORD', '');
-        $this->database = env('SEEKDB_DATABASE', 'dootask_search');
+        $this->host = env('MANTICORE_HOST', 'manticore');
+        $this->port = (int) env('MANTICORE_PORT', 9306);
     }
 
     /**
@@ -41,31 +36,29 @@ class SeekDBBase
      */
     private function getConnection(): ?PDO
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return null;
         }
 
         if (self::$pdo === null) {
             try {
-                // 先连接不指定数据库，用于初始化
-                $dsn = "mysql:host={$this->host};port={$this->port};charset=utf8mb4";
-                $pdo = new PDO($dsn, $this->user, $this->pass, [
+                // Manticore 使用 MySQL 协议，不需要用户名密码
+                $dsn = "mysql:host={$this->host};port={$this->port}";
+                $pdo = new PDO($dsn, '', '', [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                     PDO::ATTR_TIMEOUT => 30,
                 ]);
 
-                // 初始化数据库和表
+                // 初始化表结构
                 if (!self::$initialized) {
-                    $this->initializeDatabase($pdo);
+                    $this->initializeTables($pdo);
                     self::$initialized = true;
                 }
 
-                // 切换到目标数据库
-                $pdo->exec("USE `{$this->database}`");
                 self::$pdo = $pdo;
             } catch (PDOException $e) {
-                Log::error('SeekDB connection failed: ' . $e->getMessage());
+                Log::error('Manticore connection failed: ' . $e->getMessage());
                 return null;
             }
         }
@@ -74,154 +67,108 @@ class SeekDBBase
     }
 
     /**
-     * 初始化数据库和表结构
+     * 初始化表结构
      */
-    private function initializeDatabase(PDO $pdo): void
+    private function initializeTables(PDO $pdo): void
     {
         try {
-            // 创建数据库
-            $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$this->database}`");
-            $pdo->exec("USE `{$this->database}`");
-
             // 创建文件向量表
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS file_vectors (
-                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                    file_id BIGINT NOT NULL,
-                    userid BIGINT NOT NULL,
-                    pshare BIGINT NOT NULL DEFAULT 0,
-                    file_name VARCHAR(500),
-                    file_type VARCHAR(50),
-                    file_ext VARCHAR(20),
-                    content LONGTEXT,
-                    content_vector VECTOR(1536),
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    
-                    UNIQUE KEY uk_file_id (file_id),
-                    KEY idx_userid (userid),
-                    KEY idx_pshare (pshare),
-                    FULLTEXT KEY ft_content (file_name, content)
-                )
+                    id BIGINT,
+                    file_id BIGINT,
+                    userid BIGINT,
+                    pshare BIGINT,
+                    file_name TEXT,
+                    file_type STRING,
+                    file_ext STRING,
+                    content TEXT,
+                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
+                ) charset_table='chinese' morphology='icu_chinese'
             ");
 
             // 创建键值存储表
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS key_values (
-                    k VARCHAR(255) PRIMARY KEY,
-                    v TEXT,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    id BIGINT,
+                    k STRING,
+                    v TEXT
                 )
             ");
 
             // 创建文件用户关系表（用于权限过滤）
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS file_users (
-                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                    file_id BIGINT NOT NULL,
-                    userid BIGINT NOT NULL,
-                    permission TINYINT DEFAULT 0,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    
-                    UNIQUE KEY uk_file_user (file_id, userid),
-                    KEY idx_userid (userid),
-                    KEY idx_file_id (file_id)
+                    id BIGINT,
+                    file_id BIGINT,
+                    userid BIGINT,
+                    permission INTEGER
                 )
             ");
 
             // 创建用户向量表（联系人搜索）
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS user_vectors (
-                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                    userid BIGINT NOT NULL,
-                    nickname VARCHAR(200),
-                    email VARCHAR(200),
-                    tel VARCHAR(50),
-                    profession VARCHAR(200),
+                    id BIGINT,
+                    userid BIGINT,
+                    nickname TEXT,
+                    email STRING,
+                    tel STRING,
+                    profession TEXT,
                     introduction TEXT,
-                    content_vector VECTOR(1536),
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    
-                    UNIQUE KEY uk_userid (userid),
-                    FULLTEXT KEY ft_content (nickname, email, profession, introduction)
-                )
+                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
+                ) charset_table='chinese' morphology='icu_chinese'
             ");
 
             // 创建项目向量表
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS project_vectors (
-                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                    project_id BIGINT NOT NULL,
-                    userid BIGINT NOT NULL,
-                    personal TINYINT DEFAULT 0,
-                    project_name VARCHAR(500),
+                    id BIGINT,
+                    project_id BIGINT,
+                    userid BIGINT,
+                    personal INTEGER,
+                    project_name TEXT,
                     project_desc TEXT,
-                    content_vector VECTOR(1536),
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    
-                    UNIQUE KEY uk_project_id (project_id),
-                    KEY idx_userid (userid),
-                    FULLTEXT KEY ft_content (project_name, project_desc)
-                )
+                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
+                ) charset_table='chinese' morphology='icu_chinese'
             ");
 
             // 创建项目成员表（用于权限过滤）
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS project_users (
-                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                    project_id BIGINT NOT NULL,
-                    userid BIGINT NOT NULL,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    
-                    UNIQUE KEY uk_project_user (project_id, userid),
-                    KEY idx_project_id (project_id),
-                    KEY idx_userid (userid)
+                    id BIGINT,
+                    project_id BIGINT,
+                    userid BIGINT
                 )
             ");
 
             // 创建任务向量表
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS task_vectors (
-                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                    task_id BIGINT NOT NULL,
-                    project_id BIGINT NOT NULL,
-                    userid BIGINT NOT NULL,
-                    visibility TINYINT DEFAULT 1,
-                    task_name VARCHAR(500),
+                    id BIGINT,
+                    task_id BIGINT,
+                    project_id BIGINT,
+                    userid BIGINT,
+                    visibility INTEGER,
+                    task_name TEXT,
                     task_desc TEXT,
-                    task_content LONGTEXT,
-                    content_vector VECTOR(1536),
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    
-                    UNIQUE KEY uk_task_id (task_id),
-                    KEY idx_project_id (project_id),
-                    KEY idx_userid (userid),
-                    KEY idx_visibility (visibility),
-                    FULLTEXT KEY ft_content (task_name, task_desc, task_content)
-                )
+                    task_content TEXT,
+                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
+                ) charset_table='chinese' morphology='icu_chinese'
             ");
 
             // 创建任务成员表（用于 visibility=2,3 的权限过滤）
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS task_users (
-                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                    task_id BIGINT NOT NULL,
-                    userid BIGINT NOT NULL,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    
-                    UNIQUE KEY uk_task_user (task_id, userid),
-                    KEY idx_task_id (task_id),
-                    KEY idx_userid (userid)
+                    id BIGINT,
+                    task_id BIGINT,
+                    userid BIGINT
                 )
             ");
 
-            Log::info('SeekDB database initialized successfully');
+            Log::info('Manticore tables initialized successfully');
         } catch (PDOException $e) {
-            Log::warning('SeekDB initialization warning: ' . $e->getMessage());
+            Log::warning('Manticore initialization warning: ' . $e->getMessage());
             // 不抛出异常，表可能已存在
         }
     }
@@ -240,7 +187,7 @@ class SeekDBBase
      */
     public static function isInstalled(): bool
     {
-        return Apps::isInstalled("seekdb");
+        return Apps::isInstalled("manticore");
     }
 
     /**
@@ -261,7 +208,7 @@ class SeekDBBase
             $stmt = $pdo->prepare($sql);
             return $stmt->execute($params);
         } catch (PDOException $e) {
-            Log::error('SeekDB execute error: ' . $e->getMessage(), [
+            Log::error('Manticore execute error: ' . $e->getMessage(), [
                 'sql' => $sql,
                 'params' => $params
             ]);
@@ -288,7 +235,7 @@ class SeekDBBase
             $stmt->execute($params);
             return $stmt->rowCount();
         } catch (PDOException $e) {
-            Log::error('SeekDB execute error: ' . $e->getMessage(), [
+            Log::error('Manticore execute error: ' . $e->getMessage(), [
                 'sql' => $sql,
                 'params' => $params
             ]);
@@ -315,7 +262,7 @@ class SeekDBBase
             $stmt->execute($params);
             return $stmt->fetchAll();
         } catch (PDOException $e) {
-            Log::error('SeekDB query error: ' . $e->getMessage(), [
+            Log::error('Manticore query error: ' . $e->getMessage(), [
                 'sql' => $sql,
                 'params' => $params
             ]);
@@ -343,7 +290,7 @@ class SeekDBBase
             $result = $stmt->fetch();
             return $result ?: null;
         } catch (PDOException $e) {
-            Log::error('SeekDB queryOne error: ' . $e->getMessage(), [
+            Log::error('Manticore queryOne error: ' . $e->getMessage(), [
                 'sql' => $sql,
                 'params' => $params
             ]);
@@ -352,28 +299,27 @@ class SeekDBBase
     }
 
     /**
-     * 获取最后插入的 ID
+     * 转义 Manticore 全文搜索关键词
+     *
+     * @param string $keyword 原始关键词
+     * @return string 转义后的关键词
      */
-    public function lastInsertId(): ?int
+    public static function escapeMatch(string $keyword): string
     {
-        $pdo = $this->getConnection();
-        if (!$pdo) {
-            return null;
+        // Manticore 特殊字符转义
+        $special = ['\\', '(', ')', '|', '-', '!', '@', '~', '"', '&', '/', '^', '$', '=', '<', '>', '*'];
+        foreach ($special as $char) {
+            $keyword = str_replace($char, '\\' . $char, $keyword);
         }
-
-        try {
-            return (int) $pdo->lastInsertId();
-        } catch (PDOException $e) {
-            return null;
-        }
+        return $keyword;
     }
 
     // ==============================
-    // 静态便捷方法
+    // 文件向量相关方法
     // ==============================
 
     /**
-     * 全文搜索
+     * 全文搜索文件
      *
      * @param string $keyword 关键词
      * @param int $userid 用户ID（0表示不限制权限）
@@ -388,56 +334,72 @@ class SeekDBBase
         }
 
         $instance = new self();
-        $likeKeyword = "%{$keyword}%";
+        $escapedKeyword = self::escapeMatch($keyword);
 
-        // 构建 SQL - 同时搜索文件名和内容
-        // 权限过滤通过 JOIN file_users 表实现
         if ($userid > 0) {
-            // 用户可以看到：1) 自己的文件 2) 共享给自己或公开的文件
-            // 注意：pshare 指向共享根文件夹的 ID，file_users 存储的是共享文件夹的权限关系
+            // 带权限过滤的搜索
+            // 先搜索文件，再通过应用层过滤权限
             $sql = "
-                SELECT DISTINCT
-                    fv.file_id,
-                    fv.userid,
-                    fv.file_name,
-                    fv.file_type,
-                    fv.file_ext,
-                    SUBSTRING(fv.content, 1, 500) as content_preview,
-                    (
-                        CASE WHEN fv.file_name LIKE ? THEN 10 ELSE 0 END +
-                        IFNULL(MATCH(fv.content) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
-                    ) AS relevance
-                FROM file_vectors fv
-                LEFT JOIN file_users fu ON fv.pshare = fu.file_id AND fv.pshare > 0
-                WHERE (fv.file_name LIKE ? OR MATCH(fv.content) AGAINST(? IN NATURAL LANGUAGE MODE))
-                  AND (fv.userid = ? OR fu.userid IN (0, ?))
+                SELECT 
+                    id,
+                    file_id,
+                    userid,
+                    pshare,
+                    file_name,
+                    file_type,
+                    file_ext,
+                    SUBSTRING(content, 1, 500) as content_preview,
+                    WEIGHT() as relevance
+                FROM file_vectors
+                WHERE MATCH('@(file_name,content) {$escapedKeyword}')
                 ORDER BY relevance DESC
                 LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
-            $params = [$likeKeyword, $keyword, $likeKeyword, $keyword, $userid, $userid];
+            $results = $instance->query($sql);
+
+            // 应用层权限过滤：用户自己的文件 或 共享文件
+            if (!empty($results)) {
+                // 获取用户有权限的共享文件夹
+                $shareFileIds = $instance->query(
+                    "SELECT file_id FROM file_users WHERE userid IN (0, ?)",
+                    [$userid]
+                );
+                $allowedShares = array_column($shareFileIds, 'file_id');
+
+                $results = array_filter($results, function ($item) use ($userid, $allowedShares) {
+                    // 自己的文件
+                    if ($item['userid'] == $userid) {
+                        return true;
+                    }
+                    // 共享文件（pshare 在允许的共享列表中）
+                    if ($item['pshare'] > 0 && in_array($item['pshare'], $allowedShares)) {
+                        return true;
+                    }
+                    return false;
+                });
+                $results = array_values($results);
+            }
+
+            return $results;
         } else {
-            // 不限制权限（管理员或后台）
+            // 不限制权限
             $sql = "
                 SELECT 
+                    id,
                     file_id,
                     userid,
                     file_name,
                     file_type,
                     file_ext,
                     SUBSTRING(content, 1, 500) as content_preview,
-                    (
-                        CASE WHEN file_name LIKE ? THEN 10 ELSE 0 END +
-                        IFNULL(MATCH(content) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
-                    ) AS relevance
+                    WEIGHT() as relevance
                 FROM file_vectors
-                WHERE file_name LIKE ? OR MATCH(content) AGAINST(? IN NATURAL LANGUAGE MODE)
+                WHERE MATCH('@(file_name,content) {$escapedKeyword}')
                 ORDER BY relevance DESC
                 LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
-            $params = [$likeKeyword, $keyword, $likeKeyword, $keyword];
+            return $instance->query($sql);
         }
-
-        return $instance->query($sql, $params);
     }
 
     /**
@@ -455,47 +417,52 @@ class SeekDBBase
         }
 
         $instance = new self();
-        $vectorStr = '[' . implode(',', $queryVector) . ']';
+        $vectorStr = '(' . implode(',', $queryVector) . ')';
 
-        if ($userid > 0) {
-            // 权限过滤：pshare 指向共享根文件夹的 ID
-            $sql = "
-                SELECT DISTINCT
-                    fv.file_id,
-                    fv.userid,
-                    fv.file_name,
-                    fv.file_type,
-                    fv.file_ext,
-                    SUBSTRING(fv.content, 1, 500) as content_preview,
-                    COSINE_SIMILARITY(fv.content_vector, ?) AS similarity
-                FROM file_vectors fv
-                LEFT JOIN file_users fu ON fv.pshare = fu.file_id AND fv.pshare > 0
-                WHERE fv.content_vector IS NOT NULL
-                  AND (fv.userid = ? OR fu.userid IN (0, ?))
-                ORDER BY similarity DESC
-                LIMIT " . (int)$limit;
+        $sql = "
+            SELECT 
+                id,
+                file_id,
+                userid,
+                pshare,
+                file_name,
+                file_type,
+                file_ext,
+                SUBSTRING(content, 1, 500) as content_preview,
+                KNN_DIST() as distance
+            FROM file_vectors
+            WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
+            ORDER BY distance ASC
+        ";
 
-            $params = [$vectorStr, $userid, $userid];
-        } else {
-            // 不限制权限
-            $sql = "
-                SELECT 
-                    file_id,
-                    userid,
-                    file_name,
-                    file_type,
-                    file_ext,
-                    SUBSTRING(content, 1, 500) as content_preview,
-                    COSINE_SIMILARITY(content_vector, ?) AS similarity
-                FROM file_vectors
-                WHERE content_vector IS NOT NULL
-                ORDER BY similarity DESC
-                LIMIT " . (int)$limit;
+        $results = $instance->query($sql);
 
-            $params = [$vectorStr];
+        // 转换 distance 为 similarity（1 - distance 用于余弦距离）
+        foreach ($results as &$item) {
+            $item['similarity'] = 1 - ($item['distance'] ?? 0);
         }
 
-        return $instance->query($sql, $params);
+        // 权限过滤
+        if ($userid > 0 && !empty($results)) {
+            $shareFileIds = $instance->query(
+                "SELECT file_id FROM file_users WHERE userid IN (0, ?)",
+                [$userid]
+            );
+            $allowedShares = array_column($shareFileIds, 'file_id');
+
+            $results = array_filter($results, function ($item) use ($userid, $allowedShares) {
+                if ($item['userid'] == $userid) {
+                    return true;
+                }
+                if ($item['pshare'] > 0 && in_array($item['pshare'], $allowedShares)) {
+                    return true;
+                }
+                return false;
+            });
+            $results = array_values($results);
+        }
+
+        return array_slice($results, 0, $limit);
     }
 
     /**
@@ -517,7 +484,7 @@ class SeekDBBase
         float $textWeight = 0.5,
         float $vectorWeight = 0.5
     ): array {
-        // 分别执行两种搜索（权限过滤在各自方法内通过 JOIN 实现）
+        // 分别执行两种搜索
         $textResults = self::fullTextSearch($keyword, $userid, 50, 0);
         $vectorResults = !empty($queryVector)
             ? self::vectorSearch($queryVector, $userid, 50)
@@ -578,42 +545,21 @@ class SeekDBBase
             return false;
         }
 
-        // 检查是否存在
-        $existing = $instance->queryOne(
-            "SELECT id FROM file_vectors WHERE file_id = ?",
-            [$fileId]
-        );
+        // 先尝试删除已存在的记录
+        $instance->execute("DELETE FROM file_vectors WHERE file_id = ?", [$fileId]);
 
-        if ($existing) {
-            // 更新
-            $sql = "UPDATE file_vectors SET 
-                    userid = ?,
-                    pshare = ?,
-                    file_name = ?,
-                    file_type = ?,
-                    file_ext = ?,
-                    content = ?,
-                    content_vector = ?,
-                    updated_at = NOW()
-                WHERE file_id = ?";
+        // 插入新记录
+        $vectorValue = $data['content_vector'] ?? null;
+        if ($vectorValue) {
+            // 向量格式转换：从 [1,2,3] 转为 (1,2,3)
+            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
 
-            $params = [
-                $data['userid'] ?? 0,
-                $data['pshare'] ?? 0,
-                $data['file_name'] ?? '',
-                $data['file_type'] ?? '',
-                $data['file_ext'] ?? '',
-                $data['content'] ?? '',
-                $data['content_vector'] ?? null,
-                $fileId
-            ];
-        } else {
-            // 插入
             $sql = "INSERT INTO file_vectors 
-                    (file_id, userid, pshare, file_name, file_type, file_ext, content, content_vector, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                    (id, file_id, userid, pshare, file_name, file_type, file_ext, content, content_vector)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $params = [
+                $fileId,
                 $fileId,
                 $data['userid'] ?? 0,
                 $data['pshare'] ?? 0,
@@ -621,7 +567,22 @@ class SeekDBBase
                 $data['file_type'] ?? '',
                 $data['file_ext'] ?? '',
                 $data['content'] ?? '',
-                $data['content_vector'] ?? null
+                $vectorValue
+            ];
+        } else {
+            $sql = "INSERT INTO file_vectors 
+                    (id, file_id, userid, pshare, file_name, file_type, file_ext, content)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            $params = [
+                $fileId,
+                $fileId,
+                $data['userid'] ?? 0,
+                $data['pshare'] ?? 0,
+                $data['file_name'] ?? '',
+                $data['file_type'] ?? '',
+                $data['file_ext'] ?? '',
+                $data['content'] ?? ''
             ];
         }
 
@@ -641,10 +602,7 @@ class SeekDBBase
         }
 
         $instance = new self();
-        return $instance->execute(
-            "DELETE FROM file_vectors WHERE file_id = ?",
-            [$fileId]
-        );
+        return $instance->execute("DELETE FROM file_vectors WHERE file_id = ?", [$fileId]);
     }
 
     /**
@@ -660,11 +618,10 @@ class SeekDBBase
         }
 
         $instance = new self();
-        $placeholders = implode(',', array_fill(0, count($fileIds), '?'));
+        $placeholders = implode(',', array_map('intval', $fileIds));
 
         return $instance->executeWithRowCount(
-            "DELETE FROM file_vectors WHERE file_id IN ({$placeholders})",
-            $fileIds
+            "DELETE FROM file_vectors WHERE file_id IN ({$placeholders})"
         );
     }
 
@@ -681,14 +638,19 @@ class SeekDBBase
             return 0;
         }
 
+        // Manticore 不支持批量 UPDATE，需要逐个更新
         $instance = new self();
-        $placeholders = implode(',', array_fill(0, count($fileIds), '?'));
-        $params = array_merge([$pshare], $fileIds);
-
-        return $instance->executeWithRowCount(
-            "UPDATE file_vectors SET pshare = ?, updated_at = NOW() WHERE file_id IN ({$placeholders})",
-            $params
-        );
+        $count = 0;
+        foreach ($fileIds as $fileId) {
+            $result = $instance->execute(
+                "UPDATE file_vectors SET pshare = ? WHERE file_id = ?",
+                [$pshare, (int)$fileId]
+            );
+            if ($result) {
+                $count++;
+            }
+        }
+        return $count;
     }
 
     /**
@@ -746,25 +708,18 @@ class SeekDBBase
 
         $instance = new self();
 
-        // 检查是否存在
-        $existing = $instance->queryOne(
-            "SELECT id FROM file_users WHERE file_id = ? AND userid = ?",
+        // 先删除已存在的记录
+        $instance->execute(
+            "DELETE FROM file_users WHERE file_id = ? AND userid = ?",
             [$fileId, $userid]
         );
 
-        if ($existing) {
-            // 更新
-            return $instance->execute(
-                "UPDATE file_users SET permission = ?, updated_at = NOW() WHERE file_id = ? AND userid = ?",
-                [$permission, $fileId, $userid]
-            );
-        } else {
-            // 插入
-            return $instance->execute(
-                "INSERT INTO file_users (file_id, userid, permission) VALUES (?, ?, ?)",
-                [$fileId, $userid, $permission]
-            );
-        }
+        // 插入新记录
+        $id = $fileId * 1000000 + $userid; // 生成唯一 ID
+        return $instance->execute(
+            "INSERT INTO file_users (id, file_id, userid, permission) VALUES (?, ?, ?, ?)",
+            [$id, $fileId, $userid, $permission]
+        );
     }
 
     /**
@@ -790,15 +745,16 @@ class SeekDBBase
             foreach ($users as $user) {
                 $userid = (int)($user['userid'] ?? 0);
                 $permission = (int)($user['permission'] ?? 0);
+                $id = $fileId * 1000000 + $userid;
                 $instance->execute(
-                    "INSERT INTO file_users (file_id, userid, permission) VALUES (?, ?, ?)",
-                    [$fileId, $userid, $permission]
+                    "INSERT INTO file_users (id, file_id, userid, permission) VALUES (?, ?, ?, ?)",
+                    [$id, $fileId, $userid, $permission]
                 );
             }
 
             return true;
         } catch (\Exception $e) {
-            Log::error('SeekDB syncFileUsers error: ' . $e->getMessage());
+            Log::error('Manticore syncFileUsers error: ' . $e->getMessage());
             return false;
         }
     }
@@ -881,30 +837,24 @@ class SeekDBBase
         }
 
         $instance = new self();
-        $likeKeyword = "%{$keyword}%";
+        $escapedKeyword = self::escapeMatch($keyword);
 
         $sql = "
             SELECT 
+                id,
                 userid,
                 nickname,
                 email,
                 tel,
                 profession,
                 SUBSTRING(introduction, 1, 200) as introduction_preview,
-                (
-                    CASE WHEN nickname LIKE ? THEN 10 ELSE 0 END +
-                    CASE WHEN email LIKE ? THEN 5 ELSE 0 END +
-                    IFNULL(MATCH(nickname, email, profession, introduction) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
-                ) AS relevance
+                WEIGHT() as relevance
             FROM user_vectors
-            WHERE nickname LIKE ? OR email LIKE ? OR profession LIKE ?
-               OR MATCH(nickname, email, profession, introduction) AGAINST(? IN NATURAL LANGUAGE MODE)
+            WHERE MATCH('@(nickname,email,profession,introduction) {$escapedKeyword}')
             ORDER BY relevance DESC
             LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
-        $params = [$likeKeyword, $likeKeyword, $keyword, $likeKeyword, $likeKeyword, $likeKeyword, $keyword];
-
-        return $instance->query($sql, $params);
+        return $instance->query($sql);
     }
 
     /**
@@ -921,23 +871,31 @@ class SeekDBBase
         }
 
         $instance = new self();
-        $vectorStr = '[' . implode(',', $queryVector) . ']';
+        $vectorStr = '(' . implode(',', $queryVector) . ')';
 
         $sql = "
             SELECT 
+                id,
                 userid,
                 nickname,
                 email,
                 tel,
                 profession,
                 SUBSTRING(introduction, 1, 200) as introduction_preview,
-                COSINE_SIMILARITY(content_vector, ?) AS similarity
+                KNN_DIST() as distance
             FROM user_vectors
-            WHERE content_vector IS NOT NULL
-            ORDER BY similarity DESC
-            LIMIT " . (int)$limit;
+            WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
+            ORDER BY distance ASC
+        ";
 
-        return $instance->query($sql, [$vectorStr]);
+        $results = $instance->query($sql);
+
+        // 转换 distance 为 similarity
+        foreach ($results as &$item) {
+            $item['similarity'] = 1 - ($item['distance'] ?? 0);
+        }
+
+        return $results;
     }
 
     /**
@@ -1002,41 +960,41 @@ class SeekDBBase
             return false;
         }
 
-        $existing = $instance->queryOne("SELECT id FROM user_vectors WHERE userid = ?", [$userid]);
+        // 先删除已存在的记录
+        $instance->execute("DELETE FROM user_vectors WHERE userid = ?", [$userid]);
 
-        if ($existing) {
-            $sql = "UPDATE user_vectors SET 
-                    nickname = ?,
-                    email = ?,
-                    tel = ?,
-                    profession = ?,
-                    introduction = ?,
-                    content_vector = ?,
-                    updated_at = NOW()
-                WHERE userid = ?";
+        // 插入新记录
+        $vectorValue = $data['content_vector'] ?? null;
+        if ($vectorValue) {
+            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
 
-            $params = [
-                $data['nickname'] ?? '',
-                $data['email'] ?? '',
-                $data['tel'] ?? '',
-                $data['profession'] ?? '',
-                $data['introduction'] ?? '',
-                $data['content_vector'] ?? null,
-                $userid
-            ];
-        } else {
             $sql = "INSERT INTO user_vectors 
-                    (userid, nickname, email, tel, profession, introduction, content_vector, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                    (id, userid, nickname, email, tel, profession, introduction, content_vector)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             $params = [
+                $userid,
                 $userid,
                 $data['nickname'] ?? '',
                 $data['email'] ?? '',
                 $data['tel'] ?? '',
                 $data['profession'] ?? '',
                 $data['introduction'] ?? '',
-                $data['content_vector'] ?? null
+                $vectorValue
+            ];
+        } else {
+            $sql = "INSERT INTO user_vectors 
+                    (id, userid, nickname, email, tel, profession, introduction)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+            $params = [
+                $userid,
+                $userid,
+                $data['nickname'] ?? '',
+                $data['email'] ?? '',
+                $data['tel'] ?? '',
+                $data['profession'] ?? '',
+                $data['introduction'] ?? ''
             ];
         }
 
@@ -1102,51 +1060,39 @@ class SeekDBBase
         }
 
         $instance = new self();
-        $likeKeyword = "%{$keyword}%";
+        $escapedKeyword = self::escapeMatch($keyword);
 
-        if ($userid > 0) {
-            // 权限过滤：只搜索用户参与的项目
-            $sql = "
-                SELECT DISTINCT
-                    pv.project_id,
-                    pv.userid,
-                    pv.personal,
-                    pv.project_name,
-                    SUBSTRING(pv.project_desc, 1, 300) as project_desc_preview,
-                    (
-                        CASE WHEN pv.project_name LIKE ? THEN 10 ELSE 0 END +
-                        IFNULL(MATCH(pv.project_name, pv.project_desc) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
-                    ) AS relevance
-                FROM project_vectors pv
-                JOIN project_users pu ON pv.project_id = pu.project_id
-                WHERE (pv.project_name LIKE ? OR MATCH(pv.project_name, pv.project_desc) AGAINST(? IN NATURAL LANGUAGE MODE))
-                  AND pu.userid = ?
-                ORDER BY relevance DESC
-                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        $sql = "
+            SELECT 
+                id,
+                project_id,
+                userid,
+                personal,
+                project_name,
+                SUBSTRING(project_desc, 1, 300) as project_desc_preview,
+                WEIGHT() as relevance
+            FROM project_vectors
+            WHERE MATCH('@(project_name,project_desc) {$escapedKeyword}')
+            ORDER BY relevance DESC
+            LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
-            $params = [$likeKeyword, $keyword, $likeKeyword, $keyword, $userid];
-        } else {
-            // 不限制权限
-            $sql = "
-                SELECT 
-                    project_id,
-                    userid,
-                    personal,
-                    project_name,
-                    SUBSTRING(project_desc, 1, 300) as project_desc_preview,
-                    (
-                        CASE WHEN project_name LIKE ? THEN 10 ELSE 0 END +
-                        IFNULL(MATCH(project_name, project_desc) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
-                    ) AS relevance
-                FROM project_vectors
-                WHERE project_name LIKE ? OR MATCH(project_name, project_desc) AGAINST(? IN NATURAL LANGUAGE MODE)
-                ORDER BY relevance DESC
-                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        $results = $instance->query($sql);
 
-            $params = [$likeKeyword, $keyword, $likeKeyword, $keyword];
+        // 权限过滤
+        if ($userid > 0 && !empty($results)) {
+            $memberProjects = $instance->query(
+                "SELECT project_id FROM project_users WHERE userid = ?",
+                [$userid]
+            );
+            $allowedProjects = array_column($memberProjects, 'project_id');
+
+            $results = array_filter($results, function ($item) use ($allowedProjects) {
+                return in_array($item['project_id'], $allowedProjects);
+            });
+            $results = array_values($results);
         }
 
-        return $instance->query($sql, $params);
+        return $results;
     }
 
     /**
@@ -1164,42 +1110,43 @@ class SeekDBBase
         }
 
         $instance = new self();
-        $vectorStr = '[' . implode(',', $queryVector) . ']';
+        $vectorStr = '(' . implode(',', $queryVector) . ')';
 
-        if ($userid > 0) {
-            $sql = "
-                SELECT DISTINCT
-                    pv.project_id,
-                    pv.userid,
-                    pv.personal,
-                    pv.project_name,
-                    SUBSTRING(pv.project_desc, 1, 300) as project_desc_preview,
-                    COSINE_SIMILARITY(pv.content_vector, ?) AS similarity
-                FROM project_vectors pv
-                JOIN project_users pu ON pv.project_id = pu.project_id
-                WHERE pv.content_vector IS NOT NULL AND pu.userid = ?
-                ORDER BY similarity DESC
-                LIMIT " . (int)$limit;
+        $sql = "
+            SELECT 
+                id,
+                project_id,
+                userid,
+                personal,
+                project_name,
+                SUBSTRING(project_desc, 1, 300) as project_desc_preview,
+                KNN_DIST() as distance
+            FROM project_vectors
+            WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
+            ORDER BY distance ASC
+        ";
 
-            $params = [$vectorStr, $userid];
-        } else {
-            $sql = "
-                SELECT 
-                    project_id,
-                    userid,
-                    personal,
-                    project_name,
-                    SUBSTRING(project_desc, 1, 300) as project_desc_preview,
-                    COSINE_SIMILARITY(content_vector, ?) AS similarity
-                FROM project_vectors
-                WHERE content_vector IS NOT NULL
-                ORDER BY similarity DESC
-                LIMIT " . (int)$limit;
+        $results = $instance->query($sql);
 
-            $params = [$vectorStr];
+        foreach ($results as &$item) {
+            $item['similarity'] = 1 - ($item['distance'] ?? 0);
         }
 
-        return $instance->query($sql, $params);
+        // 权限过滤
+        if ($userid > 0 && !empty($results)) {
+            $memberProjects = $instance->query(
+                "SELECT project_id FROM project_users WHERE userid = ?",
+                [$userid]
+            );
+            $allowedProjects = array_column($memberProjects, 'project_id');
+
+            $results = array_filter($results, function ($item) use ($allowedProjects) {
+                return in_array($item['project_id'], $allowedProjects);
+            });
+            $results = array_values($results);
+        }
+
+        return array_slice($results, 0, $limit);
     }
 
     /**
@@ -1216,7 +1163,6 @@ class SeekDBBase
         $textResults = self::projectFullTextSearch($keyword, $userid, 50, 0);
         $vectorResults = !empty($queryVector) ? self::projectVectorSearch($queryVector, $userid, 50) : [];
 
-        // RRF 融合
         $scores = [];
         $items = [];
         $k = 60;
@@ -1265,38 +1211,39 @@ class SeekDBBase
             return false;
         }
 
-        $existing = $instance->queryOne("SELECT id FROM project_vectors WHERE project_id = ?", [$projectId]);
+        // 先删除已存在的记录
+        $instance->execute("DELETE FROM project_vectors WHERE project_id = ?", [$projectId]);
 
-        if ($existing) {
-            $sql = "UPDATE project_vectors SET 
-                    userid = ?,
-                    personal = ?,
-                    project_name = ?,
-                    project_desc = ?,
-                    content_vector = ?,
-                    updated_at = NOW()
-                WHERE project_id = ?";
+        // 插入新记录
+        $vectorValue = $data['content_vector'] ?? null;
+        if ($vectorValue) {
+            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
 
-            $params = [
-                $data['userid'] ?? 0,
-                $data['personal'] ?? 0,
-                $data['project_name'] ?? '',
-                $data['project_desc'] ?? '',
-                $data['content_vector'] ?? null,
-                $projectId
-            ];
-        } else {
             $sql = "INSERT INTO project_vectors 
-                    (project_id, userid, personal, project_name, project_desc, content_vector, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                    (id, project_id, userid, personal, project_name, project_desc, content_vector)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             $params = [
+                $projectId,
                 $projectId,
                 $data['userid'] ?? 0,
                 $data['personal'] ?? 0,
                 $data['project_name'] ?? '',
                 $data['project_desc'] ?? '',
-                $data['content_vector'] ?? null
+                $vectorValue
+            ];
+        } else {
+            $sql = "INSERT INTO project_vectors 
+                    (id, project_id, userid, personal, project_name, project_desc)
+                    VALUES (?, ?, ?, ?, ?, ?)";
+
+            $params = [
+                $projectId,
+                $projectId,
+                $data['userid'] ?? 0,
+                $data['personal'] ?? 0,
+                $data['project_name'] ?? '',
+                $data['project_desc'] ?? ''
             ];
         }
 
@@ -1361,18 +1308,17 @@ class SeekDBBase
 
         $instance = new self();
 
-        $existing = $instance->queryOne(
-            "SELECT id FROM project_users WHERE project_id = ? AND userid = ?",
+        // 先删除已存在的记录
+        $instance->execute(
+            "DELETE FROM project_users WHERE project_id = ? AND userid = ?",
             [$projectId, $userid]
         );
 
-        if ($existing) {
-            return true; // 已存在
-        }
-
+        // 插入新记录
+        $id = $projectId * 1000000 + $userid;
         return $instance->execute(
-            "INSERT INTO project_users (project_id, userid) VALUES (?, ?)",
-            [$projectId, $userid]
+            "INSERT INTO project_users (id, project_id, userid) VALUES (?, ?, ?)",
+            [$id, $projectId, $userid]
         );
     }
 
@@ -1431,15 +1377,16 @@ class SeekDBBase
             $instance->execute("DELETE FROM project_users WHERE project_id = ?", [$projectId]);
 
             foreach ($userids as $userid) {
+                $id = $projectId * 1000000 + (int)$userid;
                 $instance->execute(
-                    "INSERT INTO project_users (project_id, userid) VALUES (?, ?)",
-                    [$projectId, (int)$userid]
+                    "INSERT INTO project_users (id, project_id, userid) VALUES (?, ?, ?)",
+                    [$id, $projectId, (int)$userid]
                 );
             }
 
             return true;
         } catch (\Exception $e) {
-            Log::error('SeekDB syncProjectUsers error: ' . $e->getMessage());
+            Log::error('Manticore syncProjectUsers error: ' . $e->getMessage());
             return false;
         }
     }
@@ -1487,63 +1434,61 @@ class SeekDBBase
         }
 
         $instance = new self();
-        $likeKeyword = "%{$keyword}%";
+        $escapedKeyword = self::escapeMatch($keyword);
 
-        if ($userid > 0) {
-            // 复杂权限过滤：
-            // 1. 自己创建的任务
-            // 2. visibility=1 且是项目成员
-            // 3. visibility=2,3 且是任务成员
-            $sql = "
-                SELECT DISTINCT
-                    tv.task_id,
-                    tv.project_id,
-                    tv.userid,
-                    tv.visibility,
-                    tv.task_name,
-                    SUBSTRING(tv.task_desc, 1, 300) as task_desc_preview,
-                    SUBSTRING(tv.task_content, 1, 500) as task_content_preview,
-                    (
-                        CASE WHEN tv.task_name LIKE ? THEN 10 ELSE 0 END +
-                        IFNULL(MATCH(tv.task_name, tv.task_desc, tv.task_content) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
-                    ) AS relevance
-                FROM task_vectors tv
-                LEFT JOIN project_users pu ON tv.project_id = pu.project_id AND pu.userid = ?
-                LEFT JOIN task_users tu ON tv.task_id = tu.task_id AND tu.userid = ?
-                WHERE (tv.task_name LIKE ? OR MATCH(tv.task_name, tv.task_desc, tv.task_content) AGAINST(? IN NATURAL LANGUAGE MODE))
-                  AND (
-                    tv.userid = ?
-                    OR (tv.visibility = 1 AND pu.userid IS NOT NULL)
-                    OR (tv.visibility IN (2, 3) AND tu.userid IS NOT NULL)
-                  )
-                ORDER BY relevance DESC
-                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        $sql = "
+            SELECT 
+                id,
+                task_id,
+                project_id,
+                userid,
+                visibility,
+                task_name,
+                SUBSTRING(task_desc, 1, 300) as task_desc_preview,
+                SUBSTRING(task_content, 1, 500) as task_content_preview,
+                WEIGHT() as relevance
+            FROM task_vectors
+            WHERE MATCH('@(task_name,task_desc,task_content) {$escapedKeyword}')
+            ORDER BY relevance DESC
+            LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
-            $params = [$likeKeyword, $keyword, $userid, $userid, $likeKeyword, $keyword, $userid];
-        } else {
-            // 不限制权限
-            $sql = "
-                SELECT 
-                    task_id,
-                    project_id,
-                    userid,
-                    visibility,
-                    task_name,
-                    SUBSTRING(task_desc, 1, 300) as task_desc_preview,
-                    SUBSTRING(task_content, 1, 500) as task_content_preview,
-                    (
-                        CASE WHEN task_name LIKE ? THEN 10 ELSE 0 END +
-                        IFNULL(MATCH(task_name, task_desc, task_content) AGAINST(? IN NATURAL LANGUAGE MODE), 0)
-                    ) AS relevance
-                FROM task_vectors
-                WHERE task_name LIKE ? OR MATCH(task_name, task_desc, task_content) AGAINST(? IN NATURAL LANGUAGE MODE)
-                ORDER BY relevance DESC
-                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        $results = $instance->query($sql);
 
-            $params = [$likeKeyword, $keyword, $likeKeyword, $keyword];
+        // 权限过滤
+        if ($userid > 0 && !empty($results)) {
+            // 获取用户参与的项目
+            $memberProjects = $instance->query(
+                "SELECT project_id FROM project_users WHERE userid = ?",
+                [$userid]
+            );
+            $allowedProjects = array_column($memberProjects, 'project_id');
+
+            // 获取用户参与的任务
+            $memberTasks = $instance->query(
+                "SELECT task_id FROM task_users WHERE userid = ?",
+                [$userid]
+            );
+            $allowedTasks = array_column($memberTasks, 'task_id');
+
+            $results = array_filter($results, function ($item) use ($userid, $allowedProjects, $allowedTasks) {
+                // 自己创建的任务
+                if ($item['userid'] == $userid) {
+                    return true;
+                }
+                // visibility=1 且是项目成员
+                if ($item['visibility'] == 1 && in_array($item['project_id'], $allowedProjects)) {
+                    return true;
+                }
+                // visibility=2,3 且是任务成员
+                if (in_array($item['visibility'], [2, 3]) && in_array($item['task_id'], $allowedTasks)) {
+                    return true;
+                }
+                return false;
+            });
+            $results = array_values($results);
         }
 
-        return $instance->query($sql, $params);
+        return $results;
     }
 
     /**
@@ -1561,52 +1506,60 @@ class SeekDBBase
         }
 
         $instance = new self();
-        $vectorStr = '[' . implode(',', $queryVector) . ']';
+        $vectorStr = '(' . implode(',', $queryVector) . ')';
 
-        if ($userid > 0) {
-            $sql = "
-                SELECT DISTINCT
-                    tv.task_id,
-                    tv.project_id,
-                    tv.userid,
-                    tv.visibility,
-                    tv.task_name,
-                    SUBSTRING(tv.task_desc, 1, 300) as task_desc_preview,
-                    SUBSTRING(tv.task_content, 1, 500) as task_content_preview,
-                    COSINE_SIMILARITY(tv.content_vector, ?) AS similarity
-                FROM task_vectors tv
-                LEFT JOIN project_users pu ON tv.project_id = pu.project_id AND pu.userid = ?
-                LEFT JOIN task_users tu ON tv.task_id = tu.task_id AND tu.userid = ?
-                WHERE tv.content_vector IS NOT NULL
-                  AND (
-                    tv.userid = ?
-                    OR (tv.visibility = 1 AND pu.userid IS NOT NULL)
-                    OR (tv.visibility IN (2, 3) AND tu.userid IS NOT NULL)
-                  )
-                ORDER BY similarity DESC
-                LIMIT " . (int)$limit;
+        $sql = "
+            SELECT 
+                id,
+                task_id,
+                project_id,
+                userid,
+                visibility,
+                task_name,
+                SUBSTRING(task_desc, 1, 300) as task_desc_preview,
+                SUBSTRING(task_content, 1, 500) as task_content_preview,
+                KNN_DIST() as distance
+            FROM task_vectors
+            WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
+            ORDER BY distance ASC
+        ";
 
-            $params = [$vectorStr, $userid, $userid, $userid];
-        } else {
-            $sql = "
-                SELECT 
-                    task_id,
-                    project_id,
-                    userid,
-                    visibility,
-                    task_name,
-                    SUBSTRING(task_desc, 1, 300) as task_desc_preview,
-                    SUBSTRING(task_content, 1, 500) as task_content_preview,
-                    COSINE_SIMILARITY(content_vector, ?) AS similarity
-                FROM task_vectors
-                WHERE content_vector IS NOT NULL
-                ORDER BY similarity DESC
-                LIMIT " . (int)$limit;
+        $results = $instance->query($sql);
 
-            $params = [$vectorStr];
+        foreach ($results as &$item) {
+            $item['similarity'] = 1 - ($item['distance'] ?? 0);
         }
 
-        return $instance->query($sql, $params);
+        // 权限过滤
+        if ($userid > 0 && !empty($results)) {
+            $memberProjects = $instance->query(
+                "SELECT project_id FROM project_users WHERE userid = ?",
+                [$userid]
+            );
+            $allowedProjects = array_column($memberProjects, 'project_id');
+
+            $memberTasks = $instance->query(
+                "SELECT task_id FROM task_users WHERE userid = ?",
+                [$userid]
+            );
+            $allowedTasks = array_column($memberTasks, 'task_id');
+
+            $results = array_filter($results, function ($item) use ($userid, $allowedProjects, $allowedTasks) {
+                if ($item['userid'] == $userid) {
+                    return true;
+                }
+                if ($item['visibility'] == 1 && in_array($item['project_id'], $allowedProjects)) {
+                    return true;
+                }
+                if (in_array($item['visibility'], [2, 3]) && in_array($item['task_id'], $allowedTasks)) {
+                    return true;
+                }
+                return false;
+            });
+            $results = array_values($results);
+        }
+
+        return array_slice($results, 0, $limit);
     }
 
     /**
@@ -1623,7 +1576,6 @@ class SeekDBBase
         $textResults = self::taskFullTextSearch($keyword, $userid, 50, 0);
         $vectorResults = !empty($queryVector) ? self::taskVectorSearch($queryVector, $userid, 50) : [];
 
-        // RRF 融合
         $scores = [];
         $items = [];
         $k = 60;
@@ -1672,36 +1624,20 @@ class SeekDBBase
             return false;
         }
 
-        $existing = $instance->queryOne("SELECT id FROM task_vectors WHERE task_id = ?", [$taskId]);
+        // 先删除已存在的记录
+        $instance->execute("DELETE FROM task_vectors WHERE task_id = ?", [$taskId]);
 
-        if ($existing) {
-            $sql = "UPDATE task_vectors SET 
-                    project_id = ?,
-                    userid = ?,
-                    visibility = ?,
-                    task_name = ?,
-                    task_desc = ?,
-                    task_content = ?,
-                    content_vector = ?,
-                    updated_at = NOW()
-                WHERE task_id = ?";
+        // 插入新记录
+        $vectorValue = $data['content_vector'] ?? null;
+        if ($vectorValue) {
+            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
 
-            $params = [
-                $data['project_id'] ?? 0,
-                $data['userid'] ?? 0,
-                $data['visibility'] ?? 1,
-                $data['task_name'] ?? '',
-                $data['task_desc'] ?? '',
-                $data['task_content'] ?? '',
-                $data['content_vector'] ?? null,
-                $taskId
-            ];
-        } else {
             $sql = "INSERT INTO task_vectors 
-                    (task_id, project_id, userid, visibility, task_name, task_desc, task_content, content_vector, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                    (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, content_vector)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $params = [
+                $taskId,
                 $taskId,
                 $data['project_id'] ?? 0,
                 $data['userid'] ?? 0,
@@ -1709,7 +1645,22 @@ class SeekDBBase
                 $data['task_name'] ?? '',
                 $data['task_desc'] ?? '',
                 $data['task_content'] ?? '',
-                $data['content_vector'] ?? null
+                $vectorValue
+            ];
+        } else {
+            $sql = "INSERT INTO task_vectors 
+                    (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            $params = [
+                $taskId,
+                $taskId,
+                $data['project_id'] ?? 0,
+                $data['userid'] ?? 0,
+                $data['visibility'] ?? 1,
+                $data['task_name'] ?? '',
+                $data['task_desc'] ?? '',
+                $data['task_content'] ?? ''
             ];
         }
 
@@ -1731,7 +1682,7 @@ class SeekDBBase
 
         $instance = new self();
         return $instance->execute(
-            "UPDATE task_vectors SET visibility = ?, updated_at = NOW() WHERE task_id = ?",
+            "UPDATE task_vectors SET visibility = ? WHERE task_id = ?",
             [$visibility, $taskId]
         );
     }
@@ -1794,18 +1745,17 @@ class SeekDBBase
 
         $instance = new self();
 
-        $existing = $instance->queryOne(
-            "SELECT id FROM task_users WHERE task_id = ? AND userid = ?",
+        // 先删除已存在的记录
+        $instance->execute(
+            "DELETE FROM task_users WHERE task_id = ? AND userid = ?",
             [$taskId, $userid]
         );
 
-        if ($existing) {
-            return true;
-        }
-
+        // 插入新记录
+        $id = $taskId * 1000000 + $userid;
         return $instance->execute(
-            "INSERT INTO task_users (task_id, userid) VALUES (?, ?)",
-            [$taskId, $userid]
+            "INSERT INTO task_users (id, task_id, userid) VALUES (?, ?, ?)",
+            [$id, $taskId, $userid]
         );
     }
 
@@ -1864,15 +1814,16 @@ class SeekDBBase
             $instance->execute("DELETE FROM task_users WHERE task_id = ?", [$taskId]);
 
             foreach ($userids as $userid) {
+                $id = $taskId * 1000000 + (int)$userid;
                 $instance->execute(
-                    "INSERT INTO task_users (task_id, userid) VALUES (?, ?)",
-                    [$taskId, (int)$userid]
+                    "INSERT INTO task_users (id, task_id, userid) VALUES (?, ?, ?)",
+                    [$id, $taskId, (int)$userid]
                 );
             }
 
             return true;
         } catch (\Exception $e) {
-            Log::error('SeekDB syncTaskUsers error: ' . $e->getMessage());
+            Log::error('Manticore syncTaskUsers error: ' . $e->getMessage());
             return false;
         }
     }

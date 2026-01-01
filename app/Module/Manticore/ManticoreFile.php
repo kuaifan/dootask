@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Module\SeekDB;
+namespace App\Module\Manticore;
 
 use App\Models\File;
 use App\Models\FileContent;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 /**
- * SeekDB 文件搜索类
+ * Manticore Search 文件搜索类
  *
  * 使用方法:
  *
@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\DB;
  * 3. 工具方法
  *    - 清空索引: clear();
  */
-class SeekDBFile
+class ManticoreFile
 {
     /**
      * 可搜索的文件类型
@@ -83,18 +83,17 @@ class SeekDBFile
             return [];
         }
 
-        if (!Apps::isInstalled("seekdb")) {
-            // 未安装 SeekDB，降级到 MySQL LIKE 搜索
+        if (!Apps::isInstalled("manticore")) {
+            // 未安装 Manticore，降级到 MySQL LIKE 搜索
             return self::searchByMysql($userid, $keyword, $from, $size);
         }
 
         try {
-            // 权限过滤已在 SeekDBBase 中通过 JOIN file_users 表实现
             switch ($searchType) {
                 case 'text':
                     // 纯全文搜索
                     return self::formatSearchResults(
-                        SeekDBBase::fullTextSearch($keyword, $userid, $size, $from)
+                        ManticoreBase::fullTextSearch($keyword, $userid, $size, $from)
                     );
 
                 case 'vector':
@@ -103,11 +102,11 @@ class SeekDBFile
                     if (empty($embedding)) {
                         // embedding 获取失败，降级到全文搜索
                         return self::formatSearchResults(
-                            SeekDBBase::fullTextSearch($keyword, $userid, $size, $from)
+                            ManticoreBase::fullTextSearch($keyword, $userid, $size, $from)
                         );
                     }
                     return self::formatSearchResults(
-                        SeekDBBase::vectorSearch($embedding, $userid, $size)
+                        ManticoreBase::vectorSearch($embedding, $userid, $size)
                     );
 
                 case 'hybrid':
@@ -115,11 +114,11 @@ class SeekDBFile
                     // 混合搜索
                     $embedding = self::getEmbedding($keyword);
                     return self::formatSearchResults(
-                        SeekDBBase::hybridSearch($keyword, $embedding, $userid, $size)
+                        ManticoreBase::hybridSearch($keyword, $embedding, $userid, $size)
                     );
             }
         } catch (\Exception $e) {
-            Log::error('SeekDB search error: ' . $e->getMessage());
+            Log::error('Manticore search error: ' . $e->getMessage());
             return self::searchByMysql($userid, $keyword, $from, $size);
         }
     }
@@ -152,7 +151,7 @@ class SeekDBFile
     /**
      * 格式化搜索结果
      *
-     * @param array $results SeekDB 返回的结果
+     * @param array $results Manticore 返回的结果
      * @return array 格式化后的结果
      */
     private static function formatSearchResults(array $results): array
@@ -210,14 +209,14 @@ class SeekDBFile
     // ==============================
 
     /**
-     * 同步单个文件到 SeekDB
+     * 同步单个文件到 Manticore
      *
      * @param File $file 文件模型
      * @return bool 是否成功
      */
     public static function sync(File $file): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
@@ -229,7 +228,7 @@ class SeekDBFile
         // 根据文件类型检查大小限制
         $maxSize = self::getMaxFileSizeByExt($file->ext);
         if ($file->size > $maxSize) {
-            Log::info("SeekDB: Skip large file {$file->id} ({$file->size} bytes, max: {$maxSize})");
+            Log::info("Manticore: Skip large file {$file->id} ({$file->size} bytes, max: {$maxSize})");
             return true;
         }
 
@@ -249,9 +248,8 @@ class SeekDBFile
                 }
             }
 
-            // 写入 SeekDB
-            // pshare 指向共享根文件夹的 ID，用于权限过滤
-            $result = SeekDBBase::upsertFileVector([
+            // 写入 Manticore
+            $result = ManticoreBase::upsertFileVector([
                 'file_id' => $file->id,
                 'userid' => $file->userid,
                 'pshare' => $file->pshare ?? 0,
@@ -262,12 +260,9 @@ class SeekDBFile
                 'content_vector' => $embedding,
             ]);
 
-            // 注意：file_users 只需要同步共享文件夹的关系，不需要同步每个文件
-            // 因为搜索时是通过 pshare 关联 file_users 表
-
             return $result;
         } catch (\Exception $e) {
-            Log::error('SeekDB sync error: ' . $e->getMessage(), [
+            Log::error('Manticore sync error: ' . $e->getMessage(), [
                 'file_id' => $file->id,
                 'file_name' => $file->name,
             ]);
@@ -314,7 +309,7 @@ class SeekDBFile
      */
     public static function batchSync(iterable $files): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
@@ -335,11 +330,11 @@ class SeekDBFile
      */
     public static function delete(int $fileId): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
-        return SeekDBBase::deleteFileVector($fileId);
+        return ManticoreBase::deleteFileVector($fileId);
     }
 
     /**
@@ -397,11 +392,11 @@ class SeekDBFile
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
-        return SeekDBBase::clearAllFileVectors();
+        return ManticoreBase::clearAllFileVectors();
     }
 
     /**
@@ -411,11 +406,11 @@ class SeekDBFile
      */
     public static function getIndexedCount(): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
-        return SeekDBBase::getIndexedFileCount();
+        return ManticoreBase::getIndexedFileCount();
     }
 
     // ==============================
@@ -423,14 +418,14 @@ class SeekDBFile
     // ==============================
 
     /**
-     * 同步单个文件的用户关系到 SeekDB
+     * 同步单个文件的用户关系到 Manticore
      *
      * @param int $fileId 文件ID
      * @return bool 是否成功
      */
     public static function syncFileUsers(int $fileId): bool
     {
-        if (!Apps::isInstalled("seekdb") || $fileId <= 0) {
+        if (!Apps::isInstalled("manticore") || $fileId <= 0) {
             return false;
         }
 
@@ -447,16 +442,16 @@ class SeekDBFile
                 })
                 ->toArray();
 
-            // 同步到 SeekDB
-            return SeekDBBase::syncFileUsers($fileId, $users);
+            // 同步到 Manticore
+            return ManticoreBase::syncFileUsers($fileId, $users);
         } catch (\Exception $e) {
-            Log::error('SeekDB syncFileUsers error: ' . $e->getMessage(), ['file_id' => $fileId]);
+            Log::error('Manticore syncFileUsers error: ' . $e->getMessage(), ['file_id' => $fileId]);
             return false;
         }
     }
 
     /**
-     * 添加文件用户关系到 SeekDB
+     * 添加文件用户关系到 Manticore
      *
      * @param int $fileId 文件ID
      * @param int $userid 用户ID
@@ -465,11 +460,11 @@ class SeekDBFile
      */
     public static function addFileUser(int $fileId, int $userid, int $permission = 0): bool
     {
-        if (!Apps::isInstalled("seekdb") || $fileId <= 0) {
+        if (!Apps::isInstalled("manticore") || $fileId <= 0) {
             return false;
         }
 
-        return SeekDBBase::upsertFileUser($fileId, $userid, $permission);
+        return ManticoreBase::upsertFileUser($fileId, $userid, $permission);
     }
 
     /**
@@ -481,15 +476,15 @@ class SeekDBFile
      */
     public static function removeFileUser(int $fileId, ?int $userid = null): bool
     {
-        if (!Apps::isInstalled("seekdb") || $fileId <= 0) {
+        if (!Apps::isInstalled("manticore") || $fileId <= 0) {
             return false;
         }
 
         if ($userid === null) {
-            return SeekDBBase::deleteFileUsers($fileId);
+            return ManticoreBase::deleteFileUsers($fileId);
         }
 
-        return SeekDBBase::deleteFileUser($fileId, $userid);
+        return ManticoreBase::deleteFileUser($fileId, $userid);
     }
 
     /**
@@ -500,7 +495,7 @@ class SeekDBFile
      */
     public static function syncAllFileUsers(?callable $progressCallback = null): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
@@ -508,8 +503,8 @@ class SeekDBFile
         $lastId = 0;
         $batchSize = 1000;
 
-        // 先清空 SeekDB 中的 file_users 表
-        SeekDBBase::clearAllFileUsers();
+        // 先清空 Manticore 中的 file_users 表
+        ManticoreBase::clearAllFileUsers();
 
         // 分批同步
         while (true) {
@@ -523,7 +518,7 @@ class SeekDBFile
             }
 
             foreach ($records as $record) {
-                SeekDBBase::upsertFileUser($record->file_id, $record->userid, $record->permission);
+                ManticoreBase::upsertFileUser($record->file_id, $record->userid, $record->permission);
                 $count++;
                 $lastId = $record->id;
             }
@@ -544,14 +539,14 @@ class SeekDBFile
      */
     public static function syncFileUsersIncremental(?callable $progressCallback = null): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
         $count = 0;
         $batchSize = 1000;
-        $lastKey = "sync:seekdbFileUserLastId";
-        $lastId = intval(SeekDBKeyValue::get($lastKey, 0));
+        $lastKey = "sync:manticoreFileUserLastId";
+        $lastId = intval(ManticoreKeyValue::get($lastKey, 0));
 
         // 分批同步新增的记录
         while (true) {
@@ -565,13 +560,13 @@ class SeekDBFile
             }
 
             foreach ($records as $record) {
-                SeekDBBase::upsertFileUser($record->file_id, $record->userid, $record->permission);
+                ManticoreBase::upsertFileUser($record->file_id, $record->userid, $record->permission);
                 $count++;
                 $lastId = $record->id;
             }
 
             // 保存进度
-            SeekDBKeyValue::set($lastKey, $lastId);
+            ManticoreKeyValue::set($lastKey, $lastId);
 
             if ($progressCallback) {
                 $progressCallback($count);

@@ -7,7 +7,7 @@ use App\Models\ProjectTask;
 use App\Models\ProjectTaskUser;
 use App\Models\ProjectTaskVisibilityUser;
 use App\Models\ProjectUser;
-use App\Tasks\SeekDBSyncTask;
+use App\Tasks\ManticoreSyncTask;
 
 class ProjectTaskObserver extends AbstractObserver
 {
@@ -19,7 +19,7 @@ class ProjectTaskObserver extends AbstractObserver
      */
     public function created(ProjectTask $projectTask)
     {
-        self::taskDeliver(new SeekDBSyncTask('task_sync', $projectTask->toArray()));
+        self::taskDeliver(new ManticoreSyncTask('task_sync', $projectTask->toArray()));
     }
 
     /**
@@ -32,8 +32,8 @@ class ProjectTaskObserver extends AbstractObserver
     {
         if ($projectTask->isDirty('visibility')) {
             self::visibilityUpdate($projectTask);
-            // 同步 visibility 变化到 SeekDB
-            self::taskDeliver(new SeekDBSyncTask('task_visibility_update', [
+            // 同步 visibility 变化到 Manticore
+            self::taskDeliver(new ManticoreSyncTask('task_visibility_update', [
                 'task_id' => $projectTask->id,
                 'visibility' => $projectTask->visibility,
             ]));
@@ -59,9 +59,9 @@ class ProjectTaskObserver extends AbstractObserver
 
         if ($isDirty) {
             if ($projectTask->archived_at) {
-                self::taskDeliver(new SeekDBSyncTask('task_delete', ['task_id' => $projectTask->id]));
+                self::taskDeliver(new ManticoreSyncTask('task_delete', ['task_id' => $projectTask->id]));
             } else {
-                self::taskDeliver(new SeekDBSyncTask('task_sync', $projectTask->toArray()));
+                self::taskDeliver(new ManticoreSyncTask('task_sync', $projectTask->toArray()));
             }
         }
     }
@@ -75,7 +75,7 @@ class ProjectTaskObserver extends AbstractObserver
     public function deleted(ProjectTask $projectTask)
     {
         Deleted::record('projectTask', $projectTask->id, self::userids($projectTask));
-        self::taskDeliver(new SeekDBSyncTask('task_delete', ['task_id' => $projectTask->id]));
+        self::taskDeliver(new ManticoreSyncTask('task_delete', ['task_id' => $projectTask->id]));
     }
 
     /**
@@ -87,7 +87,7 @@ class ProjectTaskObserver extends AbstractObserver
     public function restored(ProjectTask $projectTask)
     {
         Deleted::forget('projectTask', $projectTask->id, self::userids($projectTask));
-        self::taskDeliver(new SeekDBSyncTask('task_sync', $projectTask->toArray()));
+        self::taskDeliver(new ManticoreSyncTask('task_sync', $projectTask->toArray()));
     }
 
     /**
@@ -98,7 +98,7 @@ class ProjectTaskObserver extends AbstractObserver
      */
     public function forceDeleted(ProjectTask $projectTask)
     {
-        self::taskDeliver(new SeekDBSyncTask('task_delete', ['task_id' => $projectTask->id]));
+        self::taskDeliver(new ManticoreSyncTask('task_delete', ['task_id' => $projectTask->id]));
     }
 
     /**

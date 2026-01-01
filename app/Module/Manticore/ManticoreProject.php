@@ -1,17 +1,16 @@
 <?php
 
-namespace App\Module\SeekDB;
+namespace App\Module\Manticore;
 
 use App\Models\Project;
 use App\Models\ProjectUser;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\AI;
-use App\Module\SeekDB\SeekDBKeyValue;
 use Illuminate\Support\Facades\Log;
 
 /**
- * SeekDB 项目搜索类
+ * Manticore Search 项目搜索类
  *
  * 使用方法:
  *
@@ -31,7 +30,7 @@ use Illuminate\Support\Facades\Log;
  * 4. 工具方法
  *    - 清空索引: clear();
  */
-class SeekDBProject
+class ManticoreProject
 {
     /**
      * 搜索项目（支持全文、向量、混合搜索）
@@ -48,7 +47,7 @@ class SeekDBProject
             return [];
         }
 
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return [];
         }
 
@@ -56,29 +55,29 @@ class SeekDBProject
             switch ($searchType) {
                 case 'text':
                     return self::formatSearchResults(
-                        SeekDBBase::projectFullTextSearch($keyword, $userid, $limit, 0)
+                        ManticoreBase::projectFullTextSearch($keyword, $userid, $limit, 0)
                     );
 
                 case 'vector':
                     $embedding = self::getEmbedding($keyword);
                     if (empty($embedding)) {
                         return self::formatSearchResults(
-                            SeekDBBase::projectFullTextSearch($keyword, $userid, $limit, 0)
+                            ManticoreBase::projectFullTextSearch($keyword, $userid, $limit, 0)
                         );
                     }
                     return self::formatSearchResults(
-                        SeekDBBase::projectVectorSearch($embedding, $userid, $limit)
+                        ManticoreBase::projectVectorSearch($embedding, $userid, $limit)
                     );
 
                 case 'hybrid':
                 default:
                     $embedding = self::getEmbedding($keyword);
                     return self::formatSearchResults(
-                        SeekDBBase::projectHybridSearch($keyword, $embedding, $userid, $limit)
+                        ManticoreBase::projectHybridSearch($keyword, $embedding, $userid, $limit)
                     );
             }
         } catch (\Exception $e) {
-            Log::error('SeekDB project search error: ' . $e->getMessage());
+            Log::error('Manticore project search error: ' . $e->getMessage());
             return [];
         }
     }
@@ -110,7 +109,7 @@ class SeekDBProject
     /**
      * 格式化搜索结果
      *
-     * @param array $results SeekDB 返回的结果
+     * @param array $results Manticore 返回的结果
      * @return array 格式化后的结果
      */
     private static function formatSearchResults(array $results): array
@@ -135,14 +134,14 @@ class SeekDBProject
     // ==============================
 
     /**
-     * 同步单个项目到 SeekDB
+     * 同步单个项目到 Manticore
      *
      * @param Project $project 项目模型
      * @return bool 是否成功
      */
     public static function sync(Project $project): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
@@ -164,8 +163,8 @@ class SeekDBProject
                 }
             }
 
-            // 写入 SeekDB
-            $result = SeekDBBase::upsertProjectVector([
+            // 写入 Manticore
+            $result = ManticoreBase::upsertProjectVector([
                 'project_id' => $project->id,
                 'userid' => $project->userid ?? 0,
                 'personal' => $project->personal ?? 0,
@@ -176,7 +175,7 @@ class SeekDBProject
 
             return $result;
         } catch (\Exception $e) {
-            Log::error('SeekDB project sync error: ' . $e->getMessage(), [
+            Log::error('Manticore project sync error: ' . $e->getMessage(), [
                 'project_id' => $project->id,
                 'project_name' => $project->name,
             ]);
@@ -212,7 +211,7 @@ class SeekDBProject
      */
     public static function batchSync(iterable $projects): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
@@ -233,14 +232,14 @@ class SeekDBProject
      */
     public static function delete(int $projectId): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
         // 删除项目索引
-        SeekDBBase::deleteProjectVector($projectId);
+        ManticoreBase::deleteProjectVector($projectId);
         // 删除项目成员关系
-        SeekDBBase::deleteAllProjectUsers($projectId);
+        ManticoreBase::deleteAllProjectUsers($projectId);
 
         return true;
     }
@@ -252,12 +251,12 @@ class SeekDBProject
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
-        SeekDBBase::clearAllProjectVectors();
-        SeekDBBase::clearAllProjectUsers();
+        ManticoreBase::clearAllProjectVectors();
+        ManticoreBase::clearAllProjectUsers();
 
         return true;
     }
@@ -269,11 +268,11 @@ class SeekDBProject
      */
     public static function getIndexedCount(): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
-        return SeekDBBase::getIndexedProjectCount();
+        return ManticoreBase::getIndexedProjectCount();
     }
 
     // ==============================
@@ -281,7 +280,7 @@ class SeekDBProject
     // ==============================
 
     /**
-     * 添加项目成员到 SeekDB
+     * 添加项目成员到 Manticore
      *
      * @param int $projectId 项目ID
      * @param int $userid 用户ID
@@ -289,11 +288,11 @@ class SeekDBProject
      */
     public static function addProjectUser(int $projectId, int $userid): bool
     {
-        if (!Apps::isInstalled("seekdb") || $projectId <= 0 || $userid <= 0) {
+        if (!Apps::isInstalled("manticore") || $projectId <= 0 || $userid <= 0) {
             return false;
         }
 
-        return SeekDBBase::upsertProjectUser($projectId, $userid);
+        return ManticoreBase::upsertProjectUser($projectId, $userid);
     }
 
     /**
@@ -305,22 +304,22 @@ class SeekDBProject
      */
     public static function removeProjectUser(int $projectId, int $userid): bool
     {
-        if (!Apps::isInstalled("seekdb") || $projectId <= 0 || $userid <= 0) {
+        if (!Apps::isInstalled("manticore") || $projectId <= 0 || $userid <= 0) {
             return false;
         }
 
-        return SeekDBBase::deleteProjectUser($projectId, $userid);
+        return ManticoreBase::deleteProjectUser($projectId, $userid);
     }
 
     /**
-     * 同步项目的所有成员到 SeekDB
+     * 同步项目的所有成员到 Manticore
      *
      * @param int $projectId 项目ID
      * @return bool 是否成功
      */
     public static function syncProjectUsers(int $projectId): bool
     {
-        if (!Apps::isInstalled("seekdb") || $projectId <= 0) {
+        if (!Apps::isInstalled("manticore") || $projectId <= 0) {
             return false;
         }
 
@@ -330,10 +329,10 @@ class SeekDBProject
                 ->pluck('userid')
                 ->toArray();
 
-            // 同步到 SeekDB
-            return SeekDBBase::syncProjectUsers($projectId, $userids);
+            // 同步到 Manticore
+            return ManticoreBase::syncProjectUsers($projectId, $userids);
         } catch (\Exception $e) {
-            Log::error('SeekDB syncProjectUsers error: ' . $e->getMessage(), ['project_id' => $projectId]);
+            Log::error('Manticore syncProjectUsers error: ' . $e->getMessage(), ['project_id' => $projectId]);
             return false;
         }
     }
@@ -346,7 +345,7 @@ class SeekDBProject
      */
     public static function syncAllProjectUsers(?callable $progressCallback = null): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
@@ -354,8 +353,8 @@ class SeekDBProject
         $lastId = 0;
         $batchSize = 1000;
 
-        // 先清空 SeekDB 中的 project_users 表
-        SeekDBBase::clearAllProjectUsers();
+        // 先清空 Manticore 中的 project_users 表
+        ManticoreBase::clearAllProjectUsers();
 
         // 分批同步
         while (true) {
@@ -369,7 +368,7 @@ class SeekDBProject
             }
 
             foreach ($records as $record) {
-                SeekDBBase::upsertProjectUser($record->project_id, $record->userid);
+                ManticoreBase::upsertProjectUser($record->project_id, $record->userid);
                 $count++;
                 $lastId = $record->id;
             }
@@ -390,14 +389,14 @@ class SeekDBProject
      */
     public static function syncProjectUsersIncremental(?callable $progressCallback = null): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
         $count = 0;
         $batchSize = 1000;
-        $lastKey = "sync:seekdbProjectUserLastId";
-        $lastId = intval(SeekDBKeyValue::get($lastKey, 0));
+        $lastKey = "sync:manticoreProjectUserLastId";
+        $lastId = intval(ManticoreKeyValue::get($lastKey, 0));
 
         // 分批同步新增的记录
         while (true) {
@@ -411,13 +410,13 @@ class SeekDBProject
             }
 
             foreach ($records as $record) {
-                SeekDBBase::upsertProjectUser($record->project_id, $record->userid);
+                ManticoreBase::upsertProjectUser($record->project_id, $record->userid);
                 $count++;
                 $lastId = $record->id;
             }
 
             // 保存进度
-            SeekDBKeyValue::set($lastKey, $lastId);
+            ManticoreKeyValue::set($lastKey, $lastId);
 
             if ($progressCallback) {
                 $progressCallback($count);

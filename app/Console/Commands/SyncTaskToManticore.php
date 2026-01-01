@@ -2,35 +2,35 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Project;
+use App\Models\ProjectTask;
 use App\Module\Apps;
-use App\Module\SeekDB\SeekDBProject;
-use App\Module\SeekDB\SeekDBKeyValue;
+use App\Module\Manticore\ManticoreTask;
+use App\Module\Manticore\ManticoreKeyValue;
 use Cache;
 use Illuminate\Console\Command;
 
-class SyncProjectToSeekDB extends Command
+class SyncTaskToManticore extends Command
 {
     /**
      * 更新数据
      * --f: 全量更新 (默认)
      * --i: 增量更新（从上次更新的最后一个ID接上）
-     * --u: 仅同步项目成员关系（不同步项目内容）
+     * --u: 仅同步任务成员关系（不同步任务内容）
      *
      * 清理数据
      * --c: 清除索引
      */
 
-    protected $signature = 'seekdb:sync-projects {--f} {--i} {--c} {--u} {--batch=100}';
-    protected $description = '同步项目数据到 SeekDB';
+    protected $signature = 'manticore:sync-tasks {--f} {--i} {--c} {--u} {--batch=100}';
+    protected $description = '同步任务数据到 Manticore Search';
 
     /**
      * @return int
      */
     public function handle(): int
     {
-        if (!Apps::isInstalled("seekdb")) {
-            $this->error("应用「SeekDB」未安装");
+        if (!Apps::isInstalled("manticore")) {
+            $this->error("应用「Manticore Search」未安装");
             return 1;
         }
 
@@ -53,49 +53,46 @@ class SyncProjectToSeekDB extends Command
         // 清除索引
         if ($this->option('c')) {
             $this->info('清除索引...');
-            SeekDBProject::clear();
-            SeekDBKeyValue::set('sync:seekdbProjectLastId', 0);
+            ManticoreTask::clear();
             $this->info("索引删除成功");
             $this->releaseLock();
             return 0;
         }
 
-        // 仅同步项目成员关系
+        // 仅同步任务成员关系
         if ($this->option('u')) {
-            $this->info('开始同步项目成员关系...');
-            $count = SeekDBProject::syncAllProjectUsers(function ($count) {
+            $this->info('开始同步任务成员关系...');
+            $count = ManticoreTask::syncAllTaskUsers(function ($count) {
                 if ($count % 1000 === 0) {
                     $this->info("  已同步 {$count} 条关系...");
                 }
             });
-            $this->info("项目成员关系同步完成，共 {$count} 条");
+            $this->info("任务成员关系同步完成，共 {$count} 条");
             $this->releaseLock();
             return 0;
         }
 
-        $this->info('开始同步项目数据...');
-        $this->syncProjects();
+        $this->info('开始同步任务数据...');
+        $this->syncTasks();
 
-        // 同步项目成员关系
+        // 同步任务成员关系
         if ($this->option('f') || (!$this->option('i') && !$this->option('u'))) {
-            // 全量同步：清空后重建
-            $this->info("\n全量同步项目成员关系...");
-            $count = SeekDBProject::syncAllProjectUsers(function ($count) {
+            $this->info("\n全量同步任务成员关系...");
+            $count = ManticoreTask::syncAllTaskUsers(function ($count) {
                 if ($count % 1000 === 0) {
                     $this->info("  已同步 {$count} 条关系...");
                 }
             });
-            $this->info("项目成员关系同步完成，共 {$count} 条");
+            $this->info("任务成员关系同步完成，共 {$count} 条");
         } elseif ($this->option('i')) {
-            // 增量同步：只同步新增的
-            $this->info("\n增量同步项目成员关系...");
-            $count = SeekDBProject::syncProjectUsersIncremental(function ($count) {
+            $this->info("\n增量同步任务成员关系...");
+            $count = ManticoreTask::syncTaskUsersIncremental(function ($count) {
                 if ($count % 1000 === 0) {
                     $this->info("  已同步 {$count} 条关系...");
                 }
             });
             if ($count > 0) {
-                $this->info("新增项目成员关系 {$count} 条");
+                $this->info("新增任务成员关系 {$count} 条");
             }
         }
 
@@ -113,12 +110,13 @@ class SyncProjectToSeekDB extends Command
     private function setLock(): void
     {
         $lockKey = md5($this->signature);
-        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 300);
+        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 600);
     }
 
     private function releaseLock(): void
     {
-        Cache::forget(md5($this->signature));
+        $lockKey = md5($this->signature);
+        Cache::forget($lockKey);
     }
 
     public function handleSignal(int $signal): void
@@ -127,52 +125,59 @@ class SyncProjectToSeekDB extends Command
         exit(0);
     }
 
-    private function syncProjects(): void
+    private function syncTasks(): void
     {
-        $lastKey = "sync:seekdbProjectLastId";
-        $lastId = $this->option('i') ? intval(SeekDBKeyValue::get($lastKey, 0)) : 0;
+        $lastKey = "sync:manticoreTaskLastId";
+        $lastId = $this->option('i') ? intval(ManticoreKeyValue::get($lastKey, 0)) : 0;
 
         if ($lastId > 0) {
-            $this->info("\n增量同步项目数据（从ID: {$lastId}）...");
+            $this->info("\n同步任务数据（{$lastId}）...");
         } else {
-            $this->info("\n全量同步项目数据...");
+            $this->info("\n同步任务数据...");
         }
 
-        // 只同步未归档的项目
-        $query = Project::where('id', '>', $lastId)
-            ->whereNull('archived_at');
+        // 排除已归档和已删除的任务
+        $query = ProjectTask::where('id', '>', $lastId)
+            ->whereNull('archived_at')
+            ->whereNull('deleted_at');
 
         $num = 0;
         $count = $query->count();
         $batchSize = $this->option('batch');
+
         $total = 0;
+        $lastNum = 0;
 
         do {
-            $projects = Project::where('id', '>', $lastId)
+            $tasks = ProjectTask::where('id', '>', $lastId)
                 ->whereNull('archived_at')
+                ->whereNull('deleted_at')
                 ->orderBy('id')
                 ->limit($batchSize)
                 ->get();
 
-            if ($projects->isEmpty()) {
+            if ($tasks->isEmpty()) {
                 break;
             }
 
-            $num += count($projects);
+            $num += count($tasks);
             $progress = $count > 0 ? round($num / $count * 100, 2) : 100;
-            $this->info("{$num}/{$count} ({$progress}%) 正在同步项目ID {$projects->first()->id} ~ {$projects->last()->id}");
+            if ($progress < 100) {
+                $progress = number_format($progress, 2);
+            }
+            $this->info("{$num}/{$count} ({$progress}%) 正在同步任务ID {$tasks->first()->id} ~ {$tasks->last()->id} ({$total}|{$lastNum})");
 
             $this->setLock();
 
-            $synced = SeekDBProject::batchSync($projects);
-            $total += $synced;
+            $lastNum = ManticoreTask::batchSync($tasks);
+            $total += $lastNum;
 
-            $lastId = $projects->last()->id;
-            SeekDBKeyValue::set($lastKey, $lastId);
-        } while (count($projects) == $batchSize);
+            $lastId = $tasks->last()->id;
+            ManticoreKeyValue::set($lastKey, $lastId);
+        } while (count($tasks) == $batchSize);
 
-        $this->info("同步项目结束 - 最后ID {$lastId}，共同步 {$total} 个项目");
-        $this->info("已索引项目数量: " . SeekDBProject::getIndexedCount());
+        $this->info("同步任务结束 - 最后ID {$lastId}");
+        $this->info("已索引任务数量: " . ManticoreTask::getIndexedCount());
     }
 }
 

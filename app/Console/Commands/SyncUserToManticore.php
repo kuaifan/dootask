@@ -4,12 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use App\Module\Apps;
-use App\Module\SeekDB\SeekDBUser;
-use App\Module\SeekDB\SeekDBKeyValue;
+use App\Module\Manticore\ManticoreUser;
+use App\Module\Manticore\ManticoreKeyValue;
 use Cache;
 use Illuminate\Console\Command;
 
-class SyncUserToSeekDB extends Command
+class SyncUserToManticore extends Command
 {
     /**
      * 更新数据
@@ -20,16 +20,16 @@ class SyncUserToSeekDB extends Command
      * --c: 清除索引
      */
 
-    protected $signature = 'seekdb:sync-users {--f} {--i} {--c} {--batch=100}';
-    protected $description = '同步用户数据到 SeekDB（联系人搜索）';
+    protected $signature = 'manticore:sync-users {--f} {--i} {--c} {--batch=100}';
+    protected $description = '同步用户数据到 Manticore Search';
 
     /**
      * @return int
      */
     public function handle(): int
     {
-        if (!Apps::isInstalled("seekdb")) {
-            $this->error("应用「SeekDB」未安装");
+        if (!Apps::isInstalled("manticore")) {
+            $this->error("应用「Manticore Search」未安装");
             return 1;
         }
 
@@ -52,8 +52,7 @@ class SyncUserToSeekDB extends Command
         // 清除索引
         if ($this->option('c')) {
             $this->info('清除索引...');
-            SeekDBUser::clear();
-            SeekDBKeyValue::set('sync:seekdbUserLastId', 0);
+            ManticoreUser::clear();
             $this->info("索引删除成功");
             $this->releaseLock();
             return 0;
@@ -76,12 +75,13 @@ class SyncUserToSeekDB extends Command
     private function setLock(): void
     {
         $lockKey = md5($this->signature);
-        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 300);
+        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 600);
     }
 
     private function releaseLock(): void
     {
-        Cache::forget(md5($this->signature));
+        $lockKey = md5($this->signature);
+        Cache::forget($lockKey);
     }
 
     public function handleSignal(int $signal): void
@@ -92,16 +92,16 @@ class SyncUserToSeekDB extends Command
 
     private function syncUsers(): void
     {
-        $lastKey = "sync:seekdbUserLastId";
-        $lastId = $this->option('i') ? intval(SeekDBKeyValue::get($lastKey, 0)) : 0;
+        $lastKey = "sync:manticoreUserLastId";
+        $lastId = $this->option('i') ? intval(ManticoreKeyValue::get($lastKey, 0)) : 0;
 
         if ($lastId > 0) {
-            $this->info("\n增量同步用户数据（从ID: {$lastId}）...");
+            $this->info("\n同步用户数据（{$lastId}）...");
         } else {
-            $this->info("\n全量同步用户数据...");
+            $this->info("\n同步用户数据...");
         }
 
-        // 只同步非机器人且未禁用的用户
+        // 排除机器人和已禁用账号
         $query = User::where('userid', '>', $lastId)
             ->where('bot', 0)
             ->whereNull('disable_at');
@@ -109,7 +109,9 @@ class SyncUserToSeekDB extends Command
         $num = 0;
         $count = $query->count();
         $batchSize = $this->option('batch');
+
         $total = 0;
+        $lastNum = 0;
 
         do {
             $users = User::where('userid', '>', $lastId)
@@ -125,19 +127,22 @@ class SyncUserToSeekDB extends Command
 
             $num += count($users);
             $progress = $count > 0 ? round($num / $count * 100, 2) : 100;
-            $this->info("{$num}/{$count} ({$progress}%) 正在同步用户ID {$users->first()->userid} ~ {$users->last()->userid}");
+            if ($progress < 100) {
+                $progress = number_format($progress, 2);
+            }
+            $this->info("{$num}/{$count} ({$progress}%) 正在同步用户ID {$users->first()->userid} ~ {$users->last()->userid} ({$total}|{$lastNum})");
 
             $this->setLock();
 
-            $synced = SeekDBUser::batchSync($users);
-            $total += $synced;
+            $lastNum = ManticoreUser::batchSync($users);
+            $total += $lastNum;
 
             $lastId = $users->last()->userid;
-            SeekDBKeyValue::set($lastKey, $lastId);
+            ManticoreKeyValue::set($lastKey, $lastId);
         } while (count($users) == $batchSize);
 
-        $this->info("同步用户结束 - 最后ID {$lastId}，共同步 {$total} 个用户");
-        $this->info("已索引用户数量: " . SeekDBUser::getIndexedCount());
+        $this->info("同步用户结束 - 最后ID {$lastId}");
+        $this->info("已索引用户数量: " . ManticoreUser::getIndexedCount());
     }
 }
 

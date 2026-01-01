@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Module\SeekDB;
+namespace App\Module\Manticore;
 
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskContent;
@@ -9,11 +9,10 @@ use App\Models\ProjectTaskVisibilityUser;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\AI;
-use App\Module\SeekDB\SeekDBKeyValue;
 use Illuminate\Support\Facades\Log;
 
 /**
- * SeekDB 任务搜索类
+ * Manticore Search 任务搜索类
  *
  * 权限逻辑说明：
  * - visibility = 1: 项目人员可见，通过 project_users 表过滤
@@ -38,7 +37,7 @@ use Illuminate\Support\Facades\Log;
  * 4. 工具方法
  *    - 清空索引: clear();
  */
-class SeekDBTask
+class ManticoreTask
 {
     /**
      * 最大内容长度（字符）
@@ -60,7 +59,7 @@ class SeekDBTask
             return [];
         }
 
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return [];
         }
 
@@ -68,29 +67,29 @@ class SeekDBTask
             switch ($searchType) {
                 case 'text':
                     return self::formatSearchResults(
-                        SeekDBBase::taskFullTextSearch($keyword, $userid, $limit, 0)
+                        ManticoreBase::taskFullTextSearch($keyword, $userid, $limit, 0)
                     );
 
                 case 'vector':
                     $embedding = self::getEmbedding($keyword);
                     if (empty($embedding)) {
                         return self::formatSearchResults(
-                            SeekDBBase::taskFullTextSearch($keyword, $userid, $limit, 0)
+                            ManticoreBase::taskFullTextSearch($keyword, $userid, $limit, 0)
                         );
                     }
                     return self::formatSearchResults(
-                        SeekDBBase::taskVectorSearch($embedding, $userid, $limit)
+                        ManticoreBase::taskVectorSearch($embedding, $userid, $limit)
                     );
 
                 case 'hybrid':
                 default:
                     $embedding = self::getEmbedding($keyword);
                     return self::formatSearchResults(
-                        SeekDBBase::taskHybridSearch($keyword, $embedding, $userid, $limit)
+                        ManticoreBase::taskHybridSearch($keyword, $embedding, $userid, $limit)
                     );
             }
         } catch (\Exception $e) {
-            Log::error('SeekDB task search error: ' . $e->getMessage());
+            Log::error('Manticore task search error: ' . $e->getMessage());
             return [];
         }
     }
@@ -122,7 +121,7 @@ class SeekDBTask
     /**
      * 格式化搜索结果
      *
-     * @param array $results SeekDB 返回的结果
+     * @param array $results Manticore 返回的结果
      * @return array 格式化后的结果
      */
     private static function formatSearchResults(array $results): array
@@ -149,14 +148,14 @@ class SeekDBTask
     // ==============================
 
     /**
-     * 同步单个任务到 SeekDB
+     * 同步单个任务到 Manticore
      *
      * @param ProjectTask $task 任务模型
      * @return bool 是否成功
      */
     public static function sync(ProjectTask $task): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
@@ -181,8 +180,8 @@ class SeekDBTask
                 }
             }
 
-            // 写入 SeekDB
-            $result = SeekDBBase::upsertTaskVector([
+            // 写入 Manticore
+            $result = ManticoreBase::upsertTaskVector([
                 'task_id' => $task->id,
                 'project_id' => $task->project_id ?? 0,
                 'userid' => $task->userid ?? 0,
@@ -195,7 +194,7 @@ class SeekDBTask
 
             return $result;
         } catch (\Exception $e) {
-            Log::error('SeekDB task sync error: ' . $e->getMessage(), [
+            Log::error('Manticore task sync error: ' . $e->getMessage(), [
                 'task_id' => $task->id,
                 'task_name' => $task->name,
             ]);
@@ -298,7 +297,7 @@ class SeekDBTask
      */
     public static function batchSync(iterable $tasks): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
@@ -319,14 +318,14 @@ class SeekDBTask
      */
     public static function delete(int $taskId): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
         // 删除任务索引
-        SeekDBBase::deleteTaskVector($taskId);
+        ManticoreBase::deleteTaskVector($taskId);
         // 删除任务成员关系
-        SeekDBBase::deleteAllTaskUsers($taskId);
+        ManticoreBase::deleteAllTaskUsers($taskId);
 
         return true;
     }
@@ -340,11 +339,11 @@ class SeekDBTask
      */
     public static function updateVisibility(int $taskId, int $visibility): bool
     {
-        if (!Apps::isInstalled("seekdb") || $taskId <= 0) {
+        if (!Apps::isInstalled("manticore") || $taskId <= 0) {
             return false;
         }
 
-        return SeekDBBase::updateTaskVisibility($taskId, $visibility);
+        return ManticoreBase::updateTaskVisibility($taskId, $visibility);
     }
 
     /**
@@ -354,12 +353,12 @@ class SeekDBTask
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return false;
         }
 
-        SeekDBBase::clearAllTaskVectors();
-        SeekDBBase::clearAllTaskUsers();
+        ManticoreBase::clearAllTaskVectors();
+        ManticoreBase::clearAllTaskUsers();
 
         return true;
     }
@@ -371,11 +370,11 @@ class SeekDBTask
      */
     public static function getIndexedCount(): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
-        return SeekDBBase::getIndexedTaskCount();
+        return ManticoreBase::getIndexedTaskCount();
     }
 
     // ==============================
@@ -383,7 +382,7 @@ class SeekDBTask
     // ==============================
 
     /**
-     * 添加任务成员到 SeekDB
+     * 添加任务成员到 Manticore
      *
      * @param int $taskId 任务ID
      * @param int $userid 用户ID
@@ -391,11 +390,11 @@ class SeekDBTask
      */
     public static function addTaskUser(int $taskId, int $userid): bool
     {
-        if (!Apps::isInstalled("seekdb") || $taskId <= 0 || $userid <= 0) {
+        if (!Apps::isInstalled("manticore") || $taskId <= 0 || $userid <= 0) {
             return false;
         }
 
-        return SeekDBBase::upsertTaskUser($taskId, $userid);
+        return ManticoreBase::upsertTaskUser($taskId, $userid);
     }
 
     /**
@@ -407,11 +406,11 @@ class SeekDBTask
      */
     public static function removeTaskUser(int $taskId, int $userid): bool
     {
-        if (!Apps::isInstalled("seekdb") || $taskId <= 0 || $userid <= 0) {
+        if (!Apps::isInstalled("manticore") || $taskId <= 0 || $userid <= 0) {
             return false;
         }
 
-        return SeekDBBase::deleteTaskUser($taskId, $userid);
+        return ManticoreBase::deleteTaskUser($taskId, $userid);
     }
 
     /**
@@ -426,7 +425,7 @@ class SeekDBTask
      */
     public static function removeVisibilityUser(int $taskId, int $userid): bool
     {
-        if (!Apps::isInstalled("seekdb") || $taskId <= 0 || $userid <= 0) {
+        if (!Apps::isInstalled("manticore") || $taskId <= 0 || $userid <= 0) {
             return false;
         }
 
@@ -450,10 +449,10 @@ class SeekDBTask
                 return true;
             }
 
-            // 从 SeekDB 删除
-            return SeekDBBase::deleteTaskUser($taskId, $userid);
+            // 从 Manticore 删除
+            return ManticoreBase::deleteTaskUser($taskId, $userid);
         } catch (\Exception $e) {
-            Log::error('SeekDB removeVisibilityUser error: ' . $e->getMessage(), [
+            Log::error('Manticore removeVisibilityUser error: ' . $e->getMessage(), [
                 'task_id' => $taskId,
                 'userid' => $userid,
             ]);
@@ -462,7 +461,7 @@ class SeekDBTask
     }
 
     /**
-     * 同步任务的所有成员到 SeekDB
+     * 同步任务的所有成员到 Manticore
      *
      * 包括：ProjectTaskUser 和 ProjectTaskVisibilityUser
      *
@@ -471,7 +470,7 @@ class SeekDBTask
      */
     public static function syncTaskUsers(int $taskId): bool
     {
-        if (!Apps::isInstalled("seekdb") || $taskId <= 0) {
+        if (!Apps::isInstalled("manticore") || $taskId <= 0) {
             return false;
         }
 
@@ -490,10 +489,10 @@ class SeekDBTask
             // 合并去重
             $allUserIds = array_unique(array_merge($taskUserIds, $visibilityUserIds));
 
-            // 同步到 SeekDB
-            return SeekDBBase::syncTaskUsers($taskId, $allUserIds);
+            // 同步到 Manticore
+            return ManticoreBase::syncTaskUsers($taskId, $allUserIds);
         } catch (\Exception $e) {
-            Log::error('SeekDB syncTaskUsers error: ' . $e->getMessage(), ['task_id' => $taskId]);
+            Log::error('Manticore syncTaskUsers error: ' . $e->getMessage(), ['task_id' => $taskId]);
             return false;
         }
     }
@@ -506,7 +505,7 @@ class SeekDBTask
      */
     public static function syncAllTaskUsers(?callable $progressCallback = null): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
@@ -514,8 +513,8 @@ class SeekDBTask
         $lastId = 0;
         $batchSize = 1000;
 
-        // 先清空 SeekDB 中的 task_users 表
-        SeekDBBase::clearAllTaskUsers();
+        // 先清空 Manticore 中的 task_users 表
+        ManticoreBase::clearAllTaskUsers();
 
         // 同步 ProjectTaskUser
         while (true) {
@@ -529,10 +528,10 @@ class SeekDBTask
             }
 
             foreach ($records as $record) {
-                SeekDBBase::upsertTaskUser($record->task_id, $record->userid);
+                ManticoreBase::upsertTaskUser($record->task_id, $record->userid);
                 // 如果有父任务，也添加到父任务
                 if ($record->task_pid) {
-                    SeekDBBase::upsertTaskUser($record->task_pid, $record->userid);
+                    ManticoreBase::upsertTaskUser($record->task_pid, $record->userid);
                 }
                 $count++;
                 $lastId = $record->id;
@@ -556,7 +555,7 @@ class SeekDBTask
             }
 
             foreach ($records as $record) {
-                SeekDBBase::upsertTaskUser($record->task_id, $record->userid);
+                ManticoreBase::upsertTaskUser($record->task_id, $record->userid);
                 $count++;
                 $lastId = $record->id;
             }
@@ -577,7 +576,7 @@ class SeekDBTask
      */
     public static function syncTaskUsersIncremental(?callable $progressCallback = null): int
     {
-        if (!Apps::isInstalled("seekdb")) {
+        if (!Apps::isInstalled("manticore")) {
             return 0;
         }
 
@@ -585,8 +584,8 @@ class SeekDBTask
         $batchSize = 1000;
 
         // 同步 ProjectTaskUser 新增
-        $lastKey1 = "sync:seekdbTaskUserLastId";
-        $lastId1 = intval(SeekDBKeyValue::get($lastKey1, 0));
+        $lastKey1 = "sync:manticoreTaskUserLastId";
+        $lastId1 = intval(ManticoreKeyValue::get($lastKey1, 0));
 
         while (true) {
             $records = ProjectTaskUser::where('id', '>', $lastId1)
@@ -599,15 +598,15 @@ class SeekDBTask
             }
 
             foreach ($records as $record) {
-                SeekDBBase::upsertTaskUser($record->task_id, $record->userid);
+                ManticoreBase::upsertTaskUser($record->task_id, $record->userid);
                 if ($record->task_pid) {
-                    SeekDBBase::upsertTaskUser($record->task_pid, $record->userid);
+                    ManticoreBase::upsertTaskUser($record->task_pid, $record->userid);
                 }
                 $count++;
                 $lastId1 = $record->id;
             }
 
-            SeekDBKeyValue::set($lastKey1, $lastId1);
+            ManticoreKeyValue::set($lastKey1, $lastId1);
 
             if ($progressCallback) {
                 $progressCallback($count);
@@ -615,8 +614,8 @@ class SeekDBTask
         }
 
         // 同步 ProjectTaskVisibilityUser 新增
-        $lastKey2 = "sync:seekdbTaskVisibilityUserLastId";
-        $lastId2 = intval(SeekDBKeyValue::get($lastKey2, 0));
+        $lastKey2 = "sync:manticoreTaskVisibilityUserLastId";
+        $lastId2 = intval(ManticoreKeyValue::get($lastKey2, 0));
 
         while (true) {
             $records = ProjectTaskVisibilityUser::where('id', '>', $lastId2)
@@ -629,12 +628,12 @@ class SeekDBTask
             }
 
             foreach ($records as $record) {
-                SeekDBBase::upsertTaskUser($record->task_id, $record->userid);
+                ManticoreBase::upsertTaskUser($record->task_id, $record->userid);
                 $count++;
                 $lastId2 = $record->id;
             }
 
-            SeekDBKeyValue::set($lastKey2, $lastId2);
+            ManticoreKeyValue::set($lastKey2, $lastId2);
 
             if ($progressCallback) {
                 $progressCallback($count);
