@@ -122,7 +122,7 @@ class ManticoreProject
                 'userid' => $item['userid'],
                 'personal' => $item['personal'],
                 'name' => $item['project_name'],
-                'desc_preview' => $item['project_desc_preview'] ?? null,
+                'desc_preview' => isset($item['project_desc']) ? mb_substr($item['project_desc'], 0, 300) : null,
                 'relevance' => $item['relevance'] ?? $item['similarity'] ?? $item['rrf_score'] ?? 0,
             ];
         }

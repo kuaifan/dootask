@@ -165,7 +165,7 @@ class ManticoreFile
                 'type' => $item['file_type'],
                 'ext' => $item['file_ext'],
                 'userid' => $item['userid'],
-                'content_preview' => $item['content_preview'] ?? null,
+                'content_preview' => isset($item['content']) ? mb_substr($item['content'], 0, 500) : null,
                 'relevance' => $item['relevance'] ?? $item['similarity'] ?? $item['rrf_score'] ?? 0,
             ];
         }

@@ -206,7 +206,8 @@ class ManticoreBase
 
         try {
             $stmt = $pdo->prepare($sql);
-            return $stmt->execute($params);
+            $this->bindParams($stmt, $params);
+            return $stmt->execute();
         } catch (PDOException $e) {
             Log::error('Manticore execute error: ' . $e->getMessage(), [
                 'sql' => $sql,
@@ -232,7 +233,8 @@ class ManticoreBase
 
         try {
             $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
+            $this->bindParams($stmt, $params);
+            $stmt->execute();
             return $stmt->rowCount();
         } catch (PDOException $e) {
             Log::error('Manticore execute error: ' . $e->getMessage(), [
@@ -259,7 +261,8 @@ class ManticoreBase
 
         try {
             $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
+            $this->bindParams($stmt, $params);
+            $stmt->execute();
             return $stmt->fetchAll();
         } catch (PDOException $e) {
             Log::error('Manticore query error: ' . $e->getMessage(), [
@@ -286,7 +289,8 @@ class ManticoreBase
 
         try {
             $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
+            $this->bindParams($stmt, $params);
+            $stmt->execute();
             $result = $stmt->fetch();
             return $result ?: null;
         } catch (PDOException $e) {
@@ -295,6 +299,34 @@ class ManticoreBase
                 'params' => $params
             ]);
             return null;
+        }
+    }
+
+    /**
+     * 绑定参数到预处理语句
+     * Manticore 对参数类型敏感，需要明确指定 INT 类型
+     * 注意：只有原生 int 类型才绑定为 PARAM_INT，字符串形式的数字保持为字符串
+     *
+     * @param \PDOStatement $stmt 预处理语句
+     * @param array $params 参数数组
+     */
+    private function bindParams(\PDOStatement $stmt, array $params): void
+    {
+        $index = 1;
+        foreach ($params as $value) {
+            if (is_int($value)) {
+                // 只有原生整数类型才绑定为 INT
+                $stmt->bindValue($index, $value, PDO::PARAM_INT);
+            } elseif (is_float($value)) {
+                // 浮点数作为字符串传递
+                $stmt->bindValue($index, (string)$value, PDO::PARAM_STR);
+            } elseif (is_null($value)) {
+                $stmt->bindValue($index, null, PDO::PARAM_NULL);
+            } else {
+                // 字符串（包括数字字符串）保持为字符串
+                $stmt->bindValue($index, (string)$value, PDO::PARAM_STR);
+            }
+            $index++;
         }
     }
 
@@ -348,7 +380,7 @@ class ManticoreBase
                     file_name,
                     file_type,
                     file_ext,
-                    SUBSTRING(content, 1, 500) as content_preview,
+                    content,
                     WEIGHT() as relevance
                 FROM file_vectors
                 WHERE MATCH('@(file_name,content) {$escapedKeyword}')
@@ -391,7 +423,7 @@ class ManticoreBase
                     file_name,
                     file_type,
                     file_ext,
-                    SUBSTRING(content, 1, 500) as content_preview,
+                    content,
                     WEIGHT() as relevance
                 FROM file_vectors
                 WHERE MATCH('@(file_name,content) {$escapedKeyword}')
@@ -548,15 +580,13 @@ class ManticoreBase
         // 先尝试删除已存在的记录
         $instance->execute("DELETE FROM file_vectors WHERE file_id = ?", [$fileId]);
 
-        // 插入新记录
+        // 插入新记录（向量值必须内联到 SQL，Manticore 的 float_vector 不支持参数绑定）
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
-            // 向量格式转换：从 [1,2,3] 转为 (1,2,3)
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-
             $sql = "INSERT INTO file_vectors 
                     (id, file_id, userid, pshare, file_name, file_type, file_ext, content, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$vectorValue})";
 
             $params = [
                 $fileId,
@@ -566,8 +596,7 @@ class ManticoreBase
                 $data['file_name'] ?? '',
                 $data['file_type'] ?? '',
                 $data['file_ext'] ?? '',
-                $data['content'] ?? '',
-                $vectorValue
+                $data['content'] ?? ''
             ];
         } else {
             $sql = "INSERT INTO file_vectors 
@@ -847,10 +876,10 @@ class ManticoreBase
                 email,
                 tel,
                 profession,
-                SUBSTRING(introduction, 1, 200) as introduction_preview,
+                introduction,
                 WEIGHT() as relevance
             FROM user_vectors
-            WHERE MATCH('@(nickname,email,profession,introduction) {$escapedKeyword}')
+            WHERE MATCH('@(nickname,profession,introduction) {$escapedKeyword}')
             ORDER BY relevance DESC
             LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
@@ -881,7 +910,7 @@ class ManticoreBase
                 email,
                 tel,
                 profession,
-                SUBSTRING(introduction, 1, 200) as introduction_preview,
+                introduction,
                 KNN_DIST() as distance
             FROM user_vectors
             WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
@@ -963,14 +992,13 @@ class ManticoreBase
         // 先删除已存在的记录
         $instance->execute("DELETE FROM user_vectors WHERE userid = ?", [$userid]);
 
-        // 插入新记录
+        // 插入新记录（向量值必须内联到 SQL，Manticore 的 float_vector 不支持参数绑定）
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-
             $sql = "INSERT INTO user_vectors 
                     (id, userid, nickname, email, tel, profession, introduction, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, {$vectorValue})";
 
             $params = [
                 $userid,
@@ -979,8 +1007,7 @@ class ManticoreBase
                 $data['email'] ?? '',
                 $data['tel'] ?? '',
                 $data['profession'] ?? '',
-                $data['introduction'] ?? '',
-                $vectorValue
+                $data['introduction'] ?? ''
             ];
         } else {
             $sql = "INSERT INTO user_vectors 
@@ -1069,7 +1096,7 @@ class ManticoreBase
                 userid,
                 personal,
                 project_name,
-                SUBSTRING(project_desc, 1, 300) as project_desc_preview,
+                project_desc,
                 WEIGHT() as relevance
             FROM project_vectors
             WHERE MATCH('@(project_name,project_desc) {$escapedKeyword}')
@@ -1119,7 +1146,7 @@ class ManticoreBase
                 userid,
                 personal,
                 project_name,
-                SUBSTRING(project_desc, 1, 300) as project_desc_preview,
+                project_desc,
                 KNN_DIST() as distance
             FROM project_vectors
             WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
@@ -1214,14 +1241,13 @@ class ManticoreBase
         // 先删除已存在的记录
         $instance->execute("DELETE FROM project_vectors WHERE project_id = ?", [$projectId]);
 
-        // 插入新记录
+        // 插入新记录（向量值必须内联到 SQL，Manticore 的 float_vector 不支持参数绑定）
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-
             $sql = "INSERT INTO project_vectors 
                     (id, project_id, userid, personal, project_name, project_desc, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, {$vectorValue})";
 
             $params = [
                 $projectId,
@@ -1229,8 +1255,7 @@ class ManticoreBase
                 $data['userid'] ?? 0,
                 $data['personal'] ?? 0,
                 $data['project_name'] ?? '',
-                $data['project_desc'] ?? '',
-                $vectorValue
+                $data['project_desc'] ?? ''
             ];
         } else {
             $sql = "INSERT INTO project_vectors 
@@ -1444,8 +1469,8 @@ class ManticoreBase
                 userid,
                 visibility,
                 task_name,
-                SUBSTRING(task_desc, 1, 300) as task_desc_preview,
-                SUBSTRING(task_content, 1, 500) as task_content_preview,
+                task_desc,
+                task_content,
                 WEIGHT() as relevance
             FROM task_vectors
             WHERE MATCH('@(task_name,task_desc,task_content) {$escapedKeyword}')
@@ -1516,8 +1541,8 @@ class ManticoreBase
                 userid,
                 visibility,
                 task_name,
-                SUBSTRING(task_desc, 1, 300) as task_desc_preview,
-                SUBSTRING(task_content, 1, 500) as task_content_preview,
+                task_desc,
+                task_content,
                 KNN_DIST() as distance
             FROM task_vectors
             WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
@@ -1627,14 +1652,13 @@ class ManticoreBase
         // 先删除已存在的记录
         $instance->execute("DELETE FROM task_vectors WHERE task_id = ?", [$taskId]);
 
-        // 插入新记录
+        // 插入新记录（向量值必须内联到 SQL，Manticore 的 float_vector 不支持参数绑定）
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-
             $sql = "INSERT INTO task_vectors 
                     (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$vectorValue})";
 
             $params = [
                 $taskId,
@@ -1644,8 +1668,7 @@ class ManticoreBase
                 $data['visibility'] ?? 1,
                 $data['task_name'] ?? '',
                 $data['task_desc'] ?? '',
-                $data['task_content'] ?? '',
-                $vectorValue
+                $data['task_content'] ?? ''
             ];
         } else {
             $sql = "INSERT INTO task_vectors 

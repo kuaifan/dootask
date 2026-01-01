@@ -135,8 +135,8 @@ class ManticoreTask
                 'userid' => $item['userid'],
                 'visibility' => $item['visibility'],
                 'name' => $item['task_name'],
-                'desc_preview' => $item['task_desc_preview'] ?? null,
-                'content_preview' => $item['task_content_preview'] ?? null,
+                'desc_preview' => isset($item['task_desc']) ? mb_substr($item['task_desc'], 0, 300) : null,
+                'content_preview' => isset($item['task_content']) ? mb_substr($item['task_content'], 0, 500) : null,
                 'relevance' => $item['relevance'] ?? $item['similarity'] ?? $item['rrf_score'] ?? 0,
             ];
         }

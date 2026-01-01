@@ -774,6 +774,14 @@ class AI
                 "model" => $provider['model'],
                 "input" => $text,
             ];
+
+            // 统一向量维度为 1536（与 Manticore 配置一致）
+            // OpenAI、智谱等支持 dimensions 参数的厂商需要显式指定
+            $supportsDimensions = in_array($provider['vendor'], ['openai', 'zhipu']);
+            if ($supportsDimensions) {
+                $payload['dimensions'] = 1536;
+            }
+
             $post = json_encode($payload);
 
             $ai = new self($post);
@@ -827,14 +835,13 @@ class AI
 
             return [
                 'vendor' => 'openai',
-                'model' => 'text-embedding-ada-002',
+                'model' => 'text-embedding-3-small',
                 'api_key' => $key,
                 'base_url' => rtrim($baseUrl, '/'),
                 'agency' => $agency,
             ];
         }
 
-        // 各厂商的默认 baseUrl 和 embedding 模型
         $vendorDefaults = [
             'deepseek' => [
                 'base_url' => 'https://api.deepseek.com',
@@ -842,11 +849,7 @@ class AI
             ],
             'zhipu' => [
                 'base_url' => 'https://open.bigmodel.cn/api/paas/v4',
-                'model' => 'embedding-2',
-            ],
-            'qianwen' => [
-                'base_url' => 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-                'model' => 'text-embedding-v3',
+                'model' => 'embedding-3',
             ],
         ];
 

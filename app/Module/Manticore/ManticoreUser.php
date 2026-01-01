@@ -115,7 +115,7 @@ class ManticoreUser
                 'email' => $item['email'],
                 'tel' => $item['tel'],
                 'profession' => $item['profession'],
-                'introduction_preview' => $item['introduction_preview'] ?? null,
+                'introduction_preview' => isset($item['introduction']) ? mb_substr($item['introduction'], 0, 200) : null,
                 'relevance' => $item['relevance'] ?? $item['similarity'] ?? $item['rrf_score'] ?? 0,
             ];
         }
