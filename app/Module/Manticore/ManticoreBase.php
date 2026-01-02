@@ -143,6 +143,21 @@ class ManticoreBase
                 ) charset_table='chinese' morphology='icu_chinese'
             ");
 
+            // 创建消息向量表（含 allowed_users MVA 权限字段）
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS msg_vectors (
+                    id BIGINT,
+                    msg_id BIGINT,
+                    dialog_id BIGINT,
+                    userid BIGINT,
+                    msg_type STRING,
+                    content TEXT,
+                    allowed_users MULTI,
+                    created_at BIGINT,
+                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
+                ) charset_table='chinese' morphology='icu_chinese'
+            ");
+
             Log::info('Manticore tables initialized successfully');
         } catch (PDOException $e) {
             Log::warning('Manticore initialization warning: ' . $e->getMessage());
@@ -1491,6 +1506,339 @@ class ManticoreBase
         $instance = new self();
         $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM task_vectors");
         return $result ? (int) $result['cnt'] : 0;
+    }
+
+    // ==============================
+    // 消息向量方法
+    // ==============================
+
+    /**
+     * 消息全文搜索（使用 MVA allowed_users 权限过滤）
+     *
+     * @param string $keyword 关键词
+     * @param int $userid 用户ID（权限过滤）
+     * @param int $limit 返回数量
+     * @param int $offset 偏移量
+     * @return array 搜索结果
+     */
+    public static function msgFullTextSearch(string $keyword, int $userid = 0, int $limit = 20, int $offset = 0): array
+    {
+        if (empty($keyword)) {
+            return [];
+        }
+
+        $instance = new self();
+        $escapedKeyword = self::escapeMatch($keyword);
+
+        if ($userid > 0) {
+            // 使用 MVA 权限过滤
+            $sql = "
+                SELECT 
+                    id,
+                    msg_id,
+                    dialog_id,
+                    userid,
+                    msg_type,
+                    content,
+                    created_at,
+                    WEIGHT() as relevance
+                FROM msg_vectors
+                WHERE MATCH('@content {$escapedKeyword}')
+                    AND allowed_users = " . (int)$userid . "
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        } else {
+            $sql = "
+                SELECT 
+                    id,
+                    msg_id,
+                    dialog_id,
+                    userid,
+                    msg_type,
+                    content,
+                    created_at,
+                    WEIGHT() as relevance
+                FROM msg_vectors
+                WHERE MATCH('@content {$escapedKeyword}')
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        }
+
+        return $instance->query($sql);
+    }
+
+    /**
+     * 消息向量搜索（使用 MVA allowed_users 权限过滤）
+     *
+     * @param array $queryVector 查询向量
+     * @param int $userid 用户ID（权限过滤）
+     * @param int $limit 返回数量
+     * @return array 搜索结果
+     */
+    public static function msgVectorSearch(array $queryVector, int $userid = 0, int $limit = 20): array
+    {
+        if (empty($queryVector)) {
+            return [];
+        }
+
+        $instance = new self();
+        $vectorStr = '(' . implode(',', $queryVector) . ')';
+
+        // KNN 搜索需要先获取更多结果，再在应用层过滤权限
+        $fetchLimit = $userid > 0 ? $limit * 5 : $limit;
+
+        $sql = "
+            SELECT 
+                id,
+                msg_id,
+                dialog_id,
+                userid,
+                msg_type,
+                content,
+                created_at,
+                KNN_DIST() as distance
+            FROM msg_vectors
+            WHERE KNN(content_vector, " . (int)$fetchLimit . ", {$vectorStr})
+            ORDER BY distance ASC
+        ";
+
+        $results = $instance->query($sql);
+
+        foreach ($results as &$item) {
+            $item['similarity'] = 1 - ($item['distance'] ?? 0);
+        }
+
+        // MVA 权限过滤
+        if ($userid > 0 && !empty($results)) {
+            $allowedMsgIds = $instance->query(
+                "SELECT msg_id FROM msg_vectors WHERE allowed_users = ? LIMIT 100000",
+                [$userid]
+            );
+            $allowedIds = array_column($allowedMsgIds, 'msg_id');
+
+            $results = array_filter($results, function ($item) use ($allowedIds) {
+                return in_array($item['msg_id'], $allowedIds);
+            });
+            $results = array_values($results);
+        }
+
+        return array_slice($results, 0, $limit);
+    }
+
+    /**
+     * 消息混合搜索
+     *
+     * @param string $keyword 关键词
+     * @param array $queryVector 查询向量
+     * @param int $userid 用户ID（权限过滤）
+     * @param int $limit 返回数量
+     * @return array 搜索结果
+     */
+    public static function msgHybridSearch(string $keyword, array $queryVector, int $userid = 0, int $limit = 20): array
+    {
+        $textResults = self::msgFullTextSearch($keyword, $userid, 50, 0);
+        $vectorResults = !empty($queryVector) ? self::msgVectorSearch($queryVector, $userid, 50) : [];
+
+        $scores = [];
+        $items = [];
+        $k = 60;
+
+        foreach ($textResults as $rank => $item) {
+            $id = $item['msg_id'];
+            $scores[$id] = ($scores[$id] ?? 0) + 0.5 / ($k + $rank + 1);
+            $items[$id] = $item;
+        }
+
+        foreach ($vectorResults as $rank => $item) {
+            $id = $item['msg_id'];
+            $scores[$id] = ($scores[$id] ?? 0) + 0.5 / ($k + $rank + 1);
+            if (!isset($items[$id])) {
+                $items[$id] = $item;
+            }
+        }
+
+        arsort($scores);
+
+        $results = [];
+        $count = 0;
+        foreach ($scores as $id => $score) {
+            if ($count >= $limit) break;
+            $item = $items[$id];
+            $item['rrf_score'] = $score;
+            $results[] = $item;
+            $count++;
+        }
+
+        return $results;
+    }
+
+    /**
+     * 插入或更新消息向量（含 allowed_users MVA 权限字段）
+     *
+     * @param array $data 消息数据，包含：
+     *   - msg_id: 消息ID
+     *   - dialog_id: 对话ID
+     *   - userid: 发送者ID
+     *   - msg_type: 消息类型
+     *   - content: 消息内容
+     *   - content_vector: 向量值
+     *   - allowed_users: 有权限的用户ID数组
+     *   - created_at: 创建时间戳
+     * @return bool 是否成功
+     */
+    public static function upsertMsgVector(array $data): bool
+    {
+        $instance = new self();
+
+        $msgId = $data['msg_id'] ?? 0;
+        if ($msgId <= 0) {
+            return false;
+        }
+
+        // 先删除已存在的记录
+        $instance->execute("DELETE FROM msg_vectors WHERE msg_id = ?", [$msgId]);
+
+        // 构建 allowed_users MVA 值
+        $allowedUsers = $data['allowed_users'] ?? [];
+        $allowedUsersStr = !empty($allowedUsers) ? '(' . implode(',', array_map('intval', $allowedUsers)) . ')' : '()';
+
+        // 插入新记录
+        $vectorValue = $data['content_vector'] ?? null;
+        if ($vectorValue) {
+            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
+            $sql = "INSERT INTO msg_vectors 
+                    (id, msg_id, dialog_id, userid, msg_type, content, allowed_users, created_at, content_vector)
+                    VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, ?, {$vectorValue})";
+        } else {
+            $sql = "INSERT INTO msg_vectors 
+                    (id, msg_id, dialog_id, userid, msg_type, content, allowed_users, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, ?)";
+        }
+
+        $params = [
+            $msgId,
+            $msgId,
+            $data['dialog_id'] ?? 0,
+            $data['userid'] ?? 0,
+            $data['msg_type'] ?? 'text',
+            $data['content'] ?? '',
+            $data['created_at'] ?? time()
+        ];
+
+        return $instance->execute($sql, $params);
+    }
+
+    /**
+     * 更新对话的 allowed_users 权限列表（批量更新该对话下所有消息）
+     *
+     * @param int $dialogId 对话ID
+     * @param array $userids 有权限的用户ID数组
+     * @return int 更新的消息数量
+     */
+    public static function updateDialogAllowedUsers(int $dialogId, array $userids): int
+    {
+        if ($dialogId <= 0) {
+            return 0;
+        }
+
+        $instance = new self();
+        $allowedUsersStr = !empty($userids) ? '(' . implode(',', array_map('intval', $userids)) . ')' : '()';
+
+        // Manticore 支持按条件批量更新
+        return $instance->executeWithRowCount(
+            "UPDATE msg_vectors SET allowed_users = {$allowedUsersStr} WHERE dialog_id = ?",
+            [$dialogId]
+        );
+    }
+
+    /**
+     * 删除消息向量
+     *
+     * @param int $msgId 消息ID
+     * @return bool 是否成功
+     */
+    public static function deleteMsgVector(int $msgId): bool
+    {
+        if ($msgId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        return $instance->execute("DELETE FROM msg_vectors WHERE msg_id = ?", [$msgId]);
+    }
+
+    /**
+     * 批量删除对话下的所有消息向量
+     *
+     * @param int $dialogId 对话ID
+     * @return int 删除数量
+     */
+    public static function deleteDialogMsgVectors(int $dialogId): int
+    {
+        if ($dialogId <= 0) {
+            return 0;
+        }
+
+        $instance = new self();
+        return $instance->executeWithRowCount(
+            "DELETE FROM msg_vectors WHERE dialog_id = ?",
+            [$dialogId]
+        );
+    }
+
+    /**
+     * 清空所有消息向量
+     *
+     * @return bool 是否成功
+     */
+    public static function clearAllMsgVectors(): bool
+    {
+        $instance = new self();
+        return $instance->execute("TRUNCATE TABLE msg_vectors");
+    }
+
+    /**
+     * 获取已索引的消息数量
+     *
+     * @return int 消息数量
+     */
+    public static function getIndexedMsgCount(): int
+    {
+        $instance = new self();
+        $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM msg_vectors");
+        return $result ? (int) $result['cnt'] : 0;
+    }
+
+    /**
+     * 获取对话的已索引消息数量
+     *
+     * @param int $dialogId 对话ID
+     * @return int 消息数量
+     */
+    public static function getDialogIndexedMsgCount(int $dialogId): int
+    {
+        if ($dialogId <= 0) {
+            return 0;
+        }
+
+        $instance = new self();
+        $result = $instance->queryOne(
+            "SELECT COUNT(*) as cnt FROM msg_vectors WHERE dialog_id = ?",
+            [$dialogId]
+        );
+        return $result ? (int) $result['cnt'] : 0;
+    }
+
+    /**
+     * 获取最后索引的消息ID
+     *
+     * @return int 消息ID
+     */
+    public static function getLastIndexedMsgId(): int
+    {
+        $instance = new self();
+        $result = $instance->queryOne("SELECT MAX(msg_id) as max_id FROM msg_vectors");
+        return $result ? (int) ($result['max_id'] ?? 0) : 0;
     }
 
 }

@@ -6,12 +6,14 @@ use App\Models\File;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\ProjectTask;
+use App\Models\WebSocketDialogMsg;
 use App\Module\Apps;
 use App\Module\Manticore\ManticoreBase;
 use App\Module\Manticore\ManticoreFile;
 use App\Module\Manticore\ManticoreUser;
 use App\Module\Manticore\ManticoreProject;
 use App\Module\Manticore\ManticoreTask;
+use App\Module\Manticore\ManticoreMsg;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -152,6 +154,31 @@ class ManticoreSyncTask extends AbstractTask
                 }
                 break;
 
+            // ==============================
+            // 消息同步动作
+            // ==============================
+            case 'msg_sync':
+                $msg = WebSocketDialogMsg::find($this->data['msg_id'] ?? 0);
+                if ($msg) {
+                    ManticoreMsg::sync($msg);
+                }
+                break;
+
+            case 'msg_delete':
+                $msgId = $this->data['msg_id'] ?? 0;
+                if ($msgId > 0) {
+                    ManticoreMsg::delete($msgId);
+                }
+                break;
+
+            case 'update_dialog_allowed_users':
+                // 更新对话下所有消息的 allowed_users（成员变更时调用）
+                $dialogId = $this->data['dialog_id'] ?? 0;
+                if ($dialogId > 0) {
+                    ManticoreMsg::updateDialogAllowedUsers($dialogId);
+                }
+                break;
+
             default:
                 // 增量更新（定时任务调用）
                 $this->incrementalUpdate();
@@ -181,6 +208,7 @@ class ManticoreSyncTask extends AbstractTask
         @shell_exec("php /var/www/artisan manticore:sync-users --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-projects --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-tasks --i 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-msgs --i 2>&1 &");
 
         // 执行完成
         Cache::put("ManticoreSyncTask:Time", time(), Carbon::now()->addMinutes(5));

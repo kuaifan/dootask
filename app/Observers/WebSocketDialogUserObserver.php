@@ -5,6 +5,8 @@ namespace App\Observers;
 use App\Models\Deleted;
 use App\Models\UserBot;
 use App\Models\WebSocketDialogUser;
+use App\Module\Apps;
+use App\Tasks\ManticoreSyncTask;
 use App\Tasks\ZincSearchSyncTask;
 use Carbon\Carbon;
 
@@ -32,6 +34,14 @@ class WebSocketDialogUserObserver extends AbstractObserver
         }
         Deleted::forget('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
         self::taskDeliver(new ZincSearchSyncTask('userSync', $webSocketDialogUser->toArray()));
+
+        // Manticore: 更新对话下所有消息的 allowed_users
+        if (Apps::isInstalled('manticore')) {
+            self::taskDeliver(new ManticoreSyncTask('update_dialog_allowed_users', [
+                'dialog_id' => $webSocketDialogUser->dialog_id
+            ]));
+        }
+
         //
         $dialog = $webSocketDialogUser->webSocketDialog;
         if ($dialog) {
@@ -60,6 +70,14 @@ class WebSocketDialogUserObserver extends AbstractObserver
     {
         Deleted::record('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
         self::taskDeliver(new ZincSearchSyncTask('deleteUser', $webSocketDialogUser->toArray()));
+
+        // Manticore: 更新对话下所有消息的 allowed_users
+        if (Apps::isInstalled('manticore')) {
+            self::taskDeliver(new ManticoreSyncTask('update_dialog_allowed_users', [
+                'dialog_id' => $webSocketDialogUser->dialog_id
+            ]));
+        }
+
         //
         $dialog = $webSocketDialogUser->webSocketDialog;
         if ($dialog) {

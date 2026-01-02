@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Api;
 use Request;
 use App\Models\File;
 use App\Models\User;
+use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use App\Module\Apps;
 use App\Module\Manticore\ManticoreFile;
 use App\Module\Manticore\ManticoreUser;
 use App\Module\Manticore\ManticoreProject;
 use App\Module\Manticore\ManticoreTask;
+use App\Module\Manticore\ManticoreMsg;
 
 /**
  * @apiDefine search
@@ -235,6 +237,74 @@ class SearchController extends AbstractController
                         'relevance' => $item['relevance'] ?? 0,
                         'content_preview' => $item['content_preview'] ?? null,
                     ]);
+                }
+            }
+            return Base::retSuccess('success', $formattedResults);
+        }
+
+        return Base::retSuccess('success', []);
+    }
+
+    /**
+     * @api {get} api/search/message          AI 搜索消息
+     *
+     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
+     * @apiVersion 1.0.0
+     * @apiGroup search
+     * @apiName message
+     *
+     * @apiParam {String} key                  搜索关键词
+     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid）
+     * @apiParam {Number} [take]               获取数量（默认：20，最大：50）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function message()
+    {
+        $user = User::auth();
+
+        if (!Apps::isInstalled('manticore')) {
+            return Base::retError('Manticore Search 应用未安装');
+        }
+
+        $key = trim(Request::input('key'));
+        $searchType = Request::input('search_type', 'hybrid');
+        $take = min(50, max(1, intval(Request::input('take', 20))));
+
+        if (empty($key)) {
+            return Base::retSuccess('success', []);
+        }
+
+        $results = ManticoreMsg::search($user->userid, $key, $searchType, 0, $take);
+
+        // 补充消息完整信息
+        $msgIds = array_column($results, 'msg_id');
+        if (!empty($msgIds)) {
+            $msgs = WebSocketDialogMsg::whereIn('id', $msgIds)
+                ->with(['user' => function ($query) {
+                    $query->select(User::$basicField);
+                }])
+                ->get()
+                ->keyBy('id');
+
+            $formattedResults = [];
+            foreach ($results as $item) {
+                $msgData = $msgs->get($item['msg_id']);
+                if ($msgData) {
+                    $formattedResults[] = [
+                        'id' => $msgData->id,
+                        'msg_id' => $msgData->id,
+                        'dialog_id' => $msgData->dialog_id,
+                        'userid' => $msgData->userid,
+                        'type' => $msgData->type,
+                        'msg' => $msgData->msg,
+                        'created_at' => $msgData->created_at,
+                        'user' => $msgData->user,
+                        'relevance' => $item['relevance'] ?? 0,
+                        'content_preview' => $item['content_preview'] ?? null,
+                    ];
                 }
             }
             return Base::retSuccess('success', $formattedResults);
