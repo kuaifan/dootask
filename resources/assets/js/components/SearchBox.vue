@@ -17,7 +17,7 @@
                 <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
                     <Input type="search" ref="searchKey" v-model="searchKey" :placeholder="$L('请输入关键字')"/>
                 </Form>
-                <div v-if="aiSearchAvailable" class="search-ai" :class="{active: aiSearch}" @click="toggleAiSearch">
+                <div v-if="aiSearchAvailable" class="search-ai" @click="toggleAiSearch">
                     <i class="taskfont">&#xe8a1;</i>
                     <span>{{ $L('AI 搜索') }}</span>
                 </div>
@@ -91,7 +91,7 @@
 </template>
 
 <script>
-import {mapState, mapGetters} from "vuex";
+import {mapState} from "vuex";
 import emitter from "../store/events";
 import transformEmojiToHtml from "../utils/emoji";
 
@@ -120,8 +120,6 @@ export default {
                 {type: 'file', name: '文件', icon: '&#xe6f3;'},
             ],
             action: '',
-
-            aiSearch: false,
         }
     },
 
@@ -347,16 +345,7 @@ export default {
 
         searchTask(key) {
             this.loadIng++;
-            // 如果开启了 AI 搜索，使用新的 AI 搜索接口
-            const useAiSearch = this.aiSearchAvailable && this.aiSearch;
-            const requestConfig = useAiSearch ? {
-                url: 'search/task',
-                data: {
-                    key,
-                    search_type: 'hybrid',
-                    take: this.action ? 50 : 10,
-                },
-            } : {
+            this.$store.dispatch("call", {
                 url: 'project/task/lists',
                 data: {
                     keys: {name: key},
@@ -364,19 +353,10 @@ export default {
                     scope: 'all_project',
                     pagesize: this.action ? 50 : 10,
                 },
-            };
-            this.$store.dispatch("call", requestConfig).then(({data}) => {
+            }).then(({data}) => {
                 const nowTime = $A.dayjs().unix()
-                const rawData = useAiSearch ? data : data.data;
-                const items = rawData.map(item => {
+                const items = data.data.map(item => {
                     const tags = [];
-                    // AI 搜索标记
-                    if (useAiSearch && item.content_preview) {
-                        tags.push({
-                            name: 'AI',
-                            style: 'background-color:#4F46E5',
-                        })
-                    }
                     if (item.complete_at) {
                         tags.push({
                             name: this.$L('已完成'),
@@ -407,7 +387,7 @@ export default {
 
                         id: item.id,
                         title: item.name,
-                        desc: item.content_preview ? this.truncateContent(item.content_preview) : item.desc,
+                        desc: item.desc,
                         activity: item.end_at,
 
                         rawData: item,
@@ -421,16 +401,7 @@ export default {
 
         searchProject(key) {
             this.loadIng++;
-            // 如果开启了 AI 搜索，使用新的 AI 搜索接口
-            const useAiSearch = this.aiSearchAvailable && this.aiSearch;
-            const requestConfig = useAiSearch ? {
-                url: 'search/project',
-                data: {
-                    key,
-                    search_type: 'hybrid',
-                    take: this.action ? 50 : 10,
-                },
-            } : {
+            this.$store.dispatch("call", {
                 url: 'project/lists',
                 data: {
                     keys: {
@@ -439,18 +410,9 @@ export default {
                     archived: 'all',
                     pagesize: this.action ? 50 : 10,
                 },
-            };
-            this.$store.dispatch("call", requestConfig).then(({data}) => {
-                const rawData = useAiSearch ? data : data.data;
-                const items = rawData.map(item => {
+            }).then(({data}) => {
+                const items = data.data.map(item => {
                     const tags = [];
-                    // AI 搜索标记
-                    if (useAiSearch && item.desc_preview) {
-                        tags.push({
-                            name: 'AI',
-                            style: 'background-color:#4F46E5',
-                        })
-                    }
                     if (item.owner) {
                         tags.push({
                             name: this.$L('负责人'),
@@ -471,7 +433,7 @@ export default {
 
                         id: item.id,
                         title: item.name,
-                        desc: item.desc_preview ? this.truncateContent(item.desc_preview) : (item.desc || ''),
+                        desc: item.desc || '',
                         activity: item.updated_at,
 
                         rawData: item,
@@ -535,43 +497,23 @@ export default {
 
         searchContact(key) {
             this.loadIng++;
-            // 如果开启了 AI 搜索，使用新的 AI 搜索接口
-            const useAiSearch = this.aiSearchAvailable && this.aiSearch;
-            const requestConfig = useAiSearch ? {
-                url: 'search/contact',
-                data: {
-                    key,
-                    search_type: 'hybrid',
-                    take: this.action ? 50 : 10,
-                },
-            } : {
+            this.$store.dispatch("call", {
                 url: 'users/search',
                 data: {
                     keys: {key},
                     pagesize: this.action ? 50 : 10,
                 },
-            };
-            this.$store.dispatch("call", requestConfig).then(({data}) => {
+            }).then(({data}) => {
                 const items = data.map(item => {
-                    const tags = [];
-                    // AI 搜索标记
-                    if (useAiSearch && item.introduction_preview) {
-                        tags.push({
-                            name: 'AI',
-                            style: 'background-color:#4F46E5',
-                        })
-                    }
                     return {
                         key,
                         type: 'contact',
                         icons: ['user', item.userid],
-                        tags,
+                        tags: [],
 
                         id: item.userid,
                         title: item.nickname,
-                        desc: item.introduction_preview 
-                            ? this.truncateContent(item.introduction_preview) 
-                            : (item.profession || ''),
+                        desc: item.profession || '',
                         activity: item.line_at,
 
                         rawData: item,
@@ -585,36 +527,19 @@ export default {
 
         searchFile(key) {
             this.loadIng++;
-            // 如果开启了 AI 搜索，使用统一的 AI 搜索接口
-            const useAiSearch = this.aiSearchAvailable && this.aiSearch;
-            const requestConfig = useAiSearch ? {
-                url: 'search/file',
-                data: {
-                    key,
-                    search_type: 'hybrid',
-                    take: this.action ? 50 : 10,
-                },
-            } : {
+            this.$store.dispatch("call", {
                 url: 'file/search',
                 data: {
                     key,
                     take: this.action ? 50 : 10,
                 },
-            };
-            this.$store.dispatch("call", requestConfig).then(({data}) => {
+            }).then(({data}) => {
                 const items = data.map(item => {
                     const tags = [];
                     if (item.share) {
                         tags.push({
                             name: this.$L(item.userid == this.userId ? '已共享' : '共享'),
                             style: 'background-color:#0bc037',
-                        })
-                    }
-                    // AI 搜索标记
-                    if (useAiSearch && item.content_preview) {
-                        tags.push({
-                            name: 'AI',
-                            style: 'background-color:#4F46E5',
                         })
                     }
                     return {
@@ -625,9 +550,7 @@ export default {
 
                         id: item.id,
                         title: item.name,
-                        desc: item.content_preview
-                            ? this.truncateContent(item.content_preview)
-                            : (item.type === 'folder' ? '' : $A.bytesToSize(item.size)),
+                        desc: item.type === 'folder' ? '' : $A.bytesToSize(item.size),
                         activity: item.updated_at,
 
                         rawData: item,
@@ -637,13 +560,6 @@ export default {
             }).finally(_ => {
                 this.loadIng--;
             })
-        },
-
-        truncateContent(content) {
-            if (!content) return '';
-            const maxLen = 100;
-            const text = content.replace(/\s+/g, ' ').trim();
-            return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
         },
 
         toggleAiSearch() {
@@ -675,14 +591,17 @@ export default {
                 '',
                 '## 链接格式要求',
                 '在返回结果时，请使用以下格式创建可点击的链接：',
-                '- 任务: [任务名称](dootask://task/任务ID)',
+                '- 任务: [任务名称](dootask://task/任务ID/主任务ID)',
                 '- 项目: [项目名称](dootask://project/项目ID)',
                 '- 文件: [文件名称](dootask://file/文件ID)',
                 '- 联系人: [联系人名称](dootask://contact/用户ID)',
+                '- 消息: [消息内容预览](dootask://message/对话ID/消息ID)',
                 '',
                 '示例：',
-                '- [完成项目报告](dootask://task/123)',
+                '- [完成项目报告](dootask://task/123/0)（主任务）',
+                '- [编写测试用例](dootask://task/456/123)（子任务）',
                 '- [产品开发项目](dootask://project/456)',
+                '- [关于报销的讨论](dootask://message/789/1234)',
             ].join('\n');
 
             const prepared = [
