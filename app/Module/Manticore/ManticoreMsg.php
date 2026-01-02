@@ -7,6 +7,8 @@ use App\Models\WebSocketDialogUser;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\AI;
+use Carbon\Carbon;
+use DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -169,6 +171,145 @@ class ManticoreMsg
             ];
         }
         return $formatted;
+    }
+
+    /**
+     * 按对话搜索消息（用于对话列表搜索）
+     * 
+     * 返回包含匹配消息的对话列表，每个对话只返回一次
+     * 当 Manticore 未安装时，回退到 MySQL LIKE 搜索
+     *
+     * @param int $userid 用户ID
+     * @param string $keyword 搜索关键词
+     * @param int $from 起始位置
+     * @param int $size 返回数量
+     * @return array 对话列表
+     */
+    public static function searchDialogs(int $userid, string $keyword, int $from = 0, int $size = 20): array
+    {
+        if (empty($keyword)) {
+            return [];
+        }
+
+        // 未安装 Manticore 时使用 MySQL 回退搜索
+        if (!Apps::isInstalled("manticore")) {
+            return self::searchDialogsByMysql($userid, $keyword, $from, $size);
+        }
+
+        try {
+            // 使用全文搜索获取更多结果，然后按对话分组
+            $results = ManticoreBase::msgFullTextSearch($keyword, $userid, 100, 0);
+
+            if (empty($results)) {
+                return [];
+            }
+
+            // 收集所有对话ID
+            $dialogIds = array_unique(array_column($results, 'dialog_id'));
+
+            // 获取用户在这些对话中的信息
+            $dialogUsers = WebSocketDialogUser::where('userid', $userid)
+                ->whereIn('dialog_id', $dialogIds)
+                ->get()
+                ->keyBy('dialog_id');
+
+            // 按对话分组，每个对话只保留最相关的消息
+            $msgs = [];
+            $seenDialogs = [];
+            foreach ($results as $item) {
+                $dialogId = $item['dialog_id'];
+                
+                // 每个对话只取第一条（最相关的）
+                if (isset($seenDialogs[$dialogId])) {
+                    continue;
+                }
+                $seenDialogs[$dialogId] = true;
+
+                // 获取用户在该对话的信息
+                $dialogUser = $dialogUsers->get($dialogId);
+                if (!$dialogUser) {
+                    continue;
+                }
+
+                $msgs[] = [
+                    'id' => $dialogId,
+                    'search_msg_id' => $item['msg_id'],
+                    'user_at' => $dialogUser->updated_at ? Carbon::parse($dialogUser->updated_at)->format('Y-m-d H:i:s') : null,
+                    'mark_unread' => $dialogUser->mark_unread,
+                    'silence' => $dialogUser->silence,
+                    'hide' => $dialogUser->hide,
+                    'color' => $dialogUser->color,
+                    'top_at' => $dialogUser->top_at ? Carbon::parse($dialogUser->top_at)->format('Y-m-d H:i:s') : null,
+                    'last_at' => $dialogUser->last_at ? Carbon::parse($dialogUser->last_at)->format('Y-m-d H:i:s') : null,
+                ];
+
+                // 已达到需要的数量
+                if (count($msgs) >= $from + $size) {
+                    break;
+                }
+            }
+
+            // 应用分页
+            return array_slice($msgs, $from, $size);
+        } catch (\Exception $e) {
+            Log::error('Manticore searchDialogs error: ' . $e->getMessage());
+            // 出错时回退到 MySQL 搜索
+            return self::searchDialogsByMysql($userid, $keyword, $from, $size);
+        }
+    }
+
+    /**
+     * MySQL 回退搜索（按对话搜索消息）
+     * 
+     * 通过联表查询获取用户有权限的对话中匹配的消息
+     *
+     * @param int $userid 用户ID
+     * @param string $keyword 搜索关键词
+     * @param int $from 起始位置
+     * @param int $size 返回数量
+     * @return array 对话列表
+     */
+    private static function searchDialogsByMysql(int $userid, string $keyword, int $from = 0, int $size = 20): array
+    {
+        $items = DB::table('web_socket_dialog_users as u')
+            ->select([
+                'd.*',
+                'u.top_at',
+                'u.last_at',
+                'u.mark_unread',
+                'u.silence',
+                'u.hide',
+                'u.color',
+                'u.updated_at as user_at',
+                'm.id as search_msg_id'
+            ])
+            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
+            ->join('web_socket_dialog_msgs as m', 'm.dialog_id', '=', 'd.id')
+            ->where('u.userid', $userid)
+            ->where('m.bot', 0)
+            ->whereNull('d.deleted_at')
+            ->where('m.key', 'like', "%{$keyword}%")
+            ->orderByDesc('m.id')
+            ->offset($from)
+            ->limit($size)
+            ->get()
+            ->all();
+
+        $msgs = [];
+        foreach ($items as $item) {
+            $msgs[] = [
+                'id' => $item->id,
+                'search_msg_id' => $item->search_msg_id,
+                'user_at' => Carbon::parse($item->user_at)->format('Y-m-d H:i:s'),
+                'mark_unread' => $item->mark_unread,
+                'silence' => $item->silence,
+                'hide' => $item->hide,
+                'color' => $item->color,
+                'top_at' => Carbon::parse($item->top_at)->format('Y-m-d H:i:s'),
+                'last_at' => Carbon::parse($item->last_at)->format('Y-m-d H:i:s'),
+            ];
+        }
+        return $msgs;
     }
 
     // ==============================

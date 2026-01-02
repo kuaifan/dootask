@@ -54,7 +54,6 @@ class Apps
                 'office' => 'OnlyOffice',
                 'drawio' => 'Drawio',
                 'minder' => 'Minder',
-                'search' => 'ZincSearch',
                 'manticore' => 'Manticore Search',
                 default => $appId,
             };

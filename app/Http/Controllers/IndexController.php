@@ -21,7 +21,6 @@ use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteBotMsgTask;
 use App\Tasks\CheckinRemindTask;
 use App\Tasks\CloseMeetingRoomTask;
-use App\Tasks\ZincSearchSyncTask;
 use App\Tasks\ManticoreSyncTask;
 use App\Tasks\UnclaimedTaskRemindTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -272,8 +271,6 @@ class IndexController extends InvokeController
         Task::deliver(new UnclaimedTaskRemindTask());
         // 关闭会议室
         Task::deliver(new CloseMeetingRoomTask());
-        // ZincSearch 同步
-        Task::deliver(new ZincSearchSyncTask());
         // Manticore Search 同步
         Task::deliver(new ManticoreSyncTask());
 

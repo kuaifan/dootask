@@ -32,7 +32,7 @@ use App\Models\WebSocketDialogMsgTranslate;
 use App\Models\WebSocketDialogSession;
 use App\Models\UserRecentItem;
 use App\Module\Table\OnlineData;
-use App\Module\ZincSearch\ZincSearchDialogMsg;
+use App\Module\Manticore\ManticoreMsg;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
@@ -155,7 +155,7 @@ class DialogController extends AbstractController
         }
         // 搜索消息会话
         if (count($list) < $take) {
-            $searchResults = ZincSearchDialogMsg::search($user->userid, $key, 0, $take - count($list));
+            $searchResults = ManticoreMsg::searchDialogs($user->userid, $key, 0, $take - count($list));
             if ($searchResults) {
                 foreach ($searchResults as $item) {
                     if ($dialog = WebSocketDialog::find($item['id'])) {
@@ -726,7 +726,7 @@ class DialogController extends AbstractController
         } else {
             // 搜索消息
             $list = [];
-            $searchResults = ZincSearchDialogMsg::search($user->userid, $key, 0, Base::getPaginate(50, 20, 'take'));
+            $searchResults = ManticoreMsg::searchDialogs($user->userid, $key, 0, Base::getPaginate(50, 20, 'take'));
             if ($searchResults) {
                 foreach ($searchResults as $item) {
                     if ($dialog = WebSocketDialog::find($item['id'])) {

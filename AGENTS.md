@@ -39,7 +39,7 @@
 
 - **Module（`app/Module`）**
   - 承载跨控制器 / 跨模型的业务逻辑与独立功能子域，例如：
-    - 外部服务集成：`AgoraIO/*`、`ZincSearch/*` 等；
+    - 外部服务集成：`AgoraIO/*`、`Manticore/*` 等；
     - 通用工具：`Lock.php`、`TextExtractor.php`、`Image.php` 等；
     - 项目 / 任务 / 对话等领域里的复杂协作逻辑。
   - 原则：
@@ -88,7 +88,7 @@
   - **偏好（Preferences）**：用户表达持续性偏好时（语言、输出格式、技术选型等），应尽快写入；
   - **流程 / 习惯（Procedures）**：形成「以后都按这个流程来」的稳定开发 / 发布 / 调试流程时，应记录为可复用步骤；
   - **约束 / 决策（Requirements）**：项目长期有效的决策，如不再支持某版本、某模块的架构约定等；
-  - **事实 / 关系（Facts）**：模块边界约定、服务之间的调用关系、与外部系统（如 AgoraIO、ZincSearch）集成方式等。
+  - **事实 / 关系（Facts）**：模块边界约定、服务之间的调用关系、与外部系统（如 AgoraIO、Manticore Search）集成方式等。
   - 写入建议：
     - 默认使用 `source: "text"`，在 `episode_body` 中用简洁结构化自然语言描述背景、类型、范围、具体内容；
     - 需要结构化数据时可用 `source: "json"`，保证 `episode_body` 是合法 JSON 字符串；

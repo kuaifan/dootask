@@ -6,7 +6,6 @@ use App\Models\WebSocketDialogMsg;
 use App\Module\Apps;
 use App\Module\Manticore\ManticoreMsg;
 use App\Tasks\ManticoreSyncTask;
-use App\Tasks\ZincSearchSyncTask;
 
 class WebSocketDialogMsgObserver extends AbstractObserver
 {
@@ -18,9 +17,6 @@ class WebSocketDialogMsgObserver extends AbstractObserver
      */
     public function created(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        // ZincSearch 同步
-        self::taskDeliver(new ZincSearchSyncTask('sync', $webSocketDialogMsg->toArray()));
-
         // Manticore 同步（仅在安装 Manticore 且符合索引条件时）
         if (Apps::isInstalled('manticore') && ManticoreMsg::shouldIndex($webSocketDialogMsg)) {
             self::taskDeliver(new ManticoreSyncTask('msg_sync', ['msg_id' => $webSocketDialogMsg->id]));
@@ -35,9 +31,6 @@ class WebSocketDialogMsgObserver extends AbstractObserver
      */
     public function updated(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        // ZincSearch 同步
-        self::taskDeliver(new ZincSearchSyncTask('sync', $webSocketDialogMsg->toArray()));
-
         // Manticore 同步（更新可能使消息符合或不再符合索引条件，由 sync 方法处理）
         if (Apps::isInstalled('manticore')) {
             self::taskDeliver(new ManticoreSyncTask('msg_sync', ['msg_id' => $webSocketDialogMsg->id]));
@@ -52,9 +45,6 @@ class WebSocketDialogMsgObserver extends AbstractObserver
      */
     public function deleted(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        // ZincSearch 删除
-        self::taskDeliver(new ZincSearchSyncTask('delete', $webSocketDialogMsg->toArray()));
-
         // Manticore 删除
         if (Apps::isInstalled('manticore')) {
             self::taskDeliver(new ManticoreSyncTask('msg_delete', ['msg_id' => $webSocketDialogMsg->id]));
