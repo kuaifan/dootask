@@ -12,17 +12,16 @@ use Illuminate\Console\Command;
 class SyncTaskToManticore extends Command
 {
     /**
-     * 更新数据
+     * 更新数据（MVA 方案：allowed_users 在同步时自动写入）
      * --f: 全量更新 (默认)
      * --i: 增量更新（从上次更新的最后一个ID接上）
-     * --u: 仅同步任务成员关系（不同步任务内容）
      *
      * 清理数据
      * --c: 清除索引
      */
 
-    protected $signature = 'manticore:sync-tasks {--f} {--i} {--c} {--u} {--batch=100}';
-    protected $description = '同步任务数据到 Manticore Search';
+    protected $signature = 'manticore:sync-tasks {--f} {--i} {--c} {--batch=100}';
+    protected $description = '同步任务数据到 Manticore Search（MVA 权限方案）';
 
     /**
      * @return int
@@ -59,42 +58,8 @@ class SyncTaskToManticore extends Command
             return 0;
         }
 
-        // 仅同步任务成员关系
-        if ($this->option('u')) {
-            $this->info('开始同步任务成员关系...');
-            $count = ManticoreTask::syncAllTaskUsers(function ($count) {
-                if ($count % 1000 === 0) {
-                    $this->info("  已同步 {$count} 条关系...");
-                }
-            });
-            $this->info("任务成员关系同步完成，共 {$count} 条");
-            $this->releaseLock();
-            return 0;
-        }
-
-        $this->info('开始同步任务数据...');
+        $this->info('开始同步任务数据（MVA 方案：allowed_users 自动内联）...');
         $this->syncTasks();
-
-        // 同步任务成员关系
-        if ($this->option('f') || (!$this->option('i') && !$this->option('u'))) {
-            $this->info("\n全量同步任务成员关系...");
-            $count = ManticoreTask::syncAllTaskUsers(function ($count) {
-                if ($count % 1000 === 0) {
-                    $this->info("  已同步 {$count} 条关系...");
-                }
-            });
-            $this->info("任务成员关系同步完成，共 {$count} 条");
-        } elseif ($this->option('i')) {
-            $this->info("\n增量同步任务成员关系...");
-            $count = ManticoreTask::syncTaskUsersIncremental(function ($count) {
-                if ($count % 1000 === 0) {
-                    $this->info("  已同步 {$count} 条关系...");
-                }
-            });
-            if ($count > 0) {
-                $this->info("新增任务成员关系 {$count} 条");
-            }
-        }
 
         $this->info("\n同步完成");
         $this->releaseLock();
@@ -180,4 +145,3 @@ class SyncTaskToManticore extends Command
         $this->info("已索引任务数量: " . ManticoreTask::getIndexedCount());
     }
 }
-

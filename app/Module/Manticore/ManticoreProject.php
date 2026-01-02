@@ -10,7 +10,7 @@ use App\Module\AI;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Manticore Search 项目搜索类
+ * Manticore Search 项目搜索类（MVA 权限方案）
  *
  * 使用方法:
  *
@@ -22,10 +22,8 @@ use Illuminate\Support\Facades\Log;
  *    - 批量同步: batchSync($projects);
  *    - 删除索引: delete($projectId);
  *
- * 3. 成员关系方法
- *    - 添加成员: addProjectUser($projectId, $userid);
- *    - 删除成员: removeProjectUser($projectId, $userid);
- *    - 同步所有成员: syncProjectUsers($projectId);
+ * 3. 权限更新方法
+ *    - 更新权限: updateAllowedUsers($projectId);
  *
  * 4. 工具方法
  *    - 清空索引: clear();
@@ -134,7 +132,20 @@ class ManticoreProject
     // ==============================
 
     /**
-     * 同步单个项目到 Manticore
+     * 获取项目的 allowed_users 列表
+     *
+     * @param int $projectId 项目ID
+     * @return array 有权限的用户ID数组
+     */
+    public static function getAllowedUsers(int $projectId): array
+    {
+        return ProjectUser::where('project_id', $projectId)
+            ->pluck('userid')
+            ->toArray();
+    }
+
+    /**
+     * 同步单个项目到 Manticore（含 allowed_users）
      *
      * @param Project $project 项目模型
      * @return bool 是否成功
@@ -163,7 +174,10 @@ class ManticoreProject
                 }
             }
 
-            // 写入 Manticore
+            // 获取项目成员列表（作为 allowed_users）
+            $allowedUsers = self::getAllowedUsers($project->id);
+
+            // 写入 Manticore（含 allowed_users）
             $result = ManticoreBase::upsertProjectVector([
                 'project_id' => $project->id,
                 'userid' => $project->userid ?? 0,
@@ -171,6 +185,7 @@ class ManticoreProject
                 'project_name' => $project->name ?? '',
                 'project_desc' => $project->desc ?? '',
                 'content_vector' => $embedding,
+                'allowed_users' => $allowedUsers,
             ]);
 
             return $result;
@@ -236,12 +251,7 @@ class ManticoreProject
             return false;
         }
 
-        // 删除项目索引
-        ManticoreBase::deleteProjectVector($projectId);
-        // 删除项目成员关系
-        ManticoreBase::deleteAllProjectUsers($projectId);
-
-        return true;
+        return ManticoreBase::deleteProjectVector($projectId);
     }
 
     /**
@@ -255,10 +265,7 @@ class ManticoreProject
             return false;
         }
 
-        ManticoreBase::clearAllProjectVectors();
-        ManticoreBase::clearAllProjectUsers();
-
-        return true;
+        return ManticoreBase::clearAllProjectVectors();
     }
 
     /**
@@ -276,154 +283,28 @@ class ManticoreProject
     }
 
     // ==============================
-    // 成员关系方法
+    // 权限更新方法（MVA 方案）
     // ==============================
 
     /**
-     * 添加项目成员到 Manticore
-     *
-     * @param int $projectId 项目ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function addProjectUser(int $projectId, int $userid): bool
-    {
-        if (!Apps::isInstalled("manticore") || $projectId <= 0 || $userid <= 0) {
-            return false;
-        }
-
-        return ManticoreBase::upsertProjectUser($projectId, $userid);
-    }
-
-    /**
-     * 删除项目成员
-     *
-     * @param int $projectId 项目ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function removeProjectUser(int $projectId, int $userid): bool
-    {
-        if (!Apps::isInstalled("manticore") || $projectId <= 0 || $userid <= 0) {
-            return false;
-        }
-
-        return ManticoreBase::deleteProjectUser($projectId, $userid);
-    }
-
-    /**
-     * 同步项目的所有成员到 Manticore
+     * 更新项目的 allowed_users 权限列表
+     * 从 MySQL 获取最新的项目成员并更新到 Manticore
      *
      * @param int $projectId 项目ID
      * @return bool 是否成功
      */
-    public static function syncProjectUsers(int $projectId): bool
+    public static function updateAllowedUsers(int $projectId): bool
     {
         if (!Apps::isInstalled("manticore") || $projectId <= 0) {
             return false;
         }
 
         try {
-            // 从 MySQL 获取项目成员
-            $userids = ProjectUser::where('project_id', $projectId)
-                ->pluck('userid')
-                ->toArray();
-
-            // 同步到 Manticore
-            return ManticoreBase::syncProjectUsers($projectId, $userids);
+            $userids = self::getAllowedUsers($projectId);
+            return ManticoreBase::updateProjectAllowedUsers($projectId, $userids);
         } catch (\Exception $e) {
-            Log::error('Manticore syncProjectUsers error: ' . $e->getMessage(), ['project_id' => $projectId]);
+            Log::error('Manticore updateAllowedUsers error: ' . $e->getMessage(), ['project_id' => $projectId]);
             return false;
         }
     }
-
-    /**
-     * 批量同步所有项目成员关系（全量同步）
-     *
-     * @param callable|null $progressCallback 进度回调
-     * @return int 同步数量
-     */
-    public static function syncAllProjectUsers(?callable $progressCallback = null): int
-    {
-        if (!Apps::isInstalled("manticore")) {
-            return 0;
-        }
-
-        $count = 0;
-        $lastId = 0;
-        $batchSize = 1000;
-
-        // 先清空 Manticore 中的 project_users 表
-        ManticoreBase::clearAllProjectUsers();
-
-        // 分批同步
-        while (true) {
-            $records = ProjectUser::where('id', '>', $lastId)
-                ->orderBy('id')
-                ->limit($batchSize)
-                ->get();
-
-            if ($records->isEmpty()) {
-                break;
-            }
-
-            foreach ($records as $record) {
-                ManticoreBase::upsertProjectUser($record->project_id, $record->userid);
-                $count++;
-                $lastId = $record->id;
-            }
-
-            if ($progressCallback) {
-                $progressCallback($count);
-            }
-        }
-
-        return $count;
-    }
-
-    /**
-     * 增量同步项目成员关系（只同步新增的）
-     *
-     * @param callable|null $progressCallback 进度回调
-     * @return int 同步数量
-     */
-    public static function syncProjectUsersIncremental(?callable $progressCallback = null): int
-    {
-        if (!Apps::isInstalled("manticore")) {
-            return 0;
-        }
-
-        $count = 0;
-        $batchSize = 1000;
-        $lastKey = "sync:manticoreProjectUserLastId";
-        $lastId = intval(ManticoreKeyValue::get($lastKey, 0));
-
-        // 分批同步新增的记录
-        while (true) {
-            $records = ProjectUser::where('id', '>', $lastId)
-                ->orderBy('id')
-                ->limit($batchSize)
-                ->get();
-
-            if ($records->isEmpty()) {
-                break;
-            }
-
-            foreach ($records as $record) {
-                ManticoreBase::upsertProjectUser($record->project_id, $record->userid);
-                $count++;
-                $lastId = $record->id;
-            }
-
-            // 保存进度
-            ManticoreKeyValue::set($lastKey, $lastId);
-
-            if ($progressCallback) {
-                $progressCallback($count);
-            }
-        }
-
-        return $count;
-    }
 }
-

@@ -16,9 +16,10 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * 通用 Manticore Search 同步任务
+ * 通用 Manticore Search 同步任务（MVA 权限方案）
  *
  * 支持文件、用户、项目、任务的同步操作
+ * 使用 MVA (Multi-Value Attribute) 内联权限过滤
  */
 class ManticoreSyncTask extends AbstractTask
 {
@@ -57,35 +58,19 @@ class ManticoreSyncTask extends AbstractTask
                 }
                 break;
 
-            case 'file_user_sync':
-                $fileId = $this->data['file_id'] ?? 0;
-                if ($fileId > 0) {
-                    ManticoreFile::syncFileUsers($fileId);
-                }
-                break;
-
-            case 'file_user_add':
-                $fileId = $this->data['file_id'] ?? 0;
-                $userid = $this->data['userid'] ?? 0;
-                $permission = $this->data['permission'] ?? 0;
-                if ($fileId > 0) {
-                    ManticoreFile::addFileUser($fileId, $userid, $permission);
-                }
-                break;
-
-            case 'file_user_remove':
-                $fileId = $this->data['file_id'] ?? 0;
-                $userid = $this->data['userid'] ?? null;
-                if ($fileId > 0) {
-                    ManticoreFile::removeFileUser($fileId, $userid);
-                }
-                break;
-
             case 'file_pshare_update':
                 $fileIds = $this->data['file_ids'] ?? [];
                 $pshare = $this->data['pshare'] ?? 0;
                 if (!empty($fileIds)) {
                     ManticoreBase::batchUpdatePshare($fileIds, $pshare);
+                }
+                break;
+
+            case 'update_file_allowed_users':
+                // 更新文件的 allowed_users（共享变更时调用）
+                $fileId = $this->data['file_id'] ?? 0;
+                if ($fileId > 0) {
+                    ManticoreFile::updateAllowedUsers($fileId);
                 }
                 break;
 
@@ -123,26 +108,20 @@ class ManticoreSyncTask extends AbstractTask
                 }
                 break;
 
-            case 'project_user_add':
-                $projectId = $this->data['project_id'] ?? 0;
-                $userid = $this->data['userid'] ?? 0;
-                if ($projectId > 0 && $userid > 0) {
-                    ManticoreProject::addProjectUser($projectId, $userid);
-                }
-                break;
-
-            case 'project_user_remove':
-                $projectId = $this->data['project_id'] ?? 0;
-                $userid = $this->data['userid'] ?? 0;
-                if ($projectId > 0 && $userid > 0) {
-                    ManticoreProject::removeProjectUser($projectId, $userid);
-                }
-                break;
-
-            case 'project_users_sync':
+            case 'update_project_allowed_users':
+                // 更新项目的 allowed_users（成员变更时调用）
                 $projectId = $this->data['project_id'] ?? 0;
                 if ($projectId > 0) {
-                    ManticoreProject::syncProjectUsers($projectId);
+                    ManticoreProject::updateAllowedUsers($projectId);
+                }
+                break;
+
+            case 'cascade_project_users':
+                // 项目成员变更时，级联更新该项目下所有 visibility=1 的任务
+                // 异步执行，避免阻塞
+                $projectId = $this->data['project_id'] ?? 0;
+                if ($projectId > 0) {
+                    ManticoreTask::cascadeUpdateByProject($projectId);
                 }
                 break;
 
@@ -163,43 +142,13 @@ class ManticoreSyncTask extends AbstractTask
                 }
                 break;
 
-            case 'task_visibility_update':
-                $taskId = $this->data['task_id'] ?? 0;
-                $visibility = $this->data['visibility'] ?? 1;
-                if ($taskId > 0) {
-                    ManticoreTask::updateVisibility($taskId, $visibility);
-                }
-                break;
-
-            case 'task_user_add':
-                $taskId = $this->data['task_id'] ?? 0;
-                $userid = $this->data['userid'] ?? 0;
-                if ($taskId > 0 && $userid > 0) {
-                    ManticoreTask::addTaskUser($taskId, $userid);
-                }
-                break;
-
-            case 'task_user_remove':
-                $taskId = $this->data['task_id'] ?? 0;
-                $userid = $this->data['userid'] ?? 0;
-                if ($taskId > 0 && $userid > 0) {
-                    ManticoreTask::removeTaskUser($taskId, $userid);
-                }
-                break;
-
-            case 'task_visibility_user_remove':
-                // 特殊处理：删除 visibility user 时需要检查是否仍是任务成员
-                $taskId = $this->data['task_id'] ?? 0;
-                $userid = $this->data['userid'] ?? 0;
-                if ($taskId > 0 && $userid > 0) {
-                    ManticoreTask::removeVisibilityUser($taskId, $userid);
-                }
-                break;
-
-            case 'task_users_sync':
+            case 'update_task_allowed_users':
+                // 更新任务的 allowed_users（成员变更时调用）
                 $taskId = $this->data['task_id'] ?? 0;
                 if ($taskId > 0) {
-                    ManticoreTask::syncTaskUsers($taskId);
+                    ManticoreTask::updateAllowedUsers($taskId);
+                    // 级联更新子任务
+                    ManticoreTask::cascadeToChildren($taskId);
                 }
                 break;
 
@@ -212,7 +161,7 @@ class ManticoreSyncTask extends AbstractTask
 
     /**
      * 增量更新（定时执行）
-     * 使用 --i 参数执行增量同步，会同步新增的向量数据和用户关系数据
+     * 使用 --i 参数执行增量同步，会同步新增的向量数据
      *
      * @return void
      */
@@ -227,7 +176,7 @@ class ManticoreSyncTask extends AbstractTask
         // 执行开始
         Cache::put("ManticoreSyncTask:Time", time(), Carbon::now()->addMinutes(60));
 
-        // 执行增量同步（同时同步向量表和用户关系表的新增数据）
+        // 执行增量同步（MVA 方案不需要单独同步关系表）
         @shell_exec("php /var/www/artisan manticore:sync-files --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-users --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-projects --i 2>&1 &");
@@ -241,4 +190,3 @@ class ManticoreSyncTask extends AbstractTask
     {
     }
 }
-

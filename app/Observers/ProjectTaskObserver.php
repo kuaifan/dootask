@@ -32,11 +32,6 @@ class ProjectTaskObserver extends AbstractObserver
     {
         if ($projectTask->isDirty('visibility')) {
             self::visibilityUpdate($projectTask);
-            // 同步 visibility 变化到 Manticore
-            self::taskDeliver(new ManticoreSyncTask('task_visibility_update', [
-                'task_id' => $projectTask->id,
-                'visibility' => $projectTask->visibility,
-            ]));
         }
         if ($projectTask->isDirty('archived_at')) {
             if ($projectTask->archived_at) {
@@ -46,9 +41,11 @@ class ProjectTaskObserver extends AbstractObserver
             }
         }
 
-        // 检查是否有搜索相关字段变化
-        // project_id 变化时也需要同步（任务移动到其他项目）
-        $searchableFields = ['name', 'desc', 'archived_at', 'project_id'];
+        // MVA 方案：检查是否有搜索相关字段变化或权限相关字段变化
+        // visibility 变化会影响 allowed_users 来源
+        // parent_id 变化会影响子任务继承
+        // project_id 变化会影响 visibility=1 的任务权限
+        $searchableFields = ['name', 'desc', 'archived_at', 'project_id', 'visibility', 'parent_id'];
         $isDirty = false;
         foreach ($searchableFields as $field) {
             if ($projectTask->isDirty($field)) {
@@ -61,6 +58,7 @@ class ProjectTaskObserver extends AbstractObserver
             if ($projectTask->archived_at) {
                 self::taskDeliver(new ManticoreSyncTask('task_delete', ['task_id' => $projectTask->id]));
             } else {
+                // 重新同步任务（会重新计算 allowed_users）
                 self::taskDeliver(new ManticoreSyncTask('task_sync', $projectTask->toArray()));
             }
         }

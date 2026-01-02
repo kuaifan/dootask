@@ -68,11 +68,13 @@ class ManticoreBase
 
     /**
      * 初始化表结构
+     * 
+     * MVA 方案：使用 allowed_users MULTI 字段内联权限，无需单独的关系表
      */
     private function initializeTables(PDO $pdo): void
     {
         try {
-            // 创建文件向量表
+            // 创建文件向量表（含 allowed_users MVA 权限字段）
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS file_vectors (
                     id BIGINT,
@@ -83,6 +85,7 @@ class ManticoreBase
                     file_type STRING,
                     file_ext STRING,
                     content TEXT,
+                    allowed_users MULTI,
                     content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
                 ) charset_table='chinese' morphology='icu_chinese'
             ");
@@ -96,17 +99,7 @@ class ManticoreBase
                 )
             ");
 
-            // 创建文件用户关系表（用于权限过滤）
-            $pdo->exec("
-                CREATE TABLE IF NOT EXISTS file_users (
-                    id BIGINT,
-                    file_id BIGINT,
-                    userid BIGINT,
-                    permission INTEGER
-                )
-            ");
-
-            // 创建用户向量表（联系人搜索）
+            // 创建用户向量表（联系人搜索，无需权限过滤）
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS user_vectors (
                     id BIGINT,
@@ -120,7 +113,7 @@ class ManticoreBase
                 ) charset_table='chinese' morphology='icu_chinese'
             ");
 
-            // 创建项目向量表
+            // 创建项目向量表（含 allowed_users MVA 权限字段）
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS project_vectors (
                     id BIGINT,
@@ -129,20 +122,12 @@ class ManticoreBase
                     personal INTEGER,
                     project_name TEXT,
                     project_desc TEXT,
+                    allowed_users MULTI,
                     content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
                 ) charset_table='chinese' morphology='icu_chinese'
             ");
 
-            // 创建项目成员表（用于权限过滤）
-            $pdo->exec("
-                CREATE TABLE IF NOT EXISTS project_users (
-                    id BIGINT,
-                    project_id BIGINT,
-                    userid BIGINT
-                )
-            ");
-
-            // 创建任务向量表
+            // 创建任务向量表（含 allowed_users MVA 权限字段）
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS task_vectors (
                     id BIGINT,
@@ -153,17 +138,9 @@ class ManticoreBase
                     task_name TEXT,
                     task_desc TEXT,
                     task_content TEXT,
+                    allowed_users MULTI,
                     content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
                 ) charset_table='chinese' morphology='icu_chinese'
-            ");
-
-            // 创建任务成员表（用于 visibility=2,3 的权限过滤）
-            $pdo->exec("
-                CREATE TABLE IF NOT EXISTS task_users (
-                    id BIGINT,
-                    task_id BIGINT,
-                    userid BIGINT
-                )
             ");
 
             Log::info('Manticore tables initialized successfully');
@@ -351,7 +328,7 @@ class ManticoreBase
     // ==============================
 
     /**
-     * 全文搜索文件
+     * 全文搜索文件（使用 MVA allowed_users 权限过滤）
      *
      * @param string $keyword 关键词
      * @param int $userid 用户ID（0表示不限制权限）
@@ -369,8 +346,25 @@ class ManticoreBase
         $escapedKeyword = self::escapeMatch($keyword);
 
         if ($userid > 0) {
-            // 带权限过滤的搜索
-            // 先搜索文件，再通过应用层过滤权限
+            // 使用 MVA 权限过滤：allowed_users = 0（公开）或 allowed_users = userid
+            $sql = "
+                SELECT 
+                    id,
+                    file_id,
+                    userid,
+                    pshare,
+                    file_name,
+                    file_type,
+                    file_ext,
+                    content,
+                    WEIGHT() as relevance
+                FROM file_vectors
+                WHERE MATCH('@(file_name,content) {$escapedKeyword}')
+                    AND (allowed_users = 0 OR allowed_users = " . (int)$userid . ")
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        } else {
+            // 不限制权限
             $sql = "
                 SELECT 
                     id,
@@ -386,56 +380,13 @@ class ManticoreBase
                 WHERE MATCH('@(file_name,content) {$escapedKeyword}')
                 ORDER BY relevance DESC
                 LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
-
-            $results = $instance->query($sql);
-
-            // 应用层权限过滤：用户自己的文件 或 共享文件
-            if (!empty($results)) {
-                // 获取用户有权限的共享文件夹
-                $shareFileIds = $instance->query(
-                    "SELECT file_id FROM file_users WHERE userid IN (0, ?)",
-                    [$userid]
-                );
-                $allowedShares = array_column($shareFileIds, 'file_id');
-
-                $results = array_filter($results, function ($item) use ($userid, $allowedShares) {
-                    // 自己的文件
-                    if ($item['userid'] == $userid) {
-                        return true;
-                    }
-                    // 共享文件（pshare 在允许的共享列表中）
-                    if ($item['pshare'] > 0 && in_array($item['pshare'], $allowedShares)) {
-                        return true;
-                    }
-                    return false;
-                });
-                $results = array_values($results);
-            }
-
-            return $results;
-        } else {
-            // 不限制权限
-            $sql = "
-                SELECT 
-                    id,
-                    file_id,
-                    userid,
-                    file_name,
-                    file_type,
-                    file_ext,
-                    content,
-                    WEIGHT() as relevance
-                FROM file_vectors
-                WHERE MATCH('@(file_name,content) {$escapedKeyword}')
-                ORDER BY relevance DESC
-                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
-
-            return $instance->query($sql);
         }
+
+        return $instance->query($sql);
     }
 
     /**
-     * 向量相似度搜索
+     * 向量相似度搜索（使用 MVA allowed_users 权限过滤）
      *
      * @param array $queryVector 查询向量
      * @param int $userid 用户ID（0表示不限制权限）
@@ -451,6 +402,10 @@ class ManticoreBase
         $instance = new self();
         $vectorStr = '(' . implode(',', $queryVector) . ')';
 
+        // KNN 搜索需要先获取更多结果，再在应用层过滤权限
+        // 因为 KNN 的 WHERE 条件在 Manticore 中有限制
+        $fetchLimit = $userid > 0 ? $limit * 5 : $limit;
+
         $sql = "
             SELECT 
                 id,
@@ -460,10 +415,10 @@ class ManticoreBase
                 file_name,
                 file_type,
                 file_ext,
-                SUBSTRING(content, 1, 500) as content_preview,
+                content,
                 KNN_DIST() as distance
             FROM file_vectors
-            WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
+            WHERE KNN(content_vector, " . (int)$fetchLimit . ", {$vectorStr})
             ORDER BY distance ASC
         ";
 
@@ -474,22 +429,17 @@ class ManticoreBase
             $item['similarity'] = 1 - ($item['distance'] ?? 0);
         }
 
-        // 权限过滤
+        // MVA 权限过滤
         if ($userid > 0 && !empty($results)) {
-            $shareFileIds = $instance->query(
-                "SELECT file_id FROM file_users WHERE userid IN (0, ?)",
+            // 获取有权限的文件列表（allowed_users 包含 0 或 userid）
+            $allowedFileIds = $instance->query(
+                "SELECT file_id FROM file_vectors WHERE allowed_users = 0 OR allowed_users = ? LIMIT 100000",
                 [$userid]
             );
-            $allowedShares = array_column($shareFileIds, 'file_id');
+            $allowedIds = array_column($allowedFileIds, 'file_id');
 
-            $results = array_filter($results, function ($item) use ($userid, $allowedShares) {
-                if ($item['userid'] == $userid) {
-                    return true;
-                }
-                if ($item['pshare'] > 0 && in_array($item['pshare'], $allowedShares)) {
-                    return true;
-                }
-                return false;
+            $results = array_filter($results, function ($item) use ($allowedIds) {
+                return in_array($item['file_id'], $allowedIds);
             });
             $results = array_values($results);
         }
@@ -516,7 +466,7 @@ class ManticoreBase
         float $textWeight = 0.5,
         float $vectorWeight = 0.5
     ): array {
-        // 分别执行两种搜索
+        // 分别执行两种搜索（已包含权限过滤）
         $textResults = self::fullTextSearch($keyword, $userid, 50, 0);
         $vectorResults = !empty($queryVector)
             ? self::vectorSearch($queryVector, $userid, 50)
@@ -563,9 +513,18 @@ class ManticoreBase
     }
 
     /**
-     * 插入或更新文件向量
+     * 插入或更新文件向量（含 allowed_users MVA 权限字段）
      *
-     * @param array $data 文件数据
+     * @param array $data 文件数据，包含：
+     *   - file_id: 文件ID
+     *   - userid: 所有者ID
+     *   - pshare: 共享文件夹ID
+     *   - file_name: 文件名
+     *   - file_type: 文件类型
+     *   - file_ext: 文件扩展名
+     *   - content: 文件内容
+     *   - content_vector: 向量值
+     *   - allowed_users: 有权限的用户ID数组（0表示公开）
      * @return bool 是否成功
      */
     public static function upsertFileVector(array $data): bool
@@ -580,42 +539,57 @@ class ManticoreBase
         // 先尝试删除已存在的记录
         $instance->execute("DELETE FROM file_vectors WHERE file_id = ?", [$fileId]);
 
-        // 插入新记录（向量值必须内联到 SQL，Manticore 的 float_vector 不支持参数绑定）
+        // 构建 allowed_users MVA 值
+        $allowedUsers = $data['allowed_users'] ?? [];
+        $allowedUsersStr = !empty($allowedUsers) ? '(' . implode(',', array_map('intval', $allowedUsers)) . ')' : '()';
+
+        // 插入新记录（向量值和 MVA 必须内联到 SQL）
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
             $sql = "INSERT INTO file_vectors 
-                    (id, file_id, userid, pshare, file_name, file_type, file_ext, content, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$vectorValue})";
-
-            $params = [
-                $fileId,
-                $fileId,
-                $data['userid'] ?? 0,
-                $data['pshare'] ?? 0,
-                $data['file_name'] ?? '',
-                $data['file_type'] ?? '',
-                $data['file_ext'] ?? '',
-                $data['content'] ?? ''
-            ];
+                    (id, file_id, userid, pshare, file_name, file_type, file_ext, content, allowed_users, content_vector)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorValue})";
         } else {
             $sql = "INSERT INTO file_vectors 
-                    (id, file_id, userid, pshare, file_name, file_type, file_ext, content)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-            $params = [
-                $fileId,
-                $fileId,
-                $data['userid'] ?? 0,
-                $data['pshare'] ?? 0,
-                $data['file_name'] ?? '',
-                $data['file_type'] ?? '',
-                $data['file_ext'] ?? '',
-                $data['content'] ?? ''
-            ];
+                    (id, file_id, userid, pshare, file_name, file_type, file_ext, content, allowed_users)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr})";
         }
 
+        $params = [
+            $fileId,
+            $fileId,
+            $data['userid'] ?? 0,
+            $data['pshare'] ?? 0,
+            $data['file_name'] ?? '',
+            $data['file_type'] ?? '',
+            $data['file_ext'] ?? '',
+            $data['content'] ?? ''
+        ];
+
         return $instance->execute($sql, $params);
+    }
+
+    /**
+     * 更新文件的 allowed_users 权限列表
+     *
+     * @param int $fileId 文件ID
+     * @param array $userids 有权限的用户ID数组
+     * @return bool 是否成功
+     */
+    public static function updateFileAllowedUsers(int $fileId, array $userids): bool
+    {
+        if ($fileId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        $allowedUsersStr = !empty($userids) ? '(' . implode(',', array_map('intval', $userids)) . ')' : '()';
+
+        return $instance->execute(
+            "UPDATE file_vectors SET allowed_users = {$allowedUsersStr} WHERE file_id = ?",
+            [$fileId]
+        );
     }
 
     /**
@@ -715,136 +689,6 @@ class ManticoreBase
         $instance = new self();
         $result = $instance->queryOne("SELECT MAX(file_id) as max_id FROM file_vectors");
         return $result ? (int) ($result['max_id'] ?? 0) : 0;
-    }
-
-    // ==============================
-    // 文件用户关系方法
-    // ==============================
-
-    /**
-     * 插入或更新文件用户关系
-     *
-     * @param int $fileId 文件ID
-     * @param int $userid 用户ID（0表示公开）
-     * @param int $permission 权限（0只读，1读写）
-     * @return bool 是否成功
-     */
-    public static function upsertFileUser(int $fileId, int $userid, int $permission = 0): bool
-    {
-        if ($fileId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-
-        // 先删除已存在的记录
-        $instance->execute(
-            "DELETE FROM file_users WHERE file_id = ? AND userid = ?",
-            [$fileId, $userid]
-        );
-
-        // 插入新记录
-        $id = $fileId * 1000000 + $userid; // 生成唯一 ID
-        return $instance->execute(
-            "INSERT INTO file_users (id, file_id, userid, permission) VALUES (?, ?, ?, ?)",
-            [$id, $fileId, $userid, $permission]
-        );
-    }
-
-    /**
-     * 批量同步文件用户关系（替换指定文件的所有关系）
-     *
-     * @param int $fileId 文件ID
-     * @param array $users 用户列表 [['userid' => int, 'permission' => int], ...]
-     * @return bool 是否成功
-     */
-    public static function syncFileUsers(int $fileId, array $users): bool
-    {
-        if ($fileId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-
-        try {
-            // 删除旧关系
-            $instance->execute("DELETE FROM file_users WHERE file_id = ?", [$fileId]);
-
-            // 插入新关系
-            foreach ($users as $user) {
-                $userid = (int)($user['userid'] ?? 0);
-                $permission = (int)($user['permission'] ?? 0);
-                $id = $fileId * 1000000 + $userid;
-                $instance->execute(
-                    "INSERT INTO file_users (id, file_id, userid, permission) VALUES (?, ?, ?, ?)",
-                    [$id, $fileId, $userid, $permission]
-                );
-            }
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Manticore syncFileUsers error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * 删除文件的所有用户关系
-     *
-     * @param int $fileId 文件ID
-     * @return bool 是否成功
-     */
-    public static function deleteFileUsers(int $fileId): bool
-    {
-        if ($fileId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute("DELETE FROM file_users WHERE file_id = ?", [$fileId]);
-    }
-
-    /**
-     * 删除指定文件和用户的关系
-     *
-     * @param int $fileId 文件ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function deleteFileUser(int $fileId, int $userid): bool
-    {
-        if ($fileId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute(
-            "DELETE FROM file_users WHERE file_id = ? AND userid = ?",
-            [$fileId, $userid]
-        );
-    }
-
-    /**
-     * 获取文件用户关系数量
-     *
-     * @return int 关系数量
-     */
-    public static function getFileUserCount(): int
-    {
-        $instance = new self();
-        $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM file_users");
-        return $result ? (int) $result['cnt'] : 0;
-    }
-
-    /**
-     * 清空所有文件用户关系
-     *
-     * @return bool 是否成功
-     */
-    public static function clearAllFileUsers(): bool
-    {
-        $instance = new self();
-        return $instance->execute("TRUNCATE TABLE file_users");
     }
 
     // ==============================
@@ -1072,7 +916,7 @@ class ManticoreBase
     // ==============================
 
     /**
-     * 项目全文搜索
+     * 项目全文搜索（使用 MVA allowed_users 权限过滤）
      *
      * @param string $keyword 关键词
      * @param int $userid 用户ID（权限过滤）
@@ -1089,41 +933,43 @@ class ManticoreBase
         $instance = new self();
         $escapedKeyword = self::escapeMatch($keyword);
 
-        $sql = "
-            SELECT 
-                id,
-                project_id,
-                userid,
-                personal,
-                project_name,
-                project_desc,
-                WEIGHT() as relevance
-            FROM project_vectors
-            WHERE MATCH('@(project_name,project_desc) {$escapedKeyword}')
-            ORDER BY relevance DESC
-            LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
-
-        $results = $instance->query($sql);
-
-        // 权限过滤
-        if ($userid > 0 && !empty($results)) {
-            $memberProjects = $instance->query(
-                "SELECT project_id FROM project_users WHERE userid = ?",
-                [$userid]
-            );
-            $allowedProjects = array_column($memberProjects, 'project_id');
-
-            $results = array_filter($results, function ($item) use ($allowedProjects) {
-                return in_array($item['project_id'], $allowedProjects);
-            });
-            $results = array_values($results);
+        if ($userid > 0) {
+            // 使用 MVA 权限过滤
+            $sql = "
+                SELECT 
+                    id,
+                    project_id,
+                    userid,
+                    personal,
+                    project_name,
+                    project_desc,
+                    WEIGHT() as relevance
+                FROM project_vectors
+                WHERE MATCH('@(project_name,project_desc) {$escapedKeyword}')
+                    AND allowed_users = " . (int)$userid . "
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        } else {
+            $sql = "
+                SELECT 
+                    id,
+                    project_id,
+                    userid,
+                    personal,
+                    project_name,
+                    project_desc,
+                    WEIGHT() as relevance
+                FROM project_vectors
+                WHERE MATCH('@(project_name,project_desc) {$escapedKeyword}')
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
         }
 
-        return $results;
+        return $instance->query($sql);
     }
 
     /**
-     * 项目向量搜索
+     * 项目向量搜索（使用 MVA allowed_users 权限过滤）
      *
      * @param array $queryVector 查询向量
      * @param int $userid 用户ID（权限过滤）
@@ -1139,6 +985,9 @@ class ManticoreBase
         $instance = new self();
         $vectorStr = '(' . implode(',', $queryVector) . ')';
 
+        // KNN 搜索需要先获取更多结果，再在应用层过滤权限
+        $fetchLimit = $userid > 0 ? $limit * 5 : $limit;
+
         $sql = "
             SELECT 
                 id,
@@ -1149,7 +998,7 @@ class ManticoreBase
                 project_desc,
                 KNN_DIST() as distance
             FROM project_vectors
-            WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
+            WHERE KNN(content_vector, " . (int)$fetchLimit . ", {$vectorStr})
             ORDER BY distance ASC
         ";
 
@@ -1159,16 +1008,16 @@ class ManticoreBase
             $item['similarity'] = 1 - ($item['distance'] ?? 0);
         }
 
-        // 权限过滤
+        // MVA 权限过滤
         if ($userid > 0 && !empty($results)) {
-            $memberProjects = $instance->query(
-                "SELECT project_id FROM project_users WHERE userid = ?",
+            $allowedProjectIds = $instance->query(
+                "SELECT project_id FROM project_vectors WHERE allowed_users = ? LIMIT 100000",
                 [$userid]
             );
-            $allowedProjects = array_column($memberProjects, 'project_id');
+            $allowedIds = array_column($allowedProjectIds, 'project_id');
 
-            $results = array_filter($results, function ($item) use ($allowedProjects) {
-                return in_array($item['project_id'], $allowedProjects);
+            $results = array_filter($results, function ($item) use ($allowedIds) {
+                return in_array($item['project_id'], $allowedIds);
             });
             $results = array_values($results);
         }
@@ -1224,9 +1073,16 @@ class ManticoreBase
     }
 
     /**
-     * 插入或更新项目向量
+     * 插入或更新项目向量（含 allowed_users MVA 权限字段）
      *
-     * @param array $data 项目数据
+     * @param array $data 项目数据，包含：
+     *   - project_id: 项目ID
+     *   - userid: 创建者ID
+     *   - personal: 是否个人项目
+     *   - project_name: 项目名称
+     *   - project_desc: 项目描述
+     *   - content_vector: 向量值
+     *   - allowed_users: 有权限的用户ID数组
      * @return bool 是否成功
      */
     public static function upsertProjectVector(array $data): bool
@@ -1241,38 +1097,55 @@ class ManticoreBase
         // 先删除已存在的记录
         $instance->execute("DELETE FROM project_vectors WHERE project_id = ?", [$projectId]);
 
-        // 插入新记录（向量值必须内联到 SQL，Manticore 的 float_vector 不支持参数绑定）
+        // 构建 allowed_users MVA 值
+        $allowedUsers = $data['allowed_users'] ?? [];
+        $allowedUsersStr = !empty($allowedUsers) ? '(' . implode(',', array_map('intval', $allowedUsers)) . ')' : '()';
+
+        // 插入新记录
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
             $sql = "INSERT INTO project_vectors 
-                    (id, project_id, userid, personal, project_name, project_desc, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, {$vectorValue})";
-
-            $params = [
-                $projectId,
-                $projectId,
-                $data['userid'] ?? 0,
-                $data['personal'] ?? 0,
-                $data['project_name'] ?? '',
-                $data['project_desc'] ?? ''
-            ];
+                    (id, project_id, userid, personal, project_name, project_desc, allowed_users, content_vector)
+                    VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorValue})";
         } else {
             $sql = "INSERT INTO project_vectors 
-                    (id, project_id, userid, personal, project_name, project_desc)
-                    VALUES (?, ?, ?, ?, ?, ?)";
-
-            $params = [
-                $projectId,
-                $projectId,
-                $data['userid'] ?? 0,
-                $data['personal'] ?? 0,
-                $data['project_name'] ?? '',
-                $data['project_desc'] ?? ''
-            ];
+                    (id, project_id, userid, personal, project_name, project_desc, allowed_users)
+                    VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr})";
         }
 
+        $params = [
+            $projectId,
+            $projectId,
+            $data['userid'] ?? 0,
+            $data['personal'] ?? 0,
+            $data['project_name'] ?? '',
+            $data['project_desc'] ?? ''
+        ];
+
         return $instance->execute($sql, $params);
+    }
+
+    /**
+     * 更新项目的 allowed_users 权限列表
+     *
+     * @param int $projectId 项目ID
+     * @param array $userids 有权限的用户ID数组
+     * @return bool 是否成功
+     */
+    public static function updateProjectAllowedUsers(int $projectId, array $userids): bool
+    {
+        if ($projectId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        $allowedUsersStr = !empty($userids) ? '(' . implode(',', array_map('intval', $userids)) . ')' : '()';
+
+        return $instance->execute(
+            "UPDATE project_vectors SET allowed_users = {$allowedUsersStr} WHERE project_id = ?",
+            [$projectId]
+        );
     }
 
     /**
@@ -1315,136 +1188,11 @@ class ManticoreBase
     }
 
     // ==============================
-    // 项目成员关系方法
-    // ==============================
-
-    /**
-     * 插入或更新项目成员关系
-     *
-     * @param int $projectId 项目ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function upsertProjectUser(int $projectId, int $userid): bool
-    {
-        if ($projectId <= 0 || $userid <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-
-        // 先删除已存在的记录
-        $instance->execute(
-            "DELETE FROM project_users WHERE project_id = ? AND userid = ?",
-            [$projectId, $userid]
-        );
-
-        // 插入新记录
-        $id = $projectId * 1000000 + $userid;
-        return $instance->execute(
-            "INSERT INTO project_users (id, project_id, userid) VALUES (?, ?, ?)",
-            [$id, $projectId, $userid]
-        );
-    }
-
-    /**
-     * 删除项目成员关系
-     *
-     * @param int $projectId 项目ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function deleteProjectUser(int $projectId, int $userid): bool
-    {
-        if ($projectId <= 0 || $userid <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute(
-            "DELETE FROM project_users WHERE project_id = ? AND userid = ?",
-            [$projectId, $userid]
-        );
-    }
-
-    /**
-     * 删除项目的所有成员关系
-     *
-     * @param int $projectId 项目ID
-     * @return bool 是否成功
-     */
-    public static function deleteAllProjectUsers(int $projectId): bool
-    {
-        if ($projectId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute("DELETE FROM project_users WHERE project_id = ?", [$projectId]);
-    }
-
-    /**
-     * 批量同步项目成员关系
-     *
-     * @param int $projectId 项目ID
-     * @param array $userids 用户ID列表
-     * @return bool 是否成功
-     */
-    public static function syncProjectUsers(int $projectId, array $userids): bool
-    {
-        if ($projectId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-
-        try {
-            $instance->execute("DELETE FROM project_users WHERE project_id = ?", [$projectId]);
-
-            foreach ($userids as $userid) {
-                $id = $projectId * 1000000 + (int)$userid;
-                $instance->execute(
-                    "INSERT INTO project_users (id, project_id, userid) VALUES (?, ?, ?)",
-                    [$id, $projectId, (int)$userid]
-                );
-            }
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Manticore syncProjectUsers error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * 清空所有项目成员关系
-     *
-     * @return bool 是否成功
-     */
-    public static function clearAllProjectUsers(): bool
-    {
-        $instance = new self();
-        return $instance->execute("TRUNCATE TABLE project_users");
-    }
-
-    /**
-     * 获取项目成员关系数量
-     *
-     * @return int 关系数量
-     */
-    public static function getProjectUserCount(): int
-    {
-        $instance = new self();
-        $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM project_users");
-        return $result ? (int) $result['cnt'] : 0;
-    }
-
-    // ==============================
     // 任务向量方法
     // ==============================
 
     /**
-     * 任务全文搜索
+     * 任务全文搜索（使用 MVA allowed_users 权限过滤）
      *
      * @param string $keyword 关键词
      * @param int $userid 用户ID（权限过滤）
@@ -1461,63 +1209,47 @@ class ManticoreBase
         $instance = new self();
         $escapedKeyword = self::escapeMatch($keyword);
 
-        $sql = "
-            SELECT 
-                id,
-                task_id,
-                project_id,
-                userid,
-                visibility,
-                task_name,
-                task_desc,
-                task_content,
-                WEIGHT() as relevance
-            FROM task_vectors
-            WHERE MATCH('@(task_name,task_desc,task_content) {$escapedKeyword}')
-            ORDER BY relevance DESC
-            LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
-
-        $results = $instance->query($sql);
-
-        // 权限过滤
-        if ($userid > 0 && !empty($results)) {
-            // 获取用户参与的项目
-            $memberProjects = $instance->query(
-                "SELECT project_id FROM project_users WHERE userid = ?",
-                [$userid]
-            );
-            $allowedProjects = array_column($memberProjects, 'project_id');
-
-            // 获取用户参与的任务
-            $memberTasks = $instance->query(
-                "SELECT task_id FROM task_users WHERE userid = ?",
-                [$userid]
-            );
-            $allowedTasks = array_column($memberTasks, 'task_id');
-
-            $results = array_filter($results, function ($item) use ($userid, $allowedProjects, $allowedTasks) {
-                // 自己创建的任务
-                if ($item['userid'] == $userid) {
-                    return true;
-                }
-                // visibility=1 且是项目成员
-                if ($item['visibility'] == 1 && in_array($item['project_id'], $allowedProjects)) {
-                    return true;
-                }
-                // visibility=2,3 且是任务成员
-                if (in_array($item['visibility'], [2, 3]) && in_array($item['task_id'], $allowedTasks)) {
-                    return true;
-                }
-                return false;
-            });
-            $results = array_values($results);
+        if ($userid > 0) {
+            // 使用 MVA 权限过滤
+            $sql = "
+                SELECT 
+                    id,
+                    task_id,
+                    project_id,
+                    userid,
+                    visibility,
+                    task_name,
+                    task_desc,
+                    task_content,
+                    WEIGHT() as relevance
+                FROM task_vectors
+                WHERE MATCH('@(task_name,task_desc,task_content) {$escapedKeyword}')
+                    AND allowed_users = " . (int)$userid . "
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+        } else {
+            $sql = "
+                SELECT 
+                    id,
+                    task_id,
+                    project_id,
+                    userid,
+                    visibility,
+                    task_name,
+                    task_desc,
+                    task_content,
+                    WEIGHT() as relevance
+                FROM task_vectors
+                WHERE MATCH('@(task_name,task_desc,task_content) {$escapedKeyword}')
+                ORDER BY relevance DESC
+                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
         }
 
-        return $results;
+        return $instance->query($sql);
     }
 
     /**
-     * 任务向量搜索
+     * 任务向量搜索（使用 MVA allowed_users 权限过滤）
      *
      * @param array $queryVector 查询向量
      * @param int $userid 用户ID（权限过滤）
@@ -1533,6 +1265,9 @@ class ManticoreBase
         $instance = new self();
         $vectorStr = '(' . implode(',', $queryVector) . ')';
 
+        // KNN 搜索需要先获取更多结果，再在应用层过滤权限
+        $fetchLimit = $userid > 0 ? $limit * 5 : $limit;
+
         $sql = "
             SELECT 
                 id,
@@ -1545,7 +1280,7 @@ class ManticoreBase
                 task_content,
                 KNN_DIST() as distance
             FROM task_vectors
-            WHERE KNN(content_vector, " . (int)$limit . ", {$vectorStr})
+            WHERE KNN(content_vector, " . (int)$fetchLimit . ", {$vectorStr})
             ORDER BY distance ASC
         ";
 
@@ -1555,31 +1290,16 @@ class ManticoreBase
             $item['similarity'] = 1 - ($item['distance'] ?? 0);
         }
 
-        // 权限过滤
+        // MVA 权限过滤
         if ($userid > 0 && !empty($results)) {
-            $memberProjects = $instance->query(
-                "SELECT project_id FROM project_users WHERE userid = ?",
+            $allowedTaskIds = $instance->query(
+                "SELECT task_id FROM task_vectors WHERE allowed_users = ? LIMIT 100000",
                 [$userid]
             );
-            $allowedProjects = array_column($memberProjects, 'project_id');
+            $allowedIds = array_column($allowedTaskIds, 'task_id');
 
-            $memberTasks = $instance->query(
-                "SELECT task_id FROM task_users WHERE userid = ?",
-                [$userid]
-            );
-            $allowedTasks = array_column($memberTasks, 'task_id');
-
-            $results = array_filter($results, function ($item) use ($userid, $allowedProjects, $allowedTasks) {
-                if ($item['userid'] == $userid) {
-                    return true;
-                }
-                if ($item['visibility'] == 1 && in_array($item['project_id'], $allowedProjects)) {
-                    return true;
-                }
-                if (in_array($item['visibility'], [2, 3]) && in_array($item['task_id'], $allowedTasks)) {
-                    return true;
-                }
-                return false;
+            $results = array_filter($results, function ($item) use ($allowedIds) {
+                return in_array($item['task_id'], $allowedIds);
             });
             $results = array_values($results);
         }
@@ -1635,9 +1355,18 @@ class ManticoreBase
     }
 
     /**
-     * 插入或更新任务向量
+     * 插入或更新任务向量（含 allowed_users MVA 权限字段）
      *
-     * @param array $data 任务数据
+     * @param array $data 任务数据，包含：
+     *   - task_id: 任务ID
+     *   - project_id: 项目ID
+     *   - userid: 创建者ID
+     *   - visibility: 可见性
+     *   - task_name: 任务名称
+     *   - task_desc: 任务描述
+     *   - task_content: 任务内容
+     *   - content_vector: 向量值
+     *   - allowed_users: 有权限的用户ID数组
      * @return bool 是否成功
      */
     public static function upsertTaskVector(array $data): bool
@@ -1652,42 +1381,57 @@ class ManticoreBase
         // 先删除已存在的记录
         $instance->execute("DELETE FROM task_vectors WHERE task_id = ?", [$taskId]);
 
-        // 插入新记录（向量值必须内联到 SQL，Manticore 的 float_vector 不支持参数绑定）
+        // 构建 allowed_users MVA 值
+        $allowedUsers = $data['allowed_users'] ?? [];
+        $allowedUsersStr = !empty($allowedUsers) ? '(' . implode(',', array_map('intval', $allowedUsers)) . ')' : '()';
+
+        // 插入新记录
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
             $sql = "INSERT INTO task_vectors 
-                    (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$vectorValue})";
-
-            $params = [
-                $taskId,
-                $taskId,
-                $data['project_id'] ?? 0,
-                $data['userid'] ?? 0,
-                $data['visibility'] ?? 1,
-                $data['task_name'] ?? '',
-                $data['task_desc'] ?? '',
-                $data['task_content'] ?? ''
-            ];
+                    (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, allowed_users, content_vector)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorValue})";
         } else {
             $sql = "INSERT INTO task_vectors 
-                    (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-            $params = [
-                $taskId,
-                $taskId,
-                $data['project_id'] ?? 0,
-                $data['userid'] ?? 0,
-                $data['visibility'] ?? 1,
-                $data['task_name'] ?? '',
-                $data['task_desc'] ?? '',
-                $data['task_content'] ?? ''
-            ];
+                    (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, allowed_users)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr})";
         }
 
+        $params = [
+            $taskId,
+            $taskId,
+            $data['project_id'] ?? 0,
+            $data['userid'] ?? 0,
+            $data['visibility'] ?? 1,
+            $data['task_name'] ?? '',
+            $data['task_desc'] ?? '',
+            $data['task_content'] ?? ''
+        ];
+
         return $instance->execute($sql, $params);
+    }
+
+    /**
+     * 更新任务的 allowed_users 权限列表
+     *
+     * @param int $taskId 任务ID
+     * @param array $userids 有权限的用户ID数组
+     * @return bool 是否成功
+     */
+    public static function updateTaskAllowedUsers(int $taskId, array $userids): bool
+    {
+        if ($taskId <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+        $allowedUsersStr = !empty($userids) ? '(' . implode(',', array_map('intval', $userids)) . ')' : '()';
+
+        return $instance->execute(
+            "UPDATE task_vectors SET allowed_users = {$allowedUsersStr} WHERE task_id = ?",
+            [$taskId]
+        );
     }
 
     /**
@@ -1749,129 +1493,5 @@ class ManticoreBase
         return $result ? (int) $result['cnt'] : 0;
     }
 
-    // ==============================
-    // 任务成员关系方法
-    // ==============================
-
-    /**
-     * 插入或更新任务成员关系
-     *
-     * @param int $taskId 任务ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function upsertTaskUser(int $taskId, int $userid): bool
-    {
-        if ($taskId <= 0 || $userid <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-
-        // 先删除已存在的记录
-        $instance->execute(
-            "DELETE FROM task_users WHERE task_id = ? AND userid = ?",
-            [$taskId, $userid]
-        );
-
-        // 插入新记录
-        $id = $taskId * 1000000 + $userid;
-        return $instance->execute(
-            "INSERT INTO task_users (id, task_id, userid) VALUES (?, ?, ?)",
-            [$id, $taskId, $userid]
-        );
-    }
-
-    /**
-     * 删除任务成员关系
-     *
-     * @param int $taskId 任务ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function deleteTaskUser(int $taskId, int $userid): bool
-    {
-        if ($taskId <= 0 || $userid <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute(
-            "DELETE FROM task_users WHERE task_id = ? AND userid = ?",
-            [$taskId, $userid]
-        );
-    }
-
-    /**
-     * 删除任务的所有成员关系
-     *
-     * @param int $taskId 任务ID
-     * @return bool 是否成功
-     */
-    public static function deleteAllTaskUsers(int $taskId): bool
-    {
-        if ($taskId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute("DELETE FROM task_users WHERE task_id = ?", [$taskId]);
-    }
-
-    /**
-     * 批量同步任务成员关系
-     *
-     * @param int $taskId 任务ID
-     * @param array $userids 用户ID列表
-     * @return bool 是否成功
-     */
-    public static function syncTaskUsers(int $taskId, array $userids): bool
-    {
-        if ($taskId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-
-        try {
-            $instance->execute("DELETE FROM task_users WHERE task_id = ?", [$taskId]);
-
-            foreach ($userids as $userid) {
-                $id = $taskId * 1000000 + (int)$userid;
-                $instance->execute(
-                    "INSERT INTO task_users (id, task_id, userid) VALUES (?, ?, ?)",
-                    [$id, $taskId, (int)$userid]
-                );
-            }
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Manticore syncTaskUsers error: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * 清空所有任务成员关系
-     *
-     * @return bool 是否成功
-     */
-    public static function clearAllTaskUsers(): bool
-    {
-        $instance = new self();
-        return $instance->execute("TRUNCATE TABLE task_users");
-    }
-
-    /**
-     * 获取任务成员关系数量
-     *
-     * @return int 关系数量
-     */
-    public static function getTaskUserCount(): int
-    {
-        $instance = new self();
-        $result = $instance->queryOne("SELECT COUNT(*) as cnt FROM task_users");
-        return $result ? (int) $result['cnt'] : 0;
-    }
 }
 

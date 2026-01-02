@@ -17,9 +17,14 @@ class ProjectUserObserver extends AbstractObserver
     public function created(ProjectUser $projectUser)
     {
         Deleted::forget('project', $projectUser->project_id, $projectUser->userid);
-        self::taskDeliver(new ManticoreSyncTask('project_user_add', [
+        
+        // MVA 方案：更新项目的 allowed_users
+        self::taskDeliver(new ManticoreSyncTask('update_project_allowed_users', [
             'project_id' => $projectUser->project_id,
-            'userid' => $projectUser->userid,
+        ]));
+        // 异步级联更新该项目下所有 visibility=1 的任务
+        self::taskDeliver(new ManticoreSyncTask('cascade_project_users', [
+            'project_id' => $projectUser->project_id,
         ]));
     }
 
@@ -43,9 +48,14 @@ class ProjectUserObserver extends AbstractObserver
     public function deleted(ProjectUser $projectUser)
     {
         Deleted::record('project', $projectUser->project_id, $projectUser->userid);
-        self::taskDeliver(new ManticoreSyncTask('project_user_remove', [
+        
+        // MVA 方案：更新项目的 allowed_users
+        self::taskDeliver(new ManticoreSyncTask('update_project_allowed_users', [
             'project_id' => $projectUser->project_id,
-            'userid' => $projectUser->userid,
+        ]));
+        // 异步级联更新该项目下所有 visibility=1 的任务
+        self::taskDeliver(new ManticoreSyncTask('cascade_project_users', [
+            'project_id' => $projectUser->project_id,
         ]));
     }
 

@@ -6,18 +6,20 @@ use App\Models\ProjectTask;
 use App\Models\ProjectTaskContent;
 use App\Models\ProjectTaskUser;
 use App\Models\ProjectTaskVisibilityUser;
+use App\Models\ProjectUser;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\AI;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Manticore Search 任务搜索类
+ * Manticore Search 任务搜索类（MVA 权限方案）
  *
  * 权限逻辑说明：
- * - visibility = 1: 项目人员可见，通过 project_users 表过滤
- * - visibility = 2: 任务人员可见，通过 task_users 表过滤（ProjectTaskUser）
- * - visibility = 3: 指定成员可见，通过 task_users 表过滤（ProjectTaskUser + ProjectTaskVisibilityUser）
+ * - visibility = 1: 项目人员可见，通过项目成员计算 allowed_users
+ * - visibility = 2: 任务人员可见，通过任务成员计算 allowed_users
+ * - visibility = 3: 指定成员可见，通过任务成员 + 可见性成员计算 allowed_users
+ * - 子任务继承父任务的 allowed_users
  *
  * 使用方法:
  *
@@ -29,10 +31,10 @@ use Illuminate\Support\Facades\Log;
  *    - 批量同步: batchSync($tasks);
  *    - 删除索引: delete($taskId);
  *
- * 3. 成员关系方法
- *    - 添加成员: addTaskUser($taskId, $userid);
- *    - 删除成员: removeTaskUser($taskId, $userid);
- *    - 同步所有成员: syncTaskUsers($taskId);
+ * 3. 权限更新方法
+ *    - 更新权限: updateAllowedUsers($taskId);
+ *    - 项目成员变更级联更新: cascadeUpdateByProject($projectId);
+ *    - 父任务变更级联到子任务: cascadeToChildren($taskId);
  *
  * 4. 工具方法
  *    - 清空索引: clear();
@@ -144,11 +146,65 @@ class ManticoreTask
     }
 
     // ==============================
+    // 权限计算方法（MVA 方案核心）
+    // ==============================
+
+    /**
+     * 获取任务的 allowed_users 列表
+     * 
+     * 根据 visibility 计算有权限查看此任务的用户列表：
+     * - visibility=1: 项目成员
+     * - visibility=2: 任务成员（负责人/协作人）
+     * - visibility=3: 任务成员 + 可见性指定成员
+     * - 子任务: 还需要继承父任务的成员
+     *
+     * @param ProjectTask $task 任务模型
+     * @return array 有权限的用户ID数组
+     */
+    public static function getAllowedUsers(ProjectTask $task): array
+    {
+        $userids = [];
+
+        // 1. 根据 visibility 获取基础成员
+        if ($task->visibility == 1) {
+            // visibility=1: 项目成员
+            $userids = ProjectUser::where('project_id', $task->project_id)
+                ->pluck('userid')
+                ->toArray();
+        } else {
+            // visibility=2,3: 任务成员（负责人/协作人）
+            $userids = ProjectTaskUser::where('task_id', $task->id)
+                ->orWhere('task_pid', $task->id)
+                ->pluck('userid')
+                ->toArray();
+
+            // visibility=3: 加上可见性指定成员
+            if ($task->visibility == 3) {
+                $visUsers = ProjectTaskVisibilityUser::where('task_id', $task->id)
+                    ->pluck('userid')
+                    ->toArray();
+                $userids = array_merge($userids, $visUsers);
+            }
+        }
+
+        // 2. 如果是子任务，继承父任务成员
+        if ($task->parent_id > 0) {
+            $parentTask = ProjectTask::find($task->parent_id);
+            if ($parentTask) {
+                $parentUsers = self::getAllowedUsers($parentTask);
+                $userids = array_merge($userids, $parentUsers);
+            }
+        }
+
+        return array_unique($userids);
+    }
+
+    // ==============================
     // 同步方法
     // ==============================
 
     /**
-     * 同步单个任务到 Manticore
+     * 同步单个任务到 Manticore（含 allowed_users）
      *
      * @param ProjectTask $task 任务模型
      * @return bool 是否成功
@@ -180,7 +236,10 @@ class ManticoreTask
                 }
             }
 
-            // 写入 Manticore
+            // 获取任务的 allowed_users
+            $allowedUsers = self::getAllowedUsers($task);
+
+            // 写入 Manticore（含 allowed_users）
             $result = ManticoreBase::upsertTaskVector([
                 'task_id' => $task->id,
                 'project_id' => $task->project_id ?? 0,
@@ -190,6 +249,7 @@ class ManticoreTask
                 'task_desc' => $task->desc ?? '',
                 'task_content' => $taskContent,
                 'content_vector' => $embedding,
+                'allowed_users' => $allowedUsers,
             ]);
 
             return $result;
@@ -322,28 +382,7 @@ class ManticoreTask
             return false;
         }
 
-        // 删除任务索引
-        ManticoreBase::deleteTaskVector($taskId);
-        // 删除任务成员关系
-        ManticoreBase::deleteAllTaskUsers($taskId);
-
-        return true;
-    }
-
-    /**
-     * 更新任务可见性
-     *
-     * @param int $taskId 任务ID
-     * @param int $visibility 可见性
-     * @return bool 是否成功
-     */
-    public static function updateVisibility(int $taskId, int $visibility): bool
-    {
-        if (!Apps::isInstalled("manticore") || $taskId <= 0) {
-            return false;
-        }
-
-        return ManticoreBase::updateTaskVisibility($taskId, $visibility);
+        return ManticoreBase::deleteTaskVector($taskId);
     }
 
     /**
@@ -357,10 +396,7 @@ class ManticoreTask
             return false;
         }
 
-        ManticoreBase::clearAllTaskVectors();
-        ManticoreBase::clearAllTaskUsers();
-
-        return true;
+        return ManticoreBase::clearAllTaskVectors();
     }
 
     /**
@@ -378,269 +414,110 @@ class ManticoreTask
     }
 
     // ==============================
-    // 成员关系方法
+    // 权限更新方法（MVA 方案）
     // ==============================
 
     /**
-     * 添加任务成员到 Manticore
-     *
-     * @param int $taskId 任务ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function addTaskUser(int $taskId, int $userid): bool
-    {
-        if (!Apps::isInstalled("manticore") || $taskId <= 0 || $userid <= 0) {
-            return false;
-        }
-
-        return ManticoreBase::upsertTaskUser($taskId, $userid);
-    }
-
-    /**
-     * 删除任务成员
-     *
-     * @param int $taskId 任务ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function removeTaskUser(int $taskId, int $userid): bool
-    {
-        if (!Apps::isInstalled("manticore") || $taskId <= 0 || $userid <= 0) {
-            return false;
-        }
-
-        return ManticoreBase::deleteTaskUser($taskId, $userid);
-    }
-
-    /**
-     * 删除指定可见成员（visibility=3 场景）
-     *
-     * 特殊处理：需要检查该用户是否仍是任务的负责人/协作人
-     * 如果是，则不应该从 task_users 中删除
-     *
-     * @param int $taskId 任务ID
-     * @param int $userid 用户ID
-     * @return bool 是否成功
-     */
-    public static function removeVisibilityUser(int $taskId, int $userid): bool
-    {
-        if (!Apps::isInstalled("manticore") || $taskId <= 0 || $userid <= 0) {
-            return false;
-        }
-
-        try {
-            // 检查用户是否仍是任务的负责人/协作人
-            $isTaskMember = ProjectTaskUser::where('task_id', $taskId)
-                ->where('userid', $userid)
-                ->exists();
-
-            // 检查是否是父任务的成员（子任务场景）
-            $task = \App\Models\ProjectTask::find($taskId);
-            $isParentTaskMember = false;
-            if ($task && $task->parent_id > 0) {
-                $isParentTaskMember = ProjectTaskUser::where('task_id', $task->parent_id)
-                    ->where('userid', $userid)
-                    ->exists();
-            }
-
-            // 如果仍是任务成员，不删除
-            if ($isTaskMember || $isParentTaskMember) {
-                return true;
-            }
-
-            // 从 Manticore 删除
-            return ManticoreBase::deleteTaskUser($taskId, $userid);
-        } catch (\Exception $e) {
-            Log::error('Manticore removeVisibilityUser error: ' . $e->getMessage(), [
-                'task_id' => $taskId,
-                'userid' => $userid,
-            ]);
-            return false;
-        }
-    }
-
-    /**
-     * 同步任务的所有成员到 Manticore
-     *
-     * 包括：ProjectTaskUser 和 ProjectTaskVisibilityUser
+     * 更新任务的 allowed_users 权限列表
+     * 重新计算并更新 Manticore 中的权限
      *
      * @param int $taskId 任务ID
      * @return bool 是否成功
      */
-    public static function syncTaskUsers(int $taskId): bool
+    public static function updateAllowedUsers(int $taskId): bool
     {
         if (!Apps::isInstalled("manticore") || $taskId <= 0) {
             return false;
         }
 
         try {
-            // 获取任务成员（负责人/协作人）
-            $taskUserIds = ProjectTaskUser::where('task_id', $taskId)
-                ->orWhere('task_pid', $taskId)
-                ->pluck('userid')
-                ->toArray();
+            $task = ProjectTask::find($taskId);
+            if (!$task) {
+                return false;
+            }
 
-            // 获取可见性指定成员
-            $visibilityUserIds = ProjectTaskVisibilityUser::where('task_id', $taskId)
-                ->pluck('userid')
-                ->toArray();
-
-            // 合并去重
-            $allUserIds = array_unique(array_merge($taskUserIds, $visibilityUserIds));
-
-            // 同步到 Manticore
-            return ManticoreBase::syncTaskUsers($taskId, $allUserIds);
+            $userids = self::getAllowedUsers($task);
+            return ManticoreBase::updateTaskAllowedUsers($taskId, $userids);
         } catch (\Exception $e) {
-            Log::error('Manticore syncTaskUsers error: ' . $e->getMessage(), ['task_id' => $taskId]);
+            Log::error('Manticore updateAllowedUsers error: ' . $e->getMessage(), ['task_id' => $taskId]);
             return false;
         }
     }
 
     /**
-     * 批量同步所有任务成员关系（全量同步）
+     * 级联更新项目下所有 visibility=1 任务的 allowed_users
+     * 当项目成员变更时调用（异步执行）
      *
-     * @param callable|null $progressCallback 进度回调
-     * @return int 同步数量
+     * @param int $projectId 项目ID
+     * @return int 更新的任务数量
      */
-    public static function syncAllTaskUsers(?callable $progressCallback = null): int
+    public static function cascadeUpdateByProject(int $projectId): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("manticore") || $projectId <= 0) {
             return 0;
         }
 
-        $count = 0;
-        $lastId = 0;
-        $batchSize = 1000;
+        try {
+            // 获取项目成员
+            $projectUsers = ProjectUser::where('project_id', $projectId)
+                ->pluck('userid')
+                ->toArray();
 
-        // 先清空 Manticore 中的 task_users 表
-        ManticoreBase::clearAllTaskUsers();
+            // 分批更新该项目下所有 visibility=1 的任务
+            $count = 0;
+            ProjectTask::where('project_id', $projectId)
+                ->where('visibility', 1)
+                ->whereNull('deleted_at')
+                ->whereNull('archived_at')
+                ->chunk(100, function ($tasks) use ($projectUsers, &$count) {
+                    foreach ($tasks as $task) {
+                        // 对于子任务，需要合并父任务成员
+                        $allowedUsers = $projectUsers;
+                        if ($task->parent_id > 0) {
+                            $parentTask = ProjectTask::find($task->parent_id);
+                            if ($parentTask) {
+                                $parentUsers = self::getAllowedUsers($parentTask);
+                                $allowedUsers = array_unique(array_merge($allowedUsers, $parentUsers));
+                            }
+                        }
+                        
+                        ManticoreBase::updateTaskAllowedUsers($task->id, $allowedUsers);
+                        $count++;
+                    }
+                });
 
-        // 同步 ProjectTaskUser
-        while (true) {
-            $records = ProjectTaskUser::where('id', '>', $lastId)
-                ->orderBy('id')
-                ->limit($batchSize)
-                ->get();
-
-            if ($records->isEmpty()) {
-                break;
-            }
-
-            foreach ($records as $record) {
-                ManticoreBase::upsertTaskUser($record->task_id, $record->userid);
-                // 如果有父任务，也添加到父任务
-                if ($record->task_pid) {
-                    ManticoreBase::upsertTaskUser($record->task_pid, $record->userid);
-                }
-                $count++;
-                $lastId = $record->id;
-            }
-
-            if ($progressCallback) {
-                $progressCallback($count);
-            }
+            return $count;
+        } catch (\Exception $e) {
+            Log::error('Manticore cascadeUpdateByProject error: ' . $e->getMessage(), ['project_id' => $projectId]);
+            return 0;
         }
-
-        // 同步 ProjectTaskVisibilityUser
-        $lastId = 0;
-        while (true) {
-            $records = ProjectTaskVisibilityUser::where('id', '>', $lastId)
-                ->orderBy('id')
-                ->limit($batchSize)
-                ->get();
-
-            if ($records->isEmpty()) {
-                break;
-            }
-
-            foreach ($records as $record) {
-                ManticoreBase::upsertTaskUser($record->task_id, $record->userid);
-                $count++;
-                $lastId = $record->id;
-            }
-
-            if ($progressCallback) {
-                $progressCallback($count);
-            }
-        }
-
-        return $count;
     }
 
     /**
-     * 增量同步任务成员关系（只同步新增的）
+     * 级联更新所有子任务的 allowed_users
+     * 当父任务的成员变更时调用
      *
-     * @param callable|null $progressCallback 进度回调
-     * @return int 同步数量
+     * @param int $taskId 父任务ID
+     * @return void
      */
-    public static function syncTaskUsersIncremental(?callable $progressCallback = null): int
+    public static function cascadeToChildren(int $taskId): void
     {
-        if (!Apps::isInstalled("manticore")) {
-            return 0;
+        if (!Apps::isInstalled("manticore") || $taskId <= 0) {
+            return;
         }
 
-        $count = 0;
-        $batchSize = 1000;
-
-        // 同步 ProjectTaskUser 新增
-        $lastKey1 = "sync:manticoreTaskUserLastId";
-        $lastId1 = intval(ManticoreKeyValue::get($lastKey1, 0));
-
-        while (true) {
-            $records = ProjectTaskUser::where('id', '>', $lastId1)
-                ->orderBy('id')
-                ->limit($batchSize)
-                ->get();
-
-            if ($records->isEmpty()) {
-                break;
-            }
-
-            foreach ($records as $record) {
-                ManticoreBase::upsertTaskUser($record->task_id, $record->userid);
-                if ($record->task_pid) {
-                    ManticoreBase::upsertTaskUser($record->task_pid, $record->userid);
-                }
-                $count++;
-                $lastId1 = $record->id;
-            }
-
-            ManticoreKeyValue::set($lastKey1, $lastId1);
-
-            if ($progressCallback) {
-                $progressCallback($count);
-            }
+        try {
+            ProjectTask::where('parent_id', $taskId)
+                ->whereNull('deleted_at')
+                ->whereNull('archived_at')
+                ->each(function ($child) {
+                    $allowedUsers = self::getAllowedUsers($child);
+                    ManticoreBase::updateTaskAllowedUsers($child->id, $allowedUsers);
+                    // 递归处理子任务的子任务
+                    self::cascadeToChildren($child->id);
+                });
+        } catch (\Exception $e) {
+            Log::error('Manticore cascadeToChildren error: ' . $e->getMessage(), ['task_id' => $taskId]);
         }
-
-        // 同步 ProjectTaskVisibilityUser 新增
-        $lastKey2 = "sync:manticoreTaskVisibilityUserLastId";
-        $lastId2 = intval(ManticoreKeyValue::get($lastKey2, 0));
-
-        while (true) {
-            $records = ProjectTaskVisibilityUser::where('id', '>', $lastId2)
-                ->orderBy('id')
-                ->limit($batchSize)
-                ->get();
-
-            if ($records->isEmpty()) {
-                break;
-            }
-
-            foreach ($records as $record) {
-                ManticoreBase::upsertTaskUser($record->task_id, $record->userid);
-                $count++;
-                $lastId2 = $record->id;
-            }
-
-            ManticoreKeyValue::set($lastKey2, $lastId2);
-
-            if ($progressCallback) {
-                $progressCallback($count);
-            }
-        }
-
-        return $count;
     }
 }
-

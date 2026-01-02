@@ -22,16 +22,14 @@ class ProjectTaskUserObserver extends AbstractObserver
             Deleted::forget('projectTask', $projectTaskUser->task_pid, $projectTaskUser->userid);
         }
 
-        // 同步任务成员到 Manticore
-        self::taskDeliver(new ManticoreSyncTask('task_user_add', [
+        // MVA 方案：更新任务的 allowed_users（会自动 cascadeToChildren）
+        self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
             'task_id' => $projectTaskUser->task_id,
-            'userid' => $projectTaskUser->userid,
         ]));
-        // 如果是子任务，同时添加到父任务
+        // 如果是子任务，也更新父任务
         if ($projectTaskUser->task_pid) {
-            self::taskDeliver(new ManticoreSyncTask('task_user_add', [
+            self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
                 'task_id' => $projectTaskUser->task_pid,
-                'userid' => $projectTaskUser->userid,
             ]));
         }
     }
@@ -59,10 +57,9 @@ class ProjectTaskUserObserver extends AbstractObserver
             Deleted::record('projectTask', $projectTaskUser->task_id, $projectTaskUser->userid);
         }
 
-        // 从 Manticore 删除任务成员关系
-        self::taskDeliver(new ManticoreSyncTask('task_user_remove', [
+        // MVA 方案：更新任务的 allowed_users（会自动 cascadeToChildren）
+        self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
             'task_id' => $projectTaskUser->task_id,
-            'userid' => $projectTaskUser->userid,
         ]));
     }
 

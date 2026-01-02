@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Manticore Search 文件搜索类
+ * Manticore Search 文件搜索类（MVA 权限方案）
  *
  * 使用方法:
  *
@@ -25,7 +25,10 @@ use Illuminate\Support\Facades\DB;
  *    - 批量同步: batchSync($files);
  *    - 删除索引: delete($fileId);
  *
- * 3. 工具方法
+ * 3. 权限更新方法
+ *    - 更新权限: updateAllowedUsers($fileId);
+ *
+ * 4. 工具方法
  *    - 清空索引: clear();
  */
 class ManticoreFile
@@ -205,11 +208,38 @@ class ManticoreFile
     }
 
     // ==============================
+    // 权限计算方法（MVA 方案核心）
+    // ==============================
+
+    /**
+     * 获取文件的 allowed_users 列表
+     * 
+     * 有权限查看此文件的用户列表：
+     * - 文件所有者 (userid)
+     * - 共享用户（FileUser 表中的 userid）
+     * - userid=0 表示公开共享
+     *
+     * @param File $file 文件模型
+     * @return array 有权限的用户ID数组
+     */
+    public static function getAllowedUsers(File $file): array
+    {
+        $userids = [$file->userid]; // 所有者
+
+        // 获取共享用户（包括 userid=0 表示公开）
+        $shareUsers = FileUser::where('file_id', $file->id)
+            ->pluck('userid')
+            ->toArray();
+
+        return array_unique(array_merge($userids, $shareUsers));
+    }
+
+    // ==============================
     // 同步方法
     // ==============================
 
     /**
-     * 同步单个文件到 Manticore
+     * 同步单个文件到 Manticore（含 allowed_users）
      *
      * @param File $file 文件模型
      * @return bool 是否成功
@@ -248,7 +278,10 @@ class ManticoreFile
                 }
             }
 
-            // 写入 Manticore
+            // 获取文件的 allowed_users
+            $allowedUsers = self::getAllowedUsers($file);
+
+            // 写入 Manticore（含 allowed_users）
             $result = ManticoreBase::upsertFileVector([
                 'file_id' => $file->id,
                 'userid' => $file->userid,
@@ -258,6 +291,7 @@ class ManticoreFile
                 'file_ext' => $file->ext,
                 'content' => $content,
                 'content_vector' => $embedding,
+                'allowed_users' => $allowedUsers,
             ]);
 
             return $result;
@@ -414,166 +448,33 @@ class ManticoreFile
     }
 
     // ==============================
-    // 文件用户关系同步方法
+    // 权限更新方法（MVA 方案）
     // ==============================
 
     /**
-     * 同步单个文件的用户关系到 Manticore
+     * 更新文件的 allowed_users 权限列表
+     * 从 MySQL 获取最新的共享用户并更新到 Manticore
      *
      * @param int $fileId 文件ID
      * @return bool 是否成功
      */
-    public static function syncFileUsers(int $fileId): bool
+    public static function updateAllowedUsers(int $fileId): bool
     {
         if (!Apps::isInstalled("manticore") || $fileId <= 0) {
             return false;
         }
 
         try {
-            // 从 MySQL 获取文件的用户关系
-            $users = FileUser::where('file_id', $fileId)
-                ->select(['userid', 'permission'])
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'userid' => $item->userid,
-                        'permission' => $item->permission,
-                    ];
-                })
-                ->toArray();
+            $file = File::find($fileId);
+            if (!$file) {
+                return false;
+            }
 
-            // 同步到 Manticore
-            return ManticoreBase::syncFileUsers($fileId, $users);
+            $userids = self::getAllowedUsers($file);
+            return ManticoreBase::updateFileAllowedUsers($fileId, $userids);
         } catch (\Exception $e) {
-            Log::error('Manticore syncFileUsers error: ' . $e->getMessage(), ['file_id' => $fileId]);
+            Log::error('Manticore updateAllowedUsers error: ' . $e->getMessage(), ['file_id' => $fileId]);
             return false;
         }
-    }
-
-    /**
-     * 添加文件用户关系到 Manticore
-     *
-     * @param int $fileId 文件ID
-     * @param int $userid 用户ID
-     * @param int $permission 权限
-     * @return bool 是否成功
-     */
-    public static function addFileUser(int $fileId, int $userid, int $permission = 0): bool
-    {
-        if (!Apps::isInstalled("manticore") || $fileId <= 0) {
-            return false;
-        }
-
-        return ManticoreBase::upsertFileUser($fileId, $userid, $permission);
-    }
-
-    /**
-     * 删除文件用户关系
-     *
-     * @param int $fileId 文件ID
-     * @param int|null $userid 用户ID，null 表示删除所有
-     * @return bool 是否成功
-     */
-    public static function removeFileUser(int $fileId, ?int $userid = null): bool
-    {
-        if (!Apps::isInstalled("manticore") || $fileId <= 0) {
-            return false;
-        }
-
-        if ($userid === null) {
-            return ManticoreBase::deleteFileUsers($fileId);
-        }
-
-        return ManticoreBase::deleteFileUser($fileId, $userid);
-    }
-
-    /**
-     * 批量同步所有文件用户关系（全量同步）
-     *
-     * @param callable|null $progressCallback 进度回调
-     * @return int 同步数量
-     */
-    public static function syncAllFileUsers(?callable $progressCallback = null): int
-    {
-        if (!Apps::isInstalled("manticore")) {
-            return 0;
-        }
-
-        $count = 0;
-        $lastId = 0;
-        $batchSize = 1000;
-
-        // 先清空 Manticore 中的 file_users 表
-        ManticoreBase::clearAllFileUsers();
-
-        // 分批同步
-        while (true) {
-            $records = FileUser::where('id', '>', $lastId)
-                ->orderBy('id')
-                ->limit($batchSize)
-                ->get();
-
-            if ($records->isEmpty()) {
-                break;
-            }
-
-            foreach ($records as $record) {
-                ManticoreBase::upsertFileUser($record->file_id, $record->userid, $record->permission);
-                $count++;
-                $lastId = $record->id;
-            }
-
-            if ($progressCallback) {
-                $progressCallback($count);
-            }
-        }
-
-        return $count;
-    }
-
-    /**
-     * 增量同步文件用户关系（只同步新增的）
-     *
-     * @param callable|null $progressCallback 进度回调
-     * @return int 同步数量
-     */
-    public static function syncFileUsersIncremental(?callable $progressCallback = null): int
-    {
-        if (!Apps::isInstalled("manticore")) {
-            return 0;
-        }
-
-        $count = 0;
-        $batchSize = 1000;
-        $lastKey = "sync:manticoreFileUserLastId";
-        $lastId = intval(ManticoreKeyValue::get($lastKey, 0));
-
-        // 分批同步新增的记录
-        while (true) {
-            $records = FileUser::where('id', '>', $lastId)
-                ->orderBy('id')
-                ->limit($batchSize)
-                ->get();
-
-            if ($records->isEmpty()) {
-                break;
-            }
-
-            foreach ($records as $record) {
-                ManticoreBase::upsertFileUser($record->file_id, $record->userid, $record->permission);
-                $count++;
-                $lastId = $record->id;
-            }
-
-            // 保存进度
-            ManticoreKeyValue::set($lastKey, $lastId);
-
-            if ($progressCallback) {
-                $progressCallback($count);
-            }
-        }
-
-        return $count;
     }
 }
-
