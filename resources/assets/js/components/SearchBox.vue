@@ -346,16 +346,15 @@ export default {
         searchTask(key) {
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'project/task/lists',
+                url: 'search/task',
                 data: {
-                    keys: {name: key},
-                    archived: 'all',
-                    scope: 'all_project',
-                    pagesize: this.action ? 50 : 10,
+                    key,
+                    search_type: 'text',
+                    take: this.action ? 50 : 10,
                 },
             }).then(({data}) => {
                 const nowTime = $A.dayjs().unix()
-                const items = data.data.map(item => {
+                const items = data.map(item => {
                     const tags = [];
                     if (item.complete_at) {
                         tags.push({
@@ -402,16 +401,14 @@ export default {
         searchProject(key) {
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'project/lists',
+                url: 'search/project',
                 data: {
-                    keys: {
-                        name: key
-                    },
-                    archived: 'all',
-                    pagesize: this.action ? 50 : 10,
+                    key,
+                    search_type: 'text',
+                    take: this.action ? 50 : 10,
                 },
             }).then(({data}) => {
-                const items = data.data.map(item => {
+                const items = data.map(item => {
                     const tags = [];
                     if (item.owner) {
                         tags.push({
@@ -448,9 +445,11 @@ export default {
         searchMessage(key) {
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'dialog/msg/search',
+                url: 'search/message',
                 data: {
                     key,
+                    search_type: 'text',
+                    mode: 'dialog',
                     take: this.action ? 50 : 10,
                 },
             }).then(({data}) => {
@@ -498,10 +497,11 @@ export default {
         searchContact(key) {
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'users/search',
+                url: 'search/contact',
                 data: {
-                    keys: {key},
-                    pagesize: this.action ? 50 : 10,
+                    key,
+                    search_type: 'text',
+                    take: this.action ? 50 : 10,
                 },
             }).then(({data}) => {
                 const items = data.map(item => {
@@ -528,9 +528,10 @@ export default {
         searchFile(key) {
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'file/search',
+                url: 'search/file',
                 data: {
                     key,
+                    search_type: 'text',
                     take: this.action ? 50 : 10,
                 },
             }).then(({data}) => {

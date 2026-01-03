@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use DB;
 use Request;
 use App\Models\File;
+use App\Models\Project;
+use App\Models\ProjectTask;
 use App\Models\User;
+use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
+use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use App\Module\Apps;
 use App\Module\Manticore\ManticoreFile;
@@ -22,15 +27,15 @@ use App\Module\Manticore\ManticoreMsg;
 class SearchController extends AbstractController
 {
     /**
-     * @api {get} api/search/contact          AI 搜索联系人
+     * @api {get} api/search/contact          搜索联系人
      *
-     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
+     * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0
      * @apiGroup search
      * @apiName contact
      *
      * @apiParam {String} key                  搜索关键词
-     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid）
+     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid，仅 Manticore 有效）
      * @apiParam {Number} [take]               获取数量（默认：20，最大：50）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -41,10 +46,6 @@ class SearchController extends AbstractController
     {
         User::auth();
 
-        if (!Apps::isInstalled('manticore')) {
-            return Base::retError('Manticore Search 应用未安装');
-        }
-
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
         $take = Base::getPaginate(50, 20, 'take');
@@ -53,40 +54,86 @@ class SearchController extends AbstractController
             return Base::retSuccess('success', []);
         }
 
-        $results = ManticoreUser::search($key, $searchType, $take);
+        // 优先使用 Manticore 搜索
+        if (Apps::isInstalled('manticore')) {
+            $results = ManticoreUser::search($key, $searchType, $take);
 
-        // 补充用户完整信息
-        $userids = array_column($results, 'userid');
-        if (!empty($userids)) {
-            $users = User::whereIn('userid', $userids)
-                ->select(User::$basicField)
-                ->get()
-                ->keyBy('userid');
+            // 补充用户完整信息
+            $userids = array_column($results, 'userid');
+            if (!empty($userids)) {
+                $users = User::whereIn('userid', $userids)
+                    ->select(User::$basicField)
+                    ->get()
+                    ->keyBy('userid');
 
-            foreach ($results as &$item) {
-                $userData = $users->get($item['userid']);
-                if ($userData) {
-                    $item = array_merge($userData->toArray(), [
-                        'relevance' => $item['relevance'] ?? 0,
-                        'introduction_preview' => $item['introduction_preview'] ?? null,
-                    ]);
+                foreach ($results as &$item) {
+                    $userData = $users->get($item['userid']);
+                    if ($userData) {
+                        $item = array_merge($userData->toArray(), [
+                            'relevance' => $item['relevance'] ?? 0,
+                            'introduction_preview' => $item['introduction_preview'] ?? null,
+                        ]);
+                    }
                 }
             }
+        } else {
+            // MySQL 回退搜索
+            $results = $this->searchContactByMysql($key, $take);
         }
 
         return Base::retSuccess('success', $results);
     }
 
     /**
-     * @api {get} api/search/project          AI 搜索项目
+     * MySQL 回退搜索联系人
      *
-     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
+     * @param string $key 搜索关键词
+     * @param int $take 获取数量
+     * @return array
+     */
+    private function searchContactByMysql(string $key, int $take): array
+    {
+        $builder = User::select(User::$basicField)
+            ->where('bot', 0)
+            ->whereNull('disable_at');
+
+        if (str_contains($key, "@")) {
+            $builder->where("email", "like", "%{$key}%");
+        } elseif (Base::isNumber($key)) {
+            $builder->where(function ($query) use ($key) {
+                $query->where("userid", intval($key))
+                    ->orWhere("nickname", "like", "%{$key}%")
+                    ->orWhere("pinyin", "like", "%{$key}%")
+                    ->orWhere("profession", "like", "%{$key}%");
+            });
+        } else {
+            $builder->where(function ($query) use ($key) {
+                $query->where("nickname", "like", "%{$key}%")
+                    ->orWhere("pinyin", "like", "%{$key}%")
+                    ->orWhere("profession", "like", "%{$key}%");
+            });
+        }
+
+        $users = $builder->orderByDesc('line_at')->take($take)->get();
+
+        return $users->map(function ($user) {
+            return array_merge($user->toArray(), [
+                'relevance' => 0,
+                'introduction_preview' => null,
+            ]);
+        })->toArray();
+    }
+
+    /**
+     * @api {get} api/search/project          搜索项目
+     *
+     * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0
      * @apiGroup search
      * @apiName project
      *
      * @apiParam {String} key                  搜索关键词
-     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid）
+     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid，仅 Manticore 有效）
      * @apiParam {Number} [take]               获取数量（默认：20，最大：50）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -97,10 +144,6 @@ class SearchController extends AbstractController
     {
         $user = User::auth();
 
-        if (!Apps::isInstalled('manticore')) {
-            return Base::retError('Manticore Search 应用未安装');
-        }
-
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
         $take = Base::getPaginate(50, 20, 'take');
@@ -109,39 +152,70 @@ class SearchController extends AbstractController
             return Base::retSuccess('success', []);
         }
 
-        $results = ManticoreProject::search($user->userid, $key, $searchType, $take);
+        // 优先使用 Manticore 搜索
+        if (Apps::isInstalled('manticore')) {
+            $results = ManticoreProject::search($user->userid, $key, $searchType, $take);
 
-        // 补充项目完整信息
-        $projectIds = array_column($results, 'project_id');
-        if (!empty($projectIds)) {
-            $projects = \App\Models\Project::whereIn('id', $projectIds)
-                ->get()
-                ->keyBy('id');
+            // 补充项目完整信息
+            $projectIds = array_column($results, 'project_id');
+            if (!empty($projectIds)) {
+                $projects = Project::whereIn('id', $projectIds)
+                    ->get()
+                    ->keyBy('id');
 
-            foreach ($results as &$item) {
-                $projectData = $projects->get($item['project_id']);
-                if ($projectData) {
-                    $item = array_merge($projectData->toArray(), [
-                        'relevance' => $item['relevance'] ?? 0,
-                        'desc_preview' => $item['desc_preview'] ?? null,
-                    ]);
+                foreach ($results as &$item) {
+                    $projectData = $projects->get($item['project_id']);
+                    if ($projectData) {
+                        $item = array_merge($projectData->toArray(), [
+                            'relevance' => $item['relevance'] ?? 0,
+                            'desc_preview' => $item['desc_preview'] ?? null,
+                        ]);
+                    }
                 }
             }
+        } else {
+            // MySQL 回退搜索
+            $results = $this->searchProjectByMysql($user->userid, $key, $take);
         }
 
         return Base::retSuccess('success', $results);
     }
 
     /**
-     * @api {get} api/search/task             AI 搜索任务
+     * MySQL 回退搜索项目
      *
-     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
+     * @param int $userid 用户ID
+     * @param string $key 搜索关键词
+     * @param int $take 获取数量
+     * @return array
+     */
+    private function searchProjectByMysql(int $userid, string $key, int $take): array
+    {
+        $projects = Project::authData()
+            ->whereNull('projects.archived_at')
+            ->where("projects.name", "like", "%{$key}%")
+            ->orderByDesc('projects.id')
+            ->take($take)
+            ->get();
+
+        return $projects->map(function ($project) use ($userid) {
+            $array = $project->toArray();
+            $array['relevance'] = 0;
+            $array['desc_preview'] = null;
+            return $array;
+        })->toArray();
+    }
+
+    /**
+     * @api {get} api/search/task             搜索任务
+     *
+     * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0
      * @apiGroup search
      * @apiName task
      *
      * @apiParam {String} key                  搜索关键词
-     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid）
+     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid，仅 Manticore 有效）
      * @apiParam {Number} [take]               获取数量（默认：20，最大：50）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -152,10 +226,6 @@ class SearchController extends AbstractController
     {
         $user = User::auth();
 
-        if (!Apps::isInstalled('manticore')) {
-            return Base::retError('Manticore Search 应用未安装');
-        }
-
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
         $take = Base::getPaginate(50, 20, 'take');
@@ -164,40 +234,90 @@ class SearchController extends AbstractController
             return Base::retSuccess('success', []);
         }
 
-        $results = ManticoreTask::search($user->userid, $key, $searchType, $take);
+        // 优先使用 Manticore 搜索
+        if (Apps::isInstalled('manticore')) {
+            $results = ManticoreTask::search($user->userid, $key, $searchType, $take);
 
-        // 补充任务完整信息
-        $taskIds = array_column($results, 'task_id');
-        if (!empty($taskIds)) {
-            $tasks = \App\Models\ProjectTask::whereIn('id', $taskIds)
-                ->get()
-                ->keyBy('id');
+            // 补充任务完整信息
+            $taskIds = array_column($results, 'task_id');
+            if (!empty($taskIds)) {
+                $tasks = ProjectTask::with(['taskUser', 'taskTag'])
+                    ->whereIn('id', $taskIds)
+                    ->get()
+                    ->keyBy('id');
 
-            foreach ($results as &$item) {
-                $taskData = $tasks->get($item['task_id']);
-                if ($taskData) {
-                    $item = array_merge($taskData->toArray(), [
-                        'relevance' => $item['relevance'] ?? 0,
-                        'desc_preview' => $item['desc_preview'] ?? null,
-                        'content_preview' => $item['content_preview'] ?? null,
-                    ]);
+                foreach ($results as &$item) {
+                    $taskData = $tasks->get($item['task_id']);
+                    if ($taskData) {
+                        $item = array_merge($taskData->toArray(), [
+                            'relevance' => $item['relevance'] ?? 0,
+                            'desc_preview' => $item['desc_preview'] ?? null,
+                            'content_preview' => $item['content_preview'] ?? null,
+                        ]);
+                    }
                 }
             }
+        } else {
+            // MySQL 回退搜索
+            $results = $this->searchTaskByMysql($user->userid, $key, $take);
         }
 
         return Base::retSuccess('success', $results);
     }
 
     /**
-     * @api {get} api/search/file              AI 搜索文件
+     * MySQL 回退搜索任务
      *
-     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
+     * @param int $userid 用户ID
+     * @param string $key 搜索关键词
+     * @param int $take 获取数量
+     * @return array
+     */
+    private function searchTaskByMysql(int $userid, string $key, int $take): array
+    {
+        $builder = ProjectTask::with(['taskUser', 'taskTag'])
+            ->whereIn('project_tasks.project_id', function ($query) use ($userid) {
+                $query->select('project_id')
+                    ->from('project_users')
+                    ->where('userid', $userid);
+            })
+            ->whereNull('project_tasks.archived_at')
+            ->whereNull('project_tasks.deleted_at');
+
+        if (Base::isNumber($key)) {
+            $builder->where(function ($query) use ($key) {
+                $query->where("project_tasks.id", intval($key))
+                    ->orWhere("project_tasks.name", "like", "%{$key}%")
+                    ->orWhere("project_tasks.desc", "like", "%{$key}%");
+            });
+        } else {
+            $builder->where(function ($query) use ($key) {
+                $query->where("project_tasks.name", "like", "%{$key}%")
+                    ->orWhere("project_tasks.desc", "like", "%{$key}%");
+            });
+        }
+
+        $tasks = $builder->orderByDesc('project_tasks.id')->take($take)->get();
+
+        return $tasks->map(function ($task) {
+            $array = $task->toArray();
+            $array['relevance'] = 0;
+            $array['desc_preview'] = null;
+            $array['content_preview'] = null;
+            return $array;
+        })->toArray();
+    }
+
+    /**
+     * @api {get} api/search/file              搜索文件
+     *
+     * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0
      * @apiGroup search
      * @apiName file
      *
      * @apiParam {String} key                  搜索关键词
-     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid）
+     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid，仅 Manticore 有效）
      * @apiParam {Number} [take]               获取数量（默认：20，最大：50）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -208,10 +328,6 @@ class SearchController extends AbstractController
     {
         $user = User::auth();
 
-        if (!Apps::isInstalled('manticore')) {
-            return Base::retError('Manticore Search 应用未安装');
-        }
-
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
         $take = Base::getPaginate(50, 20, 'take');
@@ -220,41 +336,113 @@ class SearchController extends AbstractController
             return Base::retSuccess('success', []);
         }
 
-        $results = ManticoreFile::search($user->userid, $key, $searchType, 0, $take);
+        // 优先使用 Manticore 搜索
+        if (Apps::isInstalled('manticore')) {
+            $results = ManticoreFile::search($user->userid, $key, $searchType, 0, $take);
 
-        // 补充文件完整信息
-        $fileIds = array_column($results, 'file_id');
-        if (!empty($fileIds)) {
-            $files = File::whereIn('id', $fileIds)
-                ->get()
-                ->keyBy('id');
+            // 补充文件完整信息
+            $fileIds = array_column($results, 'file_id');
+            if (!empty($fileIds)) {
+                $files = File::whereIn('id', $fileIds)
+                    ->get()
+                    ->keyBy('id');
 
-            $formattedResults = [];
-            foreach ($results as $item) {
-                $fileData = $files->get($item['file_id']);
-                if ($fileData) {
-                    $formattedResults[] = array_merge($fileData->toArray(), [
-                        'relevance' => $item['relevance'] ?? 0,
-                        'content_preview' => $item['content_preview'] ?? null,
-                    ]);
+                $formattedResults = [];
+                foreach ($results as $item) {
+                    $fileData = $files->get($item['file_id']);
+                    if ($fileData) {
+                        $formattedResults[] = array_merge($fileData->toArray(), [
+                            'relevance' => $item['relevance'] ?? 0,
+                            'content_preview' => $item['content_preview'] ?? null,
+                        ]);
+                    }
                 }
+                return Base::retSuccess('success', $formattedResults);
             }
-            return Base::retSuccess('success', $formattedResults);
-        }
 
-        return Base::retSuccess('success', []);
+            return Base::retSuccess('success', []);
+        } else {
+            // MySQL 回退搜索
+            $results = $this->searchFileByMysql($user->userid, $key, $take);
+            return Base::retSuccess('success', $results);
+        }
     }
 
     /**
-     * @api {get} api/search/message          AI 搜索消息
+     * MySQL 回退搜索文件
      *
-     * @apiDescription 需要token身份，需要安装 Manticore Search 应用
+     * @param int $userid 用户ID
+     * @param string $key 搜索关键词
+     * @param int $take 获取数量
+     * @return array
+     */
+    private function searchFileByMysql(int $userid, string $key, int $take): array
+    {
+        $results = [];
+
+        // 搜索用户自己的文件
+        $builder = File::where('userid', $userid);
+        if (Base::isNumber($key)) {
+            $builder->where(function ($query) use ($key) {
+                $query->where("id", $key)->orWhere("name", "like", "%{$key}%");
+            });
+        } else {
+            $builder->where("name", "like", "%{$key}%");
+        }
+        $ownFiles = $builder->take($take)->get();
+
+        foreach ($ownFiles as $file) {
+            $results[] = array_merge($file->toArray(), [
+                'relevance' => 0,
+                'content_preview' => null,
+            ]);
+        }
+
+        // 搜索共享给用户的文件
+        $remaining = $take - count($results);
+        if ($remaining > 0) {
+            $builder = File::whereIn('pshare', function ($queryA) use ($userid) {
+                $queryA->select('files.id')
+                    ->from('files')
+                    ->join('file_users', 'files.id', '=', 'file_users.file_id')
+                    ->where('files.userid', '!=', $userid)
+                    ->where(function ($queryB) use ($userid) {
+                        $queryB->whereIn('file_users.userid', [0, $userid]);
+                    });
+            });
+            if (Base::isNumber($key)) {
+                $builder->where(function ($query) use ($key) {
+                    $query->where("id", $key)->orWhere("name", "like", "%{$key}%");
+                });
+            } else {
+                $builder->where("name", "like", "%{$key}%");
+            }
+
+            $sharedFiles = $builder->take($remaining)->get();
+            foreach ($sharedFiles as $file) {
+                $temp = $file->toArray();
+                if ($file->pshare === $file->id) {
+                    $temp['pid'] = 0;
+                }
+                $temp['relevance'] = 0;
+                $temp['content_preview'] = null;
+                $results[] = $temp;
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * @api {get} api/search/message          搜索消息
+     *
+     * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0
      * @apiGroup search
      * @apiName message
      *
      * @apiParam {String} key                  搜索关键词
-     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid）
+     * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid，仅 Manticore 有效）
      * @apiParam {Number} [take]               获取数量（默认：20，最大：50）
      * @apiParam {String} [mode]               返回模式（message/position/dialog，默认：message）
      * - message: 返回消息详细信息
@@ -269,10 +457,6 @@ class SearchController extends AbstractController
     public function message()
     {
         $user = User::auth();
-
-        if (!Apps::isInstalled('manticore')) {
-            return Base::retError('Manticore Search 应用未安装');
-        }
 
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
@@ -291,12 +475,82 @@ class SearchController extends AbstractController
 
         // 如果指定了 dialog_id，需要验证用户有权限访问该对话
         if ($dialogId > 0) {
-            \App\Models\WebSocketDialog::checkDialog($dialogId);
+            WebSocketDialog::checkDialog($dialogId);
         }
 
-        $results = ManticoreMsg::search($user->userid, $key, $searchType, 0, $take, $dialogId);
+        // 优先使用 Manticore 搜索
+        if (Apps::isInstalled('manticore')) {
+            $results = ManticoreMsg::search($user->userid, $key, $searchType, 0, $take, $dialogId);
+        } else {
+            // MySQL 回退搜索
+            $results = $this->searchMessageByMysql($user->userid, $key, $take, $dialogId);
+        }
 
         // 根据 mode 返回不同格式的数据
+        return $this->formatMessageResults($results, $mode, $user->userid);
+    }
+
+    /**
+     * MySQL 回退搜索消息
+     *
+     * @param int $userid 用户ID
+     * @param string $key 搜索关键词
+     * @param int $take 获取数量
+     * @param int $dialogId 对话ID（0表示不限制）
+     * @return array
+     */
+    private function searchMessageByMysql(int $userid, string $key, int $take, int $dialogId = 0): array
+    {
+        $builder = DB::table('web_socket_dialog_msgs as m')
+            ->select([
+                'm.id as msg_id',
+                'm.dialog_id',
+                'm.userid',
+                'm.type',
+                'm.msg',
+                'm.created_at',
+            ])
+            ->join('web_socket_dialog_users as u', 'm.dialog_id', '=', 'u.dialog_id')
+            ->where('u.userid', $userid)
+            ->where('m.bot', 0)
+            ->where('m.key', 'like', "%{$key}%");
+
+        if ($dialogId > 0) {
+            $builder->where('m.dialog_id', $dialogId);
+        }
+
+        $items = $builder->orderByDesc('m.id')
+            ->limit($take)
+            ->get()
+            ->all();
+
+        $results = [];
+        foreach ($items as $item) {
+            $results[] = [
+                'msg_id' => $item->msg_id,
+                'dialog_id' => $item->dialog_id,
+                'userid' => $item->userid,
+                'type' => $item->type,
+                'msg' => $item->msg,
+                'created_at' => $item->created_at,
+                'relevance' => 0,
+                'content_preview' => null,
+            ];
+        }
+
+        return $results;
+    }
+
+    /**
+     * 格式化消息搜索结果
+     *
+     * @param array $results 搜索结果
+     * @param string $mode 返回模式
+     * @param int $userid 用户ID
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function formatMessageResults(array $results, string $mode, int $userid)
+    {
         switch ($mode) {
             case 'position':
                 // 只返回消息ID
@@ -315,11 +569,11 @@ class SearchController extends AbstractController
                     }
                     $seenDialogs[$dialogIdFromResult] = true;
 
-                    if ($dialog = \App\Models\WebSocketDialog::find($dialogIdFromResult)) {
+                    if ($dialog = WebSocketDialog::find($dialogIdFromResult)) {
                         $dialogData = array_merge($dialog->toArray(), [
                             'search_msg_id' => $item['msg_id'],
                         ]);
-                        $list[] = \App\Models\WebSocketDialog::synthesizeData($dialogData, $user->userid);
+                        $list[] = WebSocketDialog::synthesizeData($dialogData, $userid);
                     }
                 }
                 return Base::retSuccess('success', ['data' => $list]);
@@ -336,9 +590,16 @@ class SearchController extends AbstractController
                         ->get()
                         ->keyBy('id');
 
-                    $formattedResults = [];
+                    // 创建结果映射以保持原始顺序和额外字段
+                    $resultsMap = [];
                     foreach ($results as $item) {
-                        $msgData = $msgs->get($item['msg_id']);
+                        $resultsMap[$item['msg_id']] = $item;
+                    }
+
+                    $formattedResults = [];
+                    foreach ($msgIds as $msgId) {
+                        $msgData = $msgs->get($msgId);
+                        $originalItem = $resultsMap[$msgId] ?? [];
                         if ($msgData) {
                             $formattedResults[] = [
                                 'id' => $msgData->id,
@@ -349,8 +610,8 @@ class SearchController extends AbstractController
                                 'msg' => $msgData->msg,
                                 'created_at' => $msgData->created_at,
                                 'user' => $msgData->user,
-                                'relevance' => $item['relevance'] ?? 0,
-                                'content_preview' => $item['content_preview'] ?? null,
+                                'relevance' => $originalItem['relevance'] ?? 0,
+                                'content_preview' => $originalItem['content_preview'] ?? null,
                             ];
                         }
                     }
@@ -361,4 +622,3 @@ class SearchController extends AbstractController
         }
     }
 }
-
