@@ -1321,6 +1321,7 @@ export default {
                             dialog_id: this.dialogId,
                             key,
                             mode: 'position',
+                            search_type: 'text',
                         },
                     }).then(({data}) => {
                         if (this.searchKey !== key) {
