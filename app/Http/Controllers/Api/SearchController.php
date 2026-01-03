@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use DB;
 use Request;
 use App\Models\File;
 use App\Models\Project;
@@ -10,7 +9,6 @@ use App\Models\ProjectTask;
 use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
-use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use App\Module\Apps;
 use App\Module\Manticore\ManticoreFile;
@@ -93,28 +91,13 @@ class SearchController extends AbstractController
      */
     private function searchContactByMysql(string $key, int $take): array
     {
-        $builder = User::select(User::$basicField)
+        $users = User::select(User::$basicField)
             ->where('bot', 0)
-            ->whereNull('disable_at');
-
-        if (str_contains($key, "@")) {
-            $builder->where("email", "like", "%{$key}%");
-        } elseif (Base::isNumber($key)) {
-            $builder->where(function ($query) use ($key) {
-                $query->where("userid", intval($key))
-                    ->orWhere("nickname", "like", "%{$key}%")
-                    ->orWhere("pinyin", "like", "%{$key}%")
-                    ->orWhere("profession", "like", "%{$key}%");
-            });
-        } else {
-            $builder->where(function ($query) use ($key) {
-                $query->where("nickname", "like", "%{$key}%")
-                    ->orWhere("pinyin", "like", "%{$key}%")
-                    ->orWhere("profession", "like", "%{$key}%");
-            });
-        }
-
-        $users = $builder->orderByDesc('line_at')->take($take)->get();
+            ->whereNull('disable_at')
+            ->searchByKeyword($key)
+            ->orderByDesc('line_at')
+            ->take($take)
+            ->get();
 
         return $users->map(function ($user) {
             return array_merge($user->toArray(), [
@@ -193,12 +176,12 @@ class SearchController extends AbstractController
     {
         $projects = Project::authData()
             ->whereNull('projects.archived_at')
-            ->where("projects.name", "like", "%{$key}%")
+            ->searchByKeyword($key)
             ->orderByDesc('projects.id')
             ->take($take)
             ->get();
 
-        return $projects->map(function ($project) use ($userid) {
+        return $projects->map(function ($project) {
             $array = $project->toArray();
             $array['relevance'] = 0;
             $array['desc_preview'] = null;
@@ -275,29 +258,18 @@ class SearchController extends AbstractController
      */
     private function searchTaskByMysql(int $userid, string $key, int $take): array
     {
-        $builder = ProjectTask::with(['taskUser', 'taskTag'])
+        $tasks = ProjectTask::with(['taskUser', 'taskTag'])
             ->whereIn('project_tasks.project_id', function ($query) use ($userid) {
                 $query->select('project_id')
                     ->from('project_users')
                     ->where('userid', $userid);
             })
             ->whereNull('project_tasks.archived_at')
-            ->whereNull('project_tasks.deleted_at');
-
-        if (Base::isNumber($key)) {
-            $builder->where(function ($query) use ($key) {
-                $query->where("project_tasks.id", intval($key))
-                    ->orWhere("project_tasks.name", "like", "%{$key}%")
-                    ->orWhere("project_tasks.desc", "like", "%{$key}%");
-            });
-        } else {
-            $builder->where(function ($query) use ($key) {
-                $query->where("project_tasks.name", "like", "%{$key}%")
-                    ->orWhere("project_tasks.desc", "like", "%{$key}%");
-            });
-        }
-
-        $tasks = $builder->orderByDesc('project_tasks.id')->take($take)->get();
+            ->whereNull('project_tasks.deleted_at')
+            ->searchByKeyword($key)
+            ->orderByDesc('project_tasks.id')
+            ->take($take)
+            ->get();
 
         return $tasks->map(function ($task) {
             $array = $task->toArray();
@@ -381,15 +353,10 @@ class SearchController extends AbstractController
         $results = [];
 
         // 搜索用户自己的文件
-        $builder = File::where('userid', $userid);
-        if (Base::isNumber($key)) {
-            $builder->where(function ($query) use ($key) {
-                $query->where("id", $key)->orWhere("name", "like", "%{$key}%");
-            });
-        } else {
-            $builder->where("name", "like", "%{$key}%");
-        }
-        $ownFiles = $builder->take($take)->get();
+        $ownFiles = File::where('userid', $userid)
+            ->searchByKeyword($key)
+            ->take($take)
+            ->get();
 
         foreach ($ownFiles as $file) {
             $results[] = array_merge($file->toArray(), [
@@ -401,24 +368,11 @@ class SearchController extends AbstractController
         // 搜索共享给用户的文件
         $remaining = $take - count($results);
         if ($remaining > 0) {
-            $builder = File::whereIn('pshare', function ($queryA) use ($userid) {
-                $queryA->select('files.id')
-                    ->from('files')
-                    ->join('file_users', 'files.id', '=', 'file_users.file_id')
-                    ->where('files.userid', '!=', $userid)
-                    ->where(function ($queryB) use ($userid) {
-                        $queryB->whereIn('file_users.userid', [0, $userid]);
-                    });
-            });
-            if (Base::isNumber($key)) {
-                $builder->where(function ($query) use ($key) {
-                    $query->where("id", $key)->orWhere("name", "like", "%{$key}%");
-                });
-            } else {
-                $builder->where("name", "like", "%{$key}%");
-            }
+            $sharedFiles = File::sharedToUser($userid)
+                ->searchByKeyword($key)
+                ->take($remaining)
+                ->get();
 
-            $sharedFiles = $builder->take($remaining)->get();
             foreach ($sharedFiles as $file) {
                 $temp = $file->toArray();
                 if ($file->pshare === $file->id) {
@@ -501,32 +455,28 @@ class SearchController extends AbstractController
      */
     private function searchMessageByMysql(int $userid, string $key, int $take, int $dialogId = 0): array
     {
-        $builder = DB::table('web_socket_dialog_msgs as m')
-            ->select([
-                'm.id as msg_id',
-                'm.dialog_id',
-                'm.userid',
-                'm.type',
-                'm.msg',
-                'm.created_at',
+        $builder = WebSocketDialogMsg::select([
+                'id as msg_id',
+                'dialog_id',
+                'userid',
+                'type',
+                'msg',
+                'created_at',
             ])
-            ->join('web_socket_dialog_users as u', 'm.dialog_id', '=', 'u.dialog_id')
-            ->where('u.userid', $userid)
-            ->where('m.bot', 0)
-            ->where('m.key', 'like', "%{$key}%");
+            ->accessibleByUser($userid)
+            ->where('bot', 0)
+            ->searchByKeyword($key);
 
         if ($dialogId > 0) {
-            $builder->where('m.dialog_id', $dialogId);
+            $builder->where('dialog_id', $dialogId);
         }
 
-        $items = $builder->orderByDesc('m.id')
+        $items = $builder->orderByDesc('id')
             ->limit($take)
-            ->get()
-            ->all();
+            ->get();
 
-        $results = [];
-        foreach ($items as $item) {
-            $results[] = [
+        return $items->map(function ($item) {
+            return [
                 'msg_id' => $item->msg_id,
                 'dialog_id' => $item->dialog_id,
                 'userid' => $item->userid,
@@ -536,9 +486,7 @@ class SearchController extends AbstractController
                 'relevance' => 0,
                 'content_preview' => null,
             ];
-        }
-
-        return $results;
+        })->toArray();
     }
 
     /**

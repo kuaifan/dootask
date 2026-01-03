@@ -354,6 +354,32 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 按关键词搜索任务（Scope）
+     * 支持：任务ID（纯数字）、任务名称、描述
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $keyword 搜索关键词
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearchByKeyword($query, string $keyword)
+    {
+        if (is_numeric($keyword)) {
+            // 纯数字：匹配任务ID 或 名称/描述
+            return $query->where(function ($q) use ($keyword) {
+                $q->where("project_tasks.id", intval($keyword))
+                    ->orWhere("project_tasks.name", "like", "%{$keyword}%")
+                    ->orWhere("project_tasks.desc", "like", "%{$keyword}%");
+            });
+        }
+
+        // 普通文本：搜索名称/描述
+        return $query->where(function ($q) use ($keyword) {
+            $q->where("project_tasks.name", "like", "%{$keyword}%")
+                ->orWhere("project_tasks.desc", "like", "%{$keyword}%");
+        });
+    }
+
+    /**
      * 生成描述
      * @param $content
      * @return string

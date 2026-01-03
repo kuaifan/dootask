@@ -112,6 +112,36 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 按关键词搜索消息（Scope）
+     * 搜索 key 字段（消息的可搜索内容）
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $keyword 搜索关键词
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearchByKeyword($query, string $keyword)
+    {
+        return $query->where('key', 'like', "%{$keyword}%");
+    }
+
+    /**
+     * 筛选用户可访问的对话消息（Scope）
+     * 通过 web_socket_dialog_users 表验证用户对对话的访问权限
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $userid 用户ID
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeAccessibleByUser($query, int $userid)
+    {
+        return $query->whereIn('dialog_id', function ($subQuery) use ($userid) {
+            $subQuery->select('dialog_id')
+                ->from('web_socket_dialog_users')
+                ->where('userid', $userid);
+        });
+    }
+
+    /**
      * 阅读占比
      * @return int|mixed
      */

@@ -774,23 +774,50 @@ class User extends AbstractModel
     }
 
     /**
+     * 按关键词搜索用户（Scope）
+     * 支持：邮箱（含@）、用户ID（纯数字）、昵称/拼音/职业
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $keyword 搜索关键词
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearchByKeyword($query, string $keyword)
+    {
+        if (str_contains($keyword, "@")) {
+            // 包含 @ 按邮箱搜索
+            return $query->where("email", "like", "%{$keyword}%");
+        }
+
+        if (is_numeric($keyword)) {
+            // 纯数字：匹配用户ID 或 昵称/拼音/职业
+            return $query->where(function ($q) use ($keyword) {
+                $q->where("userid", intval($keyword))
+                    ->orWhere("nickname", "like", "%{$keyword}%")
+                    ->orWhere("pinyin", "like", "%{$keyword}%")
+                    ->orWhere("profession", "like", "%{$keyword}%");
+            });
+        }
+
+        // 普通文本：搜索昵称/拼音/职业
+        return $query->where(function ($q) use ($keyword) {
+            $q->where("nickname", "like", "%{$keyword}%")
+                ->orWhere("pinyin", "like", "%{$keyword}%")
+                ->orWhere("profession", "like", "%{$keyword}%");
+        });
+    }
+
+    /**
      * 搜索用户
      * @param $key
      * @param $take
      * @return User[]|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
+     * @deprecated 建议使用 scopeSearchByKeyword
      */
     public static function searchUser($key, $take = 20)
     {
         return User::select(User::$basicField)
-            ->where(function ($query) use ($key) {
-                if (str_contains($key, "@")) {
-                    $query->where("email", "like", "%{$key}%");
-                } else {
-                    $query->where("nickname", "like", "%{$key}%")
-                        ->orWhere("pinyin", "like", "%{$key}%")
-                        ->orWhere("profession", "like", "%{$key}%");
-                }
-            })->orderBy('userid')
+            ->searchByKeyword($key)
+            ->orderBy('userid')
             ->take($take)
             ->get();
     }

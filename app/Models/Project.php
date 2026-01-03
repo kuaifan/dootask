@@ -165,6 +165,18 @@ class Project extends AbstractModel
     }
 
     /**
+     * 按关键词搜索项目（Scope）
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $keyword 搜索关键词
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearchByKeyword($query, string $keyword)
+    {
+        return $query->where("projects.name", "like", "%{$keyword}%");
+    }
+
+    /**
      * 获取任务统计数据
      * @param $userid
      * @return array

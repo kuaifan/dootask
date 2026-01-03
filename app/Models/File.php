@@ -128,6 +128,45 @@ class File extends AbstractModel
      */
     const zipMaxSize = 1024 * 1024 * 1024; // 1G
 
+    /**
+     * 按关键词搜索文件（Scope）
+     * 支持：文件ID（纯数字）、文件名
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $keyword 搜索关键词
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearchByKeyword($query, string $keyword)
+    {
+        if (is_numeric($keyword)) {
+            return $query->where(function ($q) use ($keyword) {
+                $q->where("id", intval($keyword))
+                    ->orWhere("name", "like", "%{$keyword}%");
+            });
+        }
+        return $query->where("name", "like", "%{$keyword}%");
+    }
+
+    /**
+     * 筛选用户可访问的共享文件（Scope）
+     * 不包括用户自己的文件，仅返回他人共享给该用户的文件
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $userid 用户ID
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSharedToUser($query, int $userid)
+    {
+        return $query->whereIn('pshare', function ($subQuery) use ($userid) {
+            $subQuery->select('files.id')
+                ->from('files')
+                ->join('file_users', 'files.id', '=', 'file_users.file_id')
+                ->where('files.userid', '!=', $userid)
+                ->where(function ($q) use ($userid) {
+                    $q->whereIn('file_users.userid', [0, $userid]);
+                });
+        });
+    }
 
     /**
      * 获取文件列表
