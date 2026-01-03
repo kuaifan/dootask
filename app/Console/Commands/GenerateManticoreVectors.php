@@ -22,13 +22,18 @@ use Illuminate\Console\Command;
  *
  * 用于后台批量生成已索引数据的向量，与全文索引解耦
  * 使用双指针追踪：sync:xxxLastId（全文已同步）和 vector:xxxLastId（向量已生成）
+ *
+ * 运行模式：
+ * - 持续处理直到所有待处理数据完成
+ * - 每批处理完成后休眠几秒，避免 API 过载
+ * - 定时器只作为兜底触发机制
  */
 class GenerateManticoreVectors extends Command
 {
     protected $signature = 'manticore:generate-vectors
                             {--type=all : 类型 (msg/file/task/project/user/all)}
-                            {--batch=20 : 每批 embedding 数量}
-                            {--max=500 : 每轮最大处理数量}
+                            {--batch=50 : 每批 embedding 数量}
+                            {--sleep=3 : 每批处理后休眠秒数}
                             {--reset : 重置向量进度指针}';
 
     protected $description = '批量生成 Manticore 已索引数据的向量（异步处理）';
@@ -74,6 +79,8 @@ class GenerateManticoreVectors extends Command
         ],
     ];
 
+    private bool $shouldStop = false;
+
     public function handle(): int
     {
         if (!Apps::isInstalled("manticore")) {
@@ -104,7 +111,7 @@ class GenerateManticoreVectors extends Command
 
         $type = $this->option('type');
         $batchSize = intval($this->option('batch'));
-        $maxCount = intval($this->option('max'));
+        $sleepSeconds = intval($this->option('sleep'));
         $reset = $this->option('reset');
 
         if ($type === 'all') {
@@ -118,23 +125,44 @@ class GenerateManticoreVectors extends Command
             $types = [$type];
         }
 
-        foreach ($types as $t) {
-            $this->processType($t, $batchSize, $maxCount, $reset);
-        }
+        // 持续处理直到所有类型都没有待处理数据
+        $round = 0;
+        do {
+            $round++;
+            $totalPending = 0;
 
-        $this->info("\n向量生成完成");
+            foreach ($types as $t) {
+                if ($this->shouldStop) {
+                    break;
+                }
+                $pending = $this->processType($t, $batchSize, $reset && $round === 1);
+                $totalPending += $pending;
+            }
+
+            // 如果还有待处理数据，休眠后继续
+            if ($totalPending > 0 && !$this->shouldStop) {
+                $this->info("\n--- 第 {$round} 轮完成，剩余 {$totalPending} 条待处理，{$sleepSeconds} 秒后继续 ---\n");
+                sleep($sleepSeconds);
+                $this->setLock(); // 刷新锁
+            }
+        } while ($totalPending > 0 && !$this->shouldStop);
+
+        $this->info("\n向量生成完成（共 {$round} 轮）");
         $this->releaseLock();
         return 0;
     }
 
     /**
-     * 处理单个类型的向量生成
+     * 处理单个类型的向量生成（每次处理一批）
+     *
+     * @param string $type 类型
+     * @param int $batchSize 每批数量
+     * @param bool $reset 是否重置进度
+     * @return int 剩余待处理数量
      */
-    private function processType(string $type, int $batchSize, int $maxCount, bool $reset): void
+    private function processType(string $type, int $batchSize, bool $reset): int
     {
         $config = self::TYPE_CONFIG[$type];
-
-        $this->info("\n========== 处理 {$type} ==========");
 
         // 获取进度指针
         $syncLastId = intval(ManticoreKeyValue::get($config['syncKey'], 0));
@@ -142,61 +170,47 @@ class GenerateManticoreVectors extends Command
 
         if ($reset) {
             ManticoreKeyValue::set($config['vectorKey'], 0);
-            $this->info("已重置 {$type} 向量进度指针");
+            $this->info("[{$type}] 已重置向量进度指针");
         }
 
         // 计算待处理范围
         $pendingCount = $syncLastId - $vectorLastId;
         if ($pendingCount <= 0) {
-            $this->info("{$type}: 无待处理数据 (sync={$syncLastId}, vector={$vectorLastId})");
-            return;
+            return 0;
         }
 
-        $this->info("{$type}: 待处理 {$pendingCount} 条 (ID {$vectorLastId} -> {$syncLastId})");
-
-        // 限制本轮处理数量
-        $toProcess = min($pendingCount, $maxCount);
-        $this->info("{$type}: 本轮处理 {$toProcess} 条");
-
-        // 获取待处理的 ID 列表
+        // 获取待处理的 ID 列表（每次处理 batchSize * 5 条，让 generateVectorsBatch 内部再分批调用 API）
         $modelClass = $config['model'];
         $idField = $config['idField'];
+        $fetchCount = $batchSize * 5;
 
-        $processedCount = 0;
-        $currentLastId = $vectorLastId;
+        $ids = $modelClass::where($idField, '>', $vectorLastId)
+            ->where($idField, '<=', $syncLastId)
+            ->orderBy($idField)
+            ->limit($fetchCount)
+            ->pluck($idField)
+            ->toArray();
 
-        while ($processedCount < $toProcess) {
-            $remainingCount = min($toProcess - $processedCount, $batchSize * 5);
-
-            // 获取一批 ID
-            $ids = $modelClass::where($idField, '>', $currentLastId)
-                ->where($idField, '<=', $syncLastId)
-                ->orderBy($idField)
-                ->limit($remainingCount)
-                ->pluck($idField)
-                ->toArray();
-
-            if (empty($ids)) {
-                break;
-            }
-
-            // 批量生成向量
-            $manticoreClass = $config['class'];
-            $successCount = $manticoreClass::generateVectorsBatch($ids, $batchSize);
-
-            $processedCount += count($ids);
-            $currentLastId = end($ids);
-
-            // 更新向量进度指针
-            ManticoreKeyValue::set($config['vectorKey'], $currentLastId);
-
-            $this->info("{$type}: 已处理 {$processedCount}/{$toProcess}，成功 {$successCount}，当前ID: {$currentLastId}");
-
-            // 刷新锁
-            $this->setLock();
+        if (empty($ids)) {
+            return 0;
         }
 
-        $this->info("{$type}: 完成本轮向量生成，共处理 {$processedCount} 条");
+        // 批量生成向量
+        $manticoreClass = $config['class'];
+        $successCount = $manticoreClass::generateVectorsBatch($ids, $batchSize);
+
+        $currentLastId = end($ids);
+
+        // 更新向量进度指针
+        ManticoreKeyValue::set($config['vectorKey'], $currentLastId);
+
+        $remaining = $pendingCount - count($ids);
+        $this->info("[{$type}] 处理 " . count($ids) . " 条，成功 {$successCount}，ID: {$vectorLastId} -> {$currentLastId}，剩余 {$remaining}");
+
+        // 刷新锁
+        $this->setLock();
+
+        return max(0, $remaining);
     }
 
     private function getLock(): ?array
@@ -208,7 +222,8 @@ class GenerateManticoreVectors extends Command
     private function setLock(): void
     {
         $lockKey = 'manticore:generate-vectors:lock';
-        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 600);
+        // 锁有效期 30 分钟，持续处理时会不断刷新
+        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 1800);
     }
 
     private function releaseLock(): void
@@ -219,8 +234,7 @@ class GenerateManticoreVectors extends Command
 
     public function handleSignal(int $signal): void
     {
-        $this->info("\n收到信号，正在退出...");
-        $this->releaseLock();
-        exit(0);
+        $this->info("\n收到信号，将在当前批次完成后退出...");
+        $this->shouldStop = true;
     }
 }

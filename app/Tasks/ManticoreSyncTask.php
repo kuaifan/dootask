@@ -187,34 +187,38 @@ class ManticoreSyncTask extends AbstractTask
     }
 
     /**
-     * 增量更新（定时执行）
-     * 使用 --i 参数执行增量同步，会同步新增的向量数据
+     * 增量更新（定时执行 - 兜底机制）
+     *
+     * 命令本身会持续处理直到完成，定时器只是确保命令在运行
+     * 如果命令正在运行（有锁），则跳过本次触发
      *
      * @return void
      */
     private function incrementalUpdate()
     {
-        // 执行增量全文索引同步（10分钟执行一次）
+        // 兜底触发：每 2 分钟检查一次，如果命令没在运行则启动
+        $time = intval(Cache::get("ManticoreSyncTask:CheckTime"));
+        if (time() - $time < 2 * 60) {
+            return;
+        }
+        Cache::put("ManticoreSyncTask:CheckTime", time(), Carbon::now()->addMinutes(5));
+
+        // 执行增量全文索引同步（命令会持续处理直到完成）
         $this->runIncrementalSync();
 
-        // 执行向量生成（10分钟执行一次，与全文索引独立）
+        // 执行向量生成（命令会持续处理直到完成）
         $this->runVectorGeneration();
     }
 
     /**
-     * 执行增量全文索引同步
+     * 执行增量全文索引同步（兜底触发）
+     *
+     * 命令内部有锁机制，如果已在运行会自动跳过
+     * 命令会持续处理直到无新数据，然后自动退出
      */
     private function runIncrementalSync(): void
     {
-        $time = intval(Cache::get("ManticoreSyncTask:SyncTime"));
-        if (time() - $time < 10 * 60) {
-            return;
-        }
-
-        // 执行开始
-        Cache::put("ManticoreSyncTask:SyncTime", time(), Carbon::now()->addMinutes(15));
-
-        // 执行增量同步（MVA 方案不需要单独同步关系表）
+        // 启动各类型的增量同步命令（命令内部有锁，重复启动会自动跳过）
         @shell_exec("php /var/www/artisan manticore:sync-files --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-users --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-projects --i 2>&1 &");
@@ -223,25 +227,19 @@ class ManticoreSyncTask extends AbstractTask
     }
 
     /**
-     * 执行向量生成（异步批量处理）
+     * 执行向量生成（兜底触发）
+     *
+     * 命令内部有锁机制，如果已在运行会自动跳过
+     * 命令会持续处理直到无待处理数据，然后自动退出
      */
     private function runVectorGeneration(): void
     {
-        // 检查 AI 是否安装
         if (!Apps::isInstalled("ai")) {
             return;
         }
 
-        $time = intval(Cache::get("ManticoreSyncTask:VectorTime"));
-        if (time() - $time < 10 * 60) {
-            return;
-        }
-
-        // 执行开始
-        Cache::put("ManticoreSyncTask:VectorTime", time(), Carbon::now()->addMinutes(15));
-
-        // 执行向量生成（批量处理，每轮最多500条）
-        @shell_exec("php /var/www/artisan manticore:generate-vectors --type=all --batch=20 --max=500 2>&1 &");
+        // 启动向量生成命令（命令内部有锁，重复启动会自动跳过）
+        @shell_exec("php /var/www/artisan manticore:generate-vectors --type=all --batch=50 2>&1 &");
     }
 
     public function end()

@@ -14,18 +14,20 @@ class SyncProjectToManticore extends Command
     /**
      * 更新数据（MVA 方案：allowed_users 在同步时自动写入）
      * --f: 全量更新 (默认)
-     * --i: 增量更新（从上次更新的最后一个ID接上）
+     * --i: 增量更新（从上次更新的最后一个ID接上，持续处理直到完成）
      *
      * 清理数据
      * --c: 清除索引
+     *
+     * 其他选项
+     * --sleep: 每批处理完成后休眠秒数（增量模式）
      */
 
-    protected $signature = 'manticore:sync-projects {--f} {--i} {--c} {--batch=100}';
+    protected $signature = 'manticore:sync-projects {--f} {--i} {--c} {--batch=100} {--sleep=3}';
     protected $description = '同步项目数据到 Manticore Search（MVA 权限方案）';
 
-    /**
-     * @return int
-     */
+    private bool $shouldStop = false;
+
     public function handle(): int
     {
         if (!Apps::isInstalled("manticore")) {
@@ -33,14 +35,12 @@ class SyncProjectToManticore extends Command
             return 1;
         }
 
-        // 注册信号处理器
         if (extension_loaded('pcntl')) {
             pcntl_async_signals(true);
             pcntl_signal(SIGINT, [$this, 'handleSignal']);
             pcntl_signal(SIGTERM, [$this, 'handleSignal']);
         }
 
-        // 检查锁
         $lockInfo = $this->getLock();
         if ($lockInfo) {
             $this->error("命令已在运行中，开始时间: {$lockInfo['started_at']}");
@@ -49,7 +49,6 @@ class SyncProjectToManticore extends Command
 
         $this->setLock();
 
-        // 清除索引
         if ($this->option('c')) {
             $this->info('清除索引...');
             ManticoreProject::clear();
@@ -75,7 +74,7 @@ class SyncProjectToManticore extends Command
     private function setLock(): void
     {
         $lockKey = md5($this->signature);
-        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 600);
+        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 1800);
     }
 
     private function releaseLock(): void
@@ -86,60 +85,94 @@ class SyncProjectToManticore extends Command
 
     public function handleSignal(int $signal): void
     {
-        $this->releaseLock();
-        exit(0);
+        $this->info("\n收到信号，将在当前批次完成后退出...");
+        $this->shouldStop = true;
     }
 
     private function syncProjects(): void
     {
         $lastKey = "sync:manticoreProjectLastId";
-        $lastId = $this->option('i') ? intval(ManticoreKeyValue::get($lastKey, 0)) : 0;
-
-        if ($lastId > 0) {
-            $this->info("\n同步项目数据（{$lastId}）...");
-        } else {
-            $this->info("\n同步项目数据...");
-        }
-
-        // 排除已归档项目
-        $query = Project::where('id', '>', $lastId)
-            ->whereNull('archived_at');
-
-        $num = 0;
-        $count = $query->count();
+        $isIncremental = $this->option('i');
+        $sleepSeconds = intval($this->option('sleep'));
         $batchSize = $this->option('batch');
 
-        $total = 0;
-        $lastNum = 0;
+        $round = 0;
 
         do {
-            $projects = Project::where('id', '>', $lastId)
-                ->whereNull('archived_at')
-                ->orderBy('id')
-                ->limit($batchSize)
-                ->get();
+            $round++;
+            $lastId = $isIncremental ? intval(ManticoreKeyValue::get($lastKey, 0)) : 0;
 
-            if ($projects->isEmpty()) {
+            if ($round === 1) {
+                if ($lastId > 0) {
+                    $this->info("\n增量同步项目数据（从ID {$lastId} 开始）...");
+                } else {
+                    $this->info("\n全量同步项目数据...");
+                }
+            }
+
+            $count = Project::where('id', '>', $lastId)
+                ->whereNull('archived_at')
+                ->count();
+
+            if ($count === 0) {
+                if ($round === 1) {
+                    $this->info("无待同步数据");
+                }
                 break;
             }
 
-            $num += count($projects);
-            $progress = $count > 0 ? round($num / $count * 100, 2) : 100;
-            if ($progress < 100) {
-                $progress = number_format($progress, 2);
+            $this->info("[第 {$round} 轮] 待同步 {$count} 个项目");
+
+            $num = 0;
+            $total = 0;
+
+            do {
+                if ($this->shouldStop) {
+                    break;
+                }
+
+                $projects = Project::where('id', '>', $lastId)
+                    ->whereNull('archived_at')
+                    ->orderBy('id')
+                    ->limit($batchSize)
+                    ->get();
+
+                if ($projects->isEmpty()) {
+                    break;
+                }
+
+                $num += count($projects);
+                $progress = $count > 0 ? round($num / $count * 100, 2) : 100;
+                $this->info("{$num}/{$count} ({$progress}%) 项目ID {$projects->first()->id} ~ {$projects->last()->id}");
+
+                $this->setLock();
+
+                $syncCount = ManticoreProject::batchSync($projects);
+                $total += $syncCount;
+
+                $lastId = $projects->last()->id;
+                ManticoreKeyValue::set($lastKey, $lastId);
+            } while (count($projects) == $batchSize && !$this->shouldStop);
+
+            $this->info("[第 {$round} 轮] 完成，同步 {$total} 个，最后ID {$lastId}");
+
+            if ($isIncremental && !$this->shouldStop) {
+                $newCount = Project::where('id', '>', $lastId)
+                    ->whereNull('archived_at')
+                    ->count();
+
+                if ($newCount > 0) {
+                    $this->info("发现 {$newCount} 个新项目，{$sleepSeconds} 秒后继续...");
+                    sleep($sleepSeconds);
+                    continue;
+                }
             }
-            $this->info("{$num}/{$count} ({$progress}%) 正在同步项目ID {$projects->first()->id} ~ {$projects->last()->id} ({$total}|{$lastNum})");
 
-            $this->setLock();
+            break;
 
-            $lastNum = ManticoreProject::batchSync($projects);
-            $total += $lastNum;
+        } while (!$this->shouldStop);
 
-            $lastId = $projects->last()->id;
-            ManticoreKeyValue::set($lastKey, $lastId);
-        } while (count($projects) == $batchSize);
-
-        $this->info("同步项目结束 - 最后ID {$lastId}");
+        $this->info("同步项目结束（共 {$round} 轮）- 最后ID: " . ManticoreKeyValue::get($lastKey, 0));
         $this->info("已索引项目数量: " . ManticoreProject::getIndexedCount());
     }
 }
