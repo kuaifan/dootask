@@ -330,8 +330,15 @@ class ManticoreBase
      */
     public static function escapeMatch(string $keyword): string
     {
-        // Manticore 特殊字符转义
-        $special = ['\\', '(', ')', '|', '-', '!', '@', '~', '"', '&', '/', '^', '$', '=', '<', '>', '*'];
+        // Manticore 特殊字符转义（完整列表）
+        // 参考: https://manual.manticoresearch.com/Searching/Full_text_matching/Escaping
+        $special = [
+            '\\',  // 反斜杠（必须最先处理）
+            '(', ')', '[', ']',  // 括号
+            '|', '-', '!', '@', '~', '^', '$', '*', '?',  // 操作符
+            '"', '\'',  // 引号
+            '&', '/', '=', '<', '>', ':',  // 其他特殊字符
+        ];
         foreach ($special as $char) {
             $keyword = str_replace($char, '\\' . $char, $keyword);
         }

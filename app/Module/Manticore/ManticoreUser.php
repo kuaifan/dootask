@@ -332,6 +332,7 @@ class ManticoreUser
                 }
 
                 $embeddings = $result['data'];
+                $failedIds = [];
 
                 // 5. 逐个更新向量到 Manticore
                 foreach ($ids as $index => $userid) {
@@ -342,7 +343,14 @@ class ManticoreUser
                     $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
                     if (ManticoreBase::updateUserVector($userid, $vectorStr)) {
                         $successCount++;
+                    } else {
+                        $failedIds[] = $userid;
                     }
+                }
+
+                // 记录更新失败的 ID
+                if (!empty($failedIds)) {
+                    Log::warning('ManticoreUser: Vector update failed', ['user_ids' => $failedIds]);
                 }
             }
 

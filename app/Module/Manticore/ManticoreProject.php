@@ -367,6 +367,7 @@ class ManticoreProject
                 }
 
                 $embeddings = $result['data'];
+                $failedIds = [];
 
                 // 5. 逐个更新向量到 Manticore
                 foreach ($ids as $index => $projectId) {
@@ -377,7 +378,14 @@ class ManticoreProject
                     $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
                     if (ManticoreBase::updateProjectVector($projectId, $vectorStr)) {
                         $successCount++;
+                    } else {
+                        $failedIds[] = $projectId;
                     }
+                }
+
+                // 记录更新失败的 ID
+                if (!empty($failedIds)) {
+                    Log::warning('ManticoreProject: Vector update failed', ['project_ids' => $failedIds]);
                 }
             }
 

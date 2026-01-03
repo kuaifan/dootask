@@ -260,6 +260,8 @@ class ManticoreFile
         $maxSize = self::getMaxFileSizeByExt($file->ext);
         if ($file->size > $maxSize) {
             Log::info("Manticore: Skip large file {$file->id} ({$file->size} bytes, max: {$maxSize})");
+            // 删除可能存在的旧索引（文件更新后可能超限）
+            self::delete($file->id);
             return true;
         }
 
@@ -545,6 +547,7 @@ class ManticoreFile
                 }
 
                 $embeddings = $result['data'];
+                $failedIds = [];
 
                 // 5. 逐个更新向量到 Manticore
                 foreach ($ids as $index => $fileId) {
@@ -555,7 +558,14 @@ class ManticoreFile
                     $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
                     if (ManticoreBase::updateFileVector($fileId, $vectorStr)) {
                         $successCount++;
+                    } else {
+                        $failedIds[] = $fileId;
                     }
+                }
+
+                // 记录更新失败的 ID
+                if (!empty($failedIds)) {
+                    Log::warning('ManticoreFile: Vector update failed', ['file_ids' => $failedIds]);
                 }
             }
 

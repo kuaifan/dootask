@@ -484,11 +484,15 @@ class ManticoreMsg
             $result = AI::getBatchEmbeddings($texts);
 
             if (Base::isError($result)) {
-                Log::warning('ManticoreMsg batch embedding failed: ' . ($result['msg'] ?? 'Unknown error'));
+                Log::warning('ManticoreMsg: Batch embedding failed', [
+                    'msg_ids' => $idsArray,
+                    'error' => $result['msg'] ?? 'Unknown error',
+                ]);
                 continue;
             }
 
             $embeddings = $result['data'] ?? [];
+            $failedIds = [];
 
             // 更新向量
             foreach ($embeddings as $index => $embedding) {
@@ -504,7 +508,14 @@ class ManticoreMsg
                 $vectorStr = '[' . implode(',', $embedding) . ']';
                 if (ManticoreBase::updateMsgVector($msgId, $vectorStr)) {
                     $count++;
+                } else {
+                    $failedIds[] = $msgId;
                 }
+            }
+
+            // 记录更新失败的 ID
+            if (!empty($failedIds)) {
+                Log::warning('ManticoreMsg: Vector update failed', ['msg_ids' => $failedIds]);
             }
         }
 

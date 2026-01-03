@@ -151,7 +151,7 @@ class ManticoreTask
 
     /**
      * 获取任务的 allowed_users 列表
-     * 
+     *
      * 根据 visibility 计算有权限查看此任务的用户列表：
      * - visibility=1: 项目成员
      * - visibility=2: 任务成员（负责人/协作人）
@@ -159,10 +159,22 @@ class ManticoreTask
      * - 子任务: 还需要继承父任务的成员
      *
      * @param ProjectTask $task 任务模型
+     * @param int $depth 递归深度（防止无限递归）
+     * @param array $visited 已访问的任务ID（防止循环引用）
      * @return array 有权限的用户ID数组
      */
-    public static function getAllowedUsers(ProjectTask $task): array
+    public static function getAllowedUsers(ProjectTask $task, int $depth = 0, array $visited = []): array
     {
+        // 防止无限递归：深度超过10层或循环引用
+        if ($depth > 10 || in_array($task->id, $visited)) {
+            Log::warning('ManticoreTask: getAllowedUsers recursion limit reached', [
+                'task_id' => $task->id,
+                'depth' => $depth,
+            ]);
+            return [];
+        }
+        $visited[] = $task->id;
+
         $userids = [];
 
         // 1. 根据 visibility 获取基础成员
@@ -191,7 +203,7 @@ class ManticoreTask
         if ($task->parent_id > 0) {
             $parentTask = ProjectTask::find($task->parent_id);
             if ($parentTask) {
-                $parentUsers = self::getAllowedUsers($parentTask);
+                $parentUsers = self::getAllowedUsers($parentTask, $depth + 1, $visited);
                 $userids = array_merge($userids, $parentUsers);
             }
         }
@@ -584,6 +596,7 @@ class ManticoreTask
                 }
 
                 $embeddings = $result['data'];
+                $failedIds = [];
 
                 // 5. 逐个更新向量到 Manticore
                 foreach ($ids as $index => $taskId) {
@@ -594,7 +607,14 @@ class ManticoreTask
                     $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
                     if (ManticoreBase::updateTaskVector($taskId, $vectorStr)) {
                         $successCount++;
+                    } else {
+                        $failedIds[] = $taskId;
                     }
+                }
+
+                // 记录更新失败的 ID
+                if (!empty($failedIds)) {
+                    Log::warning('ManticoreTask: Vector update failed', ['task_ids' => $failedIds]);
                 }
             }
 
