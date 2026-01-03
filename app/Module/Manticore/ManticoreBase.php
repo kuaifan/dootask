@@ -3,7 +3,8 @@
 namespace App\Module\Manticore;
 
 use App\Module\Apps;
-use App\Module\Doo;
+use App\Module\Base;
+use App\Module\AI;
 use PDO;
 use PDOException;
 use Illuminate\Support\Facades\Log;
@@ -2105,6 +2106,34 @@ class ManticoreBase
             $existing['profession'],
             $existing['introduction'],
         ]);
+    }
+
+    // ==============================
+    // 通用工具方法
+    // ==============================
+
+    /**
+     * 获取文本的 Embedding 向量
+     *
+     * @param string $text 文本
+     * @return array 向量数组（空数组表示失败）
+     */
+    public static function getEmbedding(string $text): array
+    {
+        if (empty($text)) {
+            return [];
+        }
+
+        try {
+            $result = AI::getEmbedding($text);
+            if (Base::isSuccess($result)) {
+                return $result['data'] ?? [];
+            }
+        } catch (\Exception $e) {
+            Log::warning('Get embedding error: ' . $e->getMessage());
+        }
+
+        return [];
     }
 
 }

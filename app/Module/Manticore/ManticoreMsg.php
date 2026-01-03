@@ -100,7 +100,7 @@ class ManticoreMsg
 
                 case 'vector':
                     // 纯向量搜索（需要先获取 embedding）
-                    $embedding = self::getEmbedding($keyword);
+                    $embedding = ManticoreBase::getEmbedding($keyword);
                     if (empty($embedding)) {
                         // embedding 获取失败，降级到全文搜索
                         return self::formatSearchResults(
@@ -114,7 +114,7 @@ class ManticoreMsg
                 case 'hybrid':
                 default:
                     // 混合搜索
-                    $embedding = self::getEmbedding($keyword);
+                    $embedding = ManticoreBase::getEmbedding($keyword);
                     return self::formatSearchResults(
                         ManticoreBase::msgHybridSearch($keyword, $embedding, $userid, $size, $dialogId)
                     );
@@ -125,30 +125,6 @@ class ManticoreMsg
         }
     }
 
-    /**
-     * 获取文本的 Embedding 向量
-     *
-     * @param string $text 文本
-     * @return array 向量数组（空数组表示失败）
-     */
-    private static function getEmbedding(string $text): array
-    {
-        if (empty($text)) {
-            return [];
-        }
-
-        try {
-            // 调用 AI 模块获取 embedding
-            $result = AI::getEmbedding($text);
-            if (Base::isSuccess($result)) {
-                return $result['data'] ?? [];
-            }
-        } catch (\Exception $e) {
-            Log::warning('Get embedding error: ' . $e->getMessage());
-        }
-
-        return [];
-    }
 
     /**
      * 格式化搜索结果
@@ -380,7 +356,7 @@ class ManticoreMsg
             // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
             $embedding = null;
             if ($withVector && !empty($content) && Apps::isInstalled('ai')) {
-                $embeddingResult = self::getEmbedding($content);
+                $embeddingResult = ManticoreBase::getEmbedding($content);
                 if (!empty($embeddingResult)) {
                     $embedding = '[' . implode(',', $embeddingResult) . ']';
                 }

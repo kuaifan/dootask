@@ -2,15 +2,17 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Traits\ManticoreSyncLock;
 use App\Models\File;
 use App\Module\Apps;
 use App\Module\Manticore\ManticoreFile;
 use App\Module\Manticore\ManticoreKeyValue;
-use Cache;
 use Illuminate\Console\Command;
 
 class SyncFileToManticore extends Command
 {
+    use ManticoreSyncLock;
+
     /**
      * 更新数据（MVA 方案：allowed_users 在同步时自动写入）
      * --f: 全量更新 (默认)
@@ -26,11 +28,6 @@ class SyncFileToManticore extends Command
     protected $signature = 'manticore:sync-files {--f} {--i} {--c} {--batch=100} {--sleep=3}';
     protected $description = '同步文件内容到 Manticore Search（MVA 权限方案）';
 
-    private bool $shouldStop = false;
-
-    /**
-     * @return int
-     */
     public function handle(): int
     {
         if (!Apps::isInstalled("manticore")) {
@@ -38,21 +35,11 @@ class SyncFileToManticore extends Command
             return 1;
         }
 
-        // 注册信号处理器（仅在支持pcntl扩展的环境下）
-        if (extension_loaded('pcntl')) {
-            pcntl_async_signals(true);
-            pcntl_signal(SIGINT, [$this, 'handleSignal']);
-            pcntl_signal(SIGTERM, [$this, 'handleSignal']);
-        }
+        $this->registerSignalHandlers();
 
-        // 检查锁，如果已被占用则退出
-        $lockInfo = $this->getLock();
-        if ($lockInfo) {
-            $this->error("命令已在运行中，开始时间: {$lockInfo['started_at']}");
+        if (!$this->acquireLock()) {
             return 1;
         }
-
-        $this->setLock();
 
         // 清除索引
         if ($this->option('c')) {
@@ -70,30 +57,6 @@ class SyncFileToManticore extends Command
         $this->info("\n同步完成");
         $this->releaseLock();
         return 0;
-    }
-
-    private function getLock(): ?array
-    {
-        $lockKey = md5($this->signature);
-        return Cache::has($lockKey) ? Cache::get($lockKey) : null;
-    }
-
-    private function setLock(): void
-    {
-        $lockKey = md5($this->signature);
-        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 1800);
-    }
-
-    private function releaseLock(): void
-    {
-        $lockKey = md5($this->signature);
-        Cache::forget($lockKey);
-    }
-
-    public function handleSignal(int $signal): void
-    {
-        $this->info("\n收到信号，将在当前批次完成后退出...");
-        $this->shouldStop = true;
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Traits\ManticoreSyncLock;
 use App\Models\File;
 use App\Models\Project;
 use App\Models\ProjectTask;
@@ -14,7 +15,6 @@ use App\Module\Manticore\ManticoreMsg;
 use App\Module\Manticore\ManticoreProject;
 use App\Module\Manticore\ManticoreTask;
 use App\Module\Manticore\ManticoreUser;
-use Cache;
 use Illuminate\Console\Command;
 
 /**
@@ -30,6 +30,8 @@ use Illuminate\Console\Command;
  */
 class GenerateManticoreVectors extends Command
 {
+    use ManticoreSyncLock;
+
     protected $signature = 'manticore:generate-vectors
                             {--type=all : 类型 (msg/file/task/project/user/all)}
                             {--batch=50 : 每批 embedding 数量}
@@ -79,8 +81,6 @@ class GenerateManticoreVectors extends Command
         ],
     ];
 
-    private bool $shouldStop = false;
-
     public function handle(): int
     {
         if (!Apps::isInstalled("manticore")) {
@@ -93,21 +93,11 @@ class GenerateManticoreVectors extends Command
             return 1;
         }
 
-        // 注册信号处理器
-        if (extension_loaded('pcntl')) {
-            pcntl_async_signals(true);
-            pcntl_signal(SIGINT, [$this, 'handleSignal']);
-            pcntl_signal(SIGTERM, [$this, 'handleSignal']);
-        }
+        $this->registerSignalHandlers();
 
-        // 检查锁
-        $lockInfo = $this->getLock();
-        if ($lockInfo) {
-            $this->error("命令已在运行中，开始时间: {$lockInfo['started_at']}");
+        if (!$this->acquireLock()) {
             return 1;
         }
-
-        $this->setLock();
 
         $type = $this->option('type');
         $batchSize = intval($this->option('batch'));
@@ -211,30 +201,5 @@ class GenerateManticoreVectors extends Command
         $this->setLock();
 
         return max(0, $remaining);
-    }
-
-    private function getLock(): ?array
-    {
-        $lockKey = 'manticore:generate-vectors:lock';
-        return Cache::has($lockKey) ? Cache::get($lockKey) : null;
-    }
-
-    private function setLock(): void
-    {
-        $lockKey = 'manticore:generate-vectors:lock';
-        // 锁有效期 30 分钟，持续处理时会不断刷新
-        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 1800);
-    }
-
-    private function releaseLock(): void
-    {
-        $lockKey = 'manticore:generate-vectors:lock';
-        Cache::forget($lockKey);
-    }
-
-    public function handleSignal(int $signal): void
-    {
-        $this->info("\n收到信号，将在当前批次完成后退出...");
-        $this->shouldStop = true;
     }
 }

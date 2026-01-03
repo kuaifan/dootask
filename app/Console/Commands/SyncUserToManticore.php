@@ -2,15 +2,17 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Traits\ManticoreSyncLock;
 use App\Models\User;
 use App\Module\Apps;
 use App\Module\Manticore\ManticoreUser;
 use App\Module\Manticore\ManticoreKeyValue;
-use Cache;
 use Illuminate\Console\Command;
 
 class SyncUserToManticore extends Command
 {
+    use ManticoreSyncLock;
+
     /**
      * 更新数据
      * --f: 全量更新 (默认)
@@ -26,8 +28,6 @@ class SyncUserToManticore extends Command
     protected $signature = 'manticore:sync-users {--f} {--i} {--c} {--batch=100} {--sleep=3}';
     protected $description = '同步用户数据到 Manticore Search';
 
-    private bool $shouldStop = false;
-
     public function handle(): int
     {
         if (!Apps::isInstalled("manticore")) {
@@ -35,19 +35,11 @@ class SyncUserToManticore extends Command
             return 1;
         }
 
-        if (extension_loaded('pcntl')) {
-            pcntl_async_signals(true);
-            pcntl_signal(SIGINT, [$this, 'handleSignal']);
-            pcntl_signal(SIGTERM, [$this, 'handleSignal']);
-        }
+        $this->registerSignalHandlers();
 
-        $lockInfo = $this->getLock();
-        if ($lockInfo) {
-            $this->error("命令已在运行中，开始时间: {$lockInfo['started_at']}");
+        if (!$this->acquireLock()) {
             return 1;
         }
-
-        $this->setLock();
 
         if ($this->option('c')) {
             $this->info('清除索引...');
@@ -63,30 +55,6 @@ class SyncUserToManticore extends Command
         $this->info("\n同步完成");
         $this->releaseLock();
         return 0;
-    }
-
-    private function getLock(): ?array
-    {
-        $lockKey = md5($this->signature);
-        return Cache::has($lockKey) ? Cache::get($lockKey) : null;
-    }
-
-    private function setLock(): void
-    {
-        $lockKey = md5($this->signature);
-        Cache::put($lockKey, ['started_at' => date('Y-m-d H:i:s')], 1800);
-    }
-
-    private function releaseLock(): void
-    {
-        $lockKey = md5($this->signature);
-        Cache::forget($lockKey);
-    }
-
-    public function handleSignal(int $signal): void
-    {
-        $this->info("\n收到信号，将在当前批次完成后退出...");
-        $this->shouldStop = true;
     }
 
     private function syncUsers(): void

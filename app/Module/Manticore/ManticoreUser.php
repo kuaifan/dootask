@@ -52,7 +52,7 @@ class ManticoreUser
                     );
 
                 case 'vector':
-                    $embedding = self::getEmbedding($keyword);
+                    $embedding = ManticoreBase::getEmbedding($keyword);
                     if (empty($embedding)) {
                         return self::formatSearchResults(
                             ManticoreBase::userFullTextSearch($keyword, $limit, 0)
@@ -64,7 +64,7 @@ class ManticoreUser
 
                 case 'hybrid':
                 default:
-                    $embedding = self::getEmbedding($keyword);
+                    $embedding = ManticoreBase::getEmbedding($keyword);
                     return self::formatSearchResults(
                         ManticoreBase::userHybridSearch($keyword, $embedding, $limit)
                     );
@@ -75,29 +75,6 @@ class ManticoreUser
         }
     }
 
-    /**
-     * 获取文本的 Embedding 向量
-     *
-     * @param string $text 文本
-     * @return array 向量数组（空数组表示失败）
-     */
-    private static function getEmbedding(string $text): array
-    {
-        if (empty($text)) {
-            return [];
-        }
-
-        try {
-            $result = AI::getEmbedding($text);
-            if (Base::isSuccess($result)) {
-                return $result['data'] ?? [];
-            }
-        } catch (\Exception $e) {
-            Log::warning('Get embedding error: ' . $e->getMessage());
-        }
-
-        return [];
-    }
 
     /**
      * 格式化搜索结果
@@ -156,7 +133,7 @@ class ManticoreUser
             // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
             $embedding = null;
             if ($withVector && !empty($searchableContent) && Apps::isInstalled('ai')) {
-                $embeddingResult = self::getEmbedding($searchableContent);
+                $embeddingResult = ManticoreBase::getEmbedding($searchableContent);
                 if (!empty($embeddingResult)) {
                     $embedding = '[' . implode(',', $embeddingResult) . ']';
                 }
