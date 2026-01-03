@@ -19,6 +19,12 @@ WORK_DIR="$(pwd)"
 INPUT_ARGS=$@
 COMPOSE="docker-compose"
 
+# TTY 参数检测
+TTY_FLAG=""
+if [ -t 0 ] && [ -t 1 ]; then
+    TTY_FLAG="-it"
+fi
+
 # 缓存执行
 if [ -z "$CACHED_EXECUTION" ] && [ "$1" == "update" ]; then
     if ! cat "$0" > ._cmd 2>/dev/null; then
@@ -88,7 +94,7 @@ rand_string() {
     if [[ `uname` == 'Linux' ]]; then
         echo "$(date +%s%N | md5sum | cut -c 1-${lan})"
     else
-        echo "$(docker run -it --rm nginx:alpine sh -c "date +%s%N | md5sum | cut -c 1-${lan}")"
+        echo "$(docker run $TTY_FLAG --rm nginx:alpine sh -c "date +%s%N | md5sum | cut -c 1-${lan}")"
     fi
 }
 
@@ -241,7 +247,7 @@ container_exec() {
         error "没有找到 ${container} 容器!"
         exit 1
     fi
-    docker exec -it "$name" /bin/sh -c "$cmd"
+    docker exec $TTY_FLAG "$name" /bin/sh -c "$cmd"
 }
 
 # 备份数据库、还原数据库
@@ -341,11 +347,11 @@ https_auto() {
     if [[ "$restart_nginx" == "y" ]]; then
         $COMPOSE up -d
     fi
-    docker run -it --rm -v $(pwd):/work nginx:alpine sh /work/bin/https install
+    docker run $TTY_FLAG --rm -v $(pwd):/work nginx:alpine sh /work/bin/https install
     if [[ 0 -eq $? ]]; then
         container_exec nginx "nginx -s reload"
     fi
-    new_job="* 6 * * * docker run -it --rm -v $(pwd):/work nginx:alpine sh /work/bin/https renew"
+    new_job="* 6 * * * docker run --rm -v $(pwd):/work nginx:alpine sh /work/bin/https renew"
     current_crontab=$(crontab -l 2>/dev/null)
     if ! echo "$current_crontab" | grep -v "https renew"; then
         echo "任务已存在，无需添加。"
@@ -376,7 +382,7 @@ env_set() {
         if [[ `uname` == 'Linux' ]]; then
             sed -i "/^${key}=/c\\${key}=${val}" ${WORK_DIR}/.env
         else
-            docker run -it --rm -v ${WORK_DIR}:/www nginx:alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
+            docker run $TTY_FLAG --rm -v ${WORK_DIR}:/www nginx:alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
         fi
         if [ $? -ne  0 ]; then
             error "设置env参数失败！"
@@ -402,7 +408,7 @@ env_init() {
     if [ -z "$(env_get UPDATE_TIME)" ]; then
         env_set DB_HOST "mariadb"
         env_set REDIS_HOST "redis"
-        docker run -it --rm -v ${WORK_DIR}:/www nginx:alpine sh -c "sed -i 's|/etc/nginx/conf.d/site/|/var/www/docker/nginx/site/|g' /www/docker/nginx/site/*.conf &> /dev/null"
+        docker run $TTY_FLAG --rm -v ${WORK_DIR}:/www nginx:alpine sh -c "sed -i 's|/etc/nginx/conf.d/site/|/var/www/docker/nginx/site/|g' /www/docker/nginx/site/*.conf &> /dev/null"
     fi
 }
 
@@ -791,7 +797,7 @@ case "$1" in
         elif [[ "$cli" == "dev" ]]; then
             por="-p 8880:8880"
         fi
-        docker run -it --rm -v ${WORK_DIR}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
+        docker run $TTY_FLAG --rm -v ${WORK_DIR}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
         ;;
     "npm")
         shift 1
@@ -799,12 +805,12 @@ case "$1" in
         pushd electron || exit
         npm "$@"
         popd || exit
-        docker run --rm -it -v ${WORK_DIR}/resources/mobile:/work -w /work --entrypoint=/bin/bash node:16 -c "npm $@"
+        docker run $TTY_FLAG --rm -v ${WORK_DIR}/resources/mobile:/work -w /work --entrypoint=/bin/bash node:16 -c "npm $@"
         ;;
     "doc")
         shift 1
         container_exec php "php app/Http/Controllers/Api/apidoc.php"
-        docker run -it --rm -v ${WORK_DIR}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
+        docker run $TTY_FLAG --rm -v ${WORK_DIR}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
         container_exec php "php app/Http/Controllers/Api/apidoc.php restore"
         ;;
     "debug")
