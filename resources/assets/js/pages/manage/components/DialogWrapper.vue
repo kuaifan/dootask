@@ -1316,10 +1316,11 @@ export default {
                     this.searchResult = []
                     this.searchLocation = 0
                     this.$store.dispatch("call", {
-                        url: 'dialog/msg/search',
+                        url: 'search/message',
                         data: {
                             dialog_id: this.dialogId,
                             key,
+                            mode: 'position',
                         },
                     }).then(({data}) => {
                         if (this.searchKey !== key) {

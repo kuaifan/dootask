@@ -686,60 +686,6 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/search 搜索消息
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup dialog
-     * @apiName msg__search
-     *
-     * @apiParam {String} key               搜索关键词
-     * @apiParam {Number} [dialog_id]       对话ID（存在则搜索消息在对话的位置）
-     * @apiParam {Number} [take]            搜索数量
-     * - dialog_id > 0, 默认:200，最大:200
-     * - dialog_id <= 0, 默认:20，最大:50
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function msg__search()
-    {
-        $user = User::auth();
-        //
-        $key = trim(Request::input('key'));
-        $dialogId = intval(Request::input('dialog_id'));
-        //
-        if (empty($key)) {
-            return Base::retError('关键词不能为空');
-        }
-        //
-        if ($dialogId > 0) {
-            // 搜索位置
-            WebSocketDialog::checkDialog($dialogId);
-            //
-            $data = WebSocketDialogMsg::whereDialogId($dialogId)
-                ->where('key', 'LIKE', "%{$key}%")
-                ->take(Base::getPaginate(200, 200, 'take'))
-                ->pluck('id');
-            return Base::retSuccess('success', compact('data'));
-        } else {
-            // 搜索消息
-            $list = [];
-            $searchResults = ManticoreMsg::searchDialogs($user->userid, $key, 0, Base::getPaginate(50, 20, 'take'));
-            if ($searchResults) {
-                foreach ($searchResults as $item) {
-                    if ($dialog = WebSocketDialog::find($item['id'])) {
-                        $dialog = array_merge($dialog->toArray(), $item);
-                        $list[] = WebSocketDialog::synthesizeData($dialog, $user->userid);
-                    }
-                }
-            }
-            return Base::retSuccess('success', ['data' => $list]);
-        }
-    }
-
-    /**
      * @api {get} api/dialog/msg/one 获取单条消息
      *
      * @apiDescription 需要token身份
