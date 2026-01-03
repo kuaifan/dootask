@@ -77,9 +77,10 @@ class ManticoreMsg
      * @param string $searchType 搜索类型: text/vector/hybrid
      * @param int $from 起始位置
      * @param int $size 返回数量
+     * @param int $dialogId 对话ID（0表示不限制）
      * @return array 搜索结果
      */
-    public static function search(int $userid, string $keyword, string $searchType = 'hybrid', int $from = 0, int $size = 20): array
+    public static function search(int $userid, string $keyword, string $searchType = 'hybrid', int $from = 0, int $size = 20, int $dialogId = 0): array
     {
         if (empty($keyword)) {
             return [];
@@ -94,7 +95,7 @@ class ManticoreMsg
                 case 'text':
                     // 纯全文搜索
                     return self::formatSearchResults(
-                        ManticoreBase::msgFullTextSearch($keyword, $userid, $size, $from)
+                        ManticoreBase::msgFullTextSearch($keyword, $userid, $size, $from, $dialogId)
                     );
 
                 case 'vector':
@@ -103,11 +104,11 @@ class ManticoreMsg
                     if (empty($embedding)) {
                         // embedding 获取失败，降级到全文搜索
                         return self::formatSearchResults(
-                            ManticoreBase::msgFullTextSearch($keyword, $userid, $size, $from)
+                            ManticoreBase::msgFullTextSearch($keyword, $userid, $size, $from, $dialogId)
                         );
                     }
                     return self::formatSearchResults(
-                        ManticoreBase::msgVectorSearch($embedding, $userid, $size)
+                        ManticoreBase::msgVectorSearch($embedding, $userid, $size, $dialogId)
                     );
 
                 case 'hybrid':
@@ -115,7 +116,7 @@ class ManticoreMsg
                     // 混合搜索
                     $embedding = self::getEmbedding($keyword);
                     return self::formatSearchResults(
-                        ManticoreBase::msgHybridSearch($keyword, $embedding, $userid, $size)
+                        ManticoreBase::msgHybridSearch($keyword, $embedding, $userid, $size, $dialogId)
                     );
             }
         } catch (\Exception $e) {

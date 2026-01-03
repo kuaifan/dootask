@@ -47,7 +47,7 @@ class SearchController extends AbstractController
 
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
-        $take = min(50, max(1, intval(Request::input('take', 20))));
+        $take = Base::getPaginate(50, 20, 'take');
 
         if (empty($key)) {
             return Base::retSuccess('success', []);
@@ -103,7 +103,7 @@ class SearchController extends AbstractController
 
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
-        $take = min(50, max(1, intval(Request::input('take', 20))));
+        $take = Base::getPaginate(50, 20, 'take');
 
         if (empty($key)) {
             return Base::retSuccess('success', []);
@@ -158,7 +158,7 @@ class SearchController extends AbstractController
 
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
-        $take = min(50, max(1, intval(Request::input('take', 20))));
+        $take = Base::getPaginate(50, 20, 'take');
 
         if (empty($key)) {
             return Base::retSuccess('success', []);
@@ -214,7 +214,7 @@ class SearchController extends AbstractController
 
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
-        $take = min(50, max(1, intval(Request::input('take', 20))));
+        $take = Base::getPaginate(50, 20, 'take');
 
         if (empty($key)) {
             return Base::retSuccess('success', []);
@@ -256,6 +256,11 @@ class SearchController extends AbstractController
      * @apiParam {String} key                  搜索关键词
      * @apiParam {String} [search_type]        搜索类型（text/vector/hybrid，默认：hybrid）
      * @apiParam {Number} [take]               获取数量（默认：20，最大：50）
+     * @apiParam {String} [mode]               返回模式（message/position/dialog，默认：message）
+     * - message: 返回消息详细信息
+     * - position: 只返回消息ID
+     * - dialog: 返回对话级数据
+     * @apiParam {Number} [dialog_id]          对话ID（筛选指定对话内的消息）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -271,46 +276,89 @@ class SearchController extends AbstractController
 
         $key = trim(Request::input('key'));
         $searchType = Request::input('search_type', 'hybrid');
-        $take = min(50, max(1, intval(Request::input('take', 20))));
+        $take = Base::getPaginate(50, 20, 'take');
+        $mode = Request::input('mode', 'message');
+        $dialogId = intval(Request::input('dialog_id', 0));
+
+        // 验证 mode 参数
+        if (!in_array($mode, ['message', 'position', 'dialog'])) {
+            $mode = 'message';
+        }
 
         if (empty($key)) {
             return Base::retSuccess('success', []);
         }
 
-        $results = ManticoreMsg::search($user->userid, $key, $searchType, 0, $take);
-
-        // 补充消息完整信息
-        $msgIds = array_column($results, 'msg_id');
-        if (!empty($msgIds)) {
-            $msgs = WebSocketDialogMsg::whereIn('id', $msgIds)
-                ->with(['user' => function ($query) {
-                    $query->select(User::$basicField);
-                }])
-                ->get()
-                ->keyBy('id');
-
-            $formattedResults = [];
-            foreach ($results as $item) {
-                $msgData = $msgs->get($item['msg_id']);
-                if ($msgData) {
-                    $formattedResults[] = [
-                        'id' => $msgData->id,
-                        'msg_id' => $msgData->id,
-                        'dialog_id' => $msgData->dialog_id,
-                        'userid' => $msgData->userid,
-                        'type' => $msgData->type,
-                        'msg' => $msgData->msg,
-                        'created_at' => $msgData->created_at,
-                        'user' => $msgData->user,
-                        'relevance' => $item['relevance'] ?? 0,
-                        'content_preview' => $item['content_preview'] ?? null,
-                    ];
-                }
-            }
-            return Base::retSuccess('success', $formattedResults);
+        // 如果指定了 dialog_id，需要验证用户有权限访问该对话
+        if ($dialogId > 0) {
+            \App\Models\WebSocketDialog::checkDialog($dialogId);
         }
 
-        return Base::retSuccess('success', []);
+        $results = ManticoreMsg::search($user->userid, $key, $searchType, 0, $take, $dialogId);
+
+        // 根据 mode 返回不同格式的数据
+        switch ($mode) {
+            case 'position':
+                // 只返回消息ID
+                $data = array_column($results, 'msg_id');
+                return Base::retSuccess('success', compact('data'));
+
+            case 'dialog':
+                // 返回对话级数据
+                $list = [];
+                $seenDialogs = [];
+                foreach ($results as $item) {
+                    $dialogIdFromResult = $item['dialog_id'];
+                    // 每个对话只返回一次
+                    if (isset($seenDialogs[$dialogIdFromResult])) {
+                        continue;
+                    }
+                    $seenDialogs[$dialogIdFromResult] = true;
+
+                    if ($dialog = \App\Models\WebSocketDialog::find($dialogIdFromResult)) {
+                        $dialogData = array_merge($dialog->toArray(), [
+                            'search_msg_id' => $item['msg_id'],
+                        ]);
+                        $list[] = \App\Models\WebSocketDialog::synthesizeData($dialogData, $user->userid);
+                    }
+                }
+                return Base::retSuccess('success', ['data' => $list]);
+
+            case 'message':
+            default:
+                // 返回消息详细信息（默认行为）
+                $msgIds = array_column($results, 'msg_id');
+                if (!empty($msgIds)) {
+                    $msgs = WebSocketDialogMsg::whereIn('id', $msgIds)
+                        ->with(['user' => function ($query) {
+                            $query->select(User::$basicField);
+                        }])
+                        ->get()
+                        ->keyBy('id');
+
+                    $formattedResults = [];
+                    foreach ($results as $item) {
+                        $msgData = $msgs->get($item['msg_id']);
+                        if ($msgData) {
+                            $formattedResults[] = [
+                                'id' => $msgData->id,
+                                'msg_id' => $msgData->id,
+                                'dialog_id' => $msgData->dialog_id,
+                                'userid' => $msgData->userid,
+                                'type' => $msgData->type,
+                                'msg' => $msgData->msg,
+                                'created_at' => $msgData->created_at,
+                                'user' => $msgData->user,
+                                'relevance' => $item['relevance'] ?? 0,
+                                'content_preview' => $item['content_preview'] ?? null,
+                            ];
+                        }
+                    }
+                    return Base::retSuccess('success', $formattedResults);
+                }
+
+                return Base::retSuccess('success', []);
+        }
     }
 }
 

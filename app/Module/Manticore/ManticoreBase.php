@@ -1519,9 +1519,10 @@ class ManticoreBase
      * @param int $userid 用户ID（权限过滤）
      * @param int $limit 返回数量
      * @param int $offset 偏移量
+     * @param int $dialogId 对话ID（0表示不限制）
      * @return array 搜索结果
      */
-    public static function msgFullTextSearch(string $keyword, int $userid = 0, int $limit = 20, int $offset = 0): array
+    public static function msgFullTextSearch(string $keyword, int $userid = 0, int $limit = 20, int $offset = 0, int $dialogId = 0): array
     {
         if (empty($keyword)) {
             return [];
@@ -1530,39 +1531,30 @@ class ManticoreBase
         $instance = new self();
         $escapedKeyword = self::escapeMatch($keyword);
 
+        // 构建过滤条件
+        $conditions = ["MATCH('@content {$escapedKeyword}')"];
         if ($userid > 0) {
-            // 使用 MVA 权限过滤
-            $sql = "
-                SELECT 
-                    id,
-                    msg_id,
-                    dialog_id,
-                    userid,
-                    msg_type,
-                    content,
-                    created_at,
-                    WEIGHT() as relevance
-                FROM msg_vectors
-                WHERE MATCH('@content {$escapedKeyword}')
-                    AND allowed_users = " . (int)$userid . "
-                ORDER BY relevance DESC
-                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
-        } else {
-            $sql = "
-                SELECT 
-                    id,
-                    msg_id,
-                    dialog_id,
-                    userid,
-                    msg_type,
-                    content,
-                    created_at,
-                    WEIGHT() as relevance
-                FROM msg_vectors
-                WHERE MATCH('@content {$escapedKeyword}')
-                ORDER BY relevance DESC
-                LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
+            $conditions[] = "allowed_users = " . (int)$userid;
         }
+        if ($dialogId > 0) {
+            $conditions[] = "dialog_id = " . (int)$dialogId;
+        }
+        $whereClause = implode(' AND ', $conditions);
+
+        $sql = "
+            SELECT 
+                id,
+                msg_id,
+                dialog_id,
+                userid,
+                msg_type,
+                content,
+                created_at,
+                WEIGHT() as relevance
+            FROM msg_vectors
+            WHERE {$whereClause}
+            ORDER BY relevance DESC
+            LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
         return $instance->query($sql);
     }
@@ -1573,9 +1565,10 @@ class ManticoreBase
      * @param array $queryVector 查询向量
      * @param int $userid 用户ID（权限过滤）
      * @param int $limit 返回数量
+     * @param int $dialogId 对话ID（0表示不限制）
      * @return array 搜索结果
      */
-    public static function msgVectorSearch(array $queryVector, int $userid = 0, int $limit = 20): array
+    public static function msgVectorSearch(array $queryVector, int $userid = 0, int $limit = 20, int $dialogId = 0): array
     {
         if (empty($queryVector)) {
             return [];
@@ -1584,8 +1577,9 @@ class ManticoreBase
         $instance = new self();
         $vectorStr = '(' . implode(',', $queryVector) . ')';
 
-        // KNN 搜索需要先获取更多结果，再在应用层过滤权限
-        $fetchLimit = $userid > 0 ? $limit * 5 : $limit;
+        // KNN 搜索需要先获取更多结果，再在应用层过滤权限和对话
+        $needFilter = $userid > 0 || $dialogId > 0;
+        $fetchLimit = $needFilter ? $limit * 5 : $limit;
 
         $sql = "
             SELECT 
@@ -1622,6 +1616,14 @@ class ManticoreBase
             $results = array_values($results);
         }
 
+        // 对话过滤
+        if ($dialogId > 0 && !empty($results)) {
+            $results = array_filter($results, function ($item) use ($dialogId) {
+                return $item['dialog_id'] == $dialogId;
+            });
+            $results = array_values($results);
+        }
+
         return array_slice($results, 0, $limit);
     }
 
@@ -1632,12 +1634,13 @@ class ManticoreBase
      * @param array $queryVector 查询向量
      * @param int $userid 用户ID（权限过滤）
      * @param int $limit 返回数量
+     * @param int $dialogId 对话ID（0表示不限制）
      * @return array 搜索结果
      */
-    public static function msgHybridSearch(string $keyword, array $queryVector, int $userid = 0, int $limit = 20): array
+    public static function msgHybridSearch(string $keyword, array $queryVector, int $userid = 0, int $limit = 20, int $dialogId = 0): array
     {
-        $textResults = self::msgFullTextSearch($keyword, $userid, 50, 0);
-        $vectorResults = !empty($queryVector) ? self::msgVectorSearch($queryVector, $userid, 50) : [];
+        $textResults = self::msgFullTextSearch($keyword, $userid, 50, 0, $dialogId);
+        $vectorResults = !empty($queryVector) ? self::msgVectorSearch($queryVector, $userid, 50, $dialogId) : [];
 
         $scores = [];
         $items = [];
