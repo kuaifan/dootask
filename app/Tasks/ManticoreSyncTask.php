@@ -194,14 +194,25 @@ class ManticoreSyncTask extends AbstractTask
      */
     private function incrementalUpdate()
     {
-        // 60分钟执行一次
-        $time = intval(Cache::get("ManticoreSyncTask:Time"));
-        if (time() - $time < 60 * 60) {
+        // 执行增量全文索引同步（10分钟执行一次）
+        $this->runIncrementalSync();
+
+        // 执行向量生成（10分钟执行一次，与全文索引独立）
+        $this->runVectorGeneration();
+    }
+
+    /**
+     * 执行增量全文索引同步
+     */
+    private function runIncrementalSync(): void
+    {
+        $time = intval(Cache::get("ManticoreSyncTask:SyncTime"));
+        if (time() - $time < 10 * 60) {
             return;
         }
 
         // 执行开始
-        Cache::put("ManticoreSyncTask:Time", time(), Carbon::now()->addMinutes(60));
+        Cache::put("ManticoreSyncTask:SyncTime", time(), Carbon::now()->addMinutes(15));
 
         // 执行增量同步（MVA 方案不需要单独同步关系表）
         @shell_exec("php /var/www/artisan manticore:sync-files --i 2>&1 &");
@@ -209,9 +220,28 @@ class ManticoreSyncTask extends AbstractTask
         @shell_exec("php /var/www/artisan manticore:sync-projects --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-tasks --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-msgs --i 2>&1 &");
+    }
 
-        // 执行完成
-        Cache::put("ManticoreSyncTask:Time", time(), Carbon::now()->addMinutes(5));
+    /**
+     * 执行向量生成（异步批量处理）
+     */
+    private function runVectorGeneration(): void
+    {
+        // 检查 AI 是否安装
+        if (!Apps::isInstalled("ai")) {
+            return;
+        }
+
+        $time = intval(Cache::get("ManticoreSyncTask:VectorTime"));
+        if (time() - $time < 10 * 60) {
+            return;
+        }
+
+        // 执行开始
+        Cache::put("ManticoreSyncTask:VectorTime", time(), Carbon::now()->addMinutes(15));
+
+        // 执行向量生成（批量处理，每轮最多500条）
+        @shell_exec("php /var/www/artisan manticore:generate-vectors --type=all --batch=20 --max=500 2>&1 &");
     }
 
     public function end()

@@ -148,9 +148,10 @@ class ManticoreProject
      * 同步单个项目到 Manticore（含 allowed_users）
      *
      * @param Project $project 项目模型
+     * @param bool $withVector 是否同时生成向量（默认 false，向量由后台任务生成）
      * @return bool 是否成功
      */
-    public static function sync(Project $project): bool
+    public static function sync(Project $project, bool $withVector = false): bool
     {
         if (!Apps::isInstalled("manticore")) {
             return false;
@@ -165,9 +166,9 @@ class ManticoreProject
             // 构建用于搜索的文本内容
             $searchableContent = self::buildSearchableContent($project);
 
-            // 获取 embedding（如果 AI 可用）
+            // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
             $embedding = null;
-            if (!empty($searchableContent) && Apps::isInstalled('ai')) {
+            if ($withVector && !empty($searchableContent) && Apps::isInstalled('ai')) {
                 $embeddingResult = self::getEmbedding($searchableContent);
                 if (!empty($embeddingResult)) {
                     $embedding = '[' . implode(',', $embeddingResult) . ']';
@@ -222,9 +223,10 @@ class ManticoreProject
      * 批量同步项目
      *
      * @param iterable $projects 项目列表
+     * @param bool $withVector 是否同时生成向量
      * @return int 成功同步的数量
      */
-    public static function batchSync(iterable $projects): int
+    public static function batchSync(iterable $projects, bool $withVector = false): int
     {
         if (!Apps::isInstalled("manticore")) {
             return 0;
@@ -232,7 +234,7 @@ class ManticoreProject
 
         $count = 0;
         foreach ($projects as $project) {
-            if (self::sync($project)) {
+            if (self::sync($project, $withVector)) {
                 $count++;
             }
         }
@@ -305,6 +307,84 @@ class ManticoreProject
         } catch (\Exception $e) {
             Log::error('Manticore updateAllowedUsers error: ' . $e->getMessage(), ['project_id' => $projectId]);
             return false;
+        }
+    }
+
+    // ==============================
+    // 批量向量生成方法
+    // ==============================
+
+    /**
+     * 批量生成项目向量
+     * 用于后台异步处理，将已索引项目的向量批量生成
+     *
+     * @param array $projectIds 项目ID数组
+     * @param int $batchSize 每批 embedding 数量（默认20）
+     * @return int 成功处理的数量
+     */
+    public static function generateVectorsBatch(array $projectIds, int $batchSize = 20): int
+    {
+        if (!Apps::isInstalled("manticore") || !Apps::isInstalled("ai") || empty($projectIds)) {
+            return 0;
+        }
+
+        try {
+            // 1. 查询项目信息
+            $projects = Project::whereIn('id', $projectIds)
+                ->whereNull('archived_at')
+                ->get();
+
+            if ($projects->isEmpty()) {
+                return 0;
+            }
+
+            // 2. 提取每个项目的内容
+            $projectContents = [];
+            foreach ($projects as $project) {
+                $searchableContent = self::buildSearchableContent($project);
+                if (!empty($searchableContent)) {
+                    $projectContents[$project->id] = $searchableContent;
+                }
+            }
+
+            if (empty($projectContents)) {
+                return 0;
+            }
+
+            // 3. 分批处理
+            $successCount = 0;
+            $chunks = array_chunk($projectContents, $batchSize, true);
+
+            foreach ($chunks as $chunk) {
+                $texts = array_values($chunk);
+                $ids = array_keys($chunk);
+
+                // 4. 批量获取 embedding
+                $result = AI::getBatchEmbeddings($texts);
+                if (!Base::isSuccess($result) || empty($result['data'])) {
+                    Log::warning('ManticoreProject: Batch embedding failed', ['project_ids' => $ids]);
+                    continue;
+                }
+
+                $embeddings = $result['data'];
+
+                // 5. 逐个更新向量到 Manticore
+                foreach ($ids as $index => $projectId) {
+                    if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
+                        continue;
+                    }
+
+                    $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
+                    if (ManticoreBase::updateProjectVector($projectId, $vectorStr)) {
+                        $successCount++;
+                    }
+                }
+            }
+
+            return $successCount;
+        } catch (\Exception $e) {
+            Log::error('ManticoreProject generateVectorsBatch error: ' . $e->getMessage());
+            return 0;
         }
     }
 }

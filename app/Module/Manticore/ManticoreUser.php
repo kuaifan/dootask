@@ -130,9 +130,10 @@ class ManticoreUser
      * 同步单个用户到 Manticore
      *
      * @param User $user 用户模型
+     * @param bool $withVector 是否同时生成向量（默认 false，向量由后台任务生成）
      * @return bool 是否成功
      */
-    public static function sync(User $user): bool
+    public static function sync(User $user, bool $withVector = false): bool
     {
         if (!Apps::isInstalled("manticore")) {
             return false;
@@ -152,9 +153,9 @@ class ManticoreUser
             // 构建用于搜索的文本内容
             $searchableContent = self::buildSearchableContent($user);
 
-            // 获取 embedding（如果 AI 可用）
+            // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
             $embedding = null;
-            if (!empty($searchableContent) && Apps::isInstalled('ai')) {
+            if ($withVector && !empty($searchableContent) && Apps::isInstalled('ai')) {
                 $embeddingResult = self::getEmbedding($searchableContent);
                 if (!empty($embeddingResult)) {
                     $embedding = '[' . implode(',', $embeddingResult) . ']';
@@ -212,9 +213,10 @@ class ManticoreUser
      * 批量同步用户
      *
      * @param iterable $users 用户列表
+     * @param bool $withVector 是否同时生成向量
      * @return int 成功同步的数量
      */
-    public static function batchSync(iterable $users): int
+    public static function batchSync(iterable $users, bool $withVector = false): int
     {
         if (!Apps::isInstalled("manticore")) {
             return 0;
@@ -222,7 +224,7 @@ class ManticoreUser
 
         $count = 0;
         foreach ($users as $user) {
-            if (self::sync($user)) {
+            if (self::sync($user, $withVector)) {
                 $count++;
             }
         }
@@ -270,6 +272,85 @@ class ManticoreUser
         }
 
         return ManticoreBase::getIndexedUserCount();
+    }
+
+    // ==============================
+    // 批量向量生成方法
+    // ==============================
+
+    /**
+     * 批量生成用户向量
+     * 用于后台异步处理，将已索引用户的向量批量生成
+     *
+     * @param array $userIds 用户ID数组
+     * @param int $batchSize 每批 embedding 数量（默认20）
+     * @return int 成功处理的数量
+     */
+    public static function generateVectorsBatch(array $userIds, int $batchSize = 20): int
+    {
+        if (!Apps::isInstalled("manticore") || !Apps::isInstalled("ai") || empty($userIds)) {
+            return 0;
+        }
+
+        try {
+            // 1. 查询用户信息
+            $users = User::whereIn('userid', $userIds)
+                ->where('bot', 0)
+                ->whereNull('disable_at')
+                ->get();
+
+            if ($users->isEmpty()) {
+                return 0;
+            }
+
+            // 2. 提取每个用户的内容
+            $userContents = [];
+            foreach ($users as $user) {
+                $searchableContent = self::buildSearchableContent($user);
+                if (!empty($searchableContent)) {
+                    $userContents[$user->userid] = $searchableContent;
+                }
+            }
+
+            if (empty($userContents)) {
+                return 0;
+            }
+
+            // 3. 分批处理
+            $successCount = 0;
+            $chunks = array_chunk($userContents, $batchSize, true);
+
+            foreach ($chunks as $chunk) {
+                $texts = array_values($chunk);
+                $ids = array_keys($chunk);
+
+                // 4. 批量获取 embedding
+                $result = AI::getBatchEmbeddings($texts);
+                if (!Base::isSuccess($result) || empty($result['data'])) {
+                    Log::warning('ManticoreUser: Batch embedding failed', ['user_ids' => $ids]);
+                    continue;
+                }
+
+                $embeddings = $result['data'];
+
+                // 5. 逐个更新向量到 Manticore
+                foreach ($ids as $index => $userid) {
+                    if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
+                        continue;
+                    }
+
+                    $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
+                    if (ManticoreBase::updateUserVector($userid, $vectorStr)) {
+                        $successCount++;
+                    }
+                }
+            }
+
+            return $successCount;
+        } catch (\Exception $e) {
+            Log::error('ManticoreUser generateVectorsBatch error: ' . $e->getMessage());
+            return 0;
+        }
     }
 }
 

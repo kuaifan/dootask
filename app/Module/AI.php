@@ -815,6 +815,137 @@ class AI
     }
 
     /**
+     * 批量获取文本的 Embedding 向量
+     * OpenAI API 原生支持批量输入，一次请求处理多个文本
+     *
+     * @param array $texts 文本数组（最多 100 条）
+     * @param bool $noCache 是否禁用缓存
+     * @return array 返回结果，成功时 data 为向量数组的数组（与输入顺序对应）
+     */
+    public static function getBatchEmbeddings(array $texts, $noCache = false)
+    {
+        if (!Apps::isInstalled('ai')) {
+            return Base::retError('应用「AI Assistant」未安装');
+        }
+
+        if (empty($texts)) {
+            return Base::retSuccess("success", []);
+        }
+
+        // 限制批量大小（OpenAI 最多支持 2048 条，这里限制 100 条）
+        $texts = array_slice($texts, 0, 100);
+
+        // 准备结果数组，并检查缓存
+        $results = [];
+        $uncachedTexts = [];
+        $uncachedIndices = [];
+
+        foreach ($texts as $index => $text) {
+            if (empty($text)) {
+                $results[$index] = [];
+                continue;
+            }
+
+            // 截断过长的文本
+            $text = mb_substr($text, 0, 30000);
+            $texts[$index] = $text; // 更新截断后的文本
+
+            $cacheKey = "openAIEmbedding::" . md5($text);
+
+            if ($noCache) {
+                Cache::forget($cacheKey);
+            }
+
+            // 检查缓存
+            if (!$noCache && Cache::has($cacheKey)) {
+                $cached = Cache::get($cacheKey);
+                if (Base::isSuccess($cached)) {
+                    $results[$index] = $cached['data'];
+                    continue;
+                }
+            }
+
+            // 未命中缓存，加入待请求列表
+            $uncachedTexts[] = $text;
+            $uncachedIndices[] = $index;
+        }
+
+        // 如果所有文本都在缓存中
+        if (empty($uncachedTexts)) {
+            // 按原始顺序返回
+            ksort($results);
+            return Base::retSuccess("success", array_values($results));
+        }
+
+        // 获取 provider
+        $provider = self::resolveEmbeddingProvider();
+        if (!$provider) {
+            return Base::retError("请先在「AI 助手」设置中配置支持 Embedding 的 AI 服务");
+        }
+
+        // 构建批量请求
+        $payload = [
+            "model" => $provider['model'],
+            "input" => $uncachedTexts,
+        ];
+
+        $supportsDimensions = in_array($provider['vendor'], ['openai', 'zhipu']);
+        if ($supportsDimensions) {
+            $payload['dimensions'] = 1536;
+        }
+
+        $post = json_encode($payload);
+
+        $ai = new self($post);
+        $ai->setProvider($provider);
+        $ai->setUrlPath('/embeddings');
+        $ai->setTimeout(120); // 批量请求需要更长超时
+
+        $res = $ai->request(true);
+        if (Base::isError($res)) {
+            return Base::retError("批量 Embedding 请求失败", $res);
+        }
+
+        $resData = Base::json2array($res['data']);
+        if (empty($resData['data'])) {
+            return Base::retError("Embedding 接口返回数据格式错误", $resData);
+        }
+
+        // 处理返回的向量并写入缓存
+        foreach ($resData['data'] as $item) {
+            $itemIndex = $item['index'] ?? null;
+            if ($itemIndex === null || !isset($uncachedIndices[$itemIndex])) {
+                continue;
+            }
+
+            $originalIndex = $uncachedIndices[$itemIndex];
+            $embedding = $item['embedding'] ?? [];
+
+            if (!empty($embedding) && is_array($embedding)) {
+                $results[$originalIndex] = $embedding;
+
+                // 写入缓存
+                $text = $uncachedTexts[$itemIndex];
+                $cacheKey = "openAIEmbedding::" . md5($text);
+                Cache::put($cacheKey, Base::retSuccess("success", $embedding), Carbon::now()->addDays(7));
+            } else {
+                $results[$originalIndex] = [];
+            }
+        }
+
+        // 填充未获取到向量的位置
+        foreach ($uncachedIndices as $i => $originalIndex) {
+            if (!isset($results[$originalIndex])) {
+                $results[$originalIndex] = [];
+            }
+        }
+
+        // 按原始顺序返回
+        ksort($results);
+        return Base::retSuccess("success", array_values($results));
+    }
+
+    /**
      * 获取 Embedding 模型配置
      *
      * @return array|null

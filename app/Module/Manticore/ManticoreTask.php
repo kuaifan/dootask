@@ -207,9 +207,10 @@ class ManticoreTask
      * 同步单个任务到 Manticore（含 allowed_users）
      *
      * @param ProjectTask $task 任务模型
+     * @param bool $withVector 是否同时生成向量（默认 false，向量由后台任务生成）
      * @return bool 是否成功
      */
-    public static function sync(ProjectTask $task): bool
+    public static function sync(ProjectTask $task, bool $withVector = false): bool
     {
         if (!Apps::isInstalled("manticore")) {
             return false;
@@ -227,9 +228,9 @@ class ManticoreTask
             // 构建用于搜索的文本内容
             $searchableContent = self::buildSearchableContent($task, $taskContent);
 
-            // 获取 embedding（如果 AI 可用）
+            // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
             $embedding = null;
-            if (!empty($searchableContent) && Apps::isInstalled('ai')) {
+            if ($withVector && !empty($searchableContent) && Apps::isInstalled('ai')) {
                 $embeddingResult = self::getEmbedding($searchableContent);
                 if (!empty($embeddingResult)) {
                     $embedding = '[' . implode(',', $embeddingResult) . ']';
@@ -353,9 +354,10 @@ class ManticoreTask
      * 批量同步任务
      *
      * @param iterable $tasks 任务列表
+     * @param bool $withVector 是否同时生成向量
      * @return int 成功同步的数量
      */
-    public static function batchSync(iterable $tasks): int
+    public static function batchSync(iterable $tasks, bool $withVector = false): int
     {
         if (!Apps::isInstalled("manticore")) {
             return 0;
@@ -363,7 +365,7 @@ class ManticoreTask
 
         $count = 0;
         foreach ($tasks as $task) {
-            if (self::sync($task)) {
+            if (self::sync($task, $withVector)) {
                 $count++;
             }
         }
@@ -518,6 +520,88 @@ class ManticoreTask
                 });
         } catch (\Exception $e) {
             Log::error('Manticore cascadeToChildren error: ' . $e->getMessage(), ['task_id' => $taskId]);
+        }
+    }
+
+    // ==============================
+    // 批量向量生成方法
+    // ==============================
+
+    /**
+     * 批量生成任务向量
+     * 用于后台异步处理，将已索引任务的向量批量生成
+     *
+     * @param array $taskIds 任务ID数组
+     * @param int $batchSize 每批 embedding 数量（默认20）
+     * @return int 成功处理的数量
+     */
+    public static function generateVectorsBatch(array $taskIds, int $batchSize = 20): int
+    {
+        if (!Apps::isInstalled("manticore") || !Apps::isInstalled("ai") || empty($taskIds)) {
+            return 0;
+        }
+
+        try {
+            // 1. 查询任务信息
+            $tasks = ProjectTask::whereIn('id', $taskIds)
+                ->whereNull('deleted_at')
+                ->whereNull('archived_at')
+                ->get();
+
+            if ($tasks->isEmpty()) {
+                return 0;
+            }
+
+            // 2. 提取每个任务的内容
+            $taskContents = [];
+            foreach ($tasks as $task) {
+                $taskContent = self::getTaskContent($task);
+                $searchableContent = self::buildSearchableContent($task, $taskContent);
+                if (!empty($searchableContent)) {
+                    // 限制内容长度
+                    $searchableContent = mb_substr($searchableContent, 0, self::MAX_CONTENT_LENGTH);
+                    $taskContents[$task->id] = $searchableContent;
+                }
+            }
+
+            if (empty($taskContents)) {
+                return 0;
+            }
+
+            // 3. 分批处理
+            $successCount = 0;
+            $chunks = array_chunk($taskContents, $batchSize, true);
+
+            foreach ($chunks as $chunk) {
+                $texts = array_values($chunk);
+                $ids = array_keys($chunk);
+
+                // 4. 批量获取 embedding
+                $result = AI::getBatchEmbeddings($texts);
+                if (!Base::isSuccess($result) || empty($result['data'])) {
+                    Log::warning('ManticoreTask: Batch embedding failed', ['task_ids' => $ids]);
+                    continue;
+                }
+
+                $embeddings = $result['data'];
+
+                // 5. 逐个更新向量到 Manticore
+                foreach ($ids as $index => $taskId) {
+                    if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
+                        continue;
+                    }
+
+                    $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
+                    if (ManticoreBase::updateTaskVector($taskId, $vectorStr)) {
+                        $successCount++;
+                    }
+                }
+            }
+
+            return $successCount;
+        } catch (\Exception $e) {
+            Log::error('ManticoreTask generateVectorsBatch error: ' . $e->getMessage());
+            return 0;
         }
     }
 }
