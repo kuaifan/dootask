@@ -12,11 +12,12 @@
         .file-head {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 22px 0;
             padding-bottom: 16px;
             margin: 32px 32px 16px;
             border-bottom: 1px solid #F4F4F5;
             .file-nav {
-                flex: 1;
                 display: flex;
                 align-items: center;
                 > h1 {
@@ -38,55 +39,46 @@
                     }
                 }
             }
-            .file-status {
-                flex-shrink: 0;
-                margin-left: 22px;
+            .file-actions {
+                flex: 1;
                 display: flex;
+                flex-wrap: wrap;
                 align-items: center;
-                cursor: pointer;
-                > button {
-                    color: #ffffff;
-                    background: $primary-color;
-                    border-color: $primary-color;
-                }
-            }
-            .file-search {
-                flex-shrink: 0;
-                margin-left: 22px;
-                cursor: pointer;
-                .ivu-input-wrapper {
-                    width: auto;
-                    transform: translateZ(0);
-                    .ivu-input {
-                        border-color: #dcdee2;
-                        width: 0;
-                        padding-left: 0;
-                        padding-right: 30px;
-                        border-radius: 16px;
-                        transition: all 0.3s;
-                    }
-                    .ivu-input-suffix {
-                        i {
-                            color: $primary-text-color;
-                        }
+                justify-content: flex-end;
+                gap: 8px 18px;
+                .file-status {
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                    > button {
+                        color: #ffffff;
+                        background: $primary-color;
+                        border-color: $primary-color;
                     }
                 }
-                &.has-value,
-                &:hover {
+                .file-search {
                     .ivu-input-wrapper {
+                        width: auto;
+                        transform: translateZ(0);
                         .ivu-input {
+                            border-color: #dcdee2;
                             width: 160px;
                             padding-left: 14px;
+                            padding-right: 30px;
+                            border-radius: 16px;
+                        }
+                        .ivu-input-suffix {
+                            i {
+                                color: $primary-text-color;
+                            }
                         }
                     }
                 }
-            }
-            .file-add {
-                flex-shrink: 0;
-                margin-left: 18px;
-                cursor: pointer;
-                .taskfont {
-                    font-size: 18px;
+                .file-add {
+                    cursor: pointer;
+                    .taskfont {
+                        font-size: 18px;
+                    }
                 }
             }
         }

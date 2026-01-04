@@ -10,27 +10,29 @@
                     <h1>{{$L('文件')}}</h1>
                     <div v-if="loadIng == 0" class="file-refresh" @click="getFileList"><i class="taskfont">&#xe6ae;</i></div>
                 </div>
-                <div v-if="uploadList.length > 0" class="file-status" @click="[uploadShow=true, packShow=false]">
-                    <Loading v-if="uploadList.find(({status}) => status !== 'finished')"/>
-                    <Button v-else shape="circle" icon="md-arrow-round-up"></Button>
-                </div>
-                <div v-if="packList.length > 0" class="file-status" @click="[packShow=true, uploadShow=false]">
-                    <Loading v-if="packList.find(({status}) => status !== 'finished')"/>
-                    <Button v-else shape="circle" icon="md-arrow-round-down"></Button>
-                </div>
-                <div :class="['file-search', searchKey ? 'has-value' : '']" @click="onSearchFocus" @mouseenter="onSearchFocus">
-                    <Input
-                        v-model="searchKey"
-                        ref="searchInput"
-                        suffix="ios-search"
-                        @on-focus="searchIsFocus=true"
-                        @on-blur="searchIsFocus=false"
-                        @on-change="onSearchChange"
-                        :placeholder="$L('搜索名称')"
-                        clearable/>
-                </div>
-                <div class="file-add">
-                    <Button shape="circle" icon="md-add" @click.stop="handleRightClick($event, null, true)"></Button>
+                <div class="file-actions">
+                    <div v-if="uploadList.length > 0" class="file-status" @click="[uploadShow=true, packShow=false]">
+                        <Loading v-if="uploadList.find(({status}) => status !== 'finished')"/>
+                        <Button v-else shape="circle" icon="md-arrow-round-up"></Button>
+                    </div>
+                    <div v-if="packList.length > 0" class="file-status" @click="[packShow=true, uploadShow=false]">
+                        <Loading v-if="packList.find(({status}) => status !== 'finished')"/>
+                        <Button v-else shape="circle" icon="md-arrow-round-down"></Button>
+                    </div>
+                    <div class="file-search" @click="onSearchFocus">
+                        <Input
+                            v-model="searchKey"
+                            ref="searchInput"
+                            suffix="ios-search"
+                            @on-focus="searchIsFocus=true"
+                            @on-blur="searchIsFocus=false"
+                            @on-change="onSearchChange"
+                            :placeholder="$L('搜索名称')"
+                            clearable/>
+                    </div>
+                    <div class="file-add">
+                        <Button shape="circle" icon="md-add" @click.stop="handleRightClick($event, null, true)"></Button>
+                    </div>
                 </div>
             </div>
 
