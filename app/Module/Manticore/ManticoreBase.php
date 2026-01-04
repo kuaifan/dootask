@@ -2027,13 +2027,14 @@ class ManticoreBase
 
         // 重新插入（包含向量）
         $sql = "INSERT INTO task_vectors
-                (id, task_id, project_id, visibility, task_name, task_desc, task_content, allowed_users, content_vector)
-                VALUES (?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
+                (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, allowed_users, content_vector)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
 
         return $instance->execute($sql, [
             $existing['id'],
             $existing['task_id'],
             $existing['project_id'],
+            $existing['userid'] ?? 0,
             $existing['visibility'] ?? 1,
             $existing['task_name'],
             $existing['task_desc'],
@@ -2079,12 +2080,14 @@ class ManticoreBase
 
         // 重新插入（包含向量）
         $sql = "INSERT INTO project_vectors
-                (id, project_id, project_name, project_desc, allowed_users, content_vector)
-                VALUES (?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
+                (id, project_id, userid, personal, project_name, project_desc, allowed_users, content_vector)
+                VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
 
         return $instance->execute($sql, [
             $existing['id'],
             $existing['project_id'],
+            $existing['userid'] ?? 0,
+            $existing['personal'] ?? 0,
             $existing['project_name'],
             $existing['project_desc'],
         ]);
@@ -2123,8 +2126,8 @@ class ManticoreBase
 
         // 重新插入（包含向量）
         $sql = "INSERT INTO user_vectors
-                (id, userid, nickname, email, profession, introduction, content_vector)
-                VALUES (?, ?, ?, ?, ?, ?, {$vectorStr})";
+                (id, userid, nickname, email, profession, tags, introduction, content_vector)
+                VALUES (?, ?, ?, ?, ?, ?, ?, {$vectorStr})";
 
         return $instance->execute($sql, [
             $existing['id'],
@@ -2132,6 +2135,7 @@ class ManticoreBase
             $existing['nickname'],
             $existing['email'],
             $existing['profession'],
+            $existing['tags'] ?? '',
             $existing['introduction'],
         ]);
     }

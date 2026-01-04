@@ -70,6 +70,9 @@ class WebSocketDialogMsgObserver extends AbstractObserver
      */
     public function forceDeleted(WebSocketDialogMsg $webSocketDialogMsg)
     {
-        //
+        // Manticore 删除
+        if (Apps::isInstalled('manticore')) {
+            self::taskDeliver(new ManticoreSyncTask('msg_delete', ['msg_id' => $webSocketDialogMsg->id]));
+        }
     }
 }
