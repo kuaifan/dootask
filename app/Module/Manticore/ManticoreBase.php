@@ -256,7 +256,7 @@ class ManticoreBase
             $stmt = $pdo->prepare($sql);
             $this->bindParams($stmt, $params);
             $stmt->execute();
-            return $stmt->fetchAll();
+            return $this->convertNumericTypes($stmt->fetchAll());
         } catch (PDOException $e) {
             Log::error('Manticore query error: ' . $e->getMessage(), [
                 'sql' => $sql,
@@ -285,7 +285,7 @@ class ManticoreBase
             $this->bindParams($stmt, $params);
             $stmt->execute();
             $result = $stmt->fetch();
-            return $result ?: null;
+            return $result ? $this->convertNumericTypesRow($result) : null;
         } catch (PDOException $e) {
             Log::error('Manticore queryOne error: ' . $e->getMessage(), [
                 'sql' => $sql,
@@ -293,6 +293,34 @@ class ManticoreBase
             ]);
             return null;
         }
+    }
+
+    /**
+     * 转换结果集中的数值类型
+     * PDO 默认将 BIGINT 等数值类型返回为字符串，这里统一转换
+     *
+     * @param array $rows 结果集
+     * @return array 转换后的结果集
+     */
+    private function convertNumericTypes(array $rows): array
+    {
+        return array_map([$this, 'convertNumericTypesRow'], $rows);
+    }
+
+    /**
+     * 转换单行数据中的数值类型
+     *
+     * @param array $row 单行数据
+     * @return array 转换后的数据
+     */
+    private function convertNumericTypesRow(array $row): array
+    {
+        foreach ($row as $key => $value) {
+            if (is_string($value) && is_numeric($value) && !str_contains($value, '.')) {
+                $row[$key] = (int) $value;
+            }
+        }
+        return $row;
     }
 
     /**
