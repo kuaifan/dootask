@@ -54,7 +54,7 @@
                 class="ai-assistant-output">
                 <div
                     v-for="response in responses"
-                    :key="response.id || response.localId"
+                    :key="response.localId"
                     class="ai-assistant-output-item">
                     <div class="ai-assistant-output-apply">
                         <template v-if="response.status === 'error'">
@@ -1054,6 +1054,7 @@ export default {
                         }
                         this.currentSessionId = lastSession.id;
                         this.responses = JSON.parse(JSON.stringify(lastSession.responses));
+                        this.syncResponseSeed();
                         return;
                     }
                 }
@@ -1130,6 +1131,22 @@ export default {
                 }
                 this.currentSessionId = session.id;
                 this.responses = JSON.parse(JSON.stringify(session.responses));
+                this.syncResponseSeed();
+            }
+        },
+
+        /**
+         * 同步 responseSeed 以避免与已有响应 localId 冲突
+         */
+        syncResponseSeed() {
+            if (this.responses.length === 0) {
+                return;
+            }
+            const maxLocalId = this.responses.reduce((max, r) => {
+                return Math.max(max, r.localId || 0);
+            }, 0);
+            if (maxLocalId >= this.responseSeed) {
+                this.responseSeed = maxLocalId + 1;
             }
         },
 
