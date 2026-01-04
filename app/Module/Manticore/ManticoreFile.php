@@ -250,10 +250,14 @@ class ManticoreFile
 
             // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
             $embedding = null;
-            if ($withVector && !empty($content) && Apps::isInstalled('ai')) {
-                $embeddingResult = ManticoreBase::getEmbedding($content);
-                if (!empty($embeddingResult)) {
-                    $embedding = '[' . implode(',', $embeddingResult) . ']';
+            if ($withVector && Apps::isInstalled('ai')) {
+                // 向量内容包含文件名和文件内容
+                $vectorContent = self::buildVectorContent($file->name, $content);
+                if (!empty($vectorContent)) {
+                    $embeddingResult = ManticoreBase::getEmbedding($vectorContent);
+                    if (!empty($embeddingResult)) {
+                        $embedding = '[' . implode(',', $embeddingResult) . ']';
+                    }
                 }
             }
 
@@ -400,6 +404,28 @@ class ManticoreFile
     }
 
     /**
+     * 构建用于生成向量的内容
+     * 包含文件名和文件内容，确保语义搜索能匹配文件名
+     *
+     * @param string $fileName 文件名
+     * @param string $content 文件内容
+     * @return string 用于生成向量的文本
+     */
+    private static function buildVectorContent(string $fileName, string $content): string
+    {
+        $parts = [];
+
+        if (!empty($fileName)) {
+            $parts[] = $fileName;
+        }
+        if (!empty($content)) {
+            $parts[] = $content;
+        }
+
+        return implode(' ', $parts);
+    }
+
+    /**
      * 清空所有索引
      *
      * @return bool 是否成功
@@ -486,7 +512,7 @@ class ManticoreFile
                 return 0;
             }
 
-            // 2. 提取每个文件的内容
+            // 2. 提取每个文件的内容（包含文件名）
             $fileContents = [];
             foreach ($files as $file) {
                 // 检查文件大小限制
@@ -496,10 +522,12 @@ class ManticoreFile
                 }
 
                 $content = self::extractFileContent($file);
-                if (!empty($content)) {
+                // 向量内容包含文件名和文件内容
+                $vectorContent = self::buildVectorContent($file->name, $content);
+                if (!empty($vectorContent)) {
                     // 限制内容长度
-                    $content = mb_substr($content, 0, self::MAX_CONTENT_LENGTH);
-                    $fileContents[$file->id] = $content;
+                    $vectorContent = mb_substr($vectorContent, 0, self::MAX_CONTENT_LENGTH);
+                    $fileContents[$file->id] = $vectorContent;
                 }
             }
 

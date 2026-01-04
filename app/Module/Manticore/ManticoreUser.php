@@ -3,6 +3,7 @@
 namespace App\Module\Manticore;
 
 use App\Models\User;
+use App\Models\UserTag;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\AI;
@@ -90,8 +91,8 @@ class ManticoreUser
                 'userid' => $item['userid'],
                 'nickname' => $item['nickname'],
                 'email' => $item['email'],
-                'tel' => $item['tel'],
                 'profession' => $item['profession'],
+                'tags' => $item['tags'] ?? '',
                 'introduction_preview' => isset($item['introduction']) ? mb_substr($item['introduction'], 0, 200) : null,
                 'relevance' => $item['relevance'] ?? $item['similarity'] ?? $item['rrf_score'] ?? 0,
             ];
@@ -102,6 +103,24 @@ class ManticoreUser
     // ==============================
     // 同步方法
     // ==============================
+
+    /**
+     * 获取用户的标签（按认可数排序，最多10个）
+     *
+     * @param int $userid 用户ID
+     * @return string 标签名称，空格分隔
+     */
+    public static function getUserTags(int $userid): string
+    {
+        $tags = UserTag::where('user_id', $userid)
+            ->withCount('recognitions')
+            ->orderByDesc('recognitions_count')
+            ->limit(10)
+            ->pluck('name')
+            ->toArray();
+
+        return implode(' ', $tags);
+    }
 
     /**
      * 同步单个用户到 Manticore
@@ -127,8 +146,11 @@ class ManticoreUser
         }
 
         try {
+            // 获取用户标签（Top 10）
+            $tags = self::getUserTags($user->userid);
+
             // 构建用于搜索的文本内容
-            $searchableContent = self::buildSearchableContent($user);
+            $searchableContent = self::buildSearchableContent($user, $tags);
 
             // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
             $embedding = null;
@@ -144,8 +166,8 @@ class ManticoreUser
                 'userid' => $user->userid,
                 'nickname' => $user->nickname ?? '',
                 'email' => $user->email ?? '',
-                'tel' => $user->tel ?? '',
                 'profession' => $user->profession ?? '',
+                'tags' => $tags,
                 'introduction' => $user->introduction ?? '',
                 'content_vector' => $embedding,
             ]);
@@ -164,9 +186,10 @@ class ManticoreUser
      * 构建可搜索的文本内容
      *
      * @param User $user 用户模型
+     * @param string $tags 用户标签（空格分隔）
      * @return string 可搜索的文本
      */
-    private static function buildSearchableContent(User $user): string
+    private static function buildSearchableContent(User $user, string $tags = ''): string
     {
         $parts = [];
 
@@ -178,6 +201,9 @@ class ManticoreUser
         }
         if (!empty($user->profession)) {
             $parts[] = $user->profession;
+        }
+        if (!empty($tags)) {
+            $parts[] = $tags;
         }
         if (!empty($user->introduction)) {
             $parts[] = $user->introduction;
@@ -280,10 +306,11 @@ class ManticoreUser
                 return 0;
             }
 
-            // 2. 提取每个用户的内容
+            // 2. 提取每个用户的内容（包含标签）
             $userContents = [];
             foreach ($users as $user) {
-                $searchableContent = self::buildSearchableContent($user);
+                $tags = self::getUserTags($user->userid);
+                $searchableContent = self::buildSearchableContent($user, $tags);
                 if (!empty($searchableContent)) {
                     $userContents[$user->userid] = $searchableContent;
                 }

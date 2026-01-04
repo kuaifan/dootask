@@ -107,8 +107,8 @@ class ManticoreBase
                     userid BIGINT,
                     nickname TEXT,
                     email STRING,
-                    tel STRING,
                     profession TEXT,
+                    tags TEXT,
                     introduction TEXT,
                     content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
                 ) charset_table='chinese' morphology='icu_chinese'
@@ -764,17 +764,17 @@ class ManticoreBase
         $escapedKeyword = self::escapeMatch($keyword);
 
         $sql = "
-            SELECT 
+            SELECT
                 id,
                 userid,
                 nickname,
                 email,
-                tel,
                 profession,
+                tags,
                 introduction,
                 WEIGHT() as relevance
             FROM user_vectors
-            WHERE MATCH('@(nickname,profession,introduction) {$escapedKeyword}')
+            WHERE MATCH('@(nickname,profession,tags,introduction) {$escapedKeyword}')
             ORDER BY relevance DESC
             LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
@@ -798,13 +798,13 @@ class ManticoreBase
         $vectorStr = '(' . implode(',', $queryVector) . ')';
 
         $sql = "
-            SELECT 
+            SELECT
                 id,
                 userid,
                 nickname,
                 email,
-                tel,
                 profession,
+                tags,
                 introduction,
                 KNN_DIST() as distance
             FROM user_vectors
@@ -891,8 +891,8 @@ class ManticoreBase
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-            $sql = "INSERT INTO user_vectors 
-                    (id, userid, nickname, email, tel, profession, introduction, content_vector)
+            $sql = "INSERT INTO user_vectors
+                    (id, userid, nickname, email, profession, tags, introduction, content_vector)
                     VALUES (?, ?, ?, ?, ?, ?, ?, {$vectorValue})";
 
             $params = [
@@ -900,13 +900,13 @@ class ManticoreBase
                 $userid,
                 $data['nickname'] ?? '',
                 $data['email'] ?? '',
-                $data['tel'] ?? '',
                 $data['profession'] ?? '',
+                $data['tags'] ?? '',
                 $data['introduction'] ?? ''
             ];
         } else {
-            $sql = "INSERT INTO user_vectors 
-                    (id, userid, nickname, email, tel, profession, introduction)
+            $sql = "INSERT INTO user_vectors
+                    (id, userid, nickname, email, profession, tags, introduction)
                     VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             $params = [
@@ -914,8 +914,8 @@ class ManticoreBase
                 $userid,
                 $data['nickname'] ?? '',
                 $data['email'] ?? '',
-                $data['tel'] ?? '',
                 $data['profession'] ?? '',
+                $data['tags'] ?? '',
                 $data['introduction'] ?? ''
             ];
         }

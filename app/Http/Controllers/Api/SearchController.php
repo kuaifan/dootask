@@ -7,6 +7,7 @@ use App\Models\File;
 use App\Models\Project;
 use App\Models\ProjectTask;
 use App\Models\User;
+use App\Models\UserTag;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
@@ -67,9 +68,14 @@ class SearchController extends AbstractController
                 foreach ($results as &$item) {
                     $userData = $users->get($item['userid']);
                     if ($userData) {
+                        // 标签直接从 Manticore 搜索结果获取（空格分隔的字符串转数组）
+                        $tagsStr = $item['tags'] ?? '';
+                        $searchTags = !empty($tagsStr) ? preg_split('/\s+/', trim($tagsStr)) : [];
+
                         $item = array_merge($userData->toArray(), [
                             'relevance' => $item['relevance'] ?? 0,
                             'introduction_preview' => $item['introduction_preview'] ?? null,
+                            'search_tags' => $searchTags,
                         ]);
                     }
                 }
@@ -99,10 +105,15 @@ class SearchController extends AbstractController
             ->take($take)
             ->get();
 
-        return $users->map(function ($user) {
+        // 获取用户标签
+        $userids = $users->pluck('userid')->toArray();
+        $userTags = $this->getUserTagsMap($userids);
+
+        return $users->map(function ($user) use ($userTags) {
             return array_merge($user->toArray(), [
                 'relevance' => 0,
                 'introduction_preview' => null,
+                'search_tags' => $userTags[$user->userid] ?? [],
             ]);
         })->toArray();
     }
@@ -568,5 +579,41 @@ class SearchController extends AbstractController
 
                 return Base::retSuccess('success', []);
         }
+    }
+
+    /**
+     * 批量获取用户标签映射
+     *
+     * @param array $userids 用户ID数组
+     * @return array 用户ID => 标签名称数组的映射
+     */
+    private function getUserTagsMap(array $userids): array
+    {
+        if (empty($userids)) {
+            return [];
+        }
+
+        // 获取所有用户的标签（带认可数）
+        $tags = UserTag::whereIn('user_id', $userids)
+            ->withCount('recognitions')
+            ->get();
+
+        // 按用户分组，每个用户取 Top 10 标签
+        $result = [];
+        foreach ($userids as $userid) {
+            $result[$userid] = [];
+        }
+
+        $userTags = $tags->groupBy('user_id');
+        foreach ($userTags as $userid => $tagCollection) {
+            $result[$userid] = $tagCollection
+                ->sortByDesc('recognitions_count')
+                ->take(10)
+                ->pluck('name')
+                ->values()
+                ->toArray();
+        }
+
+        return $result;
     }
 }

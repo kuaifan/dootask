@@ -505,11 +505,24 @@ export default {
                 },
             }).then(({data}) => {
                 const items = data.map(item => {
+                    // 构建标签：显示匹配搜索关键词的标签
+                    const tags = [];
+                    if (item.search_tags && item.search_tags.length > 0) {
+                        const keyLower = key.toLowerCase();
+                        item.search_tags.forEach(tagName => {
+                            if (tagName.toLowerCase().includes(keyLower)) {
+                                tags.push({
+                                    name: tagName,
+                                    style: 'background-color:#2d8cf0',
+                                });
+                            }
+                        });
+                    }
                     return {
                         key,
                         type: 'contact',
                         icons: ['user', item.userid],
-                        tags: [],
+                        tags,
 
                         id: item.userid,
                         title: item.nickname,

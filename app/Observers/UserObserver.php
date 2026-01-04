@@ -35,8 +35,8 @@ class UserObserver extends AbstractObserver
             return;
         }
 
-        // 检查是否有搜索相关字段变化
-        $searchableFields = ['nickname', 'email', 'tel', 'profession', 'introduction', 'disable_at'];
+        // 检查是否有搜索相关字段变化（不含 tel，因为 Manticore 不索引电话）
+        $searchableFields = ['nickname', 'email', 'profession', 'introduction', 'disable_at'];
         $isDirty = false;
         foreach ($searchableFields as $field) {
             if ($user->isDirty($field)) {
