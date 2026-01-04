@@ -41,7 +41,7 @@ class ProjectTaskObserver extends AbstractObserver
             }
         }
 
-        // MVA 方案：检查是否有搜索相关字段变化或权限相关字段变化
+        // 检查是否有搜索相关字段变化或权限相关字段变化
         // visibility 变化会影响 allowed_users 来源
         // parent_id 变化会影响子任务继承
         // project_id 变化会影响 visibility=1 的任务权限

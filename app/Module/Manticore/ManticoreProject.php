@@ -10,7 +10,7 @@ use App\Module\AI;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Manticore Search 项目搜索类（MVA 权限方案）
+ * Manticore Search 项目搜索类
  *
  * 使用方法:
  *
@@ -262,7 +262,7 @@ class ManticoreProject
     }
 
     // ==============================
-    // 权限更新方法（MVA 方案）
+    // 权限更新方法
     // ==============================
 
     /**

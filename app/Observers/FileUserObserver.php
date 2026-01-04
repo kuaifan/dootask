@@ -6,7 +6,7 @@ use App\Models\FileUser;
 use App\Tasks\ManticoreSyncTask;
 
 /**
- * FileUser 观察者（MVA 权限方案）
+ * FileUser 观察者
  */
 class FileUserObserver extends AbstractObserver
 {
@@ -18,7 +18,7 @@ class FileUserObserver extends AbstractObserver
      */
     public function created(FileUser $fileUser)
     {
-        // MVA 方案：更新文件的 allowed_users
+        // 更新文件权限
         self::taskDeliver(new ManticoreSyncTask('update_file_allowed_users', [
             'file_id' => $fileUser->file_id,
         ]));
@@ -32,7 +32,7 @@ class FileUserObserver extends AbstractObserver
      */
     public function updated(FileUser $fileUser)
     {
-        // MVA 方案：更新文件的 allowed_users
+        // 更新文件权限
         self::taskDeliver(new ManticoreSyncTask('update_file_allowed_users', [
             'file_id' => $fileUser->file_id,
         ]));
@@ -46,7 +46,7 @@ class FileUserObserver extends AbstractObserver
      */
     public function deleted(FileUser $fileUser)
     {
-        // MVA 方案：更新文件的 allowed_users
+        // 更新文件权限
         self::taskDeliver(new ManticoreSyncTask('update_file_allowed_users', [
             'file_id' => $fileUser->file_id,
         ]));

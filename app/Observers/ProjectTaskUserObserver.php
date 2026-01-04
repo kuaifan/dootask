@@ -22,7 +22,7 @@ class ProjectTaskUserObserver extends AbstractObserver
             Deleted::forget('projectTask', $projectTaskUser->task_pid, $projectTaskUser->userid);
         }
 
-        // MVA 方案：更新任务的 allowed_users（会自动 cascadeToChildren）
+        // 更新任务权限
         self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
             'task_id' => $projectTaskUser->task_id,
         ]));
@@ -57,7 +57,7 @@ class ProjectTaskUserObserver extends AbstractObserver
             Deleted::record('projectTask', $projectTaskUser->task_id, $projectTaskUser->userid);
         }
 
-        // MVA 方案：更新任务的 allowed_users（会自动 cascadeToChildren）
+        // 更新任务权限
         self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
             'task_id' => $projectTaskUser->task_id,
         ]));

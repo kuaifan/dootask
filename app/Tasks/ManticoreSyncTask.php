@@ -101,7 +101,7 @@ class ManticoreSyncTask extends AbstractTask
                 break;
 
             case 'update_file_allowed_users':
-                // 更新文件的 allowed_users（共享变更时调用）
+                // 更新文件权限
                 $fileId = $this->data['file_id'] ?? 0;
                 if ($fileId > 0) {
                     ManticoreFile::updateAllowedUsers($fileId);
@@ -143,7 +143,7 @@ class ManticoreSyncTask extends AbstractTask
                 break;
 
             case 'update_project_allowed_users':
-                // 更新项目的 allowed_users（成员变更时调用）
+                // 更新项目权限
                 $projectId = $this->data['project_id'] ?? 0;
                 if ($projectId > 0) {
                     ManticoreProject::updateAllowedUsers($projectId);
@@ -177,7 +177,7 @@ class ManticoreSyncTask extends AbstractTask
                 break;
 
             case 'update_task_allowed_users':
-                // 更新任务的 allowed_users（成员变更时调用）
+                // 更新任务权限
                 $taskId = $this->data['task_id'] ?? 0;
                 if ($taskId > 0) {
                     ManticoreTask::updateAllowedUsers($taskId);
@@ -204,7 +204,7 @@ class ManticoreSyncTask extends AbstractTask
                 break;
 
             case 'update_dialog_allowed_users':
-                // 更新对话下所有消息的 allowed_users（成员变更时调用）
+                // 更新对话消息权限
                 $dialogId = $this->data['dialog_id'] ?? 0;
                 if ($dialogId > 0) {
                     ManticoreMsg::updateDialogAllowedUsers($dialogId);
@@ -212,7 +212,7 @@ class ManticoreSyncTask extends AbstractTask
                 break;
 
             default:
-                // 增量更新（定时任务调用）
+                // 增量更新
                 $this->incrementalUpdate();
                 break;
         }
@@ -235,10 +235,10 @@ class ManticoreSyncTask extends AbstractTask
         }
         Cache::put("ManticoreSyncTask:CheckTime", time(), Carbon::now()->addMinutes(5));
 
-        // 执行增量全文索引同步（命令会持续处理直到完成）
+        // 执行增量全文索引同步
         $this->runIncrementalSync();
 
-        // 执行向量生成（命令会持续处理直到完成）
+        // 执行向量生成
         $this->runVectorGeneration();
     }
 
@@ -250,7 +250,7 @@ class ManticoreSyncTask extends AbstractTask
      */
     private function runIncrementalSync(): void
     {
-        // 启动各类型的增量同步命令（命令内部有锁，重复启动会自动跳过）
+        // 启动各类型的增量同步命令
         @shell_exec("php /var/www/artisan manticore:sync-files --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-users --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-projects --i 2>&1 &");
@@ -270,7 +270,7 @@ class ManticoreSyncTask extends AbstractTask
             return;
         }
 
-        // 启动向量生成命令（命令内部有锁，重复启动会自动跳过）
+        // 启动向量生成命令
         @shell_exec("php /var/www/artisan manticore:generate-vectors --type=all --batch=50 2>&1 &");
     }
 

@@ -18,7 +18,7 @@ class ProjectUserObserver extends AbstractObserver
     {
         Deleted::forget('project', $projectUser->project_id, $projectUser->userid);
         
-        // MVA 方案：更新项目的 allowed_users
+        // 更新项目权限
         self::taskDeliver(new ManticoreSyncTask('update_project_allowed_users', [
             'project_id' => $projectUser->project_id,
         ]));
@@ -49,7 +49,7 @@ class ProjectUserObserver extends AbstractObserver
     {
         Deleted::record('project', $projectUser->project_id, $projectUser->userid);
         
-        // MVA 方案：更新项目的 allowed_users
+        // 更新项目权限
         self::taskDeliver(new ManticoreSyncTask('update_project_allowed_users', [
             'project_id' => $projectUser->project_id,
         ]));

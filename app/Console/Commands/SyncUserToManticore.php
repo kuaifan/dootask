@@ -16,13 +16,13 @@ class SyncUserToManticore extends Command
     /**
      * 更新数据
      * --f: 全量更新 (默认)
-     * --i: 增量更新（从上次更新的最后一个ID接上，持续处理直到完成）
+     * --i: 增量更新
      *
      * 清理数据
      * --c: 清除索引
      *
      * 其他选项
-     * --sleep: 每批处理完成后休眠秒数（增量模式）
+     * --sleep: 每批处理完成后休眠秒数
      */
 
     protected $signature = 'manticore:sync-users {--f} {--i} {--c} {--batch=100} {--sleep=3}';

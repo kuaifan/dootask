@@ -6,7 +6,7 @@ use App\Models\ProjectTaskVisibilityUser;
 use App\Tasks\ManticoreSyncTask;
 
 /**
- * ProjectTaskVisibilityUser 观察者（MVA 权限方案）
+ * ProjectTaskVisibilityUser 观察者
  *
  * 用于处理任务 visibility=3（指定成员可见）时的成员变更同步
  */
@@ -20,7 +20,7 @@ class ProjectTaskVisibilityUserObserver extends AbstractObserver
      */
     public function created(ProjectTaskVisibilityUser $visibilityUser)
     {
-        // MVA 方案：更新任务的 allowed_users（会自动 cascadeToChildren）
+        // 更新任务权限
         self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
             'task_id' => $visibilityUser->task_id,
         ]));
@@ -34,7 +34,7 @@ class ProjectTaskVisibilityUserObserver extends AbstractObserver
      */
     public function updated(ProjectTaskVisibilityUser $visibilityUser)
     {
-        // MVA 方案：更新任务的 allowed_users（会自动 cascadeToChildren）
+        // 更新任务权限
         self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
             'task_id' => $visibilityUser->task_id,
         ]));
@@ -48,7 +48,7 @@ class ProjectTaskVisibilityUserObserver extends AbstractObserver
      */
     public function deleted(ProjectTaskVisibilityUser $visibilityUser)
     {
-        // MVA 方案：更新任务的 allowed_users（会自动 cascadeToChildren）
+        // 更新任务权限
         self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
             'task_id' => $visibilityUser->task_id,
         ]));

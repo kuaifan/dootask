@@ -69,13 +69,11 @@ class ManticoreBase
 
     /**
      * 初始化表结构
-     * 
-     * MVA 方案：使用 allowed_users MULTI 字段内联权限，无需单独的关系表
      */
     private function initializeTables(PDO $pdo): void
     {
         try {
-            // 创建文件向量表（含 allowed_users MVA 权限字段）
+            // 创建文件向量表
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS file_vectors (
                     id BIGINT,
@@ -100,7 +98,7 @@ class ManticoreBase
                 )
             ");
 
-            // 创建用户向量表（联系人搜索，无需权限过滤）
+            // 创建用户向量表
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS user_vectors (
                     id BIGINT,
@@ -114,7 +112,7 @@ class ManticoreBase
                 ) charset_table='chinese' morphology='icu_chinese'
             ");
 
-            // 创建项目向量表（含 allowed_users MVA 权限字段）
+            // 创建项目向量表
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS project_vectors (
                     id BIGINT,
@@ -128,7 +126,7 @@ class ManticoreBase
                 ) charset_table='chinese' morphology='icu_chinese'
             ");
 
-            // 创建任务向量表（含 allowed_users MVA 权限字段）
+            // 创建任务向量表
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS task_vectors (
                     id BIGINT,
@@ -144,7 +142,7 @@ class ManticoreBase
                 ) charset_table='chinese' morphology='icu_chinese'
             ");
 
-            // 创建消息向量表（含 allowed_users MVA 权限字段）
+            // 创建消息向量表
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS msg_vectors (
                     id BIGINT,
@@ -379,7 +377,7 @@ class ManticoreBase
     // ==============================
 
     /**
-     * 全文搜索文件（使用 MVA allowed_users 权限过滤）
+     * 全文搜索文件
      *
      * @param string $keyword 关键词
      * @param int $userid 用户ID（0表示不限制权限）
@@ -437,7 +435,7 @@ class ManticoreBase
     }
 
     /**
-     * 向量相似度搜索（使用 MVA allowed_users 权限过滤）
+     * 向量相似度搜索
      *
      * @param array $queryVector 查询向量
      * @param int $userid 用户ID（0表示不限制权限）
@@ -564,7 +562,7 @@ class ManticoreBase
     }
 
     /**
-     * 插入或更新文件向量（含 allowed_users MVA 权限字段）
+     * 插入或更新文件向量
      *
      * @param array $data 文件数据，包含：
      *   - file_id: 文件ID
@@ -594,7 +592,7 @@ class ManticoreBase
         $allowedUsers = $data['allowed_users'] ?? [];
         $allowedUsersStr = !empty($allowedUsers) ? '(' . implode(',', array_map('intval', $allowedUsers)) . ')' : '()';
 
-        // 插入新记录（向量值和 MVA 必须内联到 SQL）
+        // 插入新记录
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
@@ -743,7 +741,7 @@ class ManticoreBase
     }
 
     // ==============================
-    // 用户向量方法（联系人搜索）
+    // 用户向量方法
     // ==============================
 
     /**
@@ -887,7 +885,7 @@ class ManticoreBase
         // 先删除已存在的记录
         $instance->execute("DELETE FROM user_vectors WHERE userid = ?", [$userid]);
 
-        // 插入新记录（向量值必须内联到 SQL，Manticore 的 float_vector 不支持参数绑定）
+        // 插入新记录
         $vectorValue = $data['content_vector'] ?? null;
         if ($vectorValue) {
             $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
@@ -967,7 +965,7 @@ class ManticoreBase
     // ==============================
 
     /**
-     * 项目全文搜索（使用 MVA allowed_users 权限过滤）
+     * 项目全文搜索
      *
      * @param string $keyword 关键词
      * @param int $userid 用户ID（权限过滤）
@@ -1020,7 +1018,7 @@ class ManticoreBase
     }
 
     /**
-     * 项目向量搜索（使用 MVA allowed_users 权限过滤）
+     * 项目向量搜索
      *
      * @param array $queryVector 查询向量
      * @param int $userid 用户ID（权限过滤）
@@ -1124,7 +1122,7 @@ class ManticoreBase
     }
 
     /**
-     * 插入或更新项目向量（含 allowed_users MVA 权限字段）
+     * 插入或更新项目向量
      *
      * @param array $data 项目数据，包含：
      *   - project_id: 项目ID
@@ -1243,7 +1241,7 @@ class ManticoreBase
     // ==============================
 
     /**
-     * 任务全文搜索（使用 MVA allowed_users 权限过滤）
+     * 任务全文搜索
      *
      * @param string $keyword 关键词
      * @param int $userid 用户ID（权限过滤）
@@ -1300,7 +1298,7 @@ class ManticoreBase
     }
 
     /**
-     * 任务向量搜索（使用 MVA allowed_users 权限过滤）
+     * 任务向量搜索
      *
      * @param array $queryVector 查询向量
      * @param int $userid 用户ID（权限过滤）
@@ -1406,7 +1404,7 @@ class ManticoreBase
     }
 
     /**
-     * 插入或更新任务向量（含 allowed_users MVA 权限字段）
+     * 插入或更新任务向量
      *
      * @param array $data 任务数据，包含：
      *   - task_id: 任务ID
@@ -1549,7 +1547,7 @@ class ManticoreBase
     // ==============================
 
     /**
-     * 消息全文搜索（使用 MVA allowed_users 权限过滤）
+     * 消息全文搜索
      *
      * @param string $keyword 关键词
      * @param int $userid 用户ID（权限过滤）
@@ -1596,7 +1594,7 @@ class ManticoreBase
     }
 
     /**
-     * 消息向量搜索（使用 MVA allowed_users 权限过滤）
+     * 消息向量搜索
      *
      * @param array $queryVector 查询向量
      * @param int $userid 用户ID（权限过滤）
@@ -1712,7 +1710,7 @@ class ManticoreBase
     }
 
     /**
-     * 插入或更新消息向量（含 allowed_users MVA 权限字段）
+     * 插入或更新消息向量
      *
      * @param array $data 消息数据，包含：
      *   - msg_id: 消息ID
@@ -1881,11 +1879,11 @@ class ManticoreBase
     }
 
     // ==============================
-    // 向量更新方法（用于异步向量生成）
+    // 向量更新方法
     // ==============================
 
     /**
-     * 更新消息的向量（仅更新向量字段）
+     * 更新消息的向量
      *
      * @param int $msgId 消息ID
      * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
@@ -1920,7 +1918,7 @@ class ManticoreBase
             ? '(' . $existing['allowed_users'] . ')'
             : '()';
 
-        // 重新插入（包含向量）
+        // 重新插入
         $sql = "INSERT INTO msg_vectors
                 (id, msg_id, dialog_id, userid, msg_type, content, allowed_users, created_at, content_vector)
                 VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, ?, {$vectorStr})";
@@ -1937,7 +1935,7 @@ class ManticoreBase
     }
 
     /**
-     * 更新文件的向量（仅更新向量字段）
+     * 更新文件的向量
      *
      * @param int $fileId 文件ID
      * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
@@ -1972,7 +1970,7 @@ class ManticoreBase
             ? '(' . $existing['allowed_users'] . ')'
             : '()';
 
-        // 重新插入（包含向量）
+        // 重新插入
         $sql = "INSERT INTO file_vectors
                 (id, file_id, userid, pshare, file_name, file_type, file_ext, content, allowed_users, content_vector)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
@@ -1990,7 +1988,7 @@ class ManticoreBase
     }
 
     /**
-     * 更新任务的向量（仅更新向量字段）
+     * 更新任务的向量
      *
      * @param int $taskId 任务ID
      * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
@@ -2025,7 +2023,7 @@ class ManticoreBase
             ? '(' . $existing['allowed_users'] . ')'
             : '()';
 
-        // 重新插入（包含向量）
+        // 重新插入
         $sql = "INSERT INTO task_vectors
                 (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, allowed_users, content_vector)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
@@ -2043,7 +2041,7 @@ class ManticoreBase
     }
 
     /**
-     * 更新项目的向量（仅更新向量字段）
+     * 更新项目的向量
      *
      * @param int $projectId 项目ID
      * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
@@ -2078,7 +2076,7 @@ class ManticoreBase
             ? '(' . $existing['allowed_users'] . ')'
             : '()';
 
-        // 重新插入（包含向量）
+        // 重新插入
         $sql = "INSERT INTO project_vectors
                 (id, project_id, userid, personal, project_name, project_desc, allowed_users, content_vector)
                 VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
@@ -2094,7 +2092,7 @@ class ManticoreBase
     }
 
     /**
-     * 更新用户的向量（仅更新向量字段）
+     * 更新用户的向量
      *
      * @param int $userid 用户ID
      * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
@@ -2124,7 +2122,7 @@ class ManticoreBase
         // Manticore 的向量需要使用 () 格式
         $vectorStr = str_replace(['[', ']'], ['(', ')'], $vectorStr);
 
-        // 重新插入（包含向量）
+        // 重新插入
         $sql = "INSERT INTO user_vectors
                 (id, userid, nickname, email, profession, tags, introduction, content_vector)
                 VALUES (?, ?, ?, ?, ?, ?, ?, {$vectorStr})";

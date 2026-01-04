@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Manticore Search 文件搜索类（MVA 权限方案）
+ * Manticore Search 文件搜索类
  *
  * 使用方法:
  *
@@ -184,7 +184,7 @@ class ManticoreFile
     }
 
     // ==============================
-    // 权限计算方法（MVA 方案核心）
+    // 权限计算方法
     // ==============================
 
     /**
@@ -454,7 +454,7 @@ class ManticoreFile
     }
 
     // ==============================
-    // 权限更新方法（MVA 方案）
+    // 权限更新方法
     // ==============================
 
     /**

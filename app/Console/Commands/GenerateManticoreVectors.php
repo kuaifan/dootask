@@ -38,7 +38,7 @@ class GenerateManticoreVectors extends Command
                             {--sleep=3 : 每批处理后休眠秒数}
                             {--reset : 重置向量进度指针}';
 
-    protected $description = '批量生成 Manticore 已索引数据的向量（异步处理）';
+    protected $description = '批量生成 Manticore 已索引数据的向量';
 
     /**
      * 类型配置

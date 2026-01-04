@@ -14,19 +14,19 @@ class SyncFileToManticore extends Command
     use ManticoreSyncLock;
 
     /**
-     * 更新数据（MVA 方案：allowed_users 在同步时自动写入）
+     * 更新数据
      * --f: 全量更新 (默认)
-     * --i: 增量更新（从上次更新的最后一个ID接上，持续处理直到完成）
+     * --i: 增量更新
      *
      * 清理数据
      * --c: 清除索引
      *
      * 其他选项
-     * --sleep: 每批处理完成后休眠秒数（增量模式）
+     * --sleep: 每批处理完成后休眠秒数
      */
 
     protected $signature = 'manticore:sync-files {--f} {--i} {--c} {--batch=100} {--sleep=3}';
-    protected $description = '同步文件内容到 Manticore Search（MVA 权限方案）';
+    protected $description = '同步文件数据到 Manticore Search';
 
     public function handle(): int
     {
@@ -51,7 +51,7 @@ class SyncFileToManticore extends Command
             return 0;
         }
 
-        $this->info('开始同步文件数据（MVA 方案：allowed_users 自动内联）...');
+        $this->info('开始同步文件数据...');
         $this->syncFiles();
 
         $this->info("\n同步完成");

@@ -38,7 +38,7 @@ class AbstractObserver
                     return;
                 }
 
-                // 标记任务已投递，? 秒后过期
+                // 标记任务已投递
                 Cache::put($cacheKey, true, self::DEDUP_WINDOW);
             }
         }

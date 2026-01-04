@@ -13,7 +13,7 @@ use App\Module\AI;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Manticore Search 任务搜索类（MVA 权限方案）
+ * Manticore Search 任务搜索类
  *
  * 权限逻辑说明：
  * - visibility = 1: 项目人员可见，通过项目成员计算 allowed_users
@@ -123,7 +123,7 @@ class ManticoreTask
     }
 
     // ==============================
-    // 权限计算方法（MVA 方案核心）
+    // 权限计算方法
     // ==============================
 
     /**
@@ -405,7 +405,7 @@ class ManticoreTask
     }
 
     // ==============================
-    // 权限更新方法（MVA 方案）
+    // 权限更新方法
     // ==============================
 
     /**
@@ -437,7 +437,7 @@ class ManticoreTask
 
     /**
      * 级联更新项目下所有 visibility=1 任务的 allowed_users
-     * 当项目成员变更时调用（异步执行）
+     * 当项目成员变更时调用
      *
      * @param int $projectId 项目ID
      * @return int 更新的任务数量
