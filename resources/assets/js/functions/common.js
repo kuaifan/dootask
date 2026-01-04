@@ -1685,8 +1685,27 @@ const timezone = require("dayjs/plugin/timezone");
             return localforage.removeItem(key)
         },
 
-        IDBClear() {
-            return localforage.clear()
+        /**
+         * 清除缓存
+         * @param {string[]} [keysToKeep] - 可选，需要保留的 key 数组
+         * @returns {Promise<void>}
+         */
+        async IDBClear(keysToKeep = []) {
+            if (!keysToKeep || !keysToKeep.length) {
+                return localforage.clear();
+            }
+            const cached = {};
+            await Promise.all(
+                keysToKeep.map(async key => {
+                    cached[key] = await this.IDBValue(key);
+                })
+            );
+            await localforage.clear();
+            await Promise.all(
+                Object.entries(cached)
+                    .filter(([, value]) => value !== null && value !== undefined)
+                    .map(([key, value]) => this.IDBSet(key, value))
+            );
         },
 
         IDBValue(key) {

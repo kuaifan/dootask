@@ -1127,30 +1127,28 @@ export default {
             );
 
             // localForage
-            const cacheItems = {
-                clientId: await $A.IDBString("clientId"),
-                cacheServerUrl: await $A.IDBString("cacheServerUrl"),
-                cacheCalendarView: await $A.IDBString("cacheCalendarView"),
-                cacheProjectParameter: await $A.IDBArray("cacheProjectParameter"),
-                cacheLoginEmail: await $A.IDBString("cacheLoginEmail"),
-                cacheFileSort: await $A.IDBJson("cacheFileSort"),
-                cacheTranslationLanguage: await $A.IDBString("cacheTranslationLanguage"),
-                cacheTranscriptionLanguage: await $A.IDBString("cacheTranscriptionLanguage"),
-                cacheTranslations: await $A.IDBArray("cacheTranslations"),
-                cacheEmojis: await $A.IDBArray("cacheEmojis"),
-                userInfo: await $A.IDBJson("userInfo"),
-                mcpServerStatus: await $A.IDBJson("mcpServerStatus"),
-                cacheVersion: state.cacheVersion,
-            };
-            await $A.IDBClear();
-            await Promise.all(
-                Object.entries(cacheItems).map(([key, value]) =>
-                    $A.IDBSet(key, value)
-                )
-            );
+            const keysToKeep = [
+                'clientId',
+                'cacheServerUrl',
+                'cacheCalendarView',
+                'cacheProjectParameter',
+                'cacheLoginEmail',
+                'cacheFileSort',
+                'cacheTranslationLanguage',
+                'cacheTranscriptionLanguage',
+                'cacheTranslations',
+                'cacheEmojis',
+                'userInfo',
+                'mcpServerStatus',
+                'aiAssistant.model',
+                'aiAssistant.sessions',
+            ];
+            await $A.IDBClear(keysToKeep);
+            await $A.IDBSet('cacheVersion', state.cacheVersion);
 
             // userInfo
-            await dispatch("saveUserInfoBase", $A.isJson(userData) ? userData : cacheItems.userInfo)
+            const cachedUserInfo = await $A.IDBJson("userInfo");
+            await dispatch("saveUserInfoBase", $A.isJson(userData) ? userData : cachedUserInfo)
 
             // readCache
             await dispatch("handleReadCache")
