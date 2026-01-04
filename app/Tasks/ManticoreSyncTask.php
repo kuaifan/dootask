@@ -36,6 +36,38 @@ class ManticoreSyncTask extends AbstractTask
         $this->data = $data;
     }
 
+    /**
+     * 获取任务动作类型（用于去重）
+     *
+     * @return string|null
+     */
+    public function getAction(): ?string
+    {
+        return $this->action;
+    }
+
+    /**
+     * 获取数据ID（用于去重）
+     *
+     * @return int|null
+     */
+    public function getDataId(): ?int
+    {
+        if (!is_array($this->data)) {
+            return null;
+        }
+
+        // 根据不同的 action 类型提取对应的 ID
+        return $this->data['id']
+            ?? $this->data['userid']
+            ?? $this->data['file_id']
+            ?? $this->data['project_id']
+            ?? $this->data['task_id']
+            ?? $this->data['msg_id']
+            ?? $this->data['dialog_id']
+            ?? null;
+    }
+
     public function start()
     {
         if (!Apps::isInstalled("manticore")) {
