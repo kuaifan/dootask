@@ -110,9 +110,9 @@
                                             <div class="last-text"><span>{{formatDraft(getDialogDraft(dialog.id)?.content)}}</span></div>
                                         </template>
                                         <template v-else>
-                                            <template v-if="dialog.type=='group' && dialog.last_msg && dialog.last_msg.userid">
-                                                <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
-                                                <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false"/>
+                                            <template v-if="dialog.type=='group' && dialog.last_msg && getLastMsgSenderId(dialog.last_msg)">
+                                                <div v-if="getLastMsgSenderId(dialog.last_msg) == userId" class="last-self">{{$L('你')}}</div>
+                                                <UserAvatar v-else :userid="getLastMsgSenderId(dialog.last_msg)" :show-name="true" :show-icon="false"/>
                                             </template>
                                             <div class="last-text">
                                                 <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
@@ -656,6 +656,19 @@ export default {
 
     methods: {
         transformEmojiToHtml,
+
+        // 获取会话列表中消息的"有效发送者ID"
+        // 对于待办完成消息（多人完成），取最后完成者
+        getLastMsgSenderId(lastMsg) {
+            if (lastMsg?.type === 'todo' && lastMsg.msg?.action === 'done') {
+                const doneUserIds = lastMsg.msg?.data?.done_userids;
+                if (Array.isArray(doneUserIds) && doneUserIds.length > 0) {
+                    return doneUserIds[0]; // done_userids 倒序，第一个是最后完成者
+                }
+            }
+            return lastMsg?.userid;
+        },
+
         listTouch() {
             if (this.$refs.navMenu?.visible) {
                 this.$refs.navMenu.hide()
