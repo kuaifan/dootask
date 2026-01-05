@@ -304,8 +304,21 @@ mysql_snapshot() {
 remove_by_network() {
     local app_id=$(env_get APP_ID)
     local network_name="dootask-networks-${app_id}"
-    for container_id in $(docker ps -q --filter network="$network_name"); do
+
+    # 删除所有状态的容器（包括已停止的）
+    for container_id in $(docker ps -aq --filter network="$network_name"); do
         docker rm -f "$container_id" 1>/dev/null
+    done
+
+    # 等待网络完全清空（最多等待10秒）
+    local retry=0
+    while [ $retry -lt 10 ]; do
+        local count=$(docker network inspect "$network_name" --format '{{len .Containers}}' 2>/dev/null | tr -d '[:space:]')
+        if [ -z "$count" ] || [ "$count" = "0" ]; then
+            break
+        fi
+        sleep 1
+        ((retry++))
     done
 }
 
