@@ -913,6 +913,7 @@ function createWebTabWindow(args) {
         return {action: 'deny'}
     })
     browserView.webContents.on('page-title-updated', (event, title) => {
+        if (!webTabWindow) return
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'title',
             id: browserView.webContents.id,
@@ -938,6 +939,7 @@ function createWebTabWindow(args) {
             }).then(_ => { }).catch(_ => { })
             return
         }
+        if (!webTabWindow) return
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'title',
             id: browserView.webContents.id,
@@ -946,6 +948,7 @@ function createWebTabWindow(args) {
         }).then(_ => { })
     })
     browserView.webContents.on('page-favicon-updated', (event, favicons) => {
+        if (!webTabWindow) return
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'favicon',
             id: browserView.webContents.id,
@@ -956,12 +959,14 @@ function createWebTabWindow(args) {
         webTabView.forEach(({id: vid, view}) => {
             view.setVisible(vid === browserView.webContents.id)
         })
+        if (!webTabWindow) return
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'start-loading',
             id: browserView.webContents.id,
         }).then(_ => { })
     })
     browserView.webContents.on('did-stop-loading', _ => {
+        if (!webTabWindow) return
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'stop-loading',
             id: browserView.webContents.id,
