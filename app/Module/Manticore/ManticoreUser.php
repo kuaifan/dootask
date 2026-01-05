@@ -41,7 +41,7 @@ class ManticoreUser
             return [];
         }
 
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return [];
         }
 
@@ -131,7 +131,7 @@ class ManticoreUser
      */
     public static function sync(User $user, bool $withVector = false): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -221,7 +221,7 @@ class ManticoreUser
      */
     public static function batchSync(iterable $users, bool $withVector = false): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -242,7 +242,7 @@ class ManticoreUser
      */
     public static function delete(int $userid): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -256,7 +256,7 @@ class ManticoreUser
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -270,7 +270,7 @@ class ManticoreUser
      */
     public static function getIndexedCount(): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -291,7 +291,7 @@ class ManticoreUser
      */
     public static function generateVectorsBatch(array $userIds, int $batchSize = 20): int
     {
-        if (!Apps::isInstalled("manticore") || !Apps::isInstalled("ai") || empty($userIds)) {
+        if (!Apps::isInstalled("search") || !Apps::isInstalled("ai") || empty($userIds)) {
             return 0;
         }
 

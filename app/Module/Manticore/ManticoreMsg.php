@@ -86,7 +86,7 @@ class ManticoreMsg
             return [];
         }
 
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return [];
         }
 
@@ -169,7 +169,7 @@ class ManticoreMsg
         }
 
         // 未安装 Manticore 时使用 MySQL 回退搜索
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return self::searchDialogsByMysql($userid, $keyword, $from, $size);
         }
 
@@ -336,7 +336,7 @@ class ManticoreMsg
      */
     public static function sync(WebSocketDialogMsg $msg, bool $withVector = false): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -396,7 +396,7 @@ class ManticoreMsg
      */
     public static function batchSync(iterable $msgs, bool $withVector = false): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -418,7 +418,7 @@ class ManticoreMsg
      */
     public static function generateVectorsBatch(array $msgIds, int $batchSize = 20): int
     {
-        if (!Apps::isInstalled("manticore") || !Apps::isInstalled('ai') || empty($msgIds)) {
+        if (!Apps::isInstalled("search") || !Apps::isInstalled('ai') || empty($msgIds)) {
             return 0;
         }
 
@@ -506,7 +506,7 @@ class ManticoreMsg
      */
     public static function delete(int $msgId): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -520,7 +520,7 @@ class ManticoreMsg
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -534,7 +534,7 @@ class ManticoreMsg
      */
     public static function getIndexedCount(): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -554,7 +554,7 @@ class ManticoreMsg
      */
     public static function updateDialogAllowedUsers(int $dialogId): int
     {
-        if (!Apps::isInstalled("manticore") || $dialogId <= 0) {
+        if (!Apps::isInstalled("search") || $dialogId <= 0) {
             return 0;
         }
 

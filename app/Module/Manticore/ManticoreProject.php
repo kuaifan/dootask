@@ -45,7 +45,7 @@ class ManticoreProject
             return [];
         }
 
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return [];
         }
 
@@ -130,7 +130,7 @@ class ManticoreProject
      */
     public static function sync(Project $project, bool $withVector = false): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -205,7 +205,7 @@ class ManticoreProject
      */
     public static function batchSync(iterable $projects, bool $withVector = false): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -226,7 +226,7 @@ class ManticoreProject
      */
     public static function delete(int $projectId): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -240,7 +240,7 @@ class ManticoreProject
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -254,7 +254,7 @@ class ManticoreProject
      */
     public static function getIndexedCount(): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -274,7 +274,7 @@ class ManticoreProject
      */
     public static function updateAllowedUsers(int $projectId): bool
     {
-        if (!Apps::isInstalled("manticore") || $projectId <= 0) {
+        if (!Apps::isInstalled("search") || $projectId <= 0) {
             return false;
         }
 
@@ -301,7 +301,7 @@ class ManticoreProject
      */
     public static function generateVectorsBatch(array $projectIds, int $batchSize = 20): int
     {
-        if (!Apps::isInstalled("manticore") || !Apps::isInstalled("ai") || empty($projectIds)) {
+        if (!Apps::isInstalled("search") || !Apps::isInstalled("ai") || empty($projectIds)) {
             return 0;
         }
 

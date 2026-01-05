@@ -34,7 +34,7 @@ class WebSocketDialogUserObserver extends AbstractObserver
         Deleted::forget('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
 
         // Manticore: 更新对话下所有消息的 allowed_users
-        if (Apps::isInstalled('manticore')) {
+        if (Apps::isInstalled('search')) {
             self::taskDeliver(new ManticoreSyncTask('update_dialog_allowed_users', [
                 'dialog_id' => $webSocketDialogUser->dialog_id
             ]));
@@ -69,7 +69,7 @@ class WebSocketDialogUserObserver extends AbstractObserver
         Deleted::record('dialog', $webSocketDialogUser->dialog_id, $webSocketDialogUser->userid);
 
         // Manticore: 更新对话下所有消息的 allowed_users
-        if (Apps::isInstalled('manticore')) {
+        if (Apps::isInstalled('search')) {
             self::taskDeliver(new ManticoreSyncTask('update_dialog_allowed_users', [
                 'dialog_id' => $webSocketDialogUser->dialog_id
             ]));

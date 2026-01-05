@@ -21,7 +21,7 @@ class ManticoreKeyValue
      */
     public static function get(string $key, $default = null)
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return $default;
         }
 
@@ -43,7 +43,7 @@ class ManticoreKeyValue
      */
     public static function set(string $key, $value): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -70,7 +70,7 @@ class ManticoreKeyValue
      */
     public static function delete(string $key): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -85,7 +85,7 @@ class ManticoreKeyValue
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -101,7 +101,7 @@ class ManticoreKeyValue
      */
     public static function exists(string $key): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -121,7 +121,7 @@ class ManticoreKeyValue
      */
     public static function all(): array
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return [];
         }
 

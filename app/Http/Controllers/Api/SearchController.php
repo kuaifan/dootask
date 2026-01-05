@@ -54,7 +54,7 @@ class SearchController extends AbstractController
         }
 
         // 优先使用 Manticore 搜索
-        if (Apps::isInstalled('manticore')) {
+        if (Apps::isInstalled('search')) {
             $results = ManticoreUser::search($key, $searchType, $take);
 
             // 补充用户完整信息
@@ -147,7 +147,7 @@ class SearchController extends AbstractController
         }
 
         // 优先使用 Manticore 搜索
-        if (Apps::isInstalled('manticore')) {
+        if (Apps::isInstalled('search')) {
             $results = ManticoreProject::search($user->userid, $key, $searchType, $take);
 
             // 补充项目完整信息
@@ -229,7 +229,7 @@ class SearchController extends AbstractController
         }
 
         // 优先使用 Manticore 搜索
-        if (Apps::isInstalled('manticore')) {
+        if (Apps::isInstalled('search')) {
             $results = ManticoreTask::search($user->userid, $key, $searchType, $take);
 
             // 补充任务完整信息
@@ -320,7 +320,7 @@ class SearchController extends AbstractController
         }
 
         // 优先使用 Manticore 搜索
-        if (Apps::isInstalled('manticore')) {
+        if (Apps::isInstalled('search')) {
             $results = ManticoreFile::search($user->userid, $key, $searchType, 0, $take);
 
             // 补充文件完整信息
@@ -444,7 +444,7 @@ class SearchController extends AbstractController
         }
 
         // 优先使用 Manticore 搜索
-        if (Apps::isInstalled('manticore')) {
+        if (Apps::isInstalled('search')) {
             $results = ManticoreMsg::search($user->userid, $key, $searchType, 0, $take, $dialogId);
         } else {
             // MySQL 回退搜索

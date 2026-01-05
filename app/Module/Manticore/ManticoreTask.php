@@ -61,7 +61,7 @@ class ManticoreTask
             return [];
         }
 
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return [];
         }
 
@@ -201,7 +201,7 @@ class ManticoreTask
      */
     public static function sync(ProjectTask $task, bool $withVector = false): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -348,7 +348,7 @@ class ManticoreTask
      */
     public static function batchSync(iterable $tasks, bool $withVector = false): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -369,7 +369,7 @@ class ManticoreTask
      */
     public static function delete(int $taskId): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -383,7 +383,7 @@ class ManticoreTask
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -397,7 +397,7 @@ class ManticoreTask
      */
     public static function getIndexedCount(): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -417,7 +417,7 @@ class ManticoreTask
      */
     public static function updateAllowedUsers(int $taskId): bool
     {
-        if (!Apps::isInstalled("manticore") || $taskId <= 0) {
+        if (!Apps::isInstalled("search") || $taskId <= 0) {
             return false;
         }
 
@@ -444,7 +444,7 @@ class ManticoreTask
      */
     public static function cascadeUpdateByProject(int $projectId): int
     {
-        if (!Apps::isInstalled("manticore") || $projectId <= 0) {
+        if (!Apps::isInstalled("search") || $projectId <= 0) {
             return 0;
         }
 
@@ -493,7 +493,7 @@ class ManticoreTask
      */
     public static function cascadeToChildren(int $taskId): void
     {
-        if (!Apps::isInstalled("manticore") || $taskId <= 0) {
+        if (!Apps::isInstalled("search") || $taskId <= 0) {
             return;
         }
 
@@ -526,7 +526,7 @@ class ManticoreTask
      */
     public static function generateVectorsBatch(array $taskIds, int $batchSize = 20): int
     {
-        if (!Apps::isInstalled("manticore") || !Apps::isInstalled("ai") || empty($taskIds)) {
+        if (!Apps::isInstalled("search") || !Apps::isInstalled("ai") || empty($taskIds)) {
             return 0;
         }
 

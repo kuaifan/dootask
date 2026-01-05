@@ -31,7 +31,7 @@ class SyncMsgToManticore extends Command
 
     public function handle(): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             $this->error("应用「Manticore Search」未安装");
             return 1;
         }

@@ -86,7 +86,7 @@ class ManticoreFile
             return [];
         }
 
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             // 未安装 Manticore，降级到 MySQL LIKE 搜索
             return self::searchByMysql($userid, $keyword, $from, $size);
         }
@@ -223,7 +223,7 @@ class ManticoreFile
      */
     public static function sync(File $file, bool $withVector = false): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -327,7 +327,7 @@ class ManticoreFile
      */
     public static function batchSync(iterable $files, bool $withVector = false): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -348,7 +348,7 @@ class ManticoreFile
      */
     public static function delete(int $fileId): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -432,7 +432,7 @@ class ManticoreFile
      */
     public static function clear(): bool
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return false;
         }
 
@@ -446,7 +446,7 @@ class ManticoreFile
      */
     public static function getIndexedCount(): int
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return 0;
         }
 
@@ -466,7 +466,7 @@ class ManticoreFile
      */
     public static function updateAllowedUsers(int $fileId): bool
     {
-        if (!Apps::isInstalled("manticore") || $fileId <= 0) {
+        if (!Apps::isInstalled("search") || $fileId <= 0) {
             return false;
         }
 
@@ -498,7 +498,7 @@ class ManticoreFile
      */
     public static function generateVectorsBatch(array $fileIds, int $batchSize = 20): int
     {
-        if (!Apps::isInstalled("manticore") || !Apps::isInstalled("ai") || empty($fileIds)) {
+        if (!Apps::isInstalled("search") || !Apps::isInstalled("ai") || empty($fileIds)) {
             return 0;
         }
 

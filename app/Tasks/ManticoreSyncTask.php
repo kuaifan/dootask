@@ -70,7 +70,7 @@ class ManticoreSyncTask extends AbstractTask
 
     public function start()
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return;
         }
 

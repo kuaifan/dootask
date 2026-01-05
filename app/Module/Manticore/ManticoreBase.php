@@ -28,8 +28,8 @@ class ManticoreBase
      */
     public function __construct()
     {
-        $this->host = env('MANTICORE_HOST', 'manticore');
-        $this->port = (int) env('MANTICORE_PORT', 9306);
+        $this->host = env('SEARCH_HOST', 'search');
+        $this->port = (int) env('SEARCH_PORT', 9306);
     }
 
     /**
@@ -37,7 +37,7 @@ class ManticoreBase
      */
     private function getConnection(): ?PDO
     {
-        if (!Apps::isInstalled("manticore")) {
+        if (!Apps::isInstalled("search")) {
             return null;
         }
 
@@ -178,7 +178,7 @@ class ManticoreBase
      */
     public static function isInstalled(): bool
     {
-        return Apps::isInstalled("manticore");
+        return Apps::isInstalled("search");
     }
 
     /**
