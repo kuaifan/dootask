@@ -943,18 +943,13 @@ class AI
 
             if (!empty($embedding) && is_array($embedding)) {
                 $results[$originalIndex] = $embedding;
-
-                // 写入缓存
-                $text = $uncachedTexts[$itemIndex];
-                $cacheKey = "openAIEmbedding::" . md5($text);
-                Cache::put($cacheKey, Base::retSuccess("success", $embedding), Carbon::now()->addDays(7));
             } else {
                 $results[$originalIndex] = [];
             }
         }
 
         // 填充未获取到向量的位置
-        foreach ($uncachedIndices as $i => $originalIndex) {
+        foreach ($uncachedIndices as $originalIndex) {
             if (!isset($results[$originalIndex])) {
                 $results[$originalIndex] = [];
             }
