@@ -1135,7 +1135,6 @@ export default {
                 'cacheLoginEmail',
                 'cacheFileSort',
                 'cacheTranslationLanguage',
-                'cacheTranscriptionLanguage',
                 'cacheTranslations',
                 'cacheEmojis',
                 'userInfo',
@@ -1174,8 +1173,7 @@ export default {
                     'clientId',
                     'cacheServerUrl',
                     'cacheCalendarView',
-                    'cacheTranslationLanguage',
-                    'cacheTranscriptionLanguage'
+                    'cacheTranslationLanguage'
                 ],
                 array: [
                     'cacheUserBasic',
@@ -1229,11 +1227,6 @@ export default {
             // TranslationLanguage 检查
             if (typeof languageList[state.cacheTranslationLanguage] === "undefined") {
                 state.cacheTranslationLanguage = languageName;
-            }
-
-            // TranscriptionLanguage 检查
-            if (typeof languageList[state.cacheTranscriptionLanguage] === "undefined") {
-                state.cacheTranscriptionLanguage = '';
             }
 
             // 处理用户信息
@@ -4288,16 +4281,6 @@ export default {
     setTranslationLanguage({state}, language) {
         state.cacheTranslationLanguage = language
         $A.IDBSave('cacheTranslationLanguage', language);
-    },
-
-    /**
-     * 设置语音转文字语言
-     * @param state
-     * @param language
-     */
-    setTranscriptionLanguage({state}, language) {
-        state.cacheTranscriptionLanguage = language
-        $A.IDBSave('cacheTranscriptionLanguage', language);
     },
 
     /** *****************************************************************************************/

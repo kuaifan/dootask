@@ -262,8 +262,7 @@
                     <div class="convert-body">
                         <div class="convert-content">
                             <div v-if="recordConvertSetting" class="convert-setting">
-                                <i class="taskfont" :class="{active: !!cacheTranscriptionLanguage}" @click="convertSetting('transcription', $event)">&#xe628;</i>
-                                <i class="taskfont" :class="{active: !!recordConvertTranslate}" @click="convertSetting('translate', $event)">&#xe795;</i>
+                                <i class="taskfont" :class="{active: !!recordConvertTranslate}" @click="convertSetting($event)">&#xe795;</i>
                             </div>
                             <div class="convert-input">
                                 <Input
@@ -599,7 +598,6 @@ export default {
             'cacheDialogs',
             'dialogMsgs',
 
-            'cacheTranscriptionLanguage',
             'cacheKeyboard',
             'keyboardShow',
             'keyboardHeight',
@@ -1686,7 +1684,6 @@ export default {
                         dialog_id: this.dialogId,
                         base64: reader.result,
                         duration: this.recordDuration,
-                        language: this.cacheTranscriptionLanguage,
                         translate: this.recordConvertTranslate
                     },
                     method: 'post',
@@ -1707,7 +1704,7 @@ export default {
             reader.readAsDataURL(this.recordBlob);
         },
 
-        async convertSetting(type, event) {
+        async convertSetting(event) {
             if (this.recordConvertStatus !== 1) {
                 $A.messageWarning("请稍后再试...")
                 return;
@@ -1717,33 +1714,17 @@ export default {
                 label: languageList[item],
                 value: item
             }))
-            let active
-            if (type === 'transcription') {
-                // 语音转文字
-                list.unshift(...[
-                    {label: this.$L('选择识别语言'), value: '', disabled: true},
-                    {label: this.$L('自动识别'), value: '', divided: true},
-                ])
-                active = this.cacheTranscriptionLanguage
-            } else {
-                // 翻译
-                list.unshift(...[
-                    {label: this.$L('选择翻译结果'), value: '', disabled: true},
-                    {label: this.$L('不翻译结果'), value: '', divided: true},
-                ])
-                active = this.recordConvertTranslate
-            }
+            list.unshift(...[
+                {label: this.$L('选择翻译结果'), value: '', disabled: true},
+                {label: this.$L('不翻译结果'), value: '', divided: true},
+            ])
             this.$store.commit('menu/operation', {
                 event,
                 list,
-                active,
+                active: this.recordConvertTranslate,
                 language: false,
-                onUpdate: async (language) => {
-                    if (type === 'transcription') {
-                        await this.$store.dispatch('setTranscriptionLanguage', language)
-                    } else {
-                        this.recordConvertTranslate = language
-                    }
+                onUpdate: (language) => {
+                    this.recordConvertTranslate = language
                     this.convertRecord()
                 }
             })

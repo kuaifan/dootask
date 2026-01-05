@@ -1306,11 +1306,7 @@ class DialogController extends AbstractController
      *
      * @apiParam {String} base64                语音base64
      * @apiParam {Number} duration              语音时长（毫秒）
-     * @apiParam {String} [language]            识别语言
-     * - 比如：zh
-     * - 默认：自动识别
-     * - 格式：符合 ISO_639 标准
-     * - 此参数不一定起效果，AI会根据语音和language参考翻译识别结果
+     * @apiParam {Number} [dialog_id]           会话ID，用于获取上下文提高识别准确率
      * @apiParam {String} [translate]           翻译识别结果
      * - 比如：zh
      * - 默认：不翻译结果
@@ -1327,9 +1323,9 @@ class DialogController extends AbstractController
         //
         $path = "uploads/tmp/chat/" . date("Ym") . "/" . $user->userid . "/";
         $base64 = Request::input('base64');
-        $language = Request::input('language');
         $translate = Request::input('translate');
         $duration = intval(Request::input('duration'));
+        $dialogId = intval(Request::input('dialog_id'));
         if ($duration < 600) {
             return Base::retError('说话时间太短');
         }
@@ -1342,17 +1338,35 @@ class DialogController extends AbstractController
             return Base::retError($data['msg']);
         }
         $recordData = $data['data'];
+        // 构建上下文提示词
+        $promptParts = [];
+        if ($user->lang === 'zh') {
+            $promptParts[] = "如果识别到中文，优先使用简体中文输出";
+        } elseif ($user->lang === 'zh-CHT') {
+            $promptParts[] = "如果識別到中文，優先使用繁體中文輸出";
+        }
+        // 获取最近的聊天上下文
+        if ($dialogId > 0) {
+            $contextTexts = WebSocketDialogMsg::whereDialogId($dialogId)
+                ->whereIn('type', ['text'])
+                ->orderByDesc('id')
+                ->limit(5)
+                ->get()
+                ->reverse()
+                ->map(fn($msg) => $msg->extractMessageContent(100))
+                ->filter()
+                ->values()
+                ->toArray();
+            if (!empty($contextTexts)) {
+                $promptParts[] = "对话上下文：" . implode("；", $contextTexts) . "。";
+            }
+        }
         // 转文字
         $extParams = [];
-        if ($language) {
-            $extParams = [
-                'language' => $language === 'zh-CHT' ? 'zh' : $language,
-                'prompt' => "将此语音识别为“" . Doo::getLanguages($language) . "”。",
-            ];
+        if (!empty($promptParts)) {
+            $extParams['prompt'] = implode("\n\n", $promptParts);
         }
-        $result = AI::transcriptions($recordData['file'], $extParams, [
-            'accept-language' => Request::header('Accept-Language', 'zh')
-        ]);
+        $result = AI::transcriptions($recordData['file'], $extParams);
         if (Base::isError($result)) {
             return $result;
         }
@@ -1944,10 +1958,15 @@ class DialogController extends AbstractController
             return Base::retSuccess("success", $msg);
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
+        // 根据用户语言构建提示词
+        $extParams = [];
+        if ($user->lang === 'zh') {
+            $extParams['prompt'] = "如果识别到中文，优先使用简体中文输出";
+        } elseif ($user->lang === 'zh-CHT') {
+            $extParams['prompt'] = "如果識別到中文，優先使用繁體中文輸出";
+        }
         //
-        $result = AI::transcriptions(public_path($msgData['path']), [], [
-            'accept-language' => Request::header('Accept-Language', 'zh')
-        ]);
+        $result = AI::transcriptions(public_path($msgData['path']), $extParams);
         if (Base::isError($result)) {
             return $result;
         }

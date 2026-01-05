@@ -264,9 +264,6 @@ export default {
     cacheTranslationLanguage: '',
     cacheTranslations: [],
 
-    // 语音转文字（识别语言）
-    cacheTranscriptionLanguage: '',
-
     // 下拉菜单操作
     menuOperation: {},
 

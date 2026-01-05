@@ -271,6 +271,9 @@ class AI
     {
         Apps::isInstalledThrow('ai');
 
+        $extParams = $extParams ?: [];
+        $extHeaders = $extHeaders ?: [];
+
         if (!file_exists($filePath)) {
             return Base::retError("语音文件不存在");
         }
@@ -287,7 +290,7 @@ class AI
         $result = Cache::remember($cacheKey, Carbon::now()->addDays(), function () use ($extParams, $extHeaders, $filePath, $audioProvider) {
             $post = array_merge($extParams, [
                 'file' => new \CURLFile($filePath),
-                'model' => 'whisper-1',
+                'model' => 'gpt-4o-mini-transcribe',
             ]);
             $header = array_merge($extHeaders, [
                 'Content-Type' => 'multipart/form-data',
@@ -373,8 +376,9 @@ class AI
                     ]
                 ],
             ];
-            if (self::shouldSendReasoningEffort($provider)) {
-                $payload['reasoning_effort'] = 'minimal';
+            $reasoningEffort = self::getReasoningEffort($provider);
+            if ($reasoningEffort !== null) {
+                $payload['reasoning_effort'] = $reasoningEffort;
             }
             $post = json_encode($payload);
 
@@ -454,8 +458,9 @@ class AI
                     ]
                 ],
             ];
-            if (self::shouldSendReasoningEffort($provider)) {
-                $payload['reasoning_effort'] = 'minimal';
+            $reasoningEffort = self::getReasoningEffort($provider);
+            if ($reasoningEffort !== null) {
+                $payload['reasoning_effort'] = $reasoningEffort;
             }
             $post = json_encode($payload);
 
@@ -542,8 +547,9 @@ class AI
                     ]
                 ],
             ];
-            if (self::shouldSendReasoningEffort($provider)) {
-                $payload['reasoning_effort'] = 'minimal';
+            $reasoningEffort = self::getReasoningEffort($provider);
+            if ($reasoningEffort !== null) {
+                $payload['reasoning_effort'] = $reasoningEffort;
             }
             $post = json_encode($payload);
 
@@ -712,7 +718,7 @@ class AI
 
         return [
             'vendor' => 'openai',
-            'model' => 'whisper-1',
+            'model' => 'gpt-4o-mini-transcribe',
             'api_key' => $key,
             'base_url' => rtrim($baseUrl, '/'),
             'agency' => $agency,
@@ -720,23 +726,37 @@ class AI
     }
 
     /**
-     * 是否需要附加 reasoning_effort 参数
+     * 获取 reasoning_effort 参数值
      * @param array $provider
-     * @return bool
+     * @return string|null 返回 'none'/'low' 或 null（不需要此参数）
      */
-    protected static function shouldSendReasoningEffort(array $provider): bool
+    protected static function getReasoningEffort(array $provider): ?string
     {
         if (($provider['vendor'] ?? '') !== 'openai') {
-            return false;
+            return null;
         }
         $model = $provider['model'] ?? '';
-        
-        // 匹配 gpt- 开头后跟数字的模型名称
-        if (preg_match('/^gpt-(\d+)/', $model, $matches)) {
-            return intval($matches[1]) >= 5;
+
+        // gpt-5.1 及之后版本支持 none
+        if (preg_match('/^gpt-(\d+)\.(\d+)/', $model, $matches)) {
+            $major = intval($matches[1]);
+            $minor = intval($matches[2]);
+            if ($major > 5 || ($major === 5 && $minor >= 1)) {
+                return 'none';
+            }
+            if ($major === 5) {
+                return 'low';
+            }
         }
-        
-        return false;
+
+        // gpt-5 (无小版本号) 使用 low
+        if (preg_match('/^gpt-(\d+)(?![.\d])/', $model, $matches)) {
+            if (intval($matches[1]) >= 5) {
+                return 'low';
+            }
+        }
+
+        return null;
     }
 
     /**
