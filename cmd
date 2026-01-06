@@ -305,10 +305,11 @@ remove_by_network() {
     local app_id=$(env_get APP_ID)
     local network_name="dootask-networks-${app_id}"
 
-    # 删除所有状态的容器（包括已停止的）
-    for container_id in $(docker ps -aq --filter network="$network_name"); do
-        docker rm -f "$container_id" 1>/dev/null
-    done
+    # 批量删除所有状态的容器（包括已停止的）
+    local container_ids=$(docker ps -aq --filter network="$network_name")
+    if [ -n "$container_ids" ]; then
+        echo "$container_ids" | xargs -r docker rm -f 1>/dev/null
+    fi
 
     # 等待网络完全清空（最多等待10秒）
     local retry=0
