@@ -88,16 +88,32 @@ class UserCheckinRecord extends AbstractModel
 
     /**
      * 时间收集
-     * @param string $data
-     * @param array $times
+     * @param string $data 日期
+     * @param array $times 签到时间数组
+     * @param string|null $shiftStart 班次开始时间（如 "09:00"），用于判断跨天
      * @return \Illuminate\Support\Collection
      */
-    public static function atCollect($data, $times)
+    public static function atCollect($data, $times, $shiftStart = null)
     {
-        $sameTimes = array_map(function($time) use ($data) {
+        $shiftStartMinutes = null;
+        if ($shiftStart) {
+            $parts = explode(':', $shiftStart);
+            $shiftStartMinutes = intval($parts[0]) * 60 + intval($parts[1]);
+        }
+
+        $sameTimes = array_map(function($time) use ($data, $shiftStartMinutes) {
+            $parts = explode(':', $time);
+            $timeMinutes = intval($parts[0]) * 60 + intval($parts[1]);
+
+            // 如果签到时间早于班次开始时间，视为跨天打卡（属于次日凌晨）
+            $targetDate = $data;
+            if ($shiftStartMinutes !== null && $timeMinutes < $shiftStartMinutes) {
+                $targetDate = date("Y-m-d", strtotime($data . " +1 day"));
+            }
+
             return [
-                "datetime" => "{$data} {$time}",
-                "timestamp" => strtotime("{$data} {$time}")
+                "datetime" => "{$targetDate} {$time}",
+                "timestamp" => strtotime("{$targetDate} {$time}")
             ];
         }, $times);
         return collect($sameTimes);

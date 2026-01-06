@@ -352,16 +352,47 @@ class UserBot extends AbstractModel
         $advance = (intval($setting['advance']) ?: 120) * 60;
         $delay = (intval($setting['delay']) ?: 120) * 60;
         //
+        $currentTime = Timer::time();
         $nowDate = date("Y-m-d");
         $nowTime = date("H:i:s");
+        $yesterdayDate = date("Y-m-d", strtotime("-1 day"));
         //
+        // 今天的签到窗口
         $timeStart = strtotime("{$nowDate} {$times[0]}");
         $timeEnd = strtotime("{$nowDate} {$times[1]}");
         $timeAdvance = max($timeStart - $advance, strtotime($nowDate));
-        $timeDelay = min($timeEnd + $delay, strtotime("{$nowDate} 23:59:59"));
+        // 移除 23:59:59 限制，允许跨天
+        $todayTimeDelay = $timeEnd + $delay;
+        //
+        // 昨天的延后窗口（用于判断凌晨打卡归属）
+        $yesterdayTimeEnd = strtotime("{$yesterdayDate} {$times[1]}");
+        $yesterdayTimeDelay = $yesterdayTimeEnd + $delay;
+        //
+        // 判断签到归属哪天
+        $targetDate = null;
+        $checkType = null; // 'up' 或 'down'
+        //
+        // 情况1：在今天的有效窗口内
+        if ($currentTime >= $timeAdvance && $currentTime <= $todayTimeDelay) {
+            $targetDate = $nowDate;
+            if ($currentTime < $timeEnd) {
+                $checkType = 'up';
+            } else {
+                $checkType = 'down';
+            }
+        }
+        // 情况2：凌晨时段，检查是否在昨天的延后窗口内
+        elseif ($currentTime < $timeAdvance && $currentTime <= $yesterdayTimeDelay) {
+            $targetDate = $yesterdayDate;
+            $checkType = 'down';
+        }
+        //
+        // 构建错误消息
         $errorTime = false;
-        if (Timer::time() < $timeAdvance || $timeDelay < Timer::time()) {
-            $errorTime = "不在有效时间内，有效时间为：" . date("H:i", $timeAdvance) . "-" . date("H:i", $timeDelay);
+        if (!$targetDate) {
+            $displayDelay = date("H:i", $todayTimeDelay % 86400);
+            $nextDay = ($todayTimeDelay > strtotime("{$nowDate} 23:59:59")) ? "(次日)" : "";
+            $errorTime = "不在有效时间内，有效时间为：" . date("H:i", $timeAdvance) . "-{$nextDay}{$displayDelay}";
         }
         //
         $macs = explode(",", $mac);
@@ -375,7 +406,7 @@ class UserBot extends AbstractModel
                     $array[] = [
                         'userid' => $UserCheckinMac->userid,
                         'mac' => $UserCheckinMac->mac,
-                        'date' => $nowDate,
+                        'date' => $targetDate ?: $nowDate,
                     ];
                     $checkins[] = [
                         'userid' => $UserCheckinMac->userid,
@@ -396,7 +427,7 @@ class UserBot extends AbstractModel
                     $array[] = [
                         'userid' => $UserInfo->userid,
                         'mac' => '00:00:00:00:00:00',
-                        'date' => $nowDate,
+                        'date' => $targetDate ?: $nowDate,
                     ];
                     $checkins[] = [
                         'userid' => $UserInfo->userid,
@@ -431,7 +462,8 @@ class UserBot extends AbstractModel
                 }
                 return null;
             };
-            $sendMsg = function($type, $checkin) use ($errorTime, $alreadyTip, $getJokeSoup, $botUser, $nowDate) {
+            $sendMsg = function($type, $checkin) use ($errorTime, $alreadyTip, $getJokeSoup, $botUser, $targetDate, $nowDate) {
+                $displayDate = $targetDate ?: $nowDate;
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid']);
                 if (!$dialog) {
                     return;
@@ -448,12 +480,13 @@ class UserBot extends AbstractModel
                     }
                     return;
                 }
-                // 判断已打卡
-                $cacheKey = "Checkin::sendMsg-{$nowDate}-{$type}:" . $checkin['userid'];
+                // 判断已打卡（使用目标日期作为缓存键）
+                $cacheKey = "Checkin::sendMsg-{$displayDate}-{$type}:" . $checkin['userid'];
                 $typeContent = $type == "up" ? "上班" : "下班";
                 if (Cache::get($cacheKey) === "yes") {
                     if ($alreadyTip) {
-                        $text = "今日已{$typeContent}打卡，无需重复打卡。";
+                        $dateHint = ($displayDate != $nowDate) ? "（{$displayDate}）" : "今日";
+                        $text = "{$dateHint}已{$typeContent}打卡，无需重复打卡。";
                         $text .= $checkin['remark'] ? " ({$checkin['remark']})": "";
                         WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                             'type' => 'content',
@@ -467,7 +500,8 @@ class UserBot extends AbstractModel
                 $hi = date("H:i");
                 $remark = $checkin['remark'] ? " ({$checkin['remark']})": "";
                 $subcontent = $getJokeSoup($type, $checkin['userid']);
-                $title = "{$typeContent}打卡成功，打卡时间: {$hi}{$remark}";
+                $dateInfo = ($displayDate != $nowDate) ? "（记录归属 {$displayDate}）" : "";
+                $title = "{$typeContent}打卡成功，打卡时间: {$hi}{$remark}{$dateInfo}";
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                     'type' => 'content',
                     'title' => $title,
@@ -482,14 +516,13 @@ class UserBot extends AbstractModel
                     ],
                 ], $botUser->userid, false, false, $type != "up");
             };
-            if ($timeAdvance <= Timer::time() && Timer::time() < $timeEnd) {
-                // 上班打卡通知（从最早打卡时间 到 下班打卡时间）
+            // 根据打卡类型发送通知
+            if ($checkType === 'up') {
                 foreach ($checkins as $checkin) {
                     $sendMsg('up', $checkin);
                 }
             }
-            if ($timeEnd <= Timer::time() && Timer::time() <= $timeDelay) {
-                // 下班打卡通知（下班打卡时间 到 最晚打卡时间）
+            if ($checkType === 'down') {
                 foreach ($checkins as $checkin) {
                     $sendMsg('down', $checkin);
                 }

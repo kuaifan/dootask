@@ -456,6 +456,24 @@ class SystemController extends AbstractController
             if ($all['modes']) {
                 $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'locat', 'face']);
             }
+            // 验证提前和延后时间是否重叠（跨天打卡支持）
+            if ($all['open'] === 'open') {
+                $times = is_array($all['time']) ? $all['time'] : Base::json2array($all['time']);
+                if (count($times) >= 2) {
+                    $startMinutes = intval(substr($times[0], 0, 2)) * 60 + intval(substr($times[0], 3, 2));
+                    $endMinutes = intval(substr($times[1], 0, 2)) * 60 + intval(substr($times[1], 3, 2));
+                    $shiftDuration = $endMinutes - $startMinutes;
+                    if ($shiftDuration <= 0) {
+                        $shiftDuration += 24 * 60; // 处理跨天班次
+                    }
+                    $advance = intval($all['advance']) ?: 120;
+                    $delay = intval($all['delay']) ?: 120;
+                    $maxAllowed = 24 * 60 - $shiftDuration;
+                    if ($advance + $delay >= $maxAllowed) {
+                        return Base::retError('提前和延后时间设置存在重叠，最大提前+延后时间不能超过 ' . ($maxAllowed - 1) . ' 分钟');
+                    }
+                }
+            }
             $setting = Base::setting('checkinSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('checkinSetting');
@@ -1271,6 +1289,8 @@ class SystemController extends AbstractController
         //
         $secondStart = strtotime("2000-01-01 {$time[0]}") - strtotime("2000-01-01 00:00:00");
         $secondEnd = strtotime("2000-01-01 {$time[1]}") - strtotime("2000-01-01 00:00:00");
+        // 获取延后时间配置（用于跨天打卡导出）
+        $delaySeconds = (intval($setting['delay']) ?: 120) * 60;
         //
         $botUser = User::botGetOrCreate('system-msg');
         if (empty($botUser)) {
@@ -1279,7 +1299,7 @@ class SystemController extends AbstractController
         $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
         //
         $doo = Doo::load();
-        go(function () use ($doo, $secondStart, $secondEnd, $time, $userid, $date, $user, $botUser, $dialog) {
+        go(function () use ($doo, $secondStart, $secondEnd, $time, $userid, $date, $user, $botUser, $dialog, $delaySeconds) {
             Coroutine::sleep(1);
             //
             $headings = [];
@@ -1316,9 +1336,10 @@ class SystemController extends AbstractController
                     $index++;
                     $sameDate = date("Y-m-d", $startT);
                     $sameTimes = $recordTimes[$sameDate] ?? [];
-                    $sameCollect = UserCheckinRecord::atCollect($sameDate, $sameTimes);
+                    $sameCollect = UserCheckinRecord::atCollect($sameDate, $sameTimes, $time[0]);
                     $firstBetween = [Carbon::createFromTimestamp($startT), Carbon::createFromTimestamp($startT + $secondEnd - 1)];
-                    $lastBetween = [Carbon::createFromTimestamp($startT + $secondStart + 1), Carbon::createFromTimestamp($startT + 86400)];
+                    // 扩展下班打卡范围以支持跨天打卡
+                    $lastBetween = [Carbon::createFromTimestamp($startT + $secondStart + 1), Carbon::createFromTimestamp($startT + 86400 + $delaySeconds)];
                     $firstRecord = $sameCollect?->whereBetween("datetime", $firstBetween)->first();
                     $lastRecord = $sameCollect?->whereBetween("datetime", $lastBetween)->last();
                     $firstTimestamp = $firstRecord['timestamp'] ?: 0;

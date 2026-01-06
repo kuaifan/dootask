@@ -411,9 +411,34 @@ export default {
         submitForm() {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
+                    // 验证提前和延后时间是否重叠
+                    if (this.formData.open === 'open') {
+                        const times = this.formData.time;
+                        if (times && times.length >= 2) {
+                            const startMinutes = this.timeToMinutes(times[0]);
+                            const endMinutes = this.timeToMinutes(times[1]);
+                            let shiftDuration = endMinutes - startMinutes;
+                            if (shiftDuration <= 0) shiftDuration += 24 * 60;
+
+                            const advance = parseInt(this.formData.advance) || 120;
+                            const delay = parseInt(this.formData.delay) || 120;
+                            const maxAllowed = 24 * 60 - shiftDuration;
+
+                            if (advance + delay >= maxAllowed) {
+                                $A.modalError('提前和延后时间设置存在重叠，最大提前+延后时间不能超过 ' + (maxAllowed - 1) + ' 分钟', {language: false});
+                                return;
+                            }
+                        }
+                    }
                     this.systemSetting(true);
                 }
             })
+        },
+
+        timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const parts = timeStr.split(':');
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]);
         },
 
         resetForm() {
