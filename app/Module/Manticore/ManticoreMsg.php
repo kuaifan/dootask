@@ -468,9 +468,9 @@ class ManticoreMsg
             }
 
             $embeddings = $result['data'] ?? [];
-            $failedIds = [];
 
-            // 更新向量
+            // 构建批量更新数据 [msg_id => vectorStr]
+            $vectorData = [];
             foreach ($embeddings as $index => $embedding) {
                 if (empty($embedding) || !is_array($embedding)) {
                     continue;
@@ -481,17 +481,20 @@ class ManticoreMsg
                     continue;
                 }
 
-                $vectorStr = '[' . implode(',', $embedding) . ']';
-                if (ManticoreBase::updateMsgVector($msgId, $vectorStr)) {
-                    $count++;
-                } else {
-                    $failedIds[] = $msgId;
-                }
+                $vectorData[$msgId] = '[' . implode(',', $embedding) . ']';
             }
 
-            // 记录更新失败的 ID
-            if (!empty($failedIds)) {
-                Log::warning('ManticoreMsg: Vector update failed', ['msg_ids' => $failedIds]);
+            // 批量更新向量（优化：减少数据库操作次数）
+            if (!empty($vectorData)) {
+                $batchCount = ManticoreBase::batchUpdateMsgVectors($vectorData);
+                $count += $batchCount;
+
+                if ($batchCount < count($vectorData)) {
+                    Log::warning('ManticoreMsg: Some vector updates failed', [
+                        'expected' => count($vectorData),
+                        'actual' => $batchCount,
+                    ]);
+                }
             }
         }
 

@@ -573,25 +573,27 @@ class ManticoreTask
                 }
 
                 $embeddings = $result['data'];
-                $failedIds = [];
 
-                // 5. 逐个更新向量到 Manticore
+                // 5. 构建批量更新数据
+                $vectorData = [];
                 foreach ($ids as $index => $taskId) {
                     if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
                         continue;
                     }
-
-                    $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
-                    if (ManticoreBase::updateTaskVector($taskId, $vectorStr)) {
-                        $successCount++;
-                    } else {
-                        $failedIds[] = $taskId;
-                    }
+                    $vectorData[$taskId] = '[' . implode(',', $embeddings[$index]) . ']';
                 }
 
-                // 记录更新失败的 ID
-                if (!empty($failedIds)) {
-                    Log::warning('ManticoreTask: Vector update failed', ['task_ids' => $failedIds]);
+                // 6. 批量更新向量
+                if (!empty($vectorData)) {
+                    $batchCount = ManticoreBase::batchUpdateTaskVectors($vectorData);
+                    $successCount += $batchCount;
+
+                    if ($batchCount < count($vectorData)) {
+                        Log::warning('ManticoreTask: Some vector updates failed', [
+                            'expected' => count($vectorData),
+                            'actual' => $batchCount,
+                        ]);
+                    }
                 }
             }
 

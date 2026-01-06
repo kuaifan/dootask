@@ -25,7 +25,7 @@ class Apps
 
         $key = 'app_installed_' . $appId;
         if (RequestContext::has($key)) {
-            return RequestContext::get($key);
+            return (bool) RequestContext::get($key, false);
         }
 
         $configFile = base_path('docker/appstore/config/' . $appId . '/config.yml');

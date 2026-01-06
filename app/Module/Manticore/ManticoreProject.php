@@ -344,25 +344,27 @@ class ManticoreProject
                 }
 
                 $embeddings = $result['data'];
-                $failedIds = [];
 
-                // 5. 逐个更新向量到 Manticore
+                // 5. 构建批量更新数据
+                $vectorData = [];
                 foreach ($ids as $index => $projectId) {
                     if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
                         continue;
                     }
-
-                    $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
-                    if (ManticoreBase::updateProjectVector($projectId, $vectorStr)) {
-                        $successCount++;
-                    } else {
-                        $failedIds[] = $projectId;
-                    }
+                    $vectorData[$projectId] = '[' . implode(',', $embeddings[$index]) . ']';
                 }
 
-                // 记录更新失败的 ID
-                if (!empty($failedIds)) {
-                    Log::warning('ManticoreProject: Vector update failed', ['project_ids' => $failedIds]);
+                // 6. 批量更新向量
+                if (!empty($vectorData)) {
+                    $batchCount = ManticoreBase::batchUpdateProjectVectors($vectorData);
+                    $successCount += $batchCount;
+
+                    if ($batchCount < count($vectorData)) {
+                        Log::warning('ManticoreProject: Some vector updates failed', [
+                            'expected' => count($vectorData),
+                            'actual' => $batchCount,
+                        ]);
+                    }
                 }
             }
 

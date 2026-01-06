@@ -551,25 +551,27 @@ class ManticoreFile
                 }
 
                 $embeddings = $result['data'];
-                $failedIds = [];
 
-                // 5. 逐个更新向量到 Manticore
+                // 5. 构建批量更新数据
+                $vectorData = [];
                 foreach ($ids as $index => $fileId) {
                     if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
                         continue;
                     }
-
-                    $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
-                    if (ManticoreBase::updateFileVector($fileId, $vectorStr)) {
-                        $successCount++;
-                    } else {
-                        $failedIds[] = $fileId;
-                    }
+                    $vectorData[$fileId] = '[' . implode(',', $embeddings[$index]) . ']';
                 }
 
-                // 记录更新失败的 ID
-                if (!empty($failedIds)) {
-                    Log::warning('ManticoreFile: Vector update failed', ['file_ids' => $failedIds]);
+                // 6. 批量更新向量
+                if (!empty($vectorData)) {
+                    $batchCount = ManticoreBase::batchUpdateFileVectors($vectorData);
+                    $successCount += $batchCount;
+
+                    if ($batchCount < count($vectorData)) {
+                        Log::warning('ManticoreFile: Some vector updates failed', [
+                            'expected' => count($vectorData),
+                            'actual' => $batchCount,
+                        ]);
+                    }
                 }
             }
 

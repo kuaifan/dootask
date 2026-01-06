@@ -154,7 +154,7 @@ export default {
 
         aiSearchAvailable() {
             return this.microAppsIds 
-                && this.microAppsIds.includes('manticore') 
+                && this.microAppsIds.includes('search') 
                 && this.microAppsIds.includes('ai')
         },
 

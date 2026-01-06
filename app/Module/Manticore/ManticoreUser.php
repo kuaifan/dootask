@@ -336,25 +336,27 @@ class ManticoreUser
                 }
 
                 $embeddings = $result['data'];
-                $failedIds = [];
 
-                // 5. 逐个更新向量到 Manticore
+                // 5. 构建批量更新数据
+                $vectorData = [];
                 foreach ($ids as $index => $userid) {
                     if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
                         continue;
                     }
-
-                    $vectorStr = '[' . implode(',', $embeddings[$index]) . ']';
-                    if (ManticoreBase::updateUserVector($userid, $vectorStr)) {
-                        $successCount++;
-                    } else {
-                        $failedIds[] = $userid;
-                    }
+                    $vectorData[$userid] = '[' . implode(',', $embeddings[$index]) . ']';
                 }
 
-                // 记录更新失败的 ID
-                if (!empty($failedIds)) {
-                    Log::warning('ManticoreUser: Vector update failed', ['user_ids' => $failedIds]);
+                // 6. 批量更新向量
+                if (!empty($vectorData)) {
+                    $batchCount = ManticoreBase::batchUpdateUserVectors($vectorData);
+                    $successCount += $batchCount;
+
+                    if ($batchCount < count($vectorData)) {
+                        Log::warning('ManticoreUser: Some vector updates failed', [
+                            'expected' => count($vectorData),
+                            'actual' => $batchCount,
+                        ]);
+                    }
                 }
             }
 

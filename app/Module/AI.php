@@ -852,8 +852,10 @@ class AI
             return Base::retSuccess("success", []);
         }
 
-        // 限制批量大小（OpenAI 最多支持 2048 条，这里限制 100 条）
-        $texts = array_slice($texts, 0, 100);
+        // 限制批量大小
+        // OpenAI 限制：最多 2048 条，单次请求合计最多 300,000 tokens
+        // 这里限制 500 条，假设平均每条 500 tokens，合计 250,000 tokens
+        $texts = array_slice($texts, 0, 500);
 
         // 准备结果数组，并检查缓存
         $results = [];

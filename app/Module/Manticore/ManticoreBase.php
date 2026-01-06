@@ -74,6 +74,7 @@ class ManticoreBase
     {
         try {
             // 创建文件向量表
+            // charset_table='non_cjk, cjk' 同时支持英文和中日韩文字
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS file_vectors (
                     id BIGINT,
@@ -86,7 +87,7 @@ class ManticoreBase
                     content TEXT,
                     allowed_users MULTI,
                     content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='chinese' morphology='icu_chinese'
+                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
             ");
 
             // 创建键值存储表
@@ -109,7 +110,7 @@ class ManticoreBase
                     tags TEXT,
                     introduction TEXT,
                     content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='chinese' morphology='icu_chinese'
+                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
             ");
 
             // 创建项目向量表
@@ -123,7 +124,7 @@ class ManticoreBase
                     project_desc TEXT,
                     allowed_users MULTI,
                     content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='chinese' morphology='icu_chinese'
+                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
             ");
 
             // 创建任务向量表
@@ -139,7 +140,7 @@ class ManticoreBase
                     task_content TEXT,
                     allowed_users MULTI,
                     content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='chinese' morphology='icu_chinese'
+                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
             ");
 
             // 创建消息向量表
@@ -154,7 +155,7 @@ class ManticoreBase
                     allowed_users MULTI,
                     created_at BIGINT,
                     content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='chinese' morphology='icu_chinese'
+                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
             ");
 
             Log::info('Manticore tables initialized successfully');
@@ -1883,259 +1884,208 @@ class ManticoreBase
     // ==============================
 
     /**
-     * 更新消息的向量
-     *
-     * @param int $msgId 消息ID
-     * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
-     * @return bool 是否成功
+     * 向量表配置
+     * 定义各类型的表名、主键字段、普通字段、MVA字段
      */
-    public static function updateMsgVector(int $msgId, string $vectorStr): bool
+    private const VECTOR_TABLE_CONFIG = [
+        'msg' => [
+            'table' => 'msg_vectors',
+            'pk' => 'msg_id',
+            'fields' => ['id', 'msg_id', 'dialog_id', 'userid', 'msg_type', 'content', 'created_at'],
+            'mva_fields' => ['allowed_users'],
+        ],
+        'file' => [
+            'table' => 'file_vectors',
+            'pk' => 'file_id',
+            'fields' => ['id', 'file_id', 'userid', 'pshare', 'file_name', 'file_type', 'file_ext', 'content'],
+            'mva_fields' => ['allowed_users'],
+        ],
+        'task' => [
+            'table' => 'task_vectors',
+            'pk' => 'task_id',
+            'fields' => ['id', 'task_id', 'project_id', 'userid', 'visibility', 'task_name', 'task_desc', 'task_content'],
+            'mva_fields' => ['allowed_users'],
+        ],
+        'project' => [
+            'table' => 'project_vectors',
+            'pk' => 'project_id',
+            'fields' => ['id', 'project_id', 'userid', 'personal', 'project_name', 'project_desc'],
+            'mva_fields' => ['allowed_users'],
+        ],
+        'user' => [
+            'table' => 'user_vectors',
+            'pk' => 'userid',
+            'fields' => ['id', 'userid', 'nickname', 'email', 'profession', 'tags', 'introduction'],
+            'mva_fields' => [],
+        ],
+    ];
+
+    /**
+     * 通用批量更新向量方法（高性能版本）
+     *
+     * 优化：将 N 条记录的 3N 次操作减少为 N+2 次操作
+     * 1. 批量 SELECT 获取现有记录 (1次)
+     * 2. 预构建所有 INSERT SQL（验证数据完整性）
+     * 3. 批量 DELETE 删除旧记录 (1次)
+     * 4. 逐条 INSERT 新记录带向量 (N次，因向量字段无法批量绑定)
+     *
+     * @param string $type 类型: msg/file/task/project/user
+     * @param array $vectorData 向量数据 [pk_value => vectorStr, ...]
+     * @return int 成功更新的数量
+     */
+    public static function batchUpdateVectors(string $type, array $vectorData): int
     {
-        if ($msgId <= 0 || empty($vectorStr)) {
-            return false;
+        if (empty($vectorData) || !isset(self::VECTOR_TABLE_CONFIG[$type])) {
+            return 0;
         }
+
+        $config = self::VECTOR_TABLE_CONFIG[$type];
+        $table = $config['table'];
+        $pk = $config['pk'];
+        $fields = $config['fields'];
+        $mvaFields = $config['mva_fields'];
 
         $instance = new self();
+        $ids = array_keys($vectorData);
 
-        // 查询现有记录
-        $existing = $instance->queryOne(
-            "SELECT * FROM msg_vectors WHERE msg_id = ?",
-            [$msgId]
+        // 1. 批量查询现有记录
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $existingRows = $instance->query(
+            "SELECT * FROM {$table} WHERE {$pk} IN ({$placeholders})",
+            $ids
         );
 
-        if (!$existing) {
-            return false;
+        if (empty($existingRows)) {
+            return 0;
         }
 
-        // 删除旧记录
-        $instance->execute("DELETE FROM msg_vectors WHERE msg_id = ?", [$msgId]);
+        // 建立 pk => row 的映射
+        $existingMap = [];
+        foreach ($existingRows as $row) {
+            $existingMap[$row[$pk]] = $row;
+        }
 
-        // Manticore 的向量需要使用 () 格式
-        $vectorStr = str_replace(['[', ']'], ['(', ')'], $vectorStr);
+        $idsToUpdate = array_keys($existingMap);
+        if (empty($idsToUpdate)) {
+            return 0;
+        }
 
-        // 构建 allowed_users MVA 值
-        $allowedUsersStr = !empty($existing['allowed_users'])
-            ? '(' . $existing['allowed_users'] . ')'
-            : '()';
+        // 2. 预构建所有 INSERT 语句（在删除前验证数据完整性）
+        $insertStatements = [];
+        foreach ($idsToUpdate as $pkValue) {
+            $existing = $existingMap[$pkValue];
+            $vectorStr = $vectorData[$pkValue] ?? null;
 
-        // 重新插入
-        $sql = "INSERT INTO msg_vectors
-                (id, msg_id, dialog_id, userid, msg_type, content, allowed_users, created_at, content_vector)
-                VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, ?, {$vectorStr})";
+            if (empty($vectorStr)) {
+                continue;
+            }
 
-        return $instance->execute($sql, [
-            $existing['id'],
-            $existing['msg_id'],
-            $existing['dialog_id'],
-            $existing['userid'],
-            $existing['msg_type'],
-            $existing['content'],
-            $existing['created_at'] ?? time(),
-        ]);
+            // Manticore 向量使用 () 格式
+            $vectorStr = str_replace(['[', ']'], ['(', ')'], $vectorStr);
+
+            // 构建字段列表和值
+            $fieldList = $fields;
+            $values = [];
+            foreach ($fields as $field) {
+                $value = $existing[$field] ?? null;
+                // 处理默认值：数值字段用 0，时间戳字段用当前时间，其他用空字符串
+                if ($value === null) {
+                    if ($field === 'created_at') {
+                        $value = time();
+                    } elseif (in_array($field, ['id', 'userid', 'pshare', 'visibility', 'personal', 'msg_id', 'file_id', 'task_id', 'project_id', 'dialog_id'])) {
+                        $value = 0;
+                    } else {
+                        $value = '';
+                    }
+                }
+                $values[] = $value;
+            }
+
+            // 构建 MVA 字段
+            $mvaValues = [];
+            foreach ($mvaFields as $mvaField) {
+                $fieldList[] = $mvaField;
+                $mvaValues[] = !empty($existing[$mvaField])
+                    ? '(' . $existing[$mvaField] . ')'
+                    : '()';
+            }
+
+            // 添加向量字段
+            $fieldList[] = 'content_vector';
+
+            // 构建 SQL
+            $valuePlaceholders = array_fill(0, count($fields), '?');
+            $allValues = implode(', ', array_merge($valuePlaceholders, $mvaValues, [$vectorStr]));
+            $sql = "INSERT INTO {$table} (" . implode(', ', $fieldList) . ") VALUES ({$allValues})";
+
+            $insertStatements[] = ['sql' => $sql, 'values' => $values, 'pk' => $pkValue];
+        }
+
+        // 如果没有有效的插入语句，直接返回
+        if (empty($insertStatements)) {
+            return 0;
+        }
+
+        // 3. 批量删除旧记录（只删除有有效向量的记录）
+        $validPks = array_column($insertStatements, 'pk');
+        $deletePlaceholders = implode(',', array_fill(0, count($validPks), '?'));
+        $instance->execute(
+            "DELETE FROM {$table} WHERE {$pk} IN ({$deletePlaceholders})",
+            $validPks
+        );
+
+        // 4. 逐条插入新记录
+        $successCount = 0;
+        foreach ($insertStatements as $stmt) {
+            if ($instance->execute($stmt['sql'], $stmt['values'])) {
+                $successCount++;
+            } else {
+                // 插入失败，记录日志（数据已被删除，需要重新同步）
+                Log::warning("Manticore batch update failed for {$table}", ['pk' => $stmt['pk']]);
+            }
+        }
+
+        return $successCount;
     }
 
     /**
-     * 更新文件的向量
-     *
-     * @param int $fileId 文件ID
-     * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
-     * @return bool 是否成功
+     * 批量更新消息向量（兼容方法）
      */
-    public static function updateFileVector(int $fileId, string $vectorStr): bool
+    public static function batchUpdateMsgVectors(array $vectorData): int
     {
-        if ($fileId <= 0 || empty($vectorStr)) {
-            return false;
-        }
-
-        $instance = new self();
-
-        // 查询现有记录
-        $existing = $instance->queryOne(
-            "SELECT * FROM file_vectors WHERE file_id = ?",
-            [$fileId]
-        );
-
-        if (!$existing) {
-            return false;
-        }
-
-        // 删除旧记录
-        $instance->execute("DELETE FROM file_vectors WHERE file_id = ?", [$fileId]);
-
-        // Manticore 的向量需要使用 () 格式
-        $vectorStr = str_replace(['[', ']'], ['(', ')'], $vectorStr);
-
-        // 构建 allowed_users MVA 值
-        $allowedUsersStr = !empty($existing['allowed_users'])
-            ? '(' . $existing['allowed_users'] . ')'
-            : '()';
-
-        // 重新插入
-        $sql = "INSERT INTO file_vectors
-                (id, file_id, userid, pshare, file_name, file_type, file_ext, content, allowed_users, content_vector)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
-
-        return $instance->execute($sql, [
-            $existing['id'],
-            $existing['file_id'],
-            $existing['userid'],
-            $existing['pshare'] ?? 0,
-            $existing['file_name'],
-            $existing['file_type'],
-            $existing['file_ext'],
-            $existing['content'],
-        ]);
+        return self::batchUpdateVectors('msg', $vectorData);
     }
 
     /**
-     * 更新任务的向量
-     *
-     * @param int $taskId 任务ID
-     * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
-     * @return bool 是否成功
+     * 批量更新文件向量
      */
-    public static function updateTaskVector(int $taskId, string $vectorStr): bool
+    public static function batchUpdateFileVectors(array $vectorData): int
     {
-        if ($taskId <= 0 || empty($vectorStr)) {
-            return false;
-        }
-
-        $instance = new self();
-
-        // 查询现有记录
-        $existing = $instance->queryOne(
-            "SELECT * FROM task_vectors WHERE task_id = ?",
-            [$taskId]
-        );
-
-        if (!$existing) {
-            return false;
-        }
-
-        // 删除旧记录
-        $instance->execute("DELETE FROM task_vectors WHERE task_id = ?", [$taskId]);
-
-        // Manticore 的向量需要使用 () 格式
-        $vectorStr = str_replace(['[', ']'], ['(', ')'], $vectorStr);
-
-        // 构建 allowed_users MVA 值
-        $allowedUsersStr = !empty($existing['allowed_users'])
-            ? '(' . $existing['allowed_users'] . ')'
-            : '()';
-
-        // 重新插入
-        $sql = "INSERT INTO task_vectors
-                (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, allowed_users, content_vector)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
-
-        return $instance->execute($sql, [
-            $existing['id'],
-            $existing['task_id'],
-            $existing['project_id'],
-            $existing['userid'] ?? 0,
-            $existing['visibility'] ?? 1,
-            $existing['task_name'],
-            $existing['task_desc'],
-            $existing['task_content'],
-        ]);
+        return self::batchUpdateVectors('file', $vectorData);
     }
 
     /**
-     * 更新项目的向量
-     *
-     * @param int $projectId 项目ID
-     * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
-     * @return bool 是否成功
+     * 批量更新任务向量
      */
-    public static function updateProjectVector(int $projectId, string $vectorStr): bool
+    public static function batchUpdateTaskVectors(array $vectorData): int
     {
-        if ($projectId <= 0 || empty($vectorStr)) {
-            return false;
-        }
-
-        $instance = new self();
-
-        // 查询现有记录
-        $existing = $instance->queryOne(
-            "SELECT * FROM project_vectors WHERE project_id = ?",
-            [$projectId]
-        );
-
-        if (!$existing) {
-            return false;
-        }
-
-        // 删除旧记录
-        $instance->execute("DELETE FROM project_vectors WHERE project_id = ?", [$projectId]);
-
-        // Manticore 的向量需要使用 () 格式
-        $vectorStr = str_replace(['[', ']'], ['(', ')'], $vectorStr);
-
-        // 构建 allowed_users MVA 值
-        $allowedUsersStr = !empty($existing['allowed_users'])
-            ? '(' . $existing['allowed_users'] . ')'
-            : '()';
-
-        // 重新插入
-        $sql = "INSERT INTO project_vectors
-                (id, project_id, userid, personal, project_name, project_desc, allowed_users, content_vector)
-                VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorStr})";
-
-        return $instance->execute($sql, [
-            $existing['id'],
-            $existing['project_id'],
-            $existing['userid'] ?? 0,
-            $existing['personal'] ?? 0,
-            $existing['project_name'],
-            $existing['project_desc'],
-        ]);
+        return self::batchUpdateVectors('task', $vectorData);
     }
 
     /**
-     * 更新用户的向量
-     *
-     * @param int $userid 用户ID
-     * @param string $vectorStr 向量字符串，格式如 '[0.1,0.2,...]'
-     * @return bool 是否成功
+     * 批量更新项目向量
      */
-    public static function updateUserVector(int $userid, string $vectorStr): bool
+    public static function batchUpdateProjectVectors(array $vectorData): int
     {
-        if ($userid <= 0 || empty($vectorStr)) {
-            return false;
-        }
+        return self::batchUpdateVectors('project', $vectorData);
+    }
 
-        $instance = new self();
-
-        // 查询现有记录
-        $existing = $instance->queryOne(
-            "SELECT * FROM user_vectors WHERE userid = ?",
-            [$userid]
-        );
-
-        if (!$existing) {
-            return false;
-        }
-
-        // 删除旧记录
-        $instance->execute("DELETE FROM user_vectors WHERE userid = ?", [$userid]);
-
-        // Manticore 的向量需要使用 () 格式
-        $vectorStr = str_replace(['[', ']'], ['(', ')'], $vectorStr);
-
-        // 重新插入
-        $sql = "INSERT INTO user_vectors
-                (id, userid, nickname, email, profession, tags, introduction, content_vector)
-                VALUES (?, ?, ?, ?, ?, ?, ?, {$vectorStr})";
-
-        return $instance->execute($sql, [
-            $existing['id'],
-            $existing['userid'],
-            $existing['nickname'],
-            $existing['email'],
-            $existing['profession'],
-            $existing['tags'] ?? '',
-            $existing['introduction'],
-        ]);
+    /**
+     * 批量更新用户向量
+     */
+    public static function batchUpdateUserVectors(array $vectorData): int
+    {
+        return self::batchUpdateVectors('user', $vectorData);
     }
 
     // ==============================
