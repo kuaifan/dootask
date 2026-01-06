@@ -241,89 +241,13 @@
                 <Button type="primary" :loading="departmentLoading > 0" @click="onSaveDepartment">{{$L(departmentData.id > 0 ? '保存' : '新建')}}</Button>
             </div>
         </Modal>
-
-        <!--修改MAC-->
-        <Modal
-            v-model="checkinMacEditShow"
-            :title="$L('修改签到MAC地址')">
-            <Form :model="checkinMacEditData" v-bind="formOptions" @submit.native.prevent>
-                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinMacEditData.userid}, ${checkinMacEditData.nickname}】MAC地址修改。`)}}</Alert>
-                <Row class="team-department-checkin-item">
-                    <Col span="12">{{$L('设备MAC地址')}}</Col>
-                    <Col span="12">{{$L('备注')}}</Col>
-                </Row>
-                <Row v-for="(item, key) in checkinMacEditData.checkin_macs" :key="key" class="team-department-checkin-item">
-                    <Col span="12">
-                        <Input
-                            v-model="item.mac"
-                            :maxlength="20"
-                            :placeholder="$L('请输入设备MAC地址')"
-                            clearable
-                            @on-clear="delCheckinDatum(key)"/>
-                    </Col>
-                    <Col span="12">
-                        <Input v-model="item.remark" :maxlength="100" :placeholder="$L('备注')"/>
-                    </Col>
-                </Row>
-                <Button type="default" icon="md-add" @click="addCheckinDatum">{{$L('添加设备')}}</Button>
-            </Form>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="checkinMacEditShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="checkinMacEditLoading > 0" @click="operationUser(checkinMacEditData, true)">{{$L('确定修改')}}</Button>
-            </div>
-        </Modal>
-
-
-         <!--修改Face-->
-         <Modal
-            v-model="checkinFaceEditShow"
-            :title="$L('修改签到人脸图片')">
-            <Form :model="checkinMacEditData" v-bind="formOptions" @submit.native.prevent>
-                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinFaceEditData.userid}, ${checkinFaceEditData.nickname}】人脸图片修改。`)}}</Alert>
-                <Row class="team-department-checkin-item">
-                    <Col span="24">{{$L('人脸图片')}}</Col>
-                </Row>
-                <Row class="team-department-checkin-item">
-                    <Col span="24">
-                        <ImgUpload v-model="checkinFaceEditData.faceimg" :num="1" :width="512" :height="512" whcut="cover"/>
-                        <div class="form-tip">{{$L('建议尺寸：500x500')}}</div>
-                    </Col>
-                </Row>
-            </Form>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="checkinFaceEditShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="checkinFaceEditLoading > 0" @click="operationUser(checkinFaceEditData, true)">{{$L('确定修改')}}</Button>
-            </div>
-        </Modal>
-
-        <!--修改部门-->
-        <Modal
-            v-model="departmentEditShow"
-            :title="$L('修改部门')">
-            <Form :model="departmentEditData" v-bind="formOptions" @submit.native.prevent>
-                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${departmentEditData.userid}, ${departmentEditData.nickname}】部门修改。`)}}</Alert>
-                <FormItem :label="$L('修改部门')">
-                    <Select
-                        v-model="departmentEditData.department"
-                        multiple
-                        :multiple-max="10"
-                        :multiple-max-before="onMultipleMaxBefore"
-                        :placeholder="$L('留空为默认部门')">
-                        <Option
-                            v-for="(item, index) in departmentList"
-                            :value="item.id"
-                            :key="index"
-                            :label="item.chains.join(' - ')">
-                            <div :class="`department-level-name level-${item.level - 1}`">{{ item.name }}</div>
-                        </Option>
-                    </Select>
-                </FormItem>
-            </Form>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="departmentEditShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="departmentEditLoading > 0" @click="operationUser(departmentEditData, true)">{{$L('确定修改')}}</Button>
-            </div>
-        </Modal>
+        <!--编辑用户信息-->
+        <UserEditModal
+            v-model="userEditShow"
+            :user-data="userEditData"
+            :checkin-mode="checkinMode"
+            :department-list="departmentList"
+            @updated="getLists"/>
 
         <!--操作离职-->
         <Modal
@@ -371,14 +295,14 @@
 <script>
 import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
-import ImgUpload from "../../../components/ImgUpload";
 import ResizeLine from "../../../components/ResizeLine.vue";
 import SearchButton from "../../../components/SearchButton.vue";
+import UserEditModal from "./UserEditModal.vue";
 import {mapState} from "vuex";
 
 export default {
     name: "TeamManagement",
-    components: {SearchButton, ResizeLine, UserAvatarTip, UserSelect, ImgUpload},
+    components: {SearchButton, ResizeLine, UserAvatarTip, UserSelect, UserEditModal},
     props: {
         checkinMode: {
             type: Boolean,
@@ -480,21 +404,7 @@ export default {
                     key: 'tel',
                     minWidth: 80,
                     render: (h, {row}) => {
-                        return h('QuickEdit', {
-                            props: {
-                                value: row.tel,
-                            },
-                            on: {
-                                'on-update': (val, cb) => {
-                                    this.operationUser({
-                                        userid: row.userid,
-                                        tel: val
-                                    }, true).finally(cb);
-                                }
-                            }
-                        }, [
-                            h('AutoTip', row.tel || '-')
-                        ]);
+                        return h('AutoTip', row.tel || '-');
                     }
                 },
                 {
@@ -502,21 +412,7 @@ export default {
                     key: 'nickname',
                     minWidth: 80,
                     render: (h, {row}) => {
-                        return h('QuickEdit', {
-                            props: {
-                                value: row.nickname_original,
-                            },
-                            on: {
-                                'on-update': (val, cb) => {
-                                    this.operationUser({
-                                        userid: row.userid,
-                                        nickname: val
-                                    }, true).finally(cb);
-                                }
-                            }
-                        }, [
-                            h('AutoTip', row.nickname_original || '-')
-                        ]);
+                        return h('AutoTip', row.nickname_original || '-');
                     }
                 },
                 {
@@ -524,21 +420,7 @@ export default {
                     key: 'profession',
                     minWidth: 80,
                     render: (h, {row}) => {
-                        return h('QuickEdit', {
-                            props: {
-                                value: row.profession,
-                            },
-                            on: {
-                                'on-update': (val, cb) => {
-                                    this.operationUser({
-                                        userid: row.userid,
-                                        profession: val
-                                    }, true).finally(cb);
-                                }
-                            }
-                        }, [
-                            h('AutoTip', row.profession || '-')
-                        ]);
+                        return h('AutoTip', row.profession || '-');
                     },
                 },
                 {
@@ -629,32 +511,9 @@ export default {
                     render: (h, params) => {
                         const identity = params.row.identity;
                         const dropdownItems = [];
-                        if (this.checkinMode) {
-                            dropdownItems.push(...[
-                                h('EDropdownItem', {
-                                    props: {
-                                        command: 'checkin_face',
-                                    },
-                                    style: {
-                                        color: '#f90',
-                                        fontWeight: 'bold'
-                                    }
-                                }, [h('div', this.$L('修改人脸图片'))]),
-                                h('EDropdownItem', {
-                                    props: {
-                                        command: 'checkin_mac',
-                                    },
-                                    style: {
-                                        color: '#f90',
-                                        fontWeight: 'bold'
-                                    }
-                                }, [h('div', this.$L('修改MAC地址'))])
-                            ])
-                        }
                         dropdownItems.push(h('EDropdownItem', {
                             props: {
                                 command: 'openDialog',
-                                divided: this.checkinMode
                             },
                         }, [h('div', this.$L('打开会话窗口'))]));
                         if (identity.includes('admin')) {
@@ -685,24 +544,13 @@ export default {
                                 },
                             }, [h('div', this.$L('设为临时帐号'))]));
                         }
-                        dropdownItems.push(...[
-                            h('EDropdownItem', {
-                                props: {
-                                    command: 'email',
-                                    divided: true
-                                },
-                            }, [h('div', this.$L('修改邮箱'))]),
-                            h('EDropdownItem', {
-                                props: {
-                                    command: 'password',
-                                },
-                            }, [h('div', this.$L('修改密码'))]),
-                            h('EDropdownItem', {
-                                props: {
-                                    command: 'department',
-                                },
-                            }, [h('div', this.$L('修改部门'))])
-                        ])
+                        // 编辑用户信息
+                        dropdownItems.push(h('EDropdownItem', {
+                            props: {
+                                command: 'edit_user_info',
+                                divided: true
+                            },
+                        }, [h('div', this.$L('编辑用户信息'))]));
                         if (identity.includes('disable')) {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
@@ -773,17 +621,9 @@ export default {
             total: 0,
             noText: '',
 
-            checkinMacEditShow: false,
-            checkinMacEditLoading: 0,
-            checkinMacEditData: {},
+            userEditShow: false,
+            userEditData: {},
 
-            checkinFaceEditShow: false,
-            checkinFaceEditLoading: 0,
-            checkinFaceEditData: {},
-
-            departmentEditShow: false,
-            departmentEditLoading: 0,
-            departmentEditData: {},
             departmentWidth: $A.getStorageInt('management.departmentWidth', 239),
 
             disableShow: false,
@@ -858,11 +698,6 @@ export default {
 
             dialogLoad: false,
             dialogList: [],
-
-            nullCheckinDatum: {
-                'mac': '',
-                'remark': '',
-            },
         }
     },
     created() {
@@ -962,46 +797,6 @@ export default {
                 });
             },
             immediate: true
-        },
-        'departmentEditData.department': {
-            handler(value, oldValue = []) {
-                if (!Array.isArray(value) || value.length === 0 || this.departmentList.length === 0) {
-                    return;
-                }
-
-                const previous = Array.isArray(oldValue) ? new Set(oldValue) : new Set();
-                const selected = new Set(value);
-
-                const hasNewSelection = Array.from(selected).some(id => !previous.has(id));
-                if (!hasNewSelection) {
-                    return;
-                }
-
-                const departmentMap = this.departmentList.reduce((acc, item) => {
-                    acc[item.id] = item;
-                    return acc;
-                }, {});
-
-                const needAdd = new Set();
-
-                value.forEach((id) => {
-                    let cursor = departmentMap[id];
-                    while (cursor && cursor.parent_id && cursor.parent_id > 0) {
-                        if (!selected.has(cursor.parent_id)) {
-                            needAdd.add(cursor.parent_id);
-                        }
-                        cursor = departmentMap[cursor.parent_id];
-                    }
-                });
-
-                if (needAdd.size > 0) {
-                    const merged = Array.from(new Set([...value, ...needAdd])).sort((a, b) => a - b);
-                    if (merged.length !== value.length || merged.some((id, index) => id !== value[index])) {
-                        this.$set(this.departmentEditData, 'department', merged);
-                    }
-                }
-            },
-            deep: true
         }
     },
     computed: {
@@ -1064,26 +859,9 @@ export default {
 
         dropUser(name, row) {
             switch (name) {
-                case 'checkin_mac':
-                    this.checkinMacEditData = {
-                        type: 'checkin_macs',
-                        userid: row.userid,
-                        nickname: row.nickname,
-                        checkin_macs: row.checkin_macs,
-                    };
-                    if (this.checkinMacEditData.checkin_macs.length === 0) {
-                        this.addCheckinDatum();
-                    }
-                    this.checkinMacEditShow = true;
-                    break;
-                case 'checkin_face':
-                    this.checkinFaceEditData = {
-                        type: 'checkin_face',
-                        userid: row.userid,
-                        nickname: row.nickname,
-                        faceimg: row.checkin_face
-                    };
-                    this.checkinFaceEditShow = true;
+                case 'edit_user_info':
+                    this.userEditData = $A.cloneJSON(row);
+                    this.userEditShow = true;
                     break;
 
                 case 'openDialog':
@@ -1144,55 +922,6 @@ export default {
                     });
                     break;
 
-                case 'email':
-                    $A.modalInput({
-                        title: "修改邮箱",
-                        placeholder: `请输入新的邮箱（${row.email}）`,
-                        onOk: (value) => {
-                            if (!value) {
-                                return '请输入新的邮箱地址'
-                            }
-                            return this.operationUser({
-                                userid: row.userid,
-                                email: value
-                            });
-                        }
-                    });
-                    break;
-
-                case 'password':
-                    $A.modalInput({
-                        title: "修改密码",
-                        placeholder: "请输入新的密码",
-                        onOk: (value) => {
-                            if (!value) {
-                                return '请输入新的密码'
-                            }
-                            return this.operationUser({
-                                userid: row.userid,
-                                password: value
-                            });
-                        }
-                    });
-                    break;
-
-                case 'department':
-                    let departments = []
-                    row.department.some(did => {
-                        const data = this.departmentList.find(d => d.id == did)
-                        if (data) {
-                            departments.push(data.owner_userid === row.userid ? `${data.name} (${this.$L('负责人')})` : data.name)
-                        }
-                    })
-                    this.departmentEditData = {
-                        type: 'department',
-                        userid: row.userid,
-                        nickname: row.nickname,
-                        department: row.department.map(id => parseInt(id)),
-                    };
-                    this.departmentEditShow = true;
-                    break;
-
                 case 'setdisable':
                     this.disableData = {
                         type: 'setdisable',
@@ -1247,19 +976,7 @@ export default {
         operationUser(data, tipErr) {
             return new Promise((resolve, reject) => {
                 let submitData = data;
-                if (data.type == 'checkin_macs') {
-                    this.checkinMacEditLoading++;
-                } else if (data.type == 'checkin_face') {
-                    this.checkinFaceEditLoading++;
-                    submitData = {
-                        type: data.type,
-                        userid: data.userid,
-                        nickname: data.nickname,
-                        checkin_face: $A.arrayLength(data.faceimg) > 0 ? data.faceimg[0].url : ''
-                    }
-                } else if (data.type == 'department') {
-                    this.departmentEditLoading++;
-                } else if (data.type == 'setdisable') {
+                if (data.type == 'setdisable') {
                     this.disableLoading++;
                     submitData = Object.assign({}, data);
                     if (Array.isArray(submitData.transfer_userid)) {
@@ -1280,14 +997,8 @@ export default {
                 }).then(({msg}) => {
                     $A.messageSuccess(msg);
                     this.getLists();
-                    resolve()
-                    if (data.type == 'checkin_macs') {
-                        this.checkinMacEditShow = false;
-                    } else if (data.type == 'checkin_face') {
-                        this.checkinFaceEditShow = false;
-                    } else if (data.type == 'department') {
-                        this.departmentEditShow = false;
-                    } else if (data.type == 'setdisable') {
+                    resolve();
+                    if (data.type == 'setdisable') {
                         this.disableShow = false;
                     }
                 }).catch(({msg}) => {
@@ -1295,21 +1006,15 @@ export default {
                         $A.modalError(msg);
                     }
                     this.getLists();
-                    reject(msg)
+                    reject(msg);
                 }).finally(_ => {
-                    if (data.type == 'checkin_macs') {
-                        this.checkinMacEditLoading--;
-                    } else if (data.type == 'checkin_face') {
-                        this.checkinFaceEditLoading--;
-                    } else if (data.type == 'department') {
-                        this.departmentEditLoading--;
-                    } else if (data.type == 'setdisable') {
+                    if (data.type == 'setdisable') {
                         this.disableLoading--;
                     } else {
                         this.loadIng--;
                     }
-                })
-            })
+                });
+            });
         },
 
         getDepartmentLists() {
@@ -1319,11 +1024,6 @@ export default {
             }).finally(_ => {
                 this.departmentLoading--;
             })
-        },
-
-        onMultipleMaxBefore(num) {
-            $A.messageError(`最多选择${num}个部门`)
-            return false
         },
 
         onShowDepartment(data) {
@@ -1479,17 +1179,6 @@ export default {
                 })
             } else {
                 this.dialogList = [];
-            }
-        },
-
-        addCheckinDatum() {
-            this.checkinMacEditData.checkin_macs.push($A.cloneJSON(this.nullCheckinDatum));
-        },
-
-        delCheckinDatum(key) {
-            this.checkinMacEditData.checkin_macs.splice(key, 1);
-            if (this.checkinMacEditData.checkin_macs.length === 0) {
-                this.addCheckinDatum();
             }
         },
     }
