@@ -29,15 +29,17 @@
                             <Form @submit.native.prevent class="block-setting-advance">
                                 <FormItem :label="$L('最早可提前')" prop="advance">
                                     <div class="input-number-box">
-                                        <InputNumber v-model="formData.advance" :min="0" :step="1"/>
+                                        <InputNumber v-model="formData.advance" :min="0" :step="1" @on-change="onAdvanceBlur"/>
                                         <label>{{ $L('分钟') }}</label>
                                     </div>
+                                    <div v-if="earliestCheckinTime" class="form-tip">{{ earliestCheckinTime }}</div>
                                 </FormItem>
                                 <FormItem :label="$L('最晚可延后')" prop="delay">
                                     <div class="input-number-box">
-                                        <InputNumber v-model="formData.delay" :min="0" :step="1"/>
+                                        <InputNumber v-model="formData.delay" :min="0" :step="1" @on-change="onDelayBlur"/>
                                         <label>{{ $L('分钟') }}</label>
                                     </div>
+                                    <div v-if="latestCheckinTime" class="form-tip">{{ latestCheckinTime }}</div>
                                 </FormItem>
                                 <div class="form-tip">{{$L('签到前后时间收到消息通知')}}</div>
                                 <FormItem :label="$L('签到打卡提醒')" prop="remindin">
@@ -405,31 +407,54 @@ export default {
 
     computed: {
         ...mapState(['formOptions']),
+
+        earliestCheckinTime() {
+            const times = this.formData.time;
+            if (!times || times.length < 1 || !times[0]) return '';
+            const advance = parseInt(this.formData.advance) || 0;
+            if (advance <= 0) return '';
+
+            const startMinutes = this.timeToMinutes(times[0]);
+            let earliestMinutes = startMinutes - advance;
+
+            // 处理跨天（负数表示前一天）
+            let prefix = '';
+            if (earliestMinutes < 0) {
+                earliestMinutes += 24 * 60;
+                prefix = '(' +  this.$L('前日') + ') ';
+            }
+
+            const hours = Math.floor(earliestMinutes / 60);
+            const mins = earliestMinutes % 60;
+            return prefix + String(hours).padStart(2, '0') + ':' + String(mins).padStart(2, '0');
+        },
+
+        latestCheckinTime() {
+            const times = this.formData.time;
+            if (!times || times.length < 2 || !times[1]) return '';
+            const delay = parseInt(this.formData.delay) || 0;
+            if (delay <= 0) return '';
+
+            const endMinutes = this.timeToMinutes(times[1]);
+            let latestMinutes = endMinutes + delay;
+
+            // 处理跨天（超过24小时表示次日）
+            let prefix = '';
+            if (latestMinutes >= 24 * 60) {
+                latestMinutes -= 24 * 60;
+                prefix = '(' +  this.$L('次日') + ') ';
+            }
+
+            const hours = Math.floor(latestMinutes / 60);
+            const mins = latestMinutes % 60;
+            return prefix + String(hours).padStart(2, '0') + ':' + String(mins).padStart(2, '0');
+        },
     },
 
     methods: {
         submitForm() {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
-                    // 验证提前和延后时间是否重叠
-                    if (this.formData.open === 'open') {
-                        const times = this.formData.time;
-                        if (times && times.length >= 2) {
-                            const startMinutes = this.timeToMinutes(times[0]);
-                            const endMinutes = this.timeToMinutes(times[1]);
-                            let shiftDuration = endMinutes - startMinutes;
-                            if (shiftDuration <= 0) shiftDuration += 24 * 60;
-
-                            const advance = parseInt(this.formData.advance) || 120;
-                            const delay = parseInt(this.formData.delay) || 120;
-                            const maxAllowed = 24 * 60 - shiftDuration;
-
-                            if (advance + delay >= maxAllowed) {
-                                $A.modalError('提前和延后时间设置存在重叠，最大提前+延后时间不能超过 ' + (maxAllowed - 1) + ' 分钟', {language: false});
-                                return;
-                            }
-                        }
-                    }
                     this.systemSetting(true);
                 }
             })
@@ -439,6 +464,44 @@ export default {
             if (!timeStr) return 0;
             const parts = timeStr.split(':');
             return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        },
+
+        getMaxAllowed() {
+            const times = this.formData.time;
+            if (!times || times.length < 2) return null;
+            const startMinutes = this.timeToMinutes(times[0]);
+            const endMinutes = this.timeToMinutes(times[1]);
+            let shiftDuration = endMinutes - startMinutes;
+            if (shiftDuration <= 0) shiftDuration += 24 * 60;
+            return 24 * 60 - shiftDuration;
+        },
+
+        onAdvanceBlur() {
+            const maxAllowed = this.getMaxAllowed();
+            if (maxAllowed === null) return;
+
+            const delay = parseInt(this.formData.delay) || 0;
+            const maxAdvance = maxAllowed - delay - 1;
+
+            if (maxAdvance < 0) {
+                this.formData.advance = 0;
+            } else if (this.formData.advance > maxAdvance) {
+                this.formData.advance = maxAdvance;
+            }
+        },
+
+        onDelayBlur() {
+            const maxAllowed = this.getMaxAllowed();
+            if (maxAllowed === null) return;
+
+            const advance = parseInt(this.formData.advance) || 0;
+            const maxDelay = maxAllowed - advance - 1;
+
+            if (maxDelay < 0) {
+                this.formData.delay = 0;
+            } else if (this.formData.delay > maxDelay) {
+                this.formData.delay = maxDelay;
+            }
         },
 
         resetForm() {

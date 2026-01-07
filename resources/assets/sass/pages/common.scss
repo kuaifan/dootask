@@ -900,6 +900,8 @@ body.window-portrait {
                 .ivu-form-item-content {
                     display: flex;
                     align-items: center;
+                    flex-wrap: wrap;
+                    gap: 8px;
                 }
             }
         }

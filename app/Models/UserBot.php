@@ -391,8 +391,8 @@ class UserBot extends AbstractModel
         $errorTime = false;
         if (!$targetDate) {
             $displayDelay = date("H:i", $todayTimeDelay % 86400);
-            $nextDay = ($todayTimeDelay > strtotime("{$nowDate} 23:59:59")) ? "(次日)" : "";
-            $errorTime = "不在有效时间内，有效时间为：" . date("H:i", $timeAdvance) . "-{$nextDay}{$displayDelay}";
+            $nextDay = ($todayTimeDelay > strtotime("{$nowDate} 23:59:59")) ? "(+1)" : "";
+            $errorTime = "不在有效时间内，有效时间为：" . date("H:i", $timeAdvance) . "-{$displayDelay}{$nextDay}";
         }
         //
         $macs = explode(",", $mac);
@@ -485,7 +485,7 @@ class UserBot extends AbstractModel
                 $typeContent = $type == "up" ? "上班" : "下班";
                 if (Cache::get($cacheKey) === "yes") {
                     if ($alreadyTip) {
-                        $dateHint = ($displayDate != $nowDate) ? "（{$displayDate}）" : "今日";
+                        $dateHint = ($displayDate != $nowDate) ? "({$displayDate}) " : "今日";
                         $text = "{$dateHint}已{$typeContent}打卡，无需重复打卡。";
                         $text .= $checkin['remark'] ? " ({$checkin['remark']})": "";
                         WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
@@ -500,7 +500,7 @@ class UserBot extends AbstractModel
                 $hi = date("H:i");
                 $remark = $checkin['remark'] ? " ({$checkin['remark']})": "";
                 $subcontent = $getJokeSoup($type, $checkin['userid']);
-                $dateInfo = ($displayDate != $nowDate) ? "（记录归属 {$displayDate}）" : "";
+                $dateInfo = ($displayDate != $nowDate) ? " ({$displayDate})" : "";
                 $title = "{$typeContent}打卡成功，打卡时间: {$hi}{$remark}{$dateInfo}";
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                     'type' => 'content',
