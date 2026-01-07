@@ -9,7 +9,7 @@
     >
         <div class="user-detail-body">
             <div class="profile-header">
-                <div class="cover-photo"></div>
+                <div class="cover-photo" :style="{ '--user-cover-photo': `url(${userData.userimg || ''})` }"></div>
                 <div class="profile-avatar">
                     <UserAvatar
                         :userid="userData.userid"

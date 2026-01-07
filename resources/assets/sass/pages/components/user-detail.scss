@@ -23,16 +23,22 @@
         padding: 0 !important;
         background-color: #ffffff;
         border-radius: 16px;
+        overflow: hidden;
     }
     .user-detail-body {
         .profile-header {
             position: relative;
             height: 180px;
             .cover-photo {
-                background: $primary-color;
                 height: 130px;
                 border-top-left-radius: 16px;
                 border-top-right-radius: 16px;
+                background: $primary-color;
+                background-position: center;
+                background-size: cover;
+                transform: scale(1.5, 1.1);
+                background-image: var(--user-cover-photo, 'none');
+                filter: blur(40px);
             }
             .profile-avatar {
                 position: absolute;
