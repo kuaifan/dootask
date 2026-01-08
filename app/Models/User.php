@@ -7,7 +7,9 @@ use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Apps;
 use App\Module\Table\OnlineData;
+use App\Observers\AbstractObserver;
 use App\Services\RequestContext;
+use App\Tasks\ManticoreSyncTask;
 use Cache;
 use Carbon\Carbon;
 
@@ -335,9 +337,6 @@ class User extends AbstractModel
             //
             return $this->delete();
         });
-        if ($ret) {
-            Apps::dispatchUserHook($this, 'user_offboard', 'delete');
-        }
         return $ret;
     }
 
@@ -413,7 +412,12 @@ class User extends AbstractModel
             }
         }
         $createdUser = $user->find($user->userid);
-        Apps::dispatchUserHook($createdUser, 'user_onboard', 'onboard');
+        if (!$createdUser->bot) {
+            // Manticore 索引同步
+            AbstractObserver::taskDeliver(new ManticoreSyncTask('user_sync', $createdUser->toArray()));
+            // 触发 user_onboard hook
+            Apps::dispatchUserHook($createdUser, 'user_onboard', 'onboard');
+        }
         return $createdUser;
     }
 

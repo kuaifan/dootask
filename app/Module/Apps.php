@@ -4,6 +4,7 @@ namespace App\Module;
 
 use App\Exceptions\ApiException;
 use App\Models\User;
+use App\Models\UserDepartment;
 use App\Services\RequestContext;
 use Symfony\Component\Yaml\Yaml;
 use App\Module\Base;
@@ -62,14 +63,36 @@ class Apps
     }
 
     /**
-     * Dispatch user lifecycle hook to appstore (onboard/offboard/delete/restore).
+     * Dispatch user lifecycle hook to appstore (user_onboard/user_offboard/user_update).
+     *
+     * @param User $user 用户对象
+     * @param string $action Hook 动作: user_onboard, user_offboard, user_update
+     * @param string $eventType 事件类型: onboard, restore, offboarded, delete, profile_update, admin_update
+     * @param array $changedFields 变更字段列表（仅 user_update 时有值）
      */
-    public static function dispatchUserHook(User $user, string $action, string $eventType = ''): void
+    public static function dispatchUserHook(User $user, string $action, string $eventType = '', array $changedFields = []): void
     {
         $appKey = env('APP_KEY', '');
         if (empty($appKey)) {
             info('[appstore_hook] APP_KEY is empty, skip dispatchUserHook');
             return;
+        }
+
+        // 获取用户部门信息
+        $departments = [];
+        if (!empty($user->department)) {
+            $deptIds = is_array($user->department)
+                ? $user->department
+                : array_filter(explode(',', $user->department));
+            if (!empty($deptIds)) {
+                $deptList = UserDepartment::whereIn('id', $deptIds)->get(['id', 'name']);
+                foreach ($deptList as $dept) {
+                    $departments[] = [
+                        'id' => (string) $dept->id,
+                        'name' => (string) $dept->name,
+                    ];
+                }
+            }
         }
 
         $url = sprintf('http://appstore/api/v1/internal/hooks/%s', $action);
@@ -78,12 +101,17 @@ class Apps
                 'id' => (string) $user->userid,
                 'email' => (string) $user->email,
                 'name' => (string) $user->nickname,
-                'role' => in_array('admin', $user->identity ?? []) ? 'admin' : 'normal',
+                'role' => $user->isAdmin() ? 'admin' : 'normal',
+                'tel' => (string) ($user->tel ?? ''),
+                'profession' => (string) ($user->profession ?? ''),
+                'birthday' => $user->birthday ? (string) $user->birthday : '',
+                'address' => (string) ($user->address ?? ''),
+                'introduction' => (string) ($user->introduction ?? ''),
+                'departments' => $departments,
             ],
+            'event_type' => $eventType,
+            'changed_fields' => $changedFields,
         ];
-        if ($eventType !== '') {
-            $payload['event_type'] = $eventType;
-        }
 
         $headers = [
             'Content-Type' => 'application/json',

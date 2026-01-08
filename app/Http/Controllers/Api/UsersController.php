@@ -37,7 +37,6 @@ use App\Models\UserRecentItem;
 use App\Models\UserTag;
 use App\Models\UserTagRecognition;
 use App\Models\UserAppSort;
-use App\Module\Apps;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserEmailVerification;
 use App\Module\AgoraIO\AgoraTokenGenerator;
@@ -1104,8 +1103,6 @@ class UsersController extends AbstractController
         $upArray = [];
         $upLdap = [];
         $transferUser = null;
-        $hookAction = '';
-        $hookEvent = '';
         switch ($type) {
             case 'setadmin':
                 $msg = '设置成功';
@@ -1187,16 +1184,12 @@ class UsersController extends AbstractController
                         return Base::retError('交接人已离职，请选择另一个交接人');
                     }
                 }
-                $hookAction = 'user_offboard';
-                $hookEvent = 'offboard';
                 break;
 
             case 'cleardisable':
                 $msg = '操作成功';
                 $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
                 $upArray['disable_at'] = null;
-                $hookAction = 'user_onboard';
-                $hookEvent = 'restore';
                 break;
 
             case 'delete':
@@ -1314,9 +1307,6 @@ class UsersController extends AbstractController
                     }
                 }
             });
-        }
-        if ($hookAction) {
-            Apps::dispatchUserHook($userInfo, $hookAction, $hookEvent);
         }
         //
         return Base::retSuccess($msg, $userInfo);
