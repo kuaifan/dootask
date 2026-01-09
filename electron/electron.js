@@ -41,7 +41,7 @@ const config = require('./package.json');
 const electronDown = require("./electron-down");
 const electronMenu = require("./electron-menu");
 const { startMCPServer, stopMCPServer } = require("./lib/mcp");
-const {onRenderer} = require("./lib/renderer");
+const {onRenderer, renderer} = require("./lib/renderer");
 const {onExport} = require("./lib/pdf-export");
 const {allowedCalls, isWin} = require("./lib/other");
 
@@ -341,10 +341,10 @@ function createMainWindow() {
     // 新窗口处理
     mainWindow.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
-            openExternal(url).catch(() => {})
+            renderer.openExternal(url).catch(() => {})
         } else {
             utils.onBeforeOpenWindow(mainWindow.webContents, url).then(() => {
-                openExternal(url).catch(() => {})
+                renderer.openExternal(url).catch(() => {})
             })
         }
         return {action: 'deny'}
@@ -600,10 +600,10 @@ function createChildWindow(args) {
     // 新窗口处理
     browser.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
-            openExternal(url).catch(() => {})
+            renderer.openExternal(url).catch(() => {})
         } else {
             utils.onBeforeOpenWindow(browser.webContents, url).then(() => {
-                openExternal(url).catch(() => {})
+                renderer.openExternal(url).catch(() => {})
             })
         }
         return {action: 'deny'}
@@ -891,9 +891,9 @@ function createWebTabWindow(args) {
     })
     browserView.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
-            openExternal(url).catch(() => {})
+            renderer.openExternal(url).catch(() => {})
         } else {
-            createWebTabWindow({url})
+            createWebTabWindow({url, afterId: browserView.webContents.id})
         }
         return {action: 'deny'}
     })
@@ -941,9 +941,6 @@ function createWebTabWindow(args) {
         }).then(_ => { })
     })
     browserView.webContents.on('did-start-loading', _ => {
-        webTabView.forEach(({id: vid, view}) => {
-            view.setVisible(vid === browserView.webContents.id)
-        })
         if (!webTabWindow) return
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'start-loading',
@@ -981,10 +978,22 @@ function createWebTabWindow(args) {
     electronMenu.webContentsMenu(browserView.webContents, true)
 
     browserView.webContents.loadURL(args.url).then(_ => { }).catch(_ => { })
+
     browserView.setVisible(true)
 
     webTabWindow.contentView.addChildView(browserView)
-    webTabView.push({
+
+    // 确定插入位置
+    let insertIndex = webTabView.length
+    if (args.afterId) {
+        const afterIndex = webTabView.findIndex(item => item.id === args.afterId)
+        if (afterIndex > -1) {
+            insertIndex = afterIndex + 1
+        }
+    }
+
+    // 插入到指定位置
+    webTabView.splice(insertIndex, 0, {
         id: browserView.webContents.id,
         view: browserView
     })
@@ -993,6 +1002,7 @@ function createWebTabWindow(args) {
         event: 'create',
         id: browserView.webContents.id,
         url: args.url,
+        afterId: args.afterId,
     }).then(_ => { })
     activateWebTab(browserView.webContents.id)
 }
@@ -1351,6 +1361,24 @@ ipcMain.on('webTabActivate', (event, id) => {
 })
 
 /**
+ * 内置浏览器 - 重排标签顺序
+ * @param newOrder 新的标签ID顺序数组
+ */
+ipcMain.on('webTabReorder', (event, newOrder) => {
+    if (!Array.isArray(newOrder) || newOrder.length === 0) {
+        event.returnValue = "ok"
+        return
+    }
+    // 根据新顺序重排 webTabView 数组
+    webTabView.sort((a, b) => {
+        const indexA = newOrder.indexOf(a.id)
+        const indexB = newOrder.indexOf(b.id)
+        return indexA - indexB
+    })
+    event.returnValue = "ok"
+})
+
+/**
  * 内置浏览器 - 关闭标签
  * @param id
  */
@@ -1367,7 +1395,7 @@ ipcMain.on('webTabExternal', (event) => {
     if (!item) {
         return
     }
-    openExternal(item.view.webContents.getURL()).catch(() => {})
+    renderer.openExternal(item.view.webContents.getURL()).catch(() => {})
     event.returnValue = "ok"
 })
 

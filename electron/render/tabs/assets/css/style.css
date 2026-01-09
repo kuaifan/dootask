@@ -34,9 +34,11 @@ body {
     font-feature-settings: 'clig', 'kern';
     flex: 1;
     width: 0;
+    height: 40px;
     display: flex;
-    cursor: default;
+    align-items: center;
     background-color: var(--tab-background);
+    cursor: default;
     -webkit-app-region: drag;
 }
 
@@ -77,8 +79,6 @@ body {
     flex: 1;
     display: flex;
     gap: 8px;
-    height: 35px;
-    margin-top: 5px;
     user-select: none;
     overflow-x: auto;
     overflow-y: hidden;
@@ -89,15 +89,17 @@ body {
 }
 
 .nav-tabs li {
-    display: inline-flex;
+    flex: 1;
+    display: flex;
     position: relative;
     box-sizing: border-box;
     align-items: center;
     height: calc(100% - 5px);
     padding: 7px 8px;
-    min-width: 100px;
-    max-width: 240px;
+    min-width: 56px;
+    max-width: 220px;
     scroll-margin: 12px;
+    border-radius: 4px;
     font-size: var(--tab-font-size);
     color: var(--tab-color);
     cursor: var(--tab-cursor);
@@ -113,7 +115,6 @@ body {
 .nav-tabs li.active {
     color: var(--tab-active-color);
     background: var(--tab-active-background);
-    border-radius: 4px;
 }
 
 .nav-tabs li.active .tab-icon.background {
@@ -254,6 +255,89 @@ body.darwin.full-screen .nav {
     padding-left: 8px;
 }
 
+/* Sortable 拖拽样式 */
+.nav-tabs li.sortable-ghost {
+    opacity: 0.4;
+    background: var(--tab-active-background);
+    border-radius: 4px;
+}
+
+.nav-tabs li.sortable-chosen {
+    background: var(--tab-active-background);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nav-tabs li.sortable-drag {
+    opacity: 1;
+}
+
+/* fallback 模式下克隆元素会被添加到 body，需要全局样式 */
+.sortable-fallback {
+    font-family: var(--tab-font-family);
+    font-size: var(--tab-font-size);
+    display: inline-flex !important;
+    align-items: center;
+    height: 30px;
+    padding: 7px 8px;
+    min-width: 100px;
+    max-width: 240px;
+    color: var(--tab-active-color);
+    background: var(--tab-active-background) !important;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    opacity: 0.95 !important;
+    cursor: grabbing;
+    z-index: 9999;
+}
+
+.sortable-fallback .tab-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    background-size: cover;
+}
+
+.sortable-fallback .tab-icon.background {
+    background-image: url(../image/link_normal_selected_icon.png);
+}
+
+.sortable-fallback .tab-title {
+    display: inline-block;
+    flex: 1;
+    margin: 0 8px;
+    overflow: hidden;
+    line-height: 150%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sortable-fallback .tab-close {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 2px;
+    position: relative;
+}
+
+.sortable-fallback .tab-close::after,
+.sortable-fallback .tab-close::before {
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    transform: translate(50%, -50%) scale(0.9) rotate(45deg);
+    content: "";
+    width: 2px;
+    height: 11px;
+    border-radius: 3px;
+    background-color: var(--tab-close-color);
+}
+
+.sortable-fallback .tab-close::before {
+    transform: translate(50%, -50%) scale(0.9) rotate(-45deg);
+}
+
 /* 暗黑模式 */
 @media (prefers-color-scheme: dark) {
     :root {
@@ -274,5 +358,14 @@ body.darwin.full-screen .nav {
 
     .tab-icon.background {
         background-image: url(../image/dark/link_normal_icon.png);
+    }
+
+    /* 暗黑模式下 fallback 样式 */
+    .sortable-fallback {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .sortable-fallback .tab-icon.background {
+        background-image: url(../image/dark/link_normal_selected_icon.png);
     }
 }

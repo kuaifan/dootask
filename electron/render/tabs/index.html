@@ -5,6 +5,7 @@
     <title>Untitled</title>
     <link rel="stylesheet" href="./assets/css/style.css">
     <script src="./assets/js/vue.global.min.js"></script>
+    <script src="./assets/js/Sortable.min.js"></script>
 </head>
 <body>
 <div id="app" class="app">
@@ -22,7 +23,7 @@
             </div>
         </div>
         <ul class="nav-tabs">
-            <li v-for="item in tabs" :data-id="item.id" :class="{active: activeId === item.id}" @click="onSwitch(item)">
+            <li v-for="item in tabs" :key="item.id" :data-id="item.id" :class="{active: activeId === item.id}" @click="onSwitch(item)">
                 <div v-if="item.state === 'loading'" class="tab-icon loading">
                     <div class="tab-icon-loading"></div>
                 </div>
@@ -55,24 +56,42 @@
 
                 // 是否可以前进
                 canGoForward: false,
+
+                // 是否正在拖拽（用于跳过 watch 同步）
+                isDragging: false,
             }
         },
         beforeCreate() {
             document.body.classList.add(window.process.platform)
         },
         mounted() {
+            // 初始化 Sortable 拖拽排序
+            this.initSortable()
+
             window.__onDispatchEvent = (detail) => {
                 const {id, event} = detail
                 switch (event) {
                     // 创建标签页
                     case 'create':
-                        this.tabs.push(Object.assign({
+                        const newTab = Object.assign({
                             id,
                             title: '',
                             url: '',
                             icon: '',
                             state: 'loading'
-                        }, detail))
+                        }, detail)
+
+                        // 确定插入位置
+                        let insertIndex = this.tabs.length
+                        if (detail.afterId) {
+                            const afterIndex = this.tabs.findIndex(item => item.id === detail.afterId)
+                            if (afterIndex > -1) {
+                                insertIndex = afterIndex + 1
+                            }
+                        }
+
+                        // 插入到指定位置
+                        this.tabs.splice(insertIndex, 0, newTab)
                         break
 
                     // 关闭标签页
@@ -202,8 +221,82 @@
             pageTitle(title) {
                 document.title = title;
             },
+            /**
+             * 监听标签列表变化，同步 Sortable 顺序
+             */
+            tabs: {
+                handler() {
+                    // 拖拽过程中跳过同步，由 onEnd 处理
+                    if (this.isDragging) return
+                    this.$nextTick(() => {
+                        if (this.sortable) {
+                            // 根据 Vue 数据顺序同步 Sortable 的 DOM 顺序
+                            const order = this.tabs.map(t => String(t.id))
+                            this.sortable.sort(order, true)
+                        }
+                    })
+                },
+                deep: false
+            }
         },
         methods: {
+            /**
+             * 初始化 Sortable 拖拽排序
+             */
+            initSortable() {
+                const el = document.querySelector('.nav-tabs')
+                if (!el) return
+
+                this.sortable = new Sortable(el, {
+                    animation: 150,
+                    delay: 50,
+                    delayOnTouchOnly: true,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    // 使用 fallback 模式，在 Electron 中更稳定
+                    forceFallback: true,
+                    fallbackClass: 'sortable-fallback',
+                    fallbackOnBody: true,
+                    fallbackTolerance: 3,
+                    // 拖拽开始时激活该标签
+                    onStart: (evt) => {
+                        this.isDragging = true
+                        const item = this.tabs[evt.oldIndex]
+                        if (item && this.activeId !== item.id) {
+                            this.sendMessage('webTabActivate', item.id)
+                        }
+                    },
+                    // 拖拽结束回调
+                    onEnd: (evt) => {
+                        const { oldIndex, newIndex } = evt
+
+                        if (oldIndex !== newIndex) {
+                            // 先将 DOM 恢复到原始位置，让 Vue 来控制渲染
+                            const parent = evt.from
+                            const children = Array.from(parent.children)
+                            if (oldIndex < newIndex) {
+                                parent.insertBefore(evt.item, children[oldIndex])
+                            } else {
+                                parent.insertBefore(evt.item, children[oldIndex + 1] || null)
+                            }
+
+                            // 更新 Vue 数据（触发响应式更新）
+                            const item = this.tabs.splice(oldIndex, 1)[0]
+                            this.tabs.splice(newIndex, 0, item)
+
+                            // 通知主进程同步顺序
+                            this.sendMessage('webTabReorder', this.tabs.map(t => t.id))
+                        }
+
+                        // 延迟重置标志，确保 Vue 渲染完成
+                        this.$nextTick(() => {
+                            this.isDragging = false
+                        })
+                    }
+                })
+            },
+
             /**
              * 切换标签页
              * @param item
