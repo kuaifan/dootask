@@ -117,8 +117,8 @@ body {
     background: var(--tab-active-background);
 }
 
-.nav-tabs li.active .tab-icon.background {
-    background-image: url(../image/link_normal_selected_icon.png);
+.nav-tabs li.active .tab-icon::before {
+    background-image: var(--tab-icon-image, url(../image/earth/light_selected.svg));
 }
 
 
@@ -152,8 +152,10 @@ body {
     display: inline-block;
     width: 18px;
     height: 18px;
-    background-size: cover;
-    background-image: url(../image/link_normal_selected_icon.png);
+    background-size: 94%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(../image/link/light_selected.svg);
 }
 
 /* 图标 */
@@ -162,30 +164,41 @@ body {
     flex-shrink: 0;
     width: 16px;
     height: 16px;
+    position: relative;
+}
+
+.tab-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
     background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: var(--tab-icon-image, url(../image/earth/light.svg));
+    transition: transform 0.3s;
 }
 
-.tab-icon.background {
-    background-image: url(../image/link_normal_icon.png);
+.tab-icon.loading::before {
+    transform: scale(0.75);
+    border-radius: 50%;
 }
 
-.tab-icon.loading {
-    background-image: none !important;
-}
-
-.tab-icon .tab-icon-loading {
-    width: 18px;
-    height: 18px;
+.tab-icon.loading::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    width: 24px;
+    height: 24px;
     border: 2px solid #eeeeee;
     border-bottom-color: #84C56A;
     border-radius: 50%;
     display: inline-block;
     box-sizing: border-box;
     animation: spin 0.75s linear infinite;
-}
-
-.tab-icon:not(.loading) .tab-icon-loading {
-    display: none;
 }
 
 .tab-icon img {
@@ -299,8 +312,8 @@ body.darwin.full-screen .nav {
     background-size: cover;
 }
 
-.sortable-fallback .tab-icon.background {
-    background-image: url(../image/link_normal_selected_icon.png);
+.sortable-fallback .tab-icon::before {
+    background-image: var(--tab-icon-image, url(../image/earth/light_selected.svg));
 }
 
 .sortable-fallback .tab-title {
@@ -338,6 +351,31 @@ body.darwin.full-screen .nav {
     transform: translate(50%, -50%) scale(0.9) rotate(-45deg);
 }
 
+/* 拖出窗口时的视觉反馈 */
+.sortable-fallback.detaching {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    transform: scale(1.05);
+    opacity: 0.9 !important;
+}
+
+/* 拖入目标窗口时的视觉反馈 */
+.nav-tabs.drag-target {
+    background: rgba(132, 197, 106, 0.1);
+    border-radius: 4px;
+}
+
+.nav-tabs.drag-target::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px dashed #84C56A;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
 /* 暗黑模式 */
 @media (prefers-color-scheme: dark) {
     :root {
@@ -348,16 +386,16 @@ body.darwin.full-screen .nav {
         --tab-close-color: #E3E3E3;
     }
 
-    .nav-tabs li.active .tab-icon.background {
-        background-image: url(../image/dark/link_normal_selected_icon.png);
+    .nav-tabs li.active .tab-icon::before {
+        background-image: var(--tab-icon-image, url(../image/earth/dark_selected.svg));
     }
 
     .nav-browser span {
-        background-image: url(../image/dark/link_normal_selected_icon.png);
+        background-image: url(../image/link/dark_selected.svg);
     }
 
-    .tab-icon.background {
-        background-image: url(../image/dark/link_normal_icon.png);
+    .tab-icon::before {
+        background-image: var(--tab-icon-image, url(../image/earth/dark.svg));
     }
 
     /* 暗黑模式下 fallback 样式 */
@@ -365,7 +403,7 @@ body.darwin.full-screen .nav {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
-    .sortable-fallback .tab-icon.background {
-        background-image: url(../image/dark/link_normal_selected_icon.png);
+    .sortable-fallback .tab-icon::before {
+        background-image: var(--tab-icon-image, url(../image/earth/dark_selected.svg));
     }
 }

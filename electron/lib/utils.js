@@ -5,7 +5,7 @@ const dayjs = require("dayjs");
 const http = require('http')
 const https = require('https')
 const crypto = require('crypto')
-const {shell, dialog, session, Notification, nativeTheme} = require("electron");
+const {shell, dialog, session, net, Notification, nativeTheme} = require("electron");
 const loger = require("electron-log");
 const Store = require("electron-store");
 const store = new Store();
@@ -639,6 +639,94 @@ const utils = {
                 fs.unlink(filePath, () => {});
                 reject(new Error('下载超时'));
             });
+        });
+    },
+
+    /**
+     * 获取并验证 favicon，转换为 base64
+     * @param {string} faviconUrl - favicon 的 URL
+     * @param {number} timeout - 超时时间（毫秒），默认 5000
+     * @returns {Promise<string|null>} - 成功返回 base64 data URL，失败返回 null
+     */
+    async fetchFaviconAsBase64(faviconUrl, timeout = 5000) {
+        if (!faviconUrl || typeof faviconUrl !== 'string') {
+            return null;
+        }
+
+        // 如果已经是 base64，直接返回
+        if (faviconUrl.startsWith('data:')) {
+            return faviconUrl;
+        }
+
+        return new Promise((resolve) => {
+            try {
+                const request = net.request(faviconUrl);
+
+                // 设置超时
+                const timeoutId = setTimeout(() => {
+                    request.abort();
+                    resolve(null);
+                }, timeout);
+
+                const chunks = [];
+
+                request.on('response', (response) => {
+                    const contentType = response.headers['content-type'];
+                    // 验证是否为图片类型
+                    const isImage = contentType && (
+                        contentType.includes('image/') ||
+                        contentType.includes('icon')
+                    );
+
+                    if (response.statusCode !== 200 || !isImage) {
+                        clearTimeout(timeoutId);
+                        resolve(null);
+                        return;
+                    }
+
+                    response.on('data', (chunk) => {
+                        chunks.push(chunk);
+                    });
+
+                    response.on('end', () => {
+                        clearTimeout(timeoutId);
+                        try {
+                            const buffer = Buffer.concat(chunks);
+                            // 验证图片数据有效（至少有一些字节）
+                            if (buffer.length < 10) {
+                                resolve(null);
+                                return;
+                            }
+                            // 获取正确的 MIME 类型
+                            let mimeType = 'image/png';
+                            if (contentType) {
+                                const match = contentType.match(/^([^;]+)/);
+                                if (match) {
+                                    mimeType = match[1].trim();
+                                }
+                            }
+                            const base64 = buffer.toString('base64');
+                            resolve(`data:${mimeType};base64,${base64}`);
+                        } catch (e) {
+                            resolve(null);
+                        }
+                    });
+
+                    response.on('error', () => {
+                        clearTimeout(timeoutId);
+                        resolve(null);
+                    });
+                });
+
+                request.on('error', () => {
+                    clearTimeout(timeoutId);
+                    resolve(null);
+                });
+
+                request.end();
+            } catch (e) {
+                resolve(null);
+            }
         });
     },
 

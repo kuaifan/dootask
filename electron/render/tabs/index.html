@@ -24,10 +24,7 @@
         </div>
         <ul class="nav-tabs">
             <li v-for="item in tabs" :key="item.id" :data-id="item.id" :class="{active: activeId === item.id}" @click="onSwitch(item)">
-                <div v-if="item.state === 'loading'" class="tab-icon loading">
-                    <div class="tab-icon-loading"></div>
-                </div>
-                <div v-else class="tab-icon background" :style="iconStyle(item)"></div>
+                <div :class="['tab-icon', item.state === 'loading' ? 'loading' : null]" :style="iconStyle(item)"></div>
                 <div class="tab-title" :title="item.title">{{tabTitle(item)}}</div>
                 <div class="tab-close" @click.stop="onClose(item)"></div>
             </li>
@@ -42,6 +39,9 @@
     const App = {
         data() {
             return {
+                // 当前窗口ID
+                windowId: null,
+
                 // 当前激活的标签页ID
                 activeId: 0,
 
@@ -50,7 +50,7 @@
 
                 // 停止定时器
                 stopTimer: null,
-                
+
                 // 是否可以后退
                 canGoBack: false,
 
@@ -59,12 +59,28 @@
 
                 // 是否正在拖拽（用于跳过 watch 同步）
                 isDragging: false,
+
+                // 拖拽状态
+                dragState: {
+                    tabId: null,
+                    startX: 0,
+                    startY: 0,
+                    startScreenX: 0,
+                    startScreenY: 0,
+                },
+
+                // 其他窗口信息（用于拖入检测）
+                otherWindows: [],
             }
         },
         beforeCreate() {
             document.body.classList.add(window.process.platform)
         },
         mounted() {
+            // 从 URL 参数获取窗口ID
+            const urlParams = new URLSearchParams(window.location.search);
+            this.windowId = parseInt(urlParams.get('windowId')) || null;
+
             // 初始化 Sortable 拖拽排序
             this.initSortable()
 
@@ -73,17 +89,23 @@
                 switch (event) {
                     // 创建标签页
                     case 'create':
-                        const newTab = Object.assign({
+                        // 检查是否已存在该标签
+                        if (this.tabs.some(t => t.id === id)) {
+                            break
+                        }
+                        const newTab = {
                             id,
-                            title: '',
-                            url: '',
-                            icon: '',
-                            state: 'loading'
-                        }, detail)
+                            title: detail.title || '',
+                            url: detail.url || '',
+                            favicon: detail.favicon || '',
+                            state: detail.state || 'loading'
+                        }
 
                         // 确定插入位置
                         let insertIndex = this.tabs.length
-                        if (detail.afterId) {
+                        if (typeof detail.insertIndex === 'number') {
+                            insertIndex = Math.max(0, Math.min(detail.insertIndex, this.tabs.length))
+                        } else if (detail.afterId) {
                             const afterIndex = this.tabs.findIndex(item => item.id === detail.afterId)
                             if (afterIndex > -1) {
                                 insertIndex = afterIndex + 1
@@ -125,13 +147,7 @@
                     case 'favicon':
                         const faviconItem = this.tabs.find(item => item.id === id)
                         if (faviconItem) {
-                            faviconItem.icon = detail.favicons[detail.favicons.length - 1]
-                            //
-                            const img = new Image();
-                            img.onerror = () => {
-                                faviconItem.icon = ''
-                            };
-                            img.src = faviconItem.icon
+                            faviconItem.favicon = detail.favicon || ''
                         }
                         break
 
@@ -263,14 +279,58 @@
                     onStart: (evt) => {
                         this.isDragging = true
                         const item = this.tabs[evt.oldIndex]
-                        if (item && this.activeId !== item.id) {
-                            this.sendMessage('webTabActivate', item.id)
+                        if (item) {
+                            // 记录拖拽起始状态
+                            this.dragState.tabId = item.id
+                            this.dragState.startX = evt.originalEvent.clientX
+                            this.dragState.startY = evt.originalEvent.clientY
+                            this.dragState.startScreenX = evt.originalEvent.screenX
+                            this.dragState.startScreenY = evt.originalEvent.screenY
+
+                            if (this.activeId !== item.id) {
+                                this.sendMessage('webTabActivate', {windowId: this.windowId, tabId: item.id})
+                            }
+
+                            // 获取所有窗口信息（用于拖入检测）
+                            this.fetchAllWindowsInfo()
                         }
+                    },
+                    // 拖拽移动时检测边界
+                    onMove: (evt, originalEvent) => {
+                        if (!originalEvent) return true
+                        this.checkDragBoundary(originalEvent)
+                        return true
                     },
                     // 拖拽结束回调
                     onEnd: (evt) => {
                         const { oldIndex, newIndex } = evt
+                        const originalEvent = evt.originalEvent
 
+                        // 检查是否拖出了窗口边界
+                        if (this.dragState.tabId && originalEvent) {
+                            const shouldDetach = this.checkDetachCondition(originalEvent)
+                            const targetWindow = this.findTargetWindow(originalEvent.screenX, originalEvent.screenY)
+
+                            if (targetWindow && targetWindow.windowId !== this.windowId) {
+                                // 拖入其他窗口
+                                this.attachToWindow(this.dragState.tabId, targetWindow.windowId, originalEvent.screenX)
+                                this.resetDragState()
+                                this.$nextTick(() => {
+                                    this.isDragging = false
+                                })
+                                return
+                            } else if (shouldDetach) {
+                                // 拖出创建新窗口
+                                this.detachTab(this.dragState.tabId, originalEvent.screenX, originalEvent.screenY)
+                                this.resetDragState()
+                                this.$nextTick(() => {
+                                    this.isDragging = false
+                                })
+                                return
+                            }
+                        }
+
+                        // 正常的窗口内排序
                         if (oldIndex !== newIndex) {
                             // 先将 DOM 恢复到原始位置，让 Vue 来控制渲染
                             const parent = evt.from
@@ -286,8 +346,10 @@
                             this.tabs.splice(newIndex, 0, item)
 
                             // 通知主进程同步顺序
-                            this.sendMessage('webTabReorder', this.tabs.map(t => t.id))
+                            this.sendMessage('webTabReorder', {windowId: this.windowId, newOrder: this.tabs.map(t => t.id)})
                         }
+
+                        this.resetDragState()
 
                         // 延迟重置标志，确保 Vue 渲染完成
                         this.$nextTick(() => {
@@ -298,11 +360,119 @@
             },
 
             /**
+             * 获取所有窗口信息
+             */
+            async fetchAllWindowsInfo() {
+                try {
+                    const windows = await electron?.sendAsync('webTabGetAllWindows')
+                    this.otherWindows = (windows || []).filter(w => w.windowId !== this.windowId)
+                } catch (e) {
+                    this.otherWindows = []
+                }
+            },
+
+            /**
+             * 检查拖拽边界
+             */
+            checkDragBoundary(event) {
+                // 实时视觉反馈
+                const fallbackEl = document.querySelector('.sortable-fallback')
+                if (fallbackEl) {
+                    const isOutside = this.checkDetachCondition(event)
+                    fallbackEl.classList.toggle('detaching', isOutside)
+                }
+            },
+
+            /**
+             * 检查是否满足分离条件
+             */
+            checkDetachCondition(event) {
+                // 检查鼠标是否超出窗口边界
+                const windowBounds = {
+                    x: window.screenX,
+                    y: window.screenY,
+                    width: window.outerWidth,
+                    height: window.outerHeight
+                }
+
+                const screenX = event.screenX
+                const screenY = event.screenY
+
+                // 检查是否在窗口范围外（左右上）
+                const isOutsideHorizontal = screenX < windowBounds.x ||
+                    screenX > windowBounds.x + windowBounds.width
+                const isOutsideTop = screenY < windowBounds.y
+                const isOutsideBottom = screenY > windowBounds.y + windowBounds.height
+
+                // 检查垂直移动距离（用于向下拖动检测）
+                const verticalMove = Math.abs(screenY - this.dragState.startScreenY)
+                const tabBarHeight = 40
+                const detachThreshold = tabBarHeight + 20 // 超过标签栏高度 + 20px 触发分离
+
+                // 向下拖动超过阈值也触发分离
+                const isDownwardDetach = screenY > this.dragState.startScreenY + detachThreshold
+
+                return isOutsideHorizontal || isOutsideTop || isOutsideBottom || isDownwardDetach
+            },
+
+            /**
+             * 查找目标窗口（用于拖入）
+             */
+            findTargetWindow(screenX, screenY) {
+                for (const win of this.otherWindows) {
+                    const tb = win.tabBarBounds
+                    // 检查是否在目标窗口的标签栏区域内
+                    if (screenX >= tb.x && screenX <= tb.x + tb.width &&
+                        screenY >= tb.y && screenY <= tb.y + tb.height) {
+                        return win
+                    }
+                }
+                return null
+            },
+
+            /**
+             * 分离标签到新窗口
+             */
+            detachTab(tabId, screenX, screenY) {
+                this.sendMessage('webTabDetach', {
+                    windowId: this.windowId,
+                    tabId: tabId,
+                    screenX: screenX,
+                    screenY: screenY
+                })
+            },
+
+            /**
+             * 将标签附加到目标窗口
+             */
+            attachToWindow(tabId, targetWindowId, screenX) {
+                // 计算插入位置（可以根据 screenX 确定位置，这里简化处理）
+                this.sendMessage('webTabAttach', {
+                    sourceWindowId: this.windowId,
+                    tabId: tabId,
+                    targetWindowId: targetWindowId,
+                    insertIndex: null // 追加到末尾
+                })
+            },
+
+            /**
+             * 重置拖拽状态
+             */
+            resetDragState() {
+                this.dragState.tabId = null
+                this.dragState.startX = 0
+                this.dragState.startY = 0
+                this.dragState.startScreenX = 0
+                this.dragState.startScreenY = 0
+                this.otherWindows = []
+            },
+
+            /**
              * 切换标签页
              * @param item
              */
             onSwitch(item) {
-                this.sendMessage('webTabActivate', item.id)
+                this.sendMessage('webTabActivate', {windowId: this.windowId, tabId: item.id})
             },
 
             /**
@@ -310,7 +480,7 @@
              * @param item
              */
             onClose(item) {
-                this.sendMessage('webTabClose', item.id);
+                this.sendMessage('webTabClose', {windowId: this.windowId, tabId: item.id});
             },
 
             /**
@@ -326,7 +496,7 @@
              * @returns {string}
              */
             iconStyle(item) {
-                return item.icon ? `background-image: url(${item.icon})` : ''
+                return item.favicon ? `--tab-icon-image: url(${item.favicon})` : ''
             },
 
             /**
