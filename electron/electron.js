@@ -1532,7 +1532,8 @@ function getAllWebTabWindowsInfo() {
                     y: bounds.y,
                     width: bounds.width,
                     height: webTabHeight
-                }
+                },
+                tabCount: windowData.views.length
             });
         }
     }

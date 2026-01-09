@@ -446,12 +446,41 @@
              * 将标签附加到目标窗口
              */
             attachToWindow(tabId, targetWindowId, screenX) {
-                // 计算插入位置（可以根据 screenX 确定位置，这里简化处理）
+                // 查找目标窗口信息
+                const targetWindow = this.otherWindows.find(w => w.windowId === targetWindowId)
+                let insertIndex = null
+
+                if (targetWindow && targetWindow.tabCount > 0) {
+                    // 计算插入位置
+                    // 导航区域宽度（macOS 约 140px，Windows 约 100px）
+                    const navAreaWidth = navigator.platform.includes('Mac') ? 140 : 100
+                    const tabBarX = targetWindow.tabBarBounds.x
+                    const tabBarWidth = targetWindow.tabBarBounds.width
+                    const tabCount = targetWindow.tabCount
+
+                    // 标签区域的起始位置和宽度
+                    const tabAreaStartX = tabBarX + navAreaWidth
+                    const tabAreaWidth = tabBarWidth - navAreaWidth - 150 // 减去右侧操作按钮区域
+
+                    // 计算每个标签的平均宽度
+                    const tabWidth = Math.min(180, tabAreaWidth / tabCount) // 最大标签宽度 180px
+
+                    // 鼠标相对于标签区域起始位置的偏移
+                    const relativeX = screenX - tabAreaStartX
+
+                    if (relativeX <= 0) {
+                        insertIndex = 0
+                    } else {
+                        // 计算鼠标位于第几个标签位置
+                        insertIndex = Math.min(Math.floor(relativeX / tabWidth), tabCount)
+                    }
+                }
+
                 this.sendMessage('webTabAttach', {
                     sourceWindowId: this.windowId,
-                    tabId: tabId,
-                    targetWindowId: targetWindowId,
-                    insertIndex: null // 追加到末尾
+                    tabId,
+                    targetWindowId,
+                    insertIndex
                 })
             },
 
