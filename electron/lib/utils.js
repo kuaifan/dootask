@@ -737,11 +737,14 @@ const utils = {
      */
     isLocalHost(url) {
         if (!url) {
-            return false
+            return true
+        }
+        if (!/^https?:\/\//i.test(url)) {
+            return true
         }
         try {
             const uri = new URL(url)
-            return uri.hostname == "localhost"
+            return uri.hostname === 'localhost'
         } catch (e) {
             return false
         }

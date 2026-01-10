@@ -30,7 +30,7 @@
             </li>
         </ul>
         <div class="nav-more" @click="onShowMenu">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><g fill="none"><path d="M9.5 16a2.5 2.5 0 1 1-5 0a2.5 2.5 0 0 1 5 0zm9 0a2.5 2.5 0 1 1-5 0a2.5 2.5 0 0 1 5 0zm6.5 2.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5z" fill="currentColor"></path></g></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32"><g fill="none"><path d="M9.5 16a2.5 2.5 0 1 1-5 0a2.5 2.5 0 0 1 5 0zm9 0a2.5 2.5 0 1 1-5 0a2.5 2.5 0 0 1 5 0zm6.5 2.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5z" fill="currentColor"></path></g></svg>
         </div>
     </div>
 </div>
@@ -213,13 +213,6 @@
              */
             pageTitle() {
                 return this.activeItem ? this.activeItem.title : 'Untitled'
-            },
-            /**
-             * 是否可以打开浏览器
-             * @returns {boolean}
-             */
-            canBrowser() {
-                return !(this.activeItem && this.isLocalHost(this.activeItem.url))
             },
             /**
              * 获取加载状态
@@ -516,7 +509,14 @@
              * 显示更多菜单
              */
             onShowMenu() {
-                this.sendMessage('webTabShowMenu', {windowId: this.windowId, tabId: this.activeId})
+                const btn = document.querySelector('.nav-more')
+                const rect = btn.getBoundingClientRect()
+                this.sendMessage('webTabShowMenu', {
+                    windowId: this.windowId,
+                    tabId: this.activeId,
+                    x: Math.round(rect.left),
+                    y: Math.round(rect.bottom)
+                })
             },
 
             /**
@@ -608,26 +608,6 @@
              */
             updateNavigationState() {
                 this.sendMessage('webTabGetNavigationState')
-            },
-
-            /**
-             * 判断是否是本地URL
-             * @param url
-             * @returns {boolean}
-             */
-            isLocalHost(url) {
-                if (!url) {
-                    return true
-                }
-                if (!/^https?:\/\//i.test(url)) {
-                    return true
-                }
-                try {
-                    const uri = new URL(url)
-                    return uri.hostname == "localhost"
-                } catch (e) {
-                    return false
-                }
             }
         },
     }

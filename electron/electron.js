@@ -1963,6 +1963,7 @@ ipcMain.on('webTabExternal', (event) => {
  */
 ipcMain.on('webTabShowMenu', (event, args) => {
     const windowId = args?.windowId
+    const tabId = args?.tabId
     const windowData = windowId ? webTabWindows.get(windowId) : null
     const webTabWindow = windowData?.window
 
@@ -1972,45 +1973,65 @@ ipcMain.on('webTabShowMenu', (event, args) => {
     }
 
     const item = currentWebTabInWindow(windowId)
-    const currentUrl = item?.view?.webContents?.getURL() || ''
+    const webContents = item?.view?.webContents
+    const currentUrl = webContents?.getURL() || ''
+    const canBrowser = !utils.isLocalHost(currentUrl)
 
     const menuTemplate = [
         {
-            label: '重新加载',
+            label: electronMenu.language.reload,
             click: () => {
-                // TODO: 实现重新加载
+                if (webContents && !webContents.isDestroyed()) {
+                    webContents.reload()
+                }
             }
         },
         {
-            label: '复制链接地址',
+            label: electronMenu.language.copyLinkAddress,
+            enabled: canBrowser,
             click: () => {
-                // TODO: 实现复制链接
+                if (currentUrl) {
+                    clipboard.writeText(currentUrl)
+                }
             }
         },
         {
-            label: '默认浏览器打开',
+            label: electronMenu.language.openInDefaultBrowser,
+            enabled: canBrowser,
             click: () => {
-                // TODO: 实现默认浏览器打开
+                if (currentUrl) {
+                    renderer.openExternal(currentUrl).catch(() => {})
+                }
             }
         },
         { type: 'separator' },
         {
-            label: '将标签页移至新窗口',
+            label: electronMenu.language.moveToNewWindow,
+            enabled: windowData?.views?.length > 1,
             click: () => {
-                // TODO: 实现移至新窗口
+                if (tabId) {
+                    const bounds = webTabWindow.getBounds()
+                    detachWebTab(windowId, tabId, bounds.x + 50, bounds.y + 50)
+                }
             }
         },
         { type: 'separator' },
         {
-            label: '打印',
+            label: electronMenu.language.print,
             click: () => {
-                // TODO: 实现打印
+                if (webContents && !webContents.isDestroyed()) {
+                    webContents.print()
+                }
             }
         }
     ]
 
     const menu = Menu.buildFromTemplate(menuTemplate)
-    menu.popup({ window: webTabWindow })
+    menu.popup({
+        window: webTabWindow,
+        x: args?.x,
+        y: args?.y
+    })
     event.returnValue = "ok"
 })
 

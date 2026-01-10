@@ -636,11 +636,13 @@ export default {
                 reload: this.$L("重新加载"),
                 print: this.$L("打印"),
                 openInBrowser: this.$L("在浏览器中打开"),
+                openInDefaultBrowser: this.$L("默认浏览器打开"),
                 saveImageAs: this.$L("图片存储为..."),
                 copyImage: this.$L("复制图片"),
                 copyEmailAddress: this.$L("复制电子邮件地址"),
                 copyLinkAddress: this.$L("复制链接地址"),
                 copyImageAddress: this.$L("复制图片地址"),
+                moveToNewWindow: this.$L("将标签页移至新窗口"),
                 failedToSaveImage: this.$L("图片保存失败"),
                 theImageFailedToSave: this.$L("图片无法保存"),
             });
