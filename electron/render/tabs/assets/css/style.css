@@ -135,11 +135,12 @@ body {
     content: none;
 }
 
-/* 浏览器打开 */
-.nav-browser {
+/* 更多菜单 */
+.nav-more {
     flex-shrink: 0;
     display: flex;
     align-items: center;
+    justify-content: center;
     height: 40px;
     padding: 0 14px;
     margin: 0 2px;
@@ -148,14 +149,15 @@ body {
     -webkit-app-region: none;
 }
 
-.nav-browser span {
-    display: inline-block;
+.nav-more svg {
     width: 18px;
     height: 18px;
-    background-size: 94%;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-image: url(../image/link/light_selected.svg);
+    color: #000000;
+    opacity: 0.7;
+}
+
+.nav-more:hover svg {
+    opacity: 1;
 }
 
 /* 图标 */
@@ -390,8 +392,8 @@ body.darwin.full-screen .nav {
         background-image: var(--tab-icon-image, url(../image/earth/dark_selected.svg));
     }
 
-    .nav-browser span {
-        background-image: url(../image/link/dark_selected.svg);
+    .nav-more svg {
+        color: #C7C7C7;
     }
 
     .tab-icon::before {

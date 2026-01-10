@@ -29,8 +29,8 @@
                 <div class="tab-close" @click.stop="onClose(item)"></div>
             </li>
         </ul>
-        <div v-if="canBrowser" class="nav-browser" @click="onBrowser">
-            <span></span>
+        <div class="nav-more" @click="onShowMenu">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><g fill="none"><path d="M9.5 16a2.5 2.5 0 1 1-5 0a2.5 2.5 0 0 1 5 0zm9 0a2.5 2.5 0 1 1-5 0a2.5 2.5 0 0 1 5 0zm6.5 2.5a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5z" fill="currentColor"></path></g></svg>
         </div>
     </div>
 </div>
@@ -513,10 +513,10 @@
             },
 
             /**
-             * 打开浏览器
+             * 显示更多菜单
              */
-            onBrowser() {
-                this.sendMessage('webTabExternal')
+            onShowMenu() {
+                this.sendMessage('webTabShowMenu', {windowId: this.windowId, tabId: this.activeId})
             },
 
             /**

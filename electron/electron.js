@@ -1959,6 +1959,62 @@ ipcMain.on('webTabExternal', (event) => {
 })
 
 /**
+ * 内置浏览器 - 显示更多菜单
+ */
+ipcMain.on('webTabShowMenu', (event, args) => {
+    const windowId = args?.windowId
+    const windowData = windowId ? webTabWindows.get(windowId) : null
+    const webTabWindow = windowData?.window
+
+    if (!webTabWindow || webTabWindow.isDestroyed()) {
+        event.returnValue = "ok"
+        return
+    }
+
+    const item = currentWebTabInWindow(windowId)
+    const currentUrl = item?.view?.webContents?.getURL() || ''
+
+    const menuTemplate = [
+        {
+            label: '重新加载',
+            click: () => {
+                // TODO: 实现重新加载
+            }
+        },
+        {
+            label: '复制链接地址',
+            click: () => {
+                // TODO: 实现复制链接
+            }
+        },
+        {
+            label: '默认浏览器打开',
+            click: () => {
+                // TODO: 实现默认浏览器打开
+            }
+        },
+        { type: 'separator' },
+        {
+            label: '将标签页移至新窗口',
+            click: () => {
+                // TODO: 实现移至新窗口
+            }
+        },
+        { type: 'separator' },
+        {
+            label: '打印',
+            click: () => {
+                // TODO: 实现打印
+            }
+        }
+    ]
+
+    const menu = Menu.buildFromTemplate(menuTemplate)
+    menu.popup({ window: webTabWindow })
+    event.returnValue = "ok"
+})
+
+/**
  * 内置浏览器 - 打开开发者工具
  */
 ipcMain.on('webTabOpenDevTools', (event) => {
