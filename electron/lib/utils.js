@@ -769,6 +769,23 @@ const utils = {
     },
 
     /**
+     * 加载内容 URL（自动判断完整 URL 或相对路径）
+     * @param webContents - BrowserWindow 或 WebContents 对象
+     * @param serverUrl - 服务器地址
+     * @param url - 要加载的 URL（完整 URL 或相对路径）
+     */
+    loadContentUrl(webContents, serverUrl, url) {
+        if (!url) return;
+        if (/^https?:/i.test(url)) {
+            // 完整 URL 直接加载
+            webContents.loadURL(url).then(_ => { }).catch(_ => { })
+        } else {
+            // 相对路径使用 loadUrl 处理
+            utils.loadUrl(webContents, serverUrl, url)
+        }
+    },
+
+    /**
      * 获取主题名称
      * @returns {string|*}
      */

@@ -119,6 +119,7 @@ export default {
     data() {
         return {
             assistShow: false,
+            isRestarting: false,
             userSelectOptions: {value: [], config: {}},
 
             backupConfigs: {},
@@ -160,8 +161,8 @@ export default {
             this.unmountAllMicroApp()
         },
         assistShow(show) {
-            if (!show && $A.isSubElectron) {
-                // 如果是子 Electron 窗口，关闭窗口助理时销毁窗口
+            if (!show && $A.isSubElectron && !this.isRestarting) {
+                // 如果是子 Electron 窗口，关闭窗口助理时销毁窗口（但是重启过程中不销毁）
                 $A.Electron.sendMessage('windowDestroy');
             }
         },
@@ -486,7 +487,7 @@ export default {
                     path: path,
                     force: false,
                     config: Object.assign({
-                        title: ' ',
+                        title: appConfig.title || ' ',
                         parent: null,
                         width: Math.min(window.screen.availWidth, 1440),
                         height: Math.min(window.screen.availHeight, 900),
@@ -518,7 +519,7 @@ export default {
                     path: config.url,
                     force: false,
                     config: {
-                        title: ' ',
+                        title: config.title || ' ',
                         parent: null,
                         width: Math.min(window.screen.availWidth, 1440),
                         height: Math.min(window.screen.availHeight, 900),
@@ -706,15 +707,20 @@ export default {
          * @param name
          */
         async onRestartApp(name) {
-            this.closeMicroApp(name, true)
-            await new Promise(resolve => setTimeout(resolve, 300));
+            this.isRestarting = true
+            try {
+                this.closeMicroApp(name, true)
+                await new Promise(resolve => setTimeout(resolve, 300));
 
-            const app = this.backupConfigs[name];
-            if (!app) {
-                $A.modalError("应用不存在");
-                return
+                const app = this.backupConfigs[name];
+                if (!app) {
+                    $A.modalError("应用不存在");
+                    return
+                }
+                await this.onOpen(app)
+            } finally {
+                this.isRestarting = false
             }
-            await this.onOpen(app)
         },
 
         /**

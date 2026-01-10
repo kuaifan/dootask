@@ -625,10 +625,10 @@ function createChildWindow(args) {
     // 加载地址
     const hash = `${args.hash || args.path}`;
     if (/^https?:/i.test(hash)) {
-        browser.loadURL(hash)
-            .then(_ => { })
-            .catch(_ => { })
+        // 完整 URL 直接加载
+        browser.loadURL(hash).then(_ => { }).catch(_ => { })
     } else if (isPreload) {
+        // preload 窗口尝试调用 __initializeApp，失败则 loadUrl
         browser
             .webContents
             .executeJavaScript(`if(typeof window.__initializeApp === 'function'){window.__initializeApp('${hash}')}else{throw new Error('no function')}`, true)
@@ -636,6 +636,7 @@ function createChildWindow(args) {
                 utils.loadUrl(browser, serverUrl, hash)
             });
     } else {
+        // 相对路径使用 loadUrl
         utils.loadUrl(browser, serverUrl, hash)
     }
 
@@ -774,7 +775,7 @@ function createWebTabWindow(args) {
 
                     // force=true 时重新加载
                     if (args.force === true && args.url) {
-                        viewItem.view.webContents.loadURL(args.url).catch(_ => {});
+                        utils.loadContentUrl(viewItem.view.webContents, serverUrl, args.url);
                     }
                     return existing.windowId;
                 }
@@ -1050,9 +1051,12 @@ function createWebTabView(windowId, args) {
     }
 
     browserView.webContents.on('destroyed', () => {
-        // 清理 name 映射
         if (browserView.tabName) {
             webTabNameMap.delete(browserView.tabName);
+        }
+        if (browserView._loadingChecker) {
+            clearInterval(browserView._loadingChecker);
+            browserView._loadingChecker = null;
         }
         closeWebTabInWindow(windowId, browserView.webContents.id);
     });
@@ -1134,27 +1138,46 @@ function createWebTabView(windowId, args) {
             favicon: base64Favicon || ''
         }).then(_ => { });
     });
-    browserView.webContents.on('did-start-loading', _ => {
-        // 使用动态窗口ID，支持标签在窗口间转移
-        const currentWindowId = browserView.webTabWindowId;
-        const wd = webTabWindows.get(currentWindowId);
-        if (!wd || !wd.window) return;
-        utils.onDispatchEvent(wd.window.webContents, {
-            event: 'start-loading',
-            id: browserView.webContents.id,
-        }).then(_ => { });
+    // 页面加载状态管理，忽略SPA路由切换(isSameDocument)
+    browserView._loadingActive = false;
+    browserView._loadingChecker = null;
+    const dispatchLoading = (event) => {
+        const wd = webTabWindows.get(browserView.webTabWindowId);
+        if (wd && wd.window) {
+            utils.onDispatchEvent(wd.window.webContents, {
+                event,
+                id: browserView.webContents.id,
+            }).then(_ => { });
+        }
+    };
+    const startLoading = () => {
+        if (browserView._loadingActive) return;
+        browserView._loadingActive = true;
+        dispatchLoading('start-loading');
+        if (!browserView._loadingChecker) {
+            browserView._loadingChecker = setInterval(() => {
+                if (browserView.webContents.isDestroyed() || !browserView.webContents.isLoading()) {
+                    stopLoading();
+                }
+            }, 3000);
+        }
+    };
+    const stopLoading = () => {
+        if (browserView._loadingChecker) {
+            clearInterval(browserView._loadingChecker);
+            browserView._loadingChecker = null;
+        }
+        if (!browserView._loadingActive) return;
+        browserView._loadingActive = false;
+        dispatchLoading('stop-loading');
+    };
+    browserView.webContents.on('did-start-navigation', (_, _url, _isInPlace, isMainFrame, _frameProcessId, _frameRoutingId, _navigationId, isSameDocument) => {
+        if (isMainFrame && !isSameDocument) {
+            startLoading();
+        }
     });
     browserView.webContents.on('did-stop-loading', _ => {
-        // 使用动态窗口ID，支持标签在窗口间转移
-        const currentWindowId = browserView.webTabWindowId;
-        const wd = webTabWindows.get(currentWindowId);
-        if (!wd || !wd.window) return;
-        utils.onDispatchEvent(wd.window.webContents, {
-            event: 'stop-loading',
-            id: browserView.webContents.id,
-        }).then(_ => { });
-
-        // 加载完成暗黑模式下把窗口背景色改成白色，避免透明网站背景色穿透
+        stopLoading();
         if (nativeTheme.shouldUseDarkColors) {
             browserView.setBackgroundColor('#FFFFFF');
         }
@@ -1179,7 +1202,8 @@ function createWebTabView(windowId, args) {
 
     electronMenu.webContentsMenu(browserView.webContents, true);
 
-    browserView.webContents.loadURL(args.url).then(_ => { }).catch(_ => { });
+    // 加载地址
+    utils.loadContentUrl(browserView.webContents, serverUrl, args.url);
 
     browserView.setVisible(true);
 
@@ -2128,20 +2152,36 @@ ipcMain.on('windowHidden', (event) => {
 })
 
 /**
- * 关闭窗口
+ * 关闭窗口（或关闭 tab，如果发送者是 tab 中的页面）
  */
 ipcMain.on('windowClose', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    win.close()
+    const tabId = event.sender.id;
+    const windowId = findWindowIdByTabId(tabId);
+    if (windowId !== null) {
+        // 发送者是 tab 中的页面，只关闭这个 tab
+        closeWebTabInWindow(windowId, tabId);
+    } else {
+        // 发送者是独立窗口，关闭整个窗口
+        const win = BrowserWindow.fromWebContents(event.sender);
+        win?.close()
+    }
     event.returnValue = "ok"
 })
 
 /**
- * 销毁窗口
+ * 销毁窗口（或销毁 tab，如果发送者是 tab 中的页面）
  */
 ipcMain.on('windowDestroy', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    win.destroy()
+    const tabId = event.sender.id;
+    const windowId = findWindowIdByTabId(tabId);
+    if (windowId !== null) {
+        // 发送者是 tab 中的页面，只关闭这个 tab
+        closeWebTabInWindow(windowId, tabId);
+    } else {
+        // 发送者是独立窗口，销毁整个窗口
+        const win = BrowserWindow.fromWebContents(event.sender);
+        win?.destroy()
+    }
     event.returnValue = "ok"
 })
 

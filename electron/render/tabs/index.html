@@ -617,7 +617,10 @@
              */
             isLocalHost(url) {
                 if (!url) {
-                    return false
+                    return true
+                }
+                if (!/^https?:\/\//i.test(url)) {
+                    return true
                 }
                 try {
                     const uri = new URL(url)

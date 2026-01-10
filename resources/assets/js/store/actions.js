@@ -5120,6 +5120,7 @@ export default {
         const config = {
             id: microAppId,
             name: data.name,
+            title: data.label || data.title || data.name,
             url: $A.mainUrl(url),
             type: data.type || data.url_type,
             background: data.background || null,
