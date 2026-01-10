@@ -65,7 +65,7 @@ export function openFileInClient(vm, item, options = {}) {
     }, options.windowConfig || {});
 
     if (vm.$Electron) {
-        vm.$store.dispatch('openChildWindow', {
+        vm.$store.dispatch('openWindow', {
             name: windowName,
             path,
             userAgent: "/hideenOfficeTitle/",

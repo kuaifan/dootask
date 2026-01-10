@@ -608,7 +608,7 @@ export default {
                     return false;
                 }
                 // 使用内置浏览器打开
-                this.$store.dispatch("openWebTabWindow", url)
+                this.$store.dispatch("openWindow", url)
                 return true
             }
             this.$Electron.listener('browserWindowBlur', _ => {

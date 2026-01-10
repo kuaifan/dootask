@@ -181,7 +181,7 @@ export default {
                     const title = $A.getFileName(this.file) + ` [${row.created_at}]`;
                     const path = `/single/file/${this.fileId}?history_id=${row.id}&history_title=${title}`;
                     if (this.$Electron) {
-                        this.$store.dispatch('openChildWindow', {
+                        this.$store.dispatch('openWindow', {
                             name: `file-${this.fileId}-${row.id}`,
                             path: path,
                             userAgent: "/hideenOfficeTitle/",

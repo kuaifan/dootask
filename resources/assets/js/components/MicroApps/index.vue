@@ -275,10 +275,10 @@ export default {
                             params.path = params.url
                             delete params.url
                         }
-                        this.$store.dispatch('openChildWindow', params);
+                        this.$store.dispatch('openWindow', params);
                     },
                     openTabWindow: (url) => {
-                        this.$store.dispatch('openWebTabWindow', url);
+                        this.$store.dispatch('openWindow', {path: url});
                     },
                     openAppPage: (params) => {
                         if (!$A.isJson(params)) {
@@ -481,7 +481,7 @@ export default {
             await $A.IDBSet("cacheMicroApps", $A.cloneJSON(apps));
 
             if (this.$Electron) {
-                await this.$store.dispatch('openChildWindow', {
+                await this.$store.dispatch('openWindow', {
                     name: `single-apps-${$A.randomString(6)}`,
                     path: path,
                     force: false,
@@ -513,7 +513,7 @@ export default {
          */
         async externalWindow(config) {
             if (this.$Electron) {
-                await this.$store.dispatch('openChildWindow', {
+                await this.$store.dispatch('openWindow', {
                     name: `external-apps-${$A.randomString(6)}`,
                     path: config.url,
                     force: false,

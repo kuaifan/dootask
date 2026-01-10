@@ -411,9 +411,10 @@ export default {
                             video: this.addData.tracks.includes("video") ? 1 : 0,
                             token: this.userToken,
                         });
-                        this.$store.dispatch('openChildWindow', {
+                        this.$store.dispatch('openWindow', {
                             name: `meeting-window`,
                             path: meetingPath,
+                            mode: 'window',
                             force: false,
                             config
                         });

@@ -219,7 +219,7 @@ export default {
                                     const path = `/${url}`
                                     if (this.$Electron) {
                                         e.preventDefault()
-                                        this.$store.dispatch('openChildWindow', {
+                                        this.$store.dispatch('openWindow', {
                                             name: `project-log-${id}`,
                                             path: path,
                                             force: false,

@@ -1383,28 +1383,43 @@ export default {
     },
 
     /**
-     * 打开子窗口（客户端）
+     * 打开窗口（客户端）
      * @param dispatch
-     * @param params
+     * @param params {path, name, mode, force, config, userAgent, webPreferences}
+     *   - path: 要打开的地址（或直接传 URL 字符串）
+     *   - name: 窗口/标签名称
+     *   - mode: 'tab' | 'window'，默认 'tab'
+     *   - force: 是否强制刷新
+     *   - config: 窗口配置（独立窗口模式有效）
+     *   - userAgent: 自定义 UserAgent
+     *   - webPreferences: 网页偏好设置
      */
-    async openChildWindow({dispatch}, params) {
-        params.path = await dispatch("userUrl", params.path)
-        $A.Electron.sendMessage('openChildWindow', params)
-    },
-
-    /**
-     * 打开新标签窗口（客户端）
-     * @param dispatch
-     * @param url
-     */
-    async openWebTabWindow({dispatch}, url) {
-        const params = {url}
-        if ($A.getDomain(url) == $A.getDomain($A.mainUrl())) {
-            params.url = await dispatch("userUrl", url)
-        } else {
-            params.webPreferences = {contextIsolation: false}
+    async openWindow({dispatch}, params) {
+        // 兼容直接传入 URL 字符串的情况
+        if (typeof params === 'string') {
+            params = { path: params }
         }
-        $A.Electron.sendMessage('openWebTabWindow', params)
+
+        // 外站 URL 自动移除 preload 脚本（通过 contextIsolation: false）
+        const pathDomain = $A.getDomain(params.path)
+        const isExternal = pathDomain && pathDomain !== $A.getDomain($A.mainUrl())
+        if (isExternal) {
+            params.webPreferences = Object.assign({contextIsolation: false}, params.webPreferences)
+        } else {
+            params.path = await dispatch("userUrl", params.path)
+        }
+
+        $A.Electron.sendMessage('openWindow', {
+            url: params.path,
+            name: params.name,
+            mode: params.mode,
+            force: params.force,
+            config: params.config,
+            userAgent: params.userAgent,
+            title: params.config?.title,
+            titleFixed: params.config?.titleFixed,
+            webPreferences: params.webPreferences,
+        })
     },
 
     /** *****************************************************************************************/
@@ -3575,9 +3590,10 @@ export default {
             return
         }
         const dialogData = state.cacheDialogs.find(({id}) => id === dialogId) || {}
-        dispatch('openChildWindow', {
+        dispatch('openWindow', {
             name: `dialog-${dialogId}`,
             path: `/single/dialog/${dialogId}`,
+            mode: 'window',
             force: false,
             config: {
                 title: dialogData.name,

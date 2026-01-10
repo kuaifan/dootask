@@ -75,13 +75,16 @@ let mainWindow = null,
     preloadWindow = null,
     mediaWindow = null;
 
-// 窗口数组和状态
+// 独立子窗口管理
 let childWindow = [];
 
 // 多窗口 Tab 管理
-// Map<windowId, {window, views: [{id, view}], activeTabId}>
+// Map<windowId, {window, views: [{id, view, name, favicon}], activeTabId}>
 let webTabWindows = new Map();
 let webTabWindowIdCounter = 1;
+// 标签名称到标签位置的映射，用于复用已存在的标签
+// Map<name, {windowId, tabId}>
+let webTabNameMap = new Map();
 
 // 窗口配置和状态
 let mediaType = null,
@@ -484,6 +487,7 @@ function createChildWindow(args) {
     if (!utils.isJson(args)) {
         args = {path: args, config: {}}
     }
+    args.path = args.path || args.url;
 
     const name = args.name || "auto_" + utils.randomString(6);
     const wind = childWindow.find(item => item.name == name);
@@ -740,7 +744,7 @@ function createMediaWindow(args, type = 'image') {
 
 /**
  * 创建内置浏览器窗口（支持多窗口）
- * @param args {url, windowId, position, afterId, ...}
+ * @param args {url, windowId, position, afterId, insertIndex, name, force, userAgent, title, titleFixed, webPreferences, ...}
  * @returns {number} 窗口ID
  */
 function createWebTabWindow(args) {
@@ -750,6 +754,34 @@ function createWebTabWindow(args) {
 
     if (!utils.isJson(args)) {
         args = {url: args}
+    }
+
+    // 如果有 name，先查找是否已存在同名标签
+    if (args.name) {
+        const existing = webTabNameMap.get(args.name);
+        if (existing) {
+            const existingWindowData = webTabWindows.get(existing.windowId);
+            if (existingWindowData && existingWindowData.window && !existingWindowData.window.isDestroyed()) {
+                const viewItem = existingWindowData.views.find(v => v.id === existing.tabId);
+                if (viewItem && viewItem.view && !viewItem.view.webContents.isDestroyed()) {
+                    // 激活已存在的标签
+                    if (existingWindowData.window.isMinimized()) {
+                        existingWindowData.window.restore();
+                    }
+                    existingWindowData.window.focus();
+                    existingWindowData.window.show();
+                    activateWebTabInWindow(existing.windowId, existing.tabId);
+
+                    // force=true 时重新加载
+                    if (args.force === true && args.url) {
+                        viewItem.view.webContents.loadURL(args.url).catch(_ => {});
+                    }
+                    return existing.windowId;
+                }
+            }
+            // 标签已失效，清理映射
+            webTabNameMap.delete(args.name);
+        }
     }
 
     // 确定目标窗口ID
@@ -805,11 +837,20 @@ function createWebTabWindow(args) {
         insertIndex = Math.max(0, Math.min(args.insertIndex, windowData.views.length));
     }
 
-    // 插入到指定位置
+    // 插入到指定位置，包含 name 信息
     windowData.views.splice(insertIndex, 0, {
         id: browserView.webContents.id,
-        view: browserView
+        view: browserView,
+        name: args.name || null
     });
+
+    // 如果有 name，注册到映射
+    if (args.name) {
+        webTabNameMap.set(args.name, {
+            windowId: windowId,
+            tabId: browserView.webContents.id
+        });
+    }
 
     utils.onDispatchEvent(webTabWindow.webContents, {
         event: 'create',
@@ -817,6 +858,7 @@ function createWebTabWindow(args) {
         url: args.url,
         afterId: args.afterId,
         windowId: windowId,
+        title: args.title,
     }).then(_ => { });
     activateWebTabInWindow(windowId, browserView.webContents.id);
 
@@ -907,7 +949,11 @@ function createWebTabWindowInstance(windowId, position) {
     webTabWindow.on('closed', () => {
         const windowData = webTabWindows.get(windowId);
         if (windowData) {
-            windowData.views.forEach(({view}) => {
+            windowData.views.forEach(({view, name}) => {
+                // 清理 name 映射
+                if (name) {
+                    webTabNameMap.delete(name);
+                }
                 try {
                     view.webContents.close();
                 } catch (e) {
@@ -990,10 +1036,24 @@ function createWebTabView(windowId, args) {
         height: (webTabWindow.getContentBounds().height || 800) - webTabHeight,
     });
 
-    // 保存所属窗口ID
+    // 保存所属窗口ID和元数据
     browserView.webTabWindowId = windowId;
+    browserView.tabName = args.name || null;
+    browserView.titleFixed = args.titleFixed || false;
+
+    // 设置自定义 UserAgent
+    if (args.userAgent) {
+        const originalUA = browserView.webContents.getUserAgent();
+        browserView.webContents.setUserAgent(
+            originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0 " + args.userAgent
+        );
+    }
 
     browserView.webContents.on('destroyed', () => {
+        // 清理 name 映射
+        if (browserView.tabName) {
+            webTabNameMap.delete(browserView.tabName);
+        }
         closeWebTabInWindow(windowId, browserView.webContents.id);
     });
     browserView.webContents.setWindowOpenHandler(({url}) => {
@@ -1004,7 +1064,11 @@ function createWebTabView(windowId, args) {
         }
         return {action: 'deny'};
     });
-    browserView.webContents.on('page-title-updated', (event, title) => {
+    browserView.webContents.on('page-title-updated', (_, title) => {
+        // titleFixed 时不更新标题
+        if (browserView.titleFixed) {
+            return;
+        }
         // 使用动态窗口ID，支持标签在窗口间转移
         const currentWindowId = browserView.webTabWindowId;
         const wd = webTabWindows.get(currentWindowId);
@@ -1293,6 +1357,12 @@ function closeWebTabInWindow(windowId, id) {
         webTabWindow.hide();
     }
     webTabWindow.contentView.removeChildView(item.view);
+
+    // 清理 name 映射
+    if (item.name) {
+        webTabNameMap.delete(item.name);
+    }
+
     try {
         item.view.webContents.close();
     } catch (e) {
@@ -1335,6 +1405,7 @@ function detachWebTab(windowId, tabId, screenX, screenY) {
     const tabItem = sourceWindowData.views[tabIndex];
     const view = tabItem.view;
     const favicon = tabItem.favicon || '';
+    const tabName = tabItem.name || null;
     const sourceWindow = sourceWindowData.window;
 
     // 从源窗口移除视图
@@ -1368,8 +1439,9 @@ function detachWebTab(windowId, tabId, screenX, screenY) {
     const newWindowData = {
         window: newWindow,
         views: [{
-            id: tabId, 
-            view, 
+            id: tabId,
+            name: tabName,
+            view,
             favicon
         }],
         activeTabId: tabId
@@ -1378,6 +1450,14 @@ function detachWebTab(windowId, tabId, screenX, screenY) {
 
     // 更新视图所属窗口
     view.webTabWindowId = newWindowId;
+
+    // 更新 name 映射中的 windowId
+    if (tabName) {
+        webTabNameMap.set(tabName, {
+            windowId: newWindowId,
+            tabId: tabId
+        });
+    }
 
     // 添加视图到新窗口
     newWindow.contentView.addChildView(view);
@@ -1448,6 +1528,7 @@ function attachWebTab(sourceWindowId, tabId, targetWindowId, insertIndex) {
     const tabItem = sourceWindowData.views[tabIndex];
     const view = tabItem.view;
     const favicon = tabItem.favicon || '';
+    const tabName = tabItem.name || null;
     const sourceWindow = sourceWindowData.window;
     const targetWindow = targetWindowData.window;
 
@@ -1464,15 +1545,24 @@ function attachWebTab(sourceWindowId, tabId, targetWindowId, insertIndex) {
     // 更新视图所属窗口
     view.webTabWindowId = targetWindowId;
 
+    // 更新 name 映射中的 windowId
+    if (tabName) {
+        webTabNameMap.set(tabName, {
+            windowId: targetWindowId,
+            tabId: tabId
+        });
+    }
+
     // 确定插入位置
     const actualInsertIndex = typeof insertIndex === 'number'
         ? Math.max(0, Math.min(insertIndex, targetWindowData.views.length))
         : targetWindowData.views.length;
 
-    // 添加到目标窗口
+    // 添加到目标窗口，保留 name 信息
     targetWindowData.views.splice(actualInsertIndex, 0, {
-        id: tabId, 
-        view, 
+        id: tabId,
+        name: tabName,
+        view,
         favicon
     });
     targetWindow.contentView.addChildView(view);
@@ -1689,15 +1779,6 @@ ipcMain.on('windowQuit', (event) => {
 })
 
 /**
- * 创建路由窗口
- * @param args {path, ?}
- */
-ipcMain.on('openChildWindow', (event, args) => {
-    createChildWindow(args)
-    event.returnValue = "ok"
-})
-
-/**
  * 显示预加载窗口（用于调试）
  */
 ipcMain.on('showPreloadWindow', (event) => {
@@ -1747,11 +1828,22 @@ ipcMain.on('openMediaViewer', (event, args) => {
 });
 
 /**
- * 内置浏览器 - 打开创建
- * @param args {url, ?}
+ * 统一窗口打开接口
+ * @param args {url, name, mode, force, config, userAgent, webPreferences, ...}
+ *   - url: 要打开的地址
+ *   - name: 窗口/标签名称
+ *   - mode: 'tab' | 'window'
+ *     - 'window': 独立窗口模式
+ *     - 'tab': 标签页模式（默认）
  */
-ipcMain.on('openWebTabWindow', (event, args) => {
-    createWebTabWindow(args)
+ipcMain.on('openWindow', (event, args) => {
+    if (args.mode === 'window') {
+        // 独立窗口模式
+        createChildWindow(args)
+    } else {
+        // 标签页模式
+        createWebTabWindow(args)
+    }
     event.returnValue = "ok"
 })
 

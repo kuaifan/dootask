@@ -1520,7 +1520,7 @@ export default {
         openFileSingle(item) {
             const path = `/single/file/${item.id}`;
             if (this.$Electron) {
-                this.$store.dispatch('openChildWindow', {
+                this.$store.dispatch('openWindow', {
                     name: `file-${item.id}`,
                     path: path,
                     userAgent: "/hideenOfficeTitle/",

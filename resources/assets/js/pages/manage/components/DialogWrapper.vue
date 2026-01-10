@@ -3781,7 +3781,7 @@ export default {
             const path = `/single/file/msg/${data.id}`;
             const title = data.type === 'longtext' ? this.$L('消息详情') : (`${msg.name} (${$A.bytesToSize(msg.size)})`);
             if (this.$Electron) {
-                this.$store.dispatch('openChildWindow', {
+                this.$store.dispatch('openWindow', {
                     name: `file-msg-${data.id}`,
                     path: path,
                     userAgent: "/hideenOfficeTitle/",

@@ -169,7 +169,7 @@ export default {
                     const title = (this.taskName || `ID: ${this.taskId}`) + ` [${row.created_at}]`;
                     const path = `/single/task/content/${this.taskId}?history_id=${row.id}&history_title=${title}`;
                     if (this.$Electron) {
-                        this.$store.dispatch('openChildWindow', {
+                        this.$store.dispatch('openWindow', {
                             name: `task-content-${this.taskId}-${row.id}`,
                             path: path,
                             force: false,

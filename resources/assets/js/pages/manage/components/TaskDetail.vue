@@ -1905,9 +1905,10 @@ export default {
                 config.minWidth = 800;
                 config.minHeight = 600;
             }
-            this.$store.dispatch('openChildWindow', {
+            this.$store.dispatch('openWindow', {
                 name: `task-${this.taskDetail.id}`,
                 path: `/single/task/${this.taskDetail.id}?navActive=${this.navActive}`,
+                mode: 'window',
                 force: false,
                 config
             });
@@ -1967,7 +1968,7 @@ export default {
             }
             const path = `/single/file/task/${file.id}`;
             if (this.$Electron) {
-                this.$store.dispatch('openChildWindow', {
+                this.$store.dispatch('openWindow', {
                     name: `file-task-${file.id}`,
                     path: path,
                     userAgent: "/hideenOfficeTitle/",
