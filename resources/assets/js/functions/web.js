@@ -63,6 +63,29 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
         },
 
         /**
+         * 获取 mainUrl 的域名
+         * @returns {string}
+         */
+        mainDomain() {
+            return $A.getDomain($A.mainUrl());
+        },
+
+        /**
+         * 移除 mainUrl 前缀（忽略 http/https 协议差异，只匹配域名）
+         * @param url
+         * @returns {string} 匹配时返回带前导斜杠的路径（如 /path/to），不匹配时返回原始 url
+         */
+        removeMainUrlPrefix(url) {
+            url = url + "";
+            const urlDomain = $A.getDomain(url);
+            const mainDomain = $A.mainDomain();
+            if (urlDomain && mainDomain && urlDomain === mainDomain) {
+                return url.replace(/^https?:\/\/[^\/]+/, '');
+            }
+            return url;
+        },
+
+        /**
          * 服务地址
          * @param str
          * @returns {string}
@@ -514,7 +537,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
          * @returns {boolean}
          */
         isDooServer() {
-            const u = $A.getDomain($A.mainUrl())
+            const u = $A.mainDomain()
             return /dootask\.com$/.test(u)
                 || /hitosea\.com$/.test(u)
                 || /^127\.0\.0\.1/.test(u)
@@ -598,7 +621,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
             if (!/\.(png|jpg|jpeg)$/.test(url)) {
                 return false
             }
-            return $A.getDomain(url) == $A.getDomain($A.mainUrl());
+            return $A.getDomain(url) == $A.mainDomain();
         },
 
         /**

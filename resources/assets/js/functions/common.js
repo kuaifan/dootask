@@ -1185,7 +1185,7 @@ const timezone = require("dayjs/plugin/timezone");
         getDomain(weburl) {
             const urlReg = /http(s)?:\/\/([^\/]+)/i;
             const domain = `${weburl}`.match(urlReg);
-            return ((domain != null && domain.length > 0) ? domain[2] : "");
+            return ((domain != null && domain.length > 0) ? domain[2] : "").toLowerCase();
         },
 
         /**

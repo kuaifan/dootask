@@ -129,7 +129,7 @@ Vue.prototype.goForward = function(route, isReplace, autoBroadcast = true) {
     if (typeof route === 'string') {
         if ($A.strExists(route, '/')) {
             if (/^https?:\/\//.test(route)) {
-                if ($A.getDomain(route) === $A.getDomain($A.mainUrl())) {
+                if ($A.getDomain(route) === $A.mainDomain()) {
                     route = route.replace(/^https?:\/\/[^\/]+/, '');
                 } else {
                     // 处理外部链接
@@ -357,7 +357,7 @@ const $preload = async () => {
     document.querySelector(".app-view-loading")?.setAttribute("data-visible", "false")
     window.__initializeApp = async (loadHash) => {
         if (/^https?:\/\//.test(loadHash)) {
-            if ($A.getDomain(loadHash) !== $A.getDomain($A.mainUrl())) {
+            if ($A.getDomain(loadHash) !== $A.mainDomain()) {
                 window.location.href = url;
                 return;
             }

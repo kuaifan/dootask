@@ -411,7 +411,7 @@ export default {
                 return 1;
             }
             // 同域名规则
-            if ($A.getDomain(url) == $A.getDomain($A.mainUrl())) {
+            if ($A.getDomain(url) == $A.mainDomain()) {
                 try {
                     const {pathname, searchParams} = new URL(url);
                     // meeting/1234567890/xxxxx    会议
@@ -438,7 +438,7 @@ export default {
         },
 
         isDownloadUrl(url) {
-            if ($A.getDomain(url) == $A.getDomain($A.mainUrl())) {
+            if ($A.getDomain(url) == $A.mainDomain()) {
                 try {
                     const {pathname, searchParams} = new URL(url);
                     // 匹配常见的下载相关路径

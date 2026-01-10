@@ -1287,7 +1287,7 @@ export default {
     userUrl({state}, url) {
         return new Promise(resolve => {
             // 如果是访问：服务器域名 且 当前是本地文件，则将服务器域名替换成本地路径
-            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) && isLocalHost(window.location)) {
+            if ($A.getDomain(url) == $A.mainDomain() && isLocalHost(window.location)) {
                 try {
                     const remoteURL = new URL(url)
                     if (/^\/(single|meeting)\//.test(remoteURL.pathname)) {
@@ -1308,7 +1308,7 @@ export default {
                 userid: state.userId,
             }
             // 如果是访问：服务器域名 或 本地文件，则添加 token 参数
-            if ($A.getDomain(url) == $A.getDomain($A.mainUrl()) || isLocalHost(url)) {
+            if ($A.getDomain(url) == $A.mainDomain() || isLocalHost(url)) {
                 params.token = state.userToken
             }
             resolve($A.urlAddParams(url, params))
@@ -1402,7 +1402,7 @@ export default {
 
         // 外站 URL 自动移除 preload 脚本（通过 contextIsolation: false）
         const pathDomain = $A.getDomain(params.path)
-        const isExternal = pathDomain && pathDomain !== $A.getDomain($A.mainUrl())
+        const isExternal = pathDomain && pathDomain !== $A.mainDomain()
         if (isExternal) {
             params.webPreferences = Object.assign({contextIsolation: false}, params.webPreferences)
         } else {

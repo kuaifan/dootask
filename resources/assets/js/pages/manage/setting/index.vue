@@ -220,7 +220,7 @@ export default {
 
         async onVersion() {
             const array = [
-                `${this.$L('服务器')}: ${$A.getDomain($A.mainUrl())}`
+                `${this.$L('服务器')}: ${$A.mainDomain()}`
             ]
             if (this.serverVersion) {
                 array.push(`${this.$L('服务器版本')}: v${this.serverVersion}`)

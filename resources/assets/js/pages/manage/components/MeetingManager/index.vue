@@ -401,9 +401,7 @@ export default {
                             width: Math.min(window.screen.availWidth, 1440),
                             height: Math.min(window.screen.availHeight, 900),
                         }
-                        const meetingLink = $A.leftDelete(linkRes.data, $A.mainUrl())
-                            .replace(/^\//, '');
-                        const meetingPath = $A.urlAddParams("/" + meetingLink, {
+                        const meetingPath = $A.urlAddParams($A.removeMainUrlPrefix(linkRes.data), {
                             type: 'direct',
                             nickname: data.nickname,
                             avatar: data.userimg,
