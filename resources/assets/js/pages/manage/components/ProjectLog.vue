@@ -222,13 +222,9 @@ export default {
                                         this.$store.dispatch('openWindow', {
                                             name: `project-log-${id}`,
                                             path: path,
-                                            force: false,
-                                            config: {
-                                                title: this.$L(title),
-                                                parent: null,
-                                                width: Math.min(window.screen.availWidth, 1440),
-                                                height: Math.min(window.screen.availHeight, 900),
-                                            },
+                                            title: this.$L(title),
+                                            width: Math.min(window.screen.availWidth, 1440),
+                                            height: Math.min(window.screen.availHeight, 900),
                                         });
                                     } else if (this.$isEEUIApp) {
                                         e.preventDefault()

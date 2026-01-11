@@ -72,14 +72,10 @@ let screenshotObj = null,
 // 窗口实例变量
 let mainWindow = null,
     mainTray = null,
-    preloadWindow = null,
     mediaWindow = null;
 
-// 独立子窗口管理
-let childWindow = [];
-
 // 多窗口 Tab 管理
-// Map<windowId, {window, views: [{id, view, name, favicon}], activeTabId}>
+// Map<windowId, {window, views: [{id, view, name, favicon}], activeTabId, mode: 'tab'|'window'}>
 let webTabWindows = new Map();
 let webTabWindowIdCounter = 1;
 // 标签名称到标签位置的映射，用于复用已存在的标签
@@ -436,241 +432,6 @@ function createUpdaterWindow(updateTitle) {
 }
 
 /**
- * 创建预窗口
- */
-function preCreateChildWindow() {
-    if (preloadWindow) {
-        return;
-    }
-
-    const browser = new BrowserWindow({
-        width: 360,
-        height: 360,
-        minWidth: 360,
-        minHeight: 360,
-        center: true,
-        show: false,
-        autoHideMenuBar: true,
-        backgroundColor: utils.getDefaultBackgroundColor(),
-        webPreferences: {
-            preload: path.join(__dirname, 'electron-preload.js'),
-            webSecurity: true,
-            nodeIntegration: true,
-            contextIsolation: true,
-        }
-    });
-
-    // 关闭事件
-    browser.addListener('closed', () => {
-        preloadWindow = null;
-    })
-
-    // 设置 UA
-    const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
-    browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
-
-    utils.loadUrl(browser, serverUrl, '/preload')
-
-    preloadWindow = browser;
-}
-
-/**
- * 创建子窗口
- * @param args {name, path, hash, force, userAgent, config, webPreferences}
- * - config: {title, titleFixed, ...BrowserWindowConstructorOptions}
- */
-function createChildWindow(args) {
-    if (!args) {
-        return;
-    }
-
-    if (!utils.isJson(args)) {
-        args = {path: args, config: {}}
-    }
-    args.path = args.path || args.url;
-
-    const name = args.name || "auto_" + utils.randomString(6);
-    const wind = childWindow.find(item => item.name == name);
-    let browser = wind ? wind.browser : null;
-    let isPreload = false;
-    // 清理已销毁但仍被引用的窗口，避免对失效对象调用方法
-    if (browser && browser.isDestroyed && browser.isDestroyed()) {
-        const index = childWindow.findIndex(item => item.name == name);
-        if (index > -1) {
-            childWindow.splice(index, 1);
-        }
-        browser = null;
-    }
-    if (browser) {
-        browser.focus();
-        if (args.force === false) {
-            return;
-        }
-    } else {
-        const config = args.config || {};
-        const webPreferences = args.webPreferences || {};
-        const options = Object.assign({
-            width: 1280,
-            height: 800,
-            minWidth: 360,
-            minHeight: 360,
-            center: true,
-            show: false,
-            autoHideMenuBar: true,
-            backgroundColor: utils.getDefaultBackgroundColor(),
-            webPreferences: Object.assign({
-                preload: path.join(__dirname, 'electron-preload.js'),
-                webSecurity: true,
-                nodeIntegration: true,
-                contextIsolation: true,
-            }, webPreferences),
-        }, config)
-
-        options.width = utils.normalizeSize(options.width, 1280)
-        options.height = utils.normalizeSize(options.height, 800)
-        options.minWidth = utils.normalizeSize(options.minWidth, 360)
-        options.minHeight = utils.normalizeSize(options.minHeight, 360)
-        if (!options.webPreferences.contextIsolation) {
-            delete options.webPreferences.preload;
-        }
-        if (options.parent) {
-            options.parent = mainWindow
-        }
-
-        if (preloadWindow && !preloadWindow.isDestroyed?.() && Object.keys(webPreferences).length === 0) {
-            // 使用预加载窗口
-            browser = preloadWindow;
-            preloadWindow = null;
-            isPreload = true;
-            options.title && browser.setTitle(options.title);
-            options.parent && browser.setParentWindow(options.parent);
-            browser.setSize(options.width, options.height);
-            browser.setMinimumSize(options.minWidth, options.minHeight);
-            browser.center();
-            browser.setAutoHideMenuBar(options.autoHideMenuBar);
-            browser.removeAllListeners("closed");
-            setTimeout(() => onShowWindow(browser), 300)
-            process.nextTick(() => setTimeout(() => onShowWindow(browser), 50));
-        } else {
-            // 创建新窗口
-            browser = new BrowserWindow(options)
-            loger.info("create new window")
-        }
-
-        browser.on('page-title-updated', (event, title) => {
-            if (title == "index.html" || options.titleFixed === true) {
-                event.preventDefault()
-            }
-        })
-
-        browser.on('focus', () => {
-            browser.webContents.send("browserWindowFocus", {})
-        })
-
-        browser.on('blur', () => {
-            browser.webContents.send("browserWindowBlur", {})
-        })
-
-        browser.on('close', event => {
-            if (!willQuitApp) {
-                utils.onBeforeUnload(event, browser).then(() => {
-                    browser.hide()
-                    setTimeout(() => {
-                        browser.destroy()
-                    }, 100)
-                })
-            }
-        })
-
-        browser.on('closed', () => {
-            const index = childWindow.findIndex(item => item.browser === browser);
-            if (index > -1) {
-                childWindow.splice(index, 1)
-            }
-        })
-
-        browser.once('ready-to-show', () => {
-            onShowWindow(browser);
-        })
-
-        browser.webContents.once('dom-ready', () => {
-            onShowWindow(browser);
-        })
-
-        childWindow.push({ name, browser })
-    }
-
-    // 设置 UA
-    const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
-    browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
-
-    // 新窗口处理
-    browser.webContents.setWindowOpenHandler(({url}) => {
-        if (allowedCalls.test(url)) {
-            renderer.openExternal(url).catch(() => {})
-        } else {
-            utils.onBeforeOpenWindow(browser.webContents, url).then(() => {
-                renderer.openExternal(url).catch(() => {})
-            })
-        }
-        return {action: 'deny'}
-    })
-
-    // 设置右键菜单
-    electronMenu.webContentsMenu(browser.webContents)
-
-    // 设置导航快捷键（返回/前进）
-    navigation.setup(browser)
-
-    // 加载地址
-    const hash = `${args.hash || args.path}`;
-    if (/^https?:/i.test(hash)) {
-        // 完整 URL 直接加载
-        browser.loadURL(hash).then(_ => { }).catch(_ => { })
-    } else if (isPreload) {
-        // preload 窗口尝试调用 __initializeApp，失败则 loadUrl
-        browser
-            .webContents
-            .executeJavaScript(`if(typeof window.__initializeApp === 'function'){window.__initializeApp('${hash}')}else{throw new Error('no function')}`, true)
-            .catch(() => {
-                utils.loadUrl(browser, serverUrl, hash)
-            });
-    } else {
-        // 相对路径使用 loadUrl
-        utils.loadUrl(browser, serverUrl, hash)
-    }
-
-    // 预创建下一个窗口
-    preCreateChildWindow();
-}
-
-/**
- * 更新子窗口
- * @param browser
- * @param args
- */
-function updateChildWindow(browser, args) {
-    if (!args) {
-        return;
-    }
-
-    if (!utils.isJson(args)) {
-        args = {path: args, name: null}
-    }
-
-    const hash = args.hash || args.path;
-    if (hash) {
-        utils.loadUrl(browser, serverUrl, hash)
-    }
-    if (args.name) {
-        const er = childWindow.find(item => item.browser == browser);
-        if (er) {
-            er.name = args.name;
-        }
-    }
-}
-
-/**
  * 创建媒体浏览器窗口
  * @param args
  * @param type
@@ -745,7 +506,10 @@ function createMediaWindow(args, type = 'image') {
 
 /**
  * 创建内置浏览器窗口（支持多窗口）
- * @param args {url, windowId, position, afterId, insertIndex, name, force, userAgent, title, titleFixed, webPreferences, ...}
+ * @param args {url, windowId, position, afterId, insertIndex, name, force, userAgent, title, titleFixed, webPreferences, mode, ...}
+ *   - mode: 'tab' | 'window'
+ *     - 'window': 独立窗口模式（无导航栏）
+ *     - 'tab': 标签页模式（默认，有导航栏）
  * @returns {number} 窗口ID
  */
 function createWebTabWindow(args) {
@@ -757,7 +521,10 @@ function createWebTabWindow(args) {
         args = {url: args}
     }
 
-    // 如果有 name，先查找是否已存在同名标签
+    const mode = args.mode || 'tab';
+    const isWindowMode = mode === 'window';
+
+    // 如果有 name，先查找是否已存在同名标签/窗口
     if (args.name) {
         const existing = webTabNameMap.get(args.name);
         if (existing) {
@@ -765,7 +532,7 @@ function createWebTabWindow(args) {
             if (existingWindowData && existingWindowData.window && !existingWindowData.window.isDestroyed()) {
                 const viewItem = existingWindowData.views.find(v => v.id === existing.tabId);
                 if (viewItem && viewItem.view && !viewItem.view.webContents.isDestroyed()) {
-                    // 激活已存在的标签
+                    // 激活已存在的标签/窗口
                     if (existingWindowData.window.isMinimized()) {
                         existingWindowData.window.restore();
                     }
@@ -790,12 +557,12 @@ function createWebTabWindow(args) {
     let windowData = windowId ? webTabWindows.get(windowId) : null;
     let webTabWindow = windowData ? windowData.window : null;
 
-    // 如果没有指定窗口或窗口不存在，查找第一个可用窗口或创建新窗口
+    // 如果没有指定窗口或窗口不存在，查找可用窗口或创建新窗口
     if (!webTabWindow) {
-        // 如果没有指定窗口，尝试使用第一个可用窗口
-        if (!windowId) {
+        // window 模式总是创建新窗口；tab 模式尝试使用第一个可用的 tab 窗口
+        if (!isWindowMode && !windowId) {
             for (const [id, data] of webTabWindows) {
-                if (data.window && !data.window.isDestroyed()) {
+                if (data.window && !data.window.isDestroyed() && data.mode !== 'window') {
                     windowId = id;
                     windowData = data;
                     webTabWindow = data.window;
@@ -807,11 +574,21 @@ function createWebTabWindow(args) {
         // 如果还是没有窗口，创建新窗口
         if (!webTabWindow) {
             windowId = webTabWindowIdCounter++;
-            webTabWindow = createWebTabWindowInstance(windowId, args.position);
+            // 从 args 中提取窗口尺寸
+            const position = {
+                x: args.x,
+                y: args.y,
+                width: args.width,
+                height: args.height,
+                minWidth: args.minWidth,
+                minHeight: args.minHeight,
+            };
+            webTabWindow = createWebTabWindowInstance(windowId, position, mode);
             windowData = {
                 window: webTabWindow,
                 views: [],
-                activeTabId: null
+                activeTabId: null,
+                mode: mode
             };
             webTabWindows.set(windowId, windowData);
         }
@@ -853,14 +630,17 @@ function createWebTabWindow(args) {
         });
     }
 
-    utils.onDispatchEvent(webTabWindow.webContents, {
-        event: 'create',
-        id: browserView.webContents.id,
-        url: args.url,
-        afterId: args.afterId,
-        windowId: windowId,
-        title: args.title,
-    }).then(_ => { });
+    // tab 模式通知标签栏创建标签；window 模式不需要
+    if (!isWindowMode) {
+        utils.onDispatchEvent(webTabWindow.webContents, {
+            event: 'create',
+            id: browserView.webContents.id,
+            url: args.url,
+            afterId: args.afterId,
+            windowId: windowId,
+            title: args.title,
+        }).then(_ => { });
+    }
     activateWebTabInWindow(windowId, browserView.webContents.id);
 
     return windowId;
@@ -870,30 +650,40 @@ function createWebTabWindow(args) {
  * 创建 WebTabWindow 实例
  * @param windowId
  * @param position {x, y, width, height}
+ * @param mode 'tab' | 'window'
  * @returns {BrowserWindow}
  */
-function createWebTabWindowInstance(windowId, position) {
-    const titleBarOverlay = {
-        height: webTabHeight
-    };
-    if (nativeTheme.shouldUseDarkColors) {
-        titleBarOverlay.color = '#3B3B3D';
-        titleBarOverlay.symbolColor = '#C5C5C5';
+function createWebTabWindowInstance(windowId, position, mode = 'tab') {
+    const isWindowMode = mode === 'window';
+
+    // mode='window': 根据屏幕分辨率动态计算默认值
+    // mode='tab': 使用 userConf 保存值或固定默认值
+    let defaultWidth, defaultHeight, defaultMinWidth, defaultMinHeight;
+    if (isWindowMode) {
+        const { width: screenWidth } = screen.getPrimaryDisplay().workAreaSize;
+        const isHighRes = screenWidth >= 2560;
+        defaultWidth = isHighRes ? 1920 : 1024;
+        defaultHeight = isHighRes ? 1080 : 768;
+        defaultMinWidth = 400;
+        defaultMinHeight = 300;
+    } else {
+        const savedBounds = userConf.get('webTabWindow') || {};
+        defaultWidth = savedBounds.width ?? 1280;
+        defaultHeight = savedBounds.height ?? 800;
+        defaultMinWidth = 360;
+        defaultMinHeight = 360;
     }
 
-    const defaultBounds = userConf.get('webTabWindow') || {};
     const hasExplicitPosition = position?.x !== undefined && position?.y !== undefined;
     const windowOptions = {
-        width: position?.width ?? defaultBounds.width ?? 1280,
-        height: position?.height ?? defaultBounds.height ?? 800,
-        minWidth: 360,
-        minHeight: 360,
+        width: position?.width ?? defaultWidth,
+        height: position?.height ?? defaultHeight,
+        minWidth: position?.minWidth ?? defaultMinWidth,
+        minHeight: position?.minHeight ?? defaultMinHeight,
         center: !hasExplicitPosition,
         show: false,
         autoHideMenuBar: true,
-        titleBarStyle: 'hidden',
-        titleBarOverlay,
-        backgroundColor: nativeTheme.shouldUseDarkColors ? '#575757' : '#FFFFFF',
+        backgroundColor: isWindowMode ? utils.getDefaultBackgroundColor() : (nativeTheme.shouldUseDarkColors ? '#575757' : '#FFFFFF'),
         webPreferences: {
             preload: path.join(__dirname, 'electron-preload.js'),
             webSecurity: true,
@@ -901,6 +691,19 @@ function createWebTabWindowInstance(windowId, position) {
             contextIsolation: true,
         },
     };
+
+    // tab 模式使用隐藏标题栏 + titleBarOverlay
+    if (!isWindowMode) {
+        const titleBarOverlay = {
+            height: webTabHeight
+        };
+        if (nativeTheme.shouldUseDarkColors) {
+            titleBarOverlay.color = '#3B3B3D';
+            titleBarOverlay.symbolColor = '#C5C5C5';
+        }
+        windowOptions.titleBarStyle = 'hidden';
+        windowOptions.titleBarOverlay = titleBarOverlay;
+    }
 
     // 有明确位置时设置 x/y
     if (hasExplicitPosition) {
@@ -944,7 +747,11 @@ function createWebTabWindowInstance(windowId, position) {
                 return;
             }
         }
-        userConf.set('webTabWindow', webTabWindow.getBounds());
+        // 只有 tab 模式才保存 bounds
+        const windowData = webTabWindows.get(windowId);
+        if (windowData && windowData.mode !== 'window') {
+            userConf.set('webTabWindow', webTabWindow.getBounds());
+        }
     });
 
     webTabWindow.on('closed', () => {
@@ -996,7 +803,10 @@ function createWebTabWindowInstance(windowId, position) {
         return item ? item.view.webContents : null;
     });
 
-    webTabWindow.loadFile('./render/tabs/index.html', {query: {windowId: String(windowId)}}).then(_ => { }).catch(_ => { });
+    // tab 模式加载标签栏界面，window 模式不需要
+    if (!isWindowMode) {
+        webTabWindow.loadFile('./render/tabs/index.html', {query: {windowId: String(windowId)}}).then(_ => { }).catch(_ => { });
+    }
 
     return webTabWindow;
 }
@@ -1012,12 +822,16 @@ function createWebTabView(windowId, args) {
     if (!windowData) return null;
 
     const webTabWindow = windowData.window;
-    const viewOptions = args.config || {};
-    viewOptions.webPreferences = Object.assign({
-        preload: path.join(__dirname, 'electron-preload.js'),
-        nodeIntegration: true,
-        contextIsolation: true
-    }, args.webPreferences || {});
+    const isWindowMode = windowData.mode === 'window';
+    const effectiveTabHeight = isWindowMode ? 0 : webTabHeight;
+
+    const viewOptions = {
+        webPreferences: Object.assign({
+            preload: path.join(__dirname, 'electron-preload.js'),
+            nodeIntegration: true,
+            contextIsolation: true
+        }, args.webPreferences || {})
+    };
     if (!viewOptions.webPreferences.contextIsolation) {
         delete viewOptions.webPreferences.preload;
     }
@@ -1025,6 +839,8 @@ function createWebTabView(windowId, args) {
     const browserView = new WebContentsView(viewOptions);
     if (args.backgroundColor) {
         browserView.setBackgroundColor(args.backgroundColor);
+    } else if (isWindowMode) {
+        browserView.setBackgroundColor(utils.getDefaultBackgroundColor());
     } else if (nativeTheme.shouldUseDarkColors) {
         browserView.setBackgroundColor('#575757');
     } else {
@@ -1032,9 +848,9 @@ function createWebTabView(windowId, args) {
     }
     browserView.setBounds({
         x: 0,
-        y: webTabHeight,
+        y: effectiveTabHeight,
         width: webTabWindow.getContentBounds().width || 1280,
-        height: (webTabWindow.getContentBounds().height || 800) - webTabHeight,
+        height: (webTabWindow.getContentBounds().height || 800) - effectiveTabHeight,
     });
 
     // 保存所属窗口ID和元数据
@@ -1063,7 +879,13 @@ function createWebTabView(windowId, args) {
     browserView.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
             renderer.openExternal(url).catch(() => {});
+        } else if (isWindowMode) {
+            // window 模式下打开外部浏览器
+            utils.onBeforeOpenWindow(browserView.webContents, url).then(() => {
+                renderer.openExternal(url).catch(() => {});
+            });
         } else {
+            // tab 模式下创建新标签
             createWebTabWindow({url, afterId: browserView.webContents.id, windowId});
         }
         return {action: 'deny'};
@@ -1323,15 +1145,18 @@ function resizeWebTabInWindow(windowId, id) {
     if (!windowData || !windowData.window) return;
 
     const webTabWindow = windowData.window;
+    const isWindowMode = windowData.mode === 'window';
+    const effectiveTabHeight = isWindowMode ? 0 : webTabHeight;
+
     const item = id === 0 ? currentWebTabInWindow(windowId) : windowData.views.find(item => item.id == id);
     if (!item) {
         return;
     }
     item.view.setBounds({
         x: 0,
-        y: webTabHeight,
+        y: effectiveTabHeight,
         width: webTabWindow.getContentBounds().width || 1280,
-        height: (webTabWindow.getContentBounds().height || 800) - webTabHeight,
+        height: (webTabWindow.getContentBounds().height || 800) - effectiveTabHeight,
     });
 }
 
@@ -1373,10 +1198,22 @@ function closeWebTabInWindow(windowId, id) {
 
     const webTabView = windowData.views;
     const webTabWindow = windowData.window;
+    const isWindowMode = windowData.mode === 'window';
+
     const item = id === 0 ? currentWebTabInWindow(windowId) : webTabView.find(item => item.id == id);
     if (!item) {
         return;
     }
+
+    // window 模式下直接关闭整个窗口
+    if (isWindowMode) {
+        webTabView.forEach(({name}) => {
+            if (name) webTabNameMap.delete(name);
+        });
+        webTabWindow.destroy();
+        return;
+    }
+
     if (webTabView.length === 1) {
         webTabWindow.hide();
     }
@@ -1668,9 +1505,7 @@ function monitorThemeChanges() {
         // 更新背景
         const backgroundColor = utils.getDefaultBackgroundColor()
         mainWindow?.setBackgroundColor(backgroundColor);
-        preloadWindow?.setBackgroundColor(backgroundColor);
         mediaWindow?.setBackgroundColor(backgroundColor);
-        childWindow.some(({browser}) => browser.setBackgroundColor(backgroundColor))
         // 更新所有 webTab 窗口背景
         for (const [, windowData] of webTabWindows) {
             windowData.window?.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#575757' : '#FFFFFF');
@@ -1706,8 +1541,6 @@ if (!getTheLock) {
         utils.useCookie()
         // 创建主窗口
         createMainWindow()
-        // 预创建子窗口
-        preCreateChildWindow()
         // 监听主题变化
         monitorThemeChanges()
         // 创建托盘
@@ -1803,42 +1636,39 @@ ipcMain.on('windowQuit', (event) => {
 })
 
 /**
- * 显示预加载窗口（用于调试）
- */
-ipcMain.on('showPreloadWindow', (event) => {
-    if (preloadWindow) {
-        onShowWindow(preloadWindow)
-    }
-    event.returnValue = "ok"
-})
-
-/**
- * 更新路由窗口
- * @param args {?name, ?path} // name: 不是要更改的窗口名，是要把窗口名改成什么， path: 地址
- */
-ipcMain.on('updateChildWindow', (event, args) => {
-    const browser = BrowserWindow.fromWebContents(event.sender);
-    updateChildWindow(browser, args)
-    event.returnValue = "ok"
-})
-
-/**
- * 获取路由窗口信息
+ * 获取路由窗口信息（从 webTabWindows 中查找 mode='window' 的窗口）
  */
 ipcMain.handle('getChildWindow', (event, args) => {
-    let child;
+    let windowData, viewItem;
     if (!args) {
-        const browser = BrowserWindow.fromWebContents(event.sender);
-        child = childWindow.find(({browser: win}) => win === browser)
-    } else {
-        child = childWindow.find(({name}) => name === args)
-    }
-    if (child) {
-        return {
-            name: child.name,
-            id: child.browser.webContents.id,
-            url: child.browser.webContents.getURL()
+        // 通过发送者查找
+        const sender = event.sender;
+        for (const [, data] of webTabWindows) {
+            if (data.mode === 'window') {
+                const found = data.views.find(v => v.view.webContents === sender);
+                if (found) {
+                    windowData = data;
+                    viewItem = found;
+                    break;
+                }
+            }
         }
+    } else {
+        // 通过名称查找
+        const location = webTabNameMap.get(args);
+        if (location) {
+            windowData = webTabWindows.get(location.windowId);
+            if (windowData && windowData.mode === 'window') {
+                viewItem = windowData.views.find(v => v.id === location.tabId);
+            }
+        }
+    }
+    if (windowData && viewItem) {
+        return {
+            name: viewItem.name,
+            id: viewItem.view.webContents.id,
+            url: viewItem.view.webContents.getURL()
+        };
     }
     return null;
 });
@@ -1857,17 +1687,12 @@ ipcMain.on('openMediaViewer', (event, args) => {
  *   - url: 要打开的地址
  *   - name: 窗口/标签名称
  *   - mode: 'tab' | 'window'
- *     - 'window': 独立窗口模式
- *     - 'tab': 标签页模式（默认）
+ *     - 'window': 独立窗口模式（无导航栏）
+ *     - 'tab': 标签页模式（默认，有导航栏）
  */
 ipcMain.on('openWindow', (event, args) => {
-    if (args.mode === 'window') {
-        // 独立窗口模式
-        createChildWindow(args)
-    } else {
-        // 标签页模式
-        createWebTabWindow(args)
-    }
+    // 统一使用 createWebTabWindow，通过 mode 区分窗口类型
+    createWebTabWindow(args)
     event.returnValue = "ok"
 })
 
@@ -2263,40 +2088,33 @@ ipcMain.on('windowDestroy', (event) => {
 })
 
 /**
- * 关闭所有子窗口
+ * 关闭所有子窗口（mode='window' 的窗口）
  */
 ipcMain.on('childWindowCloseAll', (event) => {
-    childWindow.some(({browser}) => {
-        browser && browser.close()
-    })
-    preloadWindow?.close()
+    for (const [, data] of webTabWindows) {
+        if (data.mode === 'window' && data.window && !data.window.isDestroyed()) {
+            data.window.close();
+        }
+    }
     mediaWindow?.close()
     electronDown.close()
     event.returnValue = "ok"
 })
 
 /**
- * 销毁所有子窗口
+ * 销毁所有子窗口（mode='window' 的窗口）
  */
 ipcMain.on('childWindowDestroyAll', (event) => {
-    childWindow.some(({browser}) => {
-        browser && browser.destroy()
-    })
-    preloadWindow?.destroy()
+    for (const [, data] of webTabWindows) {
+        if (data.mode === 'window' && data.window && !data.window.isDestroyed()) {
+            data.window.destroy();
+        }
+    }
     mediaWindow?.destroy()
     electronDown.destroy()
     event.returnValue = "ok"
 })
 
-/**
- * 刷新预加载窗口（用于更换语言和主题时触发）
- */
-ipcMain.on('reloadPreloadWindow', (event) => {
-    if (preloadWindow) {
-        preloadWindow.webContents.reload()
-    }
-    event.returnValue = "ok"
-})
 
 /**
  * 设置窗口尺寸
@@ -2637,10 +2455,11 @@ ipcMain.on('updateQuitAndInstall', (event, args) => {
 
     // 关闭所有子窗口
     willQuitApp = true
-    childWindow.some(({browser}) => {
-        browser && browser.destroy()
-    })
-    preloadWindow?.destroy()
+    for (const [, data] of webTabWindows) {
+        if (data.mode === 'window' && data.window && !data.window.isDestroyed()) {
+            data.window.destroy();
+        }
+    }
     mediaWindow?.destroy()
     electronDown.destroy()
 

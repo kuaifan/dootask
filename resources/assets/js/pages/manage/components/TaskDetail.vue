@@ -1891,26 +1891,16 @@ export default {
         },
 
         openNewWin() {
-            const config = {
-                title: this.taskDetail.name,
-                titleFixed: true,
-                parent: null,
-                width: Math.min(window.screen.availWidth * 0.8, this.$el.clientWidth + 72),
-                height: Math.min(window.screen.availHeight * 0.8, this.$el.clientHeight + 72),
-                minWidth: 600,
-                minHeight: 450,
-                autoZoom: true,
-            };
-            if (this.hasOpenDialog) {
-                config.minWidth = 800;
-                config.minHeight = 600;
-            }
             this.$store.dispatch('openWindow', {
                 name: `task-${this.taskDetail.id}`,
                 path: `/single/task/${this.taskDetail.id}?navActive=${this.navActive}`,
                 mode: 'window',
-                force: false,
-                config
+                title: this.taskDetail.name,
+                titleFixed: true,
+                width: Math.min(window.screen.availWidth * 0.8, this.$el.clientWidth + 72),
+                height: Math.min(window.screen.availHeight * 0.8, this.$el.clientHeight + 72),
+                minWidth: this.hasOpenDialog ? 800 : 600,
+                minHeight: this.hasOpenDialog ? 600 : 450,
             });
             this.$store.dispatch('openTask', 0);
         },
@@ -1971,15 +1961,11 @@ export default {
                 this.$store.dispatch('openWindow', {
                     name: `file-task-${file.id}`,
                     path: path,
+                    title: `${file.name} (${$A.bytesToSize(file.size)})`,
+                    titleFixed: true,
+                    width: Math.min(window.screen.availWidth, 1440),
+                    height: Math.min(window.screen.availHeight, 900),
                     userAgent: "/hideenOfficeTitle/",
-                    force: false,
-                    config: {
-                        title: `${file.name} (${$A.bytesToSize(file.size)})`,
-                        titleFixed: true,
-                        parent: null,
-                        width: Math.min(window.screen.availWidth, 1440),
-                        height: Math.min(window.screen.availHeight, 900),
-                    },
                 });
             } else if (this.$isEEUIApp) {
                 this.$store.dispatch('openAppChildPage', {

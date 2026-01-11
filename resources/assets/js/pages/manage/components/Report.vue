@@ -104,18 +104,13 @@ export default {
             this.detailData = row;
             this.$emit("on-read");
             if (this.$Electron) {
-                let config = {
-                    title: row.title,
-                    titleFixed: true,
-                    parent: null,
-                    width: Math.min(window.screen.availWidth, 1440),
-                    height: Math.min(window.screen.availHeight, 900),
-                }
                 this.$store.dispatch('openWindow', {
                     name: `report-detail-${row.id}`,
                     path: `/single/report/detail/${row.id}`,
-                    force: false,
-                    config
+                    title: row.title,
+                    titleFixed: true,
+                    width: Math.min(window.screen.availWidth, 1440),
+                    height: Math.min(window.screen.availHeight, 900),
                 });
             } else {
                 this.showDetailDrawer = true;
@@ -128,17 +123,12 @@ export default {
 
         onEditReport(id) {
             if (this.$Electron) {
-                let config = {
-                    title: this.$L(id > 0 ? '修改报告' : '新增报告'),
-                    parent: null,
-                    width: Math.min(window.screen.availWidth, 1440),
-                    height: Math.min(window.screen.availHeight, 900),
-                }
                 this.$store.dispatch('openWindow', {
                     name: `report-edit-${id}`,
                     path: `/single/report/edit/${id}`,
-                    force: false,
-                    config
+                    title: this.$L(id > 0 ? '修改报告' : '新增报告'),
+                    width: Math.min(window.screen.availWidth, 1440),
+                    height: Math.min(window.screen.availHeight, 900),
                 });
             } else {
                 this.reportId = id;

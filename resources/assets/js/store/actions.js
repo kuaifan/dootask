@@ -1385,12 +1385,15 @@ export default {
     /**
      * 打开窗口（客户端）
      * @param dispatch
-     * @param params {path, name, mode, force, config, userAgent, webPreferences}
+     * @param params {path, name, mode, force, title, titleFixed, width, height, minWidth, minHeight, userAgent, webPreferences}
      *   - path: 要打开的地址（或直接传 URL 字符串）
      *   - name: 窗口/标签名称
      *   - mode: 'tab' | 'window'，默认 'tab'
      *   - force: 是否强制刷新
-     *   - config: 窗口配置（独立窗口模式有效）
+     *   - title: 窗口标题
+     *   - titleFixed: 是否固定标题
+     *   - width/height: 窗口尺寸（mode='window' 有效）
+     *   - minWidth/minHeight: 最小尺寸（mode='window' 有效）
      *   - userAgent: 自定义 UserAgent
      *   - webPreferences: 网页偏好设置
      */
@@ -1410,14 +1413,17 @@ export default {
         }
 
         $A.Electron.sendMessage('openWindow', {
-            url: params.path,
             name: params.name,
+            url: params.path,
             mode: params.mode,
-            force: params.force,
-            config: params.config,
+            title: params.title,
+            titleFixed: params.titleFixed,
+            width: params.width,
+            height: params.height,
+            minWidth: params.minWidth,
+            minHeight: params.minHeight,
             userAgent: params.userAgent,
-            title: params.config?.title,
-            titleFixed: params.config?.titleFixed,
+            force: params.force,
             webPreferences: params.webPreferences,
         })
     },
@@ -3594,13 +3600,9 @@ export default {
             name: `dialog-${dialogId}`,
             path: `/single/dialog/${dialogId}`,
             mode: 'window',
-            force: false,
-            config: {
-                title: dialogData.name,
-                parent: null,
-                width: Math.min(window.screen.availWidth, 1024),
-                height: Math.min(window.screen.availHeight, 768),
-            },
+            title: dialogData.name,
+            width: Math.min(window.screen.availWidth, 1024),
+            height: Math.min(window.screen.availHeight, 768),
         });
     },
 

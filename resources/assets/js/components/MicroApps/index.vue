@@ -276,6 +276,19 @@ export default {
                             params.path = params.url
                             delete params.url
                         }
+                        // 兼容旧格式：将 config 扁平化
+                        if ($A.isJson(params.config)) {
+                            const config = params.config
+                            delete params.config
+                            params = Object.assign({
+                                title: config.title,
+                                titleFixed: config.titleFixed,
+                                width: config.width,
+                                height: config.height,
+                                minWidth: config.minWidth,
+                                minHeight: config.minHeight,
+                            }, params)
+                        }
                         this.$store.dispatch('openWindow', params);
                     },
                     openTabWindow: (url) => {
@@ -482,16 +495,17 @@ export default {
             await $A.IDBSet("cacheMicroApps", $A.cloneJSON(apps));
 
             if (this.$Electron) {
+                const mergedConfig = Object.assign({
+                    title: appConfig.title || ' ',
+                    width: Math.min(window.screen.availWidth, 1440),
+                    height: Math.min(window.screen.availHeight, 900),
+                }, $A.isJson(windowConfig) ? windowConfig : {});
                 await this.$store.dispatch('openWindow', {
                     name: `single-apps-${$A.randomString(6)}`,
                     path: path,
-                    force: false,
-                    config: Object.assign({
-                        title: appConfig.title || ' ',
-                        parent: null,
-                        width: Math.min(window.screen.availWidth, 1440),
-                        height: Math.min(window.screen.availHeight, 900),
-                    }, $A.isJson(windowConfig) ? windowConfig : {}),
+                    title: mergedConfig.title,
+                    width: mergedConfig.width,
+                    height: mergedConfig.height,
                 });
             } else if (this.$isEEUIApp) {
                 await this.$store.dispatch('openAppChildPage', {
@@ -517,13 +531,9 @@ export default {
                 await this.$store.dispatch('openWindow', {
                     name: `external-apps-${$A.randomString(6)}`,
                     path: config.url,
-                    force: false,
-                    config: {
-                        title: config.title || ' ',
-                        parent: null,
-                        width: Math.min(window.screen.availWidth, 1440),
-                        height: Math.min(window.screen.availHeight, 900),
-                    },
+                    title: config.title || ' ',
+                    width: Math.min(window.screen.availWidth, 1440),
+                    height: Math.min(window.screen.availHeight, 900),
                 });
             } else if (this.$isEEUIApp) {
                 await this.$store.dispatch('openAppChildPage', {
@@ -783,7 +793,7 @@ export default {
 
         /**
          * 解析类型
-         * @param type 
+         * @param type
          */
         resolveType(type) {
             if (typeof type === 'string') {

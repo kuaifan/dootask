@@ -68,9 +68,12 @@ export function openFileInClient(vm, item, options = {}) {
         vm.$store.dispatch('openWindow', {
             name: windowName,
             path,
+            title: windowConfig.title,
+            titleFixed: windowConfig.titleFixed,
+            width: windowConfig.width,
+            height: windowConfig.height,
             userAgent: "/hideenOfficeTitle/",
             force: options.force === undefined ? false : options.force,
-            config: windowConfig,
         });
         return;
     }

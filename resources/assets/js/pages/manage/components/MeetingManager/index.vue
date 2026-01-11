@@ -394,13 +394,6 @@ export default {
                         },
                     }).then(linkRes => {
                         // 使用子窗口打开会议
-                        const config = {
-                            title: this.addData.name,
-                            titleFixed: true,
-                            parent: null,
-                            width: Math.min(window.screen.availWidth, 1440),
-                            height: Math.min(window.screen.availHeight, 900),
-                        }
                         const meetingPath = $A.urlAddParams($A.removeMainUrlPrefix(linkRes.data), {
                             type: 'direct',
                             nickname: data.nickname,
@@ -412,9 +405,10 @@ export default {
                         this.$store.dispatch('openWindow', {
                             name: `meeting-window`,
                             path: meetingPath,
-                            mode: 'window',
-                            force: false,
-                            config
+                            title: this.addData.name,
+                            titleFixed: true,
+                            width: Math.min(window.screen.availWidth, 1440),
+                            height: Math.min(window.screen.availHeight, 900),
                         });
                         // 关闭弹窗
                         this.addShow = false;

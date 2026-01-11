@@ -1523,15 +1523,11 @@ export default {
                 this.$store.dispatch('openWindow', {
                     name: `file-${item.id}`,
                     path: path,
+                    title: $A.getFileName(item),
+                    titleFixed: true,
+                    width: Math.min(window.screen.availWidth, 1440),
+                    height: Math.min(window.screen.availHeight, 900),
                     userAgent: "/hideenOfficeTitle/",
-                    force: false, // 如果窗口已存在不重新加载
-                    config: {
-                        title: $A.getFileName(item),
-                        titleFixed: true,
-                        parent: null,
-                        width: Math.min(window.screen.availWidth, 1440),
-                        height: Math.min(window.screen.availHeight, 900),
-                    },
                 });
             } else if (this.$isEEUIApp) {
                 this.$store.dispatch('openAppChildPage', {

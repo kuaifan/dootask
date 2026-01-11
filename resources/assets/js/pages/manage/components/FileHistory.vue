@@ -184,15 +184,11 @@ export default {
                         this.$store.dispatch('openWindow', {
                             name: `file-${this.fileId}-${row.id}`,
                             path: path,
+                            title,
+                            titleFixed: true,
+                            width: Math.min(window.screen.availWidth, 1440),
+                            height: Math.min(window.screen.availHeight, 900),
                             userAgent: "/hideenOfficeTitle/",
-                            force: false,
-                            config: {
-                                title,
-                                titleFixed: true,
-                                parent: null,
-                                width: Math.min(window.screen.availWidth, 1440),
-                                height: Math.min(window.screen.availHeight, 900),
-                            },
                         });
                     } else if (this.$isEEUIApp) {
                         this.$store.dispatch('openAppChildPage', {
