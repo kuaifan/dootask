@@ -244,7 +244,7 @@ function createWebTabWindow(args) {
     const mode = args.mode || 'tab'
     const isWindowMode = mode === 'window'
 
-    // 查找同名标签/窗口
+    // 如果有 name，先查找是否已存在同名标签/窗口
     if (args.name) {
         const existing = webTabNameMap.get(args.name)
         if (existing) {
@@ -252,28 +252,34 @@ function createWebTabWindow(args) {
             if (existingWindowData && existingWindowData.window && !existingWindowData.window.isDestroyed()) {
                 const viewItem = existingWindowData.views.find(v => v.id === existing.tabId)
                 if (viewItem && viewItem.view && !viewItem.view.webContents.isDestroyed()) {
+                    // 激活已存在的标签/窗口
                     if (existingWindowData.window.isMinimized()) {
                         existingWindowData.window.restore()
                     }
                     existingWindowData.window.focus()
                     existingWindowData.window.show()
                     activateWebTabInWindow(existing.windowId, existing.tabId)
+
+                    // force=true 时重新加载
                     if (args.force === true && args.url) {
                         utils.loadContentUrl(viewItem.view.webContents, getServerUrl(), args.url)
                     }
                     return existing.windowId
                 }
             }
+            // 标签已失效，清理映射
             webTabNameMap.delete(args.name)
         }
     }
 
+    // 确定目标窗口ID
     let windowId = args.windowId
     let windowData = windowId ? webTabWindows.get(windowId) : null
     let webTabWindow = windowData ? windowData.window : null
 
-    // window 模式创建新窗口；tab 模式尝试复用已有窗口
+    // 如果没有指定窗口或窗口不存在，查找可用窗口或创建新窗口
     if (!webTabWindow) {
+        // window 模式总是创建新窗口；tab 模式尝试使用第一个可用的 tab 窗口
         if (!isWindowMode && !windowId) {
             for (const [id, data] of webTabWindows) {
                 if (data.window && !data.window.isDestroyed() && data.mode !== 'window') {
@@ -284,8 +290,11 @@ function createWebTabWindow(args) {
                 }
             }
         }
+
+        // 如果还是没有窗口，创建新窗口
         if (!webTabWindow) {
             windowId = webTabWindowIdCounter++
+            // 从 args 中提取窗口尺寸
             const position = {
                 x: args.x,
                 y: args.y,
@@ -311,23 +320,29 @@ function createWebTabWindow(args) {
     webTabWindow.focus()
     webTabWindow.show()
 
+    // 创建 tab 子视图
     const browserView = createWebTabView(windowId, args)
 
+    // 确定插入位置
     let insertIndex = windowData.views.length
     if (args.afterId) {
         const afterIndex = windowData.views.findIndex(item => item.id === args.afterId)
-        if (afterIndex > -1) insertIndex = afterIndex + 1
+        if (afterIndex > -1) {
+            insertIndex = afterIndex + 1
+        }
     }
     if (typeof args.insertIndex === 'number') {
         insertIndex = Math.max(0, Math.min(args.insertIndex, windowData.views.length))
     }
 
+    // 插入到指定位置，包含 name 信息
     windowData.views.splice(insertIndex, 0, {
         id: browserView.webContents.id,
         view: browserView,
         name: args.name || null
     })
 
+    // 如果有 name，注册到映射
     if (args.name) {
         webTabNameMap.set(args.name, {
             windowId: windowId,
@@ -335,15 +350,26 @@ function createWebTabWindow(args) {
         })
     }
 
+    // tab 模式通知标签栏创建标签；window 模式设置窗口标题
     if (isWindowMode) {
-        if (args.title) webTabWindow.setTitle(args.title)
+        // window 模式下，如果传入了 title 参数，设置窗口标题
+        if (args.title) {
+            webTabWindow.setTitle(args.title)
+        }
     } else {
+        // 从域名缓存获取 favicon（快速响应）
         const domain = faviconCache.extractDomain(args.url)
         const cachedFavicon = domain ? faviconCache.getByDomain(domain) : null
+
+        // 如果有缓存，保存到视图对象
         if (cachedFavicon) {
             const viewItem = windowData.views.find(v => v.id === browserView.webContents.id)
-            if (viewItem) viewItem.favicon = cachedFavicon
+            if (viewItem) {
+                viewItem.favicon = cachedFavicon
+            }
         }
+
+        // tab 模式下通知标签栏创建新标签
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'create',
             id: browserView.webContents.id,
@@ -602,10 +628,12 @@ function createWebTabView(windowId, args) {
         height: (webTabWindow.getContentBounds().height || 800) - effectiveTabHeight,
     })
 
+    // 保存所属窗口ID和元数据
     browserView.webTabWindowId = windowId
     browserView.tabName = args.name || null
     browserView.titleFixed = args.titleFixed || false
 
+    // 设置自定义 UserAgent
     if (!isPreloaded && args.userAgent) {
         const originalUA = browserView.webContents.getUserAgent()
         browserView.webContents.setUserAgent(
@@ -807,6 +835,7 @@ function createWebTabView(windowId, args) {
  * @returns {object|undefined}
  */
 function currentWebTab() {
+    // 找到第一个活跃窗口
     for (const [windowId, windowData] of webTabWindows) {
         if (windowData.window && !windowData.window.isDestroyed()) {
             return currentWebTabInWindow(windowId)
@@ -827,18 +856,24 @@ function currentWebTabInWindow(windowId) {
     const webTabView = windowData.views
     const webTabWindow = windowData.window
 
-    // 优先级：可见标签 > 聚焦标签 > 最上层视图
+    // 第一：使用当前可见的标签
     try {
         const item = webTabView.find(({ view }) => view?.getVisible && view.getVisible())
-        if (item) return item
+        if (item) {
+            return item
+        }
     } catch (e) {}
+    // 第二：使用当前聚焦的 webContents
     try {
         const focused = require('electron').webContents.getFocusedWebContents?.()
         if (focused) {
             const item = webTabView.find(it => it.id === focused.id)
-            if (item) return item
+            if (item) {
+                return item
+            }
         }
     } catch (e) {}
+    // 兜底：根据 children 顺序选择最上层的可用视图
     const children = webTabWindow.contentView?.children || []
     for (let i = children.length - 1; i >= 0; i--) {
         const id = children[i]?.webContents?.id
