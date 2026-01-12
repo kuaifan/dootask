@@ -56,7 +56,6 @@ export default {
                             return
                         }
                         $A.messageSuccess('保存成功');
-                        this.$Electron?.sendMessage('reloadPreloadWindow');
                     })
                 }
             })

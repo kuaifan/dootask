@@ -1730,6 +1730,64 @@ ipcMain.on('openWindow', (event, args) => {
 })
 
 /**
+ * 更新当前窗口/标签页的 URL 和名称（用于内部导航）
+ * @param args {path, name}
+ *   - path: 要加载的新路径
+ *   - name: 可选，新的窗口/标签名称
+ */
+ipcMain.on('updateWindow', (event, args) => {
+    if (!args) {
+        event.returnValue = "ok"
+        return
+    }
+
+    if (!utils.isJson(args)) {
+        args = {path: args}
+    }
+
+    const sender = event.sender;
+    let windowId, windowData, viewItem;
+
+    // 通过发送者查找窗口和视图
+    for (const [id, data] of webTabWindows) {
+        const found = data.views.find(v => v.view.webContents === sender);
+        if (found) {
+            windowId = id;
+            windowData = data;
+            viewItem = found;
+            break;
+        }
+    }
+
+    if (!windowData || !viewItem) {
+        event.returnValue = "ok"
+        return
+    }
+
+    // 更新 URL
+    if (args.path) {
+        utils.loadContentUrl(viewItem.view.webContents, serverUrl, args.path)
+    }
+
+    // 更新名称
+    if (args.name && args.name !== viewItem.name) {
+        const oldName = viewItem.name;
+        viewItem.name = args.name;
+
+        // 更新 webTabNameMap
+        if (oldName) {
+            webTabNameMap.delete(oldName);
+        }
+        webTabNameMap.set(args.name, {
+            windowId: windowId,
+            tabId: viewItem.id
+        });
+    }
+
+    event.returnValue = "ok"
+})
+
+/**
  * 内置浏览器 - 激活标签
  * @param args {windowId, tabId} 或 tabId
  */

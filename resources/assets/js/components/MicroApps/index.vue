@@ -276,18 +276,10 @@ export default {
                             params.path = params.url
                             delete params.url
                         }
-                        // 兼容旧格式：将 config 扁平化
+                        // 兼容旧格式
                         if ($A.isJson(params.config)) {
-                            const config = params.config
+                            Object.assign(params, params.config)
                             delete params.config
-                            params = Object.assign({
-                                title: config.title,
-                                titleFixed: config.titleFixed,
-                                width: config.width,
-                                height: config.height,
-                                minWidth: config.minWidth,
-                                minHeight: config.minHeight,
-                            }, params)
                         }
                         this.$store.dispatch('openWindow', params);
                     },

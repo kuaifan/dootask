@@ -2533,7 +2533,7 @@ export default {
         }
         if ($A.isSubElectron) {
             if (task_id > 0) {
-                $A.Electron.sendMessage('updateChildWindow', {
+                $A.Electron.sendMessage('updateWindow', {
                     name: `task-${task_id}`,
                     path: `/single/task/${task_id}`,
                 });
