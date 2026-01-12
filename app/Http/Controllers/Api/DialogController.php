@@ -109,7 +109,8 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName search
      *
-     * @apiParam {String} key         消息关键词
+     * @apiParam {String} key              搜索关键词
+     * @apiParam {String} [dialog_only]    仅搜索会话和联系人，不搜索消息内容（可选，传任意值启用）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -123,6 +124,7 @@ class DialogController extends AbstractController
         if (empty($key)) {
             return Base::retError('请输入搜索关键词');
         }
+        $dialogOnly = Request::exists('dialog_only');
         // 搜索会话
         $take = 20;
         $list = WebSocketDialog::searchDialog($user->userid, $key, $take);
@@ -153,8 +155,8 @@ class DialogController extends AbstractController
             });
             $list = array_merge($list, $users->toArray());
         }
-        // 搜索消息会话
-        if (count($list) < $take) {
+        // 搜索消息会话（仅当 dialog_only 未设置时）
+        if (!$dialogOnly && count($list) < $take) {
             $searchResults = ManticoreMsg::searchDialogs($user->userid, $key, 0, $take - count($list));
             if ($searchResults) {
                 foreach ($searchResults as $item) {
