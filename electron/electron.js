@@ -556,6 +556,8 @@ if (!getTheLock) {
         utils.useCookie()
         // 创建主窗口
         createMainWindow()
+        // 预热预加载池（延迟启动，避免影响主窗口加载）
+        webTabManager.warmupPreloadPool()
         // 监听主题变化
         monitorThemeChanges()
         // 创建托盘
@@ -616,6 +618,8 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
     willQuitApp = true
+    // 清理预加载池
+    webTabManager.clearPreloadPool()
 })
 
 app.on("will-quit", () => {

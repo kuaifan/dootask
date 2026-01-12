@@ -43,6 +43,23 @@ const webTabHeight = 40
 let webTabClosedByShortcut = new Map()
 
 // ============================================================
+// 预加载池
+// ============================================================
+
+// 预加载 view 池
+let preloadViewPool = []
+
+// 预加载配置
+const PRELOAD_CONFIG = {
+    poolSize: 1,           // 池大小
+    warmupDelay: 1000,     // 启动后延迟创建时间（ms）
+    refillDelay: 500,      // 取走后补充延迟时间（ms）
+}
+
+// 预加载定时器（用于防抖补充）
+let preloadRefillTimer = null
+
+// ============================================================
 // 依赖注入
 // ============================================================
 
@@ -89,6 +106,121 @@ function getElectronMenu() {
 }
 
 // ============================================================
+// 预加载函数
+// ============================================================
+
+/**
+ * 创建预加载 view
+ * 预加载 /preload 路由，完成基础 JS 文件加载
+ * @returns {WebContentsView}
+ */
+function createPreloadView() {
+    const serverUrl = getServerUrl()
+    if (!serverUrl) {
+        return null
+    }
+
+    const browserView = new WebContentsView({
+        webPreferences: {
+            preload: path.join(__dirname, '..', 'electron-preload.js'),
+            nodeIntegration: true,
+            contextIsolation: true,
+        }
+    })
+
+    const originalUA = browserView.webContents.session.getUserAgent() || browserView.webContents.getUserAgent()
+    browserView.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0")
+
+    utils.loadUrl(browserView.webContents, serverUrl, '/preload')
+
+    browserView._isPreloaded = true
+    browserView._preloadReady = false
+    browserView.webContents.on('did-finish-load', () => {
+        browserView._preloadReady = true
+    })
+
+    return browserView
+}
+
+/**
+ * 预热预加载池（延迟创建，避免影响主窗口加载）
+ */
+function warmupPreloadPool() {
+    if (!getServerUrl()) return
+
+    setTimeout(() => {
+        while (preloadViewPool.length < PRELOAD_CONFIG.poolSize) {
+            const view = createPreloadView()
+            if (view) {
+                preloadViewPool.push(view)
+            } else {
+                break
+            }
+        }
+    }, PRELOAD_CONFIG.warmupDelay)
+}
+
+/**
+ * 从池中获取预加载 view（优先取已就绪的）
+ * @returns {WebContentsView|null}
+ */
+function getPreloadedView() {
+    // 优先取已就绪的
+    const readyIndex = preloadViewPool.findIndex(v => v._preloadReady && !v.webContents.isDestroyed())
+    if (readyIndex >= 0) {
+        const view = preloadViewPool.splice(readyIndex, 1)[0]
+        scheduleRefillPool()
+        return view
+    }
+    // 次选任意可用（可能还在加载中）
+    const availableIndex = preloadViewPool.findIndex(v => !v.webContents.isDestroyed())
+    if (availableIndex >= 0) {
+        const view = preloadViewPool.splice(availableIndex, 1)[0]
+        scheduleRefillPool()
+        return view
+    }
+    return null
+}
+
+/**
+ * 延迟补充预加载池
+ */
+function scheduleRefillPool() {
+    if (preloadRefillTimer) clearTimeout(preloadRefillTimer)
+    preloadRefillTimer = setTimeout(() => {
+        preloadRefillTimer = null
+        while (preloadViewPool.length < PRELOAD_CONFIG.poolSize) {
+            const view = createPreloadView()
+            if (view) {
+                preloadViewPool.push(view)
+            } else {
+                break
+            }
+        }
+    }, PRELOAD_CONFIG.refillDelay)
+}
+
+/**
+ * 清理预加载池
+ */
+function clearPreloadPool() {
+    if (preloadRefillTimer) {
+        clearTimeout(preloadRefillTimer)
+        preloadRefillTimer = null
+    }
+    preloadViewPool.forEach(view => {
+        try {
+            if (!view.webContents.isDestroyed()) {
+                view.webContents.close()
+            }
+        } catch (e) {
+            // ignore
+        }
+    })
+    preloadViewPool = []
+}
+
+// ============================================================
 // 核心函数
 // ============================================================
 
@@ -112,7 +244,7 @@ function createWebTabWindow(args) {
     const mode = args.mode || 'tab'
     const isWindowMode = mode === 'window'
 
-    // 如果有 name，先查找是否已存在同名标签/窗口
+    // 查找同名标签/窗口
     if (args.name) {
         const existing = webTabNameMap.get(args.name)
         if (existing) {
@@ -120,34 +252,28 @@ function createWebTabWindow(args) {
             if (existingWindowData && existingWindowData.window && !existingWindowData.window.isDestroyed()) {
                 const viewItem = existingWindowData.views.find(v => v.id === existing.tabId)
                 if (viewItem && viewItem.view && !viewItem.view.webContents.isDestroyed()) {
-                    // 激活已存在的标签/窗口
                     if (existingWindowData.window.isMinimized()) {
                         existingWindowData.window.restore()
                     }
                     existingWindowData.window.focus()
                     existingWindowData.window.show()
                     activateWebTabInWindow(existing.windowId, existing.tabId)
-
-                    // force=true 时重新加载
                     if (args.force === true && args.url) {
                         utils.loadContentUrl(viewItem.view.webContents, getServerUrl(), args.url)
                     }
                     return existing.windowId
                 }
             }
-            // 标签已失效，清理映射
             webTabNameMap.delete(args.name)
         }
     }
 
-    // 确定目标窗口ID
     let windowId = args.windowId
     let windowData = windowId ? webTabWindows.get(windowId) : null
     let webTabWindow = windowData ? windowData.window : null
 
-    // 如果没有指定窗口或窗口不存在，查找可用窗口或创建新窗口
+    // window 模式创建新窗口；tab 模式尝试复用已有窗口
     if (!webTabWindow) {
-        // window 模式总是创建新窗口；tab 模式尝试使用第一个可用的 tab 窗口
         if (!isWindowMode && !windowId) {
             for (const [id, data] of webTabWindows) {
                 if (data.window && !data.window.isDestroyed() && data.mode !== 'window') {
@@ -158,11 +284,8 @@ function createWebTabWindow(args) {
                 }
             }
         }
-
-        // 如果还是没有窗口，创建新窗口
         if (!webTabWindow) {
             windowId = webTabWindowIdCounter++
-            // 从 args 中提取窗口尺寸
             const position = {
                 x: args.x,
                 y: args.y,
@@ -188,29 +311,23 @@ function createWebTabWindow(args) {
     webTabWindow.focus()
     webTabWindow.show()
 
-    // 创建 tab 子视图
     const browserView = createWebTabView(windowId, args)
 
-    // 确定插入位置
     let insertIndex = windowData.views.length
     if (args.afterId) {
         const afterIndex = windowData.views.findIndex(item => item.id === args.afterId)
-        if (afterIndex > -1) {
-            insertIndex = afterIndex + 1
-        }
+        if (afterIndex > -1) insertIndex = afterIndex + 1
     }
     if (typeof args.insertIndex === 'number') {
         insertIndex = Math.max(0, Math.min(args.insertIndex, windowData.views.length))
     }
 
-    // 插入到指定位置，包含 name 信息
     windowData.views.splice(insertIndex, 0, {
         id: browserView.webContents.id,
         view: browserView,
         name: args.name || null
     })
 
-    // 如果有 name，注册到映射
     if (args.name) {
         webTabNameMap.set(args.name, {
             windowId: windowId,
@@ -218,26 +335,15 @@ function createWebTabWindow(args) {
         })
     }
 
-    // tab 模式通知标签栏创建标签；window 模式设置窗口标题
     if (isWindowMode) {
-        // window 模式下，如果传入了 title 参数，设置窗口标题
-        if (args.title) {
-            webTabWindow.setTitle(args.title)
-        }
+        if (args.title) webTabWindow.setTitle(args.title)
     } else {
-        // 从域名缓存获取 favicon（快速响应）
         const domain = faviconCache.extractDomain(args.url)
         const cachedFavicon = domain ? faviconCache.getByDomain(domain) : null
-
-        // 如果有缓存，保存到视图对象
         if (cachedFavicon) {
             const viewItem = windowData.views.find(v => v.id === browserView.webContents.id)
-            if (viewItem) {
-                viewItem.favicon = cachedFavicon
-            }
+            if (viewItem) viewItem.favicon = cachedFavicon
         }
-
-        // tab 模式下通知标签栏创建新标签
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'create',
             id: browserView.webContents.id,
@@ -451,19 +557,34 @@ function createWebTabView(windowId, args) {
     const isWindowMode = windowData.mode === 'window'
     const effectiveTabHeight = isWindowMode ? 0 : webTabHeight
     const electronMenu = getElectronMenu()
+    const serverUrl = getServerUrl()
 
-    const viewOptions = {
-        webPreferences: Object.assign({
-            preload: path.join(__dirname, '..', 'electron-preload.js'),
-            nodeIntegration: true,
-            contextIsolation: true
-        }, args.webPreferences || {})
-    }
-    if (!viewOptions.webPreferences.contextIsolation) {
-        delete viewOptions.webPreferences.preload
+    // 尝试复用预加载 view（本地站点且无特殊配置）
+    let browserView = null
+    let isPreloaded = false
+    const isLocalUrl = !args.url || !args.url.startsWith('http') ||
+                       utils.getDomain(args.url) === utils.getDomain(serverUrl)
+    const hasCustomPreferences = args.webPreferences && Object.keys(args.webPreferences).length > 0
+
+    if (isLocalUrl && !hasCustomPreferences) {
+        browserView = getPreloadedView()
+        if (browserView) isPreloaded = true
     }
 
-    const browserView = new WebContentsView(viewOptions)
+    if (!browserView) {
+        const viewOptions = {
+            webPreferences: Object.assign({
+                preload: path.join(__dirname, '..', 'electron-preload.js'),
+                nodeIntegration: true,
+                contextIsolation: true
+            }, args.webPreferences || {})
+        }
+        if (!viewOptions.webPreferences.contextIsolation) {
+            delete viewOptions.webPreferences.preload
+        }
+        browserView = new WebContentsView(viewOptions)
+    }
+
     if (args.backgroundColor) {
         browserView.setBackgroundColor(args.backgroundColor)
     } else if (isWindowMode) {
@@ -473,6 +594,7 @@ function createWebTabView(windowId, args) {
     } else {
         browserView.setBackgroundColor('#FFFFFF')
     }
+
     browserView.setBounds({
         x: 0,
         y: effectiveTabHeight,
@@ -480,13 +602,11 @@ function createWebTabView(windowId, args) {
         height: (webTabWindow.getContentBounds().height || 800) - effectiveTabHeight,
     })
 
-    // 保存所属窗口ID和元数据
     browserView.webTabWindowId = windowId
     browserView.tabName = args.name || null
     browserView.titleFixed = args.titleFixed || false
 
-    // 设置自定义 UserAgent
-    if (args.userAgent) {
+    if (!isPreloaded && args.userAgent) {
         const originalUA = browserView.webContents.getUserAgent()
         browserView.webContents.setUserAgent(
             originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0 " + args.userAgent
@@ -656,13 +776,24 @@ function createWebTabView(windowId, args) {
         }
     })
 
-    const originalUA = browserView.webContents.session.getUserAgent() || browserView.webContents.getUserAgent()
-    browserView.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0")
+    if (!isPreloaded) {
+        const originalUA = browserView.webContents.session.getUserAgent() || browserView.webContents.getUserAgent()
+        browserView.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0")
+    }
 
     electronMenu?.webContentsMenu(browserView.webContents, true)
 
-    // 加载地址
-    utils.loadContentUrl(browserView.webContents, getServerUrl(), args.url)
+    // 加载业务路由（预加载 view 通过 __initializeApp 触发路由切换）
+    if (isPreloaded) {
+        const targetUrl = args.url || ''
+        browserView.webContents.executeJavaScript(
+            `window.__initializeApp && window.__initializeApp('${targetUrl.replace(/'/g, "\\'")}')`
+        ).catch(() => {
+            utils.loadContentUrl(browserView.webContents, serverUrl, args.url)
+        })
+    } else {
+        utils.loadContentUrl(browserView.webContents, serverUrl, args.url)
+    }
 
     browserView.setVisible(true)
 
@@ -676,7 +807,6 @@ function createWebTabView(windowId, args) {
  * @returns {object|undefined}
  */
 function currentWebTab() {
-    // 找到第一个活跃窗口
     for (const [windowId, windowData] of webTabWindows) {
         if (windowData.window && !windowData.window.isDestroyed()) {
             return currentWebTabInWindow(windowId)
@@ -697,24 +827,18 @@ function currentWebTabInWindow(windowId) {
     const webTabView = windowData.views
     const webTabWindow = windowData.window
 
-    // 第一：使用当前可见的标签
+    // 优先级：可见标签 > 聚焦标签 > 最上层视图
     try {
         const item = webTabView.find(({ view }) => view?.getVisible && view.getVisible())
-        if (item) {
-            return item
-        }
+        if (item) return item
     } catch (e) {}
-    // 第二：使用当前聚焦的 webContents
     try {
         const focused = require('electron').webContents.getFocusedWebContents?.()
         if (focused) {
             const item = webTabView.find(it => it.id === focused.id)
-            if (item) {
-                return item
-            }
+            if (item) return item
         }
     } catch (e) {}
-    // 兜底：根据 children 顺序选择最上层的可用视图
     const children = webTabWindow.contentView?.children || []
     for (let i = children.length - 1; i >= 0; i--) {
         const id = children[i]?.webContents?.id
@@ -1698,6 +1822,10 @@ module.exports = {
     closeWebTabInWindow,
     activateWebTabInWindow,
     findWindowIdByTabId,
+
+    // 预加载
+    warmupPreloadPool,
+    clearPreloadPool,
 
     // 对外接口
     getWebTabWindows,
