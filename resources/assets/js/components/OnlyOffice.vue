@@ -239,7 +239,7 @@ export default {
                         "onDocumentReady": this.onDocumentReady,
                     },
                 };
-                if (/\/hideenOfficeTitle\//.test(window.navigator.userAgent)) {
+                if ($A.isElectron) {
                     config.document.title = " ";
                 }
                 if (this.readOnly || this.historyId > 0) {

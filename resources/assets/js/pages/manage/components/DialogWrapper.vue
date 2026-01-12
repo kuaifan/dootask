@@ -3786,7 +3786,6 @@ export default {
                     path: path,
                     title,
                     titleFixed: true,
-                    userAgent: "/hideenOfficeTitle/",
                 });
             } else if (this.$isEEUIApp) {
                 this.$store.dispatch('openAppChildPage', {

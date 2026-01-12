@@ -1963,7 +1963,6 @@ export default {
                     path: path,
                     title: `${file.name} (${$A.bytesToSize(file.size)})`,
                     titleFixed: true,
-                    userAgent: "/hideenOfficeTitle/",
                 });
             } else if (this.$isEEUIApp) {
                 this.$store.dispatch('openAppChildPage', {

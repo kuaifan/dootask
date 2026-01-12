@@ -70,7 +70,6 @@ export function openFileInClient(vm, item, options = {}) {
             titleFixed: windowConfig.titleFixed,
             width: windowConfig.width,
             height: windowConfig.height,
-            userAgent: "/hideenOfficeTitle/",
             force: options.force === undefined ? false : options.force,
         });
         return;
