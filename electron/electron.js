@@ -46,6 +46,7 @@ const {onRenderer, renderer} = require("./lib/renderer");
 const {onExport} = require("./lib/pdf-export");
 const {allowedCalls, isWin, isMac} = require("./lib/other");
 const webTabManager = require("./lib/web-tab-manager");
+const faviconCache = require("./lib/favicon-cache");
 
 // 实例初始化
 const userConf = new electronConf()
@@ -530,6 +531,9 @@ if (!getTheLock) {
     app.on('ready', async () => {
         isReady = true
         isWin && app.setAppUserModelId(config.appId)
+
+        // 清理过期的 favicon 缓存
+        faviconCache.cleanExpiredCache()
 
         // 初始化 webTabManager
         webTabManager.init({

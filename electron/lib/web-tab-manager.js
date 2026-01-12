@@ -21,6 +21,7 @@ const {
 const utils = require('./utils')
 const navigation = require('./navigation')
 const { allowedCalls, isMac } = require('./other')
+const faviconCache = require('./favicon-cache')
 const { renderer } = require('./renderer')
 
 // ============================================================
@@ -224,6 +225,18 @@ function createWebTabWindow(args) {
             webTabWindow.setTitle(args.title)
         }
     } else {
+        // 从域名缓存获取 favicon（快速响应）
+        const domain = faviconCache.extractDomain(args.url)
+        const cachedFavicon = domain ? faviconCache.getByDomain(domain) : null
+
+        // 如果有缓存，保存到视图对象
+        if (cachedFavicon) {
+            const viewItem = windowData.views.find(v => v.id === browserView.webContents.id)
+            if (viewItem) {
+                viewItem.favicon = cachedFavicon
+            }
+        }
+
         // tab 模式下通知标签栏创建新标签
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'create',
@@ -232,6 +245,7 @@ function createWebTabWindow(args) {
             afterId: args.afterId,
             windowId: windowId,
             title: args.title,
+            favicon: cachedFavicon || '',
         }).then(_ => { })
     }
     activateWebTabInWindow(windowId, browserView.webContents.id)
@@ -565,9 +579,10 @@ function createWebTabView(windowId, args) {
 
         const tabId = browserView.webContents.id
         const faviconUrl = favicons[favicons.length - 1] || ''
+        const pageUrl = browserView.webContents.getURL()
 
-        // 验证并转换 favicon 为 base64
-        const base64Favicon = await utils.fetchFaviconAsBase64(faviconUrl)
+        // 使用缓存模块获取 favicon（先查缓存，无则下载并缓存）
+        const base64Favicon = await faviconCache.fetchAndCache(faviconUrl, pageUrl)
 
         // 保存验证后的 favicon 到视图对象
         const viewItem = wd.views.find(v => v.id === tabId)
