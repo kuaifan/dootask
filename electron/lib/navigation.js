@@ -123,17 +123,17 @@ function navigateTopLevel(webContents, direction) {
         return false
     }
     if (direction === 'back') {
-        if (!webContents.canGoBack()) {
+        if (!webContents.navigationHistory.canGoBack()) {
             return false
         }
-        webContents.goBack()
+        webContents.navigationHistory.goBack()
         return true
     }
     if (direction === 'forward') {
-        if (!webContents.canGoForward()) {
+        if (!webContents.navigationHistory.canGoForward()) {
             return false
         }
-        webContents.goForward()
+        webContents.navigationHistory.goForward()
         return true
     }
     return false

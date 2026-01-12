@@ -1643,6 +1643,23 @@ function registerIPC() {
     })
 
     /**
+     * 内置浏览器 - 延迟发送导航状态
+     */
+    function notifyNavigationState(item) {
+        setTimeout(() => {
+            const wd = webTabWindows.get(item.view.webTabWindowId)
+            if (wd && wd.window) {
+                utils.onDispatchEvent(wd.window.webContents, {
+                    event: 'navigation-state',
+                    id: item.id,
+                    canGoBack: item.view.webContents.navigationHistory.canGoBack(),
+                    canGoForward: item.view.webContents.navigationHistory.canGoForward()
+                }).then(_ => { })
+            }
+        }, 100)
+    }
+
+    /**
      * 内置浏览器 - 后退
      */
     ipcMain.on('webTabGoBack', (event, args) => {
@@ -1652,19 +1669,9 @@ function registerIPC() {
             event.returnValue = "ok"
             return
         }
-        if (item.view.webContents.canGoBack()) {
-            item.view.webContents.goBack()
-            setTimeout(() => {
-                const wd = webTabWindows.get(item.view.webTabWindowId)
-                if (wd && wd.window) {
-                    utils.onDispatchEvent(wd.window.webContents, {
-                        event: 'navigation-state',
-                        id: item.id,
-                        canGoBack: item.view.webContents.canGoBack(),
-                        canGoForward: item.view.webContents.canGoForward()
-                    }).then(_ => { })
-                }
-            }, 100)
+        if (item.view.webContents.navigationHistory.canGoBack()) {
+            item.view.webContents.navigationHistory.goBack()
+            notifyNavigationState(item)
         }
         event.returnValue = "ok"
     })
@@ -1679,19 +1686,9 @@ function registerIPC() {
             event.returnValue = "ok"
             return
         }
-        if (item.view.webContents.canGoForward()) {
-            item.view.webContents.goForward()
-            setTimeout(() => {
-                const wd = webTabWindows.get(item.view.webTabWindowId)
-                if (wd && wd.window) {
-                    utils.onDispatchEvent(wd.window.webContents, {
-                        event: 'navigation-state',
-                        id: item.id,
-                        canGoBack: item.view.webContents.canGoBack(),
-                        canGoForward: item.view.webContents.canGoForward()
-                    }).then(_ => { })
-                }
-            }, 100)
+        if (item.view.webContents.navigationHistory.canGoForward()) {
+            item.view.webContents.navigationHistory.goForward()
+            notifyNavigationState(item)
         }
         event.returnValue = "ok"
     })
@@ -1735,8 +1732,8 @@ function registerIPC() {
             return
         }
 
-        const canGoBack = item.view.webContents.canGoBack()
-        const canGoForward = item.view.webContents.canGoForward()
+        const canGoBack = item.view.webContents.navigationHistory.canGoBack()
+        const canGoForward = item.view.webContents.navigationHistory.canGoForward()
 
         const wd = webTabWindows.get(item.view.webTabWindowId)
         if (wd && wd.window) {
