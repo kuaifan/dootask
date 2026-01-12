@@ -1525,8 +1525,6 @@ export default {
                     path: path,
                     title: $A.getFileName(item),
                     titleFixed: true,
-                    width: Math.min(window.screen.availWidth, 1440),
-                    height: Math.min(window.screen.availHeight, 900),
                     userAgent: "/hideenOfficeTitle/",
                 });
             } else if (this.$isEEUIApp) {

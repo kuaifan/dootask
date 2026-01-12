@@ -405,10 +405,9 @@ export default {
                         this.$store.dispatch('openWindow', {
                             name: `meeting-window`,
                             path: meetingPath,
+                            mode: 'window',
                             title: this.addData.name,
                             titleFixed: true,
-                            width: Math.min(window.screen.availWidth, 1440),
-                            height: Math.min(window.screen.availHeight, 900),
                         });
                         // 关闭弹窗
                         this.addShow = false;

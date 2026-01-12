@@ -60,8 +60,6 @@ export function openFileInClient(vm, item, options = {}) {
         title: finalTitle,
         titleFixed: true,
         parent: null,
-        width: Math.min(window.screen.availWidth, 1440),
-        height: Math.min(window.screen.availHeight, 900),
     }, options.windowConfig || {});
 
     if (vm.$Electron) {

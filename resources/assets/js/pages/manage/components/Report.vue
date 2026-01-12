@@ -109,8 +109,6 @@ export default {
                     path: `/single/report/detail/${row.id}`,
                     title: row.title,
                     titleFixed: true,
-                    width: Math.min(window.screen.availWidth, 1440),
-                    height: Math.min(window.screen.availHeight, 900),
                 });
             } else {
                 this.showDetailDrawer = true;
@@ -127,8 +125,6 @@ export default {
                     name: `report-edit-${id}`,
                     path: `/single/report/edit/${id}`,
                     title: this.$L(id > 0 ? '修改报告' : '新增报告'),
-                    width: Math.min(window.screen.availWidth, 1440),
-                    height: Math.min(window.screen.availHeight, 900),
                 });
             } else {
                 this.reportId = id;

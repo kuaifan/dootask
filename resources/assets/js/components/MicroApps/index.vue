@@ -497,8 +497,6 @@ export default {
             if (this.$Electron) {
                 const mergedConfig = Object.assign({
                     title: appConfig.title || ' ',
-                    width: Math.min(window.screen.availWidth, 1440),
-                    height: Math.min(window.screen.availHeight, 900),
                 }, $A.isJson(windowConfig) ? windowConfig : {});
                 await this.$store.dispatch('openWindow', {
                     name: `single-apps-${$A.randomString(6)}`,
@@ -532,8 +530,6 @@ export default {
                     name: `external-apps-${$A.randomString(6)}`,
                     path: config.url,
                     title: config.title || ' ',
-                    width: Math.min(window.screen.availWidth, 1440),
-                    height: Math.min(window.screen.availHeight, 900),
                 });
             } else if (this.$isEEUIApp) {
                 await this.$store.dispatch('openAppChildPage', {

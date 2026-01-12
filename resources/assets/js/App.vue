@@ -608,7 +608,7 @@ export default {
                     return false;
                 }
                 // 使用内置浏览器打开
-                this.$store.dispatch("openWindow", url)
+                this.$store.dispatch('openWindow', url)
                 return true
             }
             this.$Electron.listener('browserWindowBlur', _ => {
@@ -659,12 +659,12 @@ export default {
             // APP进入前台
             window.__onAppActive = async () => {
                 this.appActivated = true
-                
+
                 // IndexedDB 测试失败时会自动刷新页面,这里提前返回防止后续代码执行
                 if (!await $A.IDBTest()) {
                     return;
                 }
-                
+
                 this.autoTheme()
                 $A.updateTimezone()
                 $A.eeuiAppHideWebviewSnapshot()

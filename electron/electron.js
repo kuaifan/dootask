@@ -17,6 +17,7 @@ const {
     nativeImage,
     globalShortcut,
     nativeTheme,
+    screen,
     Tray,
     Menu,
     WebContentsView,
@@ -439,8 +440,8 @@ function createUpdaterWindow(updateTitle) {
 function createMediaWindow(args, type = 'image') {
     if (mediaWindow === null) {
         mediaWindow = new BrowserWindow({
-            width: args.width || 970,
-            height: args.height || 700,
+            width: Math.floor(args.width) || 970,
+            height: Math.floor(args.height) || 700,
             minWidth: 360,
             minHeight: 360,
             autoHideMenuBar: true,
@@ -630,8 +631,14 @@ function createWebTabWindow(args) {
         });
     }
 
-    // tab 模式通知标签栏创建标签；window 模式不需要
-    if (!isWindowMode) {
+    // tab 模式通知标签栏创建标签；window 模式设置窗口标题
+    if (isWindowMode) {
+        // window 模式下，如果传入了 title 参数，设置窗口标题
+        if (args.title) {
+            webTabWindow.setTitle(args.title);
+        }
+    } else {
+        // tab 模式下通知标签栏创建新标签
         utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'create',
             id: browserView.webContents.id,
@@ -655,35 +662,21 @@ function createWebTabWindow(args) {
  */
 function createWebTabWindowInstance(windowId, position, mode = 'tab') {
     const isWindowMode = mode === 'window';
+    const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+    const isHighRes = screenWidth >= 2560;
 
-    // mode='window': 根据屏幕分辨率动态计算默认值
-    // mode='tab': 使用 userConf 保存值或固定默认值
-    let defaultWidth, defaultHeight, defaultMinWidth, defaultMinHeight;
-    if (isWindowMode) {
-        const { width: screenWidth } = screen.getPrimaryDisplay().workAreaSize;
-        const isHighRes = screenWidth >= 2560;
-        defaultWidth = isHighRes ? 1920 : 1024;
-        defaultHeight = isHighRes ? 1080 : 768;
-        defaultMinWidth = 400;
-        defaultMinHeight = 300;
-    } else {
-        const savedBounds = userConf.get('webTabWindow') || {};
-        defaultWidth = savedBounds.width ?? 1280;
-        defaultHeight = savedBounds.height ?? 800;
-        defaultMinWidth = 360;
-        defaultMinHeight = 360;
-    }
+    // 根据屏幕分辨率计算默认尺寸
+    const screenDefault = {
+        width: isHighRes ? 1440 : 1024,
+        height: isHighRes ? 900 : 768,
+        minWidth: 400,
+        minHeight: 300,
+    };
 
-    const hasExplicitPosition = position?.x !== undefined && position?.y !== undefined;
+    // 计算窗口尺寸和位置
     const windowOptions = {
-        width: position?.width ?? defaultWidth,
-        height: position?.height ?? defaultHeight,
-        minWidth: position?.minWidth ?? defaultMinWidth,
-        minHeight: position?.minHeight ?? defaultMinHeight,
-        center: !hasExplicitPosition,
         show: false,
         autoHideMenuBar: true,
-        backgroundColor: isWindowMode ? utils.getDefaultBackgroundColor() : (nativeTheme.shouldUseDarkColors ? '#575757' : '#FFFFFF'),
         webPreferences: {
             preload: path.join(__dirname, 'electron-preload.js'),
             webSecurity: true,
@@ -692,23 +685,54 @@ function createWebTabWindowInstance(windowId, position, mode = 'tab') {
         },
     };
 
+    if (isWindowMode) {
+        // window 模式：使用 position 参数或屏幕默认值，永远居中
+        Object.assign(windowOptions, {
+            width: Math.floor(position?.width ?? screenDefault.width),
+            height: Math.floor(position?.height ?? screenDefault.height),
+            minWidth: Math.floor(position?.minWidth ?? screenDefault.minWidth),
+            minHeight: Math.floor(position?.minHeight ?? screenDefault.minHeight),
+            backgroundColor: utils.getDefaultBackgroundColor(),
+            center: true,
+        });
+    } else {
+        // tab 模式：使用 savedBounds 或屏幕默认值
+        const savedBounds = userConf.get('webTabWindow') || {};
+        const maxX = Math.floor(screenWidth * 0.9);
+        const maxY = Math.floor(screenHeight * 0.9);
+        Object.assign(windowOptions, {
+            width: savedBounds.width ?? screenDefault.width,
+            height: savedBounds.height ?? screenDefault.height,
+            minWidth: screenDefault.minWidth,
+            minHeight: screenDefault.minHeight,
+            backgroundColor: nativeTheme.shouldUseDarkColors ? '#575757' : '#FFFFFF',
+            center: true,
+        });
+        // 恢复保存的位置，并限制在屏幕 90% 范围内
+        if (savedBounds.x !== undefined && savedBounds.y !== undefined) {
+            Object.assign(windowOptions, {
+                x: Math.min(savedBounds.x, maxX),
+                y: Math.min(savedBounds.y, maxY),
+                center: false,
+            });
+        }
+    }
+
     // tab 模式使用隐藏标题栏 + titleBarOverlay
     if (!isWindowMode) {
         const titleBarOverlay = {
             height: webTabHeight
         };
         if (nativeTheme.shouldUseDarkColors) {
-            titleBarOverlay.color = '#3B3B3D';
-            titleBarOverlay.symbolColor = '#C5C5C5';
+            Object.assign(titleBarOverlay, {
+                color: '#3B3B3D',
+                symbolColor: '#C5C5C5',
+            });
         }
-        windowOptions.titleBarStyle = 'hidden';
-        windowOptions.titleBarOverlay = titleBarOverlay;
-    }
-
-    // 有明确位置时设置 x/y
-    if (hasExplicitPosition) {
-        windowOptions.x = position.x;
-        windowOptions.y = position.y;
+        Object.assign(windowOptions, {
+            titleBarStyle: 'hidden',
+            titleBarOverlay: titleBarOverlay,
+        });
     }
 
     const webTabWindow = new BrowserWindow(windowOptions);
@@ -884,7 +908,7 @@ function createWebTabView(windowId, args) {
             utils.onBeforeOpenWindow(browserView.webContents, url).then(() => {
                 renderer.openExternal(url).catch(() => {});
             });
-        } else {
+        } else if (url && url !== 'about:blank') {
             // tab 模式下创建新标签
             createWebTabWindow({url, afterId: browserView.webContents.id, windowId});
         }
@@ -895,16 +919,25 @@ function createWebTabView(windowId, args) {
         if (browserView.titleFixed) {
             return;
         }
+
         // 使用动态窗口ID，支持标签在窗口间转移
         const currentWindowId = browserView.webTabWindowId;
         const wd = webTabWindows.get(currentWindowId);
         if (!wd || !wd.window) return;
-        utils.onDispatchEvent(wd.window.webContents, {
-            event: 'title',
-            id: browserView.webContents.id,
-            title: title,
-            url: browserView.webContents.getURL(),
-        }).then(_ => { });
+
+        // 根据模式更新标题
+        if (wd.mode === 'window') {
+            // window 模式下直接设置窗口标题
+            wd.window.setTitle(title);
+        } else {
+            // tab 模式下通知标签栏更新标题
+            utils.onDispatchEvent(wd.window.webContents, {
+                event: 'title',
+                id: browserView.webContents.id,
+                title: title,
+                url: browserView.webContents.getURL(),
+            }).then(_ => { });
+        }
     });
     browserView.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
         if (!errorDescription) {
@@ -1035,7 +1068,7 @@ function createWebTabView(windowId, args) {
 }
 
 /**
- * 获取当前内置浏览器标签（兼容旧API）
+ * 获取当前内置浏览器标签
  * @returns {object|undefined}
  */
 function currentWebTab() {

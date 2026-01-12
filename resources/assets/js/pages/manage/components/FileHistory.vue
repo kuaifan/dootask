@@ -186,8 +186,6 @@ export default {
                             path: path,
                             title,
                             titleFixed: true,
-                            width: Math.min(window.screen.availWidth, 1440),
-                            height: Math.min(window.screen.availHeight, 900),
                             userAgent: "/hideenOfficeTitle/",
                         });
                     } else if (this.$isEEUIApp) {

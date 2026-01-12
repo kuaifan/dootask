@@ -223,8 +223,6 @@ export default {
                                             name: `project-log-${id}`,
                                             path: path,
                                             title: this.$L(title),
-                                            width: Math.min(window.screen.availWidth, 1440),
-                                            height: Math.min(window.screen.availHeight, 900),
                                         });
                                     } else if (this.$isEEUIApp) {
                                         e.preventDefault()
