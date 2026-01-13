@@ -713,6 +713,7 @@ class WebSocketDialogMsg extends AbstractModel
         $text = $msgData['text'] ?? '';
         if (!$text) return '';
         if ($msgData['type'] === 'md') {
+            $text = preg_replace('/<\/?tool-use[^>]*>/', '', $text);
             $text = preg_replace("/:::\s*reasoning[\s\S]*?:::/", "", $text);
             if (preg_match('/:::\s*reasoning\s+/', $text)) {
                 return Doo::translate('思考中...');

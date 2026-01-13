@@ -269,6 +269,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 return '';
             }
             if (type === 'md') {
+                text = text.replace(/<\/?tool-use[^>]*>/g, '');
                 text = text.replace(/:::\s*reasoning[\s\S]*?:::/g, "");
                 if (/:::\s*reasoning\s+/.test(text)) {
                     return $A.L('思考中...')
