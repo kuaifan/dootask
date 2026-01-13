@@ -1960,11 +1960,51 @@ class ProjectTask extends AbstractModel
                     $taskUser->save();
                 }
             }
-            // 子任务
-            ProjectTask::whereParentId($this->id)->change([
-                'project_id' => $projectId,
-                'column_id' => $columnId,
-            ]);
+            // 子任务 - 根据完成状态映射工作流
+            $subTasks = ProjectTask::whereParentId($this->id)->get();
+            if ($subTasks->isNotEmpty()) {
+                // 获取新项目的工作流状态
+                $newProjectFlow = ProjectFlow::whereProjectId($projectId)->orderByDesc('id')->first();
+                $startFlowItem = null;
+                $endFlowItem = null;
+                if ($newProjectFlow) {
+                    $flowItems = ProjectFlowItem::whereFlowId($newProjectFlow->id)->orderBy('sort')->get();
+                    foreach ($flowItems as $item) {
+                        if ($item->status == 'start' && !$startFlowItem) {
+                            $startFlowItem = $item;
+                        }
+                        if ($item->status == 'end' && !$endFlowItem) {
+                            $endFlowItem = $item;
+                        }
+                    }
+                }
+                // 更新每个子任务
+                foreach ($subTasks as $subTask) {
+                    $subTask->project_id = $projectId;
+                    $subTask->column_id = $columnId;
+                    // 根据完成状态映射工作流
+                    if ($subTask->complete_at) {
+                        // 已完成 -> end 状态
+                        if ($endFlowItem) {
+                            $subTask->flow_item_id = $endFlowItem->id;
+                            $subTask->flow_item_name = $endFlowItem->status . '|' . $endFlowItem->name . '|' . $endFlowItem->color;
+                        } else {
+                            $subTask->flow_item_id = 0;
+                            $subTask->flow_item_name = '';
+                        }
+                    } else {
+                        // 未完成 -> start 状态
+                        if ($startFlowItem) {
+                            $subTask->flow_item_id = $startFlowItem->id;
+                            $subTask->flow_item_name = $startFlowItem->status . '|' . $startFlowItem->name . '|' . $startFlowItem->color;
+                        } else {
+                            $subTask->flow_item_id = 0;
+                            $subTask->flow_item_name = '';
+                        }
+                    }
+                    $subTask->save();
+                }
+            }
             //
             if ($flowItemId) {
                 // 更新任务流程
