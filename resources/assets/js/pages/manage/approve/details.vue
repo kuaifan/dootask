@@ -44,7 +44,7 @@
             </div>
             <div class="approve-details-text">
                 <h4>{{$L('事由')}}</h4>
-                <p>{{datas.var?.description || '- -'}}</p>
+                <p class="wrap-text">{{datas.var?.description || '- -'}}</p>
             </div>
             <div class="approve-details-text"  v-if="datas.var?.other">
                 <h4>{{$L('图片')}}</h4>
