@@ -45,7 +45,7 @@ class FileUser extends AbstractModel
             } else {
                 FileLink::whereFileId($file_id)->delete();
             }
-            FileUser::whereFileId($file_id)->delete();
+            FileUser::whereFileId($file_id)->remove();
         });
     }
     /**
@@ -58,7 +58,7 @@ class FileUser extends AbstractModel
     {
         return AbstractModel::transaction(function() use ($userid, $file_id) {
             FileLink::whereFileId($file_id)->whereUserid($userid)->delete();
-            return self::whereFileId($file_id)->whereUserid($userid)->delete();
+            return self::whereFileId($file_id)->whereUserid($userid)->remove();
         });
     }
 }

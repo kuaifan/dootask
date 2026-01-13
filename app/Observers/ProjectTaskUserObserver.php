@@ -42,7 +42,18 @@ class ProjectTaskUserObserver extends AbstractObserver
      */
     public function updated(ProjectTaskUser $projectTaskUser)
     {
-        //
+        // userid 变更时需要更新任务权限（移交场景）
+        if ($projectTaskUser->isDirty('userid')) {
+            self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
+                'task_id' => $projectTaskUser->task_id,
+            ]));
+            // 如果是子任务，也更新父任务
+            if ($projectTaskUser->task_pid) {
+                self::taskDeliver(new ManticoreSyncTask('update_task_allowed_users', [
+                    'task_id' => $projectTaskUser->task_pid,
+                ]));
+            }
+        }
     }
 
     /**

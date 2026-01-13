@@ -800,7 +800,7 @@ class ProjectTask extends AbstractModel
                     $this->visibility = $data["visibility"];
                     ProjectTask::whereParentId($data['task_id'])->change(['visibility' => $data["visibility"]]);
                 }
-                ProjectTaskVisibilityUser::whereTaskId($data['task_id'])->delete();
+                ProjectTaskVisibilityUser::whereTaskId($data['task_id'])->remove();
                 if (Arr::exists($data, 'visibility_appointor')) {
                     foreach ($data['visibility_appointor'] as $uid) {
                         if ($uid) {

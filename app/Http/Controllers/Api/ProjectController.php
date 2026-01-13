@@ -2379,7 +2379,7 @@ class ProjectController extends AbstractController
             $task->save();
             ProjectTaskUser::whereTaskId($task->id)->update(['task_pid' => $task->id]);
             if ($task->visibility == 3 && !empty($visibilityUserids)) {
-                ProjectTaskVisibilityUser::whereTaskId($task->id)->delete();
+                ProjectTaskVisibilityUser::whereTaskId($task->id)->remove();
                 foreach (array_unique($visibilityUserids) as $userid) {
                     if (!$userid) {
                         continue;
@@ -3031,7 +3031,7 @@ class ProjectController extends AbstractController
                 $taskTag->project_id = $project->id;
                 $taskTag->save();
             }
-            ProjectTaskUser::whereTaskId($copy->id)->delete();
+            ProjectTaskUser::whereTaskId($copy->id)->remove();
             $copy->setRelation('taskUser', collect());
             $copy->setRelation('project', $project);
             $updateData = [

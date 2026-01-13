@@ -6,6 +6,8 @@ use Request;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Tasks\PushTask;
+use App\Tasks\ManticoreSyncTask;
+use App\Observers\AbstractObserver;
 use App\Exceptions\ApiException;
 use Illuminate\Support\Facades\DB;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -621,6 +623,26 @@ class File extends AbstractModel
                 });
         });
         return true;
+    }
+
+    /**
+     * 批量更新子文件的 userid 并同步到 Manticore
+     * @param int $userid 新的 userid
+     * @return int 更新的文件数量
+     */
+    public function updateChildFilesUserid(int $userid): int
+    {
+        self::where('pids', 'like', "%,{$this->id},%")->update(['userid' => $userid]);
+
+        // 批量 update 绕过 Observer，手动触发 Manticore 同步
+        $childFileIds = self::where('pids', 'like', "%,{$this->id},%")
+            ->where('type', '!=', 'folder')
+            ->pluck('id')
+            ->toArray();
+        foreach ($childFileIds as $childFileId) {
+            AbstractObserver::taskDeliver(new ManticoreSyncTask('file_sync', ['id' => $childFileId]));
+        }
+        return count($childFileIds);
     }
 
     /**

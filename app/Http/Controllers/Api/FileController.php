@@ -418,7 +418,7 @@ class FileController extends AbstractController
                             throw new ApiException("{$file->name} 内含有共享文件，无法移动到另一个共享文件夹内");
                         }
                         $file->userid = $toShareFile->userid;
-                        File::where('pids', 'LIKE', "%,{$file->id},%")->update(['userid' => $toShareFile->userid]);
+                        $file->updateChildFilesUserid($toShareFile->userid);
                     }
                     //
                     $tmpId = $pid;
@@ -430,7 +430,7 @@ class FileController extends AbstractController
                     }
                 } else {
                     $file->userid = $user->userid;
-                    File::where('pids', 'LIKE', "%,{$file->id},%")->update(['userid' => $user->userid]);
+                    $file->updateChildFilesUserid($user->userid);
                 }
                 //
                 $file->pid = $pid;
