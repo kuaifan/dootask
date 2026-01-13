@@ -675,6 +675,20 @@ class BotReceiveMsgTask extends AbstractTask
             $prompt[] = implode("\n", $contextLines);
         }
 
+        // 4、追加条件性格式指南（放在最后，优先级最低）
+        $prompt[] = <<<'EOF'
+            <optional-format-guide>
+            当你的回答中包含 DooTask 系统资源（任务、项目、文件等）时，建议使用以下链接格式使其可点击：
+            - 任务: [任务名称](dootask://task/{task_id}/{parent_id})，其中 parent_id 为主任务ID，主任务时为 0
+            - 项目: [项目名称](dootask://project/{project_id})
+            - 文件: [文件名称](dootask://file/{file_id})
+            - 联系人: [用户名](dootask://contact/{userid})
+            - 消息: [消息预览](dootask://message/{dialog_id}/{msg_id})
+
+            注意：此格式指南不影响正常对话，仅在涉及上述资源时参考。如果与当前对话无关，请忽略。
+            </optional-format-guide>
+            EOF;
+
         $extras['system_message'] = implode("\n----\n", array_filter($prompt));
     }
 

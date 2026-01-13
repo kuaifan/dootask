@@ -94,6 +94,7 @@
 import {mapState} from "vuex";
 import emitter from "../store/events";
 import transformEmojiToHtml from "../utils/emoji";
+import {SEARCH_AI_SYSTEM_PROMPT} from "../utils/ai";
 
 export default {
     name: 'SearchBox',
@@ -593,33 +594,8 @@ export default {
         },
 
         handleAISearchBeforeSend(context = []) {
-            const systemPrompt = [
-                '你是一个智能搜索助手，负责帮助用户在 DooTask 系统中搜索和整理信息。',
-                '你可以使用 intelligent_search 工具来搜索任务、项目、文件和联系人。',
-                '',
-                '请根据用户的搜索需求：',
-                '1. 调用搜索工具获取相关结果',
-                '2. 对搜索结果进行分类整理',
-                '3. 以清晰的格式呈现给用户',
-                '4. 如有需要，可以进行多次搜索以获取更全面的结果',
-                '',
-                '## 链接格式要求',
-                '在返回结果时，请使用以下格式创建可点击的链接：',
-                '- 任务: [任务名称](dootask://task/任务ID/主任务ID)',
-                '- 项目: [项目名称](dootask://project/项目ID)',
-                '- 文件: [文件名称](dootask://file/文件ID)',
-                '- 联系人: [联系人名称](dootask://contact/用户ID)',
-                '- 消息: [消息内容预览](dootask://message/对话ID/消息ID)',
-                '',
-                '示例：',
-                '- [完成项目报告](dootask://task/123/0)（主任务）',
-                '- [编写测试用例](dootask://task/456/123)（子任务）',
-                '- [产品开发项目](dootask://project/456)',
-                '- [关于报销的讨论](dootask://message/789/1234)',
-            ].join('\n');
-
             const prepared = [
-                ['system', systemPrompt]
+                ['system', SEARCH_AI_SYSTEM_PROMPT]
             ];
 
             if (context.length > 0) {

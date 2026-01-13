@@ -1,60 +1,8 @@
 import {languageList, languageName} from "../language";
 
-const withLanguagePreferencePrompt = (prompt) => {
-    if (typeof prompt !== 'string' || !prompt) {
-        return prompt;
-    }
-    const label = languageList[languageName] || languageName || '';
-    if (!label) {
-        return prompt;
-    }
-    return `${prompt}\n\n输出语言策略：\n- 默认使用 ${label} 输出。\n- 即使上下文或引用包含其他语言，也保持 ${label} 输出。\n- 仅当我明确指定其他语言时，才切换到该语言。`;
-};
-
-const AIModelNames = (str) => {
-    const lines = str.split('\n').filter(line => line.trim());
-
-    return lines.map(line => {
-        const [value, label] = line.split('|').map(s => s.trim());
-
-        return {
-            value,
-            label: label || value
-        };
-    }, []).filter(item => item.value);
-}
-
-const AINormalizeJsonContent = (content) => {
-    if (!content) {
-        return null;
-    }
-    const raw = String(content).trim();
-    if (!raw) {
-        return null;
-    }
-    const candidates = [raw];
-    const block = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
-    if (block && block[1]) {
-        candidates.push(block[1].trim());
-    }
-    const start = raw.indexOf('{');
-    const end = raw.lastIndexOf('}');
-    if (start !== -1 && end !== -1 && end > start) {
-        candidates.push(raw.slice(start, end + 1));
-    }
-    for (const candidate of candidates) {
-        if (!candidate) {
-            continue;
-        }
-        try {
-            return JSON.parse(candidate);
-        } catch (e) {
-            // continue
-        }
-    }
-    return null;
-}
-
+/**
+ * AI 服务商标识与显示名映射
+ */
 const AIBotMap = {
     openai: "ChatGPT",
     claude: "Claude",
@@ -67,6 +15,9 @@ const AIBotMap = {
     wenxin: "文心一言",
 }
 
+/**
+ * AI 系统配置表单与平台配置
+ */
 const AISystemConfig = {
     fields: [
         {
@@ -259,6 +210,9 @@ const AISystemConfig = {
     }
 }
 
+/**
+ * 即时消息生成系统提示词
+ */
 const MESSAGE_AI_SYSTEM_PROMPT = `你是一名专业的沟通助手，协助用户编写得体、清晰且具行动指向的即时消息。
 
 写作要求：
@@ -272,6 +226,9 @@ const MESSAGE_AI_SYSTEM_PROMPT = `你是一名专业的沟通助手，协助用�
 - 仅返回可直接发送的消息内容
 - 禁止在内容前后添加额外说明、标签或引导语`;
 
+/**
+ * 任务生成系统提示词
+ */
 const TASK_AI_SYSTEM_PROMPT = `你是一个专业的任务管理专家，擅长将想法和需求转化为清晰、可执行的项目任务。
 
 任务生成要求：
@@ -315,6 +272,9 @@ const TASK_AI_SYSTEM_PROMPT = `你是一个专业的任务管理专家，擅长�
 - 如果涉及设计，要说明设计要求和期望效果
 - 如果涉及测试，要明确测试范围和验收标准`;
 
+/**
+ * 项目创建系统提示词
+ */
 const PROJECT_AI_SYSTEM_PROMPT = `你是一名资深的项目规划顾问，帮助团队快速搭建符合需求的项目。
 
 生成要求：
@@ -335,6 +295,9 @@ const PROJECT_AI_SYSTEM_PROMPT = `你是一名资深的项目规划顾问，帮�
 - 列表名称应当互不重复且语义明确
 - 若上下文包含已有名称或列表，请在此基础上迭代优化`;
 
+/**
+ * 周报/日报整理系统提示词
+ */
 const REPORT_AI_SYSTEM_PROMPT = `你是一名资深团队管理教练，需要根据提供的周报/日报草稿进行整理。
 
 工作目标：
@@ -349,6 +312,9 @@ const REPORT_AI_SYSTEM_PROMPT = `你是一名资深团队管理教练，需要�
 - 若原文包含数据或里程碑，保留并突出这些数字
 - 若某一章节没有信息，请输出“暂无”而非留空`;
 
+/**
+ * 汇报分析系统提示词
+ */
 const REPORT_ANALYSIS_SYSTEM_PROMPT = `你是一名经验丰富的团队管理顾问，擅长阅读和分析员工提交的工作汇报，能够快速提炼重点并给出可执行建议。
 
 输出要求：
@@ -358,9 +324,112 @@ const REPORT_ANALYSIS_SYSTEM_PROMPT = `你是一名经验丰富的团队管理�
 4. 语气保持专业、客观、中立，不过度夸赞或批评
 5. 控制在 200-400 字之间，可视内容复杂度略微增减，但保持紧凑`;
 
+/**
+ * 智能搜索系统提示词
+ */
+const SEARCH_AI_SYSTEM_PROMPT = `你是一个智能搜索助手，负责帮助用户在 DooTask 系统中搜索和整理信息。
+你可以使用 intelligent_search 工具来搜索任务、项目、文件和联系人。
+
+请根据用户的搜索需求：
+1. 调用搜索工具获取相关结果
+2. 对搜索结果进行分类整理
+3. 以清晰的格式呈现给用户
+4. 如有需要，可以进行多次搜索以获取更全面的结果`;
+
+/**
+ * DooTask 资源格式指南（条件性提示词）
+ * 仅在 AI 返回 DooTask 资源时生效，不影响普通对话
+ */
+const DOOTASK_RESOURCE_FORMAT_GUIDE = `
+<optional-format-guide>
+当你的回答中包含 DooTask 系统资源（任务、项目、文件等）时，建议使用以下链接格式使其可点击：
+- 任务: [任务名称](dootask://task/{task_id}/{parent_id})，其中 parent_id 为主任务ID，主任务时为 0
+- 项目: [项目名称](dootask://project/{project_id})
+- 文件: [文件名称](dootask://file/{file_id})
+- 联系人: [用户名](dootask://contact/{userid})
+- 消息: [消息预览](dootask://message/{dialog_id}/{msg_id})
+
+注意：此格式指南不影响正常对话，仅在涉及上述资源时参考。如果与当前对话无关，请忽略。
+</optional-format-guide>
+`.trim();
+
+/**
+ * 输出语言偏好提示
+ * 用于引导 AI 按指定语言输出
+ */
+const LANGUAGE_PREFERENCE_PROMPT = (label) => `输出语言策略：
+- 默认使用 ${label} 输出。
+- 即使上下文或引用包含其他语言，也保持 ${label} 输出。
+- 仅当我明确指定其他语言时，才切换到该语言。`;
+
+/**
+ * 注入语言偏好提示与资源格式指南
+ * 返回拼接后的完整提示词
+ */
+const withLanguagePreferencePrompt = (prompt) => {
+    if (typeof prompt !== 'string' || !prompt) {
+        return prompt;
+    }
+    const label = languageList[languageName] || languageName || '';
+    if (!label) {
+        return prompt;
+    }
+    return `${prompt}\n\n${LANGUAGE_PREFERENCE_PROMPT(label)}\n\n${DOOTASK_RESOURCE_FORMAT_GUIDE}`;
+};
+
+/**
+ * 解析模型列表文本为选项数组
+ * 支持以 "|" 分隔显示名
+ */
+const AIModelNames = (str) => {
+    const lines = str.split('\n').filter(line => line.trim());
+
+    return lines.map(line => {
+        const [value, label] = line.split('|').map(s => s.trim());
+
+        return {
+            value,
+            label: label || value
+        };
+    }, []).filter(item => item.value);
+}
+
+/**
+ * 尝试从内容中提取并解析 JSON
+ * 支持代码块与裸 JSON
+ */
+const AINormalizeJsonContent = (content) => {
+    if (!content) {
+        return null;
+    }
+    const raw = String(content).trim();
+    if (!raw) {
+        return null;
+    }
+    const candidates = [raw];
+    const block = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (block && block[1]) {
+        candidates.push(block[1].trim());
+    }
+    const start = raw.indexOf('{');
+    const end = raw.lastIndexOf('}');
+    if (start !== -1 && end !== -1 && end > start) {
+        candidates.push(raw.slice(start, end + 1));
+    }
+    for (const candidate of candidates) {
+        if (!candidate) {
+            continue;
+        }
+        try {
+            return JSON.parse(candidate);
+        } catch (e) {
+            // continue
+        }
+    }
+    return null;
+}
+
 export {
-    AIModelNames,
-    AINormalizeJsonContent,
     AIBotMap,
     AISystemConfig,
     MESSAGE_AI_SYSTEM_PROMPT,
@@ -368,5 +437,8 @@ export {
     PROJECT_AI_SYSTEM_PROMPT,
     REPORT_AI_SYSTEM_PROMPT,
     REPORT_ANALYSIS_SYSTEM_PROMPT,
+    SEARCH_AI_SYSTEM_PROMPT,
     withLanguagePreferencePrompt,
+    AIModelNames,
+    AINormalizeJsonContent,
 }

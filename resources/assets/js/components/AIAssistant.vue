@@ -84,7 +84,7 @@
                         v-if="response.rawOutput"
                         class="ai-assistant-output-markdown no-dark-content"
                         :text="response.displayOutput || response.rawOutput"
-                        @click="onContentClick"/>
+                        :before-navigate="() => { showModal = false }"/>
                     <div v-else class="ai-assistant-output-placeholder">
                         {{ response.status === 'error' ? (response.error || $L('发送失败')) : $L('等待 AI 回复...') }}
                     </div>
@@ -898,71 +898,6 @@ export default {
                 return true;
             }
             return distance <= threshold;
-        },
-
-        /**
-         * 处理内容区域的点击事件
-         */
-        onContentClick(e) {
-            const target = e.target;
-            if (target.tagName !== 'A') {
-                return;
-            }
-
-            const href = target.getAttribute('href');
-            if (!href || !href.startsWith('dootask://')) {
-                return;
-            }
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            // 解析 dootask:// 协议链接
-            // 格式: dootask://type/id 或 dootask://type/id1/id2 例如 dootask://task/123 或 dootask://message/789/1234
-            const match = href.match(/^dootask:\/\/(\w+)\/(\d+)(?:\/(\d+))?$/);
-            if (!match) {
-                return;
-            }
-
-            const [, type, id, id2] = match;
-            const numId = parseInt(id, 10);
-            const numId2 = id2 ? parseInt(id2, 10) : null;
-
-            switch (type) {
-                case 'task':
-                    this.$store.dispatch('openTask', {id: (numId2 && numId2 > 0) ? numId2 : numId});
-                    break;
-
-                case 'project':
-                    this.showModal = false;
-                    this.goForward({name: 'manage-project', params: {projectId: numId}});
-                    break;
-
-                case 'file':
-                    this.showModal = false;
-                    this.goForward({name: 'manage-file', params: {folderId: 0, fileId: null, shakeId: numId}});
-                    this.$store.state.fileShakeId = numId;
-                    setTimeout(() => {
-                        this.$store.state.fileShakeId = 0;
-                    }, 600);
-                    break;
-
-                case 'contact':
-                    this.$store.dispatch('openDialogUserid', numId).catch(({msg}) => {
-                        $A.modalError(msg || this.$L('打开会话失败'));
-                    });
-                    break;
-
-                case 'message':
-                    this.$store.dispatch('openDialog', numId).then(() => {
-                        if (numId2) {
-                            this.$store.state.dialogSearchMsgId = numId2;
-                        }
-                    }).catch(({msg}) => {
-                        $A.modalError(msg || this.$L('打开会话失败'));
-                    });
-                    break;
-            }
         },
 
         // ==================== 会话管理方法 ====================

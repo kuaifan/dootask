@@ -13,6 +13,11 @@ export default {
             type: String,
             default: ''
         },
+        // 导航前回调（如关闭弹窗）
+        beforeNavigate: {
+            type: Function,
+            default: null
+        },
     },
     data() {
         return {
@@ -72,7 +77,68 @@ export default {
         },
 
         onCLick(e) {
+            const target = e.target;
+            if (target.tagName === 'A') {
+                const href = target.getAttribute('href');
+                if (href && href.startsWith('dootask://')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.handleDooTaskLink(href);
+                    return;
+                }
+            }
             this.$emit('click', e)
+        },
+
+        /**
+         * 处理 dootask:// 协议链接
+         * 格式: dootask://type/id 或 dootask://type/id1/id2
+         */
+        handleDooTaskLink(href) {
+            const match = href.match(/^dootask:\/\/(\w+)\/(\d+)(?:\/(\d+))?$/);
+            if (!match) {
+                return;
+            }
+
+            const [, type, id, id2] = match;
+            const numId = parseInt(id, 10);
+            const numId2 = id2 ? parseInt(id2, 10) : null;
+
+            switch (type) {
+                case 'task':
+                    this.$store.dispatch('openTask', { id: (numId2 && numId2 > 0) ? numId2 : numId });
+                    break;
+
+                case 'project':
+                    this.beforeNavigate?.();
+                    this.goForward({ name: 'manage-project', params: { projectId: numId } });
+                    break;
+
+                case 'file':
+                    this.beforeNavigate?.();
+                    this.goForward({ name: 'manage-file', params: { folderId: 0, fileId: null, shakeId: numId } });
+                    this.$store.state.fileShakeId = numId;
+                    setTimeout(() => {
+                        this.$store.state.fileShakeId = 0;
+                    }, 600);
+                    break;
+
+                case 'contact':
+                    this.$store.dispatch('openDialogUserid', numId).catch(({ msg }) => {
+                        $A.modalError(msg);
+                    });
+                    break;
+
+                case 'message':
+                    this.$store.dispatch('openDialog', numId).then(() => {
+                        if (numId2) {
+                            this.$store.state.dialogSearchMsgId = numId2;
+                        }
+                    }).catch(({ msg }) => {
+                        $A.modalError(msg);
+                    });
+                    break;
+            }
         }
     }
 }
