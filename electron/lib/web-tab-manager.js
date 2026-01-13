@@ -497,19 +497,54 @@ function createWebTabWindowInstance(windowId, position, mode = 'tab') {
     })
 
     webTabWindow.on('close', event => {
-        if (webTabClosedByShortcut.get(windowId)) {
+        const isShortcut = webTabClosedByShortcut.get(windowId)
+        if (isShortcut) {
             webTabClosedByShortcut.set(windowId, false)
-            if (!isWillQuitApp()) {
-                closeWebTabInWindow(windowId, 0)
-                event.preventDefault()
-                return
-            }
         }
-        // 只有 tab 模式才保存 bounds
+
         const windowData = webTabWindows.get(windowId)
-        if (windowData && windowData.mode !== 'window') {
+        if (!windowData) return
+
+        // 只有 tab 模式才保存 bounds
+        if (windowData.mode !== 'window') {
             userConf?.set('webTabWindow', webTabWindow.getBounds())
         }
+
+        // 应用退出时不检查
+        if (isWillQuitApp()) return
+
+        // 检查页面是否有未保存数据
+        if (isShortcut) {
+            // 快捷键关闭：只检查当前激活的标签
+            const activeTab = windowData.views.find(v => v.id === windowData.activeTabId)
+            if (!activeTab) return
+
+            const proxyWindow = Object.create(webTabWindow, {
+                webContents: { get: () => activeTab.view.webContents }
+            })
+            utils.onBeforeUnload(event, proxyWindow).then(() => {
+                closeWebTabInWindow(windowId, 0)
+            })
+            return
+        }
+        
+        // 点击窗口关闭按钮：依次检查并关闭每个标签页
+        const checkAndCloseTabs = async () => {
+            // 复制标签列表，因为关闭时会修改原数组
+            const tabs = [...windowData.views]
+            for (const tab of tabs) {
+                // 先激活要检查的标签，让用户看到是哪个标签有未保存数据
+                activateWebTabInWindow(windowId, tab.id)
+                const proxyWindow = Object.create(webTabWindow, {
+                    webContents: { get: () => tab.view.webContents }
+                })
+                // 检查并等待用户确认（用户取消则 Promise 不 resolve，中断循环）
+                await utils.onBeforeUnload(event, proxyWindow)
+                // 确认后关闭这个标签（最后一个标签关闭时窗口会自动销毁）
+                closeWebTabInWindow(windowId, tab.id)
+            }
+        }
+        checkAndCloseTabs()
     })
 
     webTabWindow.on('closed', () => {
@@ -1563,6 +1598,20 @@ function registerIPC() {
             windowId = findWindowIdByTabId(tabId)
         }
         if (windowId) {
+            const windowData = webTabWindows.get(windowId)
+            if (windowData) {
+                const tab = windowData.views.find(v => v.id === tabId)
+                if (tab) {
+                    const proxyWindow = Object.create(windowData.window, {
+                        webContents: { get: () => tab.view.webContents }
+                    })
+                    utils.onBeforeUnload({ preventDefault: () => {} }, proxyWindow).then(() => {
+                        closeWebTabInWindow(windowId, tabId)
+                    })
+                    event.returnValue = "ok"
+                    return
+                }
+            }
             closeWebTabInWindow(windowId, tabId)
         }
         event.returnValue = "ok"
@@ -1815,6 +1864,20 @@ function registerIPC() {
         const tabId = event.sender.id
         const windowId = findWindowIdByTabId(tabId)
         if (windowId !== null) {
+            const windowData = webTabWindows.get(windowId)
+            if (windowData) {
+                const tab = windowData.views.find(v => v.id === tabId)
+                if (tab) {
+                    const proxyWindow = Object.create(windowData.window, {
+                        webContents: { get: () => tab.view.webContents }
+                    })
+                    utils.onBeforeUnload({ preventDefault: () => {} }, proxyWindow).then(() => {
+                        closeWebTabInWindow(windowId, tabId)
+                    })
+                    event.returnValue = "ok"
+                    return
+                }
+            }
             closeWebTabInWindow(windowId, tabId)
         } else {
             const win = BrowserWindow.fromWebContents(event.sender)
