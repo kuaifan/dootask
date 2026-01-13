@@ -1,7 +1,7 @@
 <template>
     <Modal
         v-model="showModal"
-        :width="shouldCreateNewSession ? '420px' : '600px'"
+        :width="shouldCreateNewSession ? '440px' : '600px'"
         :mask-closable="false"
         :footer-hide="true"
         class-name="ai-assistant-modal">
