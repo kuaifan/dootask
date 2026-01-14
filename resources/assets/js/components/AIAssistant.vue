@@ -99,7 +99,9 @@
                     :rows="inputRows || 1"
                     :autosize="inputAutosize || {minRows:1, maxRows:6}"
                     :maxlength="inputMaxlength || 500"
-                    @on-keydown="onInputKeydown" />
+                    @on-keydown="onInputKeydown"
+                    @compositionstart.native="isComposing = true"
+                    @compositionend.native="isComposing = false" />
                 <div class="ai-assistant-footer">
                     <div class="ai-assistant-footer-models">
                         <Select
@@ -175,6 +177,9 @@ export default {
             modelsLoading: false,
             modelCacheKey: 'aiAssistant.model',
             cachedModelId: '',
+
+            // 输入法组合状态
+            isComposing: false,
 
             // 响应渲染
             responses: [],
@@ -405,9 +410,10 @@ export default {
 
         /**
          * 输入框键盘事件：回车发送，Shift+回车换行
+         * 注意：输入法组合输入时（如中文候选字）不发送
          */
         onInputKeydown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey && !this.isComposing) {
                 e.preventDefault();
                 this.onSubmit();
             }
