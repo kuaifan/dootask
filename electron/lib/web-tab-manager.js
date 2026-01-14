@@ -680,12 +680,8 @@ function createWebTabView(windowId, args) {
 
     if (args.backgroundColor) {
         browserView.setBackgroundColor(args.backgroundColor)
-    } else if (isWindowMode) {
-        browserView.setBackgroundColor(utils.getDefaultBackgroundColor())
-    } else if (nativeTheme.shouldUseDarkColors) {
-        browserView.setBackgroundColor('#575757')
     } else {
-        browserView.setBackgroundColor('#FFFFFF')
+        browserView.setBackgroundColor(utils.getDefaultBackgroundColor())
     }
 
     browserView.setBounds({
@@ -852,9 +848,6 @@ function createWebTabView(windowId, args) {
     })
     browserView.webContents.on('did-stop-loading', _ => {
         stopLoading()
-        if (nativeTheme.shouldUseDarkColors) {
-            browserView.setBackgroundColor('#FFFFFF')
-        }
     })
     browserView.webContents.on('before-input-event', (event, input) => {
         // 使用动态窗口ID，支持标签在窗口间转移
