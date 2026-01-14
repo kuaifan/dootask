@@ -96,6 +96,7 @@ function setLanguage(language, silence = false) {
         utils.saveLanguage(language);
         (async () => {
             await $A.IDBDel("callAt")
+            $A.Electron?.sendMessage('recreatePreloadPool');
             $A.reloadUrl()
         })()
     } else {

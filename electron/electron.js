@@ -500,7 +500,7 @@ function monitorThemeChanges() {
         mediaWindow?.setBackgroundColor(backgroundColor);
         // 更新所有 webTab 窗口背景
         for (const [, windowData] of webTabManager.getWebTabWindows()) {
-            windowData.window?.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#575757' : '#FFFFFF');
+            windowData.window?.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#202124' : '#F1F3F4');
         }
         // 通知所有窗口
         BrowserWindow.getAllWindows().forEach(window => {

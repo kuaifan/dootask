@@ -471,7 +471,7 @@ function createWebTabWindowInstance(windowId, position, mode = 'tab') {
             height: savedBounds.height ?? screenDefault.height,
             minWidth: screenDefault.minWidth,
             minHeight: screenDefault.minHeight,
-            backgroundColor: nativeTheme.shouldUseDarkColors ? '#575757' : '#FFFFFF',
+            backgroundColor: nativeTheme.shouldUseDarkColors ? '#202124' : '#F1F3F4',
             center: true,
         })
         // 恢复保存的位置，并限制在屏幕 90% 范围内

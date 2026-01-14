@@ -6,7 +6,7 @@ if (!['dark', 'light'].includes(themeName)) {
 if (themeName === 'dark') {
     let style = document.createElement('style');
     style.rel = 'stylesheet';
-    style.innerHTML = '.app-view-loading{background-color:#0D0D0D}'
+    style.innerHTML = '.app-view-loading{background-color:#202124}'
     if (document.head) {
         document.head.appendChild(style);
     } else {

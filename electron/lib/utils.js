@@ -806,7 +806,7 @@ const utils = {
      */
     getDefaultBackgroundColor() {
         if (utils.getThemName() === "dark") {
-            return "#0D0D0D";
+            return "#202124";
         } else {
             return "#FFFFFF";
         }

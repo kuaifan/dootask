@@ -3,8 +3,8 @@
     --tab-font-size: 12px;
     --tab-transition: background-color 200ms ease-out, color 200ms ease-out;
     --tab-cursor: pointer;
-    --tab-color: #7f8792;
-    --tab-background: #EFF0F4;
+    --tab-color: #5F6368;
+    --tab-background: #F1F3F4;
     --tab-active-color: #222529;
     --tab-active-background: #FFFFFF;
     --tab-close-color: #9DA3AC;
@@ -381,11 +381,11 @@ body.darwin.full-screen .nav {
 /* 暗黑模式 */
 @media (prefers-color-scheme: dark) {
     :root {
-        --tab-color: #C5C5C5;
-        --tab-background: #3B3B3D;
-        --tab-active-color: #E1E1E1;
-        --tab-active-background: #575757;
-        --tab-close-color: #E3E3E3;
+        --tab-color: #D6D6D7;
+        --tab-background: #202124;
+        --tab-active-color: #E8EAED;
+        --tab-active-background: #323639;
+        --tab-close-color: #D6D6D7;
     }
 
     .nav-tabs li.active .tab-icon::before {
