@@ -44,6 +44,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read int|mixed $percentage
  * @property-read \App\Models\User|null $user
  * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg accessibleByUser(int $userid)
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
@@ -54,6 +55,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg query()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg searchByKeyword(string $keyword)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereBot($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDeletedAt($value)

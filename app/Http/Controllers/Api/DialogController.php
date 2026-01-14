@@ -130,7 +130,11 @@ class DialogController extends AbstractController
         $list = WebSocketDialog::searchDialog($user->userid, $key, $take);
         // 搜索联系人
         if (count($list) < $take && Base::judgeClientVersion("0.21.60")) {
-            $users = User::searchUser($key, $take - count($list));
+            $users = User::select(User::$basicField)
+                ->searchByKeyword($key)
+                ->orderBy('userid')
+                ->take($take - count($list))
+                ->get();
             $users->transform(function (User $item) use ($user) {
                 $id = 'u:' . $item->userid;
                 $lastAt = null;

@@ -25,7 +25,7 @@ use Carbon\Carbon;
  * @property string|null $tel 联系电话
  * @property string $nickname 昵称
  * @property string|null $profession 职位/职称
- * @property \Illuminate\Support\Carbon|null $birthday 生日
+ * @property string|null $birthday 生日
  * @property string|null $address 地址
  * @property string|null $introduction 个人简介
  * @property string $userimg 头像
@@ -55,7 +55,10 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User query()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder|User searchByKeyword(string $keyword)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereAddress($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereAz($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereBirthday($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereBot($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereChangepass($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
@@ -66,6 +69,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmailVerity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEncrypt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereIdentity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereIntroduction($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLang($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastIp($value)
@@ -808,21 +812,5 @@ class User extends AbstractModel
                 ->orWhere("pinyin", "like", "%{$keyword}%")
                 ->orWhere("profession", "like", "%{$keyword}%");
         });
-    }
-
-    /**
-     * 搜索用户
-     * @param $key
-     * @param $take
-     * @return User[]|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection
-     * @deprecated 建议使用 scopeSearchByKeyword
-     */
-    public static function searchUser($key, $take = 20)
-    {
-        return User::select(User::$basicField)
-            ->searchByKeyword($key)
-            ->orderBy('userid')
-            ->take($take)
-            ->get();
     }
 }

@@ -74,6 +74,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask query()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask searchByKeyword(string $keyword)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedFollow($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedUserid($value)

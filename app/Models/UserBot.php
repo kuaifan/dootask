@@ -21,7 +21,7 @@ use Throwable;
  * @property \Illuminate\Support\Carbon|null $clear_at 下一次清理时间
  * @property string|null $webhook_url 消息webhook地址
  * @property int|null $webhook_num 消息webhook请求次数
- * @property array|null $webhook_events Webhook事件配置
+ * @property array $webhook_events Webhook事件配置
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
@@ -40,6 +40,7 @@ use Throwable;
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereUserid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereWebhookEvents($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereWebhookNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereWebhookUrl($value)
  * @mixin \Eloquent

@@ -5,6 +5,37 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * App\Models\UserTag
+ *
+ * @property int $id
+ * @property int $user_id 被标签用户ID
+ * @property string $name 标签名称
+ * @property int $created_by 创建人
+ * @property int|null $updated_by 最后更新人
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $creator
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserTagRecognition> $recognitions
+ * @property-read int|null $recognitions_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag whereUpdatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserTag whereUserId($value)
+ * @mixin \Eloquent
+ */
 class UserTag extends AbstractModel
 {
     protected $table = 'user_tags';

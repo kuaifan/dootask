@@ -27,6 +27,9 @@ use JetBrains\PhpStorm\Pure;
  * @property string $sign 汇报唯一标识
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ReportReceive> $Receives
  * @property-read int|null $receives_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ReportAnalysis> $aiAnalyses
+ * @property-read int|null $ai_analyses_count
+ * @property-read \App\Models\ReportAnalysis|null $aiAnalysis
  * @property-read mixed $receives
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $receivesUser
  * @property-read int|null $receives_user_count

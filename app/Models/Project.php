@@ -48,6 +48,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|Project query()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder|Project searchByKeyword(string $keyword)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchiveDays($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchiveMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchivedAt($value)

@@ -10,9 +10,15 @@ namespace App\Models;
  * @property array|null $sorts 排序配置
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|UserAppSort newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserAppSort newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserAppSort query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|UserAppSort whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserAppSort whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserAppSort whereSorts($value)

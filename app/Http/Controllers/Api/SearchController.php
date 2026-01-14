@@ -26,7 +26,7 @@ use App\Module\Manticore\ManticoreMsg;
 class SearchController extends AbstractController
 {
     /**
-     * @api {get} api/search/contact          搜索联系人
+     * @api {get} api/search/contact 搜索联系人
      *
      * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0
@@ -119,7 +119,7 @@ class SearchController extends AbstractController
     }
 
     /**
-     * @api {get} api/search/project          搜索项目
+     * @api {get} api/search/project 搜索项目
      *
      * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0
@@ -201,7 +201,7 @@ class SearchController extends AbstractController
     }
 
     /**
-     * @api {get} api/search/task             搜索任务
+     * @api {get} api/search/task 搜索任务
      *
      * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0
@@ -292,7 +292,7 @@ class SearchController extends AbstractController
     }
 
     /**
-     * @api {get} api/search/file              搜索文件
+     * @api {get} api/search/file 搜索文件
      *
      * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0
@@ -399,7 +399,7 @@ class SearchController extends AbstractController
     }
 
     /**
-     * @api {get} api/search/message          搜索消息
+     * @api {get} api/search/message 搜索消息
      *
      * @apiDescription 需要token身份，优先使用 Manticore Search，未安装则使用 MySQL 搜索
      * @apiVersion 1.0.0

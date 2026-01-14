@@ -2829,7 +2829,11 @@ class UsersController extends AbstractController
                 $dialogIds[] = $dialog['id'];
             }
             if ($key && count($dialogList) < $dialogTake) {
-                $dialogUsers = User::searchUser($key, $dialogTake - count($dialogList));
+                $dialogUsers = User::select(User::$basicField)
+                    ->searchByKeyword($key)
+                    ->orderBy('userid')
+                    ->take($dialogTake - count($dialogList))
+                    ->get();
                 foreach ($dialogUsers as $item) {
                     $dialog = WebSocketDialog::getUserDialog($user->userid, $item->userid, now()->addDay());
                     if ($dialog && !in_array($dialog->id, $dialogIds)) {

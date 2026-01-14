@@ -42,6 +42,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|File query()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder|File searchByKeyword(string $keyword)
+ * @method static \Illuminate\Database\Eloquent\Builder|File sharedToUser(int $userid)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCreatedId($value)
