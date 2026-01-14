@@ -3051,6 +3051,11 @@ class ProjectController extends AbstractController
             $copy->addLog('复制{任务}', [
                 'copy_from' => $task->id,
             ]);
+            // 复制子任务
+            $task->copySubTasks($copy, [
+                'reset_complete' => true,
+                'update_project' => true,
+            ]);
             return $copy;
         });
         //

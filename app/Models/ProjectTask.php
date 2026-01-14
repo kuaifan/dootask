@@ -1229,6 +1229,126 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 获取项目的工作流状态项（start 和 end）
+     * @param int $projectId 项目ID
+     * @return array ['start' => ProjectFlowItem|null, 'end' => ProjectFlowItem|null]
+     */
+    public static function getProjectFlowItems(int $projectId): array
+    {
+        $startFlowItem = null;
+        $endFlowItem = null;
+        $projectFlow = ProjectFlow::whereProjectId($projectId)->orderByDesc('id')->first();
+        if ($projectFlow) {
+            $flowItems = ProjectFlowItem::whereFlowId($projectFlow->id)->orderBy('sort')->get();
+            foreach ($flowItems as $item) {
+                if ($item->status == 'start' && !$startFlowItem) {
+                    $startFlowItem = $item;
+                }
+                if ($item->status == 'end' && !$endFlowItem) {
+                    $endFlowItem = $item;
+                }
+            }
+        }
+        return ['start' => $startFlowItem, 'end' => $endFlowItem];
+    }
+
+    /**
+     * 生成工作流状态名称
+     * @param ProjectFlowItem|null $flowItem
+     * @return string
+     */
+    public static function formatFlowItemName(?ProjectFlowItem $flowItem): string
+    {
+        return $flowItem ? ($flowItem->status . '|' . $flowItem->name . '|' . $flowItem->color) : '';
+    }
+
+    /**
+     * 复制子任务到新的父任务
+     * @param ProjectTask $newParentTask 新的父任务
+     * @param array $options 选项
+     *     - reset_complete: 是否重置完成状态并映射到 start 工作流（默认 true）
+     *     - sync_time: 是否同步时间到父任务的时间（默认 false）
+     *     - update_project: 是否更新项目相关字段（project_id、column_id）（默认 false）
+     * @return array 新创建的子任务数组
+     */
+    public function copySubTasks(ProjectTask $newParentTask, array $options = []): array
+    {
+        $resetComplete = $options['reset_complete'] ?? true;
+        $syncTime = $options['sync_time'] ?? false;
+        $updateProject = $options['update_project'] ?? false;
+
+        $newSubTasks = [];
+        $subTasks = self::whereParentId($this->id)->get();
+        if ($subTasks->isEmpty()) {
+            return $newSubTasks;
+        }
+
+        // 获取 start 工作流状态
+        $flowItems = $resetComplete ? self::getProjectFlowItems($newParentTask->project_id) : ['start' => null];
+        $startFlowItem = $flowItems['start'];
+
+        foreach ($subTasks as $subTask) {
+            $newSubTask = $subTask->copyTask();
+            $newSubTask->parent_id = $newParentTask->id;
+
+            // 同步时间
+            if ($syncTime) {
+                $newSubTask->start_at = $newParentTask->start_at;
+                $newSubTask->end_at = $newParentTask->end_at;
+            }
+
+            // 更新项目相关字段
+            if ($updateProject) {
+                $newSubTask->project_id = $newParentTask->project_id;
+                $newSubTask->column_id = $newParentTask->column_id;
+            }
+
+            // 重置完成状态
+            if ($resetComplete) {
+                $newSubTask->complete_at = null;
+                $newSubTask->flow_item_id = $startFlowItem?->id ?? 0;
+                $newSubTask->flow_item_name = self::formatFlowItemName($startFlowItem);
+            }
+
+            $newSubTask->save();
+            $newSubTasks[] = $newSubTask;
+        }
+
+        return $newSubTasks;
+    }
+
+    /**
+     * 移动子任务到新项目/列
+     * @param int $projectId 目标项目ID
+     * @param int $columnId 目标列ID
+     */
+    public function moveSubTasks(int $projectId, int $columnId): void
+    {
+        $subTasks = self::whereParentId($this->id)->get();
+        if ($subTasks->isEmpty()) {
+            return;
+        }
+
+        $flowItems = self::getProjectFlowItems($projectId);
+        $startFlowItem = $flowItems['start'];
+        $endFlowItem = $flowItems['end'];
+
+        foreach ($subTasks as $subTask) {
+            $subTask->project_id = $projectId;
+            $subTask->column_id = $columnId;
+            // 根据完成状态映射工作流
+            if ($subTask->complete_at) {
+                $subTask->flow_item_id = $endFlowItem?->id ?? 0;
+                $subTask->flow_item_name = self::formatFlowItemName($endFlowItem);
+            } else {
+                $subTask->flow_item_id = $startFlowItem?->id ?? 0;
+                $subTask->flow_item_name = self::formatFlowItemName($startFlowItem);
+            }
+            $subTask->save();
+        }
+    }
+
+    /**
      * 同步项目成员至聊天室
      */
     public function syncDialogUser()
@@ -1961,50 +2081,7 @@ class ProjectTask extends AbstractModel
                 }
             }
             // 子任务 - 根据完成状态映射工作流
-            $subTasks = ProjectTask::whereParentId($this->id)->get();
-            if ($subTasks->isNotEmpty()) {
-                // 获取新项目的工作流状态
-                $newProjectFlow = ProjectFlow::whereProjectId($projectId)->orderByDesc('id')->first();
-                $startFlowItem = null;
-                $endFlowItem = null;
-                if ($newProjectFlow) {
-                    $flowItems = ProjectFlowItem::whereFlowId($newProjectFlow->id)->orderBy('sort')->get();
-                    foreach ($flowItems as $item) {
-                        if ($item->status == 'start' && !$startFlowItem) {
-                            $startFlowItem = $item;
-                        }
-                        if ($item->status == 'end' && !$endFlowItem) {
-                            $endFlowItem = $item;
-                        }
-                    }
-                }
-                // 更新每个子任务
-                foreach ($subTasks as $subTask) {
-                    $subTask->project_id = $projectId;
-                    $subTask->column_id = $columnId;
-                    // 根据完成状态映射工作流
-                    if ($subTask->complete_at) {
-                        // 已完成 -> end 状态
-                        if ($endFlowItem) {
-                            $subTask->flow_item_id = $endFlowItem->id;
-                            $subTask->flow_item_name = $endFlowItem->status . '|' . $endFlowItem->name . '|' . $endFlowItem->color;
-                        } else {
-                            $subTask->flow_item_id = 0;
-                            $subTask->flow_item_name = '';
-                        }
-                    } else {
-                        // 未完成 -> start 状态
-                        if ($startFlowItem) {
-                            $subTask->flow_item_id = $startFlowItem->id;
-                            $subTask->flow_item_name = $startFlowItem->status . '|' . $startFlowItem->name . '|' . $startFlowItem->color;
-                        } else {
-                            $subTask->flow_item_id = 0;
-                            $subTask->flow_item_name = '';
-                        }
-                    }
-                    $subTask->save();
-                }
-            }
+            $this->moveSubTasks($projectId, $columnId);
             //
             if ($flowItemId) {
                 // 更新任务流程
