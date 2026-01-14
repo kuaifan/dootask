@@ -94,7 +94,7 @@
 import {mapState} from "vuex";
 import emitter from "../store/events";
 import transformEmojiToHtml from "../utils/emoji";
-import {SEARCH_AI_SYSTEM_PROMPT} from "../utils/ai";
+import {SEARCH_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../utils/ai";
 
 export default {
     name: 'SearchBox',
@@ -595,7 +595,7 @@ export default {
 
         handleAISearchBeforeSend(context = []) {
             const prepared = [
-                ['system', SEARCH_AI_SYSTEM_PROMPT]
+                ['system', withLanguagePreferencePrompt(SEARCH_AI_SYSTEM_PROMPT)]
             ];
 
             if (context.length > 0) {

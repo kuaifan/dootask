@@ -3,6 +3,7 @@
 namespace App\Module;
 
 use App\Models\Setting;
+use App\Models\User;
 use Cache;
 use Carbon\Carbon;
 
@@ -168,6 +169,11 @@ class AI
             $message = trim((string)($item[1] ?? ''));
             if ($role === '' || $message === '') {
                 continue;
+            }
+            // 替换系统条件性提示块占位符
+            if (str_contains($message, '{{SYSTEM_OPTIONAL_PROMPTS}}')) {
+                $optionalPrompts = PromptPlaceholder::buildOptionalPrompts(User::userid());
+                $message = str_replace('{{SYSTEM_OPTIONAL_PROMPTS}}', $optionalPrompts, $message);
             }
             $context[] = [$role, $message];
         }

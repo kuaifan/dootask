@@ -337,21 +337,10 @@ const SEARCH_AI_SYSTEM_PROMPT = `你是一个智能搜索助手，负责帮助�
 4. 如有需要，可以进行多次搜索以获取更全面的结果`;
 
 /**
- * DooTask 资源格式指南（条件性提示词）
- * 仅在 AI 返回 DooTask 资源时生效，不影响普通对话
+ * 系统条件性提示块占位符
+ * 后端会将此占位符替换为：用户上下文 + 资源格式指南
  */
-const DOOTASK_RESOURCE_FORMAT_GUIDE = `
-<optional-format-guide>
-当你的回答中包含 DooTask 系统资源（任务、项目、文件等）时，建议使用以下链接格式使其可点击：
-- 任务: [任务名称](dootask://task/{task_id}/{parent_id})，其中 parent_id 为主任务ID，主任务时为 0
-- 项目: [项目名称](dootask://project/{project_id})
-- 文件: [文件名称](dootask://file/{file_id})
-- 联系人: [用户名](dootask://contact/{userid})
-- 消息: [消息预览](dootask://message/{dialog_id}/{msg_id})
-
-注意：此格式指南不影响正常对话，仅在涉及上述资源时参考。如果与当前对话无关，请忽略。
-</optional-format-guide>
-`.trim();
+const SYSTEM_OPTIONAL_PROMPTS_PLACEHOLDER = '{{SYSTEM_OPTIONAL_PROMPTS}}';
 
 /**
  * 输出语言偏好提示
@@ -363,8 +352,8 @@ const LANGUAGE_PREFERENCE_PROMPT = (label) => `输出语言策略：
 - 仅当我明确指定其他语言时，才切换到该语言。`;
 
 /**
- * 注入语言偏好提示与资源格式指南
- * 返回拼接后的完整提示词
+ * 注入语言偏好提示与系统条件性提示块占位符
+ * 返回拼接后的完整提示词（占位符由后端替换为实际内容）
  */
 const withLanguagePreferencePrompt = (prompt) => {
     if (typeof prompt !== 'string' || !prompt) {
@@ -374,7 +363,7 @@ const withLanguagePreferencePrompt = (prompt) => {
     if (!label) {
         return prompt;
     }
-    return `${prompt}\n\n${LANGUAGE_PREFERENCE_PROMPT(label)}\n\n${DOOTASK_RESOURCE_FORMAT_GUIDE}`;
+    return `${prompt}\n\n${LANGUAGE_PREFERENCE_PROMPT(label)}\n\n${SYSTEM_OPTIONAL_PROMPTS_PLACEHOLDER}`;
 };
 
 /**
