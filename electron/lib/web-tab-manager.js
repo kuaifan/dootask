@@ -236,19 +236,29 @@ function recreatePreloadPool() {
 }
 
 /**
+ * 向标签栏分发事件（仅 tab 模式有效，window 模式无标签栏）
+ * @param {object} wd - windowData 对象
+ * @param {object} data - 事件数据
+ */
+function dispatchToTabBar(wd, data) {
+    if (!wd || !wd.window || wd.mode === 'window') {
+        return Promise.resolve()
+    }
+    return utils.onDispatchEvent(wd.window.webContents, data)
+}
+
+/**
  * 内置浏览器 - 延迟发送导航状态
  */
 function notifyNavigationState(item) {
     setTimeout(() => {
         const wd = webTabWindows.get(item.view.webTabWindowId)
-        if (wd && wd.window) {
-            utils.onDispatchEvent(wd.window.webContents, {
-                event: 'navigation-state',
-                id: item.id,
-                canGoBack: item.view.webContents.navigationHistory.canGoBack(),
-                canGoForward: item.view.webContents.navigationHistory.canGoForward()
-            }).then(_ => { })
-        }
+        dispatchToTabBar(wd, {
+            event: 'navigation-state',
+            id: item.id,
+            canGoBack: item.view.webContents.navigationHistory.canGoBack(),
+            canGoForward: item.view.webContents.navigationHistory.canGoForward()
+        })
     }, 100)
 }
 
@@ -517,15 +527,17 @@ function createWebTabWindowInstance(windowId, position, mode = 'tab') {
     })
 
     webTabWindow.on('enter-full-screen', () => {
-        utils.onDispatchEvent(webTabWindow.webContents, {
+        const wd = webTabWindows.get(windowId)
+        dispatchToTabBar(wd, {
             event: 'enter-full-screen',
-        }).then(_ => { })
+        })
     })
 
     webTabWindow.on('leave-full-screen', () => {
-        utils.onDispatchEvent(webTabWindow.webContents, {
+        const wd = webTabWindows.get(windowId)
+        dispatchToTabBar(wd, {
             event: 'leave-full-screen',
-        }).then(_ => { })
+        })
     })
 
     webTabWindow.on('close', event => {
@@ -775,12 +787,12 @@ function createWebTabView(windowId, args) {
         const currentWindowId = browserView.webTabWindowId
         const wd = webTabWindows.get(currentWindowId)
         if (!wd || !wd.window) return
-        utils.onDispatchEvent(wd.window.webContents, {
+        dispatchToTabBar(wd, {
             event: 'title',
             id: browserView.webContents.id,
             title: errorDescription,
             url: browserView.webContents.getURL(),
-        }).then(_ => { })
+        })
     })
     browserView.webContents.on('page-favicon-updated', async (_, favicons) => {
         // 使用动态窗口ID，支持标签在窗口间转移
@@ -802,23 +814,21 @@ function createWebTabView(windowId, args) {
         }
 
         // 发送验证后的 favicon 给前端
-        utils.onDispatchEvent(wd.window.webContents, {
+        dispatchToTabBar(wd, {
             event: 'favicon',
             id: tabId,
             favicon: base64Favicon || ''
-        }).then(_ => { })
+        })
     })
     // 页面加载状态管理，忽略SPA路由切换(isSameDocument)
     browserView._loadingActive = false
     browserView._loadingChecker = null
     const dispatchLoading = (event) => {
         const wd = webTabWindows.get(browserView.webTabWindowId)
-        if (wd && wd.window) {
-            utils.onDispatchEvent(wd.window.webContents, {
-                event,
-                id: browserView.webContents.id,
-            }).then(_ => { })
-        }
+        dispatchToTabBar(wd, {
+            event,
+            id: browserView.webContents.id,
+        })
     }
     const startLoading = () => {
         if (browserView._loadingActive) return
@@ -1037,10 +1047,10 @@ function activateWebTabInWindow(windowId, id) {
     })
     resizeWebTabInWindow(windowId, item.id)
     item.view.webContents.focus()
-    utils.onDispatchEvent(webTabWindow.webContents, {
+    dispatchToTabBar(windowData, {
         event: 'switch',
         id: item.id,
-    }).then(_ => { })
+    })
 }
 
 /**
@@ -1092,10 +1102,10 @@ function closeWebTabInWindow(windowId, id) {
         webTabView.splice(index, 1)
     }
 
-    utils.onDispatchEvent(webTabWindow.webContents, {
+    dispatchToTabBar(windowData, {
         event: 'close',
         id: item.id,
-    }).then(_ => { })
+    })
 
     if (webTabView.length === 0) {
         userConf?.set('webTabWindow', webTabWindow.getBounds())
@@ -1158,10 +1168,10 @@ function detachWebTab(windowId, tabId, screenX, screenY) {
     sourceWindowData.views.splice(tabIndex, 1)
 
     // 通知源窗口标签已关闭
-    utils.onDispatchEvent(sourceWindow.webContents, {
+    dispatchToTabBar(sourceWindowData, {
         event: 'close',
         id: tabId,
-    }).then(_ => { })
+    })
 
     // 创建新窗口，使用源窗口的尺寸
     const sourceBounds = sourceWindow.getBounds()
@@ -1225,7 +1235,7 @@ function detachWebTab(windowId, tabId, screenX, screenY) {
     // 通知新窗口创建标签（传递完整状态信息）
     newWindow.webContents.once('dom-ready', () => {
         const isLoading = view.webContents.isLoading()
-        utils.onDispatchEvent(newWindow.webContents, {
+        dispatchToTabBar(newWindowData, {
             event: 'create',
             id: tabId,
             url: view.webContents.getURL(),
@@ -1233,11 +1243,11 @@ function detachWebTab(windowId, tabId, screenX, screenY) {
             title: view.webContents.getTitle(),
             state: isLoading ? 'loading' : 'loaded',
             favicon,
-        }).then(_ => { })
-        utils.onDispatchEvent(newWindow.webContents, {
+        })
+        dispatchToTabBar(newWindowData, {
             event: 'switch',
             id: tabId,
-        }).then(_ => { })
+        })
     })
 
     // 处理源窗口
@@ -1284,10 +1294,10 @@ function attachWebTab(sourceWindowId, tabId, targetWindowId, insertIndex) {
     sourceWindowData.views.splice(tabIndex, 1)
 
     // 通知源窗口标签已关闭
-    utils.onDispatchEvent(sourceWindow.webContents, {
+    dispatchToTabBar(sourceWindowData, {
         event: 'close',
         id: tabId,
-    }).then(_ => { })
+    })
 
     // 更新视图所属窗口
     view.webTabWindowId = targetWindowId
@@ -1324,7 +1334,7 @@ function attachWebTab(sourceWindowId, tabId, targetWindowId, insertIndex) {
 
     // 通知目标窗口创建标签（传递完整状态信息）
     const isLoading = view.webContents.isLoading()
-    utils.onDispatchEvent(targetWindow.webContents, {
+    dispatchToTabBar(targetWindowData, {
         event: 'create',
         id: tabId,
         url: view.webContents.getURL(),
@@ -1333,7 +1343,7 @@ function attachWebTab(sourceWindowId, tabId, targetWindowId, insertIndex) {
         insertIndex: actualInsertIndex,
         state: isLoading ? 'loading' : 'loaded',
         favicon,
-    }).then(_ => { })
+    })
 
     // 激活新添加的标签
     activateWebTabInWindow(targetWindowId, tabId)
@@ -1848,14 +1858,12 @@ function registerIPC() {
         const canGoForward = item.view.webContents.navigationHistory.canGoForward()
 
         const wd = webTabWindows.get(item.view.webTabWindowId)
-        if (wd && wd.window) {
-            utils.onDispatchEvent(wd.window.webContents, {
-                event: 'navigation-state',
-                id: item.id,
-                canGoBack,
-                canGoForward
-            }).then(_ => { })
-        }
+        dispatchToTabBar(wd, {
+            event: 'navigation-state',
+            id: item.id,
+            canGoBack,
+            canGoForward
+        })
 
         event.returnValue = "ok"
     })
