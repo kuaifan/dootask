@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\UserRecentItem;
 use App\Module\Base;
 use App\Module\Down;
+use App\Module\Lock;
 use App\Module\Timer;
 use App\Module\Ihttp;
 use Response;
@@ -763,10 +764,20 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         $pid = intval(Request::input('pid'));
-        $overwrite = intval(Request::input('cover'));
-        $webkitRelativePath = Request::input('webkitRelativePath');
-        $data = (new File)->contentUpload($user, $pid, $webkitRelativePath, $overwrite);
-        return Base::retSuccess($data['data']['name'] . ' 上传成功', $data['addItem']);
+        // 同一用户往相同父目录上传时排队，避免并发导致数据库死锁
+        try {
+            return Lock::withLock("file:upload:{$user->userid}:{$pid}", function () use ($user, $pid) {
+                $overwrite = intval(Request::input('cover'));
+                $webkitRelativePath = Request::input('webkitRelativePath');
+                $data = (new File)->contentUpload($user, $pid, $webkitRelativePath, $overwrite);
+                return Base::retSuccess($data['data']['name'] . ' 上传成功', $data['addItem']);
+            }, 120000, 120000);
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'Failed to acquire lock')) {
+                throw new ApiException('上传繁忙，请稍后再试');
+            }
+            throw $e;
+        }
     }
 
     /**
