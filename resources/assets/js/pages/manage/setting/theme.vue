@@ -56,6 +56,7 @@ export default {
                             return
                         }
                         $A.messageSuccess('保存成功');
+                        $A.Electron?.sendMessage('recreatePreloadPool');
                     })
                 }
             })

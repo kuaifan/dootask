@@ -220,6 +220,38 @@ function clearPreloadPool() {
     preloadViewPool = []
 }
 
+/**
+ * 重建预加载池（清理后重新创建）
+ */
+function recreatePreloadPool() {
+    clearPreloadPool()
+    while (preloadViewPool.length < PRELOAD_CONFIG.poolSize) {
+        const view = createPreloadView()
+        if (view) {
+            preloadViewPool.push(view)
+        } else {
+            break
+        }
+    }
+}
+
+/**
+ * 内置浏览器 - 延迟发送导航状态
+ */
+function notifyNavigationState(item) {
+    setTimeout(() => {
+        const wd = webTabWindows.get(item.view.webTabWindowId)
+        if (wd && wd.window) {
+            utils.onDispatchEvent(wd.window.webContents, {
+                event: 'navigation-state',
+                id: item.id,
+                canGoBack: item.view.webContents.navigationHistory.canGoBack(),
+                canGoForward: item.view.webContents.navigationHistory.canGoForward()
+            }).then(_ => { })
+        }
+    }, 100)
+}
+
 // ============================================================
 // 核心函数
 // ============================================================
@@ -527,7 +559,7 @@ function createWebTabWindowInstance(windowId, position, mode = 'tab') {
             })
             return
         }
-        
+
         // 点击窗口关闭按钮：依次检查并关闭每个标签页
         const checkAndCloseTabs = async () => {
             // 复制标签列表，因为关闭时会修改原数组
@@ -1081,6 +1113,32 @@ function closeWebTabInWindow(windowId, id) {
 }
 
 /**
+ * 安全关闭标签（检查未保存数据后关闭）
+ * @param windowId 窗口ID
+ * @param tabId 标签ID
+ */
+function safeCloseWebTab(windowId, tabId) {
+    const windowData = webTabWindows.get(windowId)
+    if (!windowData) {
+        closeWebTabInWindow(windowId, tabId)
+        return
+    }
+
+    const tab = windowData.views.find(v => v.id === tabId)
+    if (!tab) {
+        closeWebTabInWindow(windowId, tabId)
+        return
+    }
+
+    const proxyWindow = Object.create(windowData.window, {
+        webContents: { get: () => tab.view.webContents }
+    })
+    utils.onBeforeUnload({ preventDefault: () => {} }, proxyWindow).then(() => {
+        closeWebTabInWindow(windowId, tabId)
+    })
+}
+
+/**
  * 分离标签到新窗口
  * @param windowId 源窗口ID
  * @param tabId 标签ID
@@ -1433,6 +1491,14 @@ function registerIPC() {
     const electronMenu = getElectronMenu()
 
     /**
+     * 重建预加载池
+     */
+    ipcMain.on('recreatePreloadPool', (event) => {
+        recreatePreloadPool()
+        event.returnValue = "ok"
+    })
+
+    /**
      * 获取路由窗口信息（从 webTabWindows 中查找 mode='window' 的窗口）
      */
     ipcMain.handle('getChildWindow', (event, args) => {
@@ -1598,21 +1664,7 @@ function registerIPC() {
             windowId = findWindowIdByTabId(tabId)
         }
         if (windowId) {
-            const windowData = webTabWindows.get(windowId)
-            if (windowData) {
-                const tab = windowData.views.find(v => v.id === tabId)
-                if (tab) {
-                    const proxyWindow = Object.create(windowData.window, {
-                        webContents: { get: () => tab.view.webContents }
-                    })
-                    utils.onBeforeUnload({ preventDefault: () => {} }, proxyWindow).then(() => {
-                        closeWebTabInWindow(windowId, tabId)
-                    })
-                    event.returnValue = "ok"
-                    return
-                }
-            }
-            closeWebTabInWindow(windowId, tabId)
+            safeCloseWebTab(windowId, tabId)
         }
         event.returnValue = "ok"
     })
@@ -1725,23 +1777,6 @@ function registerIPC() {
         destroyAll()
         event.returnValue = "ok"
     })
-
-    /**
-     * 内置浏览器 - 延迟发送导航状态
-     */
-    function notifyNavigationState(item) {
-        setTimeout(() => {
-            const wd = webTabWindows.get(item.view.webTabWindowId)
-            if (wd && wd.window) {
-                utils.onDispatchEvent(wd.window.webContents, {
-                    event: 'navigation-state',
-                    id: item.id,
-                    canGoBack: item.view.webContents.navigationHistory.canGoBack(),
-                    canGoForward: item.view.webContents.navigationHistory.canGoForward()
-                }).then(_ => { })
-            }
-        }, 100)
-    }
 
     /**
      * 内置浏览器 - 后退
@@ -1864,21 +1899,7 @@ function registerIPC() {
         const tabId = event.sender.id
         const windowId = findWindowIdByTabId(tabId)
         if (windowId !== null) {
-            const windowData = webTabWindows.get(windowId)
-            if (windowData) {
-                const tab = windowData.views.find(v => v.id === tabId)
-                if (tab) {
-                    const proxyWindow = Object.create(windowData.window, {
-                        webContents: { get: () => tab.view.webContents }
-                    })
-                    utils.onBeforeUnload({ preventDefault: () => {} }, proxyWindow).then(() => {
-                        closeWebTabInWindow(windowId, tabId)
-                    })
-                    event.returnValue = "ok"
-                    return
-                }
-            }
-            closeWebTabInWindow(windowId, tabId)
+            safeCloseWebTab(windowId, tabId)
         } else {
             const win = BrowserWindow.fromWebContents(event.sender)
             win?.close()

@@ -556,7 +556,7 @@ export default {
                 resolve(false)
                 return;
             }
-            dispatch("synchTheme", mode)
+            dispatch("synchTheme", {mode})
             resolve(true)
         });
     },
@@ -566,8 +566,11 @@ export default {
      * @param state
      * @param dispatch
      * @param mode
+     * @param args
      */
-    synchTheme({state, dispatch}, mode = undefined) {
+    synchTheme({state, dispatch}, {mode, ...args} = {}) {
+        $A.syncDispatch("synchTheme", {...args, mode})
+        //
         if (typeof mode === "undefined") {
             mode = state.themeConf
         } else {
@@ -3814,13 +3817,14 @@ export default {
      * @param id
      * @param content
      * @param immediate
+     * @param args
      */
-    saveDialogDraft({commit}, {id, content, immediate = false}) {
+    saveDialogDraft({commit}, {id, content, immediate = false, ...args}) {
         if ($A.isSubElectron) {
             dialogDraftState.subTemp = {id, content, immediate: true}
             return
         }
-        $A.syncDispatch("saveDialogDraft", {id, content, immediate})
+        $A.syncDispatch("saveDialogDraft", {...args, id, content, immediate})
 
         // 清除已有的计时器
         if (dialogDraftState.timer[id]) {

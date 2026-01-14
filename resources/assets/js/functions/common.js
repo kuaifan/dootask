@@ -889,10 +889,10 @@ const timezone = require("dayjs/plugin/timezone");
 
         /**
          * 输入框数字限制
-         * @param object 
-         * @param min 
-         * @param max 
-         * @returns 
+         * @param object
+         * @param min
+         * @param max
+         * @returns
          */
         inputNumberLimit(object, min = null, max = null) {
             if (object === null || typeof object !== "object") return;
@@ -1674,7 +1674,7 @@ const timezone = require("dayjs/plugin/timezone");
         },
 
         IDBDel(key) {
-            localforage.removeItem(key).then(_ => {})
+            return localforage.removeItem(key)
         },
 
         IDBSet(key, value) {

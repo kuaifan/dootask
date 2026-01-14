@@ -789,11 +789,20 @@ ipcMain.on('windowMax', (event) => {
 ipcMain.on('broadcastCommand', (event, args) => {
     const channel = args.channel || args.command
     const payload = args.payload || args.data
+    // 广播给所有 BrowserWindow
     BrowserWindow.getAllWindows().forEach(window => {
         if (window.webContents.id !== event.sender.id) {
             window.webContents.send(channel, payload)
         }
     })
+    // 广播给 webTabManager 中的所有 view
+    for (const [, windowData] of webTabManager.getWebTabWindows()) {
+        windowData.views?.forEach(({ view }) => {
+            if (view && !view.webContents.isDestroyed() && view.webContents.id !== event.sender.id) {
+                view.webContents.send(channel, payload)
+            }
+        })
+    }
     event.returnValue = "ok"
 })
 

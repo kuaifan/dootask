@@ -95,7 +95,7 @@ function setLanguage(language, silence = false) {
     if (silence) {
         utils.saveLanguage(language);
         (async () => {
-            $A.IDBDel("callAt")
+            await $A.IDBDel("callAt")
             $A.reloadUrl()
         })()
     } else {
