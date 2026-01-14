@@ -339,7 +339,6 @@ class ManticoreProject
                 // 4. 批量获取 embedding
                 $result = AI::getBatchEmbeddings($texts);
                 if (!Base::isSuccess($result) || empty($result['data'])) {
-                    Log::warning('ManticoreProject: Batch embedding failed', ['project_ids' => $ids]);
                     continue;
                 }
 
@@ -358,13 +357,6 @@ class ManticoreProject
                 if (!empty($vectorData)) {
                     $batchCount = ManticoreBase::batchUpdateProjectVectors($vectorData);
                     $successCount += $batchCount;
-
-                    if ($batchCount < count($vectorData)) {
-                        Log::warning('ManticoreProject: Some vector updates failed', [
-                            'expected' => count($vectorData),
-                            'actual' => $batchCount,
-                        ]);
-                    }
                 }
             }
 

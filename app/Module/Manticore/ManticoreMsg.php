@@ -460,10 +460,6 @@ class ManticoreMsg
             $result = AI::getBatchEmbeddings($texts);
 
             if (Base::isError($result)) {
-                Log::warning('ManticoreMsg: Batch embedding failed', [
-                    'msg_ids' => $idsArray,
-                    'error' => $result['msg'] ?? 'Unknown error',
-                ]);
                 continue;
             }
 
@@ -488,13 +484,6 @@ class ManticoreMsg
             if (!empty($vectorData)) {
                 $batchCount = ManticoreBase::batchUpdateMsgVectors($vectorData);
                 $count += $batchCount;
-
-                if ($batchCount < count($vectorData)) {
-                    Log::warning('ManticoreMsg: Some vector updates failed', [
-                        'expected' => count($vectorData),
-                        'actual' => $batchCount,
-                    ]);
-                }
             }
         }
 

@@ -158,10 +158,9 @@ class ManticoreBase
                 ) charset_table='non_cjk, cjk' morphology='icu_chinese'
             ");
 
-            Log::info('Manticore tables initialized successfully');
+            // Tables initialized successfully
         } catch (PDOException $e) {
-            Log::warning('Manticore initialization warning: ' . $e->getMessage());
-            // 不抛出异常，表可能已存在
+            // 表可能已存在，忽略初始化错误
         }
     }
 
@@ -2040,8 +2039,7 @@ class ManticoreBase
             if ($instance->execute($stmt['sql'], $stmt['values'])) {
                 $successCount++;
             } else {
-                // 插入失败，记录日志（数据已被删除，需要重新同步）
-                Log::warning("Manticore batch update failed for {$table}", ['pk' => $stmt['pk']]);
+                // 插入失败，数据已被删除，需要重新同步
             }
         }
 
@@ -2110,7 +2108,7 @@ class ManticoreBase
                 return $result['data'] ?? [];
             }
         } catch (\Exception $e) {
-            Log::warning('Get embedding error: ' . $e->getMessage());
+            // embedding 获取失败，返回空数组
         }
 
         return [];

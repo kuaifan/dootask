@@ -144,10 +144,6 @@ class ManticoreTask
     {
         // 防止无限递归：深度超过10层或循环引用
         if ($depth > 10 || in_array($task->id, $visited)) {
-            Log::warning('ManticoreTask: getAllowedUsers recursion limit reached', [
-                'task_id' => $task->id,
-                'depth' => $depth,
-            ]);
             return [];
         }
         $visited[] = $task->id;
@@ -280,7 +276,6 @@ class ManticoreTask
             // 限制内容长度
             return mb_substr($text, 0, self::MAX_CONTENT_LENGTH);
         } catch (\Exception $e) {
-            Log::warning('Get task content error: ' . $e->getMessage(), ['task_id' => $task->id]);
             return '';
         }
     }
@@ -568,7 +563,6 @@ class ManticoreTask
                 // 4. 批量获取 embedding
                 $result = AI::getBatchEmbeddings($texts);
                 if (!Base::isSuccess($result) || empty($result['data'])) {
-                    Log::warning('ManticoreTask: Batch embedding failed', ['task_ids' => $ids]);
                     continue;
                 }
 
@@ -587,13 +581,6 @@ class ManticoreTask
                 if (!empty($vectorData)) {
                     $batchCount = ManticoreBase::batchUpdateTaskVectors($vectorData);
                     $successCount += $batchCount;
-
-                    if ($batchCount < count($vectorData)) {
-                        Log::warning('ManticoreTask: Some vector updates failed', [
-                            'expected' => count($vectorData),
-                            'actual' => $batchCount,
-                        ]);
-                    }
                 }
             }
 

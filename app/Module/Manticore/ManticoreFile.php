@@ -235,7 +235,6 @@ class ManticoreFile
         // 根据文件类型检查大小限制
         $maxSize = self::getMaxFileSizeByExt($file->ext);
         if ($file->size > $maxSize) {
-            Log::info("Manticore: Skip large file {$file->id} ({$file->size} bytes, max: {$maxSize})");
             // 删除可能存在的旧索引（文件更新后可能超限）
             self::delete($file->id);
             return true;
@@ -546,7 +545,6 @@ class ManticoreFile
                 // 4. 批量获取 embedding
                 $result = AI::getBatchEmbeddings($texts);
                 if (!Base::isSuccess($result) || empty($result['data'])) {
-                    Log::warning('ManticoreFile: Batch embedding failed', ['file_ids' => $ids]);
                     continue;
                 }
 
@@ -565,13 +563,6 @@ class ManticoreFile
                 if (!empty($vectorData)) {
                     $batchCount = ManticoreBase::batchUpdateFileVectors($vectorData);
                     $successCount += $batchCount;
-
-                    if ($batchCount < count($vectorData)) {
-                        Log::warning('ManticoreFile: Some vector updates failed', [
-                            'expected' => count($vectorData),
-                            'actual' => $batchCount,
-                        ]);
-                    }
                 }
             }
 

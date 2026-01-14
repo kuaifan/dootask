@@ -331,7 +331,6 @@ class ManticoreUser
                 // 4. 批量获取 embedding
                 $result = AI::getBatchEmbeddings($texts);
                 if (!Base::isSuccess($result) || empty($result['data'])) {
-                    Log::warning('ManticoreUser: Batch embedding failed', ['user_ids' => $ids]);
                     continue;
                 }
 
@@ -350,13 +349,6 @@ class ManticoreUser
                 if (!empty($vectorData)) {
                     $batchCount = ManticoreBase::batchUpdateUserVectors($vectorData);
                     $successCount += $batchCount;
-
-                    if ($batchCount < count($vectorData)) {
-                        Log::warning('ManticoreUser: Some vector updates failed', [
-                            'expected' => count($vectorData),
-                            'actual' => $batchCount,
-                        ]);
-                    }
                 }
             }
 
