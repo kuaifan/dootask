@@ -21,6 +21,15 @@
                             </div>
                         </template>
                     </TabPane>
+                    <TabPane label="Codex" name="codex">
+                        <template v-if="configTab === 'codex'">
+                            <p class="mcp-config-hint">{{ t('编辑 TOML 配置文件', 'Edit TOML config file') }}:</p>
+                            <div class="mcp-code-block">
+                                <pre ref="configCodex">{{ configCodex }}</pre>
+                                <Button size="small" class="mcp-copy-btn" @click="copyConfig('configCodex')">{{ t('复制', 'Copy') }}</Button>
+                            </div>
+                        </template>
+                    </TabPane>
                     <TabPane label="Cursor" name="cursor">
                         <template v-if="configTab === 'cursor'">
                             <p class="mcp-config-hint">{{ t('编辑配置文件', 'Edit config file') }}: <code>~/.cursor/mcp.json</code></p>
@@ -39,15 +48,6 @@
                             </div>
                         </template>
                     </TabPane>
-                    <TabPane label="Windsurf" name="windsurf">
-                        <template v-if="configTab === 'windsurf'">
-                            <p class="mcp-config-hint">{{ t('编辑 MCP 配置文件', 'Edit MCP config file') }}:</p>
-                            <div class="mcp-code-block">
-                                <pre ref="configWindsurf">{{ configWindsurf }}</pre>
-                                <Button size="small" class="mcp-copy-btn" @click="copyConfig('configWindsurf')">{{ t('复制', 'Copy') }}</Button>
-                            </div>
-                        </template>
-                    </TabPane>
                     <TabPane label="Claude Desktop" name="claude-desktop">
                         <template v-if="configTab === 'claude-desktop'">
                             <div class="mcp-config-hint">
@@ -61,12 +61,12 @@
                             </div>
                         </template>
                     </TabPane>
-                    <TabPane label="Codex" name="codex">
-                        <template v-if="configTab === 'codex'">
-                            <p class="mcp-config-hint">{{ t('编辑 TOML 配置文件', 'Edit TOML config file') }}:</p>
+                    <TabPane label="Windsurf" name="windsurf">
+                        <template v-if="configTab === 'windsurf'">
+                            <p class="mcp-config-hint">{{ t('编辑 MCP 配置文件', 'Edit MCP config file') }}:</p>
                             <div class="mcp-code-block">
-                                <pre ref="configCodex">{{ configCodex }}</pre>
-                                <Button size="small" class="mcp-copy-btn" @click="copyConfig('configCodex')">{{ t('复制', 'Copy') }}</Button>
+                                <pre ref="configWindsurf">{{ configWindsurf }}</pre>
+                                <Button size="small" class="mcp-copy-btn" @click="copyConfig('configWindsurf')">{{ t('复制', 'Copy') }}</Button>
                             </div>
                         </template>
                     </TabPane>
