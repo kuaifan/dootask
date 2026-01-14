@@ -15,7 +15,8 @@ const {
     screen,
     Menu,
     WebContentsView,
-    BrowserWindow
+    BrowserWindow,
+    dialog
 } = require('electron')
 
 const utils = require('./utils')
@@ -41,6 +42,9 @@ const webTabHeight = 40
 
 // 快捷键关闭状态 Map<windowId, boolean>
 let webTabClosedByShortcut = new Map()
+
+// 存储已声明关闭拦截的 webContents id
+const closeInterceptors = new Set()
 
 // ============================================================
 // 预加载池
@@ -560,13 +564,19 @@ function createWebTabWindowInstance(windowId, position, mode = 'tab') {
         // 检查页面是否有未保存数据
         if (isShortcut) {
             // 快捷键关闭：只检查当前激活的标签
+            event.preventDefault()
+
+            // 获取当前激活标签
             const activeTab = windowData.views.find(v => v.id === windowData.activeTabId)
             if (!activeTab) return
 
+            // 构造代理 window 对象
             const proxyWindow = Object.create(webTabWindow, {
                 webContents: { get: () => activeTab.view.webContents }
             })
-            utils.onBeforeUnload(event, proxyWindow).then(() => {
+
+            // 检查并等待用户确认
+            onBeforeUnload(event, proxyWindow).then(() => {
                 closeWebTabInWindow(windowId, 0)
             })
             return
@@ -583,7 +593,7 @@ function createWebTabWindowInstance(windowId, position, mode = 'tab') {
                     webContents: { get: () => tab.view.webContents }
                 })
                 // 检查并等待用户确认（用户取消则 Promise 不 resolve，中断循环）
-                await utils.onBeforeUnload(event, proxyWindow)
+                await onBeforeUnload(event, proxyWindow)
                 // 确认后关闭这个标签（最后一个标签关闭时窗口会自动销毁）
                 closeWebTabInWindow(windowId, tab.id)
             }
@@ -736,7 +746,7 @@ function createWebTabView(windowId, args) {
             })
         } else if (url && url !== 'about:blank') {
             // tab 模式下创建新标签
-            createWebTabWindow({ url, afterId: browserView.webContents.id, windowId })
+            createWebTabWindow({ url, afterId: browserView.webContents.id, windowId: browserView.webTabWindowId })
         }
         return { action: 'deny' }
     })
@@ -1136,7 +1146,7 @@ function safeCloseWebTab(windowId, tabId) {
     const proxyWindow = Object.create(windowData.window, {
         webContents: { get: () => tab.view.webContents }
     })
-    utils.onBeforeUnload({ preventDefault: () => {} }, proxyWindow).then(() => {
+    onBeforeUnload({ preventDefault: () => {} }, proxyWindow).then(() => {
         closeWebTabInWindow(windowId, tabId)
     })
 }
@@ -1481,6 +1491,81 @@ function destroyAllWindowMode() {
             data.window.destroy()
         }
     }
+}
+
+// ============================================================
+// 关闭拦截管理
+// ============================================================
+
+/**
+ * 注册关闭拦截（前端声明需要拦截关闭事件）
+ * @param webContentsId
+ */
+function registerCloseInterceptor(webContentsId) {
+    closeInterceptors.add(webContentsId)
+}
+
+/**
+ * 取消关闭拦截
+ * @param webContentsId
+ */
+function unregisterCloseInterceptor(webContentsId) {
+    closeInterceptors.delete(webContentsId)
+}
+
+/**
+ * 检查是否有关闭拦截
+ * @param webContentsId
+ * @returns {boolean}
+ */
+function hasCloseInterceptor(webContentsId) {
+    return closeInterceptors.has(webContentsId)
+}
+
+/**
+ * 窗口关闭事件
+ * @param event
+ * @param app
+ * @param timeout
+ */
+function onBeforeUnload(event, app, timeout = 5000) {
+    return new Promise(resolve => {
+        const contents = app.webContents
+        if (contents != null && !contents.isDestroyed()) {
+            // 检查是否有声明拦截，没有声明则直接关闭，不执行 JS
+            if (!hasCloseInterceptor(contents.id)) {
+                resolve()
+                return
+            }
+
+            // 有声明拦截，执行 JS（带超时保护）
+            const timeoutPromise = new Promise(r => setTimeout(() => r({ __timeout: true }), timeout))
+            const jsPromise = contents.executeJavaScript(`if(typeof window.__onBeforeUnload === 'function'){window.__onBeforeUnload()}`, true)
+
+            Promise.race([jsPromise, timeoutPromise]).then(options => {
+                if (utils.isJson(options)) {
+                    // 超时，直接允许关闭
+                    if (options.__timeout) {
+                        resolve()
+                        return
+                    }
+                    // 显示确认对话框
+                    let choice = dialog.showMessageBoxSync(app, options)
+                    if (choice === 1) {
+                        contents.executeJavaScript(`if(typeof window.__removeBeforeUnload === 'function'){window.__removeBeforeUnload()}`, true).catch(() => {});
+                        resolve()
+                    }
+                } else if (options !== true) {
+                    resolve()
+                }
+            }).catch(_ => {
+                resolve()
+            })
+            event.preventDefault()
+        } else {
+            resolve()
+        }
+    })
 }
 
 // ============================================================
@@ -1923,6 +2008,21 @@ function registerIPC() {
         event.returnValue = "ok"
     })
 
+    /**
+     * 注册关闭拦截（前端声明需要拦截关闭事件）
+     */
+    ipcMain.on('registerCloseInterceptor', (event) => {
+        registerCloseInterceptor(event.sender.id)
+        event.returnValue = "ok"
+    })
+
+    /**
+     * 取消关闭拦截
+     */
+    ipcMain.on('unregisterCloseInterceptor', (event) => {
+        unregisterCloseInterceptor(event.sender.id)
+        event.returnValue = "ok"
+    })
 }
 
 // ============================================================
@@ -1950,4 +2050,10 @@ module.exports = {
     destroyAll,
     closeAllWindowMode,
     destroyAllWindowMode,
+
+    // 关闭拦截管理
+    registerCloseInterceptor,
+    unregisterCloseInterceptor,
+    hasCloseInterceptor,
+    onBeforeUnload,
 }

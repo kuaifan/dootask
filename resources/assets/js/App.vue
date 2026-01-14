@@ -594,6 +594,7 @@ export default {
                     return true;
                 }
             }
+            this.$Electron.sendMessage('registerCloseInterceptor')
             window.__onBeforeOpenWindow = ({url}) => {
                 const urlType = this.getUrlMethodType(url)
                 if (urlType === 2) {

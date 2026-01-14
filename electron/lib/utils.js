@@ -5,7 +5,7 @@ const dayjs = require("dayjs");
 const http = require('http')
 const https = require('https')
 const crypto = require('crypto')
-const {shell, dialog, session, net, Notification, nativeTheme} = require("electron");
+const {shell, session, net, Notification, nativeTheme} = require("electron");
 const loger = require("electron-log");
 const Store = require("electron-store");
 const store = new Store();
@@ -291,6 +291,7 @@ const utils = {
     /**
      * 正则提取域名
      * @param weburl
+     * @param toLowerCase
      * @returns {string|string}
      */
     getDomain(weburl, toLowerCase = true) {
@@ -325,35 +326,6 @@ const utils = {
             win.focus()
             win.show()
         }
-    },
-
-    /**
-     * 窗口关闭事件
-     * @param event
-     * @param app
-     */
-    onBeforeUnload(event, app) {
-        return new Promise(resolve => {
-            const contents = app.webContents
-            if (contents != null) {
-                contents.executeJavaScript(`if(typeof window.__onBeforeUnload === 'function'){window.__onBeforeUnload()}`, true).then(options => {
-                    if (utils.isJson(options)) {
-                        let choice = dialog.showMessageBoxSync(app, options)
-                        if (choice === 1) {
-                            contents.executeJavaScript(`if(typeof window.__removeBeforeUnload === 'function'){window.__removeBeforeUnload()}`, true).catch(() => {});
-                            resolve()
-                        }
-                    } else if (options !== true) {
-                        resolve()
-                    }
-                }).catch(_ => {
-                    resolve()
-                })
-                event.preventDefault()
-            } else {
-                resolve()
-            }
-        })
     },
 
     /**

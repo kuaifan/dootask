@@ -17,10 +17,8 @@ const {
     nativeImage,
     globalShortcut,
     nativeTheme,
-    screen,
     Tray,
     Menu,
-    WebContentsView,
     BrowserWindow
 } = require('electron')
 
@@ -44,7 +42,7 @@ const electronMenu = require("./electron-menu");
 const { startMCPServer, stopMCPServer } = require("./lib/mcp");
 const {onRenderer, renderer} = require("./lib/renderer");
 const {onExport} = require("./lib/pdf-export");
-const {allowedCalls, isWin, isMac} = require("./lib/other");
+const {allowedCalls, isWin} = require("./lib/other");
 const webTabManager = require("./lib/web-tab-manager");
 const faviconCache = require("./lib/favicon-cache");
 
@@ -299,7 +297,7 @@ function createMainWindow() {
 
     mainWindow.on('close', event => {
         if (!willQuitApp) {
-            utils.onBeforeUnload(event, mainWindow).then(() => {
+            webTabManager.onBeforeUnload(event, mainWindow).then(() => {
                 if (['darwin', 'win32'].includes(process.platform)) {
                     if (mainWindow.isFullScreen()) {
                         mainWindow.once('leave-full-screen', () => {
