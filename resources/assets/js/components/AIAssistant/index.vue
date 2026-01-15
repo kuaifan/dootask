@@ -282,7 +282,7 @@ export default {
             if (!$A.isJson(params)) {
                 params = {};
             }
-            
+
             const newDisplayMode = params.displayMode === 'chat' ? 'chat' : 'modal';
             let timeout = 0;
             if (this.showModal && this.displayMode === 'chat' && newDisplayMode === 'modal') {
@@ -480,9 +480,13 @@ export default {
          * 注意：输入法组合输入时（如中文候选字）不发送
          */
         onInputKeydown(e) {
-            if (e.key === 'Enter' && !e.shiftKey && !this.isComposing) {
-                e.preventDefault();
-                this.onSubmit();
+            if (!e.shiftKey && !this.isComposing) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.onSubmit();
+                } else if (e.key === 'Escape' && this.displayMode === 'chat') {
+                    this.showModal = false;
+                }
             }
         },
 
@@ -1626,6 +1630,16 @@ export default {
 }
 
 body.dark-mode-reverse {
+    .ai-assistant-content {
+        .ai-assistant-welcome,
+        .ai-assistant-output {
+            background-color: #f5f5f5;
+        }
+    }
+    .ai-assistant-chat {
+        background-color: #e9e9e9;
+        box-shadow: none;
+    }
     .ai-assistant-modal {
         --apply-reasoning-before-bg: #4e4e56;
     }
