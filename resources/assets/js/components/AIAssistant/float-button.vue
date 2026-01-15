@@ -36,10 +36,11 @@ export default {
 
     computed: {
         visible() {
-            return this.userId > 0 && 
-                this.positionLoaded && 
-                !this.windowPortrait && 
-                this.routeName !== 'login';
+            return this.userId > 0 &&
+                this.positionLoaded &&
+                !this.windowPortrait &&
+                this.routeName !== 'login' &&
+                !this.$parent?.showModal;
         },
 
         // 计算实际的 left 值

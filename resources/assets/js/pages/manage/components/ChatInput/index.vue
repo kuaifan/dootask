@@ -1923,6 +1923,7 @@ export default {
             }
             emitter.emit('openAIAssistant', {
                 sessionKey: 'chat-message',
+                title: this.$L('AI 消息助手'),
                 placeholder: this.$L('请简要描述消息的主题、语气或要点，AI 将生成完整消息'),
                 onBeforeSend: this.handleMessageAIBeforeSend,
                 onApply: this.handleMessageAIApply,

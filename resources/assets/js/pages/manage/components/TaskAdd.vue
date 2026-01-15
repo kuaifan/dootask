@@ -632,6 +632,7 @@ export default {
         onAI() {
             emitter.emit('openAIAssistant', {
                 sessionKey: 'task-create',
+                title: this.$L('AI 任务助手'),
                 placeholder: this.$L('请简要描述任务目标、背景或预期交付，AI 将生成标题、详细说明和子任务'),
                 onBeforeSend: this.handleTaskAIBeforeSend,
                 onRender: this.handleTaskAIRender,
