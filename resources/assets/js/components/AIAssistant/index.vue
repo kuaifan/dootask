@@ -135,14 +135,17 @@
 </template>
 
 <script>
-import emitter from "../store/events";
-import {SSEClient} from "../utils";
-import {AIBotMap, AIModelNames} from "../utils/ai";
-import DialogMarkdown from "../pages/manage/components/DialogMarkdown.vue";
+import Vue from "vue";
+import emitter from "../../store/events";
+import {SSEClient} from "../../utils";
+import {AIBotMap, AIModelNames} from "../../utils/ai";
+import DialogMarkdown from "../../pages/manage/components/DialogMarkdown.vue";
+import FloatButton from "./float-button.vue";
 
 export default {
     name: 'AIAssistant',
     components: {DialogMarkdown},
+    floatButtonInstance: null,
     data() {
         return {
             // 弹窗状态
@@ -201,11 +204,13 @@ export default {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
         this.loadCachedModel();
         this.loadSessionStore();
+        this.mountFloatButton();
     },
     beforeDestroy() {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
         this.clearActiveSSEClients();
         this.clearAutoSubmitTimer();
+        this.unmountFloatButton();
     },
     computed: {
         selectedModelOption({modelMap, inputModel}) {
@@ -227,6 +232,31 @@ export default {
         },
     },
     methods: {
+        /**
+         * 挂载浮动按钮到 body
+         */
+        mountFloatButton() {
+            const FloatButtonCtor = Vue.extend(FloatButton);
+            this.$options.floatButtonInstance = new FloatButtonCtor({
+                parent: this,
+            });
+            this.$options.floatButtonInstance.$mount();
+            document.body.appendChild(this.$options.floatButtonInstance.$el);
+        },
+
+        /**
+         * 卸载浮动按钮
+         */
+        unmountFloatButton() {
+            if (this.$options.floatButtonInstance) {
+                this.$options.floatButtonInstance.$destroy();
+                if (this.$options.floatButtonInstance.$el && this.$options.floatButtonInstance.$el.parentNode) {
+                    this.$options.floatButtonInstance.$el.parentNode.removeChild(this.$options.floatButtonInstance.$el);
+                }
+                this.$options.floatButtonInstance = null;
+            }
+        },
+
         /**
          * 打开助手弹窗并应用参数
          */

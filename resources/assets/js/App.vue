@@ -102,7 +102,7 @@ import DropdownMenu from "./components/DropdownMenu";
 import {ctrlPressed} from "./mixins/ctrlPressed";
 import {mapState} from "vuex";
 import emitter from "./store/events";
-import AIAssistant from "./components/AIAssistant.vue";
+import AIAssistant from "./components/AIAssistant";
 import UserDetail from "./pages/manage/components/UserDetail.vue";
 import {languageName} from "./language";
 
