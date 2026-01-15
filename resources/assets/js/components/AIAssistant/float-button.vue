@@ -2,7 +2,7 @@
     <div
         v-show="visible"
         ref="floatBtn"
-        class="ai-float-button"
+        class="ai-float-button no-dark-content"
         :style="btnStyle"
         @mousedown.stop.prevent="onMouseDown">
         <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
@@ -36,7 +36,10 @@ export default {
 
     computed: {
         visible() {
-            return this.userId > 0 && this.positionLoaded && !this.windowPortrait;
+            return this.userId > 0 && 
+                this.positionLoaded && 
+                !this.windowPortrait && 
+                this.routeName !== 'login';
         },
 
         // 计算实际的 left 值

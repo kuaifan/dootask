@@ -605,6 +605,7 @@ export default {
             'columnTemplate',
 
             'clientNewVersion',
+            'clientDownloadUrl',
 
             'reportUnreadNumber',
             'approveUnreadNumber',
@@ -712,6 +713,18 @@ export default {
             }
         },
 
+        /**
+         * 是否显示客户端下载
+         * @returns {boolean}
+         */
+        showDownloadClient() {
+            return !this.$Electron && !this.$isEEUIApp && !!this.clientDownloadUrl
+        },
+
+        /**
+         * 右上角菜单
+         * @returns {Array}
+         */
         menu() {
             const {userIsAdmin} = this;
             const array = [
@@ -726,6 +739,7 @@ export default {
                     {path: 'system', name: '系统设置'},
                     {path: 'license', name: 'License Key'},
 
+                    {path: 'downloadClient', name: '客户端下载', divided: true, visible: this.showDownloadClient},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'allProject', name: '所有项目', divided: true},
@@ -736,6 +750,7 @@ export default {
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
+                    {path: 'downloadClient', name: '客户端下载', divided: true, visible: this.showDownloadClient},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
@@ -749,6 +764,10 @@ export default {
             return array
         },
 
+        /**
+         * 项目模板列表
+         * @returns {Array}
+         */
         columns() {
             const array = $A.cloneJSON(this.columnTemplate);
             array.unshift({
@@ -758,6 +777,10 @@ export default {
             return array
         },
 
+        /**
+         * 项目列表
+         * @returns {Array}
+         */
         projectLists() {
             const {projectKeyValue, cacheProjects} = this;
             const data = $A.cloneJSON(cacheProjects).sort((a, b) => {
@@ -778,6 +801,10 @@ export default {
             return data;
         },
 
+        /**
+         * 最近打开的任务列表
+         * @returns {Array}
+         */
         taskBrowseLists() {
             // 直接使用组件内的响应式数据
             return this.taskBrowseHistory.slice(0, 10); // 只显示前10个
@@ -932,6 +959,9 @@ export default {
                     return;
                 case 'version':
                     emitter.emit('updateNotification', null);
+                    return;
+                case 'downloadClient':
+                    emitter.emit('openDownloadClient');
                     return;
                 case 'clearCache':
                     $A.IDBSet("clearCache", "handle").then(_ => {

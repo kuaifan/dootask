@@ -3,16 +3,10 @@
         <div v-if="showSSO" class="common-right-bottom-link" @click="useSSOLogin">
             {{ $L('使用 SSO 登录') }}
         </div>
-        <template v-if="showDown">
-            <a v-if="downloadUrl" class="common-right-bottom-link" :href="downloadUrl" target="_blank">
-                <Icon type="md-download"/>
-                {{ $L('客户端下载') }}
-            </a>
-            <div v-else-if="updateVersion && updateBottomShow && $Electron" class="common-right-bottom-link" @click="updateShow=true">
-                <Icon type="md-download"/>
-                {{ $L('更新客户端') }}
-            </div>
-        </template>
+        <a v-if="showDown && clientDownloadUrl" class="common-right-bottom-link" :href="clientDownloadUrl" target="_blank">
+            <Icon type="md-download"/>
+            {{ $L('客户端下载') }}
+        </a>
         <a v-if="showPrivacy" class="common-right-bottom-link" target="_blank" :href="$A.apiUrl('privacy')">
             《{{ $L('隐私政策') }}》
         </a>
@@ -43,6 +37,7 @@
 const VMPreview = () => import('./VMEditor/preview');
 import axios from "axios";
 import emitter from "../store/events";
+import {mapState} from "vuex";
 
 export default {
     name: 'RightBottom',
@@ -59,8 +54,6 @@ export default {
             updateShow: false,
             updateBottomShow: false,
             updateIng: false,
-
-            downloadUrl: '',
         }
     },
 
@@ -77,10 +70,12 @@ export default {
                 this.updateShow = !$A.strExists(this.updateNote, `[${this.updateVersion}-Silence]`);
             })
         }
+        emitter.on('openDownloadClient', this.openDownloadClient);
     },
 
     beforeDestroy() {
         emitter.off('updateNotification', this.onUpdateShow);
+        emitter.off('openDownloadClient', this.openDownloadClient);
     },
 
     watch: {
@@ -92,20 +87,17 @@ export default {
     },
 
     computed: {
+        ...mapState(['clientDownloadUrl']),
+
         showSSO() {
             return this.$isSoftware && ['login'].includes(this.routeName)
         },
 
         showDown() {
-            if (this.$isEEUIApp || this.windowTouch) {
-                // app或者触摸屏不显示下载链接
-                return false;
+            if (this.$Electron || this.$isEEUIApp || this.windowTouch) {
+                return false
             }
-            if (this.routeName == 'manage-dashboard' && this.windowPortrait) {
-                // 在仪表盘页面且竖屏不显示下载链接
-                return false;
-            }
-            return ['login', 'index', 'manage-dashboard'].includes(this.routeName)
+            return this.routeName === 'login'
         },
 
         showPrivacy() {
@@ -116,6 +108,12 @@ export default {
     methods: {
         onUpdateShow() {
             this.updateShow = true
+        },
+
+        openDownloadClient() {
+            if (this.clientDownloadUrl) {
+                window.open(this.clientDownloadUrl, '_blank');
+            }
         },
 
         isNotServer() {
@@ -187,7 +185,7 @@ export default {
             //
             switch (publish.provider) {
                 case 'generic':
-                    this.downloadUrl = `${publish.url}/latest`
+                    this.$store.state.clientDownloadUrl = `${publish.url}/latest`
                     break;
 
                 case 'github':
@@ -196,7 +194,7 @@ export default {
                         let cache = await $A.IDBJson(key);
                         let timeout = 600;
                         if (cache.time && cache.time + timeout > $A.dayjs().unix()) {
-                            this.downloadUrl = cache.data.html_url;
+                            this.$store.state.clientDownloadUrl = cache.data.html_url;
                             return;
                         }
                         //
@@ -210,7 +208,7 @@ export default {
                                 cache.time = $A.dayjs().unix()
                                 cache.data = data.find(({tag_name}) => this.compareVersion(this.tagVersion(tag_name), this.apiVersion) === 0) || {}
                                 $A.IDBSave(key, cache);
-                                this.downloadUrl = cache.data.html_url;
+                                this.$store.state.clientDownloadUrl = cache.data.html_url;
                             }
                         }).catch(() => {
                             this.loadIng--;
