@@ -1278,6 +1278,7 @@ export default {
                     for (let i = 0; i < containers.length; i++) {
                         containers[i].classList.remove(...Object.values(mentionMap));
                         containers[i].classList.add(mentionName);
+                        containers[i].style.zIndex = window.modalTransferIndex + 1000;
                     }
                     let mentionSourceCache = null;
                     this.getMentionSource(mentionChar, searchTerm, array => {
