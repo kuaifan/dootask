@@ -1,10 +1,8 @@
 <template>
-    <Modal
+    <AssistantModal
         v-model="showModal"
-        :width="shouldCreateNewSession ? '440px' : '600px'"
-        :mask-closable="false"
-        :footer-hide="true"
-        class-name="ai-assistant-modal">
+        :displayMode="displayMode"
+        :shouldCreateNewSession="shouldCreateNewSession">
         <div slot="header" class="ai-assistant-header">
             <div class="ai-assistant-header-title">
                 <i class="taskfont">&#xe8a1;</i>
@@ -90,6 +88,17 @@
                     </div>
                 </div>
             </div>
+            <div v-else-if="displayMode === 'chat'" class="ai-assistant-welcome" @click="onFocus">
+                <div class="ai-assistant-welcome-icon">
+                    <i class="taskfont">&#xe8a1;</i>
+                </div>
+                <div class="ai-assistant-welcome-title">
+                    欢迎使用 AI 助手
+                </div>
+                <div class="ai-assistant-welcome-swiper">
+                    <!-- Swiper 容器 -->
+                </div>
+            </div>
             <div class="ai-assistant-input">
                 <Input
                     v-model="inputValue"
@@ -131,7 +140,7 @@
                 </div>
             </div>
         </div>
-    </Modal>
+    </AssistantModal>
 </template>
 
 <script>
@@ -141,14 +150,16 @@ import {SSEClient} from "../../utils";
 import {AIBotMap, AIModelNames} from "../../utils/ai";
 import DialogMarkdown from "../../pages/manage/components/DialogMarkdown.vue";
 import FloatButton from "./float-button.vue";
+import AssistantModal from "./modal.vue";
 
 export default {
     name: 'AIAssistant',
-    components: {DialogMarkdown},
+    components: {AssistantModal, DialogMarkdown},
     floatButtonInstance: null,
     data() {
         return {
             // 弹窗状态
+            displayMode: 'modal',
             showModal: false,
             closing: false,
             loadIng: 0,
@@ -233,6 +244,13 @@ export default {
     },
     methods: {
         /**
+         * 获取输入框焦点事件
+         */
+        onFocus() {
+            this.$refs.inputRef?.focus();
+        },
+
+        /**
          * 挂载浮动按钮到 body
          */
         mountFloatButton() {
@@ -264,6 +282,25 @@ export default {
             if (!$A.isJson(params)) {
                 params = {};
             }
+            
+            const newDisplayMode = params.displayMode === 'chat' ? 'chat' : 'modal';
+            let timeout = 0;
+            if (this.showModal && this.displayMode === 'chat' && newDisplayMode === 'modal') {
+                this.showModal = false;
+                timeout = 50;
+            }
+
+            setTimeout(() => {
+                this.doOpenAssistant(params, newDisplayMode);
+            }, timeout);
+        },
+
+        /**
+         * 实际执行打开助手的逻辑
+         */
+        doOpenAssistant(params, displayMode) {
+            // 应用参数
+            this.displayMode = displayMode;
             this.inputValue = params.value || '';
             this.inputPlaceholder = params.placeholder || null;
             this.inputRows = params.rows || null;
@@ -289,7 +326,7 @@ export default {
             this.$nextTick(() => {
                 this.scheduleAutoSubmit();
                 this.scrollResponsesToBottom();
-                this.$refs.inputRef.focus();
+                this.onFocus();
             });
         },
 
@@ -1103,6 +1140,7 @@ export default {
                 this.currentSessionId = session.id;
                 this.responses = JSON.parse(JSON.stringify(session.responses));
                 this.syncResponseSeed();
+                this.scrollResponsesToBottom();
             }
         },
 
@@ -1174,261 +1212,250 @@ export default {
 </script>
 
 <style lang="scss">
-.ai-assistant-modal {
-    --apply-reasoning-before-bg: #e1e1e1;
-    .ivu-modal {
-        transition: width 0.3s, max-width 0.3s;
-        .ivu-modal-header {
-            border-bottom: none !important;
-        }
-        .ivu-modal-body {
-            padding: 0 !important;
-        }
-    }
 
-    .ai-assistant-header {
+.ai-assistant-header {
+    display: flex;
+    align-items: center;
+    margin: -11px 24px -10px 0;
+    height: 38px;
+
+    .ai-assistant-header-title {
+        flex: 1;
+        min-width: 0;
         display: flex;
         align-items: center;
-        margin: -11px 24px -10px 0;
-        height: 38px;
+        color: #303133;
+        padding-right: 12px;
+        gap: 8px;
 
-        .ai-assistant-header-title {
+        > i {
+            font-size: 18px;
+        }
+
+        > span {
             flex: 1;
             min-width: 0;
-            display: flex;
-            align-items: center;
-            color: #303133;
-            padding-right: 12px;
-            gap: 8px;
-
-            > i {
-                font-size: 18px;
-            }
-
-            > span {
-                flex: 1;
-                min-width: 0;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                font-size: 18px;
-                font-weight: 500;
-            }
-        }
-        .ai-assistant-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            
-            .ai-assistant-header-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 28px;
-                height: 28px;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: background-color 0.2s;
-                &:hover {
-                    background-color: rgba(0, 0, 0, 0.06);
-                }
-                > i {
-                    font-size: 18px;
-                }
-            }
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 18px;
+            font-weight: 500;
         }
     }
-
-    .ai-assistant-content {
+    .ai-assistant-header-actions {
         display: flex;
-        flex-direction: column;
-        max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 266px);
-        @media (height <= 900px) {
-            max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 136px);
-        }
+        align-items: center;
+        gap: 4px;
 
-        .ai-assistant-output {
-            flex: 1;
-            min-height: 0;
-            padding: 12px 24px;
-            margin-bottom: 12px;
-            border-radius: 0;
-            background: #f8f9fb;
-            border: 0;
-            overflow-y: auto;
-        }
-
-        .ai-assistant-output-item + .ai-assistant-output-item {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .ai-assistant-output-apply {
-            position: sticky;
-            top: 0;
-            right: 0;
-            z-index: 1;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            height: 26px;
-            color: #999;
-            gap: 4px;
-        }
-
-        .ai-assistant-output-icon {
-            font-size: 16px;
-            color: #52c41a;
-        }
-
-        .ai-assistant-apply-btn {
+        .ai-assistant-header-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
-            border-radius: 4px;
-            height: 26px;
-            padding: 0 8px;
-        }
-
-        .ai-assistant-output-status {
-            color: #52c41a;
-        }
-
-        .ai-assistant-output-error {
-            color: #ff4d4f;
-        }
-
-        .ai-assistant-output-meta {
-            display: flex;
-            align-items: center;
-            height: 24px;
-            margin-top: -24px;
-        }
-
-        .ai-assistant-output-model {
-            max-width: 50%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 12px;
-            font-weight: 600;
-            color: #2f54eb;
-            background: rgba(47, 84, 235, 0.08);
-            border-radius: 4px;
-            padding: 2px 8px;
-        }
-
-        .ai-assistant-output-question {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            font-size: 12px;
-            color: #666;
-            line-height: 1.4;
-            margin-top: 8px;
-        }
-
-        .ai-assistant-output-placeholder {
-            margin-top: 12px;
-            font-size: 13px;
-            color: #999;
-            padding: 8px;
+            width: 28px;
+            height: 28px;
             border-radius: 6px;
-            background: rgba(0, 0, 0, 0.02);
-        }
-
-        .ai-assistant-output-markdown {
-            margin-top: 12px;
-            font-size: 13px;
-
-            .apply-reasoning {
-                margin: 0 0 12px 0;
-                padding: 0 0 0 13px;
-                line-height: 26px;
-                position: relative;
-
-                &:before {
-                    content: "";
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    bottom: 0;
-                    width: 2px;
-                    background-color: var(--apply-reasoning-before-bg);
-                }
-
-                .reasoning-label {
-                    margin-bottom: 4px;
-                    opacity: 0.9;
-                }
-
-                .reasoning-content {
-                    opacity: 0.5;
-                    > p:last-child {
-                        margin-bottom: 0;
-                    }
-                }
-            }
-        }
-    }
-
-    .ai-assistant-input {
-        padding: 4px 16px 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-
-        .ivu-input {
-            background-color: transparent;
-            border: 0;
-            border-radius: 0;
-            box-shadow: none;
-            padding: 0 8px;
-            resize: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
             &:hover {
-                border-color: transparent;
+                background-color: rgba(0, 0, 0, 0.06);
+            }
+            > i {
+                font-size: 18px;
             }
         }
-        
-        .ivu-select-selection {
-            background-color: transparent;
-            border: 0;
-            border-radius: 0;
-            box-shadow: none;
-            padding: 0 0 0 8px;
+    }
+}
+
+.ai-assistant-content {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 266px);
+    @media (height <= 900px) {
+        max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 136px);
+    }
+
+    .ai-assistant-welcome,
+    .ai-assistant-output {
+        flex: 1;
+        min-height: 0;
+        padding: 12px 24px;
+        margin-bottom: 12px;
+        border-radius: 0;
+        background: #f8f9fb;
+        border: 0;
+        overflow-y: auto;
+    }
+
+    .ai-assistant-output-item + .ai-assistant-output-item {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .ai-assistant-output-apply {
+        position: sticky;
+        top: 0;
+        right: 0;
+        z-index: 1;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        height: 26px;
+        color: #999;
+        gap: 4px;
+    }
+
+    .ai-assistant-output-icon {
+        font-size: 16px;
+        color: #52c41a;
+    }
+
+    .ai-assistant-apply-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        border-radius: 4px;
+        height: 26px;
+        padding: 0 8px;
+    }
+
+    .ai-assistant-output-status {
+        color: #52c41a;
+    }
+
+    .ai-assistant-output-error {
+        color: #ff4d4f;
+    }
+
+    .ai-assistant-output-meta {
+        display: flex;
+        align-items: center;
+        height: 24px;
+        margin-top: -24px;
+    }
+
+    .ai-assistant-output-model {
+        max-width: 50%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
+        font-weight: 600;
+        color: #2f54eb;
+        background: rgba(47, 84, 235, 0.08);
+        border-radius: 4px;
+        padding: 2px 8px;
+    }
+
+    .ai-assistant-output-question {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: 12px;
+        color: #666;
+        line-height: 1.4;
+        margin-top: 8px;
+    }
+
+    .ai-assistant-output-placeholder {
+        margin-top: 12px;
+        font-size: 13px;
+        color: #999;
+        padding: 8px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    .ai-assistant-output-markdown {
+        margin-top: 12px;
+        font-size: 13px;
+
+        .apply-reasoning {
+            margin: 0 0 12px 0;
+            padding: 0 0 0 13px;
+            line-height: 26px;
+            position: relative;
+
+            &:before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 2px;
+                background-color: var(--apply-reasoning-before-bg);
+            }
+
+            .reasoning-label {
+                margin-bottom: 4px;
+                opacity: 0.9;
+            }
+
+            .reasoning-content {
+                opacity: 0.5;
+                > p:last-child {
+                    margin-bottom: 0;
+                }
+            }
+        }
+    }
+}
+
+.ai-assistant-input {
+    padding: 4px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .ivu-input {
+        background-color: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0 8px;
+        resize: none;
+        &:hover {
+            border-color: transparent;
         }
     }
 
-    .ai-assistant-footer {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
-        .ai-assistant-footer-models {
-            text-align: left;
-            .ivu-select-disabled {
-                .ivu-select-selection {
-                    background-color: transparent;
-                }
-            }
+    .ivu-select-selection {
+        background-color: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0 0 0 8px;
+    }
+}
+
+.ai-assistant-footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    .ai-assistant-footer-models {
+        text-align: left;
+        .ivu-select-disabled {
             .ivu-select-selection {
-                border: 0;
-                box-shadow: none;
-                .ivu-select-placeholder,
-                .ivu-select-selected-value {
-                    padding-left: 0;
-                    opacity: 0.8;
-                }
+                background-color: transparent;
             }
         }
-        .ai-assistant-footer-btns {
-            flex: 1;
-            display: flex;
-            justify-content: flex-end;
+        .ivu-select-selection {
+            border: 0;
+            box-shadow: none;
+            .ivu-select-placeholder,
+            .ivu-select-selected-value {
+                padding-left: 0;
+                opacity: 0.8;
+            }
         }
+    }
+    .ai-assistant-footer-btns {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
     }
 }
 
@@ -1507,6 +1534,93 @@ export default {
         color: #F56C6C;
     }
 }
+
+.ai-assistant-chat {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: 460px;
+    height: 80vh;
+    min-width: 380px;
+    max-width: 600px;
+    max-height: 640px;
+    background-color: #ffffff;
+    box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .ai-assistant-close {
+        position: absolute;
+        top: 6px;
+        right: 10px;
+        z-index: 1;
+        font-size: 38px;
+        color: #999;
+        cursor: pointer;
+        transition: all 0.2s;
+        &:hover {
+            color: #444;
+            transform: rotate(-90deg);
+        }
+    }
+
+    .ai-assistant-drag-handle {
+        cursor: move;
+        user-select: none;
+    }
+
+    .ai-assistant-header {
+        margin: 6px 48px 6px 16px;
+
+        .ai-assistant-header-title {
+            > span {
+                font-size: 17px;
+            }
+        }
+    }
+
+    .ai-assistant-content {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+
+        .ai-assistant-welcome {
+            .ai-assistant-welcome-icon {
+                margin-top: 12px;
+                i {
+                    font-size: 24px;
+                }
+            }
+            .ai-assistant-welcome-title {
+                margin-top: 12px;
+            }
+            .ai-assistant-welcome-swiper {
+                margin-top: 24px;
+            }
+        }
+    }
+
+    .ai-assistant-input {
+        padding: 4px 12px 12px;
+    }
+}
+
+.ai-assistant-modal {
+    --apply-reasoning-before-bg: #e1e1e1;
+    .ivu-modal {
+        transition: width 0.3s, max-width 0.3s;
+        .ivu-modal-header {
+            border-bottom: none !important;
+        }
+        .ivu-modal-body {
+            padding: 0 !important;
+        }
+    }
+}
+
 body.dark-mode-reverse {
     .ai-assistant-modal {
         --apply-reasoning-before-bg: #4e4e56;
