@@ -361,7 +361,8 @@ const $preload = async () => {
             if (mainDomain === "public") {
                 mainDomain = $A.getDomain(await $A.IDBString("cacheServerUrl"))
             }
-            if ($A.getDomain(loadHash) !== mainDomain) {
+            const loadDomain = $A.getDomain(loadHash)
+            if (loadDomain !== mainDomain && loadDomain !== window.location.host) {
                 window.location.href = loadHash;
                 return;
             }

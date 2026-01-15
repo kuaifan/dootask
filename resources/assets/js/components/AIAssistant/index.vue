@@ -1449,8 +1449,10 @@ export default {
         box-shadow: none;
         padding: 0 8px;
         resize: none;
-        &:hover {
+        &:hover,
+        &:focus {
             border-color: transparent;
+            box-shadow: none;
         }
     }
 
