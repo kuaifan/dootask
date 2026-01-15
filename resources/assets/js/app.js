@@ -357,8 +357,12 @@ const $preload = async () => {
     document.querySelector(".app-view-loading")?.setAttribute("data-visible", "false")
     window.__initializeApp = async (loadHash) => {
         if (/^https?:\/\//.test(loadHash)) {
-            if ($A.getDomain(loadHash) !== $A.mainDomain()) {
-                window.location.href = url;
+            let mainDomain = $A.mainDomain()
+            if (mainDomain === "public") {
+                mainDomain = $A.getDomain(await $A.IDBString("cacheServerUrl"))
+            }
+            if ($A.getDomain(loadHash) !== mainDomain) {
+                window.location.href = loadHash;
                 return;
             }
             loadHash = loadHash.replace(/^https?:\/\/[^\/]+/, '');
