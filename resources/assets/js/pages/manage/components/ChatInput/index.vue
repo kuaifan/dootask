@@ -2586,16 +2586,14 @@ export default {
                             if (this.taskSearchKey !== searchKey) {
                                 return;
                             }
-                            const projectId = this.getProjectId();
                             const data = (await this.$store.dispatch("call", {
                                 url: 'project/task/lists',
                                 data: {
                                     keys: {
                                         name: searchKey,
                                     },
-                                    project_id: projectId > 0 ? projectId : undefined,
                                     parent_id: -1,
-                                    scope: projectId > 0 ? undefined : 'all_project',
+                                    scope: 'all_project',
                                     pagesize: 50,
                                 },
                             }).catch(_ => {}))?.data;
