@@ -32004,18 +32004,6 @@
         "ru": "Применить этот контент"
     },
     {
-        "key": "生成中...",
-        "zh": "",
-        "zh-CHT": "生成中...",
-        "en": "Generating...",
-        "ko": "생성 중...",
-        "ja": "生成中...",
-        "de": "Wird generiert...",
-        "fr": "Génération en cours...",
-        "id": "Sedang menghasilkan...",
-        "ru": "Генерация..."
-    },
-    {
         "key": "等待 AI 回复...",
         "zh": "",
         "zh-CHT": "等待 AI 回覆...",
@@ -32626,5 +32614,89 @@
         "fr": "Recherche IA",
         "id": "Pencarian AI",
         "ru": "ИИ-поиск"
+    },
+    {
+        "key": "AI 项目助手",
+        "zh": "",
+        "zh-CHT": "AI 專案助手",
+        "en": "AI Project Assistant",
+        "ko": "AI 프로젝트 도우미",
+        "ja": "AIプロジェクトアシスタント",
+        "de": "KI-Projektassistent",
+        "fr": "Assistant IA de projet",
+        "id": "Asisten Proyek AI",
+        "ru": "ИИ-помощник по проектам"
+    },
+    {
+        "key": "AI 汇报分析",
+        "zh": "",
+        "zh-CHT": "AI 匯報分析",
+        "en": "AI Report Analysis",
+        "ko": "AI 보고서 분석",
+        "ja": "AIレポート分析",
+        "de": "KI-Berichtsanalyse",
+        "fr": "Analyse de rapports IA",
+        "id": "Analisis Laporan AI",
+        "ru": "ИИ-анализ отчётов"
+    },
+    {
+        "key": "AI 任务助手",
+        "zh": "",
+        "zh-CHT": "AI 任務助手",
+        "en": "AI Task Assistant",
+        "ko": "AI 작업 도우미",
+        "ja": "AIタスクアシスタント",
+        "de": "KI-Aufgabenassistent",
+        "fr": "Assistant IA de tâches",
+        "id": "Asisten Tugas AI",
+        "ru": "ИИ-помощник по задачам"
+    },
+    {
+        "key": "AI 消息助手",
+        "zh": "",
+        "zh-CHT": "AI 訊息助手",
+        "en": "AI Message Assistant",
+        "ko": "AI 메시지 도우미",
+        "ja": "AIメッセージアシスタント",
+        "de": "KI-Nachrichtenassistent",
+        "fr": "Assistant IA de messages",
+        "id": "Asisten Pesan AI",
+        "ru": "ИИ-помощник по сообщениям"
+    },
+    {
+        "key": "欢迎使用 AI 助手",
+        "zh": "",
+        "zh-CHT": "歡迎使用 AI 助手",
+        "en": "Welcome to the AI Assistant",
+        "ko": "AI 도우미에 오신 것을 환영합니다",
+        "ja": "AIアシスタントへようこそ",
+        "de": "Willkommen beim KI-Assistenten",
+        "fr": "Bienvenue sur l’Assistant IA",
+        "id": "Selamat datang di Asisten AI",
+        "ru": "Добро пожаловать в ИИ-помощник"
+    },
+    {
+        "key": "新建会话",
+        "zh": "",
+        "zh-CHT": "建立新對話",
+        "en": "New Conversation",
+        "ko": "새 대화",
+        "ja": "新しい会話",
+        "de": "Neues Gespräch",
+        "fr": "Nouvelle conversation",
+        "id": "Percakapan Baru",
+        "ru": "Новый диалог"
+    },
+    {
+        "key": "清空历史记录",
+        "zh": "",
+        "zh-CHT": "清空歷史記錄",
+        "en": "Clear History",
+        "ko": "기록 지우기",
+        "ja": "履歴を消去",
+        "de": "Verlauf löschen",
+        "fr": "Effacer l’historique",
+        "id": "Hapus Riwayat",
+        "ru": "Очистить историю"
     }
 ]
