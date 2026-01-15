@@ -1,29 +1,41 @@
 /**
  * AI 助手页面上下文配置
  *
- * 根据当前路由和应用状态，为 AI 助手提供针对性的系统提示词
- * 原则：诚实描述 AI 能力边界，不承诺做不到的事情
+ * 设计原则：
+ * - 提供当前页面/场景的上下文数据
+ * - 传递实体 ID 和关键信息（让 AI 能调用 MCP 工具或理解场景）
+ * - 不限定 AI 的能力范围
  */
 
 /**
  * 获取当前页面的 AI 上下文
  * @param {Object} store - Vuex store 实例
- * @returns {Object} { systemPrompt, title }
+ * @param {Object} routeParams - 路由参数
+ * @returns {Object} { systemPrompt }
  */
-export function getPageContext(store) {
+export function getPageContext(store, routeParams = {}) {
     const routeName = store.state.routeName;
 
     const contextMap = {
+        // 主要管理页面
         'manage-dashboard': getDashboardContext,
         'manage-project': getProjectContext,
         'manage-messenger': getMessengerContext,
         'manage-calendar': getCalendarContext,
         'manage-file': getFileContext,
+        // 独立页面
+        'single-task': getSingleTaskContext,
+        'single-task-content': getSingleTaskContext,
+        'single-dialog': getSingleDialogContext,
+        'single-file': getSingleFileContext,
+        'single-file-task': getSingleFileTaskContext,
+        'single-report-edit': getSingleReportEditContext,
+        'single-report-detail': getSingleReportDetailContext,
     };
 
     const getContext = contextMap[routeName];
     if (getContext) {
-        return getContext(store);
+        return getContext(store, routeParams);
     }
 
     return getDefaultContext();
@@ -41,31 +53,17 @@ function getDashboardContext(store) {
     const todoCount = dashboardTask.todo_count || 0;
     const assistCount = assistTask.length || 0;
 
-    const lines = [
-        '你是一个工作效率助手。用户正在查看仪表盘。',
-        '',
-        '当前任务概况：',
-    ];
+    const lines = ['用户正在查看工作仪表盘。'];
 
     if (overdueCount > 0 || todayCount > 0 || todoCount > 0 || assistCount > 0) {
+        lines.push('', '任务概况：');
         if (overdueCount > 0) lines.push(`- 逾期任务：${overdueCount} 个`);
         if (todayCount > 0) lines.push(`- 今日到期：${todayCount} 个`);
         if (todoCount > 0) lines.push(`- 待办任务：${todoCount} 个`);
         if (assistCount > 0) lines.push(`- 协助任务：${assistCount} 个`);
-    } else {
-        lines.push('- 暂无待办任务');
     }
 
-    lines.push(
-        '',
-        '你可以帮助用户：',
-        '- 回答任务管理和时间规划相关问题',
-        '- 根据用户描述的任务情况给出优先级建议',
-        '- 协助用户整理和规划工作思路',
-    );
-
     return {
-        title: '工作助手',
         systemPrompt: lines.join('\n'),
     };
 }
@@ -78,55 +76,49 @@ function getProjectContext(store) {
     const columns = store.state.cacheColumns || [];
     const tasks = store.state.cacheTasks || [];
 
+    if (!project.id) {
+        return {
+            systemPrompt: '用户正在查看项目列表。',
+        };
+    }
+
     const lines = [
-        '你是一个项目管理助手。用户正在查看项目详情页面。',
+        '用户正在查看项目详情页面。',
+        '',
+        '当前项目：',
+        `- project_id：${project.id}`,
     ];
 
-    if (project.id) {
-        // 项目基本信息
-        lines.push('', '当前项目：');
-        lines.push(`- project_id：${project.id}`);
-        if (project.name) {
-            lines.push(`- 名称：${project.name}`);
-        }
+    if (project.name) {
+        lines.push(`- 名称：${project.name}`);
+    }
+    if (project.desc) {
+        const desc = project.desc.length > 200 ? project.desc.substring(0, 200) + '...' : project.desc;
+        lines.push(`- 描述：${desc}`);
+    }
 
-        if (project.desc) {
-            const desc = project.desc.length > 200 ? project.desc.substring(0, 200) + '...' : project.desc;
-            lines.push(`- 描述：${desc}`);
-        }
+    // 任务统计
+    const projectTasks = tasks.filter(t => t.project_id === project.id);
+    if (projectTasks.length > 0) {
+        const completedCount = projectTasks.filter(t => t.complete_at).length;
+        const overdueCount = projectTasks.filter(t => !t.complete_at && t.end_at && new Date(t.end_at) < new Date()).length;
 
-        // 任务统计
-        const projectTasks = tasks.filter(t => t.project_id === project.id);
-        if (projectTasks.length > 0) {
-            const completedCount = projectTasks.filter(t => t.complete_at).length;
-            const overdueCount = projectTasks.filter(t => !t.complete_at && t.end_at && new Date(t.end_at) < new Date()).length;
-
-            lines.push('', '任务统计：');
-            lines.push(`- 总任务：${projectTasks.length} 个`);
-            lines.push(`- 已完成：${completedCount} 个`);
-            if (overdueCount > 0) {
-                lines.push(`- 已逾期：${overdueCount} 个`);
-            }
-        }
-
-        // 看板列
-        const projectColumns = columns.filter(c => c.project_id === project.id);
-        if (projectColumns.length > 0) {
-            const columnNames = projectColumns.map(c => c.name).join('、');
-            lines.push('', `看板列：${columnNames}`);
+        lines.push('', '任务统计：');
+        lines.push(`- 总任务：${projectTasks.length} 个`);
+        lines.push(`- 已完成：${completedCount} 个`);
+        if (overdueCount > 0) {
+            lines.push(`- 已逾期：${overdueCount} 个`);
         }
     }
 
-    lines.push(
-        '',
-        '你可以帮助用户：',
-        '- 协助拆解用户描述的需求为具体任务',
-        '- 回答项目管理方法和最佳实践问题',
-        '- 根据用户提供的信息给出排期建议',
-    );
+    // 看板列
+    const projectColumns = columns.filter(c => c.project_id === project.id);
+    if (projectColumns.length > 0) {
+        const columnNames = projectColumns.map(c => c.name).join('、');
+        lines.push('', `看板列：${columnNames}`);
+    }
 
     return {
-        title: '项目助手',
         systemPrompt: lines.join('\n'),
     };
 }
@@ -139,32 +131,26 @@ function getMessengerContext(store) {
     const dialogs = store.state.cacheDialogs || [];
     const dialog = dialogs.find(d => d.id === dialogId);
 
-    const lines = [
-        '你是一个沟通协作助手。用户正在使用消息功能。',
-    ];
-
-    if (dialog) {
-        const dialogType = dialog.type === 'group' ? '群聊' : '私聊';
-        lines.push('', '当前对话：');
-        lines.push(`- dialog_id：${dialog.id}`);
-        lines.push(`- 类型：${dialogType}`);
-        if (dialog.name) {
-            lines.push(`- 名称：${dialog.name}`);
-        }
+    if (!dialog) {
+        return {
+            systemPrompt: '用户正在查看消息列表。',
+        };
     }
 
-    lines.push(
+    const dialogType = dialog.type === 'group' ? '群聊' : '私聊';
+    const lines = [
+        '用户正在使用消息功能。',
         '',
-        '你可以帮助用户：',
-        '- 润色和优化用户输入的消息内容',
-        '- 根据用户描述的场景生成得体的回复',
-        '- 翻译消息内容',
-        '',
-        '请保持回复简洁、专业、得体。',
-    );
+        '当前对话：',
+        `- dialog_id：${dialog.id}`,
+        `- 类型：${dialogType}`,
+    ];
+
+    if (dialog.name) {
+        lines.push(`- 名称：${dialog.name}`);
+    }
 
     return {
-        title: '沟通助手',
         systemPrompt: lines.join('\n'),
     };
 }
@@ -173,18 +159,8 @@ function getMessengerContext(store) {
  * 日历上下文
  */
 function getCalendarContext() {
-    const lines = [
-        '你是一个时间管理助手。用户正在查看日历。',
-        '',
-        '你可以帮助用户：',
-        '- 回答时间管理和日程规划相关问题',
-        '- 根据用户描述的安排给出优化建议',
-        '- 协助用户合理安排会议和任务时间',
-    ];
-
     return {
-        title: '日程助手',
-        systemPrompt: lines.join('\n'),
+        systemPrompt: '用户正在查看日历。',
     };
 }
 
@@ -192,35 +168,148 @@ function getCalendarContext() {
  * 文件管理上下文
  */
 function getFileContext() {
-    const lines = [
-        '你是一个文件管理助手。用户正在查看文件管理页面。',
-        '',
-        '你可以帮助用户：',
-        '- 回答文件整理和分类相关问题',
-        '- 根据用户描述建议文件命名和组织方式',
-    ];
-
     return {
-        title: '文件助手',
-        systemPrompt: lines.join('\n'),
+        systemPrompt: '用户正在查看文件管理页面。',
     };
 }
 
 /**
- * 默认上下文（通用）
+ * 单任务页面上下文
  */
-function getDefaultContext() {
-    const lines = [
-        '你是 DooTask 的 AI 助手。',
-        '',
-        '你可以帮助用户：',
-        '- 回答任务管理和项目协作相关问题',
-        '- 提供工作效率和方法论建议',
-        '- 协助处理各种工作事务',
-    ];
+function getSingleTaskContext(store, routeParams) {
+    const taskId = routeParams.taskId;
+
+    if (!taskId) {
+        return {
+            systemPrompt: '用户正在查看任务页面。',
+        };
+    }
 
     return {
-        title: 'AI 助手',
-        systemPrompt: lines.join('\n'),
+        systemPrompt: [
+            '用户正在查看任务详情页面。',
+            '',
+            '当前任务：',
+            `- task_id：${taskId}`,
+        ].join('\n'),
+    };
+}
+
+/**
+ * 单对话页面上下文
+ */
+function getSingleDialogContext(store, routeParams) {
+    const dialogId = routeParams.dialogId;
+
+    if (!dialogId) {
+        return {
+            systemPrompt: '用户正在查看对话页面。',
+        };
+    }
+
+    return {
+        systemPrompt: [
+            '用户正在查看对话窗口。',
+            '',
+            '当前对话：',
+            `- dialog_id：${dialogId}`,
+        ].join('\n'),
+    };
+}
+
+/**
+ * 单文件页面上下文
+ */
+function getSingleFileContext(store, routeParams) {
+    const fileId = routeParams.codeOrFileId;
+
+    if (!fileId) {
+        return {
+            systemPrompt: '用户正在查看文件页面。',
+        };
+    }
+
+    return {
+        systemPrompt: [
+            '用户正在查看文件。',
+            '',
+            '当前文件：',
+            `- file_id：${fileId}`,
+        ].join('\n'),
+    };
+}
+
+/**
+ * 任务附件文件页面上下文
+ */
+function getSingleFileTaskContext(store, routeParams) {
+    const fileId = routeParams.fileId;
+
+    if (!fileId) {
+        return {
+            systemPrompt: '用户正在查看文件页面。',
+        };
+    }
+
+    return {
+        systemPrompt: [
+            '用户正在查看任务附件。',
+            '',
+            '当前文件：',
+            `- file_id：${fileId}`,
+        ].join('\n'),
+    };
+}
+
+/**
+ * 工作汇报编辑页面上下文
+ */
+function getSingleReportEditContext(store, routeParams) {
+    const reportId = routeParams.reportEditId;
+
+    if (!reportId) {
+        return {
+            systemPrompt: '用户正在编辑工作汇报。',
+        };
+    }
+
+    return {
+        systemPrompt: [
+            '用户正在编辑工作汇报。',
+            '',
+            '当前汇报：',
+            `- report_id：${reportId}`,
+        ].join('\n'),
+    };
+}
+
+/**
+ * 工作汇报详情页面上下文
+ */
+function getSingleReportDetailContext(store, routeParams) {
+    const reportId = routeParams.reportDetailId;
+
+    if (!reportId) {
+        return {
+            systemPrompt: '用户正在查看工作汇报。',
+        };
+    }
+
+    return {
+        systemPrompt: [
+            '用户正在查看工作汇报。',
+            '',
+            '当前汇报：',
+            `- report_id：${reportId}`,
+        ].join('\n'),
+    };
+}
+
+/**
+ * 默认上下文
+ */
+function getDefaultContext() {
+    return {
+        systemPrompt: '',
     };
 }

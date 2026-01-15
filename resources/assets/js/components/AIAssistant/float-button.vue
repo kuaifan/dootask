@@ -252,7 +252,8 @@ export default {
          * @returns {(string|*)[][]}
          */
         handleBeforeSend(context = []) {
-            const {systemPrompt} = getPageContext(this.$store);
+            const routeParams = this.$route?.params || {};
+            const {systemPrompt} = getPageContext(this.$store, routeParams);
 
             const prepared = [
                 ['system', withLanguagePreferencePrompt(systemPrompt)],
