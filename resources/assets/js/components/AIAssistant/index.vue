@@ -56,7 +56,7 @@
                     class="ai-assistant-output-item">
                     <div class="ai-assistant-output-apply">
                         <template v-if="response.status === 'error'">
-                            <span class="ai-assistant-output-error">{{ response.error || $L('发送失败') }}</span>
+                            <span class="ai-assistant-output-error">{{ $L('发送失败') }}</span>
                         </template>
                         <template v-else-if="response.rawOutput">
                             <Button
@@ -661,7 +661,11 @@ export default {
                         this.handleStreamChunk(responseEntry, type, event);
                         break;
                     case 'done':
-                        if (responseEntry && responseEntry.status !== 'error' && responseEntry.rawOutput) {
+                        // 检查 done 事件是否携带错误信息
+                        const donePayload = this.parseStreamPayload(event);
+                        if (donePayload && donePayload.error) {
+                            this.markResponseError(responseEntry, donePayload.error);
+                        } else if (responseEntry && responseEntry.status !== 'error' && responseEntry.rawOutput) {
                             responseEntry.status = 'completed';
                         }
                         this.releaseSSEClient(sse);
