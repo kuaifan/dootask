@@ -205,8 +205,8 @@ export default {
             this.savePosition();
             this.dragging = false;
 
-            // 判断是否为点击（移动距离小于5px 或 按下时间小于200ms）
-            if (moveDistance < 5 || duration < 200) {
+            // 判断是否为点击（移动距离小于5px 且 按下时间小于200ms）
+            if (moveDistance < 5 && duration < 200) {
                 this.onClick();
             }
         },

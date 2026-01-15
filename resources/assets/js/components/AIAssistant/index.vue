@@ -70,8 +70,8 @@
                             </Button>
                         </template>
                         <template v-else>
-                            <Icon type="ios-sync" class="ai-assistant-output-icon icon-loading"/>
-                            <span class="ai-assistant-output-status">{{ loadingText || $L('生成中...') }}</span>
+                            <Icon type="ios-loading" class="ai-assistant-output-icon icon-loading"/>
+                            <span v-if="loadingText" class="ai-assistant-output-status">{{ loadingText }}</span>
                         </template>
                     </div>
                     <div class="ai-assistant-output-meta">
@@ -90,13 +90,22 @@
             </div>
             <div v-else-if="displayMode === 'chat'" class="ai-assistant-welcome" @click="onFocus">
                 <div class="ai-assistant-welcome-icon">
-                    <i class="taskfont">&#xe8a1;</i>
+                    <svg class="no-dark-content" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M385.80516777 713.87417358c-12.76971517 0-24.13100586-7.79328205-28.82575409-19.62404756l-48.91927648-123.9413531c-18.40341303-46.75969229-55.77360888-84.0359932-102.53330118-102.53330117l-123.94135309-48.91927649c-11.83076552-4.69474822-19.62404757-16.05603892-19.62404757-28.8257541s7.79328205-24.13100586 19.62404757-28.82575407l123.94135309-48.91927649c46.75969229-18.40341303 84.0359932-55.77360888 102.53330118-102.53330119l48.91927648-123.94135308c4.69474822-11.83076552 16.05603892-19.62404757 28.8257541-19.62404757s24.13100586 7.79328205 28.82575408 19.62404757l48.91927648 123.94135308c18.40341303 46.75969229 55.77360888 84.0359932 102.53330118 102.53330119l123.94135309 48.91927649c11.83076552 4.69474822 19.62404757 16.05603892 19.62404757 28.82575407 0 12.76971517-7.79328205 24.13100586-19.62404757 28.8257541l-123.94135309 48.91927649c-46.75969229 18.40341303-84.0359932 55.77360888-102.53330118 102.53330117l-48.91927648 123.9413531c-4.69474822 11.83076552-16.14993388 19.62404757-28.82575408 19.62404756zM177.45224165 390.12433614l50.89107073 20.0935224c62.62794129 24.69437565 112.67395736 74.74039171 137.368333 137.36833299l20.09352239 50.89107073 20.0935224-50.89107073c24.69437565-62.62794129 74.74039171-112.67395736 137.368333-137.36833299l50.89107072-20.0935224-50.89107073-20.09352239c-62.62794129-24.69437565-112.67395736-74.74039171-137.36833299-137.36833301l-20.09352239-50.89107074-20.0935224 50.89107074c-24.69437565 62.62794129-74.74039171 112.67395736-137.368333 137.36833301l-50.89107073 20.09352239zM771.33789183 957.62550131c-12.76971517 0-24.13100586-7.79328205-28.82575409-19.62404758l-26.6661699-67.6043744c-8.63833672-21.87752672-26.10280012-39.34199011-47.98032684-47.98032684l-67.60437441-26.6661699c-11.83076552-4.69474822-19.62404757-16.05603892-19.62404757-28.82575409s7.79328205-24.13100586 19.62404757-28.82575409l67.60437441-26.6661699c21.87752672-8.63833672 39.34199011-26.10280012 47.98032684-47.98032685l26.6661699-67.6043744c4.69474822-11.83076552 16.05603892-19.62404757 28.82575409-19.62404757s24.13100586 7.79328205 28.82575409 19.62404757l26.66616991 67.6043744c8.63833672 21.87752672 26.10280012 39.34199011 47.98032684 47.98032685l67.6043744 26.6661699c11.83076552 4.69474822 19.62404757 16.05603892 19.62404757 28.82575409s-7.79328205 24.13100586-19.62404757 28.82575409l-67.6043744 26.6661699c-21.87752672 8.63833672-39.34199011 26.10280012-47.98032684 47.98032684l-26.66616991 67.6043744c-4.69474822 11.83076552-16.14993388 19.62404757-28.82575409 19.62404758z m-75.58544639-190.70067281c33.61439727 14.83540438 60.75004201 41.87715415 75.49155143 75.49155143 14.83540438-33.61439727 41.87715415-60.75004201 75.49155142-75.49155143-33.61439727-14.83540438-60.75004201-41.87715415-75.49155142-75.49155143-14.74150942 33.61439727-41.87715415 60.75004201-75.49155143 75.49155143z"/>
+                    </svg>
                 </div>
                 <div class="ai-assistant-welcome-title">
-                    欢迎使用 AI 助手
+                    {{ $L('欢迎使用 AI 助手') }}
                 </div>
-                <div class="ai-assistant-welcome-swiper">
-                    <!-- Swiper 容器 -->
+                <div class="ai-assistant-welcome-prompts">
+                    <div
+                        v-for="(prompt, index) in welcomePrompts"
+                        :key="index"
+                        class="ai-assistant-prompt-card"
+                        @click="onPromptClick(prompt)">
+                        <span v-if="prompt.svg" class="ai-assistant-prompt-icon no-dark-content" v-html="prompt.svg"></span>
+                        <span>{{ prompt.text }}</span>
+                    </div>
                 </div>
             </div>
             <div class="ai-assistant-input">
@@ -151,6 +160,7 @@ import {AIBotMap, AIModelNames} from "../../utils/ai";
 import DialogMarkdown from "../../pages/manage/components/DialogMarkdown.vue";
 import FloatButton from "./float-button.vue";
 import AssistantModal from "./modal.vue";
+import {getWelcomePrompts} from "./welcome-prompts";
 
 export default {
     name: 'AIAssistant',
@@ -236,6 +246,9 @@ export default {
         hasSessionHistory() {
             return this.currentSessionList.length > 0;
         },
+        welcomePrompts() {
+            return getWelcomePrompts(this.$store, this.$route?.params || {});
+        },
     },
     watch: {
         inputModel(value) {
@@ -248,6 +261,19 @@ export default {
          */
         onFocus() {
             this.$refs.inputRef?.focus();
+        },
+
+        /**
+         * 点击快捷提示，填入输入框
+         */
+        onPromptClick(prompt) {
+            if (!prompt || !prompt.text) {
+                return;
+            }
+            this.inputValue = prompt.text;
+            this.$nextTick(() => {
+                this.onFocus();
+            });
         },
 
         /**
@@ -1220,7 +1246,6 @@ export default {
 </script>
 
 <style lang="scss">
-
 .ai-assistant-header {
     display: flex;
     align-items: center;
@@ -1568,6 +1593,8 @@ export default {
         color: #999;
         cursor: pointer;
         transition: all 0.2s;
+        border-radius: 50%;
+        overflow: hidden;
         &:hover {
             color: #444;
             transform: rotate(-90deg);
@@ -1596,17 +1623,93 @@ export default {
         flex-direction: column;
 
         .ai-assistant-welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            @media (max-height: 650px) {
+                justify-content: normal;
+            }
+
             .ai-assistant-welcome-icon {
-                margin-top: 12px;
-                i {
-                    font-size: 24px;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 52px;
+                height: 52px;
+                border-radius: 50%;
+                background: #8bcf70;
+                margin-bottom: 24px;
+
+                svg {
+                    width: 28px;
+                    height: 28px;
+                    fill: #fff;
                 }
             }
+
             .ai-assistant-welcome-title {
-                margin-top: 12px;
+                font-size: 16px;
+                margin-bottom: 24px;
+                font-weight: 500;
+                color: #303133;
             }
-            .ai-assistant-welcome-swiper {
-                margin-top: 24px;
+
+            .ai-assistant-welcome-prompts {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+                max-width: 100%;
+                padding: 0 8px;
+            }
+
+            .ai-assistant-prompt-card {
+                min-width: 0;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: #fff;
+                border: 1px solid #e8e8e8;
+                border-radius: 8px;
+                color: #303133;
+                cursor: pointer;
+                transition: all 0.2s;
+                padding: 8px 12px;
+                font-size: 13px;
+
+                &:hover {
+                    border-color: #8bcf70;
+                    box-shadow: 0 2px 8px rgba(139, 207, 112, 0.15);
+                }
+
+                &:active {
+                    transform: scale(0.98);
+                }
+
+                .ai-assistant-prompt-icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 16px;
+                    height: 16px;
+                    flex-shrink: 0;
+
+                    svg {
+                        width: 100%;
+                        height: 100%;
+                        stroke: #8bcf70;
+                    }
+                }
+
+                > span:last-child {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
             }
         }
     }
@@ -1634,6 +1737,15 @@ body.dark-mode-reverse {
         .ai-assistant-welcome,
         .ai-assistant-output {
             background-color: #f5f5f5;
+        }
+
+        .ai-assistant-prompt-card {
+            background: #fff;
+            border-color: #d9d9d9;
+
+            &:hover {
+                background: rgba(102, 126, 234, 0.06);
+            }
         }
     }
     .ai-assistant-chat {

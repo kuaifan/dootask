@@ -93,15 +93,17 @@ export default {
         /**
          * 处理 dootask:// 协议链接
          * 格式: dootask://type/id 或 dootask://type/id1/id2
+         * 文件链接支持: dootask://file/123 (数字ID) 或 dootask://file/OSwxLHY3ZlN2R245 (base64编码)
          */
         handleDooTaskLink(href) {
-            const match = href.match(/^dootask:\/\/(\w+)\/(\d+)(?:\/(\d+))?$/);
+            const match = href.match(/^dootask:\/\/(\w+)\/([^/]+)(?:\/(\d+))?$/);
             if (!match) {
                 return;
             }
 
             const [, type, id, id2] = match;
-            const numId = parseInt(id, 10);
+            const isNumericId = /^\d+$/.test(id);
+            const numId = isNumericId ? parseInt(id, 10) : null;
             const numId2 = id2 ? parseInt(id2, 10) : null;
 
             switch (type) {
@@ -115,12 +117,18 @@ export default {
                     break;
 
                 case 'file':
-                    this.beforeNavigate?.();
-                    this.goForward({ name: 'manage-file', params: { folderId: 0, fileId: null, shakeId: numId } });
-                    this.$store.state.fileShakeId = numId;
-                    setTimeout(() => {
-                        this.$store.state.fileShakeId = 0;
-                    }, 600);
+                    if (isNumericId) {
+                        // 数字ID：跳转到文件列表并高亮
+                        this.beforeNavigate?.();
+                        this.goForward({ name: 'manage-file', params: { folderId: 0, fileId: null, shakeId: numId } });
+                        this.$store.state.fileShakeId = numId;
+                        setTimeout(() => {
+                            this.$store.state.fileShakeId = 0;
+                        }, 600);
+                    } else {
+                        // 非数字ID（如base64编码）：打开新窗口预览
+                        window.open($A.mainUrl('single/file/' + id));
+                    }
                     break;
 
                 case 'contact':
