@@ -572,7 +572,7 @@ const renderer = {
     },
 }
 
-const onRenderer = (mainWindow) => {
+const onRenderer = (getMainWindow) => {
     ipcMain.on("rendererReq", async (event, args) => {
         try {
             let ret = null;
@@ -651,7 +651,7 @@ const onRenderer = (mainWindow) => {
                     ret = await electronDown.updateWindow(args.language, args.theme);
                     break;
                 case 'createDownload':
-                    ret = await electronDown.createDownload(mainWindow, args.url, args.options || {});
+                    ret = await electronDown.createDownload(getMainWindow(), args.url, args.options || {});
                     break;
                 case 'watchFile':
                     ret = await renderer.watchFile(args.path);

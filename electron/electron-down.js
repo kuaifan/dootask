@@ -2,7 +2,7 @@ const {BrowserWindow, screen, shell, ipcMain} = require('electron')
 const fs = require('fs');
 const path = require('path');
 const loger = require("electron-log");
-const {default: electronDl, download, CancelError} = require("@dootask/electron-dl");
+const {default: electronDl, download, CancelError, InterruptedError} = require("@dootask/electron-dl");
 const utils = require("./lib/utils");
 const {DownloadManager, DownloadStore} = require("./lib/download-manager");
 
@@ -116,10 +116,12 @@ async function createDownload(window_, url, options = {}) {
     try {
         return await download(window_, url, options);
     } catch (error) {
-        // electron-dl rejects with CancelError when a download is cancelled; treat it as expected.
+        // electron-dl rejects with CancelError/InterruptedError; treat them as expected.
         const isCancelError = (typeof CancelError === 'function' && error instanceof CancelError)
             || error?.name === 'CancelError';
-        if (!isCancelError) {
+        const isInterruptedError = (typeof InterruptedError === 'function' && error instanceof InterruptedError)
+            || error?.name === 'InterruptedError';
+        if (!isCancelError && !isInterruptedError) {
             throw error;
         }
         return null;

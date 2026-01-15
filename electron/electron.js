@@ -1060,4 +1060,4 @@ ipcMain.on('updateQuitAndInstall', (event, args) => {
 //================================================================
 
 onExport()
-onRenderer(mainWindow)
+onRenderer(() => mainWindow)
