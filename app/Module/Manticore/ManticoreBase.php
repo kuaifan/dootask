@@ -182,6 +182,63 @@ class ManticoreBase
     }
 
     /**
+     * 直接执行 SQL（不使用参数绑定）
+     * 用于包含 MVA 或向量字段的 INSERT 语句，因为 Manticore 的 prepared statement 不支持括号表达式
+     *
+     * @param string $sql 完整的 SQL 语句（所有值已内联）
+     * @return bool 是否成功
+     */
+    public function executeRaw(string $sql): bool
+    {
+        $pdo = $this->getConnection();
+        if (!$pdo) {
+            return false;
+        }
+
+        try {
+            $pdo->exec($sql);
+            return true;
+        } catch (PDOException $e) {
+            Log::error('Manticore executeRaw error: ' . $e->getMessage(), [
+                'sql' => $sql,
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * 转义 SQL 字符串值（用于不使用参数绑定的场景）
+     *
+     * @param mixed $value 要转义的值
+     * @return string 转义后的值（包含引号）
+     */
+    public function quoteValue($value): string
+    {
+        $pdo = $this->getConnection();
+        if (!$pdo) {
+            // Fallback: 手动转义
+            if (is_null($value)) {
+                return 'NULL';
+            }
+            if (is_int($value) || is_float($value)) {
+                return (string)$value;
+            }
+            return "'" . addslashes((string)$value) . "'";
+        }
+
+        if (is_null($value)) {
+            return 'NULL';
+        }
+        if (is_int($value)) {
+            return (string)$value;
+        }
+        if (is_float($value)) {
+            return (string)$value;
+        }
+        return $pdo->quote((string)$value);
+    }
+
+    /**
      * 执行 SQL（不返回结果）
      *
      * @param string $sql SQL语句
@@ -578,45 +635,9 @@ class ManticoreBase
      */
     public static function upsertFileVector(array $data): bool
     {
-        $instance = new self();
-
-        $fileId = $data['file_id'] ?? 0;
-        if ($fileId <= 0) {
-            return false;
-        }
-
-        // 先尝试删除已存在的记录
-        $instance->execute("DELETE FROM file_vectors WHERE file_id = ?", [$fileId]);
-
-        // 构建 allowed_users MVA 值
-        $allowedUsers = $data['allowed_users'] ?? [];
-        $allowedUsersStr = !empty($allowedUsers) ? '(' . implode(',', array_map('intval', $allowedUsers)) . ')' : '()';
-
-        // 插入新记录
-        $vectorValue = $data['content_vector'] ?? null;
-        if ($vectorValue) {
-            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-            $sql = "INSERT INTO file_vectors 
-                    (id, file_id, userid, pshare, file_name, file_type, file_ext, content, allowed_users, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorValue})";
-        } else {
-            $sql = "INSERT INTO file_vectors 
-                    (id, file_id, userid, pshare, file_name, file_type, file_ext, content, allowed_users)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr})";
-        }
-
-        $params = [
-            $fileId,
-            $fileId,
-            $data['userid'] ?? 0,
-            $data['pshare'] ?? 0,
-            $data['file_name'] ?? '',
-            $data['file_type'] ?? '',
-            $data['file_ext'] ?? '',
-            $data['content'] ?? ''
-        ];
-
-        return $instance->execute($sql, $params);
+        // 确保 id 字段与 file_id 一致
+        $data['id'] = $data['file_id'] ?? 0;
+        return self::upsertVector('file', $data);
     }
 
     /**
@@ -875,50 +896,9 @@ class ManticoreBase
      */
     public static function upsertUserVector(array $data): bool
     {
-        $instance = new self();
-
-        $userid = $data['userid'] ?? 0;
-        if ($userid <= 0) {
-            return false;
-        }
-
-        // 先删除已存在的记录
-        $instance->execute("DELETE FROM user_vectors WHERE userid = ?", [$userid]);
-
-        // 插入新记录
-        $vectorValue = $data['content_vector'] ?? null;
-        if ($vectorValue) {
-            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-            $sql = "INSERT INTO user_vectors
-                    (id, userid, nickname, email, profession, tags, introduction, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, {$vectorValue})";
-
-            $params = [
-                $userid,
-                $userid,
-                $data['nickname'] ?? '',
-                $data['email'] ?? '',
-                $data['profession'] ?? '',
-                $data['tags'] ?? '',
-                $data['introduction'] ?? ''
-            ];
-        } else {
-            $sql = "INSERT INTO user_vectors
-                    (id, userid, nickname, email, profession, tags, introduction)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-            $params = [
-                $userid,
-                $userid,
-                $data['nickname'] ?? '',
-                $data['email'] ?? '',
-                $data['profession'] ?? '',
-                $data['tags'] ?? '',
-                $data['introduction'] ?? ''
-            ];
-        }
-
-        return $instance->execute($sql, $params);
+        // 确保 id 字段与 userid 一致
+        $data['id'] = $data['userid'] ?? 0;
+        return self::upsertVector('user', $data);
     }
 
     /**
@@ -1136,43 +1116,9 @@ class ManticoreBase
      */
     public static function upsertProjectVector(array $data): bool
     {
-        $instance = new self();
-
-        $projectId = $data['project_id'] ?? 0;
-        if ($projectId <= 0) {
-            return false;
-        }
-
-        // 先删除已存在的记录
-        $instance->execute("DELETE FROM project_vectors WHERE project_id = ?", [$projectId]);
-
-        // 构建 allowed_users MVA 值
-        $allowedUsers = $data['allowed_users'] ?? [];
-        $allowedUsersStr = !empty($allowedUsers) ? '(' . implode(',', array_map('intval', $allowedUsers)) . ')' : '()';
-
-        // 插入新记录
-        $vectorValue = $data['content_vector'] ?? null;
-        if ($vectorValue) {
-            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-            $sql = "INSERT INTO project_vectors 
-                    (id, project_id, userid, personal, project_name, project_desc, allowed_users, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorValue})";
-        } else {
-            $sql = "INSERT INTO project_vectors 
-                    (id, project_id, userid, personal, project_name, project_desc, allowed_users)
-                    VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr})";
-        }
-
-        $params = [
-            $projectId,
-            $projectId,
-            $data['userid'] ?? 0,
-            $data['personal'] ?? 0,
-            $data['project_name'] ?? '',
-            $data['project_desc'] ?? ''
-        ];
-
-        return $instance->execute($sql, $params);
+        // 确保 id 字段与 project_id 一致
+        $data['id'] = $data['project_id'] ?? 0;
+        return self::upsertVector('project', $data);
     }
 
     /**
@@ -1420,45 +1366,9 @@ class ManticoreBase
      */
     public static function upsertTaskVector(array $data): bool
     {
-        $instance = new self();
-
-        $taskId = $data['task_id'] ?? 0;
-        if ($taskId <= 0) {
-            return false;
-        }
-
-        // 先删除已存在的记录
-        $instance->execute("DELETE FROM task_vectors WHERE task_id = ?", [$taskId]);
-
-        // 构建 allowed_users MVA 值
-        $allowedUsers = $data['allowed_users'] ?? [];
-        $allowedUsersStr = !empty($allowedUsers) ? '(' . implode(',', array_map('intval', $allowedUsers)) . ')' : '()';
-
-        // 插入新记录
-        $vectorValue = $data['content_vector'] ?? null;
-        if ($vectorValue) {
-            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-            $sql = "INSERT INTO task_vectors 
-                    (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, allowed_users, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr}, {$vectorValue})";
-        } else {
-            $sql = "INSERT INTO task_vectors 
-                    (id, task_id, project_id, userid, visibility, task_name, task_desc, task_content, allowed_users)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, {$allowedUsersStr})";
-        }
-
-        $params = [
-            $taskId,
-            $taskId,
-            $data['project_id'] ?? 0,
-            $data['userid'] ?? 0,
-            $data['visibility'] ?? 1,
-            $data['task_name'] ?? '',
-            $data['task_desc'] ?? '',
-            $data['task_content'] ?? ''
-        ];
-
-        return $instance->execute($sql, $params);
+        // 确保 id 字段与 task_id 一致
+        $data['id'] = $data['task_id'] ?? 0;
+        return self::upsertVector('task', $data);
     }
 
     /**
@@ -1725,44 +1635,9 @@ class ManticoreBase
      */
     public static function upsertMsgVector(array $data): bool
     {
-        $instance = new self();
-
-        $msgId = $data['msg_id'] ?? 0;
-        if ($msgId <= 0) {
-            return false;
-        }
-
-        // 先删除已存在的记录
-        $instance->execute("DELETE FROM msg_vectors WHERE msg_id = ?", [$msgId]);
-
-        // 构建 allowed_users MVA 值
-        $allowedUsers = $data['allowed_users'] ?? [];
-        $allowedUsersStr = !empty($allowedUsers) ? '(' . implode(',', array_map('intval', $allowedUsers)) . ')' : '()';
-
-        // 插入新记录
-        $vectorValue = $data['content_vector'] ?? null;
-        if ($vectorValue) {
-            $vectorValue = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-            $sql = "INSERT INTO msg_vectors 
-                    (id, msg_id, dialog_id, userid, msg_type, content, allowed_users, created_at, content_vector)
-                    VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, ?, {$vectorValue})";
-        } else {
-            $sql = "INSERT INTO msg_vectors 
-                    (id, msg_id, dialog_id, userid, msg_type, content, allowed_users, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, {$allowedUsersStr}, ?)";
-        }
-
-        $params = [
-            $msgId,
-            $msgId,
-            $data['dialog_id'] ?? 0,
-            $data['userid'] ?? 0,
-            $data['msg_type'] ?? 'text',
-            $data['content'] ?? '',
-            $data['created_at'] ?? time()
-        ];
-
-        return $instance->execute($sql, $params);
+        // 确保 id 字段与 msg_id 一致
+        $data['id'] = $data['msg_id'] ?? 0;
+        return self::upsertVector('msg', $data);
     }
 
     /**
@@ -1883,6 +1758,14 @@ class ManticoreBase
     // ==============================
 
     /**
+     * 数值类型字段列表（用于 SQL 值构建时判断是否需要引号）
+     */
+    private const NUMERIC_FIELDS = [
+        'id', 'userid', 'pshare', 'visibility', 'personal',
+        'msg_id', 'file_id', 'task_id', 'project_id', 'dialog_id', 'created_at'
+    ];
+
+    /**
      * 向量表配置
      * 定义各类型的表名、主键字段、普通字段、MVA字段
      */
@@ -1918,6 +1801,77 @@ class ManticoreBase
             'mva_fields' => [],
         ],
     ];
+
+    /**
+     * 通用向量插入方法
+     *
+     * 使用 executeRaw 直接执行 SQL，避免 Manticore prepared statement
+     * 无法解析 MVA 和向量字段括号语法的问题。
+     *
+     * @param string $type 类型: msg/file/task/project/user
+     * @param array $data 数据，键名对应字段名
+     * @return bool 是否成功
+     */
+    public static function upsertVector(string $type, array $data): bool
+    {
+        if (!isset(self::VECTOR_TABLE_CONFIG[$type])) {
+            return false;
+        }
+
+        $config = self::VECTOR_TABLE_CONFIG[$type];
+        $table = $config['table'];
+        $pk = $config['pk'];
+        $fields = $config['fields'];
+        $mvaFields = $config['mva_fields'];
+
+        // 检查主键
+        $pkValue = $data[$pk] ?? 0;
+        if ($pkValue <= 0) {
+            return false;
+        }
+
+        $instance = new self();
+
+        // 先删除已存在的记录
+        $instance->execute("DELETE FROM {$table} WHERE {$pk} = ?", [$pkValue]);
+
+        // 构建字段列表和值
+        $fieldList = [];
+        $valueList = [];
+
+        // 处理普通字段
+        foreach ($fields as $field) {
+            $fieldList[] = $field;
+            $value = $data[$field] ?? ($field === 'created_at' ? time() : (in_array($field, self::NUMERIC_FIELDS) ? 0 : ''));
+
+            if (in_array($field, self::NUMERIC_FIELDS)) {
+                $valueList[] = (int)$value;
+            } else {
+                $valueList[] = $instance->quoteValue($value);
+            }
+        }
+
+        // 处理 MVA 字段
+        foreach ($mvaFields as $mvaField) {
+            $fieldList[] = $mvaField;
+            $mvaData = $data[$mvaField] ?? [];
+            $valueList[] = !empty($mvaData)
+                ? '(' . implode(',', array_map('intval', $mvaData)) . ')'
+                : '()';
+        }
+
+        // 处理向量字段
+        $vectorValue = $data['content_vector'] ?? null;
+        if ($vectorValue) {
+            $fieldList[] = 'content_vector';
+            $valueList[] = str_replace(['[', ']'], ['(', ')'], $vectorValue);
+        }
+
+        // 构建并执行 SQL
+        $sql = "INSERT INTO {$table} (" . implode(', ', $fieldList) . ") VALUES (" . implode(', ', $valueList) . ")";
+
+        return $instance->executeRaw($sql);
+    }
 
     /**
      * 通用批量更新向量方法（高性能版本）
@@ -1982,29 +1936,34 @@ class ManticoreBase
             // Manticore 向量使用 () 格式
             $vectorStr = str_replace(['[', ']'], ['(', ')'], $vectorStr);
 
-            // 构建字段列表和值
+            // 构建字段列表和值（直接内联值，不使用参数绑定）
             $fieldList = $fields;
-            $values = [];
+            $quotedValues = [];
             foreach ($fields as $field) {
                 $value = $existing[$field] ?? null;
                 // 处理默认值：数值字段用 0，时间戳字段用当前时间，其他用空字符串
                 if ($value === null) {
                     if ($field === 'created_at') {
                         $value = time();
-                    } elseif (in_array($field, ['id', 'userid', 'pshare', 'visibility', 'personal', 'msg_id', 'file_id', 'task_id', 'project_id', 'dialog_id'])) {
+                    } elseif (in_array($field, self::NUMERIC_FIELDS)) {
                         $value = 0;
                     } else {
                         $value = '';
                     }
                 }
-                $values[] = $value;
+                // 根据字段类型处理值
+                if (in_array($field, self::NUMERIC_FIELDS)) {
+                    $quotedValues[] = (int)$value;
+                } else {
+                    $quotedValues[] = $instance->quoteValue($value);
+                }
             }
 
             // 构建 MVA 字段
-            $mvaValues = [];
+            $mvaValuesStr = [];
             foreach ($mvaFields as $mvaField) {
                 $fieldList[] = $mvaField;
-                $mvaValues[] = !empty($existing[$mvaField])
+                $mvaValuesStr[] = !empty($existing[$mvaField])
                     ? '(' . $existing[$mvaField] . ')'
                     : '()';
             }
@@ -2012,12 +1971,11 @@ class ManticoreBase
             // 添加向量字段
             $fieldList[] = 'content_vector';
 
-            // 构建 SQL
-            $valuePlaceholders = array_fill(0, count($fields), '?');
-            $allValues = implode(', ', array_merge($valuePlaceholders, $mvaValues, [$vectorStr]));
+            // 构建 SQL（所有值直接内联，使用 executeRaw 避免 prepared statement 解析问题）
+            $allValues = implode(', ', array_merge($quotedValues, $mvaValuesStr, [$vectorStr]));
             $sql = "INSERT INTO {$table} (" . implode(', ', $fieldList) . ") VALUES ({$allValues})";
 
-            $insertStatements[] = ['sql' => $sql, 'values' => $values, 'pk' => $pkValue];
+            $insertStatements[] = ['sql' => $sql, 'pk' => $pkValue];
         }
 
         // 如果没有有效的插入语句，直接返回
@@ -2033,10 +1991,10 @@ class ManticoreBase
             $validPks
         );
 
-        // 4. 逐条插入新记录
+        // 4. 逐条插入新记录（使用 executeRaw 避免 prepared statement 解析问题）
         $successCount = 0;
         foreach ($insertStatements as $stmt) {
-            if ($instance->execute($stmt['sql'], $stmt['values'])) {
+            if ($instance->executeRaw($stmt['sql'])) {
                 $successCount++;
             } else {
                 // 插入失败，数据已被删除，需要重新同步
