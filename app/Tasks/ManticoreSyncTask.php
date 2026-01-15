@@ -256,6 +256,9 @@ class ManticoreSyncTask extends AbstractTask
         @shell_exec("php /var/www/artisan manticore:sync-projects --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-tasks --i 2>&1 &");
         @shell_exec("php /var/www/artisan manticore:sync-msgs --i 2>&1 &");
+
+        // 启动失败重试命令
+        @shell_exec("php /var/www/artisan manticore:retry-failures 2>&1 &");
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Module\Manticore;
 
+use App\Models\ManticoreSyncFailure;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\AI;
@@ -174,6 +175,71 @@ class ManticoreBase
     }
 
     /**
+     * 判断是否为连接断开错误
+     * 参考 Laravel Illuminate\Database\DetectsLostConnections
+     */
+    private function isConnectionLostError(PDOException $e): bool
+    {
+        $message = $e->getMessage();
+        return stripos($message, 'server has gone away') !== false
+            || stripos($message, 'no connection to the server') !== false
+            || stripos($message, 'Lost connection') !== false
+            || stripos($message, 'is dead or not enabled') !== false
+            || stripos($message, 'Error while sending') !== false
+            || stripos($message, 'decryption failed or bad record mac') !== false
+            || stripos($message, 'server closed the connection unexpectedly') !== false
+            || stripos($message, 'SSL connection has been closed unexpectedly') !== false
+            || stripos($message, 'Error writing data to the connection') !== false
+            || stripos($message, 'Resource deadlock avoided') !== false
+            || stripos($message, 'Transaction() on null') !== false
+            || stripos($message, 'child connection forced to terminate') !== false
+            || stripos($message, 'query_wait_timeout') !== false
+            || stripos($message, 'reset by peer') !== false
+            || stripos($message, 'Physical connection is not usable') !== false
+            || stripos($message, 'Packets out of order') !== false
+            || stripos($message, 'Adaptive Server connection failed') !== false
+            || stripos($message, 'Connection was killed') !== false
+            || stripos($message, 'Broken pipe') !== false;
+    }
+
+    /**
+     * 带重试的执行包装器
+     * 正常情况零开销，仅在连接断开时重试一次
+     *
+     * @param callable $callback 执行回调，接收 PDO 参数
+     * @param mixed $failureReturn 失败时的返回值
+     * @param array $logContext 日志上下文
+     * @return mixed
+     */
+    private function runWithRetry(callable $callback, $failureReturn = false, array $logContext = [])
+    {
+        $pdo = $this->getConnection();
+        if (!$pdo) {
+            return $failureReturn;
+        }
+
+        try {
+            return $callback($pdo);
+        } catch (PDOException $e) {
+            // 如果是连接断开错误，重置连接并重试一次
+            if ($this->isConnectionLostError($e)) {
+                self::resetConnection();
+                $pdo = $this->getConnection();
+                if ($pdo) {
+                    try {
+                        return $callback($pdo);
+                    } catch (PDOException $retryException) {
+                        Log::error('Manticore retry failed: ' . $retryException->getMessage(), $logContext);
+                        return $failureReturn;
+                    }
+                }
+            }
+            Log::error('Manticore error: ' . $e->getMessage(), $logContext);
+            return $failureReturn;
+        }
+    }
+
+    /**
      * 检查是否已安装
      */
     public static function isInstalled(): bool
@@ -190,20 +256,14 @@ class ManticoreBase
      */
     public function executeRaw(string $sql): bool
     {
-        $pdo = $this->getConnection();
-        if (!$pdo) {
-            return false;
-        }
-
-        try {
-            $pdo->exec($sql);
-            return true;
-        } catch (PDOException $e) {
-            Log::error('Manticore executeRaw error: ' . $e->getMessage(), [
-                'sql' => $sql,
-            ]);
-            return false;
-        }
+        return $this->runWithRetry(
+            function (PDO $pdo) use ($sql) {
+                $pdo->exec($sql);
+                return true;
+            },
+            false,
+            ['sql' => $sql]
+        );
     }
 
     /**
@@ -247,22 +307,15 @@ class ManticoreBase
      */
     public function execute(string $sql, array $params = []): bool
     {
-        $pdo = $this->getConnection();
-        if (!$pdo) {
-            return false;
-        }
-
-        try {
-            $stmt = $pdo->prepare($sql);
-            $this->bindParams($stmt, $params);
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            Log::error('Manticore execute error: ' . $e->getMessage(), [
-                'sql' => $sql,
-                'params' => $params
-            ]);
-            return false;
-        }
+        return $this->runWithRetry(
+            function (PDO $pdo) use ($sql, $params) {
+                $stmt = $pdo->prepare($sql);
+                $this->bindParams($stmt, $params);
+                return $stmt->execute();
+            },
+            false,
+            ['sql' => $sql, 'params' => $params]
+        );
     }
 
     /**
@@ -274,23 +327,16 @@ class ManticoreBase
      */
     public function executeWithRowCount(string $sql, array $params = []): int
     {
-        $pdo = $this->getConnection();
-        if (!$pdo) {
-            return -1;
-        }
-
-        try {
-            $stmt = $pdo->prepare($sql);
-            $this->bindParams($stmt, $params);
-            $stmt->execute();
-            return $stmt->rowCount();
-        } catch (PDOException $e) {
-            Log::error('Manticore execute error: ' . $e->getMessage(), [
-                'sql' => $sql,
-                'params' => $params
-            ]);
-            return -1;
-        }
+        return $this->runWithRetry(
+            function (PDO $pdo) use ($sql, $params) {
+                $stmt = $pdo->prepare($sql);
+                $this->bindParams($stmt, $params);
+                $stmt->execute();
+                return $stmt->rowCount();
+            },
+            -1,
+            ['sql' => $sql, 'params' => $params]
+        );
     }
 
     /**
@@ -302,23 +348,16 @@ class ManticoreBase
      */
     public function query(string $sql, array $params = []): array
     {
-        $pdo = $this->getConnection();
-        if (!$pdo) {
-            return [];
-        }
-
-        try {
-            $stmt = $pdo->prepare($sql);
-            $this->bindParams($stmt, $params);
-            $stmt->execute();
-            return $this->convertNumericTypes($stmt->fetchAll());
-        } catch (PDOException $e) {
-            Log::error('Manticore query error: ' . $e->getMessage(), [
-                'sql' => $sql,
-                'params' => $params
-            ]);
-            return [];
-        }
+        return $this->runWithRetry(
+            function (PDO $pdo) use ($sql, $params) {
+                $stmt = $pdo->prepare($sql);
+                $this->bindParams($stmt, $params);
+                $stmt->execute();
+                return $this->convertNumericTypes($stmt->fetchAll());
+            },
+            [],
+            ['sql' => $sql, 'params' => $params]
+        );
     }
 
     /**
@@ -330,24 +369,17 @@ class ManticoreBase
      */
     public function queryOne(string $sql, array $params = []): ?array
     {
-        $pdo = $this->getConnection();
-        if (!$pdo) {
-            return null;
-        }
-
-        try {
-            $stmt = $pdo->prepare($sql);
-            $this->bindParams($stmt, $params);
-            $stmt->execute();
-            $result = $stmt->fetch();
-            return $result ? $this->convertNumericTypesRow($result) : null;
-        } catch (PDOException $e) {
-            Log::error('Manticore queryOne error: ' . $e->getMessage(), [
-                'sql' => $sql,
-                'params' => $params
-            ]);
-            return null;
-        }
+        return $this->runWithRetry(
+            function (PDO $pdo) use ($sql, $params) {
+                $stmt = $pdo->prepare($sql);
+                $this->bindParams($stmt, $params);
+                $stmt->execute();
+                $result = $stmt->fetch();
+                return $result ? $this->convertNumericTypesRow($result) : null;
+            },
+            null,
+            ['sql' => $sql, 'params' => $params]
+        );
     }
 
     /**
@@ -670,12 +702,7 @@ class ManticoreBase
      */
     public static function deleteFileVector(int $fileId): bool
     {
-        if ($fileId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute("DELETE FROM file_vectors WHERE file_id = ?", [$fileId]);
+        return self::deleteVector('file', $fileId);
     }
 
     /**
@@ -909,12 +936,7 @@ class ManticoreBase
      */
     public static function deleteUserVector(int $userid): bool
     {
-        if ($userid <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute("DELETE FROM user_vectors WHERE userid = ?", [$userid]);
+        return self::deleteVector('user', $userid);
     }
 
     /**
@@ -1151,12 +1173,7 @@ class ManticoreBase
      */
     public static function deleteProjectVector(int $projectId): bool
     {
-        if ($projectId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute("DELETE FROM project_vectors WHERE project_id = ?", [$projectId]);
+        return self::deleteVector('project', $projectId);
     }
 
     /**
@@ -1421,12 +1438,7 @@ class ManticoreBase
      */
     public static function deleteTaskVector(int $taskId): bool
     {
-        if ($taskId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute("DELETE FROM task_vectors WHERE task_id = ?", [$taskId]);
+        return self::deleteVector('task', $taskId);
     }
 
     /**
@@ -1671,12 +1683,7 @@ class ManticoreBase
      */
     public static function deleteMsgVector(int $msgId): bool
     {
-        if ($msgId <= 0) {
-            return false;
-        }
-
-        $instance = new self();
-        return $instance->execute("DELETE FROM msg_vectors WHERE msg_id = ?", [$msgId]);
+        return self::deleteVector('msg', $msgId);
     }
 
     /**
@@ -1847,7 +1854,7 @@ class ManticoreBase
             if (in_array($field, self::NUMERIC_FIELDS)) {
                 $valueList[] = (int)$value;
             } else {
-                $valueList[] = $instance->quoteValue($value);
+                $valueList[] = $instance->quoteValue((string)$value);
             }
         }
 
@@ -1870,7 +1877,50 @@ class ManticoreBase
         // 构建并执行 SQL
         $sql = "INSERT INTO {$table} (" . implode(', ', $fieldList) . ") VALUES (" . implode(', ', $valueList) . ")";
 
-        return $instance->executeRaw($sql);
+        $result = $instance->executeRaw($sql);
+
+        // 记录同步结果
+        if ($result) {
+            // 成功则删除失败记录（如果有）
+            ManticoreSyncFailure::removeSuccess($type, $pkValue, 'sync');
+        } else {
+            // 失败则记录
+            ManticoreSyncFailure::recordFailure($type, $pkValue, 'sync', "INSERT failed for {$table}");
+        }
+
+        return $result;
+    }
+
+    /**
+     * 通用向量删除方法
+     *
+     * @param string $type 类型: msg/file/task/project/user
+     * @param int $id 数据ID
+     * @return bool 是否成功
+     */
+    public static function deleteVector(string $type, int $id): bool
+    {
+        if (!isset(self::VECTOR_TABLE_CONFIG[$type]) || $id <= 0) {
+            return false;
+        }
+
+        $config = self::VECTOR_TABLE_CONFIG[$type];
+        $table = $config['table'];
+        $pk = $config['pk'];
+
+        $instance = new self();
+        $result = $instance->execute("DELETE FROM {$table} WHERE {$pk} = ?", [$id]);
+
+        // 记录删除结果
+        if ($result) {
+            // 成功则删除失败记录（如果有）
+            ManticoreSyncFailure::removeSuccess($type, $id, 'delete');
+        } else {
+            // 失败则记录
+            ManticoreSyncFailure::recordFailure($type, $id, 'delete', "DELETE failed for {$table}");
+        }
+
+        return $result;
     }
 
     /**
@@ -1955,7 +2005,7 @@ class ManticoreBase
                 if (in_array($field, self::NUMERIC_FIELDS)) {
                     $quotedValues[] = (int)$value;
                 } else {
-                    $quotedValues[] = $instance->quoteValue($value);
+                    $quotedValues[] = $instance->quoteValue((string)$value);
                 }
             }
 
@@ -1996,8 +2046,11 @@ class ManticoreBase
         foreach ($insertStatements as $stmt) {
             if ($instance->executeRaw($stmt['sql'])) {
                 $successCount++;
+                // 成功则删除失败记录（如果有）
+                ManticoreSyncFailure::removeSuccess($type, $stmt['pk'], 'sync');
             } else {
-                // 插入失败，数据已被删除，需要重新同步
+                // 失败则记录
+                ManticoreSyncFailure::recordFailure($type, $stmt['pk'], 'sync', "Batch INSERT failed for {$table}");
             }
         }
 
