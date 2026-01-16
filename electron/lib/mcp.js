@@ -27,9 +27,10 @@
  * - update_project    - 修改项目信息（名称、描述等）
  *
  * === 文件管理（个人文件系统） ===
- * - list_files        - 浏览个人文件系统，获取指定文件夹下的文件和子文件夹列表
- * - search_files      - 搜索用户文件系统中的文件（自己创建的和共享给自己的）
- * - get_file_detail   - 获取文件详情，支持通过文件ID或分享码访问，返回 content_url 可配合 WebFetch 读取
+ * - list_files          - 浏览个人文件系统，获取指定文件夹下的文件和子文件夹列表
+ * - search_files        - 搜索用户文件系统中的文件（自己创建的和共享给自己的）
+ * - get_file_detail     - 获取文件详情，可选提取文本内容
+ * - fetch_file_content  - 通过文件路径获取文本内容
  *
  * === 工作报告 ===
  * - list_received_reports    - 获取我接收的汇报列表，支持按类型/状态/部门/时间筛选
@@ -74,7 +75,8 @@
  * - "查看我的文件列表"
  * - "搜索包含'设计稿'的文件"
  * - "显示文件123的详细信息"
- * - "帮我分析这个文档的内容"
+ * - "帮我阅读这个Word文档的内容"
+ * - "分析这份PDF报告的要点"
  *
  * 工作报告：
  * - "查看未读的工作汇报"
@@ -1902,16 +1904,38 @@ class DooTaskMCP {
         // 文件管理：获取文件详情
         this.mcp.addTool({
             name: 'get_file_detail',
-            description: '获取文件详情，包括类型、大小、共享状态等。支持文件ID或分享码。',
+            description: '获取文件详情，包括类型、大小、正文内容、共享状态等。',
             parameters: z.object({
                 file_id: z.union([z.number(), z.string()])
-                    .describe('文件ID（数字）或分享码（字符串）'),
+                    .describe('文件ID 或分享码'),
+                with_content: z.boolean()
+                    .optional()
+                    .describe('是否提取文本内容'),
+                text_offset: z.number()
+                    .optional()
+                    .describe('文本起始位置'),
+                text_limit: z.number()
+                    .optional()
+                    .describe('获取长度，默认50000，最大200000'),
             }),
             execute: async (params) => {
-                const result = await this.request('GET', 'file/one', {
+                const requestData = {
                     id: params.file_id,
                     with_url: 'yes',
-                });
+                };
+
+                // 如果需要提取文本内容
+                if (params.with_content) {
+                    requestData.with_text = 'yes';
+                    if (params.text_offset !== undefined) {
+                        requestData.text_offset = params.text_offset;
+                    }
+                    if (params.text_limit !== undefined) {
+                        requestData.text_limit = Math.min(params.text_limit, 200000);
+                    }
+                }
+
+                const result = await this.request('GET', 'file/one', requestData);
 
                 if (result.error) {
                     throw new Error(result.error);
@@ -1934,10 +1958,64 @@ class DooTaskMCP {
                     updated_at: file.updated_at,
                 };
 
+                // 如果有文本内容
+                if (file.text_content) {
+                    if (file.text_content.error) {
+                        fileDetail.text_error = file.text_content.error;
+                    } else {
+                        fileDetail.text_content = file.text_content.content;
+                        fileDetail.text_total_length = file.text_content.total_length;
+                        fileDetail.text_offset = file.text_content.offset;
+                        fileDetail.text_limit = file.text_content.limit;
+                        fileDetail.text_has_more = file.text_content.has_more;
+                    }
+                }
+
                 return {
                     content: [{
                         type: 'text',
                         text: JSON.stringify(fileDetail, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 文件管理：通过路径获取文件内容
+        this.mcp.addTool({
+            name: 'fetch_file_content',
+            description: '通过文件路径获取文本内容。',
+            parameters: z.object({
+                path: z.string()
+                    .describe('系统内文件路径或URL'),
+                offset: z.number()
+                    .optional()
+                    .describe('起始位置'),
+                limit: z.number()
+                    .optional()
+                    .describe('获取长度，默认50000，最大200000'),
+            }),
+            execute: async (params) => {
+                const requestData = {
+                    path: params.path,
+                };
+
+                if (params.offset !== undefined) {
+                    requestData.offset = params.offset;
+                }
+                if (params.limit !== undefined) {
+                    requestData.limit = Math.min(params.limit, 200000);
+                }
+
+                const result = await this.request('GET', 'file/fetch', requestData);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify(result.data, null, 2)
                     }]
                 };
             }
