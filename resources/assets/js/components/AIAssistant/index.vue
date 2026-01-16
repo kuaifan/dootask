@@ -1281,7 +1281,7 @@ export default {
     .ai-assistant-header-actions {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
 
         .ai-assistant-header-btn {
             display: flex;
@@ -1650,6 +1650,31 @@ export default {
         cursor: sw-resize;
     }
 
+    .ai-assistant-fullscreen {
+        position: absolute;
+        top: 11px;
+        right: 48px;
+        z-index: 1;
+        width: 28px;
+        height: 28px;
+        padding: 4px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        svg {
+            width: 100%;
+            height: 100%;
+            stroke: #777;
+            transition: stroke 0.2s;
+        }
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.06);
+            svg {
+                stroke: #444;
+            }
+        }
+    }
+
     .ai-assistant-close {
         position: absolute;
         top: 6px;
@@ -1673,7 +1698,7 @@ export default {
     }
 
     .ai-assistant-header {
-        margin: 6px 48px 6px 16px;
+        margin: 6px 82px 6px 16px;
 
         .ai-assistant-header-title {
             > span {
@@ -1779,6 +1804,22 @@ export default {
 
     .ai-assistant-input {
         padding: 4px 12px 12px;
+    }
+
+    // 全屏状态
+    &.is-fullscreen {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        width: auto;
+        height: auto;
+        max-width: none;
+        max-height: none;
+
+        .ai-assistant-drag-handle {
+            cursor: default;
+        }
     }
 }
 

@@ -5,23 +5,37 @@
                 v-if="visible"
                 ref="chatWindow"
                 class="ai-assistant-chat"
+                :class="{'is-fullscreen': isFullscreen}"
                 :style="chatStyle">
+                <div class="ai-assistant-fullscreen" @click="toggleFullscreen">
+                    <svg v-if="isFullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="4 10 10 10 10 4"/><polyline points="14 4 14 10 20 10"/>
+                        <polyline points="10 20 10 14 4 14"/><polyline points="20 14 14 14 14 20"/>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="5 9 5 5 9 5"/><polyline points="19 9 19 5 15 5"/>
+                        <polyline points="5 15 5 19 9 19"/><polyline points="19 15 19 19 15 19"/>
+                    </svg>
+                </div>
                 <Icon class="ai-assistant-close" type="ios-close" @click="onClose"/>
                 <div
                     class="ai-assistant-drag-handle"
+                    @dblclick="toggleFullscreen"
                     @mousedown.stop.prevent="onDragMouseDown">
                     <slot name="header"></slot>
                 </div>
                 <slot></slot>
                 <!-- 调整大小的控制点 -->
-                <div class="ai-assistant-resize-handle ai-assistant-resize-n" @mousedown.stop.prevent="onResizeMouseDown($event, 'n')"></div>
-                <div class="ai-assistant-resize-handle ai-assistant-resize-s" @mousedown.stop.prevent="onResizeMouseDown($event, 's')"></div>
-                <div class="ai-assistant-resize-handle ai-assistant-resize-e" @mousedown.stop.prevent="onResizeMouseDown($event, 'e')"></div>
-                <div class="ai-assistant-resize-handle ai-assistant-resize-w" @mousedown.stop.prevent="onResizeMouseDown($event, 'w')"></div>
-                <div class="ai-assistant-resize-handle ai-assistant-resize-ne" @mousedown.stop.prevent="onResizeMouseDown($event, 'ne')"></div>
-                <div class="ai-assistant-resize-handle ai-assistant-resize-nw" @mousedown.stop.prevent="onResizeMouseDown($event, 'nw')"></div>
-                <div class="ai-assistant-resize-handle ai-assistant-resize-se" @mousedown.stop.prevent="onResizeMouseDown($event, 'se')"></div>
-                <div class="ai-assistant-resize-handle ai-assistant-resize-sw" @mousedown.stop.prevent="onResizeMouseDown($event, 'sw')"></div>
+                <template v-if="!isFullscreen">
+                    <div class="ai-assistant-resize-handle ai-assistant-resize-n" @mousedown.stop.prevent="onResizeMouseDown($event, 'n')"></div>
+                    <div class="ai-assistant-resize-handle ai-assistant-resize-s" @mousedown.stop.prevent="onResizeMouseDown($event, 's')"></div>
+                    <div class="ai-assistant-resize-handle ai-assistant-resize-e" @mousedown.stop.prevent="onResizeMouseDown($event, 'e')"></div>
+                    <div class="ai-assistant-resize-handle ai-assistant-resize-w" @mousedown.stop.prevent="onResizeMouseDown($event, 'w')"></div>
+                    <div class="ai-assistant-resize-handle ai-assistant-resize-ne" @mousedown.stop.prevent="onResizeMouseDown($event, 'ne')"></div>
+                    <div class="ai-assistant-resize-handle ai-assistant-resize-nw" @mousedown.stop.prevent="onResizeMouseDown($event, 'nw')"></div>
+                    <div class="ai-assistant-resize-handle ai-assistant-resize-se" @mousedown.stop.prevent="onResizeMouseDown($event, 'se')"></div>
+                    <div class="ai-assistant-resize-handle ai-assistant-resize-sw" @mousedown.stop.prevent="onResizeMouseDown($event, 'sw')"></div>
+                </template>
             </div>
         </transition>
     </div>
@@ -98,6 +112,8 @@ export default {
             resizing: false,
             resizeDirection: null,
             resizeRecord: {},
+            // 全屏状态
+            isFullscreen: false,
         };
     },
 
@@ -141,6 +157,10 @@ export default {
                     opacity: 0,
                 };
             }
+            // 全屏时不应用自定义尺寸和位置
+            if (this.isFullscreen) {
+                return {};
+            }
             const style = {
                 left: `${this.left}px`,
                 top: `${this.top}px`,
@@ -162,6 +182,9 @@ export default {
                 this.$nextTick(() => {
                     this.updateWindowSize();
                 });
+            } else if (!val) {
+                // 关闭时重置全屏状态
+                this.isFullscreen = false;
             }
         },
         windowWidth() {
@@ -252,8 +275,8 @@ export default {
          * 拖动：鼠标按下
          */
         onDragMouseDown(e) {
-            // 只响应鼠标左键
-            if (e.button !== 0) return;
+            // 只响应鼠标左键，全屏时禁用拖动
+            if (e.button !== 0 || this.isFullscreen) return;
 
             this.updateWindowSize();
             this.record = {
@@ -265,6 +288,13 @@ export default {
             document.addEventListener('mousemove', this.onDragMouseMove);
             document.addEventListener('mouseup', this.onDragMouseUp);
             document.addEventListener('contextmenu', this.onContextMenu);
+        },
+
+        /**
+         * 切换全屏
+         */
+        toggleFullscreen() {
+            this.isFullscreen = !this.isFullscreen;
         },
 
         /**
