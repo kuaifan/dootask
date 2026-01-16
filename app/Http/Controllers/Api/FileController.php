@@ -17,6 +17,7 @@ use App\Module\Down;
 use App\Module\Lock;
 use App\Module\Timer;
 use App\Module\Ihttp;
+use App\Module\Manticore\ManticoreFile;
 use Response;
 use Swoole\Coroutine;
 use Carbon\Carbon;
@@ -68,6 +69,11 @@ class FileController extends AbstractController
      * @apiParam {String} [with_url]            是否返回文件访问URL
      * - no: 不返回（默认）
      * - yes: 返回content_url字段
+     * @apiParam {String} [with_text]           是否提取文件文本内容（用于AI阅读，支持分页）
+     * - no: 不提取（默认）
+     * - yes: 提取文本内容，支持 docx/xlsx/pptx/pdf/txt 等格式
+     * @apiParam {Number} [text_offset]         with_text=yes时有效，文本起始位置（字符数），默认0
+     * @apiParam {Number} [text_limit]          with_text=yes时有效，文本获取长度（字符数），默认50000，最大200000
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -77,6 +83,9 @@ class FileController extends AbstractController
     {
         $id = Request::input('id');
         $with_url = Request::input('with_url', 'no');
+        $with_text = Request::input('with_text', 'no');
+        $text_offset = intval(Request::input('text_offset', 0));
+        $text_limit = intval(Request::input('text_limit', 50000));
         //
         $permission = 0;
         if (Base::isNumber($id)) {
@@ -112,7 +121,55 @@ class FileController extends AbstractController
             $array['content_url'] = FileContent::getFileUrl($file->id);
         }
 
+        // 如果请求提取文本内容
+        if ($with_text === 'yes') {
+            $array['text_content'] = ManticoreFile::extractFileContentPaginated($file, $text_offset, $text_limit);
+        }
+
         return Base::retSuccess('success', $array);
+    }
+
+    /**
+     * @api {get} api/file/fetch 通过路径获取文件文本内容
+     *
+     * @apiDescription 用于 MCP/AI 工具通过文件路径获取内容，支持分页获取大文件
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName fetch
+     *
+     * @apiParam {String} path              文件路径（相对于系统根目录，如 uploads/file/...）
+     * @apiParam {Number} [offset]          起始位置（字符数），默认0
+     * @apiParam {Number} [limit]           获取长度（字符数），默认50000，最大200000
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * - content: 文本内容
+     * - total_length: 完整内容总长度
+     * - offset: 当前起始位置
+     * - limit: 本次获取长度
+     * - has_more: 是否还有更多内容
+     */
+    public function fetch()
+    {
+        User::auth();
+        //
+        $path = trim(Request::input('path'));
+        $offset = intval(Request::input('offset', 0));
+        $limit = intval(Request::input('limit', 50000));
+
+        if (empty($path)) {
+            return Base::retError('参数错误：path 不能为空');
+        }
+
+        // 直接传入路径，ManticoreFile 内部处理 URL 解析
+        $result = ManticoreFile::extractFileContentPaginated($path, $offset, $limit);
+
+        if (isset($result['error'])) {
+            return Base::retError($result['error']);
+        }
+
+        return Base::retSuccess('success', $result);
     }
 
     /**

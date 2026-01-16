@@ -233,11 +233,12 @@ class TextExtractor
     /**
      * 获取文件内容
      * @param $filePath
-     * @param int $fileMaxSize      最大文件大小，单位字节，默认1024KB
-     * @param int $contentMaxSize   最大内容大小，单位字节，默认300KB
+     * @param int $fileMaxSize      最大文件大小，单位KB，默认1024KB
+     * @param int $contentMaxSize   最大内容大小，单位KB，默认300KB
+     * @param bool $truncate        超过contentMaxSize时是否截取，默认true截取，false返回错误
      * @return array
      */
-    public static function extractFile($filePath, int $fileMaxSize = 1024, int $contentMaxSize = 300): array
+    public static function extractFile($filePath, int $fileMaxSize = 1024, int $contentMaxSize = 300, bool $truncate = true): array
     {
         if (!file_exists($filePath) || !is_file($filePath)) {
             return Base::retError("Failed to read contents of {$filePath}");
@@ -248,8 +249,13 @@ class TextExtractor
         try {
             $extractor = new self($filePath);
             $content = $extractor->extractContent();
-            if (strlen($content) > $contentMaxSize * 1024) {
-                return Base::retError("Content size exceeds " . Base::readableBytes($contentMaxSize * 1024) . ", unable to display content");
+            $maxBytes = $contentMaxSize * 1024;
+            if (strlen($content) > $maxBytes) {
+                if ($truncate) {
+                    $content = mb_substr($content, 0, $maxBytes);
+                } else {
+                    return Base::retError("Content size exceeds " . Base::readableBytes($maxBytes) . ", unable to display content");
+                }
             }
             return Base::retSuccess("success", $content);
         } catch (Exception $e) {

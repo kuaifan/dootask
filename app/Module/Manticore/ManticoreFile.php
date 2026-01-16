@@ -10,7 +10,6 @@ use App\Module\Base;
 use App\Module\TextExtractor;
 use App\Module\AI;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Manticore Search 文件搜索类
@@ -355,7 +354,85 @@ class ManticoreFile
     }
 
     /**
-     * 提取文件内容
+     * 提取文件内容（支持分页）
+     *
+     * @param File|string $fileOrPath 文件模型 或 文件路径/URL
+     * @param int $offset 起始位置（字符数），默认 0
+     * @param int $limit 获取长度（字符数），默认 50000，最大 200000
+     * @return array 包含 content, total_length, offset, limit, has_more, 或 error
+     */
+    public static function extractFileContentPaginated(File|string $fileOrPath, int $offset = 0, int $limit = 50000): array
+    {
+        $offset = max(0, $offset);
+        $limit = min(max(1, $limit), 200000);
+
+        // 根据参数类型获取完整内容
+        if ($fileOrPath instanceof File) {
+            if ($fileOrPath->type === 'folder') {
+                return ['error' => '文件夹无法提取内容'];
+            }
+            $fullContent = self::extractFileContent($fileOrPath);
+        } else {
+            $fullContent = self::extractFileContentFromPath($fileOrPath);
+            if (is_array($fullContent)) {
+                return $fullContent; // 返回错误信息
+            }
+        }
+
+        if (empty($fullContent)) {
+            return ['error' => '无法提取文件内容'];
+        }
+
+        // 分页处理
+        $totalLength = mb_strlen($fullContent);
+
+        if ($offset >= $totalLength) {
+            return [
+                'content' => '',
+                'total_length' => $totalLength,
+                'offset' => $offset,
+                'limit' => $limit,
+                'has_more' => false,
+            ];
+        }
+
+        $content = mb_substr($fullContent, $offset, $limit);
+        $hasMore = ($offset + mb_strlen($content)) < $totalLength;
+
+        return [
+            'content' => $content,
+            'total_length' => $totalLength,
+            'offset' => $offset,
+            'limit' => $limit,
+            'has_more' => $hasMore,
+        ];
+    }
+
+    /**
+     * 通过路径/URL 提取完整内容
+     * @return string|array 内容字符串，或错误数组
+     */
+    private static function extractFileContentFromPath(string $pathOrUrl): string|array
+    {
+        // 从 URL 中提取相对路径
+        if (str_starts_with($pathOrUrl, 'http://') || str_starts_with($pathOrUrl, 'https://')) {
+            $parsed = parse_url($pathOrUrl);
+            $pathOrUrl = ltrim($parsed['path'] ?? '', '/');
+        }
+        if (preg_match('/^.*?(uploads\/.*)$/', $pathOrUrl, $matches)) {
+            $pathOrUrl = $matches[1];
+        }
+
+        // 安全检查：只允许 uploads 目录
+        if (!str_starts_with($pathOrUrl, 'uploads/')) {
+            return ['error' => '不支持的文件路径'];
+        }
+
+        return self::extractFromPath($pathOrUrl);
+    }
+
+    /**
+     * 提取文件内容（内部使用，返回完整内容）
      *
      * @param File $file 文件模型
      * @return string 文件内容文本
@@ -364,42 +441,60 @@ class ManticoreFile
     {
         // 1. 先尝试从 FileContent 的 text 字段获取（已提取的文本内容）
         $fileContent = FileContent::where('fid', $file->id)->orderByDesc('id')->first();
-        if ($fileContent && !empty($fileContent->text)) {
+        if (!$fileContent) {
+            return '';
+        }
+        if (!empty($fileContent->text)) {
             return $fileContent->text;
         }
 
         // 2. 尝试从 FileContent 的 content 字段获取
-        if ($fileContent && !empty($fileContent->content)) {
+        if (!empty($fileContent->content)) {
             $contentData = Base::json2array($fileContent->content);
 
             // 2.1 某些文件类型直接存储内容
-            if (!empty($contentData['content'])) {
-                return is_string($contentData['content']) ? $contentData['content'] : '';
+            if (!empty($contentData['content']) && is_string($contentData['content'])) {
+                return $contentData['content'];
             }
 
-            // 2.2 尝试使用 TextExtractor 提取文件内容
+            // 2.2 通过路径提取
             $filePath = $contentData['url'] ?? null;
             if ($filePath && str_starts_with($filePath, 'uploads/')) {
-                $fullPath = public_path($filePath);
-                if (file_exists($fullPath)) {
-                    // 根据文件类型设置不同的大小限制
-                    $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
-                    $maxFileSize = self::getMaxFileSizeByExt($ext);
-                    $maxContentSize = self::MAX_CONTENT_LENGTH;
-
-                    $result = TextExtractor::extractFile(
-                        $fullPath,
-                        (int) ($maxFileSize / 1024),     // 转换为 KB
-                        (int) ($maxContentSize / 1024)   // 转换为 KB
-                    );
-                    if (Base::isSuccess($result)) {
-                        return $result['data'] ?? '';
-                    }
+                $result = self::extractFromPath($filePath);
+                if (is_string($result)) {
+                    return $result;
                 }
             }
         }
 
         return '';
+    }
+
+    /**
+     * 从文件路径提取内容（核心方法）
+     * @return string|array 内容字符串，或错误数组
+     */
+    private static function extractFromPath(string $relativePath): string|array
+    {
+        $fullPath = public_path($relativePath);
+        if (!file_exists($fullPath)) {
+            return ['error' => '文件不存在'];
+        }
+
+        $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+        $maxFileSize = self::getMaxFileSizeByExt($ext);
+
+        $result = TextExtractor::extractFile(
+            $fullPath,
+            (int) ($maxFileSize / 1024),
+            (int) (self::MAX_CONTENT_LENGTH / 1024)
+        );
+
+        if (!Base::isSuccess($result)) {
+            return ['error' => $result['msg'] ?? '无法提取文件内容'];
+        }
+
+        return $result['data'] ?? '';
     }
 
     /**
