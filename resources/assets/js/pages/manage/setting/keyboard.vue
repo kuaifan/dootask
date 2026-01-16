@@ -12,14 +12,19 @@
                         {{mateName}}<div class="input-box-push">+</div>{{altName}}<div class="input-box-push">+</div>L
                     </div>
                 </FormItem>
-                <FormItem :label="$L('新建项目')">
+                <FormItem v-if="aiInstalled" :label="$L('AI 助手')">
                     <div class="input-box">
-                        {{mateName}}<div class="input-box-push">+</div>B
+                        {{mateName}}<div class="input-box-push">+</div>I
                     </div>
                 </FormItem>
                 <FormItem :label="$L('新建任务')">
                     <div class="input-box">
                         {{mateName}}<div class="input-box-push">+</div>N
+                    </div>
+                </FormItem>
+                <FormItem :label="$L('新建项目')">
+                    <div class="input-box">
+                        {{mateName}}<div class="input-box-push">+</div>B
                     </div>
                 </FormItem>
                 <FormItem :label="$L('新会议')">
@@ -70,7 +75,17 @@
 }
 </style>
 <script>
+import {mapState} from "vuex";
+
 export default {
+    computed: {
+        ...mapState(['microAppsIds']),
+
+        aiInstalled() {
+            return this.microAppsIds?.includes('ai');
+        },
+    },
+
     data() {
         return {
             loadIng: 0,

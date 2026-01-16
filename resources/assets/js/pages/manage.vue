@@ -225,14 +225,15 @@
                 </Form>
             </div>
             <ButtonGroup class="manage-box-new-group">
-                <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
+                <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddMenu('task')">{{$L('新建任务')}}</Button>
                 <Dropdown @on-click="onAddMenu" trigger="click">
                     <Button type="primary">
                         <Icon type="ios-arrow-down"></Icon>
                     </Button>
                     <DropdownMenu slot="list">
-                        <DropdownItem name="project">{{$L('新建项目')}} ({{mateName}}+B)</DropdownItem>
+                        <DropdownItem v-if="aiInstalled" name="aiAssistant">{{$L('AI 助手')}} ({{mateName}}+I)</DropdownItem>
                         <DropdownItem name="task">{{$L('新建任务')}} ({{mateName}}+K)</DropdownItem>
+                        <DropdownItem name="project">{{$L('新建项目')}} ({{mateName}}+B)</DropdownItem>
                         <DropdownItem name="group">{{$L('创建群组')}} ({{mateName}}+U)</DropdownItem>
                         <DropdownItem name="createMeeting">{{$L('新会议')}} ({{mateName}}+J)</DropdownItem>
                         <DropdownItem name="joinMeeting">{{$L('加入会议')}}</DropdownItem>
@@ -615,10 +616,15 @@ export default {
             'mobileTabbar',
             'longpressData',
 
-            'mcpServerStatus'
+            'mcpServerStatus',
+            'microAppsIds'
         ]),
 
         ...mapGetters(['dashboardTask', "filterMicroAppsMenusMain"]),
+
+        aiInstalled() {
+            return this.microAppsIds?.includes('ai');
+        },
 
         /**
          * page className
@@ -1080,7 +1086,20 @@ export default {
                         type: 'join',
                     });
                     break;
+
+                case 'aiAssistant':
+                    this.onOpenAIAssistant();
+                    break;
             }
+        },
+
+        onOpenAIAssistant() {
+            emitter.emit('openAIAssistant', {
+                displayMode: 'chat',
+                sessionKey: 'global',
+                resumeSession: 300,
+                showApplyButton: false,
+            });
         },
 
         onAddShow() {
@@ -1335,6 +1354,13 @@ export default {
                     case 74: // J - 新会议
                         e.preventDefault();
                         this.onAddMenu('createMeeting')
+                        break;
+
+                    case 73: // I - AI助手
+                        if (this.aiInstalled) {
+                            e.preventDefault();
+                            this.onOpenAIAssistant();
+                        }
                         break;
 
                     case 83: // S - 保存任务
