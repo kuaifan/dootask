@@ -1321,59 +1321,64 @@ export default {
         },
 
         shortcutEvent(e) {
-            if (e.metaKey || e.ctrlKey) {
+            if (!(e.metaKey || e.ctrlKey) || e.shiftKey) return;
+
+            // Ctrl/Cmd + Alt 组合
+            if (e.altKey) {
                 switch (e.keyCode) {
-                    case 66: // B - 新建项目
+                    case 76: // L - 下载内容
                         e.preventDefault();
-                        this.onAddShow()
-                        break;
-
-                    case 70:
-                    case 191: // F、/ - 搜索
-                        e.preventDefault();
-                        this.$refs.searchBox.onShow();
-                        break;
-
-                    case 75:
-                    case 78: // K、N - 新建任务
-                        e.preventDefault();
-                        this.onAddMenu('task')
-                        break;
-
-                    case 76: // L - 下载内容（+ alt）
-                        if (e.altKey) {
-                            e.preventDefault();
-                            this.settingRoute('download')
-                        }
-                        break;
-
-                    case 85: // U - 创建群组
-                        this.onCreateGroup([this.userId])
-                        break;
-
-                    case 74: // J - 新会议
-                        e.preventDefault();
-                        this.onAddMenu('createMeeting')
-                        break;
-
-                    case 73: // I - AI助手
-                        if (this.aiInstalled) {
-                            e.preventDefault();
-                            this.onOpenAIAssistant();
-                        }
-                        break;
-
-                    case 83: // S - 保存任务
-                        if (this.$refs.taskModal.checkUpdate()) {
-                            e.preventDefault();
-                        }
-                        break;
-
-                    case 188: // , - 进入设置
-                        e.preventDefault();
-                        this.toggleRoute('setting')
+                        this.settingRoute('download')
                         break;
                 }
+                return;
+            }
+
+            // Ctrl/Cmd 组合（无 Alt/Shift）
+            switch (e.keyCode) {
+                case 66: // B - 新建项目
+                    e.preventDefault();
+                    this.onAddShow()
+                    break;
+
+                case 70:
+                case 191: // F、/ - 搜索
+                    e.preventDefault();
+                    this.$refs.searchBox.onShow();
+                    break;
+
+                case 75:
+                case 78: // K、N - 新建任务
+                    e.preventDefault();
+                    this.onAddMenu('task')
+                    break;
+
+                case 85: // U - 创建群组
+                    this.onCreateGroup([this.userId])
+                    break;
+
+                case 74: // J - 新会议
+                    e.preventDefault();
+                    this.onAddMenu('createMeeting')
+                    break;
+
+                case 73: // I - AI助手
+                    if (this.aiInstalled) {
+                        e.preventDefault();
+                        this.onOpenAIAssistant();
+                    }
+                    break;
+
+                case 83: // S - 保存任务
+                    if (this.$refs.taskModal.checkUpdate()) {
+                        e.preventDefault();
+                    }
+                    break;
+
+                case 188: // , - 进入设置
+                    e.preventDefault();
+                    this.toggleRoute('setting')
+                    break;
             }
         },
 
