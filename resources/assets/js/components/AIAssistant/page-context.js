@@ -313,3 +313,73 @@ function getDefaultContext() {
         systemPrompt: '',
     };
 }
+
+/**
+ * 获取当前场景的唯一标识
+ * 用于判断打开 AI 助手时是否需要新建会话
+ * 场景相同则恢复上次会话，场景不同则新建会话
+ *
+ * @param {Object} store - Vuex store 实例
+ * @param {Object} routeParams - 路由参数
+ * @returns {string} 场景标识，格式如 "routeName/entityType:entityId"
+ */
+export function getSceneKey(store, routeParams = {}) {
+    const routeName = store.state.routeName;
+    const parts = [routeName || 'unknown'];
+
+    switch (routeName) {
+        case 'manage-project': {
+            const project = store.getters.projectData;
+            if (project?.id) {
+                parts.push(`project:${project.id}`);
+            }
+            break;
+        }
+        case 'manage-messenger': {
+            const dialogId = store.state.dialogId;
+            if (dialogId) {
+                parts.push(`dialog:${dialogId}`);
+            }
+            break;
+        }
+        case 'single-task':
+        case 'single-task-content': {
+            if (routeParams.taskId) {
+                parts.push(`task:${routeParams.taskId}`);
+            }
+            break;
+        }
+        case 'single-dialog': {
+            if (routeParams.dialogId) {
+                parts.push(`dialog:${routeParams.dialogId}`);
+            }
+            break;
+        }
+        case 'single-file': {
+            if (routeParams.codeOrFileId) {
+                parts.push(`file:${routeParams.codeOrFileId}`);
+            }
+            break;
+        }
+        case 'single-file-task': {
+            if (routeParams.fileId) {
+                parts.push(`file:${routeParams.fileId}`);
+            }
+            break;
+        }
+        case 'single-report-edit': {
+            if (routeParams.reportEditId) {
+                parts.push(`report:${routeParams.reportEditId}`);
+            }
+            break;
+        }
+        case 'single-report-detail': {
+            if (routeParams.reportDetailId) {
+                parts.push(`report:${routeParams.reportDetailId}`);
+            }
+            break;
+        }
+    }
+
+    return parts.join('/');
+}

@@ -217,6 +217,7 @@ export default {
             sessionStore: {},
             currentSessionKey: 'default',
             currentSessionId: null,
+            currentSceneKey: null,
             sessionCacheKey: 'aiAssistant.sessions',
             maxSessionsPerKey: 20,
         }
@@ -343,7 +344,7 @@ export default {
             this.pendingAutoSubmit = !!params.autoSubmit;
 
             // 会话管理
-            this.initSession(params.sessionKey, params.resumeSession);
+            this.initSession(params.sessionKey, params.sceneKey, params.resumeSession);
 
             this.showModal = true;
             this.fetchModelOptions();
@@ -1067,45 +1068,45 @@ export default {
         /**
          * 初始化会话
          * @param {string} sessionKey - 会话场景标识，不传则不启用会话管理
-         * @param {boolean|number} resumeSession - 恢复上次会话：true 总是恢复，数字表示秒数阈值（上次会话在该时间内则恢复）
+         * @param {string} sceneKey - 场景标识，用于判断是否恢复会话
+         * @param {number} resumeTimeout - 恢复超时时间（秒），默认1天
          */
-        initSession(sessionKey, resumeSession = false) {
+        initSession(sessionKey, sceneKey = null, resumeTimeout = 86400) {
             // 保存当前会话
             if (this.responses.length > 0) {
                 this.saveCurrentSession();
             }
 
             this.sessionEnabled = !!sessionKey;
+            this.currentSceneKey = sceneKey;
 
             if (this.sessionEnabled) {
                 this.currentSessionKey = sessionKey;
 
-                if (resumeSession) {
+                // 如果传入了 sceneKey，从历史中查找相同场景的最新会话
+                if (sceneKey) {
                     const sessions = this.getSessionList(sessionKey);
-                    if (sessions.length > 0) {
-                        const lastSession = sessions[0];
-                        // 如果是数字，检查时间阈值
-                        if (typeof resumeSession === 'number') {
-                            const elapsed = (Date.now() - lastSession.updatedAt) / 1000;
-                            if (elapsed > resumeSession) {
-                                // 超过阈值，创建新会话
-                                this.currentSessionId = this.generateSessionId();
-                                this.responses = [];
-                                return;
-                            }
+                    // 找到相同场景标识的最新一条记录
+                    const matchedSession = sessions.find(s => s.sceneKey === sceneKey);
+                    if (matchedSession) {
+                        const elapsed = (Date.now() - matchedSession.updatedAt) / 1000;
+                        // 在超时时间内则恢复
+                        if (elapsed <= resumeTimeout) {
+                            this.currentSessionId = matchedSession.id;
+                            this.responses = JSON.parse(JSON.stringify(matchedSession.responses));
+                            this.syncResponseSeed();
+                            return;
                         }
-                        this.currentSessionId = lastSession.id;
-                        this.responses = JSON.parse(JSON.stringify(lastSession.responses));
-                        this.syncResponseSeed();
-                        return;
                     }
                 }
 
+                // 无匹配会话、超时或无 sceneKey，创建新会话
                 this.currentSessionId = this.generateSessionId();
                 this.responses = [];
             } else {
                 this.currentSessionKey = 'default';
                 this.currentSessionId = null;
+                this.currentSceneKey = null;
                 this.responses = [];
             }
         },
@@ -1142,6 +1143,7 @@ export default {
                 id: this.currentSessionId,
                 title: this.generateSessionTitle(this.responses),
                 responses: JSON.parse(JSON.stringify(this.responses)),
+                sceneKey: this.currentSceneKey,
                 createdAt: existingIndex > -1 ? sessions[existingIndex].createdAt : Date.now(),
                 updatedAt: Date.now(),
             };
@@ -1172,6 +1174,7 @@ export default {
                     this.saveCurrentSession();
                 }
                 this.currentSessionId = session.id;
+                this.currentSceneKey = session.sceneKey || null;
                 this.responses = JSON.parse(JSON.stringify(session.responses));
                 this.syncResponseSeed();
                 this.scrollResponsesToBottom();

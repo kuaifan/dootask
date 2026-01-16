@@ -1094,12 +1094,7 @@ export default {
         },
 
         onOpenAIAssistant() {
-            emitter.emit('openAIAssistant', {
-                displayMode: 'chat',
-                sessionKey: 'global',
-                resumeSession: 300,
-                showApplyButton: false,
-            });
+            emitter.emit('openAIAssistantGlobal');
         },
 
         onAddShow() {

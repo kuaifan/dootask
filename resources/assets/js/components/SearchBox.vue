@@ -581,7 +581,7 @@ export default {
             const keyword = this.searchKey.trim();
             emitter.emit('openAIAssistant', {
                 sessionKey: 'ai-search',
-                resumeSession: 300,
+                resumeSession: 86400,
                 title: this.$L('AI 搜索'),
                 value: keyword,
                 placeholder: this.$L('请描述你想搜索的内容...'),

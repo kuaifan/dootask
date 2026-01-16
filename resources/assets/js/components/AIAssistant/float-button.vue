@@ -26,7 +26,7 @@
 import {mapState} from "vuex";
 import emitter from "../../store/events";
 import {withLanguagePreferencePrompt} from "../../utils/ai";
-import {getPageContext} from "./page-context";
+import {getPageContext, getSceneKey} from "./page-context";
 
 export default {
     name: 'AIAssistantFloatButton',
@@ -146,10 +146,12 @@ export default {
     mounted() {
         this.loadPosition();
         window.addEventListener('resize', this.onResize);
+        emitter.on('openAIAssistantGlobal', this.onClick);
     },
 
     beforeDestroy() {
         window.removeEventListener('resize', this.onResize);
+        emitter.off('openAIAssistantGlobal', this.onClick);
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('mouseup', this.onMouseUp);
         document.removeEventListener('contextmenu', this.onContextMenu);
@@ -358,10 +360,14 @@ export default {
          * 点击按钮
          */
         onClick() {
+            const routeParams = this.$route?.params || {};
+            const sceneKey = getSceneKey(this.$store, routeParams);
+
             emitter.emit('openAIAssistant', {
                 displayMode: 'chat',
                 sessionKey: 'global',
-                resumeSession: 300,
+                sceneKey,
+                resumeSession: 86400,
                 showApplyButton: false,
                 onBeforeSend: this.handleBeforeSend,
             });
