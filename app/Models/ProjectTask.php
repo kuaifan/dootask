@@ -400,6 +400,38 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 标准化时间参数，兼容 start_at/end_at 转换为 times
+     * @param array $data 请求数据
+     * @param self|null $task 任务实例（更新时传入）
+     * @return array 处理后的data
+     */
+    public static function normalizeTimes(array $data, ?self $task = null): array
+    {
+        if (isset($data['times']) || (!isset($data['start_at']) && !isset($data['end_at']))) {
+            return $data;
+        }
+
+        $startAt = $data['start_at'] ?? null;
+        $endAt = $data['end_at'] ?? null;
+
+        if ($endAt && !$startAt) {
+            // 只传 end_at：保留已有 start_at，否则取当前时间
+            $startAt = $task?->start_at
+                ? Carbon::parse($task->start_at)->toDateTimeString()
+                : date('Y-m-d H:i:s');
+        } elseif ($startAt && !$endAt) {
+            // 只传 start_at：必须已有 end_at
+            if (!$task?->end_at) {
+                throw new ApiException('请设置结束时间');
+            }
+            $endAt = Carbon::parse($task->end_at)->toDateTimeString();
+        }
+
+        $data['times'] = [$startAt, $endAt];
+        return $data;
+    }
+
+    /**
      * 添加任务
      * @param $data
      * @return self

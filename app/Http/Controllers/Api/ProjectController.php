@@ -2258,6 +2258,7 @@ class ProjectController extends AbstractController
             return Base::retError('任务列表不存在或已被删除');
         }
         //
+        $data = ProjectTask::normalizeTimes($data);
         $task = ProjectTask::addTask(array_merge($data, [
             'parent_id' => 0,
             'project_id' => $project->id,
@@ -2495,6 +2496,7 @@ class ProjectController extends AbstractController
         $task_id = intval($param['task_id']);
         //
         $task = ProjectTask::userTask($task_id);
+        $param = ProjectTask::normalizeTimes($param, $task);
         //
         if ($task->hasOwner()) {
             // 已经存在负责人，则需要检查权限（即：没有任务负责人时，不检查权限）
