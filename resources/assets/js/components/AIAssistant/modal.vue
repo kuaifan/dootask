@@ -9,10 +9,19 @@
                 <Icon class="ai-assistant-close" type="ios-close" @click="onClose"/>
                 <div
                     class="ai-assistant-drag-handle"
-                    @mousedown.stop.prevent="onMouseDown">
+                    @mousedown.stop.prevent="onDragMouseDown">
                     <slot name="header"></slot>
                 </div>
                 <slot></slot>
+                <!-- 调整大小的控制点 -->
+                <div class="ai-assistant-resize-handle ai-assistant-resize-n" @mousedown.stop.prevent="onResizeMouseDown($event, 'n')"></div>
+                <div class="ai-assistant-resize-handle ai-assistant-resize-s" @mousedown.stop.prevent="onResizeMouseDown($event, 's')"></div>
+                <div class="ai-assistant-resize-handle ai-assistant-resize-e" @mousedown.stop.prevent="onResizeMouseDown($event, 'e')"></div>
+                <div class="ai-assistant-resize-handle ai-assistant-resize-w" @mousedown.stop.prevent="onResizeMouseDown($event, 'w')"></div>
+                <div class="ai-assistant-resize-handle ai-assistant-resize-ne" @mousedown.stop.prevent="onResizeMouseDown($event, 'ne')"></div>
+                <div class="ai-assistant-resize-handle ai-assistant-resize-nw" @mousedown.stop.prevent="onResizeMouseDown($event, 'nw')"></div>
+                <div class="ai-assistant-resize-handle ai-assistant-resize-se" @mousedown.stop.prevent="onResizeMouseDown($event, 'se')"></div>
+                <div class="ai-assistant-resize-handle ai-assistant-resize-sw" @mousedown.stop.prevent="onResizeMouseDown($event, 'sw')"></div>
             </div>
         </transition>
     </div>
@@ -64,11 +73,31 @@ export default {
             dragging: false,
             positionLoaded: false,
             cacheKey: 'aiAssistant.chatPosition',
+            sizeCacheKey: 'aiAssistant.chatSize',
+            // 窗口尺寸（用于计算位置）
             windowSize: {
                 width: 460,
-                height: 640,
+                height: 600,
+            },
+            // 用户自定义尺寸
+            customSize: {
+                width: null,
+                height: null,
+            },
+            // 尺寸限制
+            minSize: {
+                width: 380,
+                height: 400,
+            },
+            maxSize: {
+                width: 800,
+                height: 900,
             },
             record: {},
+            // 调整大小相关
+            resizing: false,
+            resizeDirection: null,
+            resizeRecord: {},
         };
     },
 
@@ -83,11 +112,11 @@ export default {
         },
 
         clientWidth() {
-            return this.windowWidth || document.documentElement.clientWidth;
+            return this.windowWidth;
         },
 
         clientHeight() {
-            return this.windowHeight || document.documentElement.clientHeight;
+            return this.windowHeight;
         },
 
         // 计算实际的 left 值
@@ -112,10 +141,18 @@ export default {
                     opacity: 0,
                 };
             }
-            return {
+            const style = {
                 left: `${this.left}px`,
                 top: `${this.top}px`,
             };
+            // 应用自定义尺寸
+            if (this.customSize.width) {
+                style.width = `${this.customSize.width}px`;
+            }
+            if (this.customSize.height) {
+                style.height = `${this.customSize.height}px`;
+            }
+            return style;
         },
     },
 
@@ -127,17 +164,23 @@ export default {
                 });
             }
         },
+        windowWidth() {
+            this.onViewportChange();
+        },
+        windowHeight() {
+            this.onViewportChange();
+        },
     },
 
     mounted() {
-        this.loadPosition();
-        window.addEventListener('resize', this.onResize);
+        this.loadSizeAndPosition();
     },
 
     beforeDestroy() {
-        window.removeEventListener('resize', this.onResize);
-        document.removeEventListener('mousemove', this.onMouseMove);
-        document.removeEventListener('mouseup', this.onMouseUp);
+        document.removeEventListener('mousemove', this.onDragMouseMove);
+        document.removeEventListener('mouseup', this.onDragMouseUp);
+        document.removeEventListener('mousemove', this.onResizeMouseMove);
+        document.removeEventListener('mouseup', this.onResizeMouseUp);
         document.removeEventListener('contextmenu', this.onContextMenu);
     },
 
@@ -206,40 +249,40 @@ export default {
         },
 
         /**
-         * 鼠标按下
+         * 拖动：鼠标按下
          */
-        onMouseDown(e) {
+        onDragMouseDown(e) {
             // 只响应鼠标左键
             if (e.button !== 0) return;
 
             this.updateWindowSize();
             this.record = {
-                time: Date.now(),
-                startLeft: this.left,
-                startTop: this.top,
                 offsetX: e.clientX - this.left,
                 offsetY: e.clientY - this.top,
             };
             this.dragging = true;
 
-            document.addEventListener('mousemove', this.onMouseMove);
-            document.addEventListener('mouseup', this.onMouseUp);
+            document.addEventListener('mousemove', this.onDragMouseMove);
+            document.addEventListener('mouseup', this.onDragMouseUp);
             document.addEventListener('contextmenu', this.onContextMenu);
         },
 
         /**
-         * 右键菜单弹出时取消拖动
+         * 右键菜单弹出时取消拖动/调整大小
          */
         onContextMenu() {
             if (this.dragging) {
-                this.onMouseUp();
+                this.onDragMouseUp();
+            }
+            if (this.resizing) {
+                this.onResizeMouseUp();
             }
         },
 
         /**
-         * 鼠标移动
+         * 拖动：鼠标移动
          */
-        onMouseMove(e) {
+        onDragMouseMove(e) {
             if (!this.dragging) return;
 
             const minMargin = 12;
@@ -254,15 +297,154 @@ export default {
         },
 
         /**
-         * 鼠标松开
+         * 拖动：鼠标松开
          */
-        onMouseUp() {
-            document.removeEventListener('mousemove', this.onMouseMove);
-            document.removeEventListener('mouseup', this.onMouseUp);
+        onDragMouseUp() {
+            document.removeEventListener('mousemove', this.onDragMouseMove);
+            document.removeEventListener('mouseup', this.onDragMouseUp);
             document.removeEventListener('contextmenu', this.onContextMenu);
 
             this.savePosition();
             this.dragging = false;
+        },
+
+        /**
+         * 调整大小：鼠标按下
+         */
+        onResizeMouseDown(e, direction) {
+            if (e.button !== 0) return;
+
+            this.updateWindowSize();
+            this.resizeDirection = direction;
+            this.resizeRecord = {
+                startX: e.clientX,
+                startY: e.clientY,
+                startWidth: this.windowSize.width,
+                startHeight: this.windowSize.height,
+                startLeft: this.left,
+                startTop: this.top,
+            };
+            this.resizing = true;
+
+            document.addEventListener('mousemove', this.onResizeMouseMove);
+            document.addEventListener('mouseup', this.onResizeMouseUp);
+            document.addEventListener('contextmenu', this.onContextMenu);
+        },
+
+        /**
+         * 调整大小：鼠标移动
+         */
+        onResizeMouseMove(e) {
+            if (!this.resizing) return;
+
+            const dir = this.resizeDirection;
+            const deltaX = e.clientX - this.resizeRecord.startX;
+            const deltaY = e.clientY - this.resizeRecord.startY;
+
+            let newWidth = this.resizeRecord.startWidth;
+            let newHeight = this.resizeRecord.startHeight;
+            let newLeft = this.resizeRecord.startLeft;
+            let newTop = this.resizeRecord.startTop;
+
+            // 根据方向计算新尺寸
+            if (dir.includes('e')) {
+                newWidth = this.resizeRecord.startWidth + deltaX;
+            }
+            if (dir.includes('w')) {
+                newWidth = this.resizeRecord.startWidth - deltaX;
+                newLeft = this.resizeRecord.startLeft + deltaX;
+            }
+            if (dir.includes('s')) {
+                newHeight = this.resizeRecord.startHeight + deltaY;
+            }
+            if (dir.includes('n')) {
+                newHeight = this.resizeRecord.startHeight - deltaY;
+                newTop = this.resizeRecord.startTop + deltaY;
+            }
+
+            // 限制最小/最大尺寸
+            const minMargin = 12;
+            const maxWidth = Math.min(this.maxSize.width, this.clientWidth - minMargin * 2);
+            const maxHeight = Math.min(this.maxSize.height, this.clientHeight - minMargin * 2);
+
+            newWidth = Math.max(this.minSize.width, Math.min(newWidth, maxWidth));
+            newHeight = Math.max(this.minSize.height, Math.min(newHeight, maxHeight));
+
+            // 如果是从左边或上边调整，需要修正位置
+            if (dir.includes('w')) {
+                const widthDiff = newWidth - this.resizeRecord.startWidth;
+                newLeft = this.resizeRecord.startLeft - widthDiff;
+            }
+            if (dir.includes('n')) {
+                const heightDiff = newHeight - this.resizeRecord.startHeight;
+                newTop = this.resizeRecord.startTop - heightDiff;
+            }
+
+            // 边界限制位置
+            newLeft = Math.max(minMargin, Math.min(newLeft, this.clientWidth - newWidth - minMargin));
+            newTop = Math.max(minMargin, Math.min(newTop, this.clientHeight - newHeight - minMargin));
+
+            // 更新尺寸
+            this.customSize.width = newWidth;
+            this.customSize.height = newHeight;
+            this.windowSize.width = newWidth;
+            this.windowSize.height = newHeight;
+
+            // 更新位置
+            this.updatePositionFromCoords(newLeft, newTop);
+        },
+
+        /**
+         * 调整大小：鼠标松开
+         */
+        onResizeMouseUp() {
+            document.removeEventListener('mousemove', this.onResizeMouseMove);
+            document.removeEventListener('mouseup', this.onResizeMouseUp);
+            document.removeEventListener('contextmenu', this.onContextMenu);
+
+            this.saveSize();
+            this.savePosition();
+            this.resizing = false;
+            this.resizeDirection = null;
+        },
+
+        /**
+         * 先加载尺寸，再加载位置（确保位置计算时使用正确的尺寸）
+         */
+        async loadSizeAndPosition() {
+            await this.loadSize();
+            await this.loadPosition();
+        },
+
+        /**
+         * 加载保存的尺寸
+         */
+        async loadSize() {
+            try {
+                const saved = await $A.IDBString(this.sizeCacheKey);
+                if (saved) {
+                    const size = JSON.parse(saved);
+                    if (size && typeof size.width === 'number' && typeof size.height === 'number') {
+                        this.customSize = {
+                            width: Math.max(this.minSize.width, Math.min(size.width, this.maxSize.width)),
+                            height: Math.max(this.minSize.height, Math.min(size.height, this.maxSize.height)),
+                        };
+                        this.windowSize.width = this.customSize.width;
+                        this.windowSize.height = this.customSize.height;
+                    }
+                }
+            } catch (e) {
+                // ignore
+            }
+        },
+
+        /**
+         * 保存尺寸
+         */
+        saveSize() {
+            if (this.customSize.width && this.customSize.height) {
+                $A.IDBSave(this.sizeCacheKey, JSON.stringify(this.customSize));
+            }
         },
 
         /**
@@ -278,13 +460,29 @@ export default {
         },
 
         /**
-         * 窗口大小改变
+         * 视口尺寸变化
          */
-        onResize() {
-            this.$nextTick(() => {
-                this.updateWindowSize();
-                this.checkBounds();
-            });
+        onViewportChange() {
+            this.constrainSizeToScreen();
+            this.checkBounds();
+        },
+
+        /**
+         * 限制尺寸不超出屏幕
+         */
+        constrainSizeToScreen() {
+            const minMargin = 12;
+            const maxWidth = this.clientWidth - minMargin * 2;
+            const maxHeight = this.clientHeight - minMargin * 2;
+
+            if (this.customSize.width && this.customSize.width > maxWidth) {
+                this.customSize.width = Math.max(this.minSize.width, maxWidth);
+                this.windowSize.width = this.customSize.width;
+            }
+            if (this.customSize.height && this.customSize.height > maxHeight) {
+                this.customSize.height = Math.max(this.minSize.height, maxHeight);
+                this.windowSize.height = this.customSize.height;
+            }
         },
 
         onClose() {

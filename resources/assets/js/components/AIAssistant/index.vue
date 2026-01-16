@@ -1305,10 +1305,6 @@ export default {
 .ai-assistant-content {
     display: flex;
     flex-direction: column;
-    max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 266px);
-    @media (height <= 900px) {
-        max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 136px);
-    }
 
     .ai-assistant-welcome,
     .ai-assistant-output {
@@ -1575,19 +1571,84 @@ export default {
 
 .ai-assistant-chat {
     position: fixed;
-    right: 24px;
-    bottom: 24px;
     width: 460px;
-    height: 80vh;
+    height: 600px;
     min-width: 380px;
-    max-width: 600px;
-    max-height: 640px;
+    max-width: 800px;
+    min-height: 400px;
+    max-height: 900px;
     background-color: #ffffff;
     box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.12);
     border-radius: 16px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+
+    // 调整大小控制点基础样式
+    .ai-assistant-resize-handle {
+        position: absolute;
+        z-index: 10;
+    }
+
+    // 四边控制点
+    .ai-assistant-resize-n {
+        top: 0;
+        left: 8px;
+        right: 8px;
+        height: 6px;
+        cursor: n-resize;
+    }
+    .ai-assistant-resize-s {
+        bottom: 0;
+        left: 8px;
+        right: 8px;
+        height: 6px;
+        cursor: s-resize;
+    }
+    .ai-assistant-resize-e {
+        top: 8px;
+        right: 0;
+        bottom: 8px;
+        width: 6px;
+        cursor: e-resize;
+    }
+    .ai-assistant-resize-w {
+        top: 8px;
+        left: 0;
+        bottom: 8px;
+        width: 6px;
+        cursor: w-resize;
+    }
+
+    // 四角控制点
+    .ai-assistant-resize-ne {
+        top: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        cursor: ne-resize;
+    }
+    .ai-assistant-resize-nw {
+        top: 0;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        cursor: nw-resize;
+    }
+    .ai-assistant-resize-se {
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        cursor: se-resize;
+    }
+    .ai-assistant-resize-sw {
+        bottom: 0;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        cursor: sw-resize;
+    }
 
     .ai-assistant-close {
         position: absolute;
@@ -1631,14 +1692,10 @@ export default {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-
-            @media (max-height: 650px) {
-                justify-content: normal;
-            }
 
             .ai-assistant-welcome-icon {
                 flex-shrink: 0;
+                margin-top: auto;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -1669,6 +1726,7 @@ export default {
                 gap: 12px;
                 max-width: 100%;
                 padding: 0 8px;
+                margin-bottom: auto;
             }
 
             .ai-assistant-prompt-card {
@@ -1733,6 +1791,12 @@ export default {
         }
         .ivu-modal-body {
             padding: 0 !important;
+        }
+    }
+    .ai-assistant-content {
+        max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 266px);
+        @media (height <= 900px) {
+            max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 136px);
         }
     }
 }
