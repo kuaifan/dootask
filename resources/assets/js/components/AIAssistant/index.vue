@@ -99,7 +99,7 @@
                 </div>
                 <div class="ai-assistant-welcome-prompts">
                     <div
-                        v-for="(prompt, index) in welcomePrompts"
+                        v-for="(prompt, index) in displayWelcomePrompts"
                         :key="index"
                         class="ai-assistant-prompt-card"
                         @click="onPromptClick(prompt)">
@@ -154,6 +154,7 @@
 
 <script>
 import Vue from "vue";
+import {debounce} from "lodash";
 import emitter from "../../store/events";
 import {SSEClient} from "../../utils";
 import {AIBotMap, AIModelNames} from "../../utils/ai";
@@ -214,18 +215,27 @@ export default {
 
             // 会话管理
             sessionEnabled: false,
-            sessionStore: {},
+            sessionStore: [],
             currentSessionKey: 'default',
             currentSessionId: null,
             currentSceneKey: null,
-            sessionCacheKey: 'aiAssistant.sessions',
+            sessionCacheKeyPrefix: 'aiAssistant.sessions',
             maxSessionsPerKey: 20,
+            sessionStoreLoaded: false,
+
+            // 欢迎提示词（防抖更新，避免场景切换时连续刷新导致闪屏）
+            displayWelcomePrompts: [],
         }
+    },
+    created() {
+        // 创建防抖函数（每个实例独立）
+        this.refreshWelcomePromptsDebounced = debounce(() => {
+            this.displayWelcomePrompts = getWelcomePrompts(this.$store, this.$route?.params || {});
+        }, 100);
     },
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
         this.loadCachedModel();
-        this.loadSessionStore();
         this.mountFloatButton();
     },
     beforeDestroy() {
@@ -233,6 +243,7 @@ export default {
         this.clearActiveSSEClients();
         this.clearAutoSubmitTimer();
         this.unmountFloatButton();
+        this.refreshWelcomePromptsDebounced?.cancel();
     },
     computed: {
         selectedModelOption({modelMap, inputModel}) {
@@ -242,18 +253,29 @@ export default {
             return this.responses.length === 0;
         },
         currentSessionList() {
-            return this.sessionStore[this.currentSessionKey] || [];
+            return this.sessionStore || [];
         },
         hasSessionHistory() {
             return this.currentSessionList.length > 0;
         },
-        welcomePrompts() {
-            return getWelcomePrompts(this.$store, this.$route?.params || {});
+        // 提示词数据源（用于触发 watch，实际渲染用 displayWelcomePrompts）
+        welcomePromptsKey() {
+            // 返回影响提示词的关键数据，用于判断是否需要刷新
+            const routeName = this.$store.state.routeName;
+            const dialogId = this.$store.state.dialogId;
+            const projectId = this.$store.getters.projectData?.id;
+            return `${routeName}|${dialogId}|${projectId}`;
         },
     },
     watch: {
         inputModel(value) {
             this.saveModelCache(value);
+        },
+        welcomePromptsKey: {
+            handler() {
+                this.refreshWelcomePromptsDebounced();
+            },
+            immediate: true,
         },
     },
     methods: {
@@ -325,7 +347,7 @@ export default {
         /**
          * 实际执行打开助手的逻辑
          */
-        doOpenAssistant(params, displayMode) {
+        async doOpenAssistant(params, displayMode) {
             // 应用参数
             this.displayMode = displayMode;
             this.inputValue = params.value || '';
@@ -344,7 +366,7 @@ export default {
             this.pendingAutoSubmit = !!params.autoSubmit;
 
             // 会话管理
-            this.initSession(params.sessionKey, params.sceneKey, params.resumeSession);
+            await this.initSession(params.sessionKey, params.sceneKey, params.resumeSession);
 
             this.showModal = true;
             this.fetchModelOptions();
@@ -1011,29 +1033,45 @@ export default {
         // ==================== 会话管理方法 ====================
 
         /**
-         * 加载持久化的会话数据
+         * 获取指定场景的缓存 key
          */
-        async loadSessionStore() {
-            try {
-                const stored = await $A.IDBString(this.sessionCacheKey);
-                if (stored) {
-                    this.sessionStore = JSON.parse(stored);
-                }
-            } catch (e) {
-                this.sessionStore = {};
-            }
+        getSessionCacheKey(sessionKey) {
+            return `${this.sessionCacheKeyPrefix}_${sessionKey || 'default'}`;
         },
 
         /**
-         * 持久化会话数据
+         * 加载指定场景的会话数据
+         */
+        async loadSessionStore(sessionKey) {
+            const cacheKey = this.getSessionCacheKey(sessionKey);
+            try {
+                const stored = await $A.IDBString(cacheKey);
+                if (stored) {
+                    this.sessionStore = JSON.parse(stored);
+                    if (!Array.isArray(this.sessionStore)) {
+                        this.sessionStore = [];
+                    }
+                } else {
+                    this.sessionStore = [];
+                }
+            } catch (e) {
+                this.sessionStore = [];
+            }
+            this.sessionStoreLoaded = true;
+        },
+
+        /**
+         * 持久化当前场景的会话数据
          */
         saveSessionStore() {
+            const cacheKey = this.getSessionCacheKey(this.currentSessionKey);
             try {
-                $A.IDBSave(this.sessionCacheKey, JSON.stringify(this.sessionStore));
+                $A.IDBSave(cacheKey, JSON.stringify(this.sessionStore));
             } catch (e) {
                 console.warn('[AIAssistant] Failed to save session store:', e);
             }
         },
+
 
         /**
          * 生成会话 ID
@@ -1059,10 +1097,10 @@ export default {
         },
 
         /**
-         * 获取指定场景的会话列表
+         * 获取当前场景的会话列表
          */
-        getSessionList(sessionKey) {
-            return this.sessionStore[sessionKey] || [];
+        getSessionList() {
+            return this.sessionStore || [];
         },
 
         /**
@@ -1071,7 +1109,7 @@ export default {
          * @param {string} sceneKey - 场景标识，用于判断是否恢复会话
          * @param {number} resumeTimeout - 恢复超时时间（秒），默认1天
          */
-        initSession(sessionKey, sceneKey = null, resumeTimeout = 86400) {
+        async initSession(sessionKey, sceneKey = null, resumeTimeout = 86400) {
             // 保存当前会话
             if (this.responses.length > 0) {
                 this.saveCurrentSession();
@@ -1081,11 +1119,15 @@ export default {
             this.currentSceneKey = sceneKey;
 
             if (this.sessionEnabled) {
-                this.currentSessionKey = sessionKey;
+                // 如果切换到不同的场景，需要加载新场景的数据
+                if (this.currentSessionKey !== sessionKey || !this.sessionStoreLoaded) {
+                    this.currentSessionKey = sessionKey;
+                    await this.loadSessionStore(sessionKey);
+                }
 
                 // 如果传入了 sceneKey，从历史中查找相同场景的最新会话
                 if (sceneKey) {
-                    const sessions = this.getSessionList(sessionKey);
+                    const sessions = this.getSessionList();
                     // 找到相同场景标识的最新一条记录
                     const matchedSession = sessions.find(s => s.sceneKey === sceneKey);
                     if (matchedSession) {
@@ -1108,6 +1150,7 @@ export default {
                 this.currentSessionId = null;
                 this.currentSceneKey = null;
                 this.responses = [];
+                this.sessionStoreLoaded = false;
             }
         },
 
@@ -1132,31 +1175,30 @@ export default {
                 return;
             }
 
-            const sessionKey = this.currentSessionKey;
-            if (!this.sessionStore[sessionKey]) {
-                this.$set(this.sessionStore, sessionKey, []);
+            // 确保 sessionStore 是数组
+            if (!Array.isArray(this.sessionStore)) {
+                this.sessionStore = [];
             }
 
-            const sessions = this.sessionStore[sessionKey];
-            const existingIndex = sessions.findIndex(s => s.id === this.currentSessionId);
+            const existingIndex = this.sessionStore.findIndex(s => s.id === this.currentSessionId);
             const sessionData = {
                 id: this.currentSessionId,
                 title: this.generateSessionTitle(this.responses),
                 responses: JSON.parse(JSON.stringify(this.responses)),
                 sceneKey: this.currentSceneKey,
-                createdAt: existingIndex > -1 ? sessions[existingIndex].createdAt : Date.now(),
+                createdAt: existingIndex > -1 ? this.sessionStore[existingIndex].createdAt : Date.now(),
                 updatedAt: Date.now(),
             };
 
             if (existingIndex > -1) {
-                sessions[existingIndex] = sessionData;
+                this.sessionStore.splice(existingIndex, 1, sessionData);
             } else {
-                sessions.unshift(sessionData);
+                this.sessionStore.unshift(sessionData);
             }
 
             // 限制每个场景的会话数量
-            if (sessions.length > this.maxSessionsPerKey) {
-                sessions.splice(this.maxSessionsPerKey);
+            if (this.sessionStore.length > this.maxSessionsPerKey) {
+                this.sessionStore.splice(this.maxSessionsPerKey);
             }
 
             this.saveSessionStore();
@@ -1166,7 +1208,7 @@ export default {
          * 加载指定会话
          */
         loadSession(sessionId) {
-            const sessions = this.getSessionList(this.currentSessionKey);
+            const sessions = this.getSessionList();
             const session = sessions.find(s => s.id === sessionId);
             if (session) {
                 // 先保存当前会话
@@ -1200,10 +1242,9 @@ export default {
          * 删除指定会话
          */
         deleteSession(sessionId) {
-            const sessions = this.getSessionList(this.currentSessionKey);
-            const index = sessions.findIndex(s => s.id === sessionId);
+            const index = this.sessionStore.findIndex(s => s.id === sessionId);
             if (index > -1) {
-                sessions.splice(index, 1);
+                this.sessionStore.splice(index, 1);
                 this.saveSessionStore();
                 // 如果删除的是当前会话，创建新会话
                 if (this.currentSessionId === sessionId) {
@@ -1220,7 +1261,7 @@ export default {
                 title: this.$L('清空历史会话'),
                 content: this.$L('确定要清空当前场景的所有历史会话吗？'),
                 onOk: () => {
-                    this.$set(this.sessionStore, this.currentSessionKey, []);
+                    this.sessionStore = [];
                     this.saveSessionStore();
                     this.createNewSession(false);
                 }
@@ -1442,6 +1483,7 @@ export default {
     gap: 12px;
 
     .ivu-input {
+        color: #333333;
         background-color: transparent;
         border: 0;
         border-radius: 0;
