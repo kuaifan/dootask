@@ -273,9 +273,15 @@ export default {
         },
         welcomePromptsKey: {
             handler() {
-                this.refreshWelcomePromptsDebounced();
+                this.refreshWelcomePromptsDebounced?.();
             },
             immediate: true,
+        },
+        showModal(value) {
+            if (!value) {
+                // 弹窗关闭时通知操作模块
+                emitter.emit('aiAssistantClosed');
+            }
         },
     },
     methods: {

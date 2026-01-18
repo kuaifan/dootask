@@ -27,6 +27,7 @@ import {mapState} from "vuex";
 import emitter from "../../store/events";
 import {withLanguagePreferencePrompt} from "../../utils/ai";
 import {getPageContext, getSceneKey} from "./page-context";
+import {createOperationModule} from "./operation-module";
 
 export default {
     name: 'AIAssistantFloatButton',
@@ -50,6 +51,9 @@ export default {
             collapseDelay: 1000,   // 收起延迟（毫秒）
             collapseTimer: null,   // 收起定时器
             record: {},
+            // 前端操作模块
+            operationModule: null,
+            operationSessionId: null,
         };
     },
 
@@ -147,15 +151,19 @@ export default {
         this.loadPosition();
         window.addEventListener('resize', this.onResize);
         emitter.on('openAIAssistantGlobal', this.onClick);
+        emitter.on('aiAssistantClosed', this.onAssistantClosed);
+        this.initOperationModule();
     },
 
     beforeDestroy() {
         window.removeEventListener('resize', this.onResize);
         emitter.off('openAIAssistantGlobal', this.onClick);
+        emitter.off('aiAssistantClosed', this.onAssistantClosed);
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('mouseup', this.onMouseUp);
         document.removeEventListener('contextmenu', this.onContextMenu);
         this.clearCollapseTimer();
+        this.destroyOperationModule();
     },
 
     methods: {
@@ -363,6 +371,9 @@ export default {
             const routeParams = this.$route?.params || {};
             const sceneKey = getSceneKey(this.$store, routeParams);
 
+            // 启用前端操作模块
+            this.enableOperationModule();
+
             emitter.emit('openAIAssistant', {
                 displayMode: 'chat',
                 sessionKey: 'global',
@@ -371,6 +382,13 @@ export default {
                 showApplyButton: false,
                 onBeforeSend: this.handleBeforeSend,
             });
+        },
+
+        /**
+         * AI 助手关闭事件
+         */
+        onAssistantClosed() {
+            this.disableOperationModule();
         },
 
         /**
@@ -383,8 +401,14 @@ export default {
             const routeParams = this.$route?.params || {};
             const {systemPrompt} = getPageContext(this.$store, routeParams);
 
+            // 添加操作会话信息
+            let operationContext = '';
+            if (this.operationSessionId) {
+                operationContext = `\n\n前端操作会话已建立，session_id: ${this.operationSessionId}。你可以使用 get_page_context、execute_action、execute_element_action 工具直接操作用户的页面。`;
+            }
+
             const prepared = [
-                ['system', withLanguagePreferencePrompt(systemPrompt)],
+                ['system', withLanguagePreferencePrompt(systemPrompt + operationContext)],
             ];
 
             if (context.length > 0) {
@@ -392,7 +416,57 @@ export default {
             }
 
             return prepared;
-        }
+        },
+
+        /**
+         * 初始化操作模块
+         */
+        initOperationModule() {
+            if (this.operationModule) {
+                return;
+            }
+
+            this.operationModule = createOperationModule({
+                store: this.$store,
+                router: this.$router,
+                onSessionReady: (sessionId) => {
+                    this.operationSessionId = sessionId;
+                },
+                onSessionLost: () => {
+                    this.operationSessionId = null;
+                },
+            });
+        },
+
+        /**
+         * 启用操作模块
+         */
+        enableOperationModule() {
+            if (this.operationModule) {
+                this.operationModule.enable();
+            }
+        },
+
+        /**
+         * 禁用操作模块
+         */
+        disableOperationModule() {
+            if (this.operationModule) {
+                this.operationModule.disable();
+                this.operationSessionId = null;
+            }
+        },
+
+        /**
+         * 销毁操作模块
+         */
+        destroyOperationModule() {
+            if (this.operationModule) {
+                this.operationModule.disable();
+                this.operationModule = null;
+                this.operationSessionId = null;
+            }
+        },
     },
 };
 </script>
