@@ -69,6 +69,7 @@ const ELEMENT_ROLE_MAP = {
  * @param {number} options.max_elements - 每页最大元素数量，默认 50
  * @param {number} options.offset - 跳过前 N 个元素（分页用），默认 0
  * @param {string} options.container - 容器选择器，只扫描该容器内的元素
+ * @param {string} options.query - 搜索关键词，用于过滤相关元素
  * @returns {Object} 页面上下文
  */
 export function collectPageContext(store, options = {}) {
@@ -78,6 +79,7 @@ export function collectPageContext(store, options = {}) {
     const maxElements = options.max_elements || 50;
     const offset = options.offset || 0;
     const container = options.container || null;
+    const query = options.query || '';
 
     // 基础上下文
     const context = {
@@ -100,12 +102,18 @@ export function collectPageContext(store, options = {}) {
             maxElements,
             offset,
             container,
+            query,
         });
         context.elements = result.elements;
         context.element_count = result.elements.length;
         context.total_count = result.totalCount;
         context.has_more = result.hasMore;
         context.ref_map = result.refMap;
+        // 标记是否经过关键词过滤
+        if (query) {
+            context.query = query;
+            context.keyword_matched = result.keywordMatched;
+        }
     }
 
     return context;
@@ -223,7 +231,8 @@ function getAvailableActions(routeName, store) {
  * @param {number} options.maxElements - 每页最大元素数量
  * @param {number} options.offset - 跳过前 N 个元素
  * @param {string} options.container - 容器选择器
- * @returns {Object} { elements, refMap, totalCount, hasMore }
+ * @param {string} options.query - 搜索关键词
+ * @returns {Object} { elements, refMap, totalCount, hasMore, keywordMatched }
  */
 function collectElements(options = {}) {
     const {
@@ -231,6 +240,7 @@ function collectElements(options = {}) {
         maxElements = 50,
         offset = 0,
         container = null,
+        query = '',
     } = options;
 
     // 确定查询的根元素
@@ -338,8 +348,33 @@ function collectElements(options = {}) {
         allValidElements.push({ el, fromPointerScan: true });
     }
 
-    // 第二阶段：应用分页，生成最终结果
-    const totalCount = allValidElements.length;
+    // 第二阶段：应用关键词过滤（如果有 query）
+    let filteredElements = allValidElements;
+    let keywordMatched = false;
+
+    if (query) {
+        const lowerQuery = query.toLowerCase();
+        filteredElements = allValidElements.filter(({ el }) => {
+            const name = getElementName(el).toLowerCase();
+            const ariaLabel = (el.getAttribute('aria-label') || '').toLowerCase();
+            const placeholder = (el.placeholder || '').toLowerCase();
+            const title = (el.title || '').toLowerCase();
+
+            return name.includes(lowerQuery)
+                || ariaLabel.includes(lowerQuery)
+                || placeholder.includes(lowerQuery)
+                || title.includes(lowerQuery);
+        });
+        keywordMatched = filteredElements.length > 0;
+
+        // 如果关键词匹配不到任何元素，回退到全部元素
+        if (filteredElements.length === 0) {
+            filteredElements = allValidElements;
+        }
+    }
+
+    // 第三阶段：应用分页，生成最终结果
+    const totalCount = filteredElements.length;
     const startIndex = offset;
     const endIndex = Math.min(offset + maxElements, totalCount);
     const hasMore = endIndex < totalCount;
@@ -349,7 +384,7 @@ function collectElements(options = {}) {
     let refCounter = offset + 1; // ref 从 offset+1 开始，保持全局唯一
 
     for (let i = startIndex; i < endIndex; i++) {
-        const { el, fromPointerScan } = allValidElements[i];
+        const { el, fromPointerScan } = filteredElements[i];
 
         // 获取元素信息
         const elementInfo = extractElementInfo(el, refCounter);
@@ -397,7 +432,7 @@ function collectElements(options = {}) {
         }
     }
 
-    return { elements, refMap, totalCount, hasMore };
+    return { elements, refMap, totalCount, hasMore, keywordMatched };
 }
 
 /**
@@ -677,14 +712,33 @@ function generateSelector(el) {
  */
 export function findElementByRef(ref, refMap) {
     const refData = refMap[ref];
-    if (!refData) return null;
+    if (!refData) {
+        return null;
+    }
 
-    // 首先尝试使用选择器
+    // 首先尝试使用选择器 + name 双重匹配
     if (refData.selector) {
         const elements = document.querySelectorAll(refData.selector);
+
+        if (elements.length === 1) {
+            return elements[0];
+        }
+
+        // 多个匹配时，用 name 进一步筛选
+        if (elements.length > 1 && refData.name) {
+            for (const el of elements) {
+                const elName = getElementName(el);
+                if (elName === refData.name) {
+                    return el;
+                }
+            }
+        }
+
+        // 如果 name 匹配失败，尝试用 nth（仅作为最后手段）
         if (refData.nth !== undefined && elements.length > refData.nth) {
             return elements[refData.nth];
         }
+
         if (elements.length > 0) {
             return elements[0];
         }
@@ -704,6 +758,56 @@ export function findElementByRef(ref, refMap) {
     }
 
     return null;
+}
+
+/**
+ * 通过向量搜索匹配元素
+ * @param {Object} store - Vuex store 实例
+ * @param {string} query - 搜索查询
+ * @param {Array} elements - 元素列表
+ * @param {number} topK - 返回结果数量
+ * @returns {Promise<Array>} 匹配的元素列表
+ */
+export async function searchByVector(store, query, elements, topK = 10) {
+    if (!query || !elements || elements.length === 0) {
+        return [];
+    }
+
+    // 只传有 name 的元素，减少 API 调用
+    const minimalElements = elements
+        .filter(el => el.name && el.name.trim())
+        .map(el => ({
+            ref: el.ref,
+            name: el.name,
+        }));
+
+    if (minimalElements.length === 0) {
+        return [];
+    }
+
+    try {
+        const response = await store.dispatch('call', {
+            url: 'assistant/match_elements',
+            method: 'post',
+            data: {
+                query,
+                elements: minimalElements,
+                top_k: topK,
+            },
+        });
+
+        const matches = response?.data?.matches;
+        if (matches && matches.length > 0) {
+            const refOrder = matches.map(m => m.element.ref);
+            return elements
+                .filter(el => refOrder.includes(el.ref))
+                .sort((a, b) => refOrder.indexOf(a.ref) - refOrder.indexOf(b.ref));
+        }
+    } catch (e) {
+        // 向量搜索失败，静默处理
+    }
+
+    return [];
 }
 
 export default collectPageContext;

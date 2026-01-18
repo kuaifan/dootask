@@ -6,7 +6,7 @@
  */
 
 import { OperationClient } from './operation-client';
-import { collectPageContext } from './page-context-collector';
+import { collectPageContext, searchByVector } from './page-context-collector';
 import { createActionExecutor } from './action-executor';
 
 /**
@@ -114,16 +114,55 @@ class OperationModule {
     /**
      * 获取页面上下文
      */
-    getPageContext(payload) {
+    async getPageContext(payload) {
         const includeElements = payload?.include_elements !== false;
         const interactiveOnly = payload?.interactive_only || false;
         const maxElements = payload?.max_elements || 100;
+        const query = payload?.query || '';
+        const offset = payload?.offset || 0;
+        const container = payload?.container || null;
 
-        const context = collectPageContext(this.store, {
+        let context = collectPageContext(this.store, {
             include_elements: includeElements,
             interactive_only: interactiveOnly,
             max_elements: maxElements,
+            offset,
+            container,
+            query,
         });
+
+        // 如果有 query 且关键词匹配失败，尝试向量搜索
+        if (query && !context.keyword_matched) {
+            const allContext = collectPageContext(this.store, {
+                include_elements: true,
+                interactive_only: interactiveOnly,
+                max_elements: 200,
+                offset: 0,
+                container,
+            });
+
+            if (allContext.elements.length > 0) {
+                const vectorMatches = await searchByVector(this.store, query, allContext.elements, 10);
+                if (vectorMatches.length > 0) {
+                    context.elements = vectorMatches;
+                    context.element_count = vectorMatches.length;
+                    context.total_count = vectorMatches.length;
+                    context.has_more = false;
+                    context.vector_matched = true;
+                    context.ref_map = {};
+                    for (const el of vectorMatches) {
+                        if (el.ref) {
+                            context.ref_map[el.ref] = {
+                                role: el.role,
+                                name: el.name,
+                                selector: el.selector,
+                                nth: el.nth,
+                            };
+                        }
+                    }
+                }
+            }
+        }
 
         // 将 refMap 存储到 executor，供后续元素操作使用
         if (context.ref_map && this.executor) {
