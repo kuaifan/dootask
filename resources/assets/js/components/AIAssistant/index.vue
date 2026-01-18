@@ -77,7 +77,32 @@
                     <div class="ai-assistant-output-meta">
                         <span class="ai-assistant-output-model">{{ response.modelLabel || response.model }}</span>
                     </div>
-                    <div v-if="response.prompt" class="ai-assistant-output-question">{{ response.prompt }}</div>
+                    <!-- 问题区域：正常显示或编辑模式 -->
+                    <div v-if="response.prompt" class="ai-assistant-output-question-wrap">
+                        <!-- 编辑模式 -->
+                        <div v-if="editingIndex === responses.indexOf(response)" class="ai-assistant-question-editor">
+                            <Input
+                                v-model="editingValue"
+                                ref="editInputRef"
+                                type="textarea"
+                                :autosize="{minRows: 1, maxRows: 6}"
+                                :maxlength="inputMaxlength || 500"
+                                @on-keydown="onEditKeydown"
+                                @compositionstart.native="isComposing = true"
+                                @compositionend.native="isComposing = false" />
+                            <div class="ai-assistant-question-editor-btns">
+                                <Button size="small" @click="cancelEditQuestion">{{ $L('取消') }}</Button>
+                                <Button type="primary" size="small" :loading="loadIng > 0" @click="submitEditedQuestion">{{ $L('发送') }}</Button>
+                            </div>
+                        </div>
+                        <!-- 正常显示模式 -->
+                        <div v-else class="ai-assistant-output-question">
+                            <span class="ai-assistant-output-question-text">{{ response.prompt }}</span>
+                            <span class="ai-assistant-output-question-edit" :title="$L('编辑问题')" @click="startEditQuestion(responses.indexOf(response))">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M11.331 3.568a3.61 3.61 0 0 1 4.973.128l.128.135a3.61 3.61 0 0 1 0 4.838l-.128.135-6.292 6.29c-.324.324-.558.561-.79.752l-.235.177q-.309.21-.65.36l-.23.093c-.181.066-.369.114-.585.159l-.765.135-2.394.399c-.142.024-.294.05-.422.06-.1.007-.233.01-.378-.026l-.149-.049a1.1 1.1 0 0 1-.522-.474l-.046-.094a1.1 1.1 0 0 1-.074-.526c.01-.129.035-.28.06-.423l.398-2.394.134-.764a4 4 0 0 1 .16-.586l.093-.23q.15-.342.36-.65l.176-.235c.19-.232.429-.466.752-.79l6.291-6.292zm-5.485 7.36c-.35.35-.533.535-.66.688l-.11.147a2.7 2.7 0 0 0-.24.433l-.062.155c-.04.11-.072.225-.106.394l-.127.717-.398 2.393-.001.002h.003l2.393-.399.717-.126c.169-.034.284-.065.395-.105l.153-.062q.228-.1.433-.241l.148-.11c.153-.126.338-.31.687-.66l4.988-4.988-3.226-3.226zm9.517-6.291a2.28 2.28 0 0 0-3.053-.157l-.173.157-.364.363L15 8.226l.363-.363.157-.174a2.28 2.28 0 0 0 0-2.878z"/></svg>
+                            </span>
+                        </div>
+                    </div>
                     <DialogMarkdown
                         v-if="response.rawOutput"
                         class="ai-assistant-output-markdown no-dark-content"
@@ -225,6 +250,10 @@ export default {
 
             // 欢迎提示词（防抖更新，避免场景切换时连续刷新导致闪屏）
             displayWelcomePrompts: [],
+
+            // 编辑历史问题
+            editingIndex: -1,        // 正在编辑的响应索引，-1 表示不在编辑模式
+            editingValue: '',        // 编辑中的文本内容
         }
     },
     created() {
@@ -552,22 +581,38 @@ export default {
             if (this.loadIng > 0) {
                 return;
             }
-            const rawValue = this.inputValue || '';
+            const prompt = (this.inputValue || '').trim();
+            if (!prompt) {
+                return;
+            }
+            const success = await this._doSendQuestion(prompt);
+            if (success) {
+                this.inputValue = '';
+            }
+        },
+
+        /**
+         * 执行发送问题的核心逻辑
+         * @param {string} prompt - 要发送的问题
+         * @returns {Promise<boolean>} - 是否发送成功
+         * @private
+         */
+        async _doSendQuestion(prompt) {
             const modelOption = this.selectedModelOption;
             if (!modelOption) {
                 $A.messageWarning('请选择模型');
-                return;
+                return false;
             }
 
             this.loadIng++;
             let responseEntry = null;
             try {
-                const baseContext = this.collectBaseContext(rawValue);
+                const baseContext = this.collectBaseContext(prompt);
                 const context = await this.buildPayloadData(baseContext);
 
                 responseEntry = this.createResponseEntry({
                     modelOption,
-                    prompt: rawValue,
+                    prompt,
                 });
                 this.scrollResponsesToBottom();
 
@@ -577,14 +622,15 @@ export default {
                     context,
                 });
 
-                this.inputValue = '';
                 this.startStream(streamKey, responseEntry);
+                return true;
             } catch (error) {
                 const msg = error?.msg || '发送失败';
                 if (responseEntry) {
                     this.markResponseError(responseEntry, msg);
                 }
                 $A.modalError(msg);
+                return false;
             } finally {
                 this.loadIng--;
             }
@@ -1291,6 +1337,75 @@ export default {
             }
             return time.format('YYYY-MM-DD HH:mm');
         },
+
+        // ==================== 编辑历史问题 ====================
+
+        /**
+         * 开始编辑历史问题
+         */
+        startEditQuestion(index) {
+            if (index < 0 || index >= this.responses.length) {
+                return;
+            }
+            if (this.loadIng > 0) {
+                return;
+            }
+            this.editingIndex = index;
+            this.editingValue = this.responses[index].prompt || '';
+            this.$nextTick(() => {
+                // ref 在 v-for 中会变成数组
+                const inputRef = this.$refs.editInputRef;
+                const input = Array.isArray(inputRef) ? inputRef[0] : inputRef;
+                if (input && typeof input.focus === 'function') {
+                    input.focus();
+                }
+            });
+        },
+
+        /**
+         * 取消编辑
+         */
+        cancelEditQuestion() {
+            this.editingIndex = -1;
+            this.editingValue = '';
+        },
+
+        /**
+         * 编辑器键盘事件
+         */
+        onEditKeydown(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.cancelEditQuestion();
+            } else if (e.key === 'Enter' && !e.shiftKey && !this.isComposing) {
+                e.preventDefault();
+                this.submitEditedQuestion();
+            }
+        },
+
+        /**
+         * 提交编辑后的问题
+         */
+        async submitEditedQuestion() {
+            if (this.editingIndex < 0 || this.loadIng > 0) {
+                return;
+            }
+            const newPrompt = (this.editingValue || '').trim();
+            if (!newPrompt) {
+                $A.messageWarning('请输入问题');
+                return;
+            }
+
+            // 删除从编辑位置开始的所有响应
+            this.responses.splice(this.editingIndex);
+
+            // 重置编辑状态
+            this.editingIndex = -1;
+            this.editingValue = '';
+
+            // 发送新问题
+            await this._doSendQuestion(newPrompt);
+        },
     },
 }
 </script>
@@ -1427,15 +1542,97 @@ export default {
         padding: 2px 8px;
     }
 
+    .ai-assistant-output-question-wrap {
+        margin-top: 8px;
+    }
+
     .ai-assistant-output-question {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        display: flex;
+        align-items: flex-start;
+        gap: 4px;
         font-size: 12px;
         color: #666;
         line-height: 1.4;
-        margin-top: 8px;
+
+        .ai-assistant-output-question-text {
+            flex: 1;
+            min-width: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .ai-assistant-output-question-edit {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            color: #777;
+            border-radius: 4px;
+            margin-top: -2px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s, color 0.2s, background-color 0.2s;
+
+            svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            &:hover {
+                color: #444;
+                background-color: rgba(0, 0, 0, 0.06);
+            }
+        }
+
+        &:hover {
+            .ai-assistant-output-question-edit {
+                opacity: 1;
+            }
+        }
+    }
+
+    .ai-assistant-question-editor {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 13px;
+
+        .ivu-input {
+            color: #333;
+            background-color: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0 2px;
+            resize: none;
+            font-size: 12px;
+
+            &:hover,
+            &:focus {
+                border-color: transparent;
+                box-shadow: none;
+            }
+        }
+
+        .ai-assistant-question-editor-btns {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+
+            .ivu-btn {
+                height: 26px;
+                font-size: 12px;
+                padding: 0 9px;
+                border-radius: 13px;
+            }
+        }
     }
 
     .ai-assistant-output-placeholder {
