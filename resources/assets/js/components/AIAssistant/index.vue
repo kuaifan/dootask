@@ -254,6 +254,13 @@ export default {
             // 编辑历史问题
             editingIndex: -1,        // 正在编辑的响应索引，-1 表示不在编辑模式
             editingValue: '',        // 编辑中的文本内容
+
+            // 输入历史（上下键切换）
+            inputHistoryList: [],    // 历史输入列表
+            inputHistoryIndex: 0,    // 当前历史索引
+            inputHistoryCurrent: '', // 切换前的当前输入
+            inputHistoryCacheKey: 'aiAssistant.inputHistory',
+            inputHistoryLimit: 50,
         }
     },
     created() {
@@ -265,6 +272,7 @@ export default {
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
         this.loadCachedModel();
+        this.loadInputHistory();
         this.mountFloatButton();
     },
     beforeDestroy() {
@@ -560,16 +568,32 @@ export default {
         },
 
         /**
-         * 输入框键盘事件：回车发送，Shift+回车换行
+         * 输入框键盘事件：回车发送，Shift+回车换行，上下键切换历史
          * 注意：输入法组合输入时（如中文候选字）不发送
          */
         onInputKeydown(e) {
-            if (!e.shiftKey && !this.isComposing) {
+            if (this.isComposing) {
+                return;
+            }
+            if (!e.shiftKey) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     this.onSubmit();
-                } else if (e.key === 'Escape' && this.displayMode === 'chat') {
+                    return;
+                }
+                if (e.key === 'Escape' && this.displayMode === 'chat') {
                     this.showModal = false;
+                    return;
+                }
+            }
+            // 上下键切换历史输入
+            if (e.key === 'ArrowUp') {
+                if (!this.navigateInputHistory('up')) {
+                    e.preventDefault();
+                }
+            } else if (e.key === 'ArrowDown') {
+                if (!this.navigateInputHistory('down')) {
+                    e.preventDefault();
                 }
             }
         },
@@ -622,6 +646,7 @@ export default {
                     context,
                 });
 
+                this.persistInputHistory(prompt);
                 this.startStream(streamKey, responseEntry);
                 return true;
             } catch (error) {
@@ -1047,6 +1072,7 @@ export default {
             this.pendingAutoSubmit = false;
             this.clearAutoSubmitTimer();
             this.clearActiveSSEClients();
+            this.resetInputHistoryNavigation();
             this.showModal = false;
             this.responses = [];
             setTimeout(() => {
@@ -1336,6 +1362,132 @@ export default {
                 return time.format('MM-DD HH:mm');
             }
             return time.format('YYYY-MM-DD HH:mm');
+        },
+
+        // ==================== 输入历史（上下键切换）====================
+
+        /**
+         * 加载输入历史
+         */
+        async loadInputHistory() {
+            try {
+                const history = await $A.IDBValue(this.inputHistoryCacheKey);
+                if (Array.isArray(history)) {
+                    this.inputHistoryList = history;
+                } else {
+                    this.inputHistoryList = [];
+                }
+            } catch (e) {
+                this.inputHistoryList = [];
+            }
+            this.inputHistoryIndex = this.inputHistoryList.length;
+            this.inputHistoryCurrent = '';
+        },
+
+        /**
+         * 保存输入到历史
+         */
+        persistInputHistory(content) {
+            const trimmed = (content || '').trim();
+            if (!trimmed) {
+                return;
+            }
+            const history = Array.isArray(this.inputHistoryList) ? [...this.inputHistoryList] : [];
+            // 如果和最后一条相同，不重复添加
+            if (history[history.length - 1] === trimmed) {
+                this.inputHistoryIndex = history.length;
+                this.inputHistoryCurrent = '';
+                return;
+            }
+            // 如果已存在，移动到末尾
+            const existIndex = history.indexOf(trimmed);
+            if (existIndex !== -1) {
+                history.splice(existIndex, 1);
+            }
+            history.push(trimmed);
+            // 限制最大条数
+            if (history.length > this.inputHistoryLimit) {
+                history.splice(0, history.length - this.inputHistoryLimit);
+            }
+            this.inputHistoryList = history;
+            this.inputHistoryIndex = history.length;
+            this.inputHistoryCurrent = '';
+            $A.IDBSet(this.inputHistoryCacheKey, history).catch(() => {});
+        },
+
+        /**
+         * 重置历史导航状态
+         */
+        resetInputHistoryNavigation() {
+            this.inputHistoryIndex = this.inputHistoryList.length;
+            this.inputHistoryCurrent = '';
+        },
+
+        /**
+         * 导航输入历史
+         * @param {string} direction - 'up' 或 'down'
+         * @returns {boolean} - 是否允许默认行为
+         */
+        navigateInputHistory(direction) {
+            if (!this.inputHistoryList.length) {
+                return true;
+            }
+            const textarea = this.$refs.inputRef?.$el?.querySelector('textarea');
+            if (!textarea) {
+                return true;
+            }
+            const cursorPos = textarea.selectionStart;
+            const cursorEnd = textarea.selectionEnd;
+            const value = this.inputValue || '';
+            // 如果有选中文本，允许默认行为
+            if (cursorPos !== cursorEnd) {
+                return true;
+            }
+            if (direction === 'up') {
+                // 只有光标在第一行时才切换历史
+                const beforeCursor = value.substring(0, cursorPos);
+                if (beforeCursor.includes('\n')) {
+                    return true;
+                }
+                // 保存当前输入
+                if (this.inputHistoryIndex === this.inputHistoryList.length) {
+                    this.inputHistoryCurrent = value;
+                }
+                if (this.inputHistoryIndex > 0) {
+                    this.inputHistoryIndex--;
+                    this.inputValue = this.inputHistoryList[this.inputHistoryIndex] || '';
+                    this.$nextTick(() => {
+                        const ta = this.$refs.inputRef?.$el?.querySelector('textarea');
+                        ta?.setSelectionRange(0, 0);
+                    });
+                    return false;
+                }
+            } else if (direction === 'down') {
+                // 只有光标在最后一行时才切换历史
+                const afterCursor = value.substring(cursorPos);
+                if (afterCursor.includes('\n')) {
+                    return true;
+                }
+                if (this.inputHistoryIndex >= this.inputHistoryList.length) {
+                    return true;
+                }
+                if (this.inputHistoryIndex < this.inputHistoryList.length - 1) {
+                    this.inputHistoryIndex++;
+                    this.inputValue = this.inputHistoryList[this.inputHistoryIndex] || '';
+                } else {
+                    this.inputHistoryIndex = this.inputHistoryList.length;
+                    this.inputValue = this.inputHistoryCurrent || '';
+                }
+                this.$nextTick(() => {
+                    const ta = this.$refs.inputRef?.$el?.querySelector('textarea');
+                    if (ta) {
+                        const len = (this.inputValue || '').length;
+                        ta.setSelectionRange(len, len);
+                    }
+                });
+                return false;
+            }
+            return true;
         },
 
         // ==================== 编辑历史问题 ====================
