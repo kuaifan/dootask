@@ -301,7 +301,9 @@ export default {
             const routeName = this.$store.state.routeName;
             const dialogId = this.$store.state.dialogId;
             const projectId = this.$store.getters.projectData?.id;
-            return `${routeName}|${dialogId}|${projectId}`;
+            const taskId = this.$store.state.taskId;
+            const dialogModalShow = this.$store.state.dialogModalShow;
+            return `${routeName}|${dialogId}|${projectId}|${taskId}|${dialogModalShow}`;
         },
     },
     watch: {

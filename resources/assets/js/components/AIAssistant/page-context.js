@@ -14,6 +14,18 @@
  * @returns {Object} { systemPrompt }
  */
 export function getPageContext(store, routeParams = {}) {
+    // 优先检测弹窗场景
+    const taskId = store.state.taskId;
+    if (taskId > 0) {
+        return getSingleTaskContext(store, { taskId });
+    }
+
+    const dialogModalShow = store.state.dialogModalShow;
+    const dialogId = store.state.dialogId;
+    if (dialogModalShow && dialogId > 0) {
+        return getSingleDialogContext(store, { dialogId });
+    }
+
     const routeName = store.state.routeName;
 
     const contextMap = {
@@ -324,6 +336,18 @@ function getDefaultContext() {
  * @returns {string} 场景标识，格式如 "routeName/entityType:entityId"
  */
 export function getSceneKey(store, routeParams = {}) {
+    // 优先检测弹窗场景
+    const taskId = store.state.taskId;
+    if (taskId > 0) {
+        return `modal-task/task:${taskId}`;
+    }
+
+    const dialogModalShow = store.state.dialogModalShow;
+    const dialogId = store.state.dialogId;
+    if (dialogModalShow && dialogId > 0) {
+        return `modal-dialog/dialog:${dialogId}`;
+    }
+
     const routeName = store.state.routeName;
     const parts = [routeName || 'unknown'];
 

@@ -98,6 +98,20 @@ function getRandomItems(arr, count) {
 }
 
 /**
+ * 格式化提示词：选择随机数量并转换为当前语言
+ * @param {Array} rawPrompts - 原始提示词列表
+ * @returns {Array} 格式化后的提示词列表 [{ text, svg }]
+ */
+function formatPrompts(rawPrompts) {
+    const displayCount = Math.floor(Math.random() * 4) + 3; // 3, 4, 5, 或 6
+    const selectedPrompts = selectPrompts(rawPrompts, displayCount);
+    return selectedPrompts.map(item => ({
+        text: getText(item.text),
+        svg: item.svg,
+    }));
+}
+
+/**
  * 随机选择提示词：优先展示 pin 提示，并尽量避免重复类型
  * @param {Array} rawPrompts - 提示词列表
  * @param {number} count - 选择数量
@@ -174,6 +188,18 @@ function selectPrompts(rawPrompts, count) {
  * @returns {Array} 快捷提示列表 [{ text, svg }]，随机显示 3-6 个
  */
 export function getWelcomePrompts(store, routeParams = {}) {
+    // 优先检测弹窗场景
+    const taskId = store.state.taskId;
+    if (taskId > 0) {
+        return formatPrompts(getSingleTaskPrompts());
+    }
+
+    const dialogModalShow = store.state.dialogModalShow;
+    const dialogId = store.state.dialogId;
+    if (dialogModalShow && dialogId > 0) {
+        return formatPrompts(getSingleDialogPrompts());
+    }
+
     const routeName = store.state.routeName;
 
     const promptsMap = {
@@ -196,15 +222,7 @@ export function getWelcomePrompts(store, routeParams = {}) {
     const getPrompts = promptsMap[routeName];
     const rawPrompts = getPrompts ? getPrompts(store, routeParams) : getDefaultPrompts(store);
 
-    // 随机选择 3-6 个提示词
-    const displayCount = Math.floor(Math.random() * 4) + 3; // 3, 4, 5, 或 6
-    const selectedPrompts = selectPrompts(rawPrompts, displayCount);
-
-    // 转换文本为当前语言
-    return selectedPrompts.map(item => ({
-        text: getText(item.text),
-        svg: item.svg,
-    }));
+    return formatPrompts(rawPrompts);
 }
 
 /**
