@@ -268,6 +268,82 @@ const MarkdownPluginUtils = {
 
 export {MarkdownPluginUtils}
 
+/**
+ * 合并连续的工具使用
+ * 例如：
+ * > <tool-use>Tool: a</tool-use>
+ * > <tool-use>Tool: b</tool-use>
+ * > <tool-use>Tool: b</tool-use>
+ * 合并为：
+ * > <tool-use>Tool: a, b x 2</tool-use>
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+function mergeConsecutiveToolUse(text) {
+    const toolUsePattern = /^>\s*<tool-use>Tool:\s*([^<]+)<\/tool-use>\s*$/;
+    const lines = text.split('\n');
+    const result = [];
+    let toolGroup = [];
+
+    const formatToolGroup = (tools) => {
+        if (tools.length === 0) return '';
+        if (tools.length === 1) return `> <tool-use>Tool: ${tools[0]}</tool-use>`;
+
+        // 合并连续相同的工具
+        const merged = [];
+        let currentTool = tools[0];
+        let count = 1;
+
+        for (let i = 1; i < tools.length; i++) {
+            if (tools[i] === currentTool) {
+                count++;
+            } else {
+                merged.push(count > 1 ? `${currentTool} x ${count}` : currentTool);
+                currentTool = tools[i];
+                count = 1;
+            }
+        }
+        merged.push(count > 1 ? `${currentTool} x ${count}` : currentTool);
+
+        return `> <tool-use>Tool: ${merged.join(', ')}</tool-use>`;
+    };
+
+    let pendingEmptyLines = []; // 暂存空行
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const match = line.match(toolUsePattern);
+
+        if (match) {
+            // 工具使用行，丢弃暂存的空行，继续收集
+            pendingEmptyLines = [];
+            toolGroup.push(match[1].trim());
+        } else if (line.trim() === '' && toolGroup.length > 0) {
+            // 空行且已有工具组，暂存空行
+            pendingEmptyLines.push(line);
+        } else {
+            // 非工具使用的非空行，结束当前工具组
+            if (toolGroup.length > 0) {
+                result.push(formatToolGroup(toolGroup));
+                toolGroup = [];
+            }
+            // 输出暂存的空行
+            result.push(...pendingEmptyLines);
+            pendingEmptyLines = [];
+            result.push(line);
+        }
+    }
+
+    if (toolGroup.length > 0) {
+        result.push(formatToolGroup(toolGroup));
+    }
+    // 输出末尾暂存的空行
+    result.push(...pendingEmptyLines);
+
+    return result.join('\n');
+}
+
 export function MarkdownConver(text) {
     if (text === '...') {
         return '<div class="input-blink"></div>'
@@ -292,6 +368,7 @@ export function MarkdownConver(text) {
         MarkdownPluginUtils.initReasoningPlugin(MarkdownUtils.mdi);
     }
     text = MarkdownPluginUtils.clearEmptyReasoning(text);
+    text = mergeConsecutiveToolUse(text);
     text = MarkdownUtils.mdi.render(text);
     return MarkdownUtils.formatMsg(text)
 }
