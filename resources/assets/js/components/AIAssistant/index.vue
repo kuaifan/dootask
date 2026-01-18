@@ -58,7 +58,7 @@
                         <template v-if="response.status === 'error'">
                             <span class="ai-assistant-output-error">{{ $L('发送失败') }}</span>
                         </template>
-                        <template v-else-if="response.rawOutput">
+                        <template v-else-if="response.rawOutput && response.status !== 'streaming'">
                             <Button
                                 v-if="showApplyButton"
                                 type="primary"
@@ -69,9 +69,9 @@
                                 {{ applyButtonText || $L('应用此内容') }}
                             </Button>
                         </template>
-                        <template v-else>
+                        <template v-else-if="!response.rawOutput || response.status === 'streaming'">
                             <Icon type="ios-loading" class="ai-assistant-output-icon icon-loading"/>
-                            <span v-if="loadingText" class="ai-assistant-output-status">{{ loadingText }}</span>
+                            <span v-if="loadingText && !response.rawOutput" class="ai-assistant-output-status">{{ loadingText }}</span>
                         </template>
                     </div>
                     <div class="ai-assistant-output-meta">
@@ -795,7 +795,7 @@ export default {
                         const donePayload = this.parseStreamPayload(event);
                         if (donePayload && donePayload.error) {
                             this.markResponseError(responseEntry, donePayload.error);
-                        } else if (responseEntry && responseEntry.status !== 'error' && responseEntry.rawOutput) {
+                        } else if (responseEntry && responseEntry.status !== 'error') {
                             responseEntry.status = 'completed';
                         }
                         this.releaseSSEClient(sse);
@@ -803,6 +803,13 @@ export default {
                         this.saveCurrentSession();
                         break;
                 }
+            }, () => {
+                // SSE 连接失败（重试次数用完）时的回调
+                if (responseEntry && responseEntry.status === 'streaming') {
+                    responseEntry.status = 'completed';
+                }
+                this.releaseSSEClient(sse);
+                this.saveCurrentSession();
             });
             return sse;
         },

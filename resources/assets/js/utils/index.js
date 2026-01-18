@@ -118,42 +118,44 @@ export class SSEClient {
         };
     }
 
-    _onError(type, handler) {
+    _onError(type, handler, onFailed) {
         return () => {
             if (window.systemInfo.debug === "yes") {
                 console.log("SSE retry: " + this.url);
             }
             if (this.es) {
-                this._removeAllEvent(type, handler);
+                this._removeAllEvent(type, handler, onFailed);
                 this.unsunscribe();
             }
 
             if (this.retry > 0) {
                 this.retry--;
                 this.timer = setTimeout(() => {
-                    this.subscribe(type, handler);
+                    this.subscribe(type, handler, onFailed);
                 }, this.options.interval);
+            } else if (typeof onFailed === 'function') {
+                onFailed();
             }
         };
     }
 
-    _removeAllEvent(type, handler) {
+    _removeAllEvent(type, handler, onFailed) {
         type = $A.isArray(type) ? type : [type]
         this.es.removeEventListener("open", this._onOpen);
         type.some(item => {
             this.es.removeEventListener(item, this._onMessage(item, handler));
         })
-        this.es.removeEventListener("error", this._onError(type, handler));
+        this.es.removeEventListener("error", this._onError(type, handler, onFailed));
     }
 
-    subscribe(type, handler) {
+    subscribe(type, handler, onFailed) {
         type = $A.isArray(type) ? type : [type]
         this.es = new EventSource(this.url);
         this.es.addEventListener("open", this._onOpen);
         type.some(item => {
             this.es.addEventListener(item, this._onMessage(item, handler));
         })
-        this.es.addEventListener("error", this._onError(type, handler));
+        this.es.addEventListener("error", this._onError(type, handler, onFailed));
     }
 
     unsunscribe() {
