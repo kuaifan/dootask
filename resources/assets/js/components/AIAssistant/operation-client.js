@@ -4,8 +4,7 @@
  * 负责与 MCP Server 建立 WebSocket 连接，
  * 接收来自 MCP 工具的请求并返回响应。
  */
-
-const WS_PATH = '/apps/mcp_server/mcp/operation';
+const WS_PATH = 'apps/mcp_server/mcp/operation';
 const RECONNECT_DELAY = 3000;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
@@ -59,9 +58,10 @@ export class OperationClient {
             return;
         }
 
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        const url = `${protocol}//${host}${WS_PATH}?token=${encodeURIComponent(token)}`;
+        let url = $A.mainUrl(WS_PATH);
+        url = url.replace("https://", "wss://");
+        url = url.replace("http://", "ws://");
+        url += `?token=${encodeURIComponent(token)}`;
 
         try {
             this.ws = new WebSocket(url);
