@@ -1944,8 +1944,7 @@ export default {
 }
 
 .ai-assistant-history-menu {
-    min-width: 240px;
-    max-width: 260px;
+    width: 260px;
     max-height: 320px;
     overflow-y: auto;
 

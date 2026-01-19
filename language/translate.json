@@ -32698,5 +32698,65 @@
         "fr": "Effacer l’historique",
         "id": "Hapus Riwayat",
         "ru": "Очистить историю"
+    },
+    {
+        "key": "编辑问题",
+        "zh": "",
+        "zh-CHT": "編輯問題",
+        "en": "Edit issue",
+        "ko": "이슈 편집",
+        "ja": "課題を編集",
+        "de": "Vorgang bearbeiten",
+        "fr": "Modifier le ticket",
+        "id": "Edit isu",
+        "ru": "Редактировать задачу"
+    },
+    {
+        "key": "重启应用",
+        "zh": "",
+        "zh-CHT": "重新啟動應用",
+        "en": "Restart app",
+        "ko": "앱 재시작",
+        "ja": "アプリを再起動",
+        "de": "App neu starten",
+        "fr": "Redémarrer l’application",
+        "id": "Mulai ulang aplikasi",
+        "ru": "Перезапустить приложение"
+    },
+    {
+        "key": "关闭应用",
+        "zh": "",
+        "zh-CHT": "關閉應用",
+        "en": "Close app",
+        "ko": "앱 종료",
+        "ja": "アプリを終了",
+        "de": "App schließen",
+        "fr": "Fermer l’application",
+        "id": "Tutup aplikasi",
+        "ru": "Закрыть приложение"
+    },
+    {
+        "key": "请描述你想搜索的内容...",
+        "zh": "",
+        "zh-CHT": "請描述你想搜尋的內容...",
+        "en": "Describe what you want to search...",
+        "ko": "검색할 내용을 설명해 주세요...",
+        "ja": "検索したい内容を入力してください...",
+        "de": "Beschreibe, wonach du suchen möchtest...",
+        "fr": "Décrivez ce que vous souhaitez rechercher...",
+        "id": "Jelaskan apa yang ingin Anda cari...",
+        "ru": "Опишите, что вы хотите найти..."
+    },
+    {
+        "key": "搜索中...",
+        "zh": "",
+        "zh-CHT": "搜尋中...",
+        "en": "Searching...",
+        "ko": "검색 중...",
+        "ja": "検索中...",
+        "de": "Suche läuft...",
+        "fr": "Recherche en cours...",
+        "id": "Sedang mencari...",
+        "ru": "Поиск..."
     }
 ]
