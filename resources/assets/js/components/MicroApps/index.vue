@@ -358,6 +358,14 @@ export default {
                         }
                         return null;
                     },
+                    extraCallEmitter: async (...args) => {
+                        if (args.length > 0 && typeof args[0] === 'string') {
+                            const actionName = args[0];
+                            const payload = args.slice(1);
+                            emitter.emit(actionName, ...payload);
+                        }
+                        return null;
+                    },
                 },
             }
         },
