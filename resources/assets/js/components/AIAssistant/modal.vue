@@ -72,6 +72,10 @@ export default {
         shouldCreateNewSession: {
             type: Boolean,
             default: false
+        },
+        zIndex: {
+            type: Number,
+            default: 2000
         }
     },
 
@@ -155,15 +159,19 @@ export default {
             if (!this.positionLoaded) {
                 return {
                     opacity: 0,
+                    zIndex: this.zIndex,
                 };
             }
             // 全屏时不应用自定义尺寸和位置
             if (this.isFullscreen) {
-                return {};
+                return {
+                    zIndex: this.zIndex,
+                };
             }
             const style = {
                 left: `${this.left}px`,
                 top: `${this.top}px`,
+                zIndex: this.zIndex,
             };
             // 应用自定义尺寸
             if (this.customSize.width) {

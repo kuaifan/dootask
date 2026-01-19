@@ -127,6 +127,7 @@ export default {
                 top: `${this.wrapperTop}px`,
                 width: `${this.wrapperWidth}px`,
                 height: `${this.wrapperHeight}px`,
+                zIndex: this.$parent?.topZIndex || 2000,
             };
         },
 
@@ -478,7 +479,6 @@ $collapsed-height: 48px;
 
 .ai-float-button-wrapper {
     position: fixed;
-    z-index: 1000;
     display: flex;
     align-items: center;
 

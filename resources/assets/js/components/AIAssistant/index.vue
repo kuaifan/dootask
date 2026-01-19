@@ -2,7 +2,8 @@
     <AssistantModal
         v-model="showModal"
         :displayMode="displayMode"
-        :shouldCreateNewSession="shouldCreateNewSession">
+        :shouldCreateNewSession="shouldCreateNewSession"
+        :zIndex="topZIndex">
         <div slot="header" class="ai-assistant-header">
             <div class="ai-assistant-header-title">
                 <i class="taskfont">&#xe8a1;</i>
@@ -16,7 +17,8 @@
                     v-if="sessionEnabled && hasSessionHistory"
                     trigger="click"
                     placement="bottom-end"
-                    :transfer="true">
+                    :transfer="true"
+                    :z-index="topZIndex + 1">
                     <div class="ai-assistant-header-btn" :title="$L('历史会话')">
                         <i class="taskfont">&#xe6e8;</i>
                     </div>
@@ -28,12 +30,12 @@
                             @click.native="loadSession(session.id)">
                             <div class="history-item">
                                 <div class="history-item-content">
-                                    <span class="history-item-title">{{ session.title }}</span>
-                                    <span class="history-item-time">{{ formatSessionTime(session.updatedAt) }}</span>
+                                    <div class="history-item-title">{{ session.title }}</div>
+                                    <div class="history-item-delete" @click.stop="deleteSession(session.id)">
+                                        <i class="taskfont">&#xe6e5;</i>
+                                    </div>
                                 </div>
-                                <div class="history-item-delete" @click.stop="deleteSession(session.id)">
-                                    <i class="taskfont">&#xe6e5;</i>
-                                </div>
+                                <span class="history-item-time">{{ formatSessionTime(session.updatedAt) }}</span>
                             </div>
                         </DropdownItem>
                         <DropdownItem divided @click.native="clearSessionHistory">
@@ -153,7 +155,8 @@
                             :loading="modelsLoading"
                             :disabled="modelsLoading || modelGroups.length === 0"
                             :not-found-text="$L('暂无可用模型')"
-                            transfer>
+                            transfer
+                            :z-index="topZIndex + 1">
                             <OptionGroup
                                 v-for="group in modelGroups"
                                 :key="group.type"
@@ -261,6 +264,10 @@ export default {
             inputHistoryCurrent: '', // 切换前的当前输入
             inputHistoryCacheKey: 'aiAssistant.inputHistory',
             inputHistoryLimit: 50,
+
+            // 动态 z-index（确保始终在最顶层）
+            topZIndex: (window.modalTransferIndex || 1000) + 1000,
+            zIndexTimer: null,
         }
     },
     created() {
@@ -274,6 +281,7 @@ export default {
         this.loadCachedModel();
         this.loadInputHistory();
         this.mountFloatButton();
+        this.startZIndexTimer(20000);
     },
     beforeDestroy() {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
@@ -281,6 +289,7 @@ export default {
         this.clearAutoSubmitTimer();
         this.unmountFloatButton();
         this.refreshWelcomePromptsDebounced?.cancel();
+        this.stopZIndexTimer();
     },
     computed: {
         selectedModelOption({modelMap, inputModel}) {
@@ -317,8 +326,12 @@ export default {
             immediate: true,
         },
         showModal(value) {
-            if (!value) {
-                // 弹窗关闭时通知操作模块
+            if (value) {
+                // 弹窗打开时：5 秒刷新 z-index
+                this.startZIndexTimer(5000);
+            } else {
+                // 弹窗关闭时：20 秒刷新 z-index，并通知操作模块
+                this.startZIndexTimer(20000);
                 emitter.emit('aiAssistantClosed');
             }
         },
@@ -1567,6 +1580,37 @@ export default {
             // 发送新问题
             await this._doSendQuestion(newPrompt);
         },
+
+        // ==================== z-index 管理 ====================
+
+        /**
+         * 更新 z-index 确保在最顶层
+         */
+        updateTopZIndex() {
+            this.topZIndex = (window.modalTransferIndex || 1000) + 1000;
+        },
+
+        /**
+         * 启动 z-index 刷新定时器
+         * @param {number} interval - 刷新间隔（毫秒）
+         */
+        startZIndexTimer(interval) {
+            this.stopZIndexTimer();
+            this.updateTopZIndex();
+            this.zIndexTimer = setInterval(() => {
+                this.updateTopZIndex();
+            }, interval);
+        },
+
+        /**
+         * 停止 z-index 刷新定时器
+         */
+        stopZIndexTimer() {
+            if (this.zIndexTimer) {
+                clearInterval(this.zIndexTimer);
+                this.zIndexTimer = null;
+            }
+        },
     },
 }
 </script>
@@ -1901,7 +1945,7 @@ export default {
 
 .ai-assistant-history-menu {
     min-width: 240px;
-    max-width: 300px;
+    max-width: 260px;
     max-height: 320px;
     overflow-y: auto;
 
@@ -1916,17 +1960,20 @@ export default {
 
     .history-item {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        flex-direction: column;
+        gap: 2px;
 
         .history-item-content {
             flex: 1;
             min-width: 0;
             display: flex;
-            flex-direction: column;
-            gap: 2px;
+            gap: 8px;
+            line-height: 20px;
+            align-items: center;
 
             .history-item-title {
+                flex: 1;
+                min-width: 0;
                 font-size: 13px;
                 color: #303133;
                 overflow: hidden;
@@ -1934,35 +1981,40 @@ export default {
                 white-space: nowrap;
             }
 
-            .history-item-time {
-                font-size: 11px;
-                color: #909399;
+            .history-item-delete {
+                flex-shrink: 0;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                width: 20px;
+                height: 20px;
+                border-radius: 4px;
+                margin-right: -2px;
+                transition: opacity 0.2s, background-color 0.2s;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: rgba(0, 0, 0, 0.08);
+                }
+
+                > i {
+                    font-size: 12px;
+                    color: #909399;
+                }
             }
         }
 
-        .history-item-delete {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            opacity: 0;
-            transition: opacity 0.2s, background-color 0.2s;
-            cursor: pointer;
-
-            &:hover {
-                background-color: rgba(0, 0, 0, 0.08);
-            }
-
-            > i {
-                font-size: 12px;
-                color: #909399;
-            }
+        .history-item-time {
+            font-size: 11px;
+            color: #909399;
         }
 
-        &:hover .history-item-delete {
-            opacity: 1;
+        &:hover {
+            .history-item-content {
+                .history-item-delete {
+                    display: flex;
+                }
+            }
         }
     }
 
