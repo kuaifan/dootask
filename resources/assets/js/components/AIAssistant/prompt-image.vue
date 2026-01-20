@@ -42,11 +42,7 @@ export default {
         },
         showPreview() {
             if (this.imageUrl) {
-                $A.previewFile({
-                    type: 'image',
-                    url: this.imageUrl,
-                    name: `image_${this.imageId}`,
-                });
+                this.$store.dispatch("previewImage", this.imageUrl);
             }
         },
     },
