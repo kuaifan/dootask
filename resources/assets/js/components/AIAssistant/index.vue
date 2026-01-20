@@ -97,13 +97,26 @@
                                 <Button type="primary" size="small" :loading="loadIng > 0" @click="submitEditedQuestion">{{ $L('发送') }}</Button>
                             </div>
                         </div>
-                        <!-- 正常显示模式 -->
-                        <div v-else class="ai-assistant-output-question">
-                            <span class="ai-assistant-output-question-text">{{ response.prompt }}</span>
-                            <span class="ai-assistant-output-question-edit" :title="$L('编辑问题')" @click="startEditQuestion(responses.indexOf(response))">
-                                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M11.331 3.568a3.61 3.61 0 0 1 4.973.128l.128.135a3.61 3.61 0 0 1 0 4.838l-.128.135-6.292 6.29c-.324.324-.558.561-.79.752l-.235.177q-.309.21-.65.36l-.23.093c-.181.066-.369.114-.585.159l-.765.135-2.394.399c-.142.024-.294.05-.422.06-.1.007-.233.01-.378-.026l-.149-.049a1.1 1.1 0 0 1-.522-.474l-.046-.094a1.1 1.1 0 0 1-.074-.526c.01-.129.035-.28.06-.423l.398-2.394.134-.764a4 4 0 0 1 .16-.586l.093-.23q.15-.342.36-.65l.176-.235c.19-.232.429-.466.752-.79l6.291-6.292zm-5.485 7.36c-.35.35-.533.535-.66.688l-.11.147a2.7 2.7 0 0 0-.24.433l-.062.155c-.04.11-.072.225-.106.394l-.127.717-.398 2.393-.001.002h.003l2.393-.399.717-.126c.169-.034.284-.065.395-.105l.153-.062q.228-.1.433-.241l.148-.11c.153-.126.338-.31.687-.66l4.988-4.988-3.226-3.226zm9.517-6.291a2.28 2.28 0 0 0-3.053-.157l-.173.157-.364.363L15 8.226l.363-.363.157-.174a2.28 2.28 0 0 0 0-2.878z"/></svg>
-                            </span>
-                        </div>
+                        <!-- 正常显示模式（使用 template 缓存 parsePromptContent 结果，避免重复调用） -->
+                        <template v-else v-for="(parsed, _pk) in [parsePromptContent(response.prompt)]">
+                            <div class="ai-assistant-output-question">
+                                <!-- 图片区域（单独一行） -->
+                                <div v-if="parsed.images.length" class="ai-assistant-output-question-images">
+                                    <PromptImage
+                                        v-for="(img, imgIndex) in parsed.images"
+                                        :key="'img' + imgIndex"
+                                        :image-id="img.imageId"
+                                        :get-image="getImageFromCache" />
+                                </div>
+                                <!-- 文字区域 -->
+                                <div class="ai-assistant-output-question-content">
+                                    <span class="ai-assistant-output-question-text">{{ parsed.text }}</span>
+                                    <span class="ai-assistant-output-question-edit" :title="$L('编辑问题')" @click="startEditQuestion(responses.indexOf(response))">
+                                        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M11.331 3.568a3.61 3.61 0 0 1 4.973.128l.128.135a3.61 3.61 0 0 1 0 4.838l-.128.135-6.292 6.29c-.324.324-.558.561-.79.752l-.235.177q-.309.21-.65.36l-.23.093c-.181.066-.369.114-.585.159l-.765.135-2.394.399c-.142.024-.294.05-.422.06-.1.007-.233.01-.378-.026l-.149-.049a1.1 1.1 0 0 1-.522-.474l-.046-.094a1.1 1.1 0 0 1-.074-.526c.01-.129.035-.28.06-.423l.398-2.394.134-.764a4 4 0 0 1 .16-.586l.093-.23q.15-.342.36-.65l.176-.235c.19-.232.429-.466.752-.79l6.291-6.292zm-5.485 7.36c-.35.35-.533.535-.66.688l-.11.147a2.7 2.7 0 0 0-.24.433l-.062.155c-.04.11-.072.225-.106.394l-.127.717-.398 2.393-.001.002h.003l2.393-.399.717-.126c.169-.034.284-.065.395-.105l.153-.062q.228-.1.433-.241l.148-.11c.153-.126.338-.31.687-.66l4.988-4.988-3.226-3.226zm9.517-6.291a2.28 2.28 0 0 0-3.053-.157l-.173.157-.364.363L15 8.226l.363-.363.157-.174a2.28 2.28 0 0 0 0-2.878z"/></svg>
+                                    </span>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                     <DialogMarkdown
                         v-if="response.rawOutput"
@@ -136,6 +149,18 @@
                 </div>
             </div>
             <div class="ai-assistant-input">
+                <!-- 图片预览区域 -->
+                <div v-if="pendingImages.length" class="ai-assistant-images">
+                    <div
+                        v-for="img in pendingImages"
+                        :key="img.id"
+                        class="ai-assistant-image-item">
+                        <img :src="img.dataUrl" alt="preview" />
+                        <div class="ai-assistant-image-remove" @click="removeImage(img.id)">
+                            <i class="taskfont">&#xe6e5;</i>
+                        </div>
+                    </div>
+                </div>
                 <Input
                     v-model="inputValue"
                     ref="inputRef"
@@ -147,6 +172,14 @@
                     @on-keydown="onInputKeydown"
                     @compositionstart.native="isComposing = true"
                     @compositionend.native="isComposing = false" />
+                <!-- 隐藏的图片上传 input -->
+                <input
+                    ref="imageInput"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style="display: none"
+                    @change="onImageSelect" />
                 <div class="ai-assistant-footer">
                     <div class="ai-assistant-footer-models">
                         <Select
@@ -171,6 +204,9 @@
                         </Select>
                     </div>
                     <div class="ai-assistant-footer-btns">
+                        <div class="ai-assistant-image-btn" :title="$L('上传图片')" @click="triggerImageSelect">
+                            <i class="taskfont">&#xe7bc;</i>
+                        </div>
                         <Button v-if="submitButtonText" type="primary" shape="circle" icon="md-arrow-up" :loading="loadIng > 0" @click="onSubmit">{{ submitButtonText }}</Button>
                         <Button v-else type="primary" shape="circle" icon="md-arrow-up" :loading="loadIng > 0" @click="onSubmit"></Button>
                     </div>
@@ -189,11 +225,12 @@ import {AIBotMap, AIModelNames} from "../../utils/ai";
 import DialogMarkdown from "../../pages/manage/components/DialogMarkdown.vue";
 import FloatButton from "./float-button.vue";
 import AssistantModal from "./modal.vue";
+import PromptImage from "./prompt-image.vue";
 import {getWelcomePrompts} from "./welcome-prompts";
 
 export default {
     name: 'AIAssistant',
-    components: {AssistantModal, DialogMarkdown},
+    components: {AssistantModal, DialogMarkdown, PromptImage},
     floatButtonInstance: null,
     data() {
         return {
@@ -264,6 +301,13 @@ export default {
             inputHistoryCurrent: '', // 切换前的当前输入
             inputHistoryCacheKey: 'aiAssistant.inputHistory',
             inputHistoryLimit: 50,
+
+            // 图片上传
+            pendingImages: [],       // 待发送的图片列表 [{id, dataUrl, file}]
+            imageIdSeed: 0,          // 图片 ID 种子
+            maxImages: 5,            // 最大图片数量
+            imageCacheKeyPrefix: 'aiAssistant.images', // 图片缓存 key 前缀
+            imageCache: {},          // 内存中的图片缓存 {imageId: dataUrl}
 
             // 动态 z-index（确保始终在最顶层）
             topZIndex: (window.modalTransferIndex || 1000) + 1000,
@@ -627,6 +671,7 @@ export default {
             const success = await this._doSendQuestion(prompt);
             if (success) {
                 this.inputValue = '';
+                this.clearPendingImages();
             }
         },
 
@@ -646,12 +691,16 @@ export default {
             this.loadIng++;
             let responseEntry = null;
             try {
-                const baseContext = this.collectBaseContext(prompt);
+                const baseContext = await this.collectBaseContext(prompt);
                 const context = await this.buildPayloadData(baseContext);
+
+                // 处理图片：存储到独立缓存，生成带占位符的 prompt
+                const currentContent = this.buildCurrentContent(prompt);
+                const displayPrompt = await this.processContentForStorage(currentContent);
 
                 responseEntry = this.createResponseEntry({
                     modelOption,
-                    prompt,
+                    prompt: displayPrompt,
                 });
                 this.scrollResponsesToBottom();
 
@@ -701,36 +750,103 @@ export default {
         },
 
         /**
+         * 还原历史 prompt 中的图片占位符为多模态内容
+         * @param {string} prompt - 带占位符的 prompt
+         * @returns {Promise<string|Array>} - 纯文本或多模态数组
+         */
+        async restorePromptImages(prompt) {
+            if (!prompt || typeof prompt !== 'string') {
+                return prompt || '';
+            }
+            const parsed = this.parsePromptContent(prompt);
+            // 没有图片，返回纯文本
+            if (parsed.images.length === 0) {
+                return parsed.text;
+            }
+            // 有图片，构建多模态内容
+            const content = [];
+            for (const img of parsed.images) {
+                const dataUrl = await this.getImageFromCache(img.imageId);
+                if (dataUrl) {
+                    content.push({
+                        type: 'image_url',
+                        image_url: {url: dataUrl}
+                    });
+                }
+            }
+            if (parsed.text) {
+                content.push({type: 'text', text: parsed.text});
+            }
+            // 如果所有图片都获取失败，返回纯文本
+            return content.length > 0 ? content : parsed.text;
+        },
+
+        /**
          * 汇总当前会话的基础上下文
          */
-        collectBaseContext(prompt) {
+        async collectBaseContext(prompt) {
             const pushEntry = (context, role, value) => {
                 if (typeof value === 'undefined' || value === null) {
                     return;
                 }
-                const content = String(value).trim();
-                if (!content) {
-                    return;
+                // value 可以是字符串或多模态数组
+                if (typeof value === 'string') {
+                    const content = value.trim();
+                    if (!content) {
+                        return;
+                    }
+                    context.push([role, content]);
+                } else if (Array.isArray(value) && value.length > 0) {
+                    // 多模态内容
+                    context.push([role, value]);
                 }
-                context.push([role, content]);
             };
             const context = [];
             const windowSize = Number(this.contextWindowSize) || 0;
             const recentResponses = windowSize > 0
                 ? this.responses.slice(-windowSize)
                 : this.responses;
-            recentResponses.forEach(item => {
+            // 处理历史消息（还原图片 base64）
+            for (const item of recentResponses) {
                 if (item.prompt) {
-                    pushEntry(context, 'human', item.prompt);
+                    const restoredPrompt = await this.restorePromptImages(item.prompt);
+                    pushEntry(context, 'human', restoredPrompt);
                 }
                 if (item.rawOutput) {
                     pushEntry(context, 'assistant', item.rawOutput);
                 }
-            });
+            }
+            // 构建当前提问内容（可能包含图片）
             if (prompt && String(prompt).trim()) {
-                pushEntry(context, 'human', prompt);
+                const currentContent = this.buildCurrentContent(prompt);
+                pushEntry(context, 'human', currentContent);
             }
             return context;
+        },
+
+        /**
+         * 构建当前提问内容（支持多模态）
+         */
+        buildCurrentContent(prompt) {
+            const text = String(prompt).trim();
+            if (!this.pendingImages.length) {
+                // 无图片，返回纯文本
+                return text;
+            }
+            // 有图片，构建多模态内容数组
+            const content = [];
+            // 先添加图片
+            for (const img of this.pendingImages) {
+                content.push({
+                    type: 'image_url',
+                    image_url: {url: img.dataUrl}
+                });
+            }
+            // 后添加文本
+            if (text) {
+                content.push({type: 'text', text});
+            }
+            return content;
         },
 
         /**
@@ -747,6 +863,15 @@ export default {
                 }
                 const [role, value] = entry;
                 const roleName = typeof role === 'string' ? role.trim() : '';
+
+                // 支持多模态内容（数组）
+                if (Array.isArray(value)) {
+                    if (roleName && value.length > 0) {
+                        normalized.push([roleName, value]);
+                    }
+                    return;
+                }
+
                 const content = typeof value === 'string'
                     ? value.trim()
                     : String(value ?? '').trim();
@@ -1095,6 +1220,7 @@ export default {
             this.clearAutoSubmitTimer();
             this.clearActiveSSEClients();
             this.resetInputHistoryNavigation();
+            this.clearPendingImages();
             this.showModal = false;
             this.responses = [];
             setTimeout(() => {
@@ -1191,9 +1317,14 @@ export default {
             if (!firstPrompt) {
                 return this.$L('新会话');
             }
+            // 过滤图片占位符，只保留文本
+            const textOnly = this.parsePromptContent(firstPrompt).text;
+            if (!textOnly) {
+                return this.$L('新会话');
+            }
             // 截取前20个字符作为标题
-            const title = firstPrompt.trim().substring(0, 20);
-            return title.length < firstPrompt.trim().length ? `${title}...` : title;
+            const title = textOnly.trim().substring(0, 20);
+            return title.length < textOnly.trim().length ? `${title}...` : title;
         },
 
         /**
@@ -1344,6 +1475,9 @@ export default {
         deleteSession(sessionId) {
             const index = this.sessionStore.findIndex(s => s.id === sessionId);
             if (index > -1) {
+                const session = this.sessionStore[index];
+                // 清理会话相关的图片缓存
+                this.clearSessionImageCache(session);
                 this.sessionStore.splice(index, 1);
                 this.saveSessionStore();
                 // 如果删除的是当前会话，创建新会话
@@ -1360,7 +1494,11 @@ export default {
             $A.modalConfirm({
                 title: this.$L('清空历史会话'),
                 content: this.$L('确定要清空当前场景的所有历史会话吗？'),
-                onOk: () => {
+                onOk: async () => {
+                    // 清理所有会话的图片缓存
+                    for (const session of this.sessionStore) {
+                        await this.clearSessionImageCache(session);
+                    }
                     this.sessionStore = [];
                     this.saveSessionStore();
                     this.createNewSession(false);
@@ -1611,6 +1749,294 @@ export default {
                 this.zIndexTimer = null;
             }
         },
+
+        // ==================== 图片上传相关 ====================
+
+        /**
+         * 触发图片选择
+         */
+        triggerImageSelect() {
+            if (this.$refs.imageInput) {
+                this.$refs.imageInput.click();
+            }
+        },
+
+        /**
+         * 处理图片选择
+         */
+        async onImageSelect(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) {
+                return;
+            }
+
+            const remainingSlots = this.maxImages - this.pendingImages.length;
+            if (remainingSlots <= 0) {
+                $A.messageWarning(this.$L('最多上传 {0} 张图片', this.maxImages));
+                event.target.value = '';
+                return;
+            }
+
+            const filesToProcess = Array.from(files).slice(0, remainingSlots);
+
+            for (const file of filesToProcess) {
+                if (!file.type.startsWith('image/')) {
+                    continue;
+                }
+                try {
+                    const dataUrl = await this.compressImageForAI(file);
+                    this.pendingImages.push({
+                        id: ++this.imageIdSeed,
+                        dataUrl,
+                        file,
+                    });
+                } catch (e) {
+                    console.warn('[AIAssistant] 图片压缩失败:', e);
+                }
+            }
+
+            // 清空 input 以便重复选择同一文件
+            event.target.value = '';
+        },
+
+        /**
+         * 压缩图片用于 AI 视觉分析
+         * @param {File} file - 图片文件
+         * @returns {Promise<string>} - Base64 data URL (image/jpeg)
+         */
+        async compressImageForAI(file) {
+            // File 转 dataUrl 后压缩到 1024px
+            const dataUrl = await this.fileToDataUrl(file);
+            return this.resizeDataUrl(dataUrl, 1024);
+        },
+
+        /**
+         * File 转 dataUrl
+         */
+        fileToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('文件读取失败'));
+                reader.readAsDataURL(file);
+            });
+        },
+
+        /**
+         * 移除待发送的图片
+         */
+        removeImage(id) {
+            const index = this.pendingImages.findIndex(img => img.id === id);
+            if (index !== -1) {
+                this.pendingImages.splice(index, 1);
+            }
+        },
+
+        /**
+         * 清空待发送的图片
+         */
+        clearPendingImages() {
+            this.pendingImages = [];
+        },
+
+        // ==================== 图片缓存管理 ====================
+
+        /**
+         * 生成图片缓存 ID
+         */
+        generateImageCacheId() {
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).substr(2, 6);
+            return `${timestamp}_${random}`;
+        },
+
+        /**
+         * 获取图片缓存 key
+         */
+        getImageCacheKey(imageId) {
+            return `${this.imageCacheKeyPrefix}_${imageId}`;
+        },
+
+        /**
+         * 保存图片到独立缓存
+         */
+        async saveImageToCache(imageId, dataUrl) {
+            const cacheKey = this.getImageCacheKey(imageId);
+            try {
+                // 压缩到 512px 再保存（历史图片不需要高清）
+                const compressedUrl = await this.resizeDataUrl(dataUrl, 512);
+                await $A.IDBSave(cacheKey, compressedUrl);
+                // 同时保存到内存缓存
+                this.imageCache[imageId] = compressedUrl;
+            } catch (e) {
+                console.warn('[AIAssistant] 图片缓存保存失败:', e);
+            }
+        },
+
+        /**
+         * 压缩 dataUrl 图片到指定尺寸
+         * @param {string} dataUrl - Base64 图片
+         * @param {number} maxSize - 最大边长
+         * @returns {Promise<string>} - 压缩后的 dataUrl
+         */
+        resizeDataUrl(dataUrl, maxSize) {
+            return new Promise((resolve, reject) => {
+                // 参数校验
+                if (!dataUrl || typeof dataUrl !== 'string') {
+                    reject(new Error('无效的图片数据'));
+                    return;
+                }
+                const img = new Image();
+                img.onload = () => {
+                    let {width, height} = img;
+                    // 如果已经小于目标尺寸，直接返回原图
+                    if (width <= maxSize && height <= maxSize) {
+                        resolve(dataUrl);
+                        return;
+                    }
+                    // 计算缩放比例
+                    const ratio = Math.min(maxSize / width, maxSize / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                    // Canvas 压缩
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.onerror = () => reject(new Error('图片加载失败'));
+                img.src = dataUrl;
+            });
+        },
+
+        /**
+         * 从缓存获取图片
+         */
+        async getImageFromCache(imageId) {
+            // 先检查内存缓存
+            if (this.imageCache[imageId]) {
+                return this.imageCache[imageId];
+            }
+            // 从 IndexedDB 获取
+            const cacheKey = this.getImageCacheKey(imageId);
+            try {
+                const dataUrl = await $A.IDBString(cacheKey);
+                if (dataUrl) {
+                    // 保存到内存缓存
+                    this.imageCache[imageId] = dataUrl;
+                    return dataUrl;
+                }
+            } catch (e) {
+                console.warn('[AIAssistant] 图片缓存读取失败:', e);
+            }
+            return null;
+        },
+
+        /**
+         * 删除单个图片缓存
+         */
+        async deleteImageCache(imageId) {
+            const cacheKey = this.getImageCacheKey(imageId);
+            try {
+                await $A.IDBDel(cacheKey);
+                delete this.imageCache[imageId];
+            } catch (e) {
+                console.warn('[AIAssistant] 图片缓存删除失败:', e);
+            }
+        },
+
+        /**
+         * 从会话中提取所有图片 ID
+         */
+        extractImageIdsFromSession(session) {
+            const imageIds = [];
+            if (!session?.responses) return imageIds;
+            for (const response of session.responses) {
+                if (response.prompt) {
+                    const parsed = this.parsePromptContent(response.prompt);
+                    for (const img of parsed.images) {
+                        imageIds.push(img.imageId);
+                    }
+                }
+            }
+            return imageIds;
+        },
+
+        /**
+         * 清理会话相关的图片缓存
+         */
+        async clearSessionImageCache(session) {
+            const imageIds = this.extractImageIdsFromSession(session);
+            for (const imageId of imageIds) {
+                await this.deleteImageCache(imageId);
+            }
+        },
+
+        /**
+         * 处理多模态内容用于存储
+         * 将图片存储到独立缓存，返回带占位符的纯文本
+         * @param {string|Array} content - 消息内容（字符串或多模态数组）
+         * @returns {Promise<string>} - 带占位符的纯文本
+         */
+        async processContentForStorage(content) {
+            // 如果是字符串，直接返回
+            if (typeof content === 'string') {
+                return content;
+            }
+            // 如果不是数组，转为字符串
+            if (!Array.isArray(content)) {
+                return String(content);
+            }
+            // 处理多模态数组
+            const parts = [];
+            for (const item of content) {
+                if (item.type === 'text') {
+                    parts.push(item.text || '');
+                } else if (item.type === 'image_url' && item.image_url?.url) {
+                    // 生成图片 ID 并存储
+                    const imageId = this.generateImageCacheId();
+                    await this.saveImageToCache(imageId, item.image_url.url);
+                    parts.push(`[IMG:${imageId}]`);
+                }
+            }
+            return parts.join(' ');
+        },
+
+        /**
+         * 解析 prompt 内容，分离图片和文字
+         * @param {string} text - 带占位符的文本
+         * @returns {Object} - {images: [{imageId}], text: string}
+         */
+        parsePromptContent(text) {
+            const result = {images: [], text: ''};
+            if (!text || typeof text !== 'string') {
+                result.text = text || '';
+                return result;
+            }
+            const regex = /\[IMG:([^\]]+)\]/g;
+            const textParts = [];
+            let lastIndex = 0;
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                // 收集图片
+                result.images.push({imageId: match[1]});
+                // 收集占位符前的文本
+                if (match.index > lastIndex) {
+                    textParts.push(text.slice(lastIndex, match.index));
+                }
+                lastIndex = match.index + match[0].length;
+            }
+            // 收集剩余文本
+            if (lastIndex < text.length) {
+                textParts.push(text.slice(lastIndex));
+            }
+            result.text = textParts.join('').trim();
+            return result;
+        },
     },
 }
 </script>
@@ -1753,11 +2179,23 @@ export default {
 
     .ai-assistant-output-question {
         display: flex;
-        align-items: flex-start;
-        gap: 4px;
+        flex-direction: column;
+        gap: 6px;
         font-size: 12px;
         color: #666;
         line-height: 1.4;
+
+        .ai-assistant-output-question-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .ai-assistant-output-question-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+        }
 
         .ai-assistant-output-question-text {
             flex: 1;
@@ -1939,7 +2377,71 @@ export default {
     .ai-assistant-footer-btns {
         flex: 1;
         display: flex;
+        align-items: center;
         justify-content: flex-end;
+        gap: 8px;
+    }
+    .ai-assistant-image-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        color: #666;
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: #333;
+        }
+        .taskfont {
+            font-size: 18px;
+        }
+    }
+}
+
+.ai-assistant-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    margin-top: -4px;
+    .ai-assistant-image-item {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 6px;
+        overflow: hidden;
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .ai-assistant-image-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            .taskfont {
+                font-size: 12px;
+                color: #fff;
+            }
+        }
+        &:hover .ai-assistant-image-remove {
+            opacity: 1;
+        }
     }
 }
 

@@ -166,14 +166,29 @@ class AI
                 continue;
             }
             $role = trim((string)($item[0] ?? ''));
-            $message = trim((string)($item[1] ?? ''));
-            if ($role === '' || $message === '') {
+            $message = $item[1] ?? '';
+
+            // 跳过空消息
+            if (empty($message)) {
                 continue;
             }
-            // 替换系统条件性提示块占位符
-            if (str_contains($message, '{{SYSTEM_OPTIONAL_PROMPTS}}')) {
-                $optionalPrompts = PromptPlaceholder::buildOptionalPrompts(User::userid());
-                $message = str_replace('{{SYSTEM_OPTIONAL_PROMPTS}}', $optionalPrompts, $message);
+
+            // 处理纯文本（字符串）
+            if (!is_array($message)) {
+                // 纯文本
+                $message = trim((string)$message);
+                if ($role === '' || $message === '') {
+                    continue;
+                }
+                // 替换系统条件性提示块占位符
+                if (str_contains($message, '{{SYSTEM_OPTIONAL_PROMPTS}}')) {
+                    $optionalPrompts = PromptPlaceholder::buildOptionalPrompts(User::userid());
+                    $message = str_replace('{{SYSTEM_OPTIONAL_PROMPTS}}', $optionalPrompts, $message);
+                }
+            }
+
+            if ($role === '') {
+                continue;
             }
             $context[] = [$role, $message];
         }
