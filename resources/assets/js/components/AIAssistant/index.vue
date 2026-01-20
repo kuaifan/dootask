@@ -945,8 +945,8 @@ export default {
                 }
             }, () => {
                 // SSE 连接失败（重试次数用完）时的回调
-                if (responseEntry && responseEntry.status === 'streaming') {
-                    responseEntry.status = 'completed';
+                if (responseEntry && ['streaming', 'waiting'].includes(responseEntry.status)) {
+                    this.markResponseError(responseEntry, this.$L('连接失败，请重试'));
                 }
                 this.releaseSSEClient(sse);
                 this.saveCurrentSession();
