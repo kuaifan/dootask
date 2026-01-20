@@ -47,7 +47,20 @@
                 </Dropdown>
             </div>
         </div>
-        <div class="ai-assistant-content">
+        <div
+            class="ai-assistant-content"
+            :class="{'ai-assistant-content-dragging': isDragging}"
+            @dragenter.prevent="onDragEnter"
+            @dragover.prevent
+            @dragleave="onDragLeave"
+            @drop.prevent="onDrop">
+            <!-- 拖放提示遮罩 -->
+            <div v-if="isDragging" class="ai-assistant-drop-overlay">
+                <div class="ai-assistant-drop-hint">
+                    <i class="taskfont">&#xe7bc;</i>
+                    <span>{{ $L('松开以上传图片') }}</span>
+                </div>
+            </div>
             <div
                 v-if="responses.length"
                 ref="responseContainer"
@@ -171,7 +184,8 @@
                     :maxlength="inputMaxlength || 500"
                     @on-keydown="onInputKeydown"
                     @compositionstart.native="isComposing = true"
-                    @compositionend.native="isComposing = false" />
+                    @compositionend.native="isComposing = false"
+                    @paste.native="onPaste" />
                 <!-- 隐藏的图片上传 input -->
                 <input
                     ref="imageInput"
@@ -308,6 +322,8 @@ export default {
             maxImages: 5,            // 最大图片数量
             imageCacheKeyPrefix: 'aiAssistant.images', // 图片缓存 key 前缀
             imageCache: {},          // 内存中的图片缓存 {imageId: dataUrl}
+            isDragging: false,       // 是否正在拖放图片
+            dragCounter: 0,          // 拖放计数器（处理嵌套元素）
 
             // 动态 z-index（确保始终在最顶层）
             topZIndex: (window.modalTransferIndex || 1000) + 1000,
@@ -1766,14 +1782,22 @@ export default {
          */
         async onImageSelect(event) {
             const files = event.target.files;
+            await this.handleImageFiles(files);
+            event.target.value = '';
+        },
+
+        /**
+         * 通用图片文件处理方法
+         * @param {FileList|File[]} files - 文件列表
+         */
+        async handleImageFiles(files) {
             if (!files || files.length === 0) {
                 return;
             }
 
             const remainingSlots = this.maxImages - this.pendingImages.length;
             if (remainingSlots <= 0) {
-                $A.messageWarning(this.$L('最多上传 {0} 张图片', this.maxImages));
-                event.target.value = '';
+                $A.messageWarning(`最多上传 ${this.maxImages} 张图片`);
                 return;
             }
 
@@ -1794,9 +1818,64 @@ export default {
                     console.warn('[AIAssistant] 图片压缩失败:', e);
                 }
             }
+        },
 
-            // 清空 input 以便重复选择同一文件
-            event.target.value = '';
+        /**
+         * 处理拖放进入
+         */
+        onDragEnter(event) {
+            // 检查是否包含文件
+            if (event.dataTransfer?.types?.includes('Files')) {
+                this.dragCounter++;
+                this.isDragging = true;
+            }
+        },
+
+        /**
+         * 处理拖放离开
+         */
+        onDragLeave() {
+            this.dragCounter--;
+            if (this.dragCounter <= 0) {
+                this.dragCounter = 0;
+                this.isDragging = false;
+            }
+        },
+
+        /**
+         * 处理拖放放置
+         */
+        async onDrop(event) {
+            this.dragCounter = 0;
+            this.isDragging = false;
+            const files = event.dataTransfer?.files;
+            if (files && files.length > 0) {
+                const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+                await this.handleImageFiles(imageFiles);
+            }
+        },
+
+        /**
+         * 处理粘贴图片
+         */
+        async onPaste(event) {
+            const items = event.clipboardData?.items;
+            if (!items) {
+                return;
+            }
+            const imageFiles = [];
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    if (file) {
+                        imageFiles.push(file);
+                    }
+                }
+            }
+            if (imageFiles.length > 0) {
+                event.preventDefault();
+                await this.handleImageFiles(imageFiles);
+            }
         },
 
         /**
@@ -2098,6 +2177,46 @@ export default {
 .ai-assistant-content {
     display: flex;
     flex-direction: column;
+    position: relative;
+
+    &.ai-assistant-content-dragging {
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border: 2px dashed #2d8cf0;
+            border-radius: 8px;
+            background-color: rgba(45, 140, 240, 0.05);
+            pointer-events: none;
+            z-index: 10;
+        }
+    }
+
+    .ai-assistant-drop-overlay {
+        position: absolute;
+        inset: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
+        z-index: 11;
+        pointer-events: none;
+    }
+
+    .ai-assistant-drop-hint {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        color: #2d8cf0;
+        .taskfont {
+            font-size: 32px;
+        }
+        span {
+            font-size: 14px;
+        }
+    }
 
     .ai-assistant-welcome,
     .ai-assistant-output {
