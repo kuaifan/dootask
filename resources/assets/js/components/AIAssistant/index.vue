@@ -1884,9 +1884,9 @@ export default {
          * @returns {Promise<string>} - Base64 data URL (image/jpeg)
          */
         async compressImageForAI(file) {
-            // File 转 dataUrl 后压缩到 1024px
+            // File 转 dataUrl 后压缩到 1024px，强制质量压缩
             const dataUrl = await this.fileToDataUrl(file);
-            return this.resizeDataUrl(dataUrl, 1024);
+            return this.resizeDataUrl(dataUrl, 1024, true);
         },
 
         /**
@@ -1956,9 +1956,10 @@ export default {
          * 压缩 dataUrl 图片到指定尺寸
          * @param {string} dataUrl - Base64 图片
          * @param {number} maxSize - 最大边长
+         * @param {boolean} forceCompress - 是否强制质量压缩（即使尺寸不变）
          * @returns {Promise<string>} - 压缩后的 dataUrl
          */
-        resizeDataUrl(dataUrl, maxSize) {
+        resizeDataUrl(dataUrl, maxSize, forceCompress = false) {
             return new Promise((resolve, reject) => {
                 // 参数校验
                 if (!dataUrl || typeof dataUrl !== 'string') {
@@ -1968,15 +1969,18 @@ export default {
                 const img = new Image();
                 img.onload = () => {
                     let {width, height} = img;
-                    // 如果已经小于目标尺寸，直接返回原图
-                    if (width <= maxSize && height <= maxSize) {
+                    const needResize = width > maxSize || height > maxSize;
+                    // 如果不需要缩放且不强制压缩，直接返回原图
+                    if (!needResize && !forceCompress) {
                         resolve(dataUrl);
                         return;
                     }
                     // 计算缩放比例
-                    const ratio = Math.min(maxSize / width, maxSize / height);
-                    width = Math.round(width * ratio);
-                    height = Math.round(height * ratio);
+                    if (needResize) {
+                        const ratio = Math.min(maxSize / width, maxSize / height);
+                        width = Math.round(width * ratio);
+                        height = Math.round(height * ratio);
+                    }
                     // Canvas 压缩
                     const canvas = document.createElement('canvas');
                     canvas.width = width;
