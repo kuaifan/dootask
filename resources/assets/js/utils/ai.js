@@ -360,10 +360,8 @@ const withLanguagePreferencePrompt = (prompt) => {
         return prompt;
     }
     const label = languageList[languageName] || languageName || '';
-    if (!label) {
-        return prompt;
-    }
-    return `${prompt}\n\n${LANGUAGE_PREFERENCE_PROMPT(label)}\n\n${SYSTEM_OPTIONAL_PROMPTS_PLACEHOLDER}`;
+    const languagePart = label ? `\n\n${LANGUAGE_PREFERENCE_PROMPT(label)}` : '';
+    return `${prompt}${languagePart}\n\n${SYSTEM_OPTIONAL_PROMPTS_PLACEHOLDER}`;
 };
 
 /**

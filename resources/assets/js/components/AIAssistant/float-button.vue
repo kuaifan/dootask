@@ -405,7 +405,7 @@ export default {
             // 添加操作会话信息
             let operationContext = '';
             if (this.operationSessionId) {
-                operationContext = `\n\n前端操作会话已建立，session_id: ${this.operationSessionId}。你可以使用 get_page_context、execute_action、execute_element_action 工具直接操作用户的页面。`;
+                operationContext = `\n\n页面操作会话 session_id: ${this.operationSessionId}。`;
             }
 
             const prepared = [
