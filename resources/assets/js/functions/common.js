@@ -2409,24 +2409,37 @@ const timezone = require("dayjs/plugin/timezone");
          * 对象中有Date格式的转成指定格式
          * @param value     支持类型：dayjs、Date、string
          * @param format    默认格式：YYYY-MM-DD HH:mm:ss
+         * @param key       当前字段名（用于白名单判断）
          * @returns {*}
          */
-        newDateString(value, format = "YYYY-MM-DD HH:mm:ss") {
+        newDateString(value, format = "YYYY-MM-DD HH:mm:ss", key = null) {
             if (value === null) {
                 return value;
             }
-            if (value instanceof dayjs || value instanceof Date || $A.isDateString(value)) {
-                value = $A.dayjs(value).format(format);
-            } else if ($A.isJson(value)) {
+            // Date/dayjs 对象直接转换
+            if (value instanceof dayjs || value instanceof Date) {
+                return $A.dayjs(value).format(format);
+            }
+            // 字符串日期处理：
+            // 1. 直接调用（key=null）时，始终转换（用于显示格式化）
+            // 2. 递归调用（key有值）时，仅白名单字段转换（避免文件名等被误转换）
+            if ($A.isDateString(value)) {
+                if (key === null || key === 'times' || /_at$/i.test(key)) {
+                    return $A.dayjs(value).format(format);
+                }
+                return value;
+            }
+            // 对象：递归处理
+            if ($A.isJson(value)) {
                 value = Object.assign({}, value)
-                for (let key in value) {
-                    if (!value.hasOwnProperty(key)) continue;
-                    value[key] = $A.newDateString(value[key], format);
+                for (let k in value) {
+                    if (!value.hasOwnProperty(k)) continue;
+                    value[k] = $A.newDateString(value[k], format, k);
                 }
             } else if ($A.isArray(value)) {
                 value = Object.assign([], value)
                 value.forEach((val, index) => {
-                    value[index] = $A.newDateString(val, format);
+                    value[index] = $A.newDateString(val, format, key);
                 });
             }
             return value;
