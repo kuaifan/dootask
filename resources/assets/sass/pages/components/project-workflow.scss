@@ -127,7 +127,75 @@
 
     .taskflow-config {
         display: flex;
+        flex-direction: column;
         max-height: 100%;
+
+        .taskflow-config-rules {
+            flex-shrink: 0;
+            padding: 12px 20px;
+            margin-bottom: 12px;
+            background-color: #f7f8fa;
+            border-radius: 4px;
+            .rules-title {
+                display: flex;
+                align-items: center;
+                margin-bottom: 8px;
+                font-size: 13px;
+                font-weight: 500;
+                color: $primary-title-color;
+                > i {
+                    margin-right: 4px;
+                    font-size: 16px;
+                    color: #1890ff;
+                }
+            }
+            .rules-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .rules-item {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 4px;
+                font-size: 13px;
+                color: #666;
+                line-height: 24px;
+                .rule-status {
+                    flex-shrink: 0;
+                    padding: 2px 8px;
+                    border-radius: 3px;
+                    font-size: 12px;
+                    &.start {
+                        background-color: rgba($flow-status-start-color, 0.1);
+                        color: $flow-status-start-color;
+                    }
+                    &.progress {
+                        background-color: rgba($flow-status-progress-color, 0.1);
+                        color: $flow-status-progress-color;
+                    }
+                    &.test {
+                        background-color: rgba($flow-status-test-color, 0.1);
+                        color: $flow-status-test-color;
+                    }
+                    &.end {
+                        background-color: rgba($flow-status-end-color, 0.1);
+                        color: $flow-status-end-color;
+                    }
+                }
+                .rule-column {
+                    padding: 2px 8px;
+                    background-color: rgba(#1890ff, 0.1);
+                    color: #1890ff;
+                    border-radius: 3px;
+                    font-size: 12px;
+                }
+                .common-avatar {
+                    margin: 0 2px;
+                }
+            }
+        }
 
         .taskflow-config-table {
             display: flex;

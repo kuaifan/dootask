@@ -30,6 +30,36 @@
                         </div>
                     </div>
                     <div slot="content" class="taskflow-config">
+                        <div v-if="flowRulesMap[data.id] && flowRulesMap[data.id].length > 0" class="taskflow-config-rules">
+                            <div class="rules-title">
+                                <Icon type="md-list-box" />
+                                <span>{{$L('工作流规则')}}</span>
+                            </div>
+                            <div class="rules-list">
+                                <div v-for="(rule, ruleIndex) in flowRulesMap[data.id]" :key="ruleIndex" class="rules-item">
+                                    <template v-if="rule.type === 'owner'">
+                                        <span>{{$L('流转到')}}</span>
+                                        <span class="rule-status" :class="rule.status">{{rule.name}}</span>
+                                        <span v-if="rule.usertype === 'add'">{{$L('时添加')}}</span>
+                                        <span v-else>{{$L('时改变任务负责人为')}}</span>
+                                        <UserAvatar v-for="(uid, uidx) in rule.userids" :key="`${ruleIndex}_${uidx}`" :userid="uid" :size="20" :borderWidth="1" showName/>
+                                        <span v-if="rule.usertype === 'add'">{{$L('至任务负责人')}}</span>
+                                        <span v-else-if="rule.usertype === 'merge'">{{$L('（并保留操作人），原负责人移至协助人员')}}</span>
+                                        <span v-else>{{$L('，原负责人移至协助人员')}}</span>
+                                    </template>
+                                    <template v-else-if="rule.type === 'limit'">
+                                        <span class="rule-status" :class="rule.status">{{rule.name}}</span>
+                                        <span>{{$L('仅限任务负责人和项目管理员修改状态')}}</span>
+                                    </template>
+                                    <template v-else-if="rule.type === 'column'">
+                                        <span>{{$L('流转到')}}</span>
+                                        <span class="rule-status" :class="rule.status">{{rule.name}}</span>
+                                        <span>{{$L('时自动将任务移动至列表')}}</span>
+                                        <span class="rule-column">{{rule.columnName}}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                         <div class="taskflow-config-table">
                             <div class="taskflow-config-table-left-container">
                                 <div class="taskflow-config-table-column-header left-header">{{$L('配置项')}}</div>
@@ -269,6 +299,52 @@ export default {
                     name: item.name,
                 }
             });
+        },
+
+        flowRulesMap() {
+            const map = {};
+            const columnMap = {};
+            this.columnList.forEach(col => {
+                columnMap[col.id] = col.name;
+            });
+
+            this.list.forEach(data => {
+                const rules = [];
+                data.project_flow_item.forEach(item => {
+                    // 状态负责人规则
+                    if (item.userids && item.userids.length > 0) {
+                        rules.push({
+                            type: 'owner',
+                            name: item.name,
+                            status: item.status,
+                            userids: item.userids,
+                            usertype: item.usertype
+                        });
+                    }
+
+                    // 限制负责人规则（不依赖状态负责人）
+                    if (item.userlimit === 1) {
+                        rules.push({
+                            type: 'limit',
+                            name: item.name,
+                            status: item.status
+                        });
+                    }
+
+                    // 关联列表规则
+                    if (item.columnid && columnMap[item.columnid]) {
+                        rules.push({
+                            type: 'column',
+                            name: item.name,
+                            status: item.status,
+                            columnName: columnMap[item.columnid]
+                        });
+                    }
+                });
+                map[data.id] = rules;
+            });
+
+            return map;
         }
     },
 
@@ -573,6 +649,7 @@ export default {
                 }
             });
         },
+
     }
 }
 </script>
