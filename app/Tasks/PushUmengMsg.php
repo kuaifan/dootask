@@ -38,7 +38,7 @@ class PushUmengMsg extends AbstractTask
         }
 
         // 消息ID
-        $msgId = isset($this->array['id']) ? intval($this->array['id']) : 0;
+        $msgId = isset($this->array['extra']['msg_id']) ? intval($this->array['extra']['msg_id']) : 0;
 
         // 处理用户列表
         $userids = is_array($this->userid) ? $this->userid : [$this->userid];
