@@ -2,7 +2,7 @@
 
 namespace App\Tasks;
 
-use App\Models\Apps;
+use App\Module\Apps;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskAiEvent;
 use App\Module\Base;
