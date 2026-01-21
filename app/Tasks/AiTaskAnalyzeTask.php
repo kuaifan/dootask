@@ -53,8 +53,16 @@ class AiTaskAnalyzeTask extends AbstractTask
                 continue;
             }
 
-            // 标记为处理中
-            $event->markProcessing();
+            // 使用原子操作标记为处理中（防止并发重复处理）
+            $updated = ProjectTaskAiEvent::where('id', $event->id)
+                ->whereIn('status', [ProjectTaskAiEvent::STATUS_PENDING, ProjectTaskAiEvent::STATUS_FAILED])
+                ->update(['status' => ProjectTaskAiEvent::STATUS_PROCESSING]);
+
+            if (!$updated) {
+                // 已被其他进程处理
+                continue;
+            }
+            $event->status = ProjectTaskAiEvent::STATUS_PROCESSING;
 
             try {
                 // 检查是否满足执行条件

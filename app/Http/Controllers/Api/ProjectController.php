@@ -3851,6 +3851,11 @@ class ProjectController extends AbstractController
         $type = trim(Request::input('type'));
         $data = Request::input('data', []);
 
+        // 验证建议类型
+        if (!in_array($type, ProjectTaskAiEvent::getEventTypes())) {
+            return Base::retError('无效的建议类型');
+        }
+
         // 验证任务
         $task = ProjectTask::userTask($taskId);
         if (!$task) {
@@ -3884,6 +3889,13 @@ class ProjectController extends AbstractController
             case ProjectTaskAiEvent::EVENT_SUBTASKS:
                 // 创建子任务
                 $subtasks = $result['content'] ?? [];
+                // 检查子任务数量限制
+                $existingCount = ProjectTask::where('parent_id', $task->id)
+                    ->whereNull('deleted_at')
+                    ->count();
+                if ($existingCount + count($subtasks) > 50) {
+                    return Base::retError('子任务数量超过限制（最多50个）');
+                }
                 \DB::transaction(function () use ($task, $subtasks) {
                     foreach ($subtasks as $name) {
                         ProjectTask::addTask([
@@ -3963,10 +3975,25 @@ class ProjectController extends AbstractController
         $msgId = intval(Request::input('msg_id'));
         $type = trim(Request::input('type'));
 
+        // 验证建议类型
+        if (!in_array($type, ProjectTaskAiEvent::getEventTypes())) {
+            return Base::retError('无效的建议类型');
+        }
+
         // 验证任务
         $task = ProjectTask::userTask($taskId);
         if (!$task) {
             return Base::retError('任务不存在或无权限');
+        }
+
+        // 验证事件记录存在
+        $event = ProjectTaskAiEvent::where('task_id', $taskId)
+            ->where('event_type', $type)
+            ->where('msg_id', $msgId)
+            ->first();
+
+        if (!$event || $event->status !== ProjectTaskAiEvent::STATUS_COMPLETED) {
+            return Base::retError('建议不存在或已处理');
         }
 
         // 更新消息状态

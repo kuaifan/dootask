@@ -47,8 +47,8 @@ class AiTaskSuggestion
                 return !$hasOwner;
 
             case ProjectTaskAiEvent::EVENT_SIMILAR:
-                // 始终执行
-                return true;
+                // 向量搜索暂未实现，跳过
+                return false;
 
             default:
                 return false;
@@ -165,16 +165,28 @@ class AiTaskSuggestion
     }
 
     /**
+     * 转义用户输入以防止 Prompt 注入
+     */
+    private static function escapeUserInput(string $input): string
+    {
+        // 移除可能影响 AI Prompt 解析的特殊字符
+        $input = str_replace(['```', '---', '==='], '', $input);
+        // 截断过长的输入
+        return mb_substr(trim($input), 0, 500);
+    }
+
+    /**
      * 构建描述生成 Prompt
      */
     private static function buildDescriptionPrompt(ProjectTask $task): string
     {
-        $projectName = $task->project->name ?? '未知项目';
+        $taskName = self::escapeUserInput($task->name);
+        $projectName = self::escapeUserInput($task->project->name ?? '未知项目');
 
         return <<<PROMPT
 你是一个专业的项目管理助手。请根据以下任务标题，生成结构化的任务描述。
 
-任务标题：{$task->name}
+任务标题：{$taskName}
 所属项目：{$projectName}
 
 请按以下格式生成任务描述（使用 Markdown）：
@@ -198,12 +210,13 @@ PROMPT;
      */
     private static function buildSubtasksPrompt(ProjectTask $task): string
     {
-        $content = $task->content ?? '';
+        $taskName = self::escapeUserInput($task->name);
+        $content = self::escapeUserInput($task->content ?? '');
 
         return <<<PROMPT
 你是一个专业的项目管理助手。请将以下任务拆分为可执行的子任务。
 
-任务标题：{$task->name}
+任务标题：{$taskName}
 任务描述：{$content}
 
 请返回 3-5 个子任务，每行一个，格式如下：
@@ -226,9 +239,11 @@ PROMPT;
     {
         $membersText = '';
         foreach ($members as $member) {
-            $membersText .= "- {$member['nickname']}（ID:{$member['userid']}）";
+            $nickname = self::escapeUserInput($member['nickname']);
+            $membersText .= "- {$nickname}（ID:{$member['userid']}）";
             if (!empty($member['profession'])) {
-                $membersText .= "，职位：{$member['profession']}";
+                $profession = self::escapeUserInput($member['profession']);
+                $membersText .= "，职位：{$profession}";
             }
             $membersText .= "，进行中任务：{$member['in_progress_count']}个";
             $membersText .= "，近期完成：{$member['completed_count']}个";
@@ -238,11 +253,14 @@ PROMPT;
             $membersText .= "\n";
         }
 
+        $taskName = self::escapeUserInput($task->name);
+        $taskContent = self::escapeUserInput($task->content ?? '');
+
         return <<<PROMPT
 你是一个专业的项目管理助手。请根据任务内容和团队成员情况，推荐最合适的负责人。
 
-任务标题：{$task->name}
-任务描述：{$task->content}
+任务标题：{$taskName}
+任务描述：{$taskContent}
 
 团队成员：
 {$membersText}
@@ -552,7 +570,10 @@ MD;
      */
     public static function updateMessageStatus(int $msgId, int $dialogId, string $type, string $status): void
     {
-        $msg = WebSocketDialogMsg::find($msgId);
+        // 验证消息存在且属于指定对话
+        $msg = WebSocketDialogMsg::where('id', $msgId)
+            ->where('dialog_id', $dialogId)
+            ->first();
         if (!$msg) {
             return;
         }
