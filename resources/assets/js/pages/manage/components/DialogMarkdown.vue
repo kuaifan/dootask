@@ -191,10 +191,10 @@ export default {
         applyAiSuggestionByType(type, taskId, result, params) {
             switch (type) {
                 case 'description':
-                    // 更新任务描述
+                    // 更新任务描述（Markdown 转 HTML）
                     this.$store.dispatch('taskUpdate', {
                         task_id: taskId,
-                        content: result.content,
+                        content: MarkdownConver(result.content),
                     }).then(() => {
                         $A.messageSuccess(this.$L('应用成功'));
                     }).catch(({msg}) => {

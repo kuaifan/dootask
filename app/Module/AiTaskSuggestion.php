@@ -103,8 +103,18 @@ class AiTaskSuggestion
      */
     public static function generateAssignee(ProjectTask $task): ?array
     {
-        // 获取项目成员
+        // 获取当前任务已有的成员（负责人和协助人）
+        $existingUserIds = ProjectTaskUser::where('task_id', $task->id)
+            ->pluck('userid')
+            ->toArray();
+
+        // 获取项目成员，排除已有任务成员
         $members = self::getProjectMembersInfo($task->project_id);
+        $members = array_filter($members, function ($member) use ($existingUserIds) {
+            return !in_array($member['userid'], $existingUserIds);
+        });
+        $members = array_values($members); // 重新索引
+
         if (empty($members)) {
             return null;
         }
@@ -192,17 +202,20 @@ class AiTaskSuggestion
 
 请按以下格式生成任务描述（使用 Markdown）：
 
-> **背景**：[描述任务的背景和上下文]
-> **目标**：[明确任务要达成的目标]
-> **验收标准**：
-> - [验收标准1]
-> - [验收标准2]
-> - [验收标准3]
+**背景**：[描述任务的背景和上下文]
+
+**目标**：[明确任务要达成的目标]
+
+**验收标准**：
+- [验收标准1]
+- [验收标准2]
+- [验收标准3]
 
 要求：
 1. 内容要专业、简洁
 2. 验收标准要具体、可衡量
 3. 与用户输入语言保持一致
+4. 只返回 Markdown 内容，不要返回其他文字
 PROMPT;
     }
 
@@ -379,6 +392,8 @@ PROMPT;
         $lines = explode("\n", trim($text));
         $recommendations = [];
 
+        $addedUserIds = []; // 记录已添加的用户ID，防止重复
+
         foreach ($lines as $line) {
             $line = trim($line);
             $line = preg_replace('/^\d+[\.\)、]\s*/', '', $line);
@@ -387,12 +402,18 @@ PROMPT;
                 $userid = intval($matches[1]);
                 $reason = trim($matches[2]);
 
+                // 跳过已添加的用户
+                if (in_array($userid, $addedUserIds)) {
+                    continue;
+                }
+
                 if (isset($memberMap[$userid])) {
                     $recommendations[] = [
                         'userid' => $userid,
                         'nickname' => $memberMap[$userid]['nickname'],
                         'reason' => $reason,
                     ];
+                    $addedUserIds[] = $userid;
                 }
             }
         }
@@ -496,7 +517,7 @@ PROMPT;
             }
         }
 
-        return implode("\n---\n\n", $parts);
+        return implode("\n\n---\n\n", $parts);
     }
 
     /**
@@ -512,7 +533,7 @@ PROMPT;
 
 {$content}
 
-[✓ 采纳描述]({$applyUrl})  [✗ 忽略]({$dismissUrl})
+[✅ 采纳描述]({$applyUrl})  [❌ 忽略]({$dismissUrl})
 MD;
     }
 
@@ -534,7 +555,7 @@ MD;
 ### 建议拆分子任务
 
 {$list}
-[✓ 创建子任务]({$applyUrl})  [✗ 忽略]({$dismissUrl})
+[✅ 创建子任务]({$applyUrl})  [❌ 忽略]({$dismissUrl})
 MD;
     }
 
@@ -672,7 +693,8 @@ MD;
             $dialogId,
             'text',
             ['text' => $newContent, 'type' => 'md'],
-            self::AI_ASSISTANT_USERID
+            self::AI_ASSISTANT_USERID,
+            true,  // push_self
         );
     }
 }
