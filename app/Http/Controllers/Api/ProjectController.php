@@ -3829,6 +3829,8 @@ class ProjectController extends AbstractController
     /**
      * @api {post} api/project/task/ai-apply          26. 采纳AI建议
      *
+     * @apiDescription 标记AI建议为已采纳，返回建议数据供前端调用相应业务接口处理
+     *
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName task__ai_apply
@@ -3836,20 +3838,21 @@ class ProjectController extends AbstractController
      * @apiParam {Number} task_id       任务ID
      * @apiParam {Number} msg_id        消息ID
      * @apiParam {String} type          建议类型：description/subtasks/assignee/similar
-     * @apiParam {Object} [data]        额外数据
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {String} data.type   建议类型
+     * @apiSuccess {Number} data.task_id 任务ID
+     * @apiSuccess {Object} data.result 建议内容（格式根据type不同而异）
      */
     public function task__ai_apply()
     {
-        $user = User::auth();
+        User::auth();
         //
         $taskId = intval(Request::input('task_id'));
         $msgId = intval(Request::input('msg_id'));
         $type = trim(Request::input('type'));
-        $data = Request::input('data', []);
 
         // 验证建议类型
         if (!in_array($type, ProjectTaskAiEvent::getEventTypes())) {
@@ -3877,95 +3880,23 @@ class ProjectController extends AbstractController
             return Base::retError('建议内容为空');
         }
 
-        // 根据类型执行不同操作
-        switch ($type) {
-            case ProjectTaskAiEvent::EVENT_DESCRIPTION:
-                // 更新任务描述
-                $task->content = $result['content'];
-                $task->save();
-                $task->addLog('AI建议：更新任务描述');
-                break;
-
-            case ProjectTaskAiEvent::EVENT_SUBTASKS:
-                // 创建子任务
-                $subtasks = $result['content'] ?? [];
-                // 过滤无效的子任务名称
-                $subtasks = array_filter(array_map(function ($name) {
-                    $name = trim((string)$name);
-                    return (empty($name) || mb_strlen($name) > 100) ? null : $name;
-                }, $subtasks));
-                if (empty($subtasks)) {
-                    return Base::retError('没有有效的子任务名称');
-                }
-                // 检查子任务数量限制
-                $existingCount = ProjectTask::where('parent_id', $task->id)
-                    ->whereNull('deleted_at')
-                    ->count();
-                if ($existingCount + count($subtasks) > 50) {
-                    return Base::retError('子任务数量超过限制（最多50个）');
-                }
-                \DB::transaction(function () use ($task, $subtasks) {
-                    foreach ($subtasks as $name) {
-                        ProjectTask::addTask([
-                            'parent_id' => $task->id,
-                            'project_id' => $task->project_id,
-                            'column_id' => $task->column_id,
-                            'name' => $name,
-                        ]);
-                    }
-                    $task->addLog('AI建议：创建' . count($subtasks) . '个子任务');
-                });
-                break;
-
-            case ProjectTaskAiEvent::EVENT_ASSIGNEE:
-                // 指派负责人
-                $userid = intval($data['userid'] ?? 0);
-                if ($userid <= 0) {
-                    return Base::retError('请选择负责人');
-                }
-                // 验证用户是否为项目成员
-                if (!ProjectUser::where('project_id', $task->project_id)->where('userid', $userid)->exists()) {
-                    return Base::retError('用户不是项目成员');
-                }
-                $task->owner = [$userid];
-                $task->save();
-                $task->addLog('AI建议：指派负责人', ['userid' => [$userid]]);
-                break;
-
-            case ProjectTaskAiEvent::EVENT_SIMILAR:
-                // 添加关联任务
-                $relatedTaskId = intval($data['related_task_id'] ?? 0);
-                if ($relatedTaskId <= 0) {
-                    return Base::retError('请选择关联任务');
-                }
-                // 验证关联任务存在且有权限
-                $relatedTask = ProjectTask::userTask($relatedTaskId);
-                if (!$relatedTask) {
-                    return Base::retError('关联任务不存在或无权限');
-                }
-                ProjectTaskRelation::firstOrCreate([
-                    'task_id' => $task->id,
-                    'related_task_id' => $relatedTaskId,
-                    'direction' => 'ai_similar',
-                ], [
-                    'userid' => $user->userid,
-                ]);
-                $task->addLog('AI建议：添加关联任务', ['task_id' => $relatedTaskId]);
-                break;
-
-            default:
-                return Base::retError('未知的建议类型');
-        }
-
         // 标记事件为已采纳
         $event->markApplied();
+
+        // 记录日志
+        $task->addLog('AI建议：采纳' . $type . '建议');
 
         // 更新消息状态
         if ($msgId > 0 && $task->dialog_id) {
             AiTaskSuggestion::updateMessageStatus($msgId, $task->dialog_id, $type, 'applied');
         }
 
-        return Base::retSuccess('应用成功');
+        // 返回建议数据，由前端调用相应接口处理
+        return Base::retSuccess('已采纳', [
+            'type' => $type,
+            'task_id' => $taskId,
+            'result' => $result,
+        ]);
     }
 
     /**

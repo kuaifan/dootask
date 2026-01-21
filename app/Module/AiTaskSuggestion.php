@@ -8,6 +8,7 @@ use App\Models\ProjectTaskUser;
 use App\Models\ProjectUser;
 use App\Models\User;
 use App\Models\WebSocketDialogMsg;
+use App\Module\Manticore\ManticoreBase;
 use Cache;
 use Carbon\Carbon;
 
@@ -401,12 +402,74 @@ PROMPT;
 
     /**
      * 通过 Embedding 搜索相似任务
+     *
+     * @param array $embedding 任务内容的向量表示
+     * @param int $projectId 项目ID（用于过滤同项目任务）
+     * @param int $excludeTaskId 排除的任务ID（当前任务）
+     * @return array 相似任务列表
      */
     private static function searchSimilarByEmbedding(array $embedding, int $projectId, int $excludeTaskId): array
     {
-        // TODO: 实现向量搜索
-        // 当前先返回空数组，后续集成 SeekDB 或其他向量搜索
-        return [];
+        if (empty($embedding)) {
+            return [];
+        }
+
+        try {
+            // 使用 ManticoreBase 进行向量搜索
+            // userid=0 跳过权限过滤，我们通过 project_id 过滤
+            $results = ManticoreBase::taskVectorSearch($embedding, 0, 50);
+
+            if (empty($results)) {
+                return [];
+            }
+
+            // 获取当前任务的子任务ID列表
+            $childTaskIds = ProjectTask::where('parent_id', $excludeTaskId)
+                ->whereNull('deleted_at')
+                ->pluck('id')
+                ->toArray();
+
+            // 过滤：同项目、排除当前任务及其子任务、相似度阈值
+            $similarTasks = [];
+            foreach ($results as $item) {
+                // 过滤不同项目的任务
+                if ($item['project_id'] != $projectId) {
+                    continue;
+                }
+
+                // 排除当前任务
+                if ($item['task_id'] == $excludeTaskId) {
+                    continue;
+                }
+
+                // 排除子任务
+                if (in_array($item['task_id'], $childTaskIds)) {
+                    continue;
+                }
+
+                // 相似度阈值（0.7 以上才算相似）
+                $similarity = $item['similarity'] ?? 0;
+                if ($similarity < 0.7) {
+                    continue;
+                }
+
+                $similarTasks[] = [
+                    'task_id' => $item['task_id'],
+                    'name' => $item['task_name'] ?? '',
+                    'similarity' => round($similarity, 2),
+                ];
+
+                // 最多返回 5 个相似任务
+                if (count($similarTasks) >= 5) {
+                    break;
+                }
+            }
+
+            return $similarTasks;
+        } catch (\Exception $e) {
+            \Log::error('searchSimilarByEmbedding error: ' . $e->getMessage());
+            return [];
+        }
     }
 
     /**

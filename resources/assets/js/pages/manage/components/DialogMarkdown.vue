@@ -172,31 +172,104 @@ export default {
             const [, type, taskId, msgId, queryString] = match;
             const params = new URLSearchParams(queryString || '');
 
-            const data = {};
-            if (type === 'assignee') {
-                const userid = params.get('userid');
-                if (!userid || isNaN(parseInt(userid, 10))) {
-                    return;
-                }
-                data.userid = parseInt(userid, 10);
-            } else if (type === 'similar') {
-                const related = params.get('related');
-                if (!related || isNaN(parseInt(related, 10))) {
-                    return;
-                }
-                data.related_task_id = parseInt(related, 10);
-            }
-
+            // 先调用接口标记为已采纳，获取建议数据
             this.$store.dispatch('applyAiSuggestion', {
                 task_id: parseInt(taskId, 10),
                 msg_id: parseInt(msgId, 10),
                 type,
-                data,
-            }).then(() => {
-                $A.messageSuccess(this.$L('应用成功'));
+            }).then(({data}) => {
+                // 根据类型调用对应的业务接口
+                this.applyAiSuggestionByType(data.type, data.task_id, data.result, params);
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });
+        },
+
+        /**
+         * 根据类型执行对应的业务操作
+         */
+        applyAiSuggestionByType(type, taskId, result, params) {
+            switch (type) {
+                case 'description':
+                    // 更新任务描述
+                    this.$store.dispatch('taskUpdate', {
+                        task_id: taskId,
+                        content: result.content,
+                    }).then(() => {
+                        $A.messageSuccess(this.$L('应用成功'));
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
+                    });
+                    break;
+
+                case 'subtasks':
+                    // 批量创建子任务
+                    this.createSubtasksSequentially(taskId, result.content || []);
+                    break;
+
+                case 'assignee':
+                    // 指派负责人
+                    const userid = params.get('userid');
+                    if (!userid || isNaN(parseInt(userid, 10))) {
+                        $A.modalError(this.$L('请选择负责人'));
+                        return;
+                    }
+                    this.$store.dispatch('taskUpdate', {
+                        task_id: taskId,
+                        owner: [parseInt(userid, 10)],
+                    }).then(() => {
+                        $A.messageSuccess(this.$L('应用成功'));
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
+                    });
+                    break;
+
+                case 'similar':
+                    // 相似任务关联（当前功能未启用）
+                    $A.messageSuccess(this.$L('应用成功'));
+                    break;
+
+                default:
+                    $A.modalError(this.$L('未知的建议类型'));
+            }
+        },
+
+        /**
+         * 顺序创建子任务
+         */
+        createSubtasksSequentially(taskId, subtasks) {
+            if (!subtasks || subtasks.length === 0) {
+                $A.modalError(this.$L('没有有效的子任务'));
+                return;
+            }
+
+            let completed = 0;
+            const total = subtasks.length;
+
+            const createNext = (index) => {
+                if (index >= total) {
+                    $A.messageSuccess(this.$L('应用成功'));
+                    return;
+                }
+                const name = subtasks[index];
+                if (!name || typeof name !== 'string' || !name.trim()) {
+                    createNext(index + 1);
+                    return;
+                }
+                this.$store.dispatch('taskAddSub', {
+                    task_id: taskId,
+                    name: name.trim(),
+                }).then(() => {
+                    completed++;
+                    createNext(index + 1);
+                }).catch(({msg}) => {
+                    // 单个失败不影响后续创建
+                    console.warn(`创建子任务失败: ${name}`, msg);
+                    createNext(index + 1);
+                });
+            };
+
+            createNext(0);
         },
 
         /**

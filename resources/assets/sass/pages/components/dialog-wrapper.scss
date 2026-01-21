@@ -691,11 +691,15 @@
                             border-radius: 50%;
                             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                             color: #fff;
-                            font-size: 10px;
-                            font-weight: bold;
                             display: flex;
                             align-items: center;
                             justify-content: center;
+                            padding: 3px;
+
+                            svg {
+                                width: 100%;
+                                height: 100%;
+                            }
                         }
 
                         .avatar-name {
