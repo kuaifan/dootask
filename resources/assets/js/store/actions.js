@@ -5219,6 +5219,42 @@ export default {
             // 启动 MCP 服务器
             commit('mcp/server/status', {running: 'running'});
         }
+    },
+
+    /** *****************************************************************************************/
+    /** *********************************** AI Suggestions **************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 采纳 AI 建议
+     */
+    applyAiSuggestion({}, params) {
+        return new Promise((resolve, reject) => {
+            this.dispatch('call', {
+                url: 'project/task/ai-apply',
+                data: params,
+            }).then(result => {
+                resolve(result);
+            }).catch(e => {
+                reject(e);
+            });
+        });
+    },
+
+    /**
+     * 忽略 AI 建议
+     */
+    dismissAiSuggestion({}, params) {
+        return new Promise((resolve, reject) => {
+            this.dispatch('call', {
+                url: 'project/task/ai-dismiss',
+                data: params,
+            }).then(result => {
+                resolve(result);
+            }).catch(e => {
+                reject(e);
+            });
+        });
     }
 
 }

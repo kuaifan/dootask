@@ -146,7 +146,76 @@ export default {
                         $A.modalError(msg);
                     });
                     break;
+
+                case 'ai-apply':
+                    this.handleAiApply(href);
+                    break;
+
+                case 'ai-dismiss':
+                    this.handleAiDismiss(href);
+                    break;
             }
+        },
+
+        /**
+         * 处理 AI 建议采纳
+         * 格式: dootask://ai-apply/{type}/{task_id}/{msg_id}?{params}
+         */
+        handleAiApply(href) {
+            const match = href.match(/^dootask:\/\/ai-apply\/(\w+)\/(\d+)\/(\d+)(?:\?(.*))?$/);
+            if (!match) {
+                return;
+            }
+            const [, type, taskId, msgId, queryString] = match;
+            const params = new URLSearchParams(queryString || '');
+
+            const data = {};
+            if (type === 'assignee') {
+                const userid = params.get('userid');
+                if (!userid || isNaN(parseInt(userid, 10))) {
+                    return;
+                }
+                data.userid = parseInt(userid, 10);
+            } else if (type === 'similar') {
+                const related = params.get('related');
+                if (!related || isNaN(parseInt(related, 10))) {
+                    return;
+                }
+                data.related_task_id = parseInt(related, 10);
+            }
+
+            this.$store.dispatch('applyAiSuggestion', {
+                task_id: parseInt(taskId, 10),
+                msg_id: parseInt(msgId, 10),
+                type,
+                data,
+            }).then(() => {
+                $A.messageSuccess(this.$L('应用成功'));
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
+
+        /**
+         * 处理 AI 建议忽略
+         * 格式: dootask://ai-dismiss/{type}/{task_id}/{msg_id}
+         */
+        handleAiDismiss(href) {
+            const match = href.match(/^dootask:\/\/ai-dismiss\/(\w+)\/(\d+)\/(\d+)$/);
+            if (!match) {
+                return;
+            }
+            const [, type, taskId, msgId] = match;
+
+            this.$store.dispatch('dismissAiSuggestion', {
+                task_id: parseInt(taskId, 10),
+                msg_id: parseInt(msgId, 10),
+                type,
+            }).then(() => {
+                $A.messageSuccess(this.$L('已忽略'));
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
         }
     }
 }
