@@ -23,6 +23,7 @@ use App\Tasks\CheckinRemindTask;
 use App\Tasks\CloseMeetingRoomTask;
 use App\Tasks\ManticoreSyncTask;
 use App\Tasks\UnclaimedTaskRemindTask;
+use App\Tasks\AiTaskLoopTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Laravolt\Avatar\Avatar;
 
@@ -273,6 +274,8 @@ class IndexController extends InvokeController
         Task::deliver(new CloseMeetingRoomTask());
         // Manticore Search 同步
         Task::deliver(new ManticoreSyncTask());
+        // AI 任务建议
+        Task::deliver(new AiTaskLoopTask());
 
         return "success";
     }
