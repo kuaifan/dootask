@@ -23,7 +23,7 @@ class AiTaskLoopTask extends AbstractTask
     /**
      * 任务创建后多久开始分析（秒）
      */
-    const DELAY_SECONDS = 60;
+    const DELAY_SECONDS = 10;
 
     public function __construct()
     {
