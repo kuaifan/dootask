@@ -99,8 +99,8 @@ class UserObserver extends AbstractObserver
 
         if (!empty($changedFields)) {
             // 判断是用户自己修改还是管理员修改
-            $currentUser = User::authInfo();
-            $eventType = ($currentUser && $currentUser->userid === $user->userid)
+            $currentUserid = User::userid();
+            $eventType = ($currentUserid > 0 && $currentUserid === $user->userid)
                 ? 'profile_update'
                 : 'admin_update';
             Apps::dispatchUserHook($user, 'user_update', $eventType, $changedFields);
