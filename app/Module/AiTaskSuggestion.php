@@ -368,7 +368,6 @@ class AiTaskSuggestion
                 'profession' => $user->profession ?? '',
                 'in_progress_count' => $inProgressCount,
                 'completed_count' => $completedCount,
-                'similar_count' => 0, // TODO: 计算相似任务数量
             ];
         }
 

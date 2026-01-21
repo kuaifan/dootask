@@ -213,7 +213,7 @@ export default {
                         task_id: taskId,
                         content: MarkdownConver(result.content),
                     }).then(() => {
-                        $A.messageSuccess(this.$L('应用成功'));
+                        $A.messageSuccess('应用成功');
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                     });
@@ -228,7 +228,7 @@ export default {
                     // 增加负责人（保留现有负责人）
                     const userid = params.get('userid');
                     if (!userid || isNaN(parseInt(userid, 10))) {
-                        $A.modalError(this.$L('请选择负责人'));
+                        $A.modalError('请选择负责人');
                         return;
                     }
                     const newUserId = parseInt(userid, 10);
@@ -241,7 +241,7 @@ export default {
                         task_id: taskId,
                         owner: owners,
                     }).then(() => {
-                        $A.messageSuccess(this.$L('应用成功'));
+                        $A.messageSuccess('应用成功');
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                     });
@@ -249,11 +249,11 @@ export default {
 
                 case 'similar':
                     // 相似任务关联（后端已处理）
-                    $A.messageSuccess(this.$L('应用成功'));
+                    $A.messageSuccess('应用成功');
                     break;
 
                 default:
-                    $A.modalError(this.$L('未知的建议类型'));
+                    $A.modalError('未知的建议类型');
             }
         },
 
@@ -262,7 +262,7 @@ export default {
          */
         createSubtasksSequentially(taskId, subtasks) {
             if (!subtasks || subtasks.length === 0) {
-                $A.modalError(this.$L('没有有效的子任务'));
+                $A.modalError('没有有效的子任务');
                 return;
             }
 
@@ -271,7 +271,7 @@ export default {
 
             const createNext = (index) => {
                 if (index >= total) {
-                    $A.messageSuccess(this.$L('应用成功'));
+                    $A.messageSuccess('应用成功');
                     return;
                 }
                 const name = subtasks[index];

@@ -31,12 +31,12 @@ const MarkdownUtils = {
             // 如果有 status，显示状态文字
             if (status) {
                 const statusLabels = {
-                    description: { applied: '✓ 已采纳', dismissed: '✗ 已忽略' },
-                    subtasks: { applied: '✓ 已创建', dismissed: '✗ 已忽略' },
-                    assignee: { applied: '✓ 已指派', dismissed: '✗ 已忽略' },
-                    similar: { applied: '✓ 已关联', dismissed: '✗ 已忽略' },
+                    description: { applied: `✓ ${$A.L('已采纳')}`, dismissed: `✗ ${$A.L('已忽略')}` },
+                    subtasks: { applied: `✓ ${$A.L('已创建')}`, dismissed: `✗ ${$A.L('已忽略')}` },
+                    assignee: { applied: `✓ ${$A.L('已指派')}`, dismissed: `✗ ${$A.L('已忽略')}` },
+                    similar: { applied: `✓ ${$A.L('已关联')}`, dismissed: `✗ ${$A.L('已忽略')}` },
                 };
-                const label = statusLabels[type]?.[status] || (status === 'applied' ? '✓ 已采纳' : '✗ 已忽略');
+                const label = statusLabels[type]?.[status] || (status === 'applied' ? `✓ ${$A.L('已采纳')}` : `✗ ${$A.L('已忽略')}`);
                 const statusClass = status === 'applied' ? 'ai-status-applied' : 'ai-status-dismissed';
                 return `<span class="ai-status ${statusClass}">${label}</span>`;
             }
@@ -48,12 +48,12 @@ const MarkdownUtils = {
 
             // 根据类型生成按钮文案
             const buttonLabels = {
-                description: ['采纳描述', '忽略'],
-                subtasks: ['创建子任务', '忽略'],
-                assignee: ['指派', '忽略'],
-                similar: ['关联', '忽略'],
+                description: [$A.L('采纳描述'), $A.L('忽略')],
+                subtasks: [$A.L('创建子任务'), $A.L('忽略')],
+                assignee: [$A.L('指派'), $A.L('忽略')],
+                similar: [$A.L('关联'), $A.L('忽略')],
             };
-            const [applyLabel, dismissLabel] = buttonLabels[type] || ['采纳', '忽略'];
+            const [applyLabel, dismissLabel] = buttonLabels[type] || [$A.L('采纳'), $A.L('忽略')];
 
             // 构建 URL 查询参数
             let queryParams = [];
