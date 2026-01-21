@@ -680,6 +680,30 @@
                     height: 22px;
                     margin-bottom: 6px;
                     opacity: 0.8;
+
+                    .ai-assistant-avatar {
+                        display: flex;
+                        align-items: center;
+
+                        .ai-icon {
+                            width: 22px;
+                            height: 22px;
+                            border-radius: 50%;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: #fff;
+                            font-size: 10px;
+                            font-weight: bold;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+
+                        .avatar-name {
+                            margin-left: 6px;
+                            font-size: 12px;
+                            color: #666;
+                        }
+                    }
                 }
 
                 .dialog-head {

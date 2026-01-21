@@ -2,7 +2,14 @@
     <div class="dialog-view" :class="viewClass" :data-id="msgData.id">
         <!--昵称-->
         <div v-if="dialogType === 'group'" class="dialog-username" @pointerdown="handleOperation($event, 'mention')">
-            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" click-open-detail/>
+            <!-- AI 助手头像 -->
+            <template v-if="msgData.userid === -1">
+                <div class="ai-assistant-avatar">
+                    <div class="ai-icon">AI</div>
+                    <div class="avatar-name">{{ $L('AI 助手') }}</div>
+                </div>
+            </template>
+            <UserAvatar v-else :userid="msgData.userid" :show-icon="false" :show-name="true" click-open-detail/>
         </div>
 
         <div
