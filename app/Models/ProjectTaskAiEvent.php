@@ -31,6 +31,8 @@ class ProjectTaskAiEvent extends AbstractModel
     const STATUS_COMPLETED = 'completed';
     const STATUS_FAILED = 'failed';
     const STATUS_SKIPPED = 'skipped';
+    const STATUS_APPLIED = 'applied';
+    const STATUS_DISMISSED = 'dismissed';
 
     const MAX_RETRY = 3;
 
@@ -128,5 +130,25 @@ class ProjectTaskAiEvent extends AbstractModel
     {
         return $this->status === self::STATUS_FAILED
             && $this->retry_count < self::MAX_RETRY;
+    }
+
+    /**
+     * 标记为已采纳
+     */
+    public function markApplied(): bool
+    {
+        return $this->update([
+            'status' => self::STATUS_APPLIED,
+        ]);
+    }
+
+    /**
+     * 标记为已忽略
+     */
+    public function markDismissed(): bool
+    {
+        return $this->update([
+            'status' => self::STATUS_DISMISSED,
+        ]);
     }
 }

@@ -3889,6 +3889,14 @@ class ProjectController extends AbstractController
             case ProjectTaskAiEvent::EVENT_SUBTASKS:
                 // 创建子任务
                 $subtasks = $result['content'] ?? [];
+                // 过滤无效的子任务名称
+                $subtasks = array_filter(array_map(function ($name) {
+                    $name = trim((string)$name);
+                    return (empty($name) || mb_strlen($name) > 100) ? null : $name;
+                }, $subtasks));
+                if (empty($subtasks)) {
+                    return Base::retError('没有有效的子任务名称');
+                }
                 // 检查子任务数量限制
                 $existingCount = ProjectTask::where('parent_id', $task->id)
                     ->whereNull('deleted_at')
@@ -3930,6 +3938,11 @@ class ProjectController extends AbstractController
                 if ($relatedTaskId <= 0) {
                     return Base::retError('请选择关联任务');
                 }
+                // 验证关联任务存在且有权限
+                $relatedTask = ProjectTask::userTask($relatedTaskId);
+                if (!$relatedTask) {
+                    return Base::retError('关联任务不存在或无权限');
+                }
                 ProjectTaskRelation::firstOrCreate([
                     'task_id' => $task->id,
                     'related_task_id' => $relatedTaskId,
@@ -3943,6 +3956,9 @@ class ProjectController extends AbstractController
             default:
                 return Base::retError('未知的建议类型');
         }
+
+        // 标记事件为已采纳
+        $event->markApplied();
 
         // 更新消息状态
         if ($msgId > 0 && $task->dialog_id) {
@@ -3995,6 +4011,9 @@ class ProjectController extends AbstractController
         if (!$event || $event->status !== ProjectTaskAiEvent::STATUS_COMPLETED) {
             return Base::retError('建议不存在或已处理');
         }
+
+        // 标记事件为已忽略
+        $event->markDismissed();
 
         // 更新消息状态
         if ($msgId > 0 && $task->dialog_id) {
