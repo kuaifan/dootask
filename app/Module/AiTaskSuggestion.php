@@ -136,10 +136,12 @@ class AiTaskSuggestion
         $searchText = $task->name . ' ' . ($task->content ?? '');
 
         try {
-            $embedding = AI::getEmbedding($searchText);
-            if (empty($embedding)) {
+            $result = AI::getEmbedding($searchText);
+            if (Base::isError($result) || empty($result['data'])) {
                 return null;
             }
+
+            $embedding = $result['data'];
 
             // 搜索相似任务（排除自己和子任务）
             $similarTasks = self::searchSimilarByEmbedding(
@@ -270,7 +272,12 @@ PROMPT;
                 ['user', $prompt],
             ]);
 
-            return $result['content'] ?? null;
+            if (Base::isError($result)) {
+                \Log::error('AiTaskSuggestion::callAi error: ' . ($result['msg'] ?? 'Unknown error'));
+                return null;
+            }
+
+            return $result['data']['content'] ?? null;
         } catch (\Exception $e) {
             \Log::error('AiTaskSuggestion::callAi error: ' . $e->getMessage());
             return null;

@@ -276,6 +276,101 @@ class AI
         ]);
     }
 
+    /**
+     * 通用 AI 调用接口
+     * 适用于自定义对话场景
+     *
+     * @param array $messages 消息数组，格式：[['role', 'content'], ...]
+     *                        role: system | user | assistant
+     * @param int $timeout 超时时间（秒）
+     * @param bool $noCache 是否禁用缓存
+     * @return array 返回结果，成功时 data 包含 content 字段
+     */
+    public static function invoke(array $messages, int $timeout = 60, bool $noCache = true): array
+    {
+        if (!Apps::isInstalled('ai')) {
+            return Base::retError('应用「AI Assistant」未安装');
+        }
+
+        if (empty($messages)) {
+            return Base::retError('消息内容不能为空');
+        }
+
+        $provider = self::resolveTextProvider();
+        if (!$provider) {
+            return Base::retError("请先配置 AI 助手");
+        }
+
+        // 转换消息格式
+        $formattedMessages = [];
+        foreach ($messages as $msg) {
+            if (!is_array($msg) || count($msg) < 2) {
+                continue;
+            }
+            $role = trim((string)($msg[0] ?? ''));
+            $content = trim((string)($msg[1] ?? ''));
+            if ($role === '' || $content === '') {
+                continue;
+            }
+            // 标准化 role
+            $role = match ($role) {
+                'system' => 'system',
+                'assistant' => 'assistant',
+                default => 'user',
+            };
+            $formattedMessages[] = [
+                'role' => $role,
+                'content' => $content,
+            ];
+        }
+
+        if (empty($formattedMessages)) {
+            return Base::retError('消息内容格式错误');
+        }
+
+        // 构建缓存 key
+        $cacheKey = "AIInvoke::" . md5(json_encode($formattedMessages));
+        if ($noCache) {
+            Cache::forget($cacheKey);
+        }
+
+        $result = Cache::remember($cacheKey, Carbon::now()->addHours(1), function () use ($formattedMessages, $provider, $timeout) {
+            $payload = [
+                "model" => $provider['model'],
+                "messages" => $formattedMessages,
+            ];
+            $reasoningEffort = self::getReasoningEffort($provider);
+            if ($reasoningEffort !== null) {
+                $payload['reasoning_effort'] = $reasoningEffort;
+            }
+            $post = json_encode($payload);
+
+            $ai = new self($post);
+            $ai->setProvider($provider);
+            $ai->setTimeout($timeout);
+
+            $res = $ai->request();
+            if (Base::isError($res)) {
+                return Base::retError("AI 调用失败", $res);
+            }
+
+            $content = $res['data'];
+            if (empty($content)) {
+                return Base::retError("AI 返回内容为空");
+            }
+
+            return Base::retSuccess("success", [
+                'content' => $content,
+            ]);
+        });
+
+        if (Base::isError($result)) {
+            Cache::forget($cacheKey);
+        }
+
+        return $result;
+    }
+
     /** ******************************************************************************************** */
     /** ******************************************************************************************** */
     /** ******************************************************************************************** */
