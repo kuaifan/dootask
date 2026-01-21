@@ -63,6 +63,86 @@ class ProjectTaskRelation extends AbstractModel
         return $this->belongsTo(ProjectTask::class, 'related_task_id');
     }
 
+    /**
+     * 创建双向任务关联
+     *
+     * @param int $sourceTaskId 源任务ID
+     * @param int $targetTaskId 目标任务ID
+     * @param int|null $dialogId 来源对话ID
+     * @param int|null $msgId 来源消息ID
+     * @param int|null $userid 操作人
+     * @param bool $push 是否推送更新
+     * @return bool 是否创建成功
+     */
+    public static function createRelation(
+        int $sourceTaskId,
+        int $targetTaskId,
+        ?int $dialogId = null,
+        ?int $msgId = null,
+        ?int $userid = null,
+        bool $push = true
+    ): bool {
+        if ($sourceTaskId === $targetTaskId) {
+            return false;
+        }
+
+        $sourceTask = ProjectTask::with('project')->find($sourceTaskId);
+        $targetTask = ProjectTask::with('project')->find($targetTaskId);
+
+        if (!$sourceTask || !$targetTask) {
+            return false;
+        }
+
+        if ($sourceTask->deleted_at || $targetTask->deleted_at) {
+            return false;
+        }
+
+        // 创建正向关联：源任务提及目标任务
+        $mentionRelation = static::updateOrCreate(
+            [
+                'task_id' => $sourceTaskId,
+                'related_task_id' => $targetTaskId,
+                'direction' => self::DIRECTION_MENTION,
+            ],
+            [
+                'dialog_id' => $dialogId,
+                'msg_id' => $msgId,
+                'userid' => $userid,
+            ]
+        );
+
+        // 创建反向关联：目标任务被源任务提及
+        $reverseRelation = static::updateOrCreate(
+            [
+                'task_id' => $targetTaskId,
+                'related_task_id' => $sourceTaskId,
+                'direction' => self::DIRECTION_MENTIONED_BY,
+            ],
+            [
+                'dialog_id' => $dialogId,
+                'msg_id' => $msgId,
+                'userid' => $userid,
+            ]
+        );
+
+        // 推送关联更新
+        if ($push) {
+            $needPush = $mentionRelation->wasRecentlyCreated || $mentionRelation->wasChanged()
+                || $reverseRelation->wasRecentlyCreated || $reverseRelation->wasChanged();
+
+            if ($needPush) {
+                if ($sourceTask->project) {
+                    $sourceTask->pushMsg('relation', null, null, false);
+                }
+                if ($targetTask->project) {
+                    $targetTask->pushMsg('relation', null, null, false);
+                }
+            }
+        }
+
+        return true;
+    }
+
     public static function recordMentionsFromMessage(WebSocketDialogMsg $msg): void
     {
         if ($msg->type !== 'text') {
@@ -84,71 +164,25 @@ class ProjectTaskRelation extends AbstractModel
             return;
         }
 
-        $sourceTasks = ProjectTask::with('project')->whereDialogId($msg->dialog_id)->get();
-        if ($sourceTasks->isEmpty()) {
+        $sourceTaskIds = ProjectTask::whereDialogId($msg->dialog_id)
+            ->whereNull('deleted_at')
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($sourceTaskIds)) {
             return;
         }
 
-        $targetTasks = ProjectTask::with('project')->whereIn('id', $targetIds)->get()->keyBy('id');
-        if ($targetTasks->isEmpty()) {
-            return;
-        }
-
-        $pushTasks = [];
-        foreach ($sourceTasks as $sourceTask) {
+        foreach ($sourceTaskIds as $sourceTaskId) {
             foreach ($targetIds as $targetId) {
-                if ($targetId === $sourceTask->id) {
-                    continue;
-                }
-
-                $targetTask = $targetTasks->get($targetId);
-                if (!$targetTask) {
-                    continue;
-                }
-
-                $mentionRelation = static::updateOrCreate(
-                    [
-                        'task_id' => $sourceTask->id,
-                        'related_task_id' => $targetTask->id,
-                        'direction' => self::DIRECTION_MENTION,
-                    ],
-                    [
-                        'dialog_id' => $msg->dialog_id,
-                        'msg_id' => $msg->id,
-                        'userid' => $msg->userid,
-                    ]
+                self::createRelation(
+                    $sourceTaskId,
+                    $targetId,
+                    $msg->dialog_id,
+                    $msg->id,
+                    $msg->userid
                 );
-
-                if ($mentionRelation->wasRecentlyCreated || $mentionRelation->wasChanged()) {
-                    $pushTasks[$sourceTask->id] = $sourceTask;
-                }
-
-                $reverseRelation = static::updateOrCreate(
-                    [
-                        'task_id' => $targetTask->id,
-                        'related_task_id' => $sourceTask->id,
-                        'direction' => self::DIRECTION_MENTIONED_BY,
-                    ],
-                    [
-                        'dialog_id' => $msg->dialog_id,
-                        'msg_id' => $msg->id,
-                        'userid' => $msg->userid,
-                    ]
-                );
-
-                if ($reverseRelation->wasRecentlyCreated || $reverseRelation->wasChanged()) {
-                    $pushTasks[$targetTask->id] = $targetTask;
-                }
             }
-        }
-
-        foreach ($pushTasks as $task) {
-            $task->loadMissing('project');
-            if (!$task->project) {
-                continue;
-            }
-
-            $task->pushMsg('relation', null, null, false);
         }
     }
 }

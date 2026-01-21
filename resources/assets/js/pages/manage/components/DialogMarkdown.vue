@@ -172,12 +172,29 @@ export default {
             const [, type, taskId, msgId, queryString] = match;
             const params = new URLSearchParams(queryString || '');
 
-            // 先调用接口标记为已采纳，获取建议数据
-            this.$store.dispatch('applyAiSuggestion', {
+            // 构建请求数据
+            const requestData = {
                 task_id: parseInt(taskId, 10),
                 msg_id: parseInt(msgId, 10),
                 type,
-            }).then(({data}) => {
+            };
+
+            // assignee 类型传递 userid
+            if (type === 'assignee' && params.get('userid')) {
+                requestData.userid = parseInt(params.get('userid'), 10);
+            }
+
+            // similar 类型传递 related
+            if (type === 'similar' && params.get('related')) {
+                requestData.related = parseInt(params.get('related'), 10);
+            }
+
+            // 调用接口标记为已采纳
+            this.$store.dispatch('applyAiSuggestion', requestData).then(({data}) => {
+                // 更新本地消息
+                if (data.msg) {
+                    this.$store.dispatch('saveDialogMsg', data.msg);
+                }
                 // 根据类型调用对应的业务接口
                 this.applyAiSuggestionByType(data.type, data.task_id, data.result, params);
             }).catch(({msg}) => {
@@ -208,15 +225,21 @@ export default {
                     break;
 
                 case 'assignee':
-                    // 指派负责人
+                    // 增加负责人（保留现有负责人）
                     const userid = params.get('userid');
                     if (!userid || isNaN(parseInt(userid, 10))) {
                         $A.modalError(this.$L('请选择负责人'));
                         return;
                     }
+                    const newUserId = parseInt(userid, 10);
+                    // 从缓存获取任务当前负责人
+                    const task = this.$store.state.cacheTasks.find(t => t.id === taskId);
+                    const currentOwners = task?.task_user?.filter(u => u.owner === 1).map(u => u.userid) || [];
+                    // 追加新负责人（避免重复）
+                    const owners = [...new Set([...currentOwners, newUserId])];
                     this.$store.dispatch('taskUpdate', {
                         task_id: taskId,
-                        owner: [parseInt(userid, 10)],
+                        owner: owners,
                     }).then(() => {
                         $A.messageSuccess(this.$L('应用成功'));
                     }).catch(({msg}) => {
@@ -225,7 +248,7 @@ export default {
                     break;
 
                 case 'similar':
-                    // 相似任务关联（当前功能未启用）
+                    // 相似任务关联（后端已处理）
                     $A.messageSuccess(this.$L('应用成功'));
                     break;
 
@@ -274,20 +297,37 @@ export default {
 
         /**
          * 处理 AI 建议忽略
-         * 格式: dootask://ai-dismiss/{type}/{task_id}/{msg_id}
+         * 格式: dootask://ai-dismiss/{type}/{task_id}/{msg_id}?userid=xxx&related=xxx
          */
         handleAiDismiss(href) {
-            const match = href.match(/^dootask:\/\/ai-dismiss\/(\w+)\/(\d+)\/(\d+)$/);
+            const match = href.match(/^dootask:\/\/ai-dismiss\/(\w+)\/(\d+)\/(\d+)(\?.*)?$/);
             if (!match) {
                 return;
             }
-            const [, type, taskId, msgId] = match;
+            const [, type, taskId, msgId, queryString] = match;
+            const params = new URLSearchParams(queryString || '');
 
-            this.$store.dispatch('dismissAiSuggestion', {
+            const data = {
                 task_id: parseInt(taskId, 10),
                 msg_id: parseInt(msgId, 10),
                 type,
-            }).then(() => {
+            };
+
+            // assignee 类型传递 userid 用于单独忽略
+            if (type === 'assignee' && params.get('userid')) {
+                data.userid = parseInt(params.get('userid'), 10);
+            }
+
+            // similar 类型传递 related 用于单独忽略
+            if (type === 'similar' && params.get('related')) {
+                data.related = parseInt(params.get('related'), 10);
+            }
+
+            this.$store.dispatch('dismissAiSuggestion', data).then(({data: respData}) => {
+                // 更新本地消息
+                if (respData.msg) {
+                    this.$store.dispatch('saveDialogMsg', respData.msg);
+                }
                 $A.messageSuccess(this.$L('已忽略'));
             }).catch(({msg}) => {
                 $A.modalError(msg);

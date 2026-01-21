@@ -5,7 +5,6 @@ namespace App\Tasks;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskAiEvent;
 use App\Module\AiTaskSuggestion;
-use App\Module\Base;
 
 /**
  * AI 任务分析异步任务
@@ -24,7 +23,7 @@ class AiTaskAnalyzeTask extends AbstractTask
     public function start()
     {
         $task = ProjectTask::with('project')->find($this->taskId);
-        if (!$task || $task->deleted_at || !$task->dialog_id) {
+        if (!$task || $task->deleted_at) {
             return;
         }
 
@@ -66,7 +65,9 @@ class AiTaskAnalyzeTask extends AbstractTask
 
             try {
                 // 检查是否满足执行条件
-                if (!AiTaskSuggestion::shouldExecute($task, $eventType)) {
+                $shouldExecute = AiTaskSuggestion::shouldExecute($task, $eventType);
+
+                if (!$shouldExecute) {
                     $event->markSkipped('不满足执行条件');
                     continue;
                 }

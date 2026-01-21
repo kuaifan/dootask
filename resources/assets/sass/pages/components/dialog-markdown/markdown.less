@@ -95,6 +95,33 @@ body {
                 animation: blink-animate 1.2s infinite steps(1, start);
             }
         }
+
+        .ai-action-buttons {
+            display: inline-flex;
+            gap: 4px;
+
+            .ai-btn {
+                display: inline-flex;
+                align-items: center;
+                padding: 0 4px;
+                text-decoration: none;
+                cursor: pointer;
+
+                &.ai-btn-apply {
+                    color: #52c41a;
+                }
+
+                &.ai-btn-dismiss {
+                    color: #909399;
+                }
+            }
+        }
+
+        .ai-status {
+            display: inline-block;
+            margin-left: 8px;
+            color: #909399;
+        }
     }
 
     .self {

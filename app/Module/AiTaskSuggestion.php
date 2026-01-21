@@ -7,6 +7,7 @@ use App\Models\ProjectTaskAiEvent;
 use App\Models\ProjectTaskUser;
 use App\Models\ProjectUser;
 use App\Models\User;
+use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Apps;
 use App\Module\Manticore\ManticoreBase;
@@ -43,9 +44,7 @@ class AiTaskSuggestion
 
             case ProjectTaskAiEvent::EVENT_ASSIGNEE:
                 // 未指定负责人
-                $hasOwner = ProjectTaskUser::where('task_id', $task->id)
-                    ->where('owner', 1)
-                    ->exists();
+                $hasOwner = ProjectTaskUser::where('task_id', $task->id)->where('owner', 1)->exists();
                 return !$hasOwner;
 
             case ProjectTaskAiEvent::EVENT_SIMILAR:
@@ -145,7 +144,10 @@ class AiTaskSuggestion
     public static function findSimilarTasks(ProjectTask $task): ?array
     {
         // 使用 AI 模块的 Embedding 搜索
-        $searchText = $task->name . ' ' . ($task->content ?? '');
+        $searchText = $task->name;
+        if (empty($searchText)) {
+            return null;
+        }
 
         try {
             $result = AI::getEmbedding($searchText);
@@ -179,12 +181,12 @@ class AiTaskSuggestion
     /**
      * 转义用户输入以防止 Prompt 注入
      */
-    private static function escapeUserInput(string $input): string
+    private static function escapeUserInput(string $input, int $length = 500): string
     {
         // 移除可能影响 AI Prompt 解析的特殊字符
         $input = str_replace(['```', '---', '==='], '', $input);
         // 截断过长的输入
-        return mb_substr(trim($input), 0, 500);
+        return mb_substr(trim($input), 0, $length);
     }
 
     /**
@@ -192,32 +194,30 @@ class AiTaskSuggestion
      */
     private static function buildDescriptionPrompt(ProjectTask $task): string
     {
-        $taskName = self::escapeUserInput($task->name);
-        $projectName = self::escapeUserInput($task->project->name ?? '未知项目');
+        $taskName = self::escapeUserInput($task->name, 100);
+        $projectName = self::escapeUserInput($task->project->name ?? '未知项目', 100);
+        $columnName = self::escapeUserInput($task->projectColumn->name ?? '未知栏目', 50);
 
         return <<<PROMPT
-你是一个专业的项目管理助手。请根据以下任务标题，生成结构化的任务描述。
+            你是一名任务规划助手，擅长根据任务标题推断并补充任务描述。
 
-任务标题：{$taskName}
-所属项目：{$projectName}
+            所属项目：{$projectName}
+            所属栏目：{$columnName}
+            任务标题：{$taskName}
 
-请按以下格式生成任务描述（使用 Markdown）：
+            你的任务：
+            根据标题、项目和栏目信息，推断任务意图并生成实用的任务描述。
 
-**背景**：[描述任务的背景和上下文]
+            生成原则：
+            1. 基于标题关键词和上下文进行合理推断，内容要具体、可执行
+            2. 使用 Markdown 格式，根据任务性质灵活组织结构（可包含目标、要求、验收标准等）
+            3. 简单任务保持简洁，复杂任务可适当展开，避免空泛的套话
+            4. 与标题语言保持一致
 
-**目标**：[明确任务要达成的目标]
-
-**验收标准**：
-- [验收标准1]
-- [验收标准2]
-- [验收标准3]
-
-要求：
-1. 内容要专业、简洁
-2. 验收标准要具体、可衡量
-3. 与用户输入语言保持一致
-4. 只返回 Markdown 内容，不要返回其他文字
-PROMPT;
+            输出要求：
+            - 仅返回 Markdown 格式的描述内容
+            - 禁止输出额外说明、引导语或与任务无关的内容
+            PROMPT;
     }
 
     /**
@@ -225,26 +225,37 @@ PROMPT;
      */
     private static function buildSubtasksPrompt(ProjectTask $task): string
     {
-        $taskName = self::escapeUserInput($task->name);
+        $taskName = self::escapeUserInput($task->name, 100);
+        $projectName = self::escapeUserInput($task->project->name ?? '未知项目', 100);
+        $columnName = self::escapeUserInput($task->projectColumn->name ?? '未知栏目', 50);
         $content = self::escapeUserInput($task->content ?? '');
 
         return <<<PROMPT
-你是一个专业的项目管理助手。请将以下任务拆分为可执行的子任务。
+            你是一名任务拆解助手，擅长将复杂任务分解为可执行的子任务。
 
-任务标题：{$taskName}
-任务描述：{$content}
+            所属项目：{$projectName}
+            所属栏目：{$columnName}
+            任务标题：{$taskName}
+            任务描述：{$content}
 
-请返回 3-5 个子任务，每行一个，格式如下：
-1. [子任务名称]
-2. [子任务名称]
-...
+            你的任务：
+            分析任务内容，拆解出关键的执行步骤作为子任务。
 
-要求：
-1. 每个子任务要具体、可执行
-2. 子任务之间有合理的顺序
-3. 子任务名称简洁明了（不超过30字）
-4. 只返回子任务列表，不要其他内容
-PROMPT;
+            拆解原则：
+            1. 每个子任务聚焦单一可执行动作，避免含糊或重复
+            2. 根据任务复杂度灵活决定数量（通常 2-5 个），简单任务少拆，复杂任务多拆
+            3. 子任务之间保持合理的执行顺序或逻辑关系
+            4. 子任务名称简洁明了，控制在 8-30 个字符内
+            5. 与任务标题语言保持一致
+
+            输出格式：
+            1. [子任务名称]
+            2. [子任务名称]
+            ...
+
+            输出要求：
+            - 仅返回子任务列表，禁止输出额外说明或引导语
+            PROMPT;
     }
 
     /**
@@ -252,45 +263,49 @@ PROMPT;
      */
     private static function buildAssigneePrompt(ProjectTask $task, array $members): string
     {
+        $taskName = self::escapeUserInput($task->name, 100);
+        $projectName = self::escapeUserInput($task->project->name ?? '未知项目', 100);
+        $columnName = self::escapeUserInput($task->projectColumn->name ?? '未知栏目', 50);
+        $taskContent = self::escapeUserInput($task->content ?? '');
+
         $membersText = '';
         foreach ($members as $member) {
-            $nickname = self::escapeUserInput($member['nickname']);
+            $nickname = self::escapeUserInput($member['nickname'], 20);
             $membersText .= "- {$nickname}（ID:{$member['userid']}）";
             if (!empty($member['profession'])) {
-                $profession = self::escapeUserInput($member['profession']);
+                $profession = self::escapeUserInput($member['profession'], 50);
                 $membersText .= "，职位：{$profession}";
             }
-            $membersText .= "，进行中任务：{$member['in_progress_count']}个";
+            $membersText .= "，进行中：{$member['in_progress_count']}个";
             $membersText .= "，近期完成：{$member['completed_count']}个";
-            if ($member['similar_count'] > 0) {
-                $membersText .= "，处理过类似任务：{$member['similar_count']}个";
-            }
             $membersText .= "\n";
         }
 
-        $taskName = self::escapeUserInput($task->name);
-        $taskContent = self::escapeUserInput($task->content ?? '');
-
         return <<<PROMPT
-你是一个专业的项目管理助手。请根据任务内容和团队成员情况，推荐最合适的负责人。
+            你是一名任务分配助手，根据任务内容和成员情况推荐合适的负责人。
 
-任务标题：{$taskName}
-任务描述：{$taskContent}
+            所属项目：{$projectName}
+            所属栏目：{$columnName}
+            任务标题：{$taskName}
+            任务描述：{$taskContent}
 
-团队成员：
-{$membersText}
+            可选成员：
+            {$membersText}
 
-请推荐 2 名最合适的负责人，按优先级排序，格式如下：
-1. [userid]|[推荐理由，简短说明]
-2. [userid]|[推荐理由，简短说明]
+            推荐原则：
+            1. 分析任务内容，匹配成员职位或专业方向
+            2. 优先推荐进行中任务较少的成员，平衡工作负载
+            3. 近期完成任务多说明执行力强，可作为参考
 
-推荐依据：
-1. 优先选择处理过类似任务的成员
-2. 考虑当前工作负载（进行中任务较少的优先）
-3. 考虑专业匹配度
+            输出格式：
+            1. [userid]|[推荐理由]
+            2. [userid]|[推荐理由]
 
-只返回推荐列表，不要其他内容。
-PROMPT;
+            输出要求：
+            - 推荐 1-2 名最合适的负责人，按优先级排序
+            - 推荐理由需具体说明为何此人适合该任务，不超过 20 字
+            - 仅返回推荐列表，禁止输出额外说明
+            PROMPT;
     }
 
     /**
@@ -439,7 +454,7 @@ PROMPT;
         try {
             // 使用 ManticoreBase 进行向量搜索
             // userid=0 跳过权限过滤，我们通过 project_id 过滤
-            $results = ManticoreBase::taskVectorSearch($embedding, 0, 50);
+            $results = ManticoreBase::taskVectorSearch($embedding, 0, 200);
 
             if (empty($results)) {
                 return [];
@@ -469,9 +484,9 @@ PROMPT;
                     continue;
                 }
 
-                // 相似度阈值（0.7 以上才算相似）
+                // 相似度阈值（0.5 以上才算相似）
                 $similarity = $item['similarity'] ?? 0;
-                if ($similarity < 0.7) {
+                if ($similarity < 0.5) {
                     continue;
                 }
 
@@ -499,7 +514,7 @@ PROMPT;
      */
     public static function buildMarkdownMessage(int $taskId, array $suggestions, int $msgId = 0): string
     {
-        $parts = ["## AI 任务建议\n"];
+        $parts = [];
 
         foreach ($suggestions as $suggestion) {
             switch ($suggestion['type']) {
@@ -526,15 +541,12 @@ PROMPT;
      */
     private static function buildDescriptionMarkdown(int $taskId, int $msgId, string $content): string
     {
-        $applyUrl = "dootask://ai-apply/description/{$taskId}/{$msgId}";
-        $dismissUrl = "dootask://ai-dismiss/description/{$taskId}/{$msgId}";
-
         return <<<MD
 ### 建议补充任务描述
 
 {$content}
 
-[✅ 采纳描述]({$applyUrl})  [❌ 忽略]({$dismissUrl})
+:::ai-action{type="description" task="{$taskId}" msg="{$msgId}"}:::
 MD;
     }
 
@@ -549,14 +561,11 @@ MD;
             $list .= "{$num}. {$name}\n";
         }
 
-        $applyUrl = "dootask://ai-apply/subtasks/{$taskId}/{$msgId}";
-        $dismissUrl = "dootask://ai-dismiss/subtasks/{$taskId}/{$msgId}";
-
         return <<<MD
 ### 建议拆分子任务
 
 {$list}
-[✅ 创建子任务]({$applyUrl})  [❌ 忽略]({$dismissUrl})
+:::ai-action{type="subtasks" task="{$taskId}" msg="{$msgId}"}:::
 MD;
     }
 
@@ -566,18 +575,16 @@ MD;
     private static function buildAssigneeMarkdown(int $taskId, int $msgId, array $recommendations): string
     {
         $list = '';
-        $buttons = '';
         foreach ($recommendations as $rec) {
-            $list .= "- **{$rec['nickname']}** - {$rec['reason']}\n";
-            $applyUrl = "dootask://ai-apply/assignee/{$taskId}/{$msgId}?userid={$rec['userid']}";
-            $buttons .= "[指派给{$rec['nickname']}]({$applyUrl})  ";
+            $stUserId = $rec['userid'];
+            $viewUrl = "dootask://contact/{$stUserId}";
+            $list .= "- **[{$rec['nickname']}]({$viewUrl})** - {$rec['reason']} :::ai-action{type=\"assignee\" task=\"{$taskId}\" msg=\"{$msgId}\" userid=\"{$stUserId}\"}:::\n";
         }
 
         return <<<MD
 ### 推荐负责人
 
 {$list}
-{$buttons}
 MD;
     }
 
@@ -589,14 +596,10 @@ MD;
         $list = '';
         foreach ($similarTasks as $i => $st) {
             $num = $i + 1;
-            $viewUrl = "dootask://task/{$st['id']}";
-            $addUrl = "dootask://ai-apply/similar/{$taskId}/{$msgId}?related={$st['id']}";
-            $similarity = round($st['similarity'] * 100);
-            $list .= "{$num}. **#{$st['id']} {$st['name']}** - 相似度 {$similarity}%\n";
-            $list .= "   [查看任务]({$viewUrl})  [添加关联]({$addUrl})\n\n";
+            $stTaskId = $st['task_id'];
+            $viewUrl = "dootask://task/{$stTaskId}";
+            $list .= "{$num}. **[#{$stTaskId}]({$viewUrl})** {$st['name']} :::ai-action{type=\"similar\" task=\"{$taskId}\" msg=\"{$msgId}\" related=\"{$stTaskId}\"}:::\n";
         }
-
-        $dismissUrl = "dootask://ai-dismiss/similar/{$taskId}/{$msgId}";
 
         return <<<MD
 ### 发现相似任务
@@ -604,7 +607,6 @@ MD;
 以下任务与当前任务内容相似，可能是重复任务或可作为参考：
 
 {$list}
-[全部忽略]({$dismissUrl})
 MD;
     }
 
@@ -613,13 +615,24 @@ MD;
      */
     public static function sendSuggestionMessage(ProjectTask $task, array $suggestions): ?int
     {
-        if (empty($suggestions) || empty($task->dialog_id)) {
+        if (empty($suggestions)) {
             return null;
+        }
+
+        // 如果任务没有对话，自动创建
+        if (!$task->dialog_id) {
+            $dialog = WebSocketDialog::createGroup($task->name, $task->relationUserids(), 'task');
+            if ($dialog) {
+                $task->dialog_id = $dialog->id;
+                $task->save();
+                $task->pushMsg('dialog');
+            } else {
+                return null;
+            }
         }
 
         // 先发送消息获取 msg_id，然后更新消息内容带上 msg_id
         $tempMarkdown = self::buildMarkdownMessage($task->id, $suggestions, 0);
-
         $result = WebSocketDialogMsg::sendMsg(
             null,
             $task->dialog_id,
@@ -630,72 +643,71 @@ MD;
             false, // push_retry
             true   // push_silence
         );
-
-        if (Base::isSuccess($result)) {
-            $msgId = $result['data']->id ?? 0;
-            if ($msgId > 0) {
-                // 更新消息，带上真实的 msg_id
-                $finalMarkdown = self::buildMarkdownMessage($task->id, $suggestions, $msgId);
-                WebSocketDialogMsg::sendMsg(
-                    'change-' . $msgId,
-                    $task->dialog_id,
-                    'text',
-                    ['text' => $finalMarkdown, 'type' => 'md'],
-                    self::AI_ASSISTANT_USERID
-                );
-                return $msgId;
-            }
+        if (Base::isError($result)) {
+            return null;
+        }
+        $msgId = $result['data']->id ?? 0;
+        if (empty($msgId)) {
+            return null;
         }
 
-        return null;
+        // 更新消息，带上真实的 msg_id
+        $finalMarkdown = self::buildMarkdownMessage($task->id, $suggestions, $msgId);
+        WebSocketDialogMsg::sendMsg(
+            'change-' . $msgId,
+            $task->dialog_id,
+            'text',
+            ['text' => $finalMarkdown, 'type' => 'md'],
+            self::AI_ASSISTANT_USERID,
+            true,  // push_self
+        );
+        return $msgId;
     }
 
     /**
      * 更新消息状态（采纳/忽略后）
+     *
+     * @param int $msgId 消息ID
+     * @param int $dialogId 对话ID
+     * @param string $type 建议类型
+     * @param string $status 状态：applied/dismissed
+     * @param int $userid 用户ID（assignee类型单独处理时使用）
+     * @param int $related 关联任务ID（similar类型单独处理时使用）
+     * @return array 更新后的消息数据
      */
-    public static function updateMessageStatus(int $msgId, int $dialogId, string $type, string $status): void
+    public static function updateMessageStatus(int $msgId, int $dialogId, string $type, string $status, int $userid = 0, int $related = 0): array
     {
         // 验证消息存在且属于指定对话
         $msg = WebSocketDialogMsg::where('id', $msgId)
             ->where('dialog_id', $dialogId)
             ->first();
         if (!$msg) {
-            return;
+            return Base::retError('消息不存在');
         }
 
         $content = $msg->msg['text'] ?? '';
         if (empty($content)) {
-            return;
+            return Base::retError('消息内容为空');
         }
 
-        // 根据状态替换对应的按钮
-        $statusText = $status === 'applied' ? '✓ 已采纳' : '✗ 已忽略';
-
-        // 替换对应类型的按钮为状态文字
-        $pattern = '/\[.*?\]\(dootask:\/\/ai-(apply|dismiss)\/' . preg_quote($type, '/') . '\/\d+\/\d+[^)]*\)\s*/';
-        $newContent = preg_replace($pattern, '', $content);
-
-        // 在对应标题后添加状态
-        $sectionTitles = [
-            'description' => '### 建议补充任务描述',
-            'subtasks' => '### 建议拆分子任务',
-            'assignee' => '### 推荐负责人',
-            'similar' => '### 发现相似任务',
-        ];
-
-        if (isset($sectionTitles[$type])) {
-            $title = $sectionTitles[$type];
-            $newContent = str_replace($title, $title . "\n\n**{$statusText}**", $newContent);
+        // 根据类型和参数构建匹配模式，添加 status 属性
+        if ($type === 'assignee' && $userid > 0) {
+            $pattern = '/(:::ai-action\{type="assignee"[^}]*userid="' . $userid . '"[^}]*)\}:::/';
+        } elseif ($type === 'similar' && $related > 0) {
+            $pattern = '/(:::ai-action\{type="similar"[^}]*related="' . $related . '"[^}]*)\}:::/';
+        } else {
+            $pattern = '/(:::ai-action\{type="' . preg_quote($type, '/') . '"[^}]*)\}:::/';
         }
 
-        // 更新消息
-        WebSocketDialogMsg::sendMsg(
+        $newContent = preg_replace($pattern, '$1 status="' . $status . '"}:::', $content);
+
+        // 更新消息并返回结果
+        return WebSocketDialogMsg::sendMsg(
             'change-' . $msgId,
             $dialogId,
             'text',
             ['text' => $newContent, 'type' => 'md'],
-            self::AI_ASSISTANT_USERID,
-            true,  // push_self
+            self::AI_ASSISTANT_USERID
         );
     }
 }

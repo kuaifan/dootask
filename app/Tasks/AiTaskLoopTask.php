@@ -37,11 +37,6 @@ class AiTaskLoopTask extends AbstractTask
             return;
         }
 
-        // 检查功能开关
-        if (Base::settingFind('aiAssistant', 'taskSuggestion') !== 'open') {
-            return;
-        }
-
         // 查询待处理的任务
         $tasks = $this->findPendingTasks();
 
@@ -72,7 +67,6 @@ class AiTaskLoopTask extends AbstractTask
             ->whereNull('archived_at')
             ->where('created_at', '<=', $delayTime) // 创建超过延迟时间
             ->where('created_at', '>=', Carbon::now()->subDays(1)) // 只处理1天内的
-            ->whereNotNull('dialog_id') // 有对话ID
             ->whereNotIn('id', $processedTaskIds)
             ->orderBy('created_at', 'asc')
             ->take(self::BATCH_SIZE)

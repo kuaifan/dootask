@@ -11,6 +11,65 @@ const MarkdownUtils = {
     mds: null,
 
     /**
+     * 处理 AI 建议操作按钮语法
+     * 格式: :::ai-action{type="xxx" task="123" msg="456" userid="789" related="123" status="applied"}:::
+     * @param {string} text
+     * @returns {string}
+     */
+    processAiAction: (text) => {
+        // 匹配 :::ai-action{...}::: 语法
+        return text.replace(/:::ai-action\{([^}]+)\}:::/g, (match, attrs) => {
+            // 解析属性
+            const params = {};
+            attrs.replace(/(\w+)="([^"]+)"/g, (m, key, value) => {
+                params[key] = value;
+            });
+
+            const type = params.type || '';
+            const status = params.status || '';
+
+            // 如果有 status，显示状态文字
+            if (status) {
+                const statusLabels = {
+                    description: { applied: '✓ 已采纳', dismissed: '✗ 已忽略' },
+                    subtasks: { applied: '✓ 已创建', dismissed: '✗ 已忽略' },
+                    assignee: { applied: '✓ 已指派', dismissed: '✗ 已忽略' },
+                    similar: { applied: '✓ 已关联', dismissed: '✗ 已忽略' },
+                };
+                const label = statusLabels[type]?.[status] || (status === 'applied' ? '✓ 已采纳' : '✗ 已忽略');
+                const statusClass = status === 'applied' ? 'ai-status-applied' : 'ai-status-dismissed';
+                return `<span class="ai-status ${statusClass}">${label}</span>`;
+            }
+
+            const taskId = params.task || '';
+            const msgId = params.msg || '';
+            const userid = params.userid || '';
+            const related = params.related || '';
+
+            // 根据类型生成按钮文案
+            const buttonLabels = {
+                description: ['采纳描述', '忽略'],
+                subtasks: ['创建子任务', '忽略'],
+                assignee: ['指派', '忽略'],
+                similar: ['关联', '忽略'],
+            };
+            const [applyLabel, dismissLabel] = buttonLabels[type] || ['采纳', '忽略'];
+
+            // 构建 URL 查询参数
+            let queryParams = [];
+            if (userid) queryParams.push(`userid=${userid}`);
+            if (related) queryParams.push(`related=${related}`);
+            const queryString = queryParams.length > 0 ? '?' + queryParams.join('&') : '';
+
+            const applyUrl = `dootask://ai-apply/${type}/${taskId}/${msgId}${queryString}`;
+            const dismissUrl = `dootask://ai-dismiss/${type}/${taskId}/${msgId}${queryString}`;
+
+            // 返回按钮 HTML
+            return `<span class="ai-action-buttons"><a href="${applyUrl}" class="ai-btn ai-btn-apply">✓ ${applyLabel}</a> <a href="${dismissUrl}" class="ai-btn ai-btn-dismiss">✗ ${dismissLabel}</a></span>`;
+        });
+    },
+
+    /**
      * 解析Markdown
      * @param {*} text
      * @returns
@@ -369,6 +428,7 @@ export function MarkdownConver(text) {
     }
     text = MarkdownPluginUtils.clearEmptyReasoning(text);
     text = mergeConsecutiveToolUse(text);
+    text = MarkdownUtils.processAiAction(text);
     text = MarkdownUtils.mdi.render(text);
     return MarkdownUtils.formatMsg(text)
 }

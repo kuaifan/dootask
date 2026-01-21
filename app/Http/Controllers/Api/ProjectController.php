@@ -3838,6 +3838,8 @@ class ProjectController extends AbstractController
      * @apiParam {Number} task_id       任务ID
      * @apiParam {Number} msg_id        消息ID
      * @apiParam {String} type          建议类型：description/subtasks/assignee/similar
+     * @apiParam {Number} [userid]      用户ID（assignee类型时用于指定采纳哪个推荐）
+     * @apiParam {Number} [related]     关联任务ID（similar类型时用于指定采纳哪个相似任务）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -3853,6 +3855,8 @@ class ProjectController extends AbstractController
         $taskId = intval(Request::input('task_id'));
         $msgId = intval(Request::input('msg_id'));
         $type = trim(Request::input('type'));
+        $userid = intval(Request::input('userid'));
+        $related = intval(Request::input('related'));
 
         // 验证建议类型
         if (!in_array($type, ProjectTaskAiEvent::getEventTypes())) {
@@ -3871,8 +3875,8 @@ class ProjectController extends AbstractController
             ->where('msg_id', $msgId)
             ->first();
 
-        if (!$event || $event->status !== ProjectTaskAiEvent::STATUS_COMPLETED) {
-            return Base::retError('建议不存在或已处理');
+        if (!$event) {
+            return Base::retError('建议不存在');
         }
 
         $result = $event->result;
@@ -3883,19 +3887,36 @@ class ProjectController extends AbstractController
         // 标记事件为已采纳
         $event->markApplied();
 
-        // 记录日志
-        $task->addLog('AI建议：采纳' . $type . '建议');
-
-        // 更新消息状态
-        if ($msgId > 0 && $task->dialog_id) {
-            AiTaskSuggestion::updateMessageStatus($msgId, $task->dialog_id, $type, 'applied');
+        // similar 类型：创建任务关联
+        if ($type === 'similar' && $related > 0) {
+            ProjectTaskRelation::createRelation(
+                $taskId,
+                $related,
+                $task->dialog_id,
+                $msgId,
+                User::userid()
+            );
         }
 
-        // 返回建议数据，由前端调用相应接口处理
+        // 记录日志
+        if ($type === 'assignee' && $userid > 0) {
+            $user = User::find($userid);
+            $task->addLog('AI建议：指派给 ' . ($user ? $user->nickname : $userid));
+        } elseif ($type === 'similar' && $related > 0) {
+            $task->addLog('AI建议：关联任务 #' . $related);
+        } else {
+            $task->addLog('AI建议：采纳' . $type . '建议');
+        }
+
+        // 更新消息状态
+        $msgResult = AiTaskSuggestion::updateMessageStatus($msgId, $task->dialog_id, $type, 'applied', $userid, $related);
+
+        // 返回建议数据和消息内容
         return Base::retSuccess('已采纳', [
             'type' => $type,
             'task_id' => $taskId,
             'result' => $result,
+            'msg' => $msgResult['data'] ?? null,
         ]);
     }
 
@@ -3909,6 +3930,8 @@ class ProjectController extends AbstractController
      * @apiParam {Number} task_id       任务ID
      * @apiParam {Number} msg_id        消息ID
      * @apiParam {String} type          建议类型
+     * @apiParam {Number} [userid]      用户ID（assignee类型时用于忽略单个推荐）
+     * @apiParam {Number} [related]     关联任务ID（similar类型时用于忽略单个推荐）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -3921,6 +3944,8 @@ class ProjectController extends AbstractController
         $taskId = intval(Request::input('task_id'));
         $msgId = intval(Request::input('msg_id'));
         $type = trim(Request::input('type'));
+        $userid = intval(Request::input('userid'));
+        $related = intval(Request::input('related'));
 
         // 验证建议类型
         if (!in_array($type, ProjectTaskAiEvent::getEventTypes())) {
@@ -3939,18 +3964,19 @@ class ProjectController extends AbstractController
             ->where('msg_id', $msgId)
             ->first();
 
-        if (!$event || $event->status !== ProjectTaskAiEvent::STATUS_COMPLETED) {
-            return Base::retError('建议不存在或已处理');
+        if (!$event) {
+            return Base::retError('建议不存在');
         }
 
         // 标记事件为已忽略
         $event->markDismissed();
 
         // 更新消息状态
-        if ($msgId > 0 && $task->dialog_id) {
-            AiTaskSuggestion::updateMessageStatus($msgId, $task->dialog_id, $type, 'dismissed');
-        }
+        $msgResult = AiTaskSuggestion::updateMessageStatus($msgId, $task->dialog_id, $type, 'dismissed', $userid, $related);
 
-        return Base::retSuccess('已忽略');
+        // 返回消息内容
+        return Base::retSuccess('已忽略', [
+            'msg' => $msgResult['data'] ?? null,
+        ]);
     }
 }
