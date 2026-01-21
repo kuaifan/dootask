@@ -2,21 +2,8 @@
     <div class="dialog-view" :class="viewClass" :data-id="msgData.id">
         <!--昵称-->
         <div v-if="dialogType === 'group'" class="dialog-username" @pointerdown="handleOperation($event, 'mention')">
-            <!-- AI 助手头像 -->
-            <template v-if="msgData.userid === -1">
-                <div class="ai-assistant-avatar">
-                    <div class="ai-icon">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor" opacity="0.3"/>
-                            <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
-                            <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
-                            <path d="M12 17.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" fill="currentColor"/>
-                            <path d="M19 3h-2v2h-2v2h2v2h2V7h2V5h-2V3z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <div class="avatar-name">{{ $L('AI 助手') }}</div>
-                </div>
-            </template>
+            <!-- AI 助手只显示名称 -->
+            <span v-if="msgData.userid === -1" class="ai-assistant-name">{{ $L('AI 助手') }}</span>
             <UserAvatar v-else :userid="msgData.userid" :show-icon="false" :show-name="true" click-open-detail/>
         </div>
 
