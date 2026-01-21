@@ -5230,7 +5230,7 @@ export default {
      */
     applyAiSuggestion({}, params) {
         return this.dispatch('call', {
-            url: 'project/task/ai-apply',
+            url: 'project/task/ai_apply',
             data: params,
         });
     },
@@ -5240,7 +5240,7 @@ export default {
      */
     dismissAiSuggestion({}, params) {
         return this.dispatch('call', {
-            url: 'project/task/ai-dismiss',
+            url: 'project/task/ai_dismiss',
             data: params,
         });
     }

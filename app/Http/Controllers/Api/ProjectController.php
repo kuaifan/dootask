@@ -3827,7 +3827,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/ai-apply          26. 采纳AI建议
+     * @api {post} api/project/task/ai_apply          26. 采纳AI建议
      *
      * @apiDescription 标记AI建议为已采纳，返回建议数据供前端调用相应业务接口处理
      *
@@ -3900,7 +3900,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/ai-dismiss          27. 忽略AI建议
+     * @api {post} api/project/task/ai_dismiss          27. 忽略AI建议
      *
      * @apiVersion 1.0.0
      * @apiGroup project
