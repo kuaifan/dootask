@@ -94,8 +94,19 @@ export default {
          * 处理 dootask:// 协议链接
          * 格式: dootask://type/id 或 dootask://type/id1/id2
          * 文件链接支持: dootask://file/123 (数字ID) 或 dootask://file/OSwxLHY3ZlN2R245 (base64编码)
+         * AI 建议链接: dootask://ai-apply/{type}/{task_id}/{msg_id} 或 dootask://ai-dismiss/...
          */
         handleDooTaskLink(href) {
+            // 优先处理 AI 建议链接（格式与其他类型不同）
+            if (href.startsWith('dootask://ai-apply/')) {
+                this.handleAiApply(href);
+                return;
+            }
+            if (href.startsWith('dootask://ai-dismiss/')) {
+                this.handleAiDismiss(href);
+                return;
+            }
+
             const match = href.match(/^dootask:\/\/(\w+)\/([^/]+)(?:\/(\d+))?$/);
             if (!match) {
                 return;
@@ -145,14 +156,6 @@ export default {
                     }).catch(({ msg }) => {
                         $A.modalError(msg);
                     });
-                    break;
-
-                case 'ai-apply':
-                    this.handleAiApply(href);
-                    break;
-
-                case 'ai-dismiss':
-                    this.handleAiDismiss(href);
                     break;
             }
         },
