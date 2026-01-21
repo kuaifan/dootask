@@ -8,6 +8,7 @@ use App\Models\ProjectTaskUser;
 use App\Models\ProjectUser;
 use App\Models\User;
 use App\Models\WebSocketDialogMsg;
+use App\Module\Apps;
 use App\Module\Manticore\ManticoreBase;
 use Cache;
 use Carbon\Carbon;
@@ -36,9 +37,9 @@ class AiTaskSuggestion
                 return empty($content) || mb_strlen($content) < 20;
 
             case ProjectTaskAiEvent::EVENT_SUBTASKS:
-                // 无子任务且标题长度 > 10
+                // 无子任务且标题长度 > 5
                 $hasSubtasks = ProjectTask::where('parent_id', $task->id)->exists();
-                return !$hasSubtasks && mb_strlen($task->name) > 10;
+                return !$hasSubtasks && mb_strlen($task->name) > 5;
 
             case ProjectTaskAiEvent::EVENT_ASSIGNEE:
                 // 未指定负责人
@@ -48,8 +49,8 @@ class AiTaskSuggestion
                 return !$hasOwner;
 
             case ProjectTaskAiEvent::EVENT_SIMILAR:
-                // 向量搜索暂未实现，跳过
-                return false;
+                // 需要安装 search 插件才能使用向量搜索
+                return Apps::isInstalled('search');
 
             default:
                 return false;
