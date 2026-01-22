@@ -684,13 +684,13 @@ class ProjectTask extends AbstractModel
                     // 判断自动完成
                     if (!$this->complete_at) {
                         $flowData['complete_at'] = $this->complete_at;
-                        $data['complete_at'] = date("Y-m-d H:i");
+                        $this->completeTask(Carbon::now(), $newFlowItem->name);
                     }
                 } else {
                     // 判断自动打开
                     if ($this->complete_at) {
                         $flowData['complete_at'] = $this->complete_at;
-                        $data['complete_at'] = false;
+                        $this->completeTask(null);
                     }
                 }
                 $flowUserids = $newFlowItem->userids;
@@ -740,7 +740,7 @@ class ProjectTask extends AbstractModel
                 ])->save();
             }
             // 状态
-            if (Arr::exists($data, 'complete_at')) {
+            if (Arr::exists($data, 'complete_at') && !Arr::exists($data, 'flow_item_id')) {
                 // 子任务：主任务已完成时无法修改
                 if ($mainTask?->complete_at) {
                     throw new ApiException('主任务已完成，无法修改子任务状态');
@@ -750,12 +750,14 @@ class ProjectTask extends AbstractModel
                     if ($this->complete_at) {
                         throw new ApiException('任务已完成');
                     }
-                    $this->completeTask(Carbon::now(), isset($newFlowItem) ? $newFlowItem->name : null);
+                    $flowItemName = $this->checkAndAutoSetFlowItem('end', -4005);
+                    $this->completeTask(Carbon::now(), $flowItemName);
                 } else {
                     // 标记未完成
                     if (!$this->complete_at) {
                         throw new ApiException('未完成任务');
                     }
+                    $this->checkAndAutoSetFlowItem('start', -4006);
                     $this->completeTask(null);
                 }
                 $updateMarking['is_update_project'] = true;
@@ -1537,6 +1539,49 @@ class ProjectTask extends AbstractModel
             $this->appendattrs['has_owner'] = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->exists();
         }
         return $this->appendattrs['has_owner'];
+    }
+
+    /**
+     * 检查并自动设置工作流状态
+     * @param string $status 目标状态类型 ('start' 或 'end')
+     * @param int $errorCode 多状态时的错误码 (-4005 或 -4006)
+     * @return string|null 自动设置的状态名称，无状态时返回 null
+     */
+    private function checkAndAutoSetFlowItem(string $status, int $errorCode): ?string
+    {
+        $flowItems = ProjectFlowItem::whereProjectId($this->project_id)
+            ->whereStatus($status)
+            ->get(['id', 'name', 'status', 'color']);
+
+        if ($flowItems->count() > 1) {
+            $msg = $status === 'end' ? '存在多个结束状态，请选择要使用的状态' : '存在多个开始状态，请选择要使用的状态';
+            throw new ApiException($msg, [
+                'task_id' => $this->id,
+                'flow_items' => $flowItems->toArray(),
+            ], $errorCode);
+        }
+
+        if ($flowItems->count() == 1) {
+            $autoFlowItem = $flowItems->first();
+            $oldFlowItemId = $this->flow_item_id;
+            $oldFlowItemName = $this->flow_item_name;
+            $this->flow_item_id = $autoFlowItem->id;
+            $this->flow_item_name = $autoFlowItem->status . "|" . $autoFlowItem->name . "|" . $autoFlowItem->color;
+
+            if ($oldFlowItemId != $this->flow_item_id) {
+                ProjectTaskFlowChange::createInstance([
+                    'task_id' => $this->id,
+                    'userid' => User::userid(),
+                    'before_flow_item_id' => $oldFlowItemId,
+                    'before_flow_item_name' => $oldFlowItemName,
+                    'after_flow_item_id' => $this->flow_item_id,
+                    'after_flow_item_name' => $this->flow_item_name,
+                ])->save();
+            }
+            return $autoFlowItem->name;
+        }
+
+        return null;
     }
 
     /**
