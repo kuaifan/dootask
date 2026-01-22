@@ -314,8 +314,12 @@ export default {
                         complete_at: $A.daytz().format('YYYY-MM-DD HH:mm:ss')
                     }).then(() => {
                         completeTemp(true)
-                    }).catch(() => {
+                    }).catch((error) => {
                         completeTemp(false)
+                        // 处理多结束状态的情况
+                        if (error && error.ret === -4005 && error.data?.flow_items) {
+                            this.showFlowItemSelector(error.data.flow_items, 'complete')
+                        }
                     })
                     break;
 
@@ -330,8 +334,12 @@ export default {
                         complete_at: false
                     }).then(() => {
                         completeTemp(false)
-                    }).catch(() => {
+                    }).catch((error) => {
                         completeTemp(true)
+                        // 处理多开始状态的情况
+                        if (error && error.ret === -4006 && error.data?.flow_items) {
+                            this.showFlowItemSelector(error.data.flow_items, 'uncomplete')
+                        }
                     })
                     break;
 
@@ -388,10 +396,16 @@ export default {
                     if (typeof this.onUpdate === "function") {
                         this.onUpdate(data)
                     }
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
+                }).catch((error) => {
+                    // 对于需要选择工作流状态的情况，不弹出错误提示
+                    if (error && (error.ret === -4005 || error.ret === -4006)) {
+                        this.$store.dispatch("getTaskOne", updateData.task_id).catch(() => {})
+                        reject(error)
+                        return
+                    }
+                    $A.modalError(error?.msg);
                     this.$store.dispatch("getTaskOne", updateData.task_id).catch(() => {})
-                    reject()
+                    reject(error)
                 });
             })
         },
@@ -419,6 +433,38 @@ export default {
                             resolve();
                         });
                     })
+                }
+            });
+        },
+
+        showFlowItemSelector(flowItems, type) {
+            const list = flowItems.map(item => ({
+                label: item.name,
+                value: item.id,
+                color: item.color,
+            }));
+            this.$store.commit('menu/operation', {
+                event: {target: this.$refs.icon},
+                list,
+                size: 'large',
+                onUpdate: (flowItemId) => {
+                    if (flowItemId) {
+                        const selectedItem = flowItems.find(item => item.id === flowItemId);
+                        if (selectedItem) {
+                            const updateData = {
+                                flow_item_id: flowItemId,
+                                flow_item_status: selectedItem.status,
+                                flow_item_name: selectedItem.name,
+                            };
+                            // 同时传递 complete_at 以确保任务状态正确更新
+                            if (type === 'complete') {
+                                updateData.complete_at = $A.daytz().format('YYYY-MM-DD HH:mm:ss');
+                            } else {
+                                updateData.complete_at = false;
+                            }
+                            this.updateTask(updateData).catch(() => {});
+                        }
+                    }
                 }
             });
         },
