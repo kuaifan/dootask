@@ -105,6 +105,8 @@ class AiTaskAnalyzeTask extends AbstractTask
 
     /**
      * 执行具体的分析
+     * @param ProjectTask $task 任务对象
+     * @param string $eventType 事件类型
      */
     private function executeAnalysis(ProjectTask $task, string $eventType): ?array
     {

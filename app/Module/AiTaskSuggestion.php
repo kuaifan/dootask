@@ -24,7 +24,7 @@ class AiTaskSuggestion
     /**
      * 相似度阈值
      */
-    const SIMILAR_THRESHOLD = 0.7;
+    const SIMILAR_THRESHOLD = 0.5;
 
     /**
      * 检查是否满足执行条件
@@ -58,10 +58,12 @@ class AiTaskSuggestion
 
     /**
      * 生成任务描述建议
+     * @param ProjectTask $task 任务对象
      */
     public static function generateDescription(ProjectTask $task): ?array
     {
-        $prompt = self::buildDescriptionPrompt($task);
+        $language = self::getUserLanguageInfo($task->userid)['name'];
+        $prompt = self::buildDescriptionPrompt($task, $language);
         $result = self::callAi($prompt);
 
         if (empty($result)) {
@@ -76,10 +78,12 @@ class AiTaskSuggestion
 
     /**
      * 生成子任务拆分建议
+     * @param ProjectTask $task 任务对象
      */
     public static function generateSubtasks(ProjectTask $task): ?array
     {
-        $prompt = self::buildSubtasksPrompt($task);
+        $language = self::getUserLanguageInfo($task->userid)['name'];
+        $prompt = self::buildSubtasksPrompt($task, $language);
         $result = self::callAi($prompt);
 
         if (empty($result)) {
@@ -100,6 +104,7 @@ class AiTaskSuggestion
 
     /**
      * 生成负责人推荐
+     * @param ProjectTask $task 任务对象
      */
     public static function generateAssignee(ProjectTask $task): ?array
     {
@@ -119,7 +124,8 @@ class AiTaskSuggestion
             return null;
         }
 
-        $prompt = self::buildAssigneePrompt($task, $members);
+        $language = self::getUserLanguageInfo($task->userid)['name'];
+        $prompt = self::buildAssigneePrompt($task, $members, $language);
         $result = self::callAi($prompt);
 
         if (empty($result)) {
@@ -140,6 +146,7 @@ class AiTaskSuggestion
 
     /**
      * 搜索相似任务
+     * @param ProjectTask $task 任务对象
      */
     public static function findSimilarTasks(ProjectTask $task): ?array
     {
@@ -168,14 +175,107 @@ class AiTaskSuggestion
                 return null;
             }
 
+            // 获取用户语言对应的文案
+            $lang = self::getUserLanguageInfo($task->userid)['code'];
+
             return [
                 'type' => 'similar',
+                'lang' => $lang,
                 'content' => $similarTasks,
             ];
         } catch (\Exception $e) {
             \Log::error('AiTaskSuggestion::findSimilarTasks error: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * 获取用户语言信息
+     * @param int $userid 用户ID
+     * @return array ['code' => 语言代码, 'name' => 语言名称]
+     */
+    private static function getUserLanguageInfo(int $userid): array
+    {
+        $user = User::find($userid);
+        $code = $user->lang ?? 'zh';
+        $name = Doo::getLanguages($code) ?: '简体中文';
+        return ['code' => $code, 'name' => $name];
+    }
+
+    /**
+     * 获取多语言标题和提示文案
+     * @param string $lang 语言代码
+     * @return array
+     */
+    private static function getLocalizedTitles(string $lang): array
+    {
+        $titles = [
+            'zh' => [
+                'description' => '建议补充任务描述',
+                'subtasks' => '建议拆分子任务',
+                'assignee' => '推荐负责人',
+                'similar' => '发现相似任务',
+                'similar_hint' => '以下任务与当前任务内容相似，可能是重复任务或可作为参考：',
+            ],
+            'zh-CHT' => [
+                'description' => '建議補充任務描述',
+                'subtasks' => '建議拆分子任務',
+                'assignee' => '推薦負責人',
+                'similar' => '發現相似任務',
+                'similar_hint' => '以下任務與當前任務內容相似，可能是重複任務或可作為參考：',
+            ],
+            'en' => [
+                'description' => 'Suggested Task Description',
+                'subtasks' => 'Suggested Subtasks',
+                'assignee' => 'Recommended Assignee',
+                'similar' => 'Similar Tasks Found',
+                'similar_hint' => 'The following tasks are similar and may be duplicates or references:',
+            ],
+            'ko' => [
+                'description' => '작업 설명 추가 제안',
+                'subtasks' => '하위 작업 분할 제안',
+                'assignee' => '추천 담당자',
+                'similar' => '유사한 작업 발견',
+                'similar_hint' => '다음 작업은 현재 작업과 유사하며 중복되거나 참고할 수 있습니다:',
+            ],
+            'ja' => [
+                'description' => 'タスク説明の追加を提案',
+                'subtasks' => 'サブタスクの分割を提案',
+                'assignee' => '推奨担当者',
+                'similar' => '類似タスクを発見',
+                'similar_hint' => '以下のタスクは現在のタスクと類似しており、重複している可能性があります：',
+            ],
+            'de' => [
+                'description' => 'Vorgeschlagene Aufgabenbeschreibung',
+                'subtasks' => 'Vorgeschlagene Unteraufgaben',
+                'assignee' => 'Empfohlener Verantwortlicher',
+                'similar' => 'Ähnliche Aufgaben gefunden',
+                'similar_hint' => 'Die folgenden Aufgaben sind ähnlich und könnten Duplikate oder Referenzen sein:',
+            ],
+            'fr' => [
+                'description' => 'Description de tâche suggérée',
+                'subtasks' => 'Sous-tâches suggérées',
+                'assignee' => 'Responsable recommandé',
+                'similar' => 'Tâches similaires trouvées',
+                'similar_hint' => 'Les tâches suivantes sont similaires et peuvent être des doublons ou des références:',
+            ],
+            'id' => [
+                'description' => 'Saran Deskripsi Tugas',
+                'subtasks' => 'Saran Pembagian Subtugas',
+                'assignee' => 'Penanggung Jawab yang Direkomendasikan',
+                'similar' => 'Tugas Serupa Ditemukan',
+                'similar_hint' => 'Tugas berikut mirip dengan tugas saat ini dan mungkin duplikat atau referensi:',
+            ],
+            'ru' => [
+                'description' => 'Предлагаемое описание задачи',
+                'subtasks' => 'Предлагаемые подзадачи',
+                'assignee' => 'Рекомендуемый ответственный',
+                'similar' => 'Найдены похожие задачи',
+                'similar_hint' => 'Следующие задачи похожи на текущую и могут быть дубликатами или справочными:',
+            ],
+        ];
+
+        return $titles[$lang] ?? $titles['zh'];
     }
 
     /**
@@ -191,8 +291,10 @@ class AiTaskSuggestion
 
     /**
      * 构建描述生成 Prompt
+     * @param ProjectTask $task 任务对象
+     * @param string $language 输出语言名称
      */
-    private static function buildDescriptionPrompt(ProjectTask $task): string
+    private static function buildDescriptionPrompt(ProjectTask $task, string $language): string
     {
         $taskName = self::escapeUserInput($task->name, 100);
         $projectName = self::escapeUserInput($task->project->name ?? '未知项目', 100);
@@ -212,7 +314,8 @@ class AiTaskSuggestion
             1. 基于标题关键词和上下文进行合理推断，内容要具体、可执行
             2. 使用 Markdown 格式，根据任务性质灵活组织结构（可包含目标、要求、验收标准等）
             3. 简单任务保持简洁，复杂任务可适当展开，避免空泛的套话
-            4. 与标题语言保持一致
+
+            输出语言：与任务标题的语言保持一致，如无法确定则使用{$language}
 
             输出要求：
             - 仅返回 Markdown 格式的描述内容
@@ -222,8 +325,10 @@ class AiTaskSuggestion
 
     /**
      * 构建子任务拆分 Prompt
+     * @param ProjectTask $task 任务对象
+     * @param string $language 输出语言名称
      */
-    private static function buildSubtasksPrompt(ProjectTask $task): string
+    private static function buildSubtasksPrompt(ProjectTask $task, string $language): string
     {
         $taskName = self::escapeUserInput($task->name, 100);
         $projectName = self::escapeUserInput($task->project->name ?? '未知项目', 100);
@@ -246,7 +351,8 @@ class AiTaskSuggestion
             2. 根据任务复杂度灵活决定数量（通常 2-5 个），简单任务少拆，复杂任务多拆
             3. 子任务之间保持合理的执行顺序或逻辑关系
             4. 子任务名称简洁明了，控制在 8-30 个字符内
-            5. 与任务标题语言保持一致
+
+            输出语言：与任务标题的语言保持一致，如无法确定则使用{$language}
 
             输出格式：
             1. [子任务名称]
@@ -260,8 +366,11 @@ class AiTaskSuggestion
 
     /**
      * 构建负责人推荐 Prompt
+     * @param ProjectTask $task 任务对象
+     * @param array $members 成员列表
+     * @param string $language 输出语言名称
      */
-    private static function buildAssigneePrompt(ProjectTask $task, array $members): string
+    private static function buildAssigneePrompt(ProjectTask $task, array $members, string $language): string
     {
         $taskName = self::escapeUserInput($task->name, 100);
         $projectName = self::escapeUserInput($task->project->name ?? '未知项目', 100);
@@ -296,6 +405,8 @@ class AiTaskSuggestion
             1. 分析任务内容，匹配成员职位或专业方向
             2. 优先推荐进行中任务较少的成员，平衡工作负载
             3. 近期完成任务多说明执行力强，可作为参考
+
+            输出语言：推荐理由的语言与任务标题保持一致，如无法确定则使用{$language}
 
             输出格式：
             1. [userid]|[推荐理由]
@@ -483,9 +594,9 @@ class AiTaskSuggestion
                     continue;
                 }
 
-                // 相似度阈值（0.5 以上才算相似）
+                // 相似度阈值
                 $similarity = $item['similarity'] ?? 0;
-                if ($similarity < 0.5) {
+                if ($similarity < self::SIMILAR_THRESHOLD) {
                     continue;
                 }
 
@@ -510,24 +621,33 @@ class AiTaskSuggestion
 
     /**
      * 构建 Markdown 消息
+     * @param int $taskId 任务ID
+     * @param array $suggestions 建议列表
+     * @param int $msgId 消息ID
+     * @param string $lang 语言代码
      */
-    public static function buildMarkdownMessage(int $taskId, array $suggestions, int $msgId = 0): string
+    public static function buildMarkdownMessage(int $taskId, array $suggestions, int $msgId = 0, string $lang = 'zh'): string
     {
         $parts = [];
+        $titles = self::getLocalizedTitles($lang);
 
         foreach ($suggestions as $suggestion) {
+            // 如果 suggestion 中有 lang，使用它（similar 类型）
+            $suggestionLang = $suggestion['lang'] ?? $lang;
+            $suggestionTitles = ($suggestionLang !== $lang) ? self::getLocalizedTitles($suggestionLang) : $titles;
+
             switch ($suggestion['type']) {
                 case 'description':
-                    $parts[] = self::buildDescriptionMarkdown($taskId, $msgId, $suggestion['content']);
+                    $parts[] = self::buildDescriptionMarkdown($taskId, $msgId, $suggestion['content'], $suggestionTitles);
                     break;
                 case 'subtasks':
-                    $parts[] = self::buildSubtasksMarkdown($taskId, $msgId, $suggestion['content']);
+                    $parts[] = self::buildSubtasksMarkdown($taskId, $msgId, $suggestion['content'], $suggestionTitles);
                     break;
                 case 'assignee':
-                    $parts[] = self::buildAssigneeMarkdown($taskId, $msgId, $suggestion['content']);
+                    $parts[] = self::buildAssigneeMarkdown($taskId, $msgId, $suggestion['content'], $suggestionTitles);
                     break;
                 case 'similar':
-                    $parts[] = self::buildSimilarMarkdown($taskId, $msgId, $suggestion['content']);
+                    $parts[] = self::buildSimilarMarkdown($taskId, $msgId, $suggestion['content'], $suggestionTitles);
                     break;
             }
         }
@@ -537,11 +657,16 @@ class AiTaskSuggestion
 
     /**
      * 构建描述建议 Markdown
+     * @param int $taskId 任务ID
+     * @param int $msgId 消息ID
+     * @param string $content 描述内容
+     * @param array $titles 本地化标题
      */
-    private static function buildDescriptionMarkdown(int $taskId, int $msgId, string $content): string
+    private static function buildDescriptionMarkdown(int $taskId, int $msgId, string $content, array $titles): string
     {
+        $title = $titles['description'];
         return <<<MD
-### 建议补充任务描述
+### {$title}
 
 {$content}
 
@@ -551,9 +676,14 @@ MD;
 
     /**
      * 构建子任务建议 Markdown
+     * @param int $taskId 任务ID
+     * @param int $msgId 消息ID
+     * @param array $subtasks 子任务列表
+     * @param array $titles 本地化标题
      */
-    private static function buildSubtasksMarkdown(int $taskId, int $msgId, array $subtasks): string
+    private static function buildSubtasksMarkdown(int $taskId, int $msgId, array $subtasks, array $titles): string
     {
+        $title = $titles['subtasks'];
         $list = '';
         foreach ($subtasks as $i => $name) {
             $num = $i + 1;
@@ -561,7 +691,7 @@ MD;
         }
 
         return <<<MD
-### 建议拆分子任务
+### {$title}
 
 {$list}
 :::ai-action{type="subtasks" task="{$taskId}" msg="{$msgId}"}:::
@@ -570,9 +700,14 @@ MD;
 
     /**
      * 构建负责人建议 Markdown
+     * @param int $taskId 任务ID
+     * @param int $msgId 消息ID
+     * @param array $recommendations 推荐列表
+     * @param array $titles 本地化标题
      */
-    private static function buildAssigneeMarkdown(int $taskId, int $msgId, array $recommendations): string
+    private static function buildAssigneeMarkdown(int $taskId, int $msgId, array $recommendations, array $titles): string
     {
+        $title = $titles['assignee'];
         $list = '';
         foreach ($recommendations as $rec) {
             $stUserId = $rec['userid'];
@@ -581,7 +716,7 @@ MD;
         }
 
         return <<<MD
-### 推荐负责人
+### {$title}
 
 {$list}
 MD;
@@ -589,9 +724,15 @@ MD;
 
     /**
      * 构建相似任务 Markdown
+     * @param int $taskId 任务ID
+     * @param int $msgId 消息ID
+     * @param array $similarTasks 相似任务列表
+     * @param array $titles 本地化标题
      */
-    private static function buildSimilarMarkdown(int $taskId, int $msgId, array $similarTasks): string
+    private static function buildSimilarMarkdown(int $taskId, int $msgId, array $similarTasks, array $titles): string
     {
+        $title = $titles['similar'];
+        $hint = $titles['similar_hint'];
         $list = '';
         foreach ($similarTasks as $i => $st) {
             $num = $i + 1;
@@ -601,9 +742,9 @@ MD;
         }
 
         return <<<MD
-### 发现相似任务
+### {$title}
 
-以下任务与当前任务内容相似，可能是重复任务或可作为参考：
+{$hint}
 
 {$list}
 MD;
@@ -611,6 +752,8 @@ MD;
 
     /**
      * 发送建议消息
+     * @param ProjectTask $task 任务对象
+     * @param array $suggestions 建议列表
      */
     public static function sendSuggestionMessage(ProjectTask $task, array $suggestions): ?int
     {
@@ -630,8 +773,11 @@ MD;
             }
         }
 
+        // 获取用户语言
+        $lang = self::getUserLanguageInfo($task->userid)['code'];
+
         // 先发送消息获取 msg_id，然后更新消息内容带上 msg_id
-        $tempMarkdown = self::buildMarkdownMessage($task->id, $suggestions, 0);
+        $tempMarkdown = self::buildMarkdownMessage($task->id, $suggestions, 0, $lang);
         $result = WebSocketDialogMsg::sendMsg(
             null,
             $task->dialog_id,
@@ -651,7 +797,7 @@ MD;
         }
 
         // 更新消息，带上真实的 msg_id
-        $finalMarkdown = self::buildMarkdownMessage($task->id, $suggestions, $msgId);
+        $finalMarkdown = self::buildMarkdownMessage($task->id, $suggestions, $msgId, $lang);
         WebSocketDialogMsg::sendMsg(
             'change-' . $msgId,
             $task->dialog_id,
