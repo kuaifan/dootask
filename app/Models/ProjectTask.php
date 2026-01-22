@@ -684,13 +684,13 @@ class ProjectTask extends AbstractModel
                     // 判断自动完成
                     if (!$this->complete_at) {
                         $flowData['complete_at'] = $this->complete_at;
-                        $this->completeTask(Carbon::now(), $newFlowItem->name);
+                        $data['complete_at'] = date("Y-m-d H:i");
                     }
                 } else {
                     // 判断自动打开
                     if ($this->complete_at) {
                         $flowData['complete_at'] = $this->complete_at;
-                        $this->completeTask(null);
+                        $data['complete_at'] = false;
                     }
                 }
                 $flowUserids = $newFlowItem->userids;
@@ -740,7 +740,7 @@ class ProjectTask extends AbstractModel
                 ])->save();
             }
             // 状态
-            if (Arr::exists($data, 'complete_at') && !Arr::exists($data, 'flow_item_id')) {
+            if (Arr::exists($data, 'complete_at')) {
                 // 子任务：主任务已完成时无法修改
                 if ($mainTask?->complete_at) {
                     throw new ApiException('主任务已完成，无法修改子任务状态');
@@ -750,14 +750,22 @@ class ProjectTask extends AbstractModel
                     if ($this->complete_at) {
                         throw new ApiException('任务已完成');
                     }
-                    $flowItemName = $this->checkAndAutoSetFlowItem('end', -4005);
+                    // 只有用户单独提交 complete_at 时才自动设置工作流状态
+                    if (!Arr::exists($data, 'flow_item_id')) {
+                        $flowItemName = $this->checkAndAutoSetFlowItem('end', -4005);
+                    } else {
+                        $flowItemName = isset($newFlowItem) ? $newFlowItem->name : null;
+                    }
                     $this->completeTask(Carbon::now(), $flowItemName);
                 } else {
                     // 标记未完成
                     if (!$this->complete_at) {
                         throw new ApiException('未完成任务');
                     }
-                    $this->checkAndAutoSetFlowItem('start', -4006);
+                    // 只有用户单独提交 complete_at 时才自动设置工作流状态
+                    if (!Arr::exists($data, 'flow_item_id')) {
+                        $this->checkAndAutoSetFlowItem('start', -4006);
+                    }
                     $this->completeTask(null);
                 }
                 $updateMarking['is_update_project'] = true;
