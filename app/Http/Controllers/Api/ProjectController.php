@@ -1051,8 +1051,16 @@ class ProjectController extends AbstractController
         $owner = is_numeric($owner) ? intval($owner) : null;
         $keys = is_array($keys) ? $keys : [];
         $sorts = is_array($sorts) ? $sorts : [];
+        $with_extend = array_filter(explode(',', Request::input('with_extend', '')));
 
-        $builder = ProjectTask::with(['taskUser', 'taskTag']);
+        $withs = ['taskUser', 'taskTag'];
+        if (in_array('project_name', $with_extend)) {
+            $withs[] = 'project:id,name';
+        }
+        if (in_array('column_name', $with_extend)) {
+            $withs[] = 'projectColumn:id,name';
+        }
+        $builder = ProjectTask::with($withs);
         //
         if ($keys['name']) {
             if (Base::isNumber($keys['name'])) {
@@ -1247,6 +1255,14 @@ class ProjectController extends AbstractController
             unset($item['_sub_num']);
             unset($item['_sub_complete']);
             unset($item['_percent']);
+            if (in_array('project_name', $with_extend)) {
+                $item['project_name'] = $item['project']['name'] ?? '';
+                unset($item['project']);
+            }
+            if (in_array('column_name', $with_extend)) {
+                $item['column_name'] = $item['project_column']['name'] ?? '';
+                unset($item['project_column']);
+            }
         }
         //
         if ($list->currentPage() === 1) {
