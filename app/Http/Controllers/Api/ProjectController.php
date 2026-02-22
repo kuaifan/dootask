@@ -999,6 +999,10 @@ class ProjectController extends AbstractController
      * - 等于-1：仅主任务（可与 project_id 组合）
      * @apiParam {String} [scope]            查询范围（仅在未指定 project_id 且 parent_id ≤ 0 时生效）
      * - all_project：查询“我参与的项目”下的所有任务（仍受可见性限制）
+     * @apiParam {Number} [owner]            任务身份筛选（按当前登录用户在任务中的身份）
+     * - 1：我负责的任务
+     * - 0：我协助的任务
+     * - 不传：不过滤（默认）
      *
      * @apiParam {String} [time]             指定时间范围，如：today, week, month, year, 2020-12-12,2020-12-30
      * - today: 今天
@@ -1043,6 +1047,8 @@ class ProjectController extends AbstractController
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
         $scope = Request::input('scope');
+        $owner = Request::input('owner');
+        $owner = is_numeric($owner) ? intval($owner) : null;
         $keys = is_array($keys) ? $keys : [];
         $sorts = is_array($sorts) ? $sorts : [];
 
@@ -1108,8 +1114,11 @@ class ProjectController extends AbstractController
         }
         if ($scopeAll) {
             $builder->allData();
+            if ($owner !== null) {
+                $builder->where('project_task_users.owner', $owner);
+            }
         } else {
-            $builder->authData();
+            $builder->authData(null, $owner);
         }
         //
         if ($name) {
