@@ -21,6 +21,9 @@ use App\Module\TimeRange;
 use App\Module\MsgTool;
 use App\Models\FileContent;
 use App\Models\ProjectTask;
+use App\Models\ProjectTaskUser;
+use App\Models\ProjectTaskVisibilityUser;
+use App\Models\ProjectUser;
 use App\Models\AbstractModel;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
@@ -1694,6 +1697,106 @@ class DialogController extends AbstractController
             'text' => $text,
         ];
         return WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', $msgData, $botUser->userid, false, false, $silence);
+    }
+
+    /**
+     * @api {post} api/dialog/msg/send_ai_assistant          以AI助手身份发送消息到对话
+     *
+     * @apiDescription 需要token身份，以AI助手身份(userid=-1)发送消息到对话。支持两种方式：
+     * 1. 通过 dialog_id 直接发送到指定对话
+     * 2. 通过 task_id 发送到任务对话（自动创建对话如不存在）
+     * 两个参数至少提供一个，同时提供时优先使用 dialog_id
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__send_ai_assistant
+     *
+     * @apiParam {Number} [dialog_id]           对话ID（与task_id二选一）
+     * @apiParam {Number} [task_id]             任务ID（与dialog_id二选一，自动创建对话）
+     * @apiParam {String} text                 消息内容
+     * @apiParam {String} [text_type=md]       消息格式：md 或 html
+     * @apiParam {String} [silence=no]         是否静默发送：yes/no
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__send_ai_assistant()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $task_id = intval(Request::input('task_id'));
+        $text = trim(Request::input('text'));
+        $text_type = strtolower(trim(Request::input('text_type'))) ?: 'md';
+        $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
+        $markdown = in_array($text_type, ['md', 'markdown']);
+        //
+        if (empty($dialog_id) && empty($task_id)) {
+            return Base::retError('dialog_id 或 task_id 至少提供一个');
+        }
+        if (empty($text)) {
+            return Base::retError('消息内容不能为空');
+        }
+        if (mb_strlen($text) > 200000) {
+            return Base::retError('消息内容最大不能超过200000字');
+        }
+        //
+        if ($dialog_id) {
+            // Direct dialog mode: verify user is a member
+            WebSocketDialog::checkDialog($dialog_id);
+        } else {
+            // Task mode: resolve task -> dialog_id (auto-create if needed)
+            $task = ProjectTask::find($task_id);
+            if (!$task) {
+                return Base::retError('任务不存在');
+            }
+            if (!ProjectUser::whereProjectId($task->project_id)->whereUserid($user->userid)->exists()) {
+                return Base::retError('没有权限操作此任务');
+            }
+            // 任务可见性校验（与 task__one 一致）
+            if ($task->visibility != 1) {
+                $project_userid = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');
+                if ($user->userid != $project_userid) {
+                    $visibleUserids = array_merge(
+                        ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray(),
+                        ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray(),
+                        ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid')->toArray()
+                    );
+                    if (!in_array($user->userid, $visibleUserids)) {
+                        return Base::retError('没有权限操作此任务');
+                    }
+                }
+            }
+            if (!$task->dialog_id) {
+                $dialog = WebSocketDialog::createGroup($task->name, $task->relationUserids(), 'task');
+                if ($dialog) {
+                    $task->dialog_id = $dialog->id;
+                    $task->save();
+                    $task->pushMsg('dialog');
+                } else {
+                    return Base::retError('无法创建任务对话');
+                }
+            }
+            $dialog_id = $task->dialog_id;
+        }
+        //
+        $msgData = ['text' => $text];
+        if ($markdown) {
+            $msgData['type'] = 'md';
+        }
+        //
+        $result = WebSocketDialogMsg::sendMsg(
+            null,
+            $dialog_id,
+            'text',
+            $msgData,
+            \App\Module\AiTaskSuggestion::AI_ASSISTANT_USERID,
+            true,   // push_self
+            false,  // push_retry
+            $silence
+        );
+        //
+        return $result;
     }
 
     /**
