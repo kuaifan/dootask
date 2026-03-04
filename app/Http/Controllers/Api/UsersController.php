@@ -300,6 +300,8 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName token__expire
      *
+     * @apiParam {Number} [refresh]    是否刷新 token（1=是），token 剩余有效期不足总有效期的 1/3 时才会刷新
+     *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -307,10 +309,11 @@ class UsersController extends AbstractController
      * @apiSuccess {Number|null} data.remaining_seconds    距离过期剩余秒数（负值表示已过期）
      * @apiSuccess {Boolean} data.expired    token 是否已过期
      * @apiSuccess {String} data.server_time    当前服务器时间
+     * @apiSuccess {String} [data.token]    刷新后的新 token（仅当 refresh=1 且 token 即将过期时返回）
      */
     public function token__expire()
     {
-        User::auth();
+        $user = User::auth();
         $expiredAt = Doo::userExpiredAt();
         $expired = Doo::userExpired();
         $expiredAtCarbon = $expiredAt ? Carbon::parse($expiredAt) : null;
@@ -320,6 +323,14 @@ class UsersController extends AbstractController
             'expired' => $expired,
             'server_time' => Carbon::now()->toDateTimeString(),
         ];
+        // 请求刷新 token：剩余有效期不足总有效期的 1/3 时才刷新
+        if (Request::input('refresh') && $expiredAtCarbon) {
+            $tokenValidDays = max(1, intval(Base::settingFind('system', 'token_valid_days', 30)));
+            $refreshThresholdDays = ceil($tokenValidDays / 3);
+            if ($expiredAtCarbon->isBefore(Carbon::now()->addDays($refreshThresholdDays))) {
+                $data['token'] = User::generateToken($user, true);
+            }
+        }
         return Base::retSuccess('success', $data);
     }
 
@@ -377,10 +388,14 @@ class UsersController extends AbstractController
         //
         $refreshToken = false;
         if (in_array(Base::platform(), ['ios', 'android'])) {
-            // 移动端token还剩7天到期时获取新的token
+            // 移动端token剩余有效期不足总有效期的1/3时获取新的token
             $expiredAt = Doo::userExpiredAt();
-            if ($expiredAt && Carbon::parse($expiredAt)->isBefore(Carbon::now()->addDays(7))) {
-                $refreshToken = true;
+            if ($expiredAt) {
+                $tokenValidDays = max(1, intval(Base::settingFind('system', 'token_valid_days', 30)));
+                $refreshThresholdDays = ceil($tokenValidDays / 3);
+                if (Carbon::parse($expiredAt)->isBefore(Carbon::now()->addDays($refreshThresholdDays))) {
+                    $refreshToken = true;
+                }
             }
         }
         User::generateToken($user, $refreshToken);
