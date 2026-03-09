@@ -2635,6 +2635,19 @@ export default {
         });
     },
 
+    deleteTaskRelated({commit, dispatch}, {taskId, relatedTaskId}) {
+        return new Promise((resolve, reject) => {
+            dispatch("call", {
+                url: 'project/task/related/delete',
+                data: {task_id: taskId, related_task_id: relatedTaskId},
+            }).then(({msg}) => {
+                commit('task/related/clear', taskId);
+                commit('task/related/clear', relatedTaskId);
+                resolve(msg);
+            }).catch(reject);
+        });
+    },
+
     /**
      * 添加子任务
      * @param dispatch

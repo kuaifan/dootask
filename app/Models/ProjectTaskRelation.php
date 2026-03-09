@@ -143,6 +143,41 @@ class ProjectTaskRelation extends AbstractModel
         return true;
     }
 
+    /**
+     * 删除双向任务关联
+     *
+     * @param int $taskId 任务ID
+     * @param int $relatedTaskId 关联任务ID
+     * @return bool 是否删除成功
+     */
+    public static function deleteRelation(int $taskId, int $relatedTaskId): bool
+    {
+        // 删除正向关联
+        $deleted1 = static::whereTaskId($taskId)
+            ->whereRelatedTaskId($relatedTaskId)
+            ->delete();
+
+        // 删除反向关联
+        $deleted2 = static::whereTaskId($relatedTaskId)
+            ->whereRelatedTaskId($taskId)
+            ->delete();
+
+        if ($deleted1 || $deleted2) {
+            // 推送关联更新
+            $sourceTask = ProjectTask::with('project')->find($taskId);
+            $targetTask = ProjectTask::with('project')->find($relatedTaskId);
+            if ($sourceTask?->project) {
+                $sourceTask->pushMsg('relation', null, null, false);
+            }
+            if ($targetTask?->project) {
+                $targetTask->pushMsg('relation', null, null, false);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
     public static function recordMentionsFromMessage(WebSocketDialogMsg $msg): void
     {
         if ($msg->type !== 'text') {

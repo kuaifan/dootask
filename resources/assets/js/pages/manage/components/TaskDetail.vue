@@ -376,6 +376,10 @@
                                     class="related-status archived">
                                     {{$L('已归档')}}
                                 </span>
+                                <Icon
+                                    type="md-close"
+                                    class="related-remove"
+                                    @click.native.stop="removeRelatedTask(item)"/>
                             </li>
                         </ul>
                     </FormItem>
@@ -1595,6 +1599,26 @@ export default {
                 return;
             }
             this.$store.dispatch('openTask', item.related_task_id);
+        },
+
+        removeRelatedTask(item) {
+            if (!item || !item.related_task_id) {
+                return;
+            }
+            $A.modalConfirm({
+                title: '温馨提示',
+                content: '确定要解除与任务 #' + item.related_task_id + ' 的关联吗？',
+                onOk: () => {
+                    this.$store.dispatch('deleteTaskRelated', {
+                        taskId: this.taskId,
+                        relatedTaskId: item.related_task_id,
+                    }).then(() => {
+                        this.loadRelatedTasks();
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
+                    });
+                },
+            });
         },
 
         onTaskRelationUpdate(taskId) {
