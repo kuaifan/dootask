@@ -93,6 +93,7 @@ class SystemController extends AbstractController
                     'file_upload_limit',
                     'unclaimed_task_reminder',
                     'unclaimed_task_reminder_time',
+                    'task_ai_auto_analyze',
                 ])) {
                     unset($all[$key]);
                 }
@@ -146,6 +147,7 @@ class SystemController extends AbstractController
         $setting['file_upload_limit'] = $setting['file_upload_limit'] ?: '';
         $setting['unclaimed_task_reminder'] = $setting['unclaimed_task_reminder'] ?: 'close';
         $setting['unclaimed_task_reminder_time'] = $setting['unclaimed_task_reminder_time'] ?: '';
+        $setting['task_ai_auto_analyze'] = $setting['task_ai_auto_analyze'] ?: 'open';
         $setting['server_timezone'] = config('app.timezone');
         $setting['server_version'] = Base::getVersion();
         //

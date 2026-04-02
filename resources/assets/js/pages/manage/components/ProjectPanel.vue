@@ -416,6 +416,15 @@
                     </template>
 
                 </FormItem>
+                <FormItem :label="$L('AI任务分析')" prop="ai_auto_analyze">
+                    <RadioGroup v-model="settingData.ai_auto_analyze">
+                        <Radio label="open" :disabled="systemConfig.task_ai_auto_analyze === 'close'">{{$L('开启')}}</Radio>
+                        <Radio label="close">{{$L('关闭')}}</Radio>
+                    </RadioGroup>
+                    <div v-if="systemConfig.task_ai_auto_analyze === 'close'" class="form-tip">{{$L('系统已关闭AI任务分析功能。')}}</div>
+                    <div v-else-if="settingData.ai_auto_analyze === 'open'" class="form-tip">{{$L('新建任务后AI自动分析并给出建议。')}}</div>
+                    <div v-else class="form-tip">{{$L('关闭后本项目将不再自动分析任务。')}}</div>
+                </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="settingShow=false">{{$L('取消')}}</Button>
@@ -696,6 +705,8 @@ export default {
             'cacheUserBasic',
 
             'formOptions',
+
+            'systemConfig',
         ]),
 
         ...mapGetters(['projectData', 'transforTasks']),
@@ -1508,7 +1519,8 @@ export default {
                         name: this.projectData.name,
                         desc: this.projectData.desc,
                         archive_method: this.projectData.archive_method,
-                        archive_days: this.projectData.archive_days
+                        archive_days: this.projectData.archive_days,
+                        ai_auto_analyze: this.projectData.ai_auto_analyze || 'open'
                     });
                     this.settingShow = true;
                     this.$nextTick(() => {

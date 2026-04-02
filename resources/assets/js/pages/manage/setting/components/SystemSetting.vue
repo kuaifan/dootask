@@ -124,6 +124,14 @@
                             :placeholder="$L('请选择提醒时间')"
                             transfer/>
                     </FormItem>
+                    <FormItem :label="$L('AI任务分析')" prop="taskAiAutoAnalyze">
+                        <RadioGroup v-model="formDatum.task_ai_auto_analyze">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.task_ai_auto_analyze == 'open'" class="form-tip">{{$L('新建任务后AI自动分析并给出建议。')}}</div>
+                        <div v-else class="form-tip">{{$L('关闭后所有项目将不再自动分析任务。')}}</div>
+                    </FormItem>
                     <FormItem :label="$L('个人任务上限')" prop="taskUserLimit">
                         <div style="width: 110px;">
                             <Input type="number" number v-model="formDatum.task_user_limit" @on-keyup="$A.inputNumberLimit($event, 1, 2000)">

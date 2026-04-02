@@ -37,10 +37,20 @@ class AiTaskLoopTask extends AbstractTask
             return;
         }
 
+        // 检查系统级 AI 自动分析开关
+        if (Base::settingFind('system', 'task_ai_auto_analyze', 'open') === 'close') {
+            return;
+        }
+
         // 查询待处理的任务
         $tasks = $this->findPendingTasks();
 
         foreach ($tasks as $task) {
+            // 检查项目级 AI 自动分析开关
+            if ($task->project && $task->project->ai_auto_analyze === 'close') {
+                continue;
+            }
+
             // 为任务创建事件记录
             $this->createEventRecords($task);
 
@@ -62,7 +72,8 @@ class AiTaskLoopTask extends AbstractTask
             ->pluck('task_id');
 
         // 查询新建任务（未处理过的）
-        $newTasks = ProjectTask::where('parent_id', 0) // 只处理主任务
+        $newTasks = ProjectTask::with('project')
+            ->where('parent_id', 0) // 只处理主任务
             ->whereNull('deleted_at')
             ->whereNull('archived_at')
             ->where('created_at', '<=', $delayTime) // 创建超过延迟时间
@@ -81,7 +92,8 @@ class AiTaskLoopTask extends AbstractTask
             ->take(self::BATCH_SIZE - $newTasks->count())
             ->pluck('task_id');
 
-        $retryTasks = ProjectTask::whereIn('id', $retryTaskIds)
+        $retryTasks = ProjectTask::with('project')
+            ->whereIn('id', $retryTaskIds)
             ->whereNull('deleted_at')
             ->get();
 

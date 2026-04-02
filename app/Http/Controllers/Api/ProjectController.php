@@ -301,6 +301,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} [desc]            项目介绍
      * @apiParam {String} [archive_method]  归档方式
      * @apiParam {Number} [archive_days]    自动归档天数
+     * @apiParam {String} [ai_auto_analyze] AI自动分析（open|close）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -315,6 +316,7 @@ class ProjectController extends AbstractController
         $desc = trim(Request::input('desc', ''));
         $archive_method = Request::input('archive_method');
         $archive_days = intval(Request::input('archive_days'));
+        $ai_auto_analyze = Request::input('ai_auto_analyze');
         if (mb_strlen($name) < 2) {
             return Base::retError('项目名称不可以少于2个字');
         } elseif (mb_strlen($name) > 32) {
@@ -330,7 +332,7 @@ class ProjectController extends AbstractController
         }
         //
         $project = Project::userProject($project_id, true, true);
-        AbstractModel::transaction(function () use ($archive_days, $archive_method, $desc, $name, $project) {
+        AbstractModel::transaction(function () use ($archive_days, $archive_method, $ai_auto_analyze, $desc, $name, $project) {
             if ($project->name != $name) {
                 $project->addLog("修改项目名称", [
                     'change' => [$project->name, $name]
@@ -355,6 +357,12 @@ class ProjectController extends AbstractController
                     'change' => [$project->archive_days, $archive_days]
                 ]);
                 $project->archive_days = $archive_days;
+            }
+            if (in_array($ai_auto_analyze, ['open', 'close']) && $project->ai_auto_analyze != $ai_auto_analyze) {
+                $project->addLog("修改AI自动分析", [
+                    'change' => [$project->ai_auto_analyze, $ai_auto_analyze]
+                ]);
+                $project->ai_auto_analyze = $ai_auto_analyze;
             }
             $project->save();
         });
