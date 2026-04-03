@@ -2311,6 +2311,7 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
+        $msg_ids = Request::input('msg_ids');
         $msg_id = intval(Request::input("msg_id"));
         $dialogids = Request::input('dialogids');
         $userids = Request::input('userids');
@@ -2321,6 +2322,30 @@ class DialogController extends AbstractController
             return Base::retError("请选择对话或成员");
         }
         //
+        // 支持批量逐条转发
+        if (!empty($msg_ids) && is_array($msg_ids)) {
+            if (count($msg_ids) > 100) {
+                return Base::retError("最多转发100条消息");
+            }
+            $allMsgs = [];
+            $msgs = WebSocketDialogMsg::whereIn('id', $msg_ids)->orderBy('created_at')->get();
+            if ($msgs->isEmpty()) {
+                return Base::retError("消息不存在或已被删除");
+            }
+            WebSocketDialog::checkDialog($msgs->first()->dialog_id);
+            foreach ($msgs as $msg) {
+                $res = $msg->forwardMsg($dialogids, $userids, $user, $show_source, $leave_message);
+                if (Base::isSuccess($res)) {
+                    $allMsgs = array_merge($allMsgs, $res['data']['msgs']);
+                }
+                // 留言只在第一条时发送，后续不再重复
+                $leave_message = '';
+            }
+            return Base::retSuccess('转发成功', [
+                'msgs' => $allMsgs
+            ]);
+        }
+        //
         $msg = WebSocketDialogMsg::whereId($msg_id)->first();
         if (empty($msg)) {
             return Base::retError("消息不存在或已被删除");
@@ -2328,6 +2353,47 @@ class DialogController extends AbstractController
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
         return $msg->forwardMsg($dialogids, $userids, $user, $show_source, $leave_message);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/merge-forward 合并转发消息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__merge_forward
+     *
+     * @apiParam {Array} msg_ids                消息ID数组（最多100条）
+     * @apiParam {Array} dialogids              转发给的对话ID
+     * @apiParam {Array} userids                转发给的成员ID
+     * @apiParam {Number} show_source           是否显示原发送者信息
+     * @apiParam {String} leave_message         转发留言
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__merge_forward()
+    {
+        $user = User::auth();
+        //
+        $msg_ids = Request::input('msg_ids');
+        $dialogids = Request::input('dialogids');
+        $userids = Request::input('userids');
+        $show_source = intval(Request::input("show_source"));
+        $leave_message = Request::input('leave_message');
+        //
+        if (empty($dialogids) && empty($userids)) {
+            return Base::retError("请选择对话或成员");
+        }
+        if (empty($msg_ids) || !is_array($msg_ids)) {
+            return Base::retError("请选择要转发的消息");
+        }
+        if (count($msg_ids) > 100) {
+            return Base::retError("最多转发100条消息");
+        }
+        //
+        return WebSocketDialogMsg::mergeForwardMsg($msg_ids, $dialogids, $userids, $user, $show_source, $leave_message);
     }
 
     /**

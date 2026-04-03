@@ -43,6 +43,8 @@
                 <WordChainMsg v-else-if="msgData.type === 'word-chain'" :msg="msgData.msg" :msgId="msgData.id" :unfoldWordChainData="unfoldWordChainData" @unfoldWordChain="unfoldWordChain(msgData)" @onWordChain="onWordChain"/>
                 <!--投票-->
                 <VoteMsg v-else-if="msgData.type === 'vote'" :msg="msgData.msg" :voteData="voteData" @onVote="onVote($event, msgData)"/>
+                <!--合并转发-->
+                <MergeForwardMsg v-else-if="msgData.type === 'merge-forward'" :msg="msgData.msg"/>
                 <!--模板-->
                 <TemplateMsg v-else-if="msgData.type === 'template'" :msg="msgData.msg" @viewText="viewText"/>
                 <!--等待-->
@@ -190,6 +192,7 @@ import MeetingMsg from "./meet.vue";
 import WordChainMsg from "./word-chain.vue";
 import VoteMsg from "./vote.vue";
 import TemplateMsg from "./template";
+import MergeForwardMsg from "./merge-forward.vue";
 import LoadMsg from "./load.vue";
 import UnknownMsg from "./unknown.vue";
 import emitter from "../../../../store/events";
@@ -208,6 +211,7 @@ export default {
     components: {
         UnknownMsg,
         LoadMsg,
+        MergeForwardMsg,
         TemplateMsg,
         VoteMsg,
         WordChainMsg,

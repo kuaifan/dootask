@@ -22,7 +22,9 @@
 
             :dialog-id="forwardDialogId"
             :forward-to="forwardTo"
-            :msg-detail="msgDetail"/>
+            :msg-detail="msgDetail"
+            :msg-ids="msgIds"
+            :msg-list="msgList"/>
     </div>
 </template>
 
@@ -72,6 +74,16 @@ export default {
             type: Object,
             default: null
         },
+        // 多选消息ID数组
+        msgIds: {
+            type: Array,
+            default: () => []
+        },
+        // 多选消息详情列表
+        msgList: {
+            type: Array,
+            default: () => []
+        },
     },
 
     data() {
@@ -117,7 +129,9 @@ export default {
                 //
                 data.dialogids = selects.filter(value => $A.leftExists(value, 'd:')).map(value => value.replace('d:', ''));
                 data.userids = selects.filter(value => !$A.leftExists(value, 'd:'));
-                if (this.msgDetail) {
+                if (this.msgIds && this.msgIds.length > 0) {
+                    data.msg_ids = this.msgIds;
+                } else if (this.msgDetail) {
                     data.msg_id = this.msgDetail.id;
                 }
                 //

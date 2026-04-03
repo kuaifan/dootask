@@ -461,6 +461,8 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 case 'notice':
                     const notice = data.msg.source === 'api' ? data.msg.notice : $A.L(data.msg.notice);
                     return $A.cutString(notice, 50)
+                case 'merge-forward':
+                    return `[${$A.L('聊天记录')}] ${$A.cutString(data.msg.title || '', 50)}`
                 case 'template':
                     return $A.templateMsgSimpleDesc(data.msg)
                 case 'preview':

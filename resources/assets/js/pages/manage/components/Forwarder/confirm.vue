@@ -28,7 +28,42 @@
         </div>
         <div class="twice-affirm-body-extend">
             <div class="forwarder-wrapper-body">
-                <div v-if="msgDetail" class="dialog-wrapper inde-list">
+                <!--多选转发方式-->
+                <div v-if="isMultiMode" class="forward-mode-select">
+                    <RadioGroup v-model="forwardMode" size="small">
+                        <Radio label="one-by-one">{{ $L('逐条转发') }}</Radio>
+                        <Radio label="merge">{{ $L('合并转发') }}</Radio>
+                    </RadioGroup>
+                </div>
+                <!--多选消息预览-->
+                <div v-if="isMultiMode" class="dialog-wrapper inde-list">
+                    <Scrollbar class-name="dialog-scroller">
+                        <template v-if="forwardMode === 'merge'">
+                            <div class="merge-forward-preview">
+                                <div class="merge-preview-title">{{ $L('聊天记录') }}</div>
+                                <div v-for="(item, index) in previewMsgList" :key="item.id" class="merge-preview-item">
+                                    <UserAvatar :userid="item.userid" :show-icon="false" :show-name="true" :size="16"/>
+                                    <span class="preview-desc" v-html="$A.getMsgSimpleDesc(item)"></span>
+                                </div>
+                                <div class="merge-preview-count">{{ $L('共') }} {{ msgIds.length }} {{ $L('条消息') }}</div>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <DialogItem
+                                v-for="item in previewMsgList"
+                                :key="item.id"
+                                :source="item"
+                                @on-view-text="onViewText"
+                                @on-view-file="onViewFile"
+                                @on-down-file="onDownFile"
+                                @on-emoji="onEmoji"
+                                @on-other="onOther"
+                                simpleView/>
+                        </template>
+                    </Scrollbar>
+                </div>
+                <!--单条消息预览-->
+                <div v-else-if="msgDetail" class="dialog-wrapper inde-list">
                     <Scrollbar class-name="dialog-scroller">
                         <DialogItem
                             :source="msgDetail"
@@ -127,6 +162,16 @@ export default {
             type: Object,
             default: null
         },
+        // 多选消息ID数组
+        msgIds: {
+            type: Array,
+            default: () => []
+        },
+        // 多选消息详情列表
+        msgList: {
+            type: Array,
+            default: () => []
+        },
     },
 
     data() {
@@ -135,6 +180,7 @@ export default {
             loading: false,
 
             message: '',    // 留言
+            forwardMode: 'one-by-one',  // 转发方式: one-by-one | merge
 
             ainew: $A.getStorageBoolean('forwarder.ainew', true),       // 是否AI开启新会话
             sender: $A.getStorageBoolean('forwarder.sender', true),     // 是否隐藏原发送者信息
@@ -143,6 +189,15 @@ export default {
 
     computed: {
         ...mapState(['cacheUserBasic']),
+
+        isMultiMode() {
+            return this.msgIds && this.msgIds.length > 0;
+        },
+
+        previewMsgList() {
+            if (!this.isMultiMode) return [];
+            return this.msgList.slice(0, this.forwardMode === 'merge' ? 4 : 10);
+        },
 
         aiUser({forwardTo, cacheUserBasic}) {
             const users = forwardTo.filter(item => item.type !== 'group');
@@ -213,6 +268,9 @@ export default {
             }
             const data = {
                 message: this.message,
+            }
+            if (this.isMultiMode) {
+                data.forward_mode = this.forwardMode;
             }
             if (!this.senderHidden) {
                 data.sender = this.sender

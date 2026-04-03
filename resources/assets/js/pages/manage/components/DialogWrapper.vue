@@ -201,7 +201,7 @@
                 :data-sources="allMsgs"
                 :data-component="msgItem"
 
-                :extra-props="{dialogData, operateVisible, operateItem, pointerMouse, isMyDialog, msgId, unreadOne, scrollIng, readEnabled}"
+                :extra-props="{dialogData, operateVisible, operateItem, pointerMouse, isMyDialog, msgId, unreadOne, scrollIng, readEnabled, multiSelectMode, selectedMsgIdsSet}"
                 :estimate-size="dialogData.type=='group' ? 105 : 77"
                 :keeps="dialogMsgKeep"
                 :disabled="scrollDisabled"
@@ -219,7 +219,8 @@
                 @on-error="onError"
                 @on-emoji="onEmoji"
                 @on-other="onOther"
-                @on-show-emoji-user="onShowEmojiUser">
+                @on-show-emoji-user="onShowEmojiUser"
+                @on-multi-select-toggle="onMultiSelectToggle">
                 <template #header v-if="!isChildComponent">
                     <div class="dialog-item head-box">
                         <div v-if="loadIng > 0 || prevId > 0" class="loading" :class="{filled: allMsgs.length === 0}">
@@ -231,8 +232,20 @@
             </VirtualList>
         </div>
 
+        <!--多选操作栏-->
+        <div v-if="multiSelectMode" class="dialog-multi-select-bar">
+            <div class="multi-select-info">
+                <span>{{ $L('已选') }} {{ selectedMsgIds.length }} {{ $L('条') }}</span>
+                <span v-if="selectedMsgIds.length >= 100" class="multi-select-max">{{ $L('(最多100条)') }}</span>
+            </div>
+            <div class="multi-select-actions">
+                <Button type="primary" size="small" :disabled="selectedMsgIds.length === 0" @click="onMultiForward">{{ $L('转发') }}</Button>
+                <Button size="small" @click="onMultiSelectCancel">{{ $L('取消') }}</Button>
+            </div>
+        </div>
+
         <!--底部输入-->
-        <div ref="footer" class="dialog-footer" @click="onClickFooter">
+        <div v-show="!multiSelectMode" ref="footer" class="dialog-footer" @click="onClickFooter">
             <!--滚动到底部-->
             <div
                 v-if="scrollTail > 500 || (msgNew > 0 && allMsgs.length > 0)"
@@ -354,6 +367,10 @@
                                 <li v-if="actionPermission(operateItem, 'forward')" @click="onOperate('forward')">
                                     <i class="taskfont">&#xe638;</i>
                                     <span>{{ $L('转发') }}</span>
+                                </li>
+                                <li v-if="actionPermission(operateItem, 'forward')" @click="onOperate('multiSelect')">
+                                    <i class="taskfont">&#xe7b7;</i>
+                                    <span>{{ $L('多选') }}</span>
                                 </li>
                                 <li v-if="operateItem.userid == userId" @click="onOperate('withdraw')">
                                     <i class="taskfont">&#xe637;</i>
@@ -503,7 +520,9 @@
             :title="$L('转发')"
             :confirm-title="$L('确认转发')"
             :multiple-max="50"
-            :msg-detail="operateItem"
+            :msg-detail="multiSelectMode ? null : operateItem"
+            :msg-ids="multiSelectMode ? selectedMsgIds : []"
+            :msg-list="multiSelectMsgList"
             :before-submit="onForward"/>
 
         <!-- 设置待办 -->
@@ -801,6 +820,9 @@ export default {
             operateStyles: {},
             operateItem: {},
 
+            multiSelectMode: false,
+            selectedMsgIds: [],
+
             recordState: '',
             pointerMouse: false,
 
@@ -944,6 +966,15 @@ export default {
                 return true
             }
             return this.dialogData.group_type === 'user'
+        },
+
+        selectedMsgIdsSet() {
+            return new Set(this.selectedMsgIds);
+        },
+
+        multiSelectMsgList() {
+            if (!this.multiSelectMode || this.selectedMsgIds.length === 0) return [];
+            return this.allMsgs.filter(m => this.selectedMsgIdsSet.has(m.id));
         },
 
         dialogList() {
@@ -1254,6 +1285,7 @@ export default {
                 window.localStorage.removeItem('__cache:vote__')
                 window.localStorage.removeItem('__cache:unfoldWordChain__')
                 //
+                this.onMultiSelectCancel()
                 this.handlerMsgTransfer()
             },
             immediate: true
@@ -2993,26 +3025,54 @@ export default {
         },
 
         onForward(forwardData) {
+            const isMulti = forwardData.msg_ids && forwardData.msg_ids.length > 0;
+            const url = isMulti
+                ? (forwardData.forward_mode === 'merge' ? 'dialog/msg/merge-forward' : 'dialog/msg/forward')
+                : 'dialog/msg/forward';
+            const data = {
+                dialogids: forwardData.dialogids,
+                userids: forwardData.userids,
+                show_source: forwardData.sender ? 1 : 0,
+                leave_message: forwardData.message
+            };
+            if (isMulti) {
+                data.msg_ids = forwardData.msg_ids;
+            } else {
+                data.msg_id = forwardData.msg_id;
+            }
             return new Promise((resolve, reject) => {
-                this.$store.dispatch("call", {
-                    url: 'dialog/msg/forward',
-                    data: {
-                        dialogids: forwardData.dialogids,
-                        userids: forwardData.userids,
-                        msg_id: forwardData.msg_id,
-                        show_source: forwardData.sender ? 1 : 0,
-                        leave_message: forwardData.message
-                    }
-                }).then(({data, msg}) => {
+                this.$store.dispatch("call", {url, data}).then(({data, msg}) => {
                     this.$store.dispatch("saveDialogMsg", data.msgs);
                     this.$store.dispatch("updateDialogLastMsg", data.msgs);
                     $A.messageSuccess(msg);
+                    if (isMulti) this.onMultiSelectCancel();
                     resolve()
                 }).catch(({msg}) => {
                     $A.modalError(msg);
                     reject()
                 });
             });
+        },
+
+        onMultiSelectToggle(msgId) {
+            const index = this.selectedMsgIds.indexOf(msgId);
+            if (index > -1) {
+                this.selectedMsgIds.splice(index, 1);
+            } else if (this.selectedMsgIds.length < 100) {
+                this.selectedMsgIds.push(msgId);
+            } else {
+                $A.messageWarning(this.$L('最多选择100条消息'));
+            }
+        },
+
+        onMultiForward() {
+            if (this.selectedMsgIds.length === 0) return;
+            this.$refs.forwarder.onSelection();
+        },
+
+        onMultiSelectCancel() {
+            this.multiSelectMode = false;
+            this.selectedMsgIds = [];
         },
 
         onActivity(activity) {
@@ -3135,6 +3195,10 @@ export default {
 
                 // 长按触发消息操作
                 case "operateMsg":
+                    if (this.multiSelectMode && $A.isJson(data) && data.id) {
+                        this.onMultiSelectToggle(data.id);
+                        return;
+                    }
                     this.operateVisible = $A.isJson(data) && this.operateItem.id === data.id;
                     this.operateItem = $A.isJson(data) ? data : {};
                     this.operateCopys = []
@@ -3328,6 +3392,11 @@ export default {
 
                     case "forward":
                         this.$refs.forwarder.onSelection()
+                        break;
+
+                    case "multiSelect":
+                        this.multiSelectMode = true;
+                        this.selectedMsgIds = [this.operateItem.id];
                         break;
 
                     case "withdraw":

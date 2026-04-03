@@ -492,6 +492,47 @@ class WebSocketDialogMsg extends AbstractModel
      * @param string $leaveMessage      转发留言
      * @return mixed
      */
+    /**
+     * 收集目标对话
+     * @param array|int $userids    转发给的成员ID
+     * @param array|int $dialogids  转发给的对话ID
+     * @param User $user            当前用户
+     * @return array
+     */
+    private static function collectTargetDialogs($userids, $dialogids, $user)
+    {
+        $dialogs = [];
+        if ($userids) {
+            if (!is_array($userids)) {
+                $userids = [$userids];
+            }
+            foreach ($userids as $userid) {
+                if (!User::whereUserid($userid)->exists()) {
+                    continue;
+                }
+                $dialog = WebSocketDialog::checkUserDialog($user, $userid);
+                if ($dialog) {
+                    $dialogs[$dialog->id] = $dialog;
+                }
+            }
+        }
+        if ($dialogids) {
+            if (!is_array($dialogids)) {
+                $dialogids = [$dialogids];
+            }
+            foreach ($dialogids as $dialogid) {
+                if (isset($dialogs[$dialogid])) {
+                    continue;
+                }
+                $dialog = WebSocketDialog::find($dialogid);
+                if ($dialog) {
+                    $dialogs[$dialog->id] = $dialog;
+                }
+            }
+        }
+        return $dialogs;
+    }
+
     public function forwardMsg($dialogids, $userids, $user, $showSource = 1, $leaveMessage = '')
     {
         return AbstractModel::transaction(function () use ($dialogids, $user, $userids, $showSource, $leaveMessage) {
@@ -513,35 +554,7 @@ class WebSocketDialogMsg extends AbstractModel
                 'leave' => $leaveMessage ? 1 : 0,   // 是否留言（用于判断是否发给AI）
             ];
             $msgs = [];
-            $dialogs = [];
-            if ($userids) {
-                if (!is_array($userids)) {
-                    $userids = [$userids];
-                }
-                foreach ($userids as $userid) {
-                    if (!User::whereUserid($userid)->exists()) {
-                        continue;
-                    }
-                    $dialog = WebSocketDialog::checkUserDialog($user, $userid);
-                    if ($dialog) {
-                        $dialogs[$dialog->id] = $dialog;
-                    }
-                }
-            }
-            if ($dialogids) {
-                if (!is_array($dialogids)) {
-                    $dialogids = [$dialogids];
-                }
-                foreach ($dialogids as $dialogid) {
-                    if (isset($dialogs[$dialogid])) {
-                        continue;
-                    }
-                    $dialog = WebSocketDialog::find($dialogid);
-                    if ($dialog) {
-                        $dialogs[$dialog->id] = $dialog;
-                    }
-                }
-            }
+            $dialogs = self::collectTargetDialogs($userids, $dialogids, $user);
             foreach ($dialogs as $dialog) {
                 $res = self::sendMsg('forward-' . $forwardId, $dialog->id, $this->type, $msgData, $user->userid);
                 if (Base::isSuccess($res)) {
@@ -560,6 +573,81 @@ class WebSocketDialogMsg extends AbstractModel
             }
             return Base::retSuccess('转发成功', [
                 'msgs' => $msgs
+            ]);
+        });
+    }
+
+    /**
+     * 合并转发消息
+     * @param array $msgIds             消息ID数组
+     * @param array|int $dialogids      转发给的对话ID
+     * @param array|int $userids        转发给的成员ID
+     * @param User $user                当前用户
+     * @param int $showSource           是否显示原发送者信息
+     * @param string $leaveMessage      转发留言
+     * @return array
+     */
+    public static function mergeForwardMsg($msgIds, $dialogids, $userids, $user, $showSource = 1, $leaveMessage = '')
+    {
+        return AbstractModel::transaction(function () use ($msgIds, $dialogids, $userids, $user, $showSource, $leaveMessage) {
+            // 查询并验证所有消息
+            $msgs = self::whereIn('id', $msgIds)->orderBy('created_at')->get();
+            if ($msgs->isEmpty()) {
+                throw new ApiException('消息不存在或已被删除');
+            }
+            // 验证所有消息属于同一对话
+            $dialogId = $msgs->first()->dialog_id;
+            if ($msgs->pluck('dialog_id')->unique()->count() > 1) {
+                throw new ApiException('只能合并转发同一对话的消息');
+            }
+            WebSocketDialog::checkDialog($dialogId);
+            // 收集发送者生成标题
+            $senderIds = $msgs->pluck('userid')->unique()->values()->toArray();
+            $senderNames = User::whereIn('userid', array_slice($senderIds, 0, 2))
+                ->pluck('nickname')
+                ->toArray();
+            $title = implode(Doo::translate('和'), $senderNames);
+            if (count($senderIds) > 2) {
+                $title .= Doo::translate('等人');
+            }
+            $title .= Doo::translate('的聊天记录');
+            // 组装消息列表
+            $list = [];
+            foreach ($msgs as $msg) {
+                $list[] = [
+                    'userid' => $msg->userid,
+                    'type' => $msg->type,
+                    'msg' => Base::json2array($msg->getRawOriginal('msg')),
+                    'created_at' => $msg->created_at->toDateTimeString(),
+                ];
+            }
+            // 构建合并转发消息体
+            $msgData = [
+                'title' => $title,
+                'list' => $list,
+                'count' => count($list),
+                'forward_data' => [
+                    'show' => $showSource,
+                    'leave' => $leaveMessage ? 1 : 0,
+                ],
+            ];
+            $dialogs = self::collectTargetDialogs($userids, $dialogids, $user);
+            // 发送到每个目标对话
+            $result = [];
+            foreach ($dialogs as $dialog) {
+                $res = self::sendMsg(null, $dialog->id, 'merge-forward', $msgData, $user->userid);
+                if (Base::isSuccess($res)) {
+                    $result[] = $res['data'];
+                }
+                if ($leaveMessage) {
+                    $res = self::sendMsg(null, $dialog->id, 'text', ['text' => $leaveMessage], $user->userid);
+                    if (Base::isSuccess($res)) {
+                        $result[] = $res['data'];
+                    }
+                }
+            }
+            return Base::retSuccess('转发成功', [
+                'msgs' => $result
             ]);
         });
     }
@@ -694,6 +782,10 @@ class WebSocketDialogMsg extends AbstractModel
 
             case 'template':
                 return self::previewTemplateMsg($data['msg']);
+
+            case 'merge-forward':
+                $action = Doo::translate("聊天记录");
+                return "[{$action}] " . Base::cutStr($data['msg']['title'] ?? '', 50);
 
             case 'preview':
                 return $data['msg']['preview'];
@@ -1261,6 +1353,9 @@ class WebSocketDialogMsg extends AbstractModel
                 $msg['width'] = $imageSize[0];
                 $msg['height'] = $imageSize[1];
             }
+        }
+        if ($type === 'merge-forward') {
+            $mtype = 'merge-forward';
         }
         if ($push_silence === null) {
             $push_silence = !in_array($type, ["text", "file", "record", "meeting"]);

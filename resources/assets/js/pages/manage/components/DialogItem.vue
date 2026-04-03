@@ -40,6 +40,9 @@
             {{source.msg.source === 'api' ? source.msg.notice : $L(source.msg.notice)}}
         </div>
         <template v-else>
+            <div v-if="multiSelectMode && isSelectableMsg" class="dialog-multi-check" @click.stop="onMultiSelectToggle">
+                <Icon :type="isSelected ? 'ios-checkmark-circle' : 'ios-radio-button-off'" :class="{checked: isSelected}"/>
+            </div>
             <div
                 class="dialog-avatar"
                 @pointerdown="handleOperation">
@@ -132,6 +135,14 @@ export default {
             type: Boolean,
             default: false
         },
+        multiSelectMode: {
+            type: Boolean,
+            default: false
+        },
+        selectedMsgIdsSet: {
+            type: Set,
+            default: () => new Set()
+        },
     },
 
     computed: {
@@ -165,12 +176,22 @@ export default {
             return this.simpleView || this.msgId > 0
         },
 
+        isSelected() {
+            return this.multiSelectMode && this.selectedMsgIdsSet.has(this.source.id);
+        },
+
+        isSelectableMsg() {
+            return !['tag', 'top', 'todo', 'notice'].includes(this.source.type);
+        },
+
         classArray() {
             return {
                 'dialog-item': true,
                 'reply-item': this.isReply,
                 'unread-start': this.isUnreadStart,
                 'self': this.isRightMsg,
+                'multi-select-mode': this.multiSelectMode,
+                'multi-selected': this.isSelected,
             }
         },
     },
@@ -260,6 +281,10 @@ export default {
                 data: this.source,
                 element: currentTarget
             })
+        },
+
+        onMultiSelectToggle() {
+            this.dispatch("on-multi-select-toggle", this.source.id)
         },
 
         onViewReply(data) {
