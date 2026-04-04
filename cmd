@@ -502,6 +502,19 @@ DooTask 管理脚本
 EOF
 }
 
+# 检测端口是否被占用
+# 参数1: 端口号, 参数2: 当前端口号（可选，相同则跳过检测）
+check_port() {
+    local port=$1
+    local current_port=$2
+    if [[ "$port" -gt 0 ]] && [[ "$port" != "$current_port" ]]; then
+        if ! docker run --rm -p "${port}:80" --entrypoint true nginx:alpine 2>/dev/null; then
+            error "端口 ${port} 已被占用，请指定其他端口"
+            exit 1
+        fi
+    fi
+}
+
 # 安装函数
 handle_install() {
     check_sudo
@@ -562,7 +575,16 @@ handle_install() {
     done
 
     # 设置端口
+    local old_port=$(env_get APP_PORT)
     [[ "$port" -gt 0 ]] && env_set APP_PORT "$port"
+
+    # 检测端口占用（首次安装或端口变更时）
+    local new_port=$(env_get APP_PORT)
+    if [ -z "$(docker_name nginx)" ] || [[ "$new_port" != "$old_port" ]]; then
+        check_port "$new_port"
+        local ssl_port=$(env_get APP_SSL_PORT)
+        check_port "$ssl_port"
+    fi
 
     # 启动PHP容器
     $COMPOSE up php -d
@@ -764,6 +786,7 @@ case "$1" in
         ;;
     "port")
         shift 1
+        check_port "$1" "$(env_get APP_PORT)"
         env_set APP_PORT "$1"
         $COMPOSE up -d
         success "修改成功"
