@@ -391,6 +391,7 @@ env_set() {
     local val=$2
     local exist=`cat ${WORK_DIR}/.env | grep "^$key="`
     if [ -z "$exist" ]; then
+        echo "" >> $WORK_DIR/.env
         echo "$key=$val" >> $WORK_DIR/.env
     else
         if [[ `uname` == 'Linux' ]]; then
