@@ -502,6 +502,18 @@ DooTask 管理脚本
 EOF
 }
 
+# 检测APP_ID是否与其他实例冲突
+check_instance() {
+    local app_id=$(env_get APP_ID)
+    local container_name="dootask-php-${app_id}"
+    local mount_path=$(docker inspect "$container_name" --format '{{range .Mounts}}{{if eq .Destination "/var/www"}}{{.Source}}{{end}}{{end}}' 2>/dev/null)
+    if [[ -n "$mount_path" ]] && [[ "$mount_path" != "$WORK_DIR" ]]; then
+        error "APP_ID（${app_id}）已被其他实例使用：${mount_path}"
+        error "请先清空 .env 中的 APP_ID 和 APP_IPPR 再重新安装"
+        exit 1
+    fi
+}
+
 # 检测端口是否被占用
 # 参数1: 端口号, 参数2: 当前端口号（可选，相同则跳过检测）
 check_port() {
@@ -518,7 +530,8 @@ check_port() {
 # 安装函数
 handle_install() {
     check_sudo
-    
+    check_instance
+
     local relock=$(arg_get relock)
     local port=$(arg_get port)
 
