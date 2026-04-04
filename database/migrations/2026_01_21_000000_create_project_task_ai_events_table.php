@@ -8,6 +8,9 @@ class CreateProjectTaskAiEventsTable extends Migration
 {
     public function up()
     {
+        if (Schema::hasTable('project_task_ai_events')) {
+            return;
+        }
         Schema::create('project_task_ai_events', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('task_id')->comment('任务ID');

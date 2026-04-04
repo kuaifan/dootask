@@ -13,6 +13,9 @@ class CreateManticoreSyncFailuresTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('manticore_sync_failures')) {
+            return;
+        }
         Schema::create('manticore_sync_failures', function (Blueprint $table) {
             $table->id();
             $table->string('data_type', 20)->comment('数据类型: msg/file/task/project/user');
