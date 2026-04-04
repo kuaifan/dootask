@@ -204,12 +204,6 @@ class AI
         }
 
         $apiKey = Base::val($setting, $modelType . '_key');
-        if ($modelType === 'wenxin') {
-            $wenxinSecret = Base::val($setting, 'wenxin_secret');
-            if ($wenxinSecret) {
-                $apiKey = trim(($apiKey ?: '') . ':' . $wenxinSecret);
-            }
-        }
         if ($modelType === 'ollama' && empty($apiKey)) {
             $apiKey = Base::strRandom(6);
         }
@@ -766,14 +760,6 @@ class AI
                 if ($key === '') {
                     $key = Base::strRandom(6);
                 }
-                $model = trim((string)($setting[$vendor . '_model'] ?? ''));
-                break;
-            case 'wenxin':
-                $secret = trim((string)($setting['wenxin_secret'] ?? ''));
-                if ($key === '' || $secret === '' || $baseUrl === '') {
-                    return null;
-                }
-                $key = $key . ':' . $secret;
                 $model = trim((string)($setting[$vendor . '_model'] ?? ''));
                 break;
             default:

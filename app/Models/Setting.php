@@ -199,7 +199,6 @@ class Setting extends AbstractModel
         $key = trim((string)($setting[$vendor . '_key'] ?? ''));
         return match ($vendor) {
             'ollama' => $key !== '' || !empty($setting['ollama_base_url']),
-            'wenxin' => $key !== '' && !empty($setting['wenxin_secret']),
             default => $key !== '',
         };
     }

@@ -490,10 +490,6 @@ class BotReceiveMsgTask extends AbstractTask
                 if ($dialog->session_id) {
                     $extras['context_key'] = 'session_' . $dialog->session_id;
                 }
-                // 设置文心一言的API密钥
-                if ($type === 'wenxin') {
-                    $extras['api_key'] .= ':' . $setting['wenxin_secret'];
-                }
                 // 群聊清理上下文（群聊不使用上下文）
                 if ($dialog->type === 'group') {
                     $extras['before_clear'] = 1;
