@@ -3237,6 +3237,10 @@ export default {
             switch (type) {
                 // 长按触发提及
                 case "mention":
+                    if (data.userid === -1) {
+                        // AI 助手不支持@提及
+                        break;
+                    }
                     const user = this.cacheUserBasic.find(({userid}) => userid == data.userid);
                     if (user) {
                         this.$refs.input?.addMention({

@@ -2,9 +2,7 @@
     <div class="dialog-view" :class="viewClass" :data-id="msgData.id">
         <!--昵称-->
         <div v-if="dialogType === 'group'" class="dialog-username" @pointerdown="handleOperation($event, 'mention')">
-            <!-- AI 助手只显示名称 -->
-            <span v-if="msgData.userid === -1" class="ai-assistant-name">{{ $L('AI 助手') }}</span>
-            <UserAvatar v-else :userid="msgData.userid" :show-icon="false" :show-name="true" click-open-detail/>
+            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" :click-open-detail="msgData.userid !== -1"/>
         </div>
 
         <div
@@ -20,7 +18,7 @@
                 <div class="reply-desc" v-html="$A.getMsgSimpleDesc(msgData.msg.reply_data, 'image-preview')"></div>
             </div>
             <!--转发-->
-            <div v-if="!hideForward && msgData.forward_id && showForwardData(msgData.msg.forward_data)" class="dialog-reply no-dark-content" @click="openDialog(msgData.msg.forward_data.userid)">
+            <div v-if="!hideForward && msgData.forward_id && showForwardData(msgData.msg.forward_data)" class="dialog-reply no-dark-content" @click="msgData.msg.forward_data.userid !== -1 && openDialog(msgData.msg.forward_data.userid)">
                 <div class="reply-avatar">
                     <UserAvatar :userid="msgData.msg.forward_data.userid" :show-icon="false" :show-name="true"/>
                 </div>

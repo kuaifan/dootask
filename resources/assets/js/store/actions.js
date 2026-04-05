@@ -645,7 +645,7 @@ export default {
         dispatch("dialogMsgRead");
         dispatch("updateMicroAppsStatus");
         //
-        const allIds = Object.values(state.userAvatar).map(({userid}) => userid);
+        const allIds = Object.values(state.userAvatar).map(({userid}) => userid).filter(id => id > 0);
         [...new Set(allIds)].some(userid => dispatch("getUserBasic", {userid}))
     },
 

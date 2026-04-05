@@ -2259,6 +2259,7 @@ export default {
                 this.quoteUpdate ||                         // 修改消息
                 !this.quoteData ||                          // 无引用消息
                 !this.replyMsgAutoMention ||                // 不自动@
+                userData.userid === -1 ||                   // AI 助手
                 this.userId === userData.userid ||          // 自己
                 this.quoteData.userid !== userData.userid   // 不同人
             ) {

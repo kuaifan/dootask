@@ -151,6 +151,11 @@ export default {
             if (!this.$store.state.userId) {
                 return;
             }
+            // AI 助手虚拟用户
+            if (this.userid === -1) {
+                this.setUser({userid: -1, nickname: this.$L('AI 助手'), bot: false, userimg: $A.mainUrl('images/avatar/default_assistant.png'), online: false});
+                return;
+            }
             const tempUser = this.$store.state.cacheUserBasic.find(({userid}) => userid == this.userid);
             if (tempUser) {
                 this.setUser(tempUser);
