@@ -431,6 +431,20 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
          * @param imgClassName
          * @returns {string|*}
          */
+        getMergeForwardTitle(msg) {
+            const names = msg.sender_names || [];
+            if (names.length === 0) {
+                return $A.L('聊天记录');
+            }
+            if (names.length === 1) {
+                return $A.L('(*)的聊天记录', names[0]);
+            }
+            if (msg.sender_total > 2) {
+                return $A.L('(*)和(*)等人的聊天记录', names[0], names[1]);
+            }
+            return $A.L('(*)和(*)的聊天记录', names[0], names[1]);
+        },
+
         getMsgSimpleDesc(data, imgClassName = null) {
             if (!$A.isJson(data)) {
                 return '';
@@ -462,7 +476,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     const notice = data.msg.source === 'api' ? data.msg.notice : $A.L(data.msg.notice);
                     return $A.cutString(notice, 50)
                 case 'merge-forward':
-                    return `[${$A.L('聊天记录')}] ${$A.cutString(data.msg.title || '', 50)}`
+                    return `[${$A.L('聊天记录')}] ${$A.cutString($A.getMergeForwardTitle(data.msg), 50)}`
                 case 'template':
                     return $A.templateMsgSimpleDesc(data.msg)
                 case 'preview':

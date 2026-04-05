@@ -44,7 +44,7 @@
                 <!--投票-->
                 <VoteMsg v-else-if="msgData.type === 'vote'" :msg="msgData.msg" :voteData="voteData" @onVote="onVote($event, msgData)"/>
                 <!--合并转发-->
-                <MergeForwardMsg v-else-if="msgData.type === 'merge-forward'" :msg="msgData.msg"/>
+                <MergeForwardMsg v-else-if="msgData.type === 'merge-forward'" :msg="msgData.msg" @on-view-detail="onMergeForwardDetail"/>
                 <!--模板-->
                 <TemplateMsg v-else-if="msgData.type === 'template'" :msg="msgData.msg" @viewText="viewText"/>
                 <!--等待-->
@@ -590,6 +590,10 @@ export default {
 
         onShowEmojiUser(item) {
             this.$emit("on-show-emoji-user", item)
+        },
+
+        onMergeForwardDetail(msg) {
+            this.$emit("on-merge-forward-detail", {msgId: this.msgData.id, msgData: msg})
         },
 
         sortEmojiUser(useris) {

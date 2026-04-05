@@ -500,7 +500,7 @@ class Setting extends AbstractModel
         }
         $limitTime = Carbon::parse($dialogMsg->created_at)->addMinutes($limitNum);
         if ($limitTime->lt(Carbon::now())) {
-            throw new ApiException('已超过' . Doo::translate(Base::forumMinuteDay($limitNum)) . '，' . $error);
+            throw new ApiException('已超过' . Base::forumMinuteDay($limitNum) . '，' . $error);
         }
     }
 }

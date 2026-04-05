@@ -2334,6 +2334,9 @@ class DialogController extends AbstractController
             }
             WebSocketDialog::checkDialog($msgs->first()->dialog_id);
             foreach ($msgs as $msg) {
+                if (in_array($msg->type, WebSocketDialogMsg::$unforwardableTypes)) {
+                    continue;
+                }
                 $res = $msg->forwardMsg($dialogids, $userids, $user, $show_source, $leave_message);
                 if (Base::isSuccess($res)) {
                     $allMsgs = array_merge($allMsgs, $res['data']['msgs']);
@@ -2356,12 +2359,12 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/merge-forward 合并转发消息
+     * @api {get} api/dialog/msg/mergeforward 合并转发消息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
-     * @apiName msg__merge_forward
+     * @apiName msg__mergeforward
      *
      * @apiParam {Array} msg_ids                消息ID数组（最多100条）
      * @apiParam {Array} dialogids              转发给的对话ID
@@ -2373,7 +2376,7 @@ class DialogController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function msg__merge_forward()
+    public function msg__mergeforward()
     {
         $user = User::auth();
         //
@@ -2394,6 +2397,57 @@ class DialogController extends AbstractController
         }
         //
         return WebSocketDialogMsg::mergeForwardMsg($msg_ids, $dialogids, $userids, $user, $show_source, $leave_message);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/mergedetail 合并转发消息详情
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__mergedetail
+     *
+     * @apiParam {Number} msg_id                合并转发消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__mergedetail()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        if ($msg_id <= 0) {
+            return Base::retError('参数错误');
+        }
+        $dialogMsg = WebSocketDialogMsg::find($msg_id);
+        if (!$dialogMsg || $dialogMsg->type !== 'merge-forward') {
+            return Base::retError('消息不存在或已被删除');
+        }
+        WebSocketDialog::checkDialog($dialogMsg->dialog_id);
+        //
+        $msgData = Base::json2array($dialogMsg->getRawOriginal('msg'));
+        $msgIds = $msgData['msg_ids'] ?? [];
+        if (empty($msgIds)) {
+            return Base::retError('消息不存在或已被删除');
+        }
+        $msgs = WebSocketDialogMsg::withTrashed()
+            ->whereIn('id', $msgIds)
+            ->orderBy('created_at')
+            ->get()
+            ->map(function ($msg) {
+                return [
+                    'id' => $msg->id,
+                    'userid' => $msg->userid,
+                    'type' => $msg->type,
+                    'msg' => $msg->msg,
+                    'created_at' => $msg->created_at->toDateTimeString(),
+                ];
+            });
+        return Base::retSuccess('success', [
+            'msgs' => $msgs,
+        ]);
     }
 
     /**

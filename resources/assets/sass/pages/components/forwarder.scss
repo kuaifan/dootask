@@ -76,6 +76,11 @@
                                 }
 
                             }
+
+                            .reply-item {
+                                border-bottom: 0;
+                                margin-bottom: 0;
+                            }
                         }
                     }
 
@@ -84,7 +89,8 @@
 
                         .ivu-radio-group {
                             display: flex;
-                            gap: 16px;
+                            flex-wrap: wrap;
+                            gap: 4px;
                         }
                     }
 

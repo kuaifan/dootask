@@ -220,6 +220,7 @@
                 @on-emoji="onEmoji"
                 @on-other="onOther"
                 @on-show-emoji-user="onShowEmojiUser"
+                @on-merge-forward-detail="onMergeForwardDetail"
                 @on-multi-select-toggle="onMultiSelectToggle">
                 <template #header v-if="!isChildComponent">
                     <div class="dialog-item head-box">
@@ -233,9 +234,9 @@
         </div>
 
         <!--多选操作栏-->
-        <div v-if="multiSelectMode" class="dialog-multi-select-bar">
+        <div v-if="!isStaticMode && multiSelectMode" class="dialog-multi-select-bar">
             <div class="multi-select-info">
-                <span>{{ $L('已选') }} {{ selectedMsgIds.length }} {{ $L('条') }}</span>
+                <span>{{ $L('已选(*)条', selectedMsgIds.length) }}</span>
                 <span v-if="selectedMsgIds.length >= 100" class="multi-select-max">{{ $L('(最多100条)') }}</span>
             </div>
             <div class="multi-select-actions">
@@ -245,7 +246,7 @@
         </div>
 
         <!--底部输入-->
-        <div v-show="!multiSelectMode" ref="footer" class="dialog-footer" @click="onClickFooter">
+        <div v-if="!isStaticMode" v-show="!multiSelectMode" ref="footer" class="dialog-footer" @click="onClickFooter">
             <!--滚动到底部-->
             <div
                 v-if="scrollTail > 500 || (msgNew > 0 && allMsgs.length > 0)"
@@ -673,6 +674,26 @@
             </div>
         </DrawerOverlay>
 
+        <!--合并转发详情-->
+        <DrawerOverlay
+            v-model="mergeForwardShow"
+            placement="right"
+            class-name="dialog-wrapper-list"
+            :size="500">
+            <template v-if="mergeForwardShow">
+                <div v-if="mergeForwardLoading" style="display:flex;align-items:center;justify-content:center;height:100%">
+                    <Spin size="large"/>
+                </div>
+                <DialogWrapper
+                    v-else
+                    :staticMsgs="mergeForwardMsgs"
+                    isChildComponent
+                    class="inde-list">
+                    <div slot="head" class="drawer-title">{{ mergeForwardTitle }}</div>
+                </DialogWrapper>
+            </template>
+        </DrawerOverlay>
+
         <!-- 群接龙 -->
         <DialogGroupWordChain/>
 
@@ -756,6 +777,11 @@ export default {
         isChildComponent: {
             type: Boolean,
             default: false
+        },
+        // 静态消息列表（传入时跳过 store 和 API 加载，直接渲染）
+        staticMsgs: {
+            type: Array,
+            default: null
         },
         beforeBack: Function
     },
@@ -858,6 +884,11 @@ export default {
             todoViewMid: 0,
             todoViewId: 0,
 
+            mergeForwardShow: false,
+            mergeForwardData: {},
+            mergeForwardMsgs: [],
+            mergeForwardLoading: false,
+
             scrollDisabled: false,
             scrollDirection: null,
             scrollAction: 0,
@@ -891,18 +922,22 @@ export default {
     },
 
     mounted() {
-        emitter.on('websocketMsg', this.onWebsocketMsg);
-        emitter.on('streamMsgData', this.onMsgChange);
-        this.keepInterval = setInterval(this.keepIntoInput, 1000)
-        this.windowTouch && document.addEventListener('selectionchange', this.onSelectionchange);
+        if (!this.isStaticMode) {
+            emitter.on('websocketMsg', this.onWebsocketMsg);
+            emitter.on('streamMsgData', this.onMsgChange);
+            this.keepInterval = setInterval(this.keepIntoInput, 1000)
+            this.windowTouch && document.addEventListener('selectionchange', this.onSelectionchange);
+        }
     },
 
     beforeDestroy() {
-        this.windowTouch && document.removeEventListener('selectionchange', this.onSelectionchange);
-        clearInterval(this.keepInterval);
-        emitter.off('streamMsgData', this.onMsgChange);
-        emitter.off('websocketMsg', this.onWebsocketMsg);
-        this.generateUnreadData(this.dialogId)
+        if (!this.isStaticMode) {
+            this.windowTouch && document.removeEventListener('selectionchange', this.onSelectionchange);
+            clearInterval(this.keepInterval);
+            emitter.off('streamMsgData', this.onMsgChange);
+            emitter.off('websocketMsg', this.onWebsocketMsg);
+            this.generateUnreadData(this.dialogId)
+        }
         //
         if (!this.isChildComponent) {
             this.$store.dispatch('forgetInDialog', {uid: this._uid})
@@ -947,7 +982,16 @@ export default {
 
         ...mapGetters(['isLoad', 'isMessengerPage', 'getDialogQuote']),
 
+        isStaticMode() {
+            return this.staticMsgs !== null
+        },
+
+        mergeForwardTitle() {
+            return $A.getMergeForwardTitle(this.mergeForwardData);
+        },
+
         isReady() {
+            if (this.isStaticMode) return true
             return this.dialogId > 0 && this.dialogData.id > 0
         },
 
@@ -1006,6 +1050,9 @@ export default {
         },
 
         allMsgList() {
+            if (this.isStaticMode) {
+                return this.staticMsgs || []
+            }
             const array = [];
             array.push(...this.dialogMsgList.filter(item => this.msgFilter(item)));
             if (this.msgId > 0) {
@@ -1276,6 +1323,13 @@ export default {
     watch: {
         dialogId: {
             handler(dialog_id, old_id) {
+                if (this.isStaticMode) {
+                    this.allMsgs = (this.staticMsgs || []).map((item, index) => {
+                        if (!item.id) item.id = index + 1
+                        return item
+                    })
+                    return
+                }
                 this.getDialogBase(dialog_id)
                 this.generateUnreadData(old_id)
                 //
@@ -3027,7 +3081,7 @@ export default {
         onForward(forwardData) {
             const isMulti = forwardData.msg_ids && forwardData.msg_ids.length > 0;
             const url = isMulti
-                ? (forwardData.forward_mode === 'merge' ? 'dialog/msg/merge-forward' : 'dialog/msg/forward')
+                ? (forwardData.forward_mode === 'merge' ? 'dialog/msg/mergeforward' : 'dialog/msg/forward')
                 : 'dialog/msg/forward';
             const data = {
                 dialogids: forwardData.dialogids,
@@ -4017,6 +4071,26 @@ export default {
             this.respondShow = true
         },
 
+        onMergeForwardDetail({msgId, msgData}) {
+            if (this.operateVisible) {
+                return
+            }
+            this.mergeForwardData = msgData
+            this.mergeForwardMsgs = []
+            this.mergeForwardLoading = true
+            this.mergeForwardShow = true
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/mergedetail',
+                data: { msg_id: msgId },
+            }).then(({data}) => {
+                this.mergeForwardMsgs = data.msgs || []
+            }).catch(_ => {
+                this.mergeForwardShow = false
+            }).finally(() => {
+                this.mergeForwardLoading = false
+            })
+        },
+
         onOther({event, data}) {
             if (this.operateVisible) {
                 return
@@ -4263,8 +4337,8 @@ export default {
         actionPermission(item, permission) {
             switch (permission) {
                 case 'forward':
-                    if (['word-chain', 'vote', 'template'].includes(item.type)) {
-                        return false    // 投票、接龙、模板消息 不支持转发
+                    if (['tag', 'top', 'todo', 'notice', 'word-chain', 'vote', 'template'].includes(item.type)) {
+                        return false    // 系统消息、投票、接龙、模板消息 不支持转发
                     }
                     break;
 

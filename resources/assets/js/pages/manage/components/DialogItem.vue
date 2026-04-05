@@ -72,7 +72,8 @@
                 @on-error="onError"
                 @on-emoji="onEmoji"
                 @on-other="onOther"
-                @on-show-emoji-user="onShowEmojiUser"/>
+                @on-show-emoji-user="onShowEmojiUser"
+                @on-merge-forward-detail="onMergeForwardDetail"/>
         </template>
     </div>
 </template>
@@ -181,7 +182,7 @@ export default {
         },
 
         isSelectableMsg() {
-            return !['tag', 'top', 'todo', 'notice'].includes(this.source.type);
+            return !['tag', 'top', 'todo', 'notice', 'word-chain', 'vote', 'template'].includes(this.source.type);
         },
 
         classArray() {
@@ -321,6 +322,10 @@ export default {
 
         onShowEmojiUser(data) {
             this.dispatch("on-show-emoji-user", data)
+        },
+
+        onMergeForwardDetail(data) {
+            this.dispatch("on-merge-forward-detail", data)
         },
 
         dispatch(event, ...arg) {

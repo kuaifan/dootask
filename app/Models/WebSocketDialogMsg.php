@@ -533,9 +533,17 @@ class WebSocketDialogMsg extends AbstractModel
         return $dialogs;
     }
 
+    /**
+     * 不支持转发的消息类型
+     */
+    public static $unforwardableTypes = ['tag', 'top', 'todo', 'notice', 'word-chain', 'vote', 'template'];
+
     public function forwardMsg($dialogids, $userids, $user, $showSource = 1, $leaveMessage = '')
     {
         return AbstractModel::transaction(function () use ($dialogids, $user, $userids, $showSource, $leaveMessage) {
+            if (in_array($this->type, self::$unforwardableTypes)) {
+                throw new ApiException('此类型消息不支持转发');
+            }
             $msgData = Base::json2array($this->getRawOriginal('msg'));
             $forwardData = is_array($msgData['forward_data']) ? $msgData['forward_data'] : [];
             $forwardId = $forwardData['id'] ?: $this->id;
@@ -601,31 +609,35 @@ class WebSocketDialogMsg extends AbstractModel
                 throw new ApiException('只能合并转发同一对话的消息');
             }
             WebSocketDialog::checkDialog($dialogId);
-            // 收集发送者生成标题
+            // 过滤不支持转发的消息类型
+            $msgs = $msgs->filter(function ($msg) {
+                return !in_array($msg->type, self::$unforwardableTypes);
+            });
+            if ($msgs->isEmpty()) {
+                throw new ApiException('所选消息均不支持转发');
+            }
+            // 收集发送者信息
             $senderIds = $msgs->pluck('userid')->unique()->values()->toArray();
             $senderNames = User::whereIn('userid', array_slice($senderIds, 0, 2))
                 ->pluck('nickname')
                 ->toArray();
-            $title = implode(Doo::translate('和'), $senderNames);
-            if (count($senderIds) > 2) {
-                $title .= Doo::translate('等人');
-            }
-            $title .= Doo::translate('的聊天记录');
-            // 组装消息列表
-            $list = [];
-            foreach ($msgs as $msg) {
-                $list[] = [
+            // 组装预览列表（前4条，精简字段）
+            $msgIds = $msgs->pluck('id')->toArray();
+            $preview = [];
+            foreach ($msgs->take(4) as $msg) {
+                $preview[] = [
                     'userid' => $msg->userid,
                     'type' => $msg->type,
-                    'msg' => Base::json2array($msg->getRawOriginal('msg')),
-                    'created_at' => $msg->created_at->toDateTimeString(),
+                    'msg' => self::buildPreviewMsg($msg->type, Base::json2array($msg->getRawOriginal('msg'))),
                 ];
             }
             // 构建合并转发消息体
             $msgData = [
-                'title' => $title,
-                'list' => $list,
-                'count' => count($list),
+                'sender_names' => $senderNames,
+                'sender_total' => count($senderIds),
+                'msg_ids' => $msgIds,
+                'preview' => $preview,
+                'count' => count($msgIds),
                 'forward_data' => [
                     'show' => $showSource,
                     'leave' => $leaveMessage ? 1 : 0,
@@ -650,6 +662,26 @@ class WebSocketDialogMsg extends AbstractModel
                 'msgs' => $result
             ]);
         });
+    }
+
+    /**
+     * 构建预览消息（精简字段）
+     * @param string $type
+     * @param array $msg
+     * @return array
+     */
+    private static function buildPreviewMsg($type, $msg)
+    {
+        switch ($type) {
+            case 'text':
+                return ['text' => $msg['text'] ?? ''];
+            case 'file':
+                return ['name' => $msg['name'] ?? '', 'ext' => $msg['ext'] ?? ''];
+            case 'location':
+                return ['title' => $msg['title'] ?? ''];
+            default:
+                return [];
+        }
     }
 
     /**
@@ -784,8 +816,7 @@ class WebSocketDialogMsg extends AbstractModel
                 return self::previewTemplateMsg($data['msg']);
 
             case 'merge-forward':
-                $action = Doo::translate("聊天记录");
-                return "[{$action}] " . Base::cutStr($data['msg']['title'] ?? '', 50);
+                return "[" . Doo::translate("聊天记录") . "]";
 
             case 'preview':
                 return $data['msg']['preview'];

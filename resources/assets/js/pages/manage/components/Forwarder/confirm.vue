@@ -45,7 +45,7 @@
                                     <UserAvatar :userid="item.userid" :show-icon="false" :show-name="true" :size="16"/>
                                     <span class="preview-desc" v-html="$A.getMsgSimpleDesc(item)"></span>
                                 </div>
-                                <div class="merge-preview-count">{{ $L('共') }} {{ msgIds.length }} {{ $L('条消息') }}</div>
+                                <div class="merge-preview-count">{{ $L('共(*)条消息', msgIds.length) }}</div>
                             </div>
                         </template>
                         <template v-else>
@@ -101,7 +101,7 @@
                         <Icon @click="onAinew" class="radio-icon" :type="ainew ? 'ios-checkmark-circle' : 'ios-radio-button-off'"/>
                         <span @click="onAinew" class="radio-label">{{ $L('AI开启新会话') }}</span>
                     </li>
-                    <li v-if="!senderHidden" :class="{selected: !sender}">
+                    <li v-if="!senderHidden && forwardMode !== 'merge'" :class="{selected: !sender}">
                         <Icon @click="onSender" class="radio-icon" :type="sender ? 'ios-radio-button-off' : 'ios-checkmark-circle'"/>
                         <span @click="onSender" class="radio-label">{{ $L('不显示原发送者信息') }}</span>
                     </li>
