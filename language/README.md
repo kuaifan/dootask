@@ -8,6 +8,7 @@
 
    ```dotenv
    OPENAI_API_KEY=你的OpenAI密钥
+   OPENAI_BASE_URL=可选的自定义API地址
    OPENAI_PROXY_URL=可选的代理地址
    ```
 

@@ -75,6 +75,7 @@ if ($openAiKey === '') {
     exit(1);
 }
 $openAiProxy = trim(language_env_value('OPENAI_PROXY_URL', $languageEnv) ?? '');
+$openAiBaseUrl = trim(language_env_value('OPENAI_BASE_URL', $languageEnv) ?? '');
 
 // 读取所有要翻译的内容
 $originals = [];
@@ -170,6 +171,9 @@ if (count($needs) > 0) {
         // 开始翻译
         print_r("正在翻译：" . (count($keys) + $done) . "/" . count($needs) . "...\n");
         $openAi = new OpenAi($openAiKey);
+        if ($openAiBaseUrl !== '') {
+            $openAi->setBaseURL(rtrim(preg_replace('#/v\d+/?$#', '', $openAiBaseUrl), '/'));
+        }
         if ($openAiProxy !== '') {
             $openAi->setProxy($openAiProxy);
         }

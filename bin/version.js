@@ -229,7 +229,7 @@ async function enhanceWithAI(version, changelogSection) {
         return changelogSection;
     }
     const proxyUrl = (process.env.OPENAI_PROXY_URL || "").trim();
-    const explicitApiUrl = process.env.CHANGELOG_AI_URL || process.env.OPENAI_API_URL;
+    const explicitApiUrl = process.env.CHANGELOG_AI_URL || process.env.OPENAI_API_URL || process.env.OPENAI_BASE_URL;
     const apiUrl = resolveApiEndpoint(explicitApiUrl);
     const dispatcher = createProxyDispatcher(proxyUrl);
     const model = process.env.CHANGELOG_AI_MODEL || process.env.OPENAI_API_MODEL || "gpt-4o-mini";
