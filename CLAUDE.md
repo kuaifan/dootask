@@ -36,6 +36,11 @@ Laravel 8 (LaravelS/Swoole) + Vue 2 (Vite) + Electron。开源任务/项目管�
 - API 调用使用 `store.dispatch("call", params)`，不要在组件中直接 axios/fetch
 - `$A.modalXXX`、`$A.messageXXX`、`$A.noticeXXX` 内部自动处理 `$L` 翻译，调用方不要额外包 `$L`。仅当传入 `language: false` 时由调用方自行处理翻译
 
+### 国际化
+
+- 新增用户可见文本须追加原文（简体中文）到：前端 `language/original-web.txt`，后端 `language/original-api.txt`（去重）
+- 前端翻译用 `$L("文本")`，动态值用 `(*)` 占位：`$L('共(*)条', n)`——禁止拼接翻译
+
 ## 交互规范
 
 - **提问时附带建议**：当需要向用户提问或请求澄清时，应同时提供具体的建议选项或推荐方案，帮助用户快速决策，而非仅抛出开放式问题
