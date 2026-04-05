@@ -12,7 +12,7 @@ const utils = require('./lib/utils');
 const config = require('../package.json')
 const env = require('dotenv').config({ path: './.env' })
 const argv = process.argv;
-const {BUILD_FRONTEND, APPLEID, APPLEIDPASS, GITHUB_TOKEN, GITHUB_REPOSITORY, PUBLISH_KEY} = process.env;
+const {BUILD_FRONTEND, APPLEID, APPLEIDPASS, GITHUB_TOKEN, GITHUB_REPOSITORY, UPLOAD_TOKEN, UPLOAD_URL} = process.env;
 
 const electronDir = path.resolve(__dirname, "public");
 const nativeCachePath = path.resolve(__dirname, ".native");
@@ -350,192 +350,166 @@ function axiosAutoTry(data) {
 }
 
 /**
- * 上传app应用
- * @param url
+ * 官网发布器
  */
-function androidUpload(url) {
-    if (!PUBLISH_KEY) {
-        console.error("缺少 PUBLISH_KEY 环境变量");
-        process.exit()
+class WebsitePublisher {
+    constructor({baseUrl, token, version}) {
+        this.baseUrl = baseUrl
+        this.token = token
+        this.version = version
     }
-    const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
-    if (!fs.existsSync(releaseDir)) {
-        console.error("发布文件未找到");
-        process.exit()
-    }
-    fs.readdir(releaseDir, async (err, files) => {
-        if (err) {
-            console.warn(err)
-        } else {
-            const uploadOras = {}
-            for (const filename of files) {
-                const localFile = path.join(releaseDir, filename)
-                if (/\.apk$/.test(filename) && fs.existsSync(localFile)) {
-                    const fileStat = fs.statSync(localFile)
-                    if (fileStat.isFile()) {
-                        uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
-                        const formData = new FormData()
-                        formData.append("file", fs.createReadStream(localFile));
-                        formData.append("action", "draft");
-                        await axiosAutoTry({
-                            axios: {
-                                method: 'post',
-                                url: url,
-                                data: formData,
-                                headers: {
-                                    'Publish-Version': config.version,
-                                    'Publish-Key': PUBLISH_KEY,
-                                    'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
-                                },
-                                onUploadProgress: progress => {
-                                    const complete = Math.min(99, Math.round(progress.loaded / progress.total * 100 | 0)) + '%'
-                                    uploadOras[filename].text = `Upload [${complete}] ${filename}`
-                                },
-                            },
-                            onRetry: _ => {
-                                uploadOras[filename].warn(`Upload [retry] ${filename}`)
-                                uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
-                            },
-                            retryNumber: 3
-                        }).then(({status, data}) => {
-                            if (status !== 200) {
-                                uploadOras[filename].fail(`Upload [fail:${status}] ${filename}`)
-                                return
-                            }
-                            if (!utils.isJson(data)) {
-                                uploadOras[filename].fail(`Upload [fail:not json] ${filename}`)
-                                return
-                            }
-                            if (data.ret !== 1) {
-                                uploadOras[filename].fail(`Upload [fail:ret ${data.ret}] ${filename}`)
-                                return
-                            }
-                            uploadOras[filename].succeed(`Upload [100%] ${filename}`)
-                        }).catch(_ => {
-                            uploadOras[filename].fail(`Upload [fail] ${filename}`)
-                        })
-                    }
-                }
+
+    /**
+     * 上传单个文件
+     * @param localFile 本地文件路径
+     * @param options { platform, arch } 可选，有则为安装包
+     */
+    async uploadPackage(localFile, options = {}) {
+        const filename = path.basename(localFile)
+        let spinner = ora(`Upload [0%] ${filename}`).start()
+        const formData = new FormData()
+        formData.append("file", fs.createReadStream(localFile))
+        formData.append("version", this.version)
+        if (options.platform) {
+            formData.append("platform", options.platform)
+            if (options.arch) {
+                formData.append("arch", options.arch)
             }
         }
-    });
+        await axiosAutoTry({
+            axios: {
+                method: 'post',
+                url: `${this.baseUrl}/api/upload/package`,
+                data: formData,
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
+                },
+                onUploadProgress: progress => {
+                    const complete = Math.min(99, Math.round(progress.loaded / progress.total * 100 | 0)) + '%'
+                    spinner.text = `Upload [${complete}] ${filename}`
+                },
+            },
+            onRetry: _ => {
+                spinner.warn(`Upload [retry] ${filename}`)
+                spinner = ora(`Upload [0%] ${filename}`).start()
+            },
+            retryNumber: 3
+        }).then(({status, data}) => {
+            if (status !== 200) {
+                spinner.fail(`Upload [fail:${status}] ${filename}`)
+                return
+            }
+            if (!utils.isJson(data)) {
+                spinner.fail(`Upload [fail:not json] ${filename}`)
+                return
+            }
+            if (!data.success) {
+                spinner.fail(`Upload [fail] ${filename}: ${data.message || JSON.stringify(data)}`)
+                return
+            }
+            spinner.succeed(`Upload [100%] ${filename}`)
+        }).catch(_ => {
+            spinner.fail(`Upload [fail] ${filename}`)
+        })
+    }
+
+    /**
+     * 上传 changelog
+     */
+    async uploadChangelog(content) {
+        const spinner = ora('Uploading changelog...').start()
+        await axiosAutoTry({
+            axios: {
+                method: 'post',
+                url: `${this.baseUrl}/api/upload/changelog`,
+                data: { content },
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            retryNumber: 3
+        }).then(({status, data}) => {
+            if (status !== 200 || !data.success) {
+                spinner.fail('Changelog upload failed')
+                return
+            }
+            spinner.succeed('Changelog uploaded')
+        }).catch(_ => {
+            spinner.fail('Changelog upload failed')
+        })
+    }
+
+    /**
+     * 通知发布完成
+     */
+    async release() {
+        const spinner = ora('Publishing release...').start()
+        await axiosAutoTry({
+            axios: {
+                method: 'post',
+                url: `${this.baseUrl}/api/upload/release`,
+                data: { version: this.version },
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            retryNumber: 3
+        }).then(({status, data}) => {
+            if (status !== 200 || !data.success) {
+                spinner.fail(`Release failed: ${data?.message || status}`)
+                return
+            }
+            spinner.succeed('Release published')
+        }).catch(_ => {
+            spinner.fail('Release failed')
+        })
+    }
 }
 
+// 安装包扩展名
+const INSTALLER_EXTS = ['.dmg', '.exe', '.msi', '.appimage', '.deb', '.rpm', '.apk']
+
 /**
- * 通知发布完成
- * @param url
+ * 创建 WebsitePublisher 实例（如果环境变量齐全）
  */
-async function published(url) {
-    if (!PUBLISH_KEY) {
-        console.error("缺少 PUBLISH_KEY 环境变量");
-        process.exit()
+function createPublisher() {
+    if (!UPLOAD_TOKEN || !UPLOAD_URL) {
+        return null
     }
-    const spinner = ora('完成发布...').start();
-    const formData = new FormData()
-    formData.append("action", "release");
-    await axiosAutoTry({
-        axios: {
-            method: 'post',
-            url: url,
-            data: formData,
-            headers: {
-                'Publish-Version': config.version,
-                'Publish-Key': PUBLISH_KEY,
-            },
-        },
-        retryNumber: 3
-    }).then(({status, data}) => {
-        if (status !== 200) {
-            spinner.fail('发布失败, status: ' + status)
-            return
-        }
-        if (!utils.isJson(data)) {
-            spinner.fail('发布失败, not json')
-            return
-        }
-        if (data.ret !== 1) {
-            spinner.fail(`发布失败, ${JSON.stringify(data)}`)
-            return
-        }
-        spinner.succeed('发布完成')
-    }).catch(_ => {
-        spinner.fail('发布失败')
+    return new WebsitePublisher({
+        baseUrl: UPLOAD_URL.replace(/\/+$/, ''),
+        token: UPLOAD_TOKEN,
+        version: config.version
     })
 }
 
 /**
- * 通用发布
- * @param url
- * @param key
- * @param version
- * @param output
+ * 从文件名判断是否为安装包
  */
-function genericPublish({url, key, version, output}) {
-    if (!/https?:\/\//i.test(url)) {
-        console.warn("发布地址无效: " + url)
-        return
-    }
-    const filePath = path.resolve(__dirname, output)
-    if (!fs.existsSync(filePath)) {
-        console.warn("发布文件未找到: " + filePath)
-        return
-    }
-    fs.readdir(filePath, async (err, files) => {
-        if (err) {
-            console.warn(err)
-        } else {
-            const uploadOras = {}
-            for (const filename of files) {
-                const localFile = path.join(filePath, filename)
-                if (fs.existsSync(localFile)) {
-                    const fileStat = fs.statSync(localFile)
-                    if (fileStat.isFile()) {
-                        uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
-                        const formData = new FormData()
-                        formData.append("file", fs.createReadStream(localFile));
-                        formData.append("action", "draft");
-                        await axiosAutoTry({
-                            axios: {
-                                method: 'post',
-                                url: url,
-                                data: formData,
-                                headers: {
-                                    'Publish-Version': version,
-                                    'Publish-Key': key,
-                                    'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
-                                },
-                                onUploadProgress: progress => {
-                                    const complete = Math.min(99, Math.round(progress.loaded / progress.total * 100 | 0)) + '%'
-                                    uploadOras[filename].text = `Upload [${complete}] ${filename}`
-                                },
-                            },
-                            onRetry: _ => {
-                                uploadOras[filename].warn(`Upload [retry] ${filename}`)
-                                uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
-                            },
-                            retryNumber: 3
-                        }).then(({status, data}) => {
-                            if (status !== 200) {
-                                uploadOras[filename].fail(`Upload [fail:${status}] ${filename}`)
-                                return
-                            }
-                            if (!utils.isJson(data)) {
-                                uploadOras[filename].fail(`Upload [fail:not json] ${filename}`)
-                                return
-                            }
-                            if (data.ret !== 1) {
-                                uploadOras[filename].fail(`Upload [fail:ret ${data.ret}] ${filename}`)
-                                return
-                            }
-                            uploadOras[filename].succeed(`Upload [100%] ${filename}`)
-                        }).catch(_ => {
-                            uploadOras[filename].fail(`Upload [fail] ${filename}`)
-                        })
-                    }
-                }
-            }
-        }
-    });
+function isInstaller(filename) {
+    return INSTALLER_EXTS.some(ext => filename.toLowerCase().endsWith(ext))
+}
+
+/**
+ * 从文件名提取 arch
+ */
+function parseArchFromFilename(filename) {
+    if (/-arm64[.-]/i.test(filename)) return 'arm64'
+    if (/-x64[.-]/i.test(filename)) return 'x64'
+    return null
+}
+
+/**
+ * 将构建平台名映射为 API platform
+ */
+function mapPlatform(buildPlatform) {
+    if (buildPlatform.includes('mac')) return 'mac'
+    if (buildPlatform.includes('win')) return 'win'
+    if (buildPlatform.includes('linux')) return 'linux'
+    return null
 }
 
 /**
@@ -703,13 +677,27 @@ async function startBuild(data) {
     appConfig.build.directories.output = `${output}-generic`;
     fs.writeFileSync(packageFile, JSON.stringify(appConfig, null, 4), 'utf8');
     child_process.execSync(`npm run ${platform}`, {stdio: "inherit", cwd: "electron"});
-    if (publish === true && PUBLISH_KEY) {
-        genericPublish({
-            url: appConfig.build.publish.url,
-            key: PUBLISH_KEY,
-            version: config.version,
-            output: appConfig.build.directories.output
-        })
+    if (publish === true) {
+        const publisher = createPublisher()
+        if (publisher) {
+            const outputDir = path.resolve(__dirname, appConfig.build.directories.output)
+            if (fs.existsSync(outputDir)) {
+                const apiPlatform = mapPlatform(platform)
+                const files = fs.readdirSync(outputDir)
+                for (const filename of files) {
+                    const localFile = path.join(outputDir, filename)
+                    const fileStat = fs.statSync(localFile)
+                    if (!fileStat.isFile()) continue
+
+                    if (isInstaller(filename) && apiPlatform) {
+                        const arch = parseArchFromFilename(filename)
+                        await publisher.uploadPackage(localFile, { platform: apiPlatform, arch })
+                    } else {
+                        await publisher.uploadPackage(localFile)
+                    }
+                }
+            }
+        }
     }
     // package.json Recovery
     recoveryPackage(true)
@@ -746,18 +734,56 @@ if (["dev"].includes(argv[2])) {
     })
 } else if (["android-upload"].includes(argv[2])) {
     // 上传安卓文件（GitHub Actions）
-    config.app.forEach(({publish}) => {
-        if (publish.provider === 'generic') {
-            androidUpload(publish.url)
+    (async () => {
+        const publisher = createPublisher()
+        if (publisher) {
+            const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
+            if (fs.existsSync(releaseDir)) {
+                const files = fs.readdirSync(releaseDir)
+                for (const filename of files) {
+                    const localFile = path.join(releaseDir, filename)
+                    if (/\.apk$/.test(filename) && fs.existsSync(localFile) && fs.statSync(localFile).isFile()) {
+                        await publisher.uploadPackage(localFile, { platform: 'android' })
+                    }
+                }
+            } else {
+                console.error("发布文件未找到")
+                process.exit(1)
+            }
+        } else {
+            console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
+            process.exit(1)
         }
-    })
-} else if (["published"].includes(argv[2])) {
-    // 发布完成（GitHub Actions）
-    config.app.forEach(async ({publish}) => {
-        if (publish.provider === 'generic') {
-            await published(publish.url)
+    })()
+} else if (["release"].includes(argv[2])) {
+    // 通知官网发布完成（GitHub Actions）
+    (async () => {
+        const publisher = createPublisher()
+        if (publisher) {
+            await publisher.release()
+        } else {
+            console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
+            process.exit(1)
         }
-    })
+    })()
+} else if (["upload-changelog"].includes(argv[2])) {
+    // 上传 changelog（GitHub Actions）
+    (async () => {
+        const publisher = createPublisher()
+        if (publisher) {
+            const changelogPath = path.resolve(__dirname, "../CHANGELOG.md")
+            if (fs.existsSync(changelogPath)) {
+                const content = fs.readFileSync(changelogPath, 'utf8')
+                await publisher.uploadChangelog(content)
+            } else {
+                console.error("CHANGELOG.md 未找到")
+                process.exit(1)
+            }
+        } else {
+            console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
+            process.exit(1)
+        }
+    })()
 } else if (["all", "win", "mac"].includes(argv[2])) {
     // 自动编译（GitHub Actions）
     platforms.filter(p => {
@@ -907,8 +933,8 @@ if (["dev"].includes(argv[2])) {
 
             // 发布判断环境变量
             if (answers.publish) {
-                if (!PUBLISH_KEY && (!GITHUB_TOKEN || !utils.strExists(GITHUB_REPOSITORY, "/"))) {
-                    console.error("发布需要 PUBLISH_KEY 或 GitHub Token 和 Repository, 请检查环境变量!");
+                if (!(UPLOAD_TOKEN && UPLOAD_URL) && !(GITHUB_TOKEN && utils.strExists(GITHUB_REPOSITORY, "/"))) {
+                    console.error("发布需要 UPLOAD_TOKEN + UPLOAD_URL 或 GITHUB_TOKEN + GITHUB_REPOSITORY, 请检查环境变量!");
                     process.exit()
                 }
             }

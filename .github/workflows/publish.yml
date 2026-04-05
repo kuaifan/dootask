@@ -52,53 +52,18 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // 获取最新的 tag
-            const { data: tags } = await github.rest.repos.listTags({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              per_page: 1
-            });
+            const fs = require('fs');
+            const version = '${{ needs.check-version.outputs.version }}';
 
-            // 获取提交日志
+            // 从 CHANGELOG.md 提取当前版本段落
             let changelog = '';
-            if (tags.length > 0) {
-              const { data: commits } = await github.rest.repos.compareCommits({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                base: tags[0].name,
-                head: 'HEAD'
-              });
-
-              // 按类型分组提交
-              const groups = {
-                'feat:': { title: '## Features', commits: new Set() },
-                'fix:': { title: '## Bug Fixes', commits: new Set() },
-                'perf:': { title: '## Performance Improvements', commits: new Set() }
-              };
-
-              // 分类收集提交，使用 Set 去重
-              commits.commits.forEach(commit => {
-                const message = commit.commit.message.split('\n')[0].trim();
-                for (const [prefix, group] of Object.entries(groups)) {
-                  if (message.startsWith(prefix)) {
-                    // 移除前缀后添加到对应分组
-                    const cleanMessage = message.slice(prefix.length).trim();
-                    group.commits.add(cleanMessage);  // 使用 Set.add 自动去重
-                    break;
-                  }
-                }
-              });
-
-              // 生成更新日志
-              const sections = [];
-              for (const group of Object.values(groups)) {
-                if (group.commits.size > 0) {
-                  sections.push(`${group.title}\n\n${Array.from(group.commits).map(msg => `- ${msg}`).join('\n')}`);
-                }
-              }
-
-              if (sections.length > 0) {
-                changelog = '# Changelog\n\n' + sections.join('\n\n');
+            const changelogPath = 'CHANGELOG.md';
+            if (fs.existsSync(changelogPath)) {
+              const content = fs.readFileSync(changelogPath, 'utf-8');
+              const regex = new RegExp(`## \\[${version.replace(/\./g, '\\.')}\\][\\s\\S]*?(?=\\n## \\[|$)`);
+              const match = content.match(regex);
+              if (match) {
+                changelog = match[0].trim();
               }
             }
 
@@ -106,8 +71,8 @@ jobs:
             const { data } = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: `v${{ needs.check-version.outputs.version }}`,
-              name: `${{ needs.check-version.outputs.version }}`,
+              tag_name: `v${version}`,
+              name: version,
               body: changelog || 'No significant changes in this release.',
               draft: true,
               prerelease: false
@@ -215,7 +180,8 @@ jobs:
       - name: (Android) Upload File
         if: matrix.build_type == 'android'
         env:
-          PUBLISH_KEY: ${{ secrets.PUBLISH_KEY }}
+          UPLOAD_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
+          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
         run: |
           node ./electron/build.js android-upload
 
@@ -253,7 +219,8 @@ jobs:
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          PUBLISH_KEY: ${{ secrets.PUBLISH_KEY }}
+          UPLOAD_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
+          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
@@ -263,7 +230,8 @@ jobs:
       - name: (Windows) Build Client
         if: matrix.build_type == 'windows'
         env:
-          PUBLISH_KEY: ${{ secrets.PUBLISH_KEY }}
+          UPLOAD_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
+          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         shell: bash
@@ -294,11 +262,13 @@ jobs:
               prerelease: false
             })
 
-      - name: Publish Official
+      - name: Upload Changelog & Publish to Website
         env:
-          PUBLISH_KEY: ${{ secrets.PUBLISH_KEY }}
+          UPLOAD_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
+          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
         run: |
           pushd electron || exit
           npm install
           popd || exit
-          node ./electron/build.js published
+          node ./electron/build.js upload-changelog
+          node ./electron/build.js release

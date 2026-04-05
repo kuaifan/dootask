@@ -90,7 +90,7 @@
             ],
             "publish": {
                 "provider": "generic",
-                "url": "https://www.dootask.com/desktop/publish"
+                "url": "https://www.dootask.com/api/download/update"
             }
         }
     ]
