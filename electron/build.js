@@ -376,7 +376,7 @@ class WebsitePublisher {
             }
         }
         formData.append("file", fs.createReadStream(localFile))
-        await axiosAutoTry({
+        const {status, data} = await axiosAutoTry({
             axios: {
                 method: 'post',
                 url: `${this.baseUrl}/api/upload/package`,
@@ -396,23 +396,13 @@ class WebsitePublisher {
                 spinner = ora(`Upload [0%] ${filename}`).start()
             },
             retryNumber: 3
-        }).then(({status, data}) => {
-            if (status !== 200) {
-                spinner.fail(`Upload [fail:${status}] ${filename}`)
-                return
-            }
-            if (!utils.isJson(data)) {
-                spinner.fail(`Upload [fail:not json] ${filename}`)
-                return
-            }
-            if (!data.success) {
-                spinner.fail(`Upload [fail] ${filename}: ${data.message || JSON.stringify(data)}`)
-                return
-            }
-            spinner.succeed(`Upload [100%] ${filename}`)
-        }).catch(err => {
-            spinner.fail(`Upload [fail] ${filename}: ${err.code || err.message || err}`)
         })
+        if (status !== 200 || !utils.isJson(data) || !data.success) {
+            const reason = data?.message || `status ${status}`
+            spinner.fail(`Upload [fail] ${filename}: ${reason}`)
+            throw new Error(`Upload failed: ${filename}: ${reason}`)
+        }
+        spinner.succeed(`Upload [100%] ${filename}`)
     }
 
     /**
@@ -420,7 +410,7 @@ class WebsitePublisher {
      */
     async uploadChangelog(content) {
         const spinner = ora('Uploading changelog...').start()
-        await axiosAutoTry({
+        const {status, data} = await axiosAutoTry({
             axios: {
                 method: 'post',
                 url: `${this.baseUrl}/api/upload/changelog`,
@@ -431,15 +421,12 @@ class WebsitePublisher {
                 },
             },
             retryNumber: 3
-        }).then(({status, data}) => {
-            if (status !== 200 || !data.success) {
-                spinner.fail('Changelog upload failed')
-                return
-            }
-            spinner.succeed('Changelog uploaded')
-        }).catch(err => {
-            spinner.fail(`Changelog upload failed: ${err.code || err.message || err}`)
         })
+        if (status !== 200 || !data.success) {
+            spinner.fail('Changelog upload failed')
+            throw new Error('Changelog upload failed')
+        }
+        spinner.succeed('Changelog uploaded')
     }
 
     /**
@@ -447,7 +434,7 @@ class WebsitePublisher {
      */
     async release() {
         const spinner = ora('Publishing release...').start()
-        await axiosAutoTry({
+        const {status, data} = await axiosAutoTry({
             axios: {
                 method: 'post',
                 url: `${this.baseUrl}/api/upload/release`,
@@ -458,15 +445,12 @@ class WebsitePublisher {
                 },
             },
             retryNumber: 3
-        }).then(({status, data}) => {
-            if (status !== 200 || !data.success) {
-                spinner.fail(`Release failed: ${data?.message || status}`)
-                return
-            }
-            spinner.succeed('Release published')
-        }).catch(err => {
-            spinner.fail(`Release failed: ${err.code || err.message || err}`)
         })
+        if (status !== 200 || !data.success) {
+            spinner.fail(`Release failed: ${data?.message || status}`)
+            throw new Error(`Release failed: ${data?.message || status}`)
+        }
+        spinner.succeed('Release published')
     }
 }
 
@@ -737,54 +721,58 @@ if (["dev"].includes(argv[2])) {
     // 上传安卓文件（GitHub Actions）
     (async () => {
         const publisher = createPublisher()
-        if (publisher) {
-            const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
-            if (fs.existsSync(releaseDir)) {
-                const files = fs.readdirSync(releaseDir)
-                for (const filename of files) {
-                    const localFile = path.join(releaseDir, filename)
-                    if (/\.apk$/.test(filename) && fs.existsSync(localFile) && fs.statSync(localFile).isFile()) {
-                        await publisher.uploadPackage(localFile, { platform: 'android' })
-                    }
-                }
-            } else {
-                console.error("发布文件未找到")
-                process.exit(1)
-            }
-        } else {
+        if (!publisher) {
             console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
             process.exit(1)
         }
-    })()
+        const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
+        if (!fs.existsSync(releaseDir)) {
+            console.error("发布文件未找到")
+            process.exit(1)
+        }
+        const files = fs.readdirSync(releaseDir)
+        for (const filename of files) {
+            const localFile = path.join(releaseDir, filename)
+            if (/\.apk$/.test(filename) && fs.existsSync(localFile) && fs.statSync(localFile).isFile()) {
+                await publisher.uploadPackage(localFile, { platform: 'android' })
+            }
+        }
+    })().catch(err => {
+        console.error(err.message || err)
+        process.exit(1)
+    })
 } else if (["release"].includes(argv[2])) {
     // 通知官网发布完成（GitHub Actions）
     (async () => {
         const publisher = createPublisher()
-        if (publisher) {
-            await publisher.release()
-        } else {
+        if (!publisher) {
             console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
             process.exit(1)
         }
-    })()
+        await publisher.release()
+    })().catch(err => {
+        console.error(err.message || err)
+        process.exit(1)
+    })
 } else if (["upload-changelog"].includes(argv[2])) {
     // 上传 changelog（GitHub Actions）
     (async () => {
         const publisher = createPublisher()
-        if (publisher) {
-            const changelogPath = path.resolve(__dirname, "../CHANGELOG.md")
-            if (fs.existsSync(changelogPath)) {
-                const content = fs.readFileSync(changelogPath, 'utf8')
-                await publisher.uploadChangelog(content)
-            } else {
-                console.error("CHANGELOG.md 未找到")
-                process.exit(1)
-            }
-        } else {
+        if (!publisher) {
             console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
             process.exit(1)
         }
-    })()
+        const changelogPath = path.resolve(__dirname, "../CHANGELOG.md")
+        if (!fs.existsSync(changelogPath)) {
+            console.error("CHANGELOG.md 未找到")
+            process.exit(1)
+        }
+        const content = fs.readFileSync(changelogPath, 'utf8')
+        await publisher.uploadChangelog(content)
+    })().catch(err => {
+        console.error(err.message || err)
+        process.exit(1)
+    })
 } else if (["all", "win", "mac"].includes(argv[2])) {
     // 自动编译（GitHub Actions）
     platforms.filter(p => {
