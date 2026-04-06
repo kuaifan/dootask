@@ -368,7 +368,6 @@ class WebsitePublisher {
         const filename = path.basename(localFile)
         let spinner = ora(`Upload [0%] ${filename}`).start()
         const formData = new FormData()
-        formData.append("file", fs.createReadStream(localFile))
         formData.append("version", this.version)
         if (options.platform) {
             formData.append("platform", options.platform)
@@ -376,6 +375,7 @@ class WebsitePublisher {
                 formData.append("arch", options.arch)
             }
         }
+        formData.append("file", fs.createReadStream(localFile))
         await axiosAutoTry({
             axios: {
                 method: 'post',
