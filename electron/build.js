@@ -320,7 +320,7 @@ function axiosAutoTry(data) {
             if (typeof data.retryNumber == 'number' && data.retryNumber > 0) {
                 data.retryNumber--;
                 if (typeof data.onRetry === "function") {
-                    data.onRetry()
+                    data.onRetry(error)
                 }
                 if (error.code == 'ECONNABORTED' || error.code == 'ECONNRESET') {
                     // 中止，超时
@@ -390,8 +390,9 @@ class WebsitePublisher {
                     spinner.text = `Upload [${complete}] ${filename}`
                 },
             },
-            onRetry: _ => {
-                spinner.warn(`Upload [retry] ${filename}`)
+            onRetry: (err) => {
+                const reason = err?.response?.status || err?.code || err?.message || ''
+                spinner.warn(`Upload [retry] ${filename}${reason ? ': ' + reason : ''}`)
                 spinner = ora(`Upload [0%] ${filename}`).start()
             },
             retryNumber: 3
@@ -409,8 +410,8 @@ class WebsitePublisher {
                 return
             }
             spinner.succeed(`Upload [100%] ${filename}`)
-        }).catch(_ => {
-            spinner.fail(`Upload [fail] ${filename}`)
+        }).catch(err => {
+            spinner.fail(`Upload [fail] ${filename}: ${err.code || err.message || err}`)
         })
     }
 
@@ -436,8 +437,8 @@ class WebsitePublisher {
                 return
             }
             spinner.succeed('Changelog uploaded')
-        }).catch(_ => {
-            spinner.fail('Changelog upload failed')
+        }).catch(err => {
+            spinner.fail(`Changelog upload failed: ${err.code || err.message || err}`)
         })
     }
 
@@ -463,8 +464,8 @@ class WebsitePublisher {
                 return
             }
             spinner.succeed('Release published')
-        }).catch(_ => {
-            spinner.fail('Release failed')
+        }).catch(err => {
+            spinner.fail(`Release failed: ${err.code || err.message || err}`)
         })
     }
 }
