@@ -4,6 +4,7 @@ namespace App\Ldap;
 
 use App\Models\User;
 use App\Module\Base;
+use App\Services\RequestContext;
 use LdapRecord\Configuration\ConfigurationException;
 use LdapRecord\Container;
 use LdapRecord\LdapRecordException;
@@ -11,7 +12,6 @@ use LdapRecord\Models\Model;
 
 class LdapUser extends Model
 {
-    protected static $init = null;
     /**
      * The object classes of the LDAP model.
      *
@@ -22,8 +22,9 @@ class LdapUser extends Model
         'organizationalPerson',
         'person',
         'top',
-        'posixAccount',
     ];
+
+    private static $emailAttrs = ['mail', 'cn', 'uid', 'userPrincipalName'];
 
     /**
      * @return mixed|null
@@ -69,18 +70,28 @@ class LdapUser extends Model
     }
 
     /**
+     * 获取登录属性名
+     * @return string
+     */
+    public static function getLoginAttr(): string
+    {
+        $attr = Base::settingFind('thirdAccessSetting', 'ldap_login_attr');
+        return in_array($attr, ['cn', 'uid', 'mail', 'sAMAccountName']) ? $attr : 'cn';
+    }
+
+    /**
      * 初始化配置
      * @return bool
      */
     public static function initConfig()
     {
-        if (is_bool(self::$init)) {
-            return self::$init;
+        if (RequestContext::has('ldap_init')) {
+            return RequestContext::get('ldap_init');
         }
         //
         $setting = Base::setting('thirdAccessSetting');
         if ($setting['ldap_open'] !== 'open') {
-            return self::$init = false;
+            return RequestContext::save('ldap_init', false);
         }
         //
         $connection = Container::getDefaultConnection();
@@ -92,15 +103,15 @@ class LdapUser extends Model
                 "username" => $setting['ldap_user_dn'],
                 "password" => $setting['ldap_password'],
             ]);
-            return self::$init = true;
+            return RequestContext::save('ldap_init', true);
         } catch (ConfigurationException $e) {
             info($e->getMessage());
-            return self::$init = false;
+            return RequestContext::save('ldap_init', false);
         }
     }
 
     /**
-     * 获取
+     * 通过管理员绑定搜索用户，然后用用户 DN 做 Bind 认证
      * @param $username
      * @param $password
      * @return Model|null
@@ -111,14 +122,66 @@ class LdapUser extends Model
             return null;
         }
         try {
-            return self::static()
-                ->where([
-                    'cn' => $username,
-                    'userPassword' => $password
-                ])->first();
+            $loginAttr = self::getLoginAttr();
+            $row = self::static()
+                ->whereRaw($loginAttr, '=', $username)
+                ->first();
+            if (!$row) {
+                return null;
+            }
+            $connection = Container::getDefaultConnection();
+            if (!$connection->auth()->attempt($row->getDn(), $password)) {
+                return null;
+            }
+            // Swoole 下连接共享，必须恢复管理员绑定
+            $connection->auth()->attempt(
+                $connection->getConfiguration()->get('username'),
+                $connection->getConfiguration()->get('password')
+            );
+            return $row;
+        } catch (\Exception $e) {
+            info("[LDAP] auth fail: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 通过邮箱查找 LDAP 用户
+     * @param $email
+     * @return Model|null
+     */
+    public static function findByEmail($email): ?Model
+    {
+        if (!self::initConfig()) {
+            return null;
+        }
+        try {
+            foreach (self::$emailAttrs as $attr) {
+                $row = self::static()->whereRaw($attr, '=', $email)->first();
+                if ($row) {
+                    return $row;
+                }
+            }
+            return null;
         } catch (\Exception) {
             return null;
         }
+    }
+
+    /**
+     * 获取用户的邮箱（从 LDAP 记录中提取）
+     * @param Model $row
+     * @return string|null
+     */
+    public static function getUserEmail(Model $row): ?string
+    {
+        foreach (self::$emailAttrs as $attr) {
+            $val = $row->getFirstAttribute($attr);
+            if ($val && Base::isEmail($val)) {
+                return $val;
+            }
+        }
+        return null;
     }
 
     /**
@@ -138,7 +201,11 @@ class LdapUser extends Model
             return null;
         }
         if (empty($user)) {
-            $user = User::reg($username, $password);
+            $email = self::getUserEmail($row) ?: $username;
+            $user = User::whereEmail($email)->first();
+            if (empty($user)) {
+                $user = User::reg($email, $password);
+            }
         }
         if ($user) {
             $userimg = $row->getPhoto();
@@ -173,7 +240,7 @@ class LdapUser extends Model
         }
         //
         if (self::isSyncLocal()) {
-            $row = self::userFirst($user->email, $password);
+            $row = self::findByEmail($user->email);
             if ($row) {
                 return;
             }
@@ -184,17 +251,18 @@ class LdapUser extends Model
                 } else {
                     $userimg = '';
                 }
-                self::static()->create([
+                $attrs = [
                     'cn' => $user->email,
-                    'gidNumber' => 0,
-                    'homeDirectory' => '/home/ldap/dootask/' . env("APP_NAME"),
                     'sn' => $user->email,
                     'uid' => $user->email,
-                    'uidNumber' => $user->userid,
                     'userPassword' => $password,
                     'displayName' => $user->nickname,
-                    'jpegPhoto' => $userimg,
-                ]);
+                    'mail' => $user->email,
+                ];
+                if ($userimg) {
+                    $attrs['jpegPhoto'] = $userimg;
+                }
+                self::static()->create($attrs);
                 $user->identity = Base::arrayImplode(array_merge(array_diff($user->identity, ['ldap']), ['ldap']));
                 $user->save();
             } catch (LdapRecordException $e) {
@@ -205,11 +273,11 @@ class LdapUser extends Model
 
     /**
      * 更新
-     * @param $username
+     * @param $email
      * @param $array
      * @return void
      */
-    public static function userUpdate($username, $array)
+    public static function userUpdate($email, $array)
     {
         if (empty($array)) {
             return;
@@ -218,10 +286,7 @@ class LdapUser extends Model
             return;
         }
         try {
-            $row = self::static()
-                ->where([
-                    'cn' => $username,
-                ])->first();
+            $row = self::findByEmail($email);
             $row?->update($array);
         } catch (\Exception $e) {
             info("[LDAP] update fail: " . $e->getMessage());
@@ -230,19 +295,16 @@ class LdapUser extends Model
 
     /**
      * 删除
-     * @param $username
+     * @param $email
      * @return void
      */
-    public static function userDelete($username)
+    public static function userDelete($email)
     {
         if (!self::initConfig()) {
             return;
         }
         try {
-            $row = self::static()
-                ->where([
-                    'cn' => $username,
-                ])->first();
+            $row = self::findByEmail($email);
             $row?->delete();
         } catch (\Exception $e) {
             info("[LDAP] delete fail: " . $e->getMessage());

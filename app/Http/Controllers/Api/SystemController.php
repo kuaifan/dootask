@@ -612,6 +612,7 @@ class SystemController extends AbstractController
                     'ldap_password',
                     'ldap_user_dn',
                     'ldap_base_dn',
+                    'ldap_login_attr',
                     'ldap_sync_local'
                 ])) {
                     unset($all[$key]);
@@ -625,6 +626,7 @@ class SystemController extends AbstractController
         //
         $setting['ldap_open'] = $setting['ldap_open'] ?: 'close';
         $setting['ldap_port'] = intval($setting['ldap_port']) ?: 389;
+        $setting['ldap_login_attr'] = $setting['ldap_login_attr'] ?: 'cn';
         $setting['ldap_sync_local'] = $setting['ldap_sync_local'] ?: 'close';
         //
         return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));

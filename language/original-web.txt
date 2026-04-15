@@ -2358,3 +2358,5 @@ AI任务分析
 
 生日
 请选择生日
+登录属性
+用于匹配登录用户名的 LDAP 属性，Active Directory 请选择 sAMAccountName

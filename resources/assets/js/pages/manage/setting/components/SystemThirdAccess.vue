@@ -33,6 +33,15 @@
                         <FormItem :label="$L('密码')" prop="ldap_password">
                             <Input v-model="formData.ldap_password" type="password"/>
                         </FormItem>
+                        <FormItem :label="$L('登录属性')" prop="ldap_login_attr">
+                            <RadioGroup v-model="formData.ldap_login_attr">
+                                <Radio label="uid">uid</Radio>
+                                <Radio label="cn">cn</Radio>
+                                <Radio label="mail">mail</Radio>
+                                <Radio label="sAMAccountName">sAMAccountName</Radio>
+                            </RadioGroup>
+                            <div class="form-tip">{{$L('用于匹配登录用户名的 LDAP 属性，Active Directory 请选择 sAMAccountName')}}</div>
+                        </FormItem>
                         <FormItem :label="$L('同步本地帐号')" prop="ldap_sync_local">
                             <RadioGroup v-model="formData.ldap_sync_local">
                                 <Radio label="open">{{ $L('开启') }}</Radio>
