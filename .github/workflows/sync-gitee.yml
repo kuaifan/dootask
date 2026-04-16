@@ -1,0 +1,45 @@
+name: "Sync to Gitee"
+
+# Required GitHub Secrets:
+#
+#   GITEE_SSH_PRIVATE_KEY  - SSH private key with push access to gitee.com/aipaw/dootask
+
+on:
+  workflow_run:
+    workflows: ["Publish"]
+    types:
+      - completed
+
+jobs:
+  sync:
+    name: Push to Gitee
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup SSH key
+        env:
+          GITEE_SSH_PRIVATE_KEY: ${{ secrets.GITEE_SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$GITEE_SSH_PRIVATE_KEY" > ~/.ssh/gitee_key
+          chmod 600 ~/.ssh/gitee_key
+          cat >> ~/.ssh/config << EOF
+          Host gitee.com
+            HostName gitee.com
+            IdentityFile ~/.ssh/gitee_key
+            StrictHostKeyChecking no
+          EOF
+
+      - name: Push to Gitee
+        run: |
+          git remote add gitee git@gitee.com:aipaw/dootask.git
+          git push gitee pro
+
+      - name: Clean up
+        if: always()
+        run: rm -rf ~/.ssh/gitee_key
