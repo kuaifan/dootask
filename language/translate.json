@@ -33586,5 +33586,89 @@
         "fr": "Veuillez sélectionner les messages à transférer",
         "id": "Silakan pilih pesan yang akan diteruskan",
         "ru": "Выберите сообщения для пересылки"
+    },
+    {
+        "key": "(最多(%T1)条)",
+        "zh": "",
+        "zh-CHT": "(最多(%T1)條)",
+        "en": "(Up to (%T1) items)",
+        "ko": "(최대 (%T1)개)",
+        "ja": "(最大(%T1)件)",
+        "de": "(Maximal (%T1) Einträge)",
+        "fr": "(Jusqu’à (%T1) éléments)",
+        "id": "(Maksimal (%T1) item)",
+        "ru": "(Максимум (%T1) шт.)"
+    },
+    {
+        "key": "最多选择(%T1)条消息",
+        "zh": "",
+        "zh-CHT": "最多選擇(%T1)則訊息",
+        "en": "Select up to (%T1) messages",
+        "ko": "최대 (%T1)개의 메시지를 선택할 수 있습니다",
+        "ja": "最大(%T1)件のメッセージを選択できます",
+        "de": "Wählen Sie bis zu (%T1) Nachrichten aus",
+        "fr": "Sélectionnez jusqu’à (%T1) messages",
+        "id": "Pilih hingga (%T1) pesan",
+        "ru": "Можно выбрать до (%T1) сообщений"
+    },
+    {
+        "key": "确定要解除与任务 #(%T1) 的关联吗？",
+        "zh": "",
+        "zh-CHT": "確定要解除與任務 #(%T1) 的關聯嗎？",
+        "en": "Are you sure you want to unlink from task #(%T1)?",
+        "ko": "작업 #(%T1)과의 연결을 해제하시겠습니까?",
+        "ja": "タスク #(%T1) との関連付けを解除してもよろしいですか？",
+        "de": "Möchten Sie die Verknüpfung mit Aufgabe #(%T1) wirklich aufheben?",
+        "fr": "Voulez-vous vraiment dissocier la tâche #(%T1) ?",
+        "id": "Yakin ingin membatalkan tautan dengan tugas #(%T1)?",
+        "ru": "Вы уверены, что хотите отвязать от задачи #(%T1)?"
+    },
+    {
+        "key": "共(%T1)条消息",
+        "zh": "",
+        "zh-CHT": "共(%T1)則訊息",
+        "en": "Total: (%T1) messages",
+        "ko": "총 (%T1)개 메시지",
+        "ja": "合計(%T1)件のメッセージ",
+        "de": "Insgesamt (%T1) Nachrichten",
+        "fr": "Total : (%T1) messages",
+        "id": "Total (%T1) pesan",
+        "ru": "Всего: (%T1) сообщений"
+    },
+    {
+        "key": "已选(%T1)条",
+        "zh": "",
+        "zh-CHT": "已選(%T1)條",
+        "en": "Selected: (%T1)",
+        "ko": "(%T1)개 선택됨",
+        "ja": "(%T1)件選択済み",
+        "de": "(%T1) ausgewählt",
+        "fr": "(%T1) sélectionné(s)",
+        "id": "(%T1) dipilih",
+        "ru": "Выбрано: (%T1)"
+    },
+    {
+        "key": "登录属性",
+        "zh": "",
+        "zh-CHT": "登入屬性",
+        "en": "Login attribute",
+        "ko": "로그인 속성",
+        "ja": "ログイン属性",
+        "de": "Anmeldeattribut",
+        "fr": "Attribut de connexion",
+        "id": "Atribut login",
+        "ru": "Атрибут входа"
+    },
+    {
+        "key": "用于匹配登录用户名的 LDAP 属性，Active Directory 请选择 sAMAccountName",
+        "zh": "",
+        "zh-CHT": "用於比對登入使用者名稱的 LDAP 屬性，Active Directory 請選擇 sAMAccountName",
+        "en": "LDAP attribute used to match the login username. For Active Directory, select sAMAccountName.",
+        "ko": "로그인 사용자 이름을 일치시키는 데 사용되는 LDAP 속성입니다. Active Directory의 경우 sAMAccountName을 선택하세요.",
+        "ja": "ログインユーザー名の照合に使用する LDAP 属性です。Active Directory の場合は sAMAccountName を選択してください。",
+        "de": "LDAP-Attribut zum Abgleich des Anmeldenamens. Wählen Sie für Active Directory sAMAccountName.",
+        "fr": "Attribut LDAP utilisé pour faire correspondre le nom d’utilisateur de connexion. Pour Active Directory, sélectionnez sAMAccountName.",
+        "id": "Atribut LDAP yang digunakan untuk mencocokkan nama pengguna login. Untuk Active Directory, pilih sAMAccountName.",
+        "ru": "LDAP-атрибут для сопоставления имени пользователя при входе. Для Active Directory выберите sAMAccountName."
     }
 ]

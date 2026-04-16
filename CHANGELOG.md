@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.20]
+
+### Bug Fixes
+
+- 优化了 LDAP 登录方式，更好兼容 Active Directory，企业账号登录更稳定。
+
 ## [1.7.14]
 
 ### Features
