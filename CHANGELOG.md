@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.23]
+
+### Features
+
+- 支持使用非邮箱形式的用户名登录，登录方式更灵活，也更适合接入常见的企业账号环境。
+- 进一步优化与 Active Directory 的兼容性，企业用户接入和登录更顺畅。
+
+### Bug Fixes
+
+- 修复部分企业账号环境下的登录问题，提升账号验证的稳定性和成功率。
+- 修复上传或发布失败时提示不明确的问题，方便更快发现并处理失败情况。
+
 ## [1.7.20]
 
 ### Bug Fixes

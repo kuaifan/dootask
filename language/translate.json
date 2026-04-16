@@ -33670,5 +33670,29 @@
         "fr": "Attribut LDAP utilisé pour faire correspondre le nom d’utilisateur de connexion. Pour Active Directory, sélectionnez sAMAccountName.",
         "id": "Atribut LDAP yang digunakan untuk mencocokkan nama pengguna login. Untuk Active Directory, pilih sAMAccountName.",
         "ru": "LDAP-атрибут для сопоставления имени пользователя при входе. Для Active Directory выберите sAMAccountName."
+    },
+    {
+        "key": "请输入帐号",
+        "zh": "",
+        "zh-CHT": "請輸入帳號",
+        "en": "Please enter your account",
+        "ko": "계정을 입력하세요",
+        "ja": "アカウントを入力してください",
+        "de": "Bitte geben Sie Ihr Konto ein",
+        "fr": "Veuillez saisir votre compte",
+        "id": "Silakan masukkan akun Anda",
+        "ru": "Пожалуйста, введите учетную запись"
+    },
+    {
+        "key": "LDAP 用户缺少邮箱属性，请联系管理员配置",
+        "zh": "",
+        "zh-CHT": "LDAP 使用者缺少郵箱屬性，請聯繫管理員進行設定",
+        "en": "The LDAP user is missing the email attribute. Please contact the administrator to configure it.",
+        "ko": "LDAP 사용자에게 이메일 속성이 없습니다. 관리자에게 문의하여 설정해 주세요.",
+        "ja": "LDAPユーザーにメール属性がありません。管理者に連絡して設定してください。",
+        "de": "Dem LDAP-Benutzer fehlt das E-Mail-Attribut. Bitte wenden Sie sich an den Administrator, um es zu konfigurieren.",
+        "fr": "Il manque l’attribut e-mail pour l’utilisateur LDAP. Veuillez contacter l’administrateur pour le configurer.",
+        "id": "Pengguna LDAP tidak memiliki atribut email. Silakan hubungi administrator untuk mengonfigurasinya.",
+        "ru": "У пользователя LDAP отсутствует атрибут электронной почты. Пожалуйста, свяжитесь с администратором для настройки."
     }
 ]
