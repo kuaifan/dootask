@@ -507,8 +507,13 @@ export default {
                 this.code = $A.trim(this.code)
                 this.invite = $A.trim(this.invite)
                 //
-                if (!$A.isEmail(this.email)) {
+                if (this.loginType == 'reg' && !$A.isEmail(this.email)) {
                     $A.messageWarning("请输入正确的邮箱地址")
+                    this.$refs.email.focus()
+                    return
+                }
+                if (!this.email) {
+                    $A.messageWarning("请输入帐号")
                     this.$refs.email.focus()
                     return
                 }

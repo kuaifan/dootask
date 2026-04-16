@@ -35,10 +35,11 @@
                         </FormItem>
                         <FormItem :label="$L('登录属性')" prop="ldap_login_attr">
                             <RadioGroup v-model="formData.ldap_login_attr">
-                                <Radio label="uid">uid</Radio>
                                 <Radio label="cn">cn</Radio>
+                                <Radio label="uid">uid</Radio>
                                 <Radio label="mail">mail</Radio>
                                 <Radio label="sAMAccountName">sAMAccountName</Radio>
+                                <Radio label="userPrincipalName">userPrincipalName</Radio>
                             </RadioGroup>
                             <div class="form-tip">{{$L('用于匹配登录用户名的 LDAP 属性，Active Directory 请选择 sAMAccountName')}}</div>
                         </FormItem>

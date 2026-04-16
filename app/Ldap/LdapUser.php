@@ -2,6 +2,7 @@
 
 namespace App\Ldap;
 
+use App\Exceptions\ApiException;
 use App\Models\User;
 use App\Module\Base;
 use App\Services\RequestContext;
@@ -76,7 +77,7 @@ class LdapUser extends Model
     public static function getLoginAttr(): string
     {
         $attr = Base::settingFind('thirdAccessSetting', 'ldap_login_attr');
-        return in_array($attr, ['cn', 'uid', 'mail', 'sAMAccountName']) ? $attr : 'cn';
+        return in_array($attr, ['cn', 'uid', 'mail', 'sAMAccountName', 'userPrincipalName']) ? $attr : 'cn';
     }
 
     /**
@@ -201,10 +202,15 @@ class LdapUser extends Model
             return null;
         }
         if (empty($user)) {
-            $email = self::getUserEmail($row) ?: $username;
+            $email = self::getUserEmail($row);
+            if (empty($email)) {
+                throw new ApiException('LDAP 用户缺少邮箱属性，请联系管理员配置');
+            }
             $user = User::whereEmail($email)->first();
             if (empty($user)) {
                 $user = User::reg($email, $password);
+            } elseif (!$user->isLdap()) {
+                info("[LDAP] merged with existing local account: userid={$user->userid}, email={$email}");
             }
         }
         if ($user) {
