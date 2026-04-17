@@ -19,8 +19,6 @@ class LdapUser extends Model
      * @var array
      */
     public static $objectClasses = [
-        'inetOrgPerson',
-        'organizationalPerson',
         'person',
         'top',
     ];
@@ -208,7 +206,9 @@ class LdapUser extends Model
             }
             $user = User::whereEmail($email)->first();
             if (empty($user)) {
-                $user = User::reg($email, $password);
+                // LDAP 用户通过 LDAP 认证，本地密码用随机值以满足密码策略
+                $localPassword = Base::generatePassword(16) . 'Aa1!';
+                $user = User::reg($email, $localPassword);
             } elseif (!$user->isLdap()) {
                 info("[LDAP] merged with existing local account: userid={$user->userid}, email={$email}");
             }
