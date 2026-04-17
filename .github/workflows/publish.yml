@@ -131,8 +131,6 @@ jobs:
         include:
           - platform: "macos-latest"
             build_type: "mac"
-          - platform: "ubuntu-latest"
-            build_type: "android"
           - platform: "windows-latest"
             build_type: "windows"
 
@@ -147,69 +145,8 @@ jobs:
         with:
           node-version: 20.x
 
-      # Android 构建步骤
-      - name: (Android) Build Js
-        if: matrix.build_type == 'android'
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: |
-            git submodule init
-            git submodule update --remote "resources/mobile"
-            ./cmd appbuild publish
-
-      - name: (Android) Setup JDK 11
-        if: matrix.build_type == 'android'
-        uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "11"
-
-      - name: (Android) Build App
-        if: matrix.build_type == 'android'
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 20
-          max_attempts: 5
-          command: |
-            cd resources/mobile/platforms/android/eeuiApp
-            chmod +x ./gradlew
-            ./gradlew assembleRelease --quiet
-
-      - name: (Android) Upload File
-        if: matrix.build_type == 'android'
-        env:
-          UPLOAD_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
-          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
-        run: |
-          node ./electron/build.js android-upload
-
-      - name: (Android) Upload Release
-        if: matrix.build_type == 'android'
-        uses: actions/github-script@v7
-        env:
-          RELEASE_ID: ${{ needs.create-release.outputs.release_id }}
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const globby = require('globby');
-
-            // 查找 APK 文件
-            const files = await globby('resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release/*.apk');
-
-            for (const file of files) {
-              const data = await fs.promises.readFile(file);
-
-              await github.rest.repos.uploadReleaseAsset({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: process.env.RELEASE_ID,
-                name: path.basename(file),
-                data: data
-              });
-            }
+      # 移动端构建已迁移到 dootask-app 仓库（EAS Build），见
+      # dootask-app/.github/workflows/build.yml
 
       # Mac 构建步骤
       - name: (Mac) Build Client

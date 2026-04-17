@@ -566,42 +566,9 @@ async function startBuild(data) {
     indexString = indexString.replace("<!--script-->", `<script type="module" src="./${manifestContent['resources/assets/js/app.js']['file']}"></script>`);
     fs.writeFileSync(indexFile, indexString, 'utf8');
     //
-    if (data.id === 'app') {
-        const eeuiDir = path.resolve(__dirname, "../resources/mobile");
-        const eeuiRun = `docker run --rm -v ${eeuiDir}:/work -w /work kuaifan/eeui-cli:0.0.1`
-        const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
-        fse.removeSync(publicDir)
-        fse.copySync(electronDir, publicDir)
-        if (argv[3] === "publish") {
-            // Android config
-            const gradleFile = path.resolve(eeuiDir, "platforms/android/eeuiApp/local.properties")
-            let gradleResult = fs.existsSync(gradleFile) ? fs.readFileSync(gradleFile, 'utf8') : "";
-            gradleResult = gradleResult.replace(/(versionCode|versionName)\s*=\s*(.+?)(\n|$)/g, '')
-            gradleResult += `versionCode = ${config.codeVerson}\nversionName = ${config.version}\n`
-            fs.writeFileSync(gradleFile, gradleResult, 'utf8')
-            // iOS config
-            const xcconfigFile = path.resolve(eeuiDir, "platforms/ios/eeuiApp/Config/Version.xcconfig")
-            let xcconfigResult = fs.existsSync(xcconfigFile) ? fs.readFileSync(xcconfigFile, 'utf8') : "";
-            xcconfigResult = xcconfigResult.replace(/(VERSION_CODE|VERSION_NAME)\s*=\s*(.+?)(\n|$)/g, '')
-            xcconfigResult += `VERSION_CODE = ${config.codeVerson}\nVERSION_NAME = ${config.version}\n`
-            fs.writeFileSync(xcconfigFile, xcconfigResult, 'utf8')
-        }
-        if (['build', 'publish'].includes(argv[3])) {
-            if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
-                child_process.execSync(`${eeuiRun} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
-            }
-            child_process.execSync(`${eeuiRun} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
-        } else {
-            [
-                path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),
-                path.resolve(publicDir, "../../platforms/android/eeuiApp/app/src/main/assets/eeui/public"),
-            ].some(dir => {
-                fse.removeSync(dir)
-                fse.copySync(electronDir, dir)
-            })
-        }
-        return;
-    }
+    // 注：移动端（data.id === 'app'）的 EEUI 打包逻辑已随着迁移到 dootask-app 仓库
+    // 而移除。前端资源现在通过 ./cmd appbuild（= web_build prod）构建到 public/，
+    // 实际的 iOS/Android 打包在 dootask-app 仓库用 EAS Build 执行。
     const output = `dist/${data.id.replace(/\./g, '-')}/${platform}`
     // package.json Backup
     fse.copySync(packageFile, packageBakFile)
@@ -697,50 +664,6 @@ if (["dev"].includes(argv[2])) {
     fs.writeFileSync(devloadCachePath, utils.formatUrl("localhost:" + env.parsed.APP_PORT), 'utf8');
     child_process.spawn("npx", ["vite", "--", "fromcmd", "electronDev"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
-} else if (["app"].includes(argv[2])) {
-    // 编译前端页面给 App
-    let mobileSrcDir = path.resolve(__dirname, "../resources/mobile");
-    if (!fs.existsSync(mobileSrcDir)) {
-        console.error("resources/mobile 未找到");
-        process.exit()
-    }
-    startBuild({
-        name: 'App',
-        id: 'app',
-        platform: '',
-        url: 'http://public/',
-        configure: {
-            platform: '',
-            archs: [],
-            publish: false,
-            release: true,
-            notarize: false,
-        }
-    })
-} else if (["android-upload"].includes(argv[2])) {
-    // 上传安卓文件（GitHub Actions）
-    (async () => {
-        const publisher = createPublisher()
-        if (!publisher) {
-            console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
-            process.exit(1)
-        }
-        const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
-        if (!fs.existsSync(releaseDir)) {
-            console.error("发布文件未找到")
-            process.exit(1)
-        }
-        const files = fs.readdirSync(releaseDir)
-        for (const filename of files) {
-            const localFile = path.join(releaseDir, filename)
-            if (/\.apk$/.test(filename) && fs.existsSync(localFile) && fs.statSync(localFile).isFile()) {
-                await publisher.uploadPackage(localFile, { platform: 'android' })
-            }
-        }
-    })().catch(err => {
-        console.error(err.message || err)
-        process.exit(1)
-    })
 } else if (["release"].includes(argv[2])) {
     // 通知官网发布完成（GitHub Actions）
     (async () => {

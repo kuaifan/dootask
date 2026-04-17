@@ -833,22 +833,17 @@ case "$1" in
         ;;
     "appbuild"|"buildapp")
         shift 1
-        electron_operate app "$@"
+        # 移动端已迁移到独立仓库 dootask-app（Expo + EAS Build）。
+        # 这里只负责把前端 Vue SPA 构建到 public/，实际打包在 dootask-app 仓库执行。
+        web_build prod
+        echo ""
+        echo "前端资源已构建至 public/"
+        echo "移动端打包请在 dootask-app 仓库使用 EAS Build"
+        echo "本地同步：cp -r public/* ~/workspaces/dootask-app/assets/web/"
         ;;
     "electron")
         shift 1
         electron_operate "$@"
-        ;;
-    "eeui")
-        shift 1
-        cli="$@"
-        por=""
-        if [[ "$cli" == "build" ]]; then
-            cli="build --simple"
-        elif [[ "$cli" == "dev" ]]; then
-            por="-p 8880:8880"
-        fi
-        docker run $TTY_FLAG --rm -v ${WORK_DIR}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
         ;;
     "npm")
         shift 1
