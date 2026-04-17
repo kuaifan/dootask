@@ -322,6 +322,7 @@ export default {
             maxImages: 5,            // 最大图片数量
             imageCacheKeyPrefix: 'aiAssistant.images', // 图片缓存 key 前缀
             imageCache: {},          // 内存中的图片缓存 {imageId: dataUrl}
+            serverImageMap: {},      // 服务端返回的 {imageId: url} 映射
             isDragging: false,       // 是否正在拖放图片
             dragCounter: 0,          // 拖放计数器（处理嵌套元素）
 
@@ -335,6 +336,9 @@ export default {
         this.refreshWelcomePromptsDebounced = debounce(() => {
             this.displayWelcomePrompts = getWelcomePrompts(this.$store, this.$route?.params || {});
         }, 100);
+        this.saveSessionStoreDebounced = debounce(() => {
+            this.saveSessionStore();
+        }, 2000);
     },
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
@@ -1275,28 +1279,27 @@ export default {
         // ==================== 会话管理方法 ====================
 
         /**
-         * 获取指定场景的缓存 key
-         */
-        getSessionCacheKey(sessionKey) {
-            return `${this.sessionCacheKeyPrefix}_${sessionKey || 'default'}`;
-        },
-
-        /**
          * 加载指定场景的会话数据
          */
         async loadSessionStore(sessionKey) {
-            const cacheKey = this.getSessionCacheKey(sessionKey);
             try {
-                const stored = await $A.IDBString(cacheKey);
-                if (stored) {
-                    this.sessionStore = JSON.parse(stored);
-                    if (!Array.isArray(this.sessionStore)) {
-                        this.sessionStore = [];
-                    }
+                const {data} = await this.$store.dispatch("call", {
+                    url: 'assistant/session/list',
+                    data: {session_key: sessionKey},
+                });
+                if (Array.isArray(data)) {
+                    this.sessionStore = data;
+                    // 缓存服务端返回的图片URL映射
+                    data.forEach(session => {
+                        if (session.images) {
+                            Object.assign(this.serverImageMap, session.images);
+                        }
+                    });
                 } else {
                     this.sessionStore = [];
                 }
             } catch (e) {
+                console.warn('[AIAssistant] 加载会话失败:', e);
                 this.sessionStore = [];
             }
             this.sessionStoreLoaded = true;
@@ -1305,12 +1308,42 @@ export default {
         /**
          * 持久化当前场景的会话数据
          */
-        saveSessionStore() {
-            const cacheKey = this.getSessionCacheKey(this.currentSessionKey);
+        async saveSessionStore() {
+            if (!this.currentSessionId) return;
+            const session = this.sessionStore.find(s => s.id === this.currentSessionId);
+            if (!session) return;
+
+            // 收集本次需要上传的新图片（在 imageCache 中有 base64 但 serverImageMap 中没有的）
+            const newImages = [];
+            const imageIds = this.extractImageIdsFromSession(session);
+            for (const imageId of imageIds) {
+                if (!this.serverImageMap[imageId] && this.imageCache[imageId]) {
+                    newImages.push({
+                        imageId,
+                        dataUrl: this.imageCache[imageId],
+                    });
+                }
+            }
+
             try {
-                $A.IDBSave(cacheKey, JSON.stringify(this.sessionStore));
+                const {data} = await this.$store.dispatch("call", {
+                    url: 'assistant/session/save',
+                    method: 'post',
+                    data: {
+                        session_key: this.currentSessionKey,
+                        session_id: session.id,
+                        scene_key: session.sceneKey || '',
+                        title: session.title || '',
+                        data: session.responses || [],
+                        new_images: newImages,
+                    },
+                });
+                // 更新服务端图片映射
+                if (data?.image_urls) {
+                    Object.assign(this.serverImageMap, data.image_urls);
+                }
             } catch (e) {
-                console.warn('[AIAssistant] Failed to save session store:', e);
+                console.warn('[AIAssistant] 保存会话失败:', e);
             }
         },
 
@@ -1448,7 +1481,7 @@ export default {
                 this.sessionStore.splice(this.maxSessionsPerKey);
             }
 
-            this.saveSessionStore();
+            this.saveSessionStoreDebounced();
         },
 
         /**
@@ -1492,11 +1525,16 @@ export default {
             const index = this.sessionStore.findIndex(s => s.id === sessionId);
             if (index > -1) {
                 const session = this.sessionStore[index];
-                // 清理会话相关的图片缓存
                 this.clearSessionImageCache(session);
                 this.sessionStore.splice(index, 1);
-                this.saveSessionStore();
-                // 如果删除的是当前会话，创建新会话
+                this.$store.dispatch("call", {
+                    url: 'assistant/session/delete',
+                    method: 'post',
+                    data: {
+                        session_key: this.currentSessionKey,
+                        session_id: sessionId,
+                    },
+                }).catch(e => console.warn('[AIAssistant] 删除会话失败:', e));
                 if (this.currentSessionId === sessionId) {
                     this.createNewSession(false);
                 }
@@ -1510,13 +1548,18 @@ export default {
             $A.modalConfirm({
                 title: this.$L('清空历史会话'),
                 content: this.$L('确定要清空当前场景的所有历史会话吗？'),
-                onOk: async () => {
-                    // 清理所有会话的图片缓存
-                    for (const session of this.sessionStore) {
-                        await this.clearSessionImageCache(session);
-                    }
+                onOk: () => {
+                    this.serverImageMap = {};
+                    this.imageCache = {};
                     this.sessionStore = [];
-                    this.saveSessionStore();
+                    this.$store.dispatch("call", {
+                        url: 'assistant/session/delete',
+                        method: 'post',
+                        data: {
+                            session_key: this.currentSessionKey,
+                            clear_all: true,
+                        },
+                    }).catch(e => console.warn('[AIAssistant] 清空会话失败:', e));
                     this.createNewSession(false);
                 }
             });
@@ -1930,26 +1973,10 @@ export default {
         },
 
         /**
-         * 获取图片缓存 key
-         */
-        getImageCacheKey(imageId) {
-            return `${this.imageCacheKeyPrefix}_${imageId}`;
-        },
-
-        /**
          * 保存图片到独立缓存
          */
-        async saveImageToCache(imageId, dataUrl) {
-            const cacheKey = this.getImageCacheKey(imageId);
-            try {
-                // 压缩到 512px 再保存（历史图片不需要高清）
-                const compressedUrl = await this.resizeDataUrl(dataUrl, 512);
-                await $A.IDBSave(cacheKey, compressedUrl);
-                // 同时保存到内存缓存
-                this.imageCache[imageId] = compressedUrl;
-            } catch (e) {
-                console.warn('[AIAssistant] 图片缓存保存失败:', e);
-            }
+        saveImageToCache(imageId, dataUrl) {
+            this.imageCache[imageId] = dataUrl;
         },
 
         /**
@@ -2000,21 +2027,13 @@ export default {
          * 从缓存获取图片
          */
         async getImageFromCache(imageId) {
-            // 先检查内存缓存
+            // 1. 先检查内存缓存
             if (this.imageCache[imageId]) {
                 return this.imageCache[imageId];
             }
-            // 从 IndexedDB 获取
-            const cacheKey = this.getImageCacheKey(imageId);
-            try {
-                const dataUrl = await $A.IDBString(cacheKey);
-                if (dataUrl) {
-                    // 保存到内存缓存
-                    this.imageCache[imageId] = dataUrl;
-                    return dataUrl;
-                }
-            } catch (e) {
-                console.warn('[AIAssistant] 图片缓存读取失败:', e);
+            // 2. 检查服务端URL映射
+            if (this.serverImageMap[imageId]) {
+                return this.serverImageMap[imageId];
             }
             return null;
         },
@@ -2022,14 +2041,9 @@ export default {
         /**
          * 删除单个图片缓存
          */
-        async deleteImageCache(imageId) {
-            const cacheKey = this.getImageCacheKey(imageId);
-            try {
-                await $A.IDBDel(cacheKey);
-                delete this.imageCache[imageId];
-            } catch (e) {
-                console.warn('[AIAssistant] 图片缓存删除失败:', e);
-            }
+        deleteImageCache(imageId) {
+            delete this.imageCache[imageId];
+            delete this.serverImageMap[imageId];
         },
 
         /**
@@ -2052,10 +2066,10 @@ export default {
         /**
          * 清理会话相关的图片缓存
          */
-        async clearSessionImageCache(session) {
+        clearSessionImageCache(session) {
             const imageIds = this.extractImageIdsFromSession(session);
             for (const imageId of imageIds) {
-                await this.deleteImageCache(imageId);
+                this.deleteImageCache(imageId);
             }
         },
 

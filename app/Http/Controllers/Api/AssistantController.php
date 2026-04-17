@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\AiAssistantSession;
 use App\Models\User;
 use App\Module\AI;
 use App\Module\Apps;
@@ -154,5 +155,153 @@ class AssistantController extends AbstractController
             return 0;
         }
         return $dotProduct / $denominator;
+    }
+
+    /**
+     * 获取会话列表
+     */
+    public function session__list()
+    {
+        $user = User::auth();
+        $sessionKey = trim(Request::input('session_key', 'default'));
+
+        $sessions = AiAssistantSession::where('userid', $user->userid)
+            ->where('session_key', $sessionKey)
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $list = [];
+        foreach ($sessions as $session) {
+            $data = Base::json2array($session->data);
+            $images = Base::json2array($session->images);
+            foreach ($images as $imageId => $path) {
+                $images[$imageId] = Base::fillUrl($path);
+            }
+            $list[] = [
+                'id' => $session->session_id,
+                'title' => $session->title,
+                'responses' => $data,
+                'images' => $images,
+                'sceneKey' => $session->scene_key,
+                'createdAt' => $session->created_at ? $session->created_at->getTimestampMs() : 0,
+                'updatedAt' => $session->updated_at ? $session->updated_at->getTimestampMs() : 0,
+            ];
+        }
+
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * 保存会话
+     */
+    public function session__save()
+    {
+        $user = User::auth();
+        $sessionKey = trim(Request::input('session_key', 'default'));
+        $sessionId = trim(Request::input('session_id', ''));
+        $sceneKey = trim(Request::input('scene_key', ''));
+        $title = trim(Request::input('title', ''));
+        $data = Request::input('data', []);
+        $newImages = Request::input('new_images', []);
+
+        if (empty($sessionId)) {
+            return Base::retError('session_id 不能为空');
+        }
+
+        $newImageUrls = [];
+        if (is_array($newImages)) {
+            $path = 'uploads/assistant/' . date('Ym') . '/' . $user->userid . '/';
+            foreach ($newImages as $img) {
+                $imageId = $img['imageId'] ?? '';
+                $dataUrl = $img['dataUrl'] ?? '';
+                if (empty($imageId) || empty($dataUrl)) {
+                    continue;
+                }
+                $result = Base::image64save([
+                    'image64' => $dataUrl,
+                    'path' => $path,
+                    'autoThumb' => false,
+                ]);
+                if (Base::isSuccess($result)) {
+                    $newImageUrls[$imageId] = $result['data']['path'];
+                }
+            }
+        }
+
+        $session = AiAssistantSession::where('userid', $user->userid)
+            ->where('session_key', $sessionKey)
+            ->where('session_id', $sessionId)
+            ->first();
+
+        $imageMap = $newImageUrls;
+        if ($session) {
+            $existingImages = Base::json2array($session->images);
+            $imageMap = array_merge($existingImages, $newImageUrls);
+        }
+
+        $session = AiAssistantSession::createInstance([
+            'userid' => $user->userid,
+            'session_key' => $sessionKey,
+            'session_id' => $sessionId,
+            'scene_key' => $sceneKey,
+            'title' => mb_substr($title, 0, 255),
+            'data' => Base::array2json(is_array($data) ? $data : []),
+            'images' => Base::array2json($imageMap),
+        ], $session?->id);
+        $session->save();
+
+        // 仅返回本次新增的图片URL
+        $urls = [];
+        foreach ($newImageUrls as $imageId => $path) {
+            $urls[$imageId] = Base::fillUrl($path);
+        }
+
+        return Base::retSuccess('success', [
+            'image_urls' => $urls,
+        ]);
+    }
+
+    /**
+     * 删除会话
+     */
+    public function session__delete()
+    {
+        $user = User::auth();
+        $sessionKey = trim(Request::input('session_key', 'default'));
+        $sessionId = trim(Request::input('session_id', ''));
+        $clearAll = Request::input('clear_all', false);
+
+        $query = AiAssistantSession::where('userid', $user->userid)
+            ->where('session_key', $sessionKey);
+
+        if ($clearAll) {
+            $sessions = $query->get();
+            foreach ($sessions as $session) {
+                $this->deleteSessionImages($session);
+            }
+            $query->delete();
+        } else {
+            if (empty($sessionId)) {
+                return Base::retError('session_id 不能为空');
+            }
+            $session = $query->where('session_id', $sessionId)->first();
+            if ($session) {
+                $this->deleteSessionImages($session);
+                $session->delete();
+            }
+        }
+
+        return Base::retSuccess('success');
+    }
+
+    private function deleteSessionImages(AiAssistantSession $session)
+    {
+        $images = Base::json2array($session->images);
+        foreach ($images as $path) {
+            $fullPath = public_path($path);
+            if (file_exists($fullPath)) {
+                @unlink($fullPath);
+            }
+        }
     }
 }
