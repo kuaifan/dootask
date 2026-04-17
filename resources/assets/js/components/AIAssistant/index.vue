@@ -1927,9 +1927,8 @@ export default {
          * @returns {Promise<string>} - Base64 data URL (image/jpeg)
          */
         async compressImageForAI(file) {
-            // File 转 dataUrl 后压缩到 1024px，强制质量压缩
             const dataUrl = await this.fileToDataUrl(file);
-            return this.resizeDataUrl(dataUrl, 1024, true);
+            return this.resizeDataUrl(dataUrl, 1568, true);
         },
 
         /**
