@@ -35,14 +35,14 @@ import {languageName} from "../language";
             })
         },
 
-        // 获取eeui版本号
+        // 获取eeui版本号（Expo 壳下改为读取启动时注入的 __EXPO_INIT_DATA__，兼容旧 EEUI）
         eeuiAppVersion() {
-            return $A.eeuiModule()?.getVersion();
+            return window.__EXPO_INIT_DATA__?.version ?? $A.eeuiModule()?.getVersion();
         },
 
         // 获取本地软件版本号
         eeuiAppLocalVersion() {
-            return $A.eeuiModule()?.getLocalVersion();
+            return window.__EXPO_INIT_DATA__?.version ?? $A.eeuiModule()?.getLocalVersion();
         },
 
         // Alert
@@ -61,8 +61,12 @@ import {languageName} from "../language";
             return $A.eeuiModule()?.rewriteUrl(val);
         },
 
-        // 获取页面信息
+        // 获取页面信息（Expo 壳在 injectedJS 启动时写入 __EXPO_INIT_DATA__.pageInfo）
         eeuiAppGetPageInfo(pageName) {
+            const cached = window.__EXPO_INIT_DATA__?.pageInfo;
+            if (cached) {
+                return pageName ? { ...cached, pageName } : cached;
+            }
             return $A.eeuiModule()?.getPageInfo(pageName || "");
         },
 
@@ -152,13 +156,16 @@ import {languageName} from "../language";
             $A.eeuiModule()?.checkUpdate();
         },
 
-        // 获取主题名称 light|dark
+        // 获取主题名称 light|dark（Expo 壳：启动时注入 + 系统变更推送更新 __EXPO_INIT_DATA__.themeName）
         eeuiAppGetThemeName() {
-            return $A.eeuiModule()?.getThemeName();
+            return window.__EXPO_INIT_DATA__?.themeName ?? $A.eeuiModule()?.getThemeName();
         },
 
-        // 判断软键盘是否可见
+        // 判断软键盘是否可见（Expo 壳：keyboardDidShow/Hide 会同步更新 __EXPO_INIT_DATA__.keyboardVisible）
         eeuiAppKeyboardStatus() {
+            if (window.__EXPO_INIT_DATA__ && typeof window.__EXPO_INIT_DATA__.keyboardVisible === "boolean") {
+                return window.__EXPO_INIT_DATA__.keyboardVisible;
+            }
             return $A.eeuiModule()?.keyboardStatus();
         },
 
@@ -167,8 +174,12 @@ import {languageName} from "../language";
             $A.eeuiModule()?.setVariate(key, value);
         },
 
-        // 获取全局变量
+        // 获取全局变量（Expo 壳：setVariate 时 RN 会 broadcast 到所有 WebView 的 __EXPO_VARIATES__）
         eeuiAppGetVariate(key, defaultVal = "") {
+            const cache = window.__EXPO_VARIATES__;
+            if (cache && Object.prototype.hasOwnProperty.call(cache, key)) {
+                return cache[key];
+            }
             return $A.eeuiModule()?.getVariate(key, defaultVal);
         },
 
@@ -177,8 +188,12 @@ import {languageName} from "../language";
             $A.eeuiModule()?.setCachesString(key, value, expired);
         },
 
-        // 获取缓存数据
+        // 获取缓存数据（Expo 壳：若 __EXPO_CACHES__ 已 hydrate 就同步读取，否则回落到原生桥）
         eeuiAppGetCachesString(key, defaultVal = "") {
+            const cache = window.__EXPO_CACHES__;
+            if (cache && Object.prototype.hasOwnProperty.call(cache, key)) {
+                return cache[key];
+            }
             return $A.eeuiModule()?.getCachesString(key, defaultVal);
         },
 

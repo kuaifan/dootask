@@ -1557,7 +1557,8 @@ class SystemController extends AbstractController
     {
         $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
         $isMain = str_contains($userAgent, 'maintaskwindow');
-        $isApp = str_contains($userAgent, 'kuaifan_eeui');
+        $isApp = str_contains($userAgent, 'kuaifan_eeui')
+            || str_contains($userAgent, 'dootask_expo');
         $version = Base::getVersion();
         $array = [];
 

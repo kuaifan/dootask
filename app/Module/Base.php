@@ -1841,13 +1841,14 @@ class Base
     }
 
     /**
-     * 是否是App移动端
+     * 是否是App移动端（兼容旧 EEUI 壳与新 Expo 壳）
      * @return bool
      */
     public static function isEEUIApp()
     {
         $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
-        return str_contains($userAgent, 'kuaifan_eeui');
+        return str_contains($userAgent, 'kuaifan_eeui')
+            || str_contains($userAgent, 'dootask_expo');
     }
 
     /**

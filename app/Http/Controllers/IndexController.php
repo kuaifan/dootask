@@ -457,12 +457,16 @@ class IndexController extends InvokeController
                     'button' => Doo::translate('点击下载'),
                 ]);
             }
-            // 浏览器类型
+            // 浏览器类型（兼容旧 EEUI 与新 Expo 壳）
             $browser = 'none';
-            if (str_contains($userAgent, 'chrome') || str_contains($userAgent, 'android_kuaifan_eeui')) {
-                $browser = str_contains($userAgent, 'android_kuaifan_eeui') ? 'android-mobile' : 'chrome-desktop';
-            } elseif (str_contains($userAgent, 'safari') || str_contains($userAgent, 'ios_kuaifan_eeui')) {
-                $browser = str_contains($userAgent, 'ios_kuaifan_eeui') ? 'safari-mobile' : 'safari-desktop';
+            $isAndroidApp = str_contains($userAgent, 'android_kuaifan_eeui')
+                || str_contains($userAgent, 'android_dootask_expo');
+            $isIosApp = str_contains($userAgent, 'ios_kuaifan_eeui')
+                || str_contains($userAgent, 'ios_dootask_expo');
+            if (str_contains($userAgent, 'chrome') || $isAndroidApp) {
+                $browser = $isAndroidApp ? 'android-mobile' : 'chrome-desktop';
+            } elseif (str_contains($userAgent, 'safari') || $isIosApp) {
+                $browser = $isIosApp ? 'safari-mobile' : 'safari-desktop';
             }
             // electron 直接在线预览查看
             if (str_contains($userAgent, 'electron') || str_contains($browser, 'desktop')) {

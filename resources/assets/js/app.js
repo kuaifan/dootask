@@ -1,5 +1,5 @@
 const isElectron = !!(window && window.process && window.process.type && window.electron);
-const isEEUIApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
+const isEEUIApp = window && window.navigator && /eeui|dootask_expo/i.test(window.navigator.userAgent);
 const isSoftware = isElectron || isEEUIApp;
 
 document.getElementById("app")?.setAttribute("data-preload", "false");
@@ -325,14 +325,15 @@ const $preload = async () => {
     document.getElementById("app")?.setAttribute("data-preload", "true")
 
     if ($A.isEEUIApp) {
+        // 同时等待旧 EEUI 的 requireModuleJs 与新 Expo 壳注入的 __EXPO_BRIDGE_READY__
         const requireTime = new Date().getTime();
-        while (typeof requireModuleJs !== "function") {
+        while (typeof requireModuleJs !== "function" && !window.__EXPO_BRIDGE_READY__) {
             await new Promise(resolve => setTimeout(resolve, 200));
             if (new Date().getTime() - requireTime > 15 * 1000) {
                 break
             }
         }
-        if (typeof requireModuleJs !== "function") {
+        if (typeof requireModuleJs !== "function" && !window.__EXPO_BRIDGE_READY__) {
             const errorTip = $A.L("加载失败，请重启软件")
             const errorView = document.querySelector(".app-view-loading")
             if (errorView) {

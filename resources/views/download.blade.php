@@ -78,7 +78,7 @@
         document.body.classList.add("dark");
     }
     //
-    const isEEUIApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
+    const isEEUIApp = window && window.navigator && /eeui|dootask_expo/i.test(window.navigator.userAgent);
     if (isEEUIApp) {
         document.querySelector(".link").addEventListener('click', function (e) {
             e.preventDefault();
