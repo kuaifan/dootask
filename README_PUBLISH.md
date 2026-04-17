@@ -18,14 +18,25 @@ npm run build       # 编译前端
 说明：
 
 - 执行 `npm run build` 作用是生成网页端；
-- 客户端 (Windows、Mac、Android) 会通过 GitHub Actions 自动生成并发布；所以，如果要自动发布只需要提交git并推送即可；
-- 如果想手动生成客户端执行 `./cmd electron` 根据提示选择操作。
+- 桌面客户端（Windows、Mac）会通过 GitHub Actions 自动生成并发布；所以，如果要自动发布只需要提交 git 并推送即可；
+- 如果想手动生成桌面客户端执行 `./cmd electron` 根据提示选择操作。
 
+## 编译移动端 App
 
-## 编译 App
+移动端（iOS / Android）已迁移到独立仓库 [kuaifan/dootask-app](https://github.com/kuaifan/dootask-app)
+（Expo + EAS Build）。构建流程：
 
 ```shell
-./cmd appbuild publish  # 编译生成App需要的资源
+# 1. 本仓库：构建前端资源
+./cmd appbuild
+
+# 2. 拷贝到 dootask-app 仓库
+cp -r public/* ~/workspaces/dootask-app/assets/web/
+
+# 3. dootask-app 仓库：EAS Build 本地或 CI 触发
+cd ~/workspaces/dootask-app
+npx eas build --platform android --profile preview
+# 或在 dootask-app 的 GitHub Actions 里手动触发 "EAS Build" workflow
 ```
 
-编译完后进入 `resources/mobile` EEUI框架目录内打包 Android 或 iOS 应用（Android 以实现 GitHub Actions 自动发布）
+详见 dootask-app 仓库的 README。
