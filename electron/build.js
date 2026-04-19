@@ -664,6 +664,21 @@ if (["dev"].includes(argv[2])) {
     fs.writeFileSync(devloadCachePath, utils.formatUrl("localhost:" + env.parsed.APP_PORT), 'utf8');
     child_process.spawn("npx", ["vite", "--", "fromcmd", "electronDev"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
+} else if (["app"].includes(argv[2])) {
+    // 编译前端页面给移动端 App（dootask-app 仓库消费 electron/public/ 目录）
+    startBuild({
+        name: 'App',
+        id: 'app',
+        platform: '',
+        url: 'http://public/',
+        configure: {
+            platform: '',
+            archs: [],
+            publish: false,
+            release: true,
+            notarize: false,
+        }
+    })
 } else if (["release"].includes(argv[2])) {
     // 通知官网发布完成（GitHub Actions）
     (async () => {

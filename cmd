@@ -833,13 +833,14 @@ case "$1" in
         ;;
     "appbuild"|"buildapp")
         shift 1
-        # 移动端已迁移到独立仓库 dootask-app（Expo + EAS Build）。
-        # 这里只负责把前端 Vue SPA 构建到 public/，实际打包在 dootask-app 仓库执行。
-        web_build prod
+        # 移动端已迁移到独立仓库 dootask-app（Expo + EAS Build），但前端资源的
+        # post-processing（生成 config.js、把 manifest 里的 css/js 注入 index.html、
+        # 拷贝 language/）仍然走 electron/build.js 的 startBuild({id:'app'}) 分支。
+        # 产物在 electron/public/；实际移动端打包在 dootask-app 仓库执行。
+        electron_operate app "$@"
         echo ""
-        echo "前端资源已构建至 public/"
-        echo "移动端打包请在 dootask-app 仓库使用 EAS Build"
-        echo "本地同步：cp -r public/* ~/workspaces/dootask-app/assets/web/"
+        echo "前端资源已构建至 electron/public/"
+        echo "同步到 dootask-app：cp -r electron/public/* ~/wwwroot/dootask-app/assets/web/"
         ;;
     "electron")
         shift 1
