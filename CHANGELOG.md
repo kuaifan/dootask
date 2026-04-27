@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.29]
+
+### Features
+
+- AI 助手聊天记录现在可自动保存，换设备或重新打开后也能继续查看历史对话。
+
+### Bug Fixes
+
+- 改善 AI 助手中长图的显示清晰度，减少图片被压缩后变模糊的问题。
+- 修复部分企业账号环境下用户搜索失败、密码规则异常的问题。
+
 ## [1.7.23]
 
 ### Features
