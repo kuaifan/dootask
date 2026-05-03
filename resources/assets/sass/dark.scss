@@ -323,7 +323,8 @@ body.dark-mode-reverse {
         .group-info-user {
             > ul {
                 > li {
-                    .user-tag {
+                    .user-tag,
+                    .deputy-tag {
                         color: #1c1917;
                     }
                 }

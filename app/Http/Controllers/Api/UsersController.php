@@ -2146,6 +2146,65 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @api {post} api/users/department/adddeputy 任命副负责人（限管理员）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName department__adddeputy
+     *
+     * @apiParam {Number} id          部门 id
+     * @apiParam {Number} userid      副负责人 userid
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     */
+    public function department__adddeputy()
+    {
+        User::auth('admin');
+        $id = intval(Request::input('id'));
+        $userid = intval(Request::input('userid'));
+
+        $dept = UserDepartment::find($id);
+        if (empty($dept)) {
+            return Base::retError('部门不存在或已被删除');
+        }
+
+        // ApiException 由框架统一捕获并 retError 转换
+        $dept->addDeputy($userid);
+
+        Cache::forever("UserDepartment::rand", Base::generatePassword());
+        return Base::retSuccess('任命成功');
+    }
+
+    /**
+     * @api {post} api/users/department/deldeputy 罢免副负责人（限管理员）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName department__deldeputy
+     *
+     * @apiParam {Number} id          部门 id
+     * @apiParam {Number} userid      要罢免的副负责人 userid
+     */
+    public function department__deldeputy()
+    {
+        User::auth('admin');
+        $id = intval(Request::input('id'));
+        $userid = intval(Request::input('userid'));
+
+        $dept = UserDepartment::find($id);
+        if (empty($dept)) {
+            return Base::retError('部门不存在或已被删除');
+        }
+
+        $dept->delDeputy($userid);
+        Cache::forever("UserDepartment::rand", Base::generatePassword());
+        return Base::retSuccess('罢免成功');
+    }
+
+    /**
      * @api {get} api/users/department/del 删除部门（限管理员）
      *
      * @apiDescription 需要token身份

@@ -1755,8 +1755,10 @@ class DialogController extends AbstractController
             }
             // 任务可见性校验（与 task__one 一致）
             if ($task->visibility != 1) {
-                $project_userid = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');
-                if ($user->userid != $project_userid) {
+                $projectOwnerids = ProjectUser::whereProjectId($task->project_id)
+                    ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
+                    ->pluck('userid')->map(fn($v) => (int)$v)->toArray();
+                if (!in_array($user->userid, $projectOwnerids)) {
                     $visibleUserids = array_merge(
                         ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray(),
                         ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray(),
@@ -2832,7 +2834,10 @@ class DialogController extends AbstractController
                 return Base::retError('对话不存在或已被删除', ['dialog_id' => $dialog_id], -4003);
             }
         } else {
-            $dialog = WebSocketDialog::checkDialog($dialog_id, true);
+            $dialog = WebSocketDialog::checkDialog($dialog_id);
+            if (!$dialog->isOwner(User::userid())) {
+                throw new \App\Exceptions\ApiException('仅群主或群管理员可操作');
+            }
         }
         //
         $data = ['id' => $dialog->id];
@@ -2891,7 +2896,11 @@ class DialogController extends AbstractController
             return Base::retError('请选择群成员');
         }
         //
-        $dialog = WebSocketDialog::checkDialog($dialog_id, "auto");
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+        // 有群主（主或副）时，仅群主/副群主可邀请；无群主时，任意成员可邀请
+        if ($dialog->owner_id > 0 && !$dialog->isOwner($user->userid)) {
+            throw new \App\Exceptions\ApiException('仅限群主或群管理员操作');
+        }
         //
         $dialog->checkGroup();
         $dialog->joinGroup($userids, $user->userid);
@@ -2981,15 +2990,105 @@ class DialogController extends AbstractController
         $dialog = WebSocketDialog::checkDialog($dialog_id, $check_owner);
         //
         $dialog->checkGroup($check_owner ? 'user' : null);
+        $oldOwnerId = (int)$dialog->owner_id;
         $dialog->owner_id = $userid;
         if ($dialog->save()) {
             $dialog->joinGroup($userid, 0);
+            // 同步 role：原主 role=0、新主 role=1（覆盖即可）
+            if ($oldOwnerId > 0 && $oldOwnerId !== (int)$userid) {
+                WebSocketDialogUser::where('dialog_id', $dialog->id)
+                    ->where('userid', $oldOwnerId)
+                    ->update(['role' => 0]);
+            }
+            WebSocketDialogUser::where('dialog_id', $dialog->id)
+                ->where('userid', $userid)
+                ->update(['role' => 1]);
             $dialog->pushMsg("groupUpdate", [
                 'id' => $dialog->id,
                 'owner_id' => $dialog->owner_id,
+                'deputy_ids' => $dialog->deputy_ids,
             ]);
         }
         return Base::retSuccess('转让成功');
+    }
+
+    /**
+     * 任命副群主（仅主群主可操作）
+     *
+     * @apiParam {Number} dialog_id 群对话ID
+     * @apiParam {Number} userid 要任命的群成员 userid
+     */
+    public function group__adddeputy()
+    {
+        $user = User::auth();
+        $dialog_id = intval(Request::input('dialog_id'));
+        $userid = intval(Request::input('userid'));
+
+        if ($userid <= 0) {
+            return Base::retError('请选择有效的成员');
+        }
+
+        $dialog = WebSocketDialog::checkDialog($dialog_id, true); // checkOwner=true：仅主群主
+        $dialog->checkGroup('user'); // 仅普通群
+
+        $member = WebSocketDialogUser::where('dialog_id', $dialog->id)
+            ->where('userid', $userid)
+            ->first();
+        if (empty($member)) {
+            return Base::retError('该用户不是群成员');
+        }
+
+        if ((int)$member->role === 1) {
+            return Base::retError('不能将群主任命为群管理员');
+        }
+        if ((int)$member->role !== 2) {
+            $member->role = 2;
+            $member->save();
+            $dialog->pushMsg('groupUpdate', [
+                'id' => $dialog->id,
+                'deputy_ids' => $dialog->fresh()->deputy_ids,
+            ]);
+        }
+
+        return Base::retSuccess('任命成功');
+    }
+
+    /**
+     * 罢免副群主（仅主群主可操作）
+     *
+     * @apiParam {Number} dialog_id 群对话ID
+     * @apiParam {Number} userid 要罢免的副群主 userid
+     */
+    public function group__deldeputy()
+    {
+        $user = User::auth();
+        $dialog_id = intval(Request::input('dialog_id'));
+        $userid = intval(Request::input('userid'));
+
+        if ($userid <= 0) {
+            return Base::retError('请选择有效的成员');
+        }
+
+        $dialog = WebSocketDialog::checkDialog($dialog_id, true);
+        $dialog->checkGroup('user');
+
+        $member = WebSocketDialogUser::where('dialog_id', $dialog->id)
+            ->where('userid', $userid)
+            ->first();
+        if (empty($member)) {
+            return Base::retSuccess('罢免成功'); // 幂等：本来就不是成员
+        }
+
+        if ((int)$member->role === 2) {
+            $member->role = 0;
+            $member->save();
+            $dialog->pushMsg('groupUpdate', [
+                'id' => $dialog->id,
+                'deputy_ids' => $dialog->fresh()->deputy_ids,
+            ]);
+        }
+
+        return Base::retSuccess('罢免成功');
     }
 
     /**

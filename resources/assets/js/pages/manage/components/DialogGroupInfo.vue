@@ -6,7 +6,7 @@
                 <div class="quick-edit">
                     <div class="quick-text" :title="dialogData.name">{{dialogData.name}}</div>
                     <Icon
-                        v-if="dialogData.owner_id == userId"
+                        v-if="isOwnerOrDeputy"
                         class="quick-icon"
                         type="ios-create-outline"
                         @click.stop="onEditName"/>
@@ -39,31 +39,46 @@
                         <span>{{$L('群机器人')}}</span>
                     </li>
                     <li v-for="item in botList" @click="openUser(item.userid)">
-                        <UserAvatar :userid="item.userid" :size="32" showName/>
-                        <div v-if="item.userid === dialogData.owner_id" class="user-tag">{{ $L("群主") }}</div>
-                        <div v-else-if="operableExit(item)" class="user-exit" @click.stop="onExit(item)"><Icon type="md-exit"/></div>
+                        <UserAvatar :userid="item.userid" :size="32" showName>
+                            <template v-if="item.userid === dialogData.owner_id" #name-prefix>
+                                <div class="user-tag">{{ $L("群主") }}</div>
+                            </template>
+                            <template v-else-if="(dialogData.deputy_ids || []).includes(item.userid)" #name-prefix>
+                                <div class="deputy-tag">{{ $L('群管理员') }}</div>
+                            </template>
+                        </UserAvatar>
+                        <div v-if="canKickMember(item)" class="user-exit" @click.stop="onExit(item)"><Icon type="md-exit"/></div>
                     </li>
                     <li class="label">
                         <span>{{$L(`群成员 (${userList.length}人)`)}}</span>
                     </li>
-                    <li v-for="item in userList" @click="openUser(item.userid)">
-                        <UserAvatar :userid="item.userid" :size="32" showName/>
-                        <div v-if="item.userid === dialogData.owner_id" class="user-tag">{{ $L("群主") }}</div>
-                        <div v-else-if="operableExit(item)" class="user-exit" @click.stop="onExit(item)"><Icon type="md-exit"/></div>
-                    </li>
                 </template>
-                <template v-else>
-                    <li v-for="item in userList" @click="openUser(item.userid)">
-                        <UserAvatar :userid="item.userid" :size="32" showName/>
-                        <div v-if="item.userid === dialogData.owner_id" class="user-tag">{{ $L("群主") }}</div>
-                        <div v-else-if="operableExit(item)" class="user-exit" @click.stop="onExit(item)"><Icon type="md-exit"/></div>
-                    </li>
-                </template>
+                <li v-for="item in userList" @click="openUser(item.userid)">
+                    <UserAvatar :userid="item.userid" :size="32" showName>
+                        <template v-if="item.userid === dialogData.owner_id" #name-prefix>
+                            <div class="user-tag">{{ $L("群主") }}</div>
+                        </template>
+                        <template v-else-if="(dialogData.deputy_ids || []).includes(item.userid)" #name-prefix>
+                            <div class="deputy-tag">{{ $L('群管理员') }}</div>
+                        </template>
+                    </UserAvatar>
+                    <div
+                        v-if="canManageDeputy && !isPrimaryOwner(item) && !isDeputy(item)"
+                        class="user-deputy-add"
+                        :title="$L('任命群管理员')"
+                        @click.stop="addDeputy(item)"><Icon type="md-add"/></div>
+                    <div
+                        v-if="canManageDeputy && isDeputy(item)"
+                        class="user-deputy-del"
+                        :title="$L('罢免群管理员')"
+                        @click.stop="delDeputy(item)"><Icon type="md-remove"/></div>
+                    <div v-if="canKickMember(item)" class="user-exit" @click.stop="onExit(item)"><Icon type="md-exit"/></div>
+                </li>
             </ul>
         </div>
 
         <div v-if="operableAdd" class="group-info-button">
-            <Button v-if="dialogData.owner_id == userId || dialogData.owner_id == 0" @click="openAdd" type="primary" icon="md-add">{{ $L("添加成员") }}</Button>
+            <Button v-if="isOwnerOrDeputy || dialogData.owner_id == 0" @click="openAdd" type="primary" icon="md-add">{{ $L("添加成员") }}</Button>
         </div>
 
         <!--添加成员-->
@@ -152,10 +167,15 @@ export default {
                 }
                 return true;
             })
+            const deputyIds = dialogData.deputy_ids || [];
+            const rank = uid => {
+                if (uid === dialogData.owner_id) return 0;
+                if (deputyIds.includes(uid)) return 1;
+                return 2;
+            };
             return list.sort((a, b) => {
-                if (a.userid === dialogData.owner_id || b.userid === dialogData.owner_id) {
-                    return (a.userid === dialogData.owner_id ? 0 : 1) - (b.userid === dialogData.owner_id ? 0 : 1);
-                }
+                const ra = rank(a.userid), rb = rank(b.userid);
+                if (ra !== rb) return ra - rb;
                 return $A.sortDay(a.created_at, b.created_at);
             })
         },
@@ -167,6 +187,17 @@ export default {
 
         userList({allList}) {
             return allList.filter(item => !item.bot)
+        },
+
+        canManageDeputy() {
+            // Only the primary owner can manage deputies
+            return this.dialogData?.owner_id === this.userId;
+        },
+
+        isOwnerOrDeputy() {
+            if (!this.dialogData) return false;
+            if (this.dialogData.owner_id === this.userId) return true;
+            return (this.dialogData.deputy_ids || []).includes(this.userId);
         },
     },
 
@@ -214,7 +245,7 @@ export default {
             if (group_type == 'all') {
                 return this.userIsAdmin
             }
-            return [0, this.userId].includes(owner_id)
+            return [0, this.userId].includes(owner_id) || this.isOwnerOrDeputy
         },
 
         openAdd() {
@@ -243,12 +274,25 @@ export default {
             });
         },
 
-        operableExit(item) {
-            const {owner_id, group_type} = this.dialogData
-            if (group_type == 'all') {
-                return this.userIsAdmin
-            }
-            return owner_id == this.userId || item.inviter == this.userId
+        isPrimaryOwner(item) {
+            return item.userid === this.dialogData.owner_id;
+        },
+
+        isDeputy(item) {
+            return (this.dialogData.deputy_ids || []).includes(item.userid);
+        },
+
+        canKickMember(item) {
+            if (!this.dialogData) return false;
+            if (item.userid === this.userId) return false; // can't kick self via this button
+            const ownerId = this.dialogData.owner_id;
+            const deputyIds = this.dialogData.deputy_ids || [];
+            const isPrimary = ownerId === this.userId;
+            const isDeputy = deputyIds.includes(this.userId);
+            if (!isPrimary && !isDeputy) return false; // not a manager
+            if (isPrimary) return item.userid !== ownerId; // primary can kick anyone except self
+            // deputy: can't kick primary or other deputies
+            return item.userid !== ownerId && !deputyIds.includes(item.userid);
         },
 
         onExit(item) {
@@ -281,6 +325,52 @@ export default {
                             reject(msg);
                         });
                     })
+                },
+            });
+        },
+
+        addDeputy(item) {
+            $A.modalConfirm({
+                language: false,
+                title: this.$L('任命群管理员'),
+                content: this.$L('确定将 (*) 任命为群管理员吗？', item.nickname || item.email),
+                onOk: () => {
+                    this.$store.dispatch('call', {
+                        url: 'dialog/group/adddeputy',
+                        data: {
+                            dialog_id: this.dialogData.id,
+                            userid: item.userid,
+                        },
+                        method: 'post',
+                    }).then(({msg}) => {
+                        $A.messageSuccess(msg);
+                        this.getDialogUser();
+                    }).catch(({msg}) => {
+                        $A.messageError(msg);
+                    });
+                },
+            });
+        },
+
+        delDeputy(item) {
+            $A.modalConfirm({
+                title: '罢免群管理员',
+                content: '确定要罢免该群管理员吗？',
+                // title/content auto-translated by modalConfig
+                onOk: () => {
+                    this.$store.dispatch('call', {
+                        url: 'dialog/group/deldeputy',
+                        data: {
+                            dialog_id: this.dialogData.id,
+                            userid: item.userid,
+                        },
+                        method: 'post',
+                    }).then(({msg}) => {
+                        $A.messageSuccess(msg);
+                        this.getDialogUser();
+                    }).catch(({msg}) => {
+                        $A.messageError(msg);
+                    });
                 },
             });
         },

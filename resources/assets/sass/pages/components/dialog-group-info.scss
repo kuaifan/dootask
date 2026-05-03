@@ -63,7 +63,9 @@
                 &:hover {
                     background-color: rgba($primary-desc-color, 0.1);
 
-                    .user-exit {
+                    .user-exit,
+                    .user-deputy-add,
+                    .user-deputy-del {
                         opacity: 1;
                         transform: translateX(0);
                     }
@@ -102,19 +104,27 @@
                     }
                 }
 
-                .user-tag {
-                    margin-left: 4px;
+                .user-tag,
+                .deputy-tag {
+                    flex-shrink: 0;
+                    margin-right: 4px;
                     height: 22px;
                     line-height: 22px;
                     padding: 0 6px;
                     border-radius: 3px;
                     transform: scale(0.9);
-                    transform-origin: right center;
+                    transform-origin: left center;
                     color: #ffffff;
                     background-color: $primary-color;
                 }
 
-                .user-exit {
+                .deputy-tag {
+                    background-color: #5a8dee;
+                }
+
+                .user-exit,
+                .user-deputy-add,
+                .user-deputy-del {
                     display: flex;
                     align-items: center;
                     justify-content: flex-end;
@@ -137,7 +147,7 @@
                         justify-content: center;
                         width: 22px;
                         height: 22px;
-                        font-size: 12px;
+                        font-size: 14px;
                         color: $primary-desc-color;
                         border: 1px solid #dddddd;
                         border-radius: 50%;
@@ -168,7 +178,9 @@ body.window-portrait {
                     &:hover {
                         background-color: transparent;
                     }
-                    .user-exit {
+                    .user-exit,
+                    .user-deputy-add,
+                    .user-deputy-del {
                         opacity: 1;
                         transform: translateX(0);
                     }

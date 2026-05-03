@@ -37,6 +37,36 @@ use App\Module\Base;
  */
 class ProjectUser extends AbstractModel
 {
+    /** @var int 普通成员编码 */
+    const OWNER_MEMBER = 0;
+    /** @var int 主负责人编码 */
+    const OWNER_PRIMARY = 1;
+    /** @var int 副负责人编码 */
+    const OWNER_DEPUTY = 2;
+
+    /**
+     * 是否主负责人（owner=1）
+     */
+    public function isPrimaryOwner(): bool
+    {
+        return (int)$this->owner === self::OWNER_PRIMARY;
+    }
+
+    /**
+     * 是否副负责人（owner=2）
+     */
+    public function isDeputyOwner(): bool
+    {
+        return (int)$this->owner === self::OWNER_DEPUTY;
+    }
+
+    /**
+     * 是否负责人（主或副）
+     */
+    public function isOwner(): bool
+    {
+        return $this->isPrimaryOwner() || $this->isDeputyOwner();
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
@@ -61,12 +91,19 @@ class ProjectUser extends AbstractModel
             foreach ($list as $item) {
                 $row = self::whereProjectId($item->project_id)->whereUserid($newUserid)->first();
                 if ($row) {
-                    // 已存在则删除原数据，判断改变已存在的数据
-                    $row->owner = max($row->owner, $item->owner);
+                    // 已存在：仅当离职用户是主（owner=1）时把接收人升为主；
+                    // 离职用户是副（owner=2）时不传副给接收人（spec：副不替补）
+                    if ((int)$item->owner === self::OWNER_PRIMARY) {
+                        $row->owner = self::OWNER_PRIMARY;
+                    }
+                    // owner=2/0：保留接收人原有 owner 值不变
                     $row->save();
                     $item->delete();
                 } else {
-                    // 不存在则改变原数据
+                    // 不存在：转移时如果离职用户是副，降级为普通成员（不带副身份过户给接收人）
+                    if ((int)$item->owner === self::OWNER_DEPUTY) {
+                        $item->owner = self::OWNER_MEMBER;
+                    }
                     $item->userid = $newUserid;
                     $item->save();
                 }

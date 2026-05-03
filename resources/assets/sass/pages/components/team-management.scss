@@ -109,9 +109,26 @@
                     &.level-4 {
                         margin-left: 54px;
                     }
+                    .department-owner-wrap {
+                        display: flex;
+                        align-items: center;
+                        position: relative;
+                    }
                     .department-icon {
                         padding: 8px;
                         font-size: 16px;
+                    }
+                    .department-owner-more {
+                        margin-left: -2px;
+                        margin-right: 4px;
+                        padding: 0 5px;
+                        height: 18px;
+                        line-height: 18px;
+                        font-size: 11px;
+                        color: #ffffff;
+                        background-color: #5a8dee;
+                        border-radius: 9px;
+                        flex-shrink: 0;
                     }
                     .department-title {
                         flex: 1;

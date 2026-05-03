@@ -19,6 +19,7 @@
         </div>
         <div v-if="showName" class="avatar-name" :style="nameStyle">
             <div v-if="user.bot" class="taskfont bot">&#xe68c;</div>
+            <slot name="name-prefix"/>
             <span>{{nameText || user.nickname}}</span>
         </div>
     </div>

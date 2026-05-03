@@ -10,7 +10,7 @@
                 <div v-if="loading" class="project-load"><Loading/></div>
             </div>
             <ul class="project-icons">
-                <li class="project-avatar" :class="{'cursor-default': projectData.owner_userid !== userId}" @click="projectDropdown('user')">
+                <li class="project-avatar" :class="{'cursor-default': !isOwnerOrDeputy}" @click="projectDropdown('user')">
                     <ul>
                         <li>
                             <UserAvatarTip :userid="projectData.owner_userid" :size="36" :borderWidth="2" :openDelay="0">
@@ -24,8 +24,10 @@
                                     <Icon type="ios-more"/>
                                 </ETooltip>
                             </li>
-                            <li v-else>
-                                <UserAvatarTip :userid="item.userid" :size="36" :borderWidth="2" :openDelay="0"/>
+                            <li v-else :class="{'is-deputy': isDeputyUid(item.userid)}">
+                                <UserAvatarTip :userid="item.userid" :size="36" :borderWidth="2" :openDelay="0">
+                                    <p v-if="isDeputyUid(item.userid)">{{$L('项目管理员')}}</p>
+                                </UserAvatarTip>
                             </li>
                         </template>
                     </ul>
@@ -50,7 +52,7 @@
                 <li class="project-icon">
                     <EDropdown @command="projectDropdown" trigger="click" transfer>
                         <Icon class="menu-icon" type="ios-more" />
-                        <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown" class="project-panel-project-menu-dropdown">
+                        <EDropdownMenu v-if="isOwnerOrDeputy" slot="dropdown" class="project-panel-project-menu-dropdown">
                             <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                             <EDropdownItem command="permissions">{{$L('权限设置')}}</EDropdownItem>
                             <EDropdownItem command="task_template">{{$L('任务模板')}}</EDropdownItem>
@@ -62,9 +64,12 @@
                             <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
                             <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
                             <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
-                            <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
                             <EDropdownItem command="archived">{{$L('归档项目')}}</EDropdownItem>
-                            <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
+                            <!--主独占（仅主负责人可见）-->
+                            <template v-if="canManageDeputy">
+                                <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
+                                <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
+                            </template>
                         </EDropdownMenu>
                         <EDropdownMenu v-else slot="dropdown">
                             <EDropdownItem command="task_tag">{{$L('任务标签')}}</EDropdownItem>
@@ -446,14 +451,27 @@
             :title="$L('成员管理')"
             :mask-closable="false">
             <Form :model="userData" v-bind="formOptions" @submit.native.prevent>
+                <FormItem v-if="canManageDeputy" prop="deputy_userids" :label="$L('项目管理员')">
+                    <UserSelect
+                        v-model="userData.deputy_userids"
+                        :uncancelable="deputyRowUncancelable"
+                        :disabledChoice="deputyRowDisabledChoice"
+                        :multiple="true"
+                        :multiple-max="20"
+                        :title="$L('选择项目管理员')"/>
+                </FormItem>
                 <FormItem prop="userids" :label="$L('项目成员')">
-                    <UserSelect v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :title="$L('选择项目成员')"/>
+                    <UserSelect
+                        v-model="userData.userids"
+                        :uncancelable="memberRowUncancelable"
+                        :multiple-max="100"
+                        :title="$L('选择项目成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="userShow=false">{{$L('取消')}}</Button>
                 <Poptip
-                    v-if="userWaitRemove.length > 0"
+                    v-if="userWaitRemove.length > 0 || deputyWaitDemote.length > 0"
                     confirm
                     placement="bottom"
                     style="margin-left:8px"
@@ -462,11 +480,19 @@
                     @on-ok="onUser"
                     transfer>
                     <div slot="title">
-                        <p><strong>{{$L('移除成员负责的任务将变成无负责人，')}}</strong></p>
-                        <p>{{$L('注意此操作不可逆！')}}</p>
-                        <ul class="project-panel-wait-remove">
-                            <li>{{$L('即将移除')}}：</li>
-                            <li v-for="id in userWaitRemove" :key="id">
+                        <p><strong>{{$L('请确认以下操作，注意此操作不可逆！')}}</strong></p>
+                        <template v-if="userWaitRemove.length > 0">
+                            <p>{{$L('移除成员负责的任务将变成无负责人。')}}</p>
+                            <ul class="project-panel-wait-remove">
+                                <li>{{$L('即将移除')}}：</li>
+                                <li v-for="id in userWaitRemove" :key="'r'+id">
+                                    <UserAvatar :userid="id" :size="20" showName/>
+                                </li>
+                            </ul>
+                        </template>
+                        <ul v-if="deputyWaitDemote.length > 0" class="project-panel-wait-remove">
+                            <li>{{$L('即将罢免项目管理员')}}：</li>
+                            <li v-for="id in deputyWaitDemote" :key="'d'+id">
                                 <UserAvatar :userid="id" :size="20" showName/>
                             </li>
                         </ul>
@@ -747,6 +773,12 @@ export default {
             return wait;
         },
 
+        deputyWaitDemote() {
+            // 所有从副负责人列表中移出的人（即使同时被踢出项目，也在罢免段显示，避免操作隐身）
+            const {deputy_userids = [], deputy_useridbak = []} = this.userData;
+            return deputy_useridbak.filter(id => !deputy_userids.includes(id));
+        },
+
         msgUnread() {
             const {cacheDialogs, projectData} = this;
             const dialog = cacheDialogs.find(({id}) => id === projectData.dialog_id);
@@ -779,19 +811,65 @@ export default {
             }
         },
 
+        canManageDeputy() {
+            return this.projectData?.owner_userid === this.userId;
+        },
+
+        isOwnerOrDeputy() {
+            if (!this.projectData) return false;
+            if (this.projectData.owner_userid === this.userId) return true;
+            return (this.projectData.deputy_userids || []).includes(this.userId);
+        },
+
+        memberRowUncancelable() {
+            // 项目成员行：主+当前副选择（响应式）都不可移除
+            if (!this.projectData) return [];
+            const deputies = (this.userData && Array.isArray(this.userData.deputy_userids))
+                ? this.userData.deputy_userids
+                : (this.projectData.deputy_userids || []);
+            return [
+                this.projectData.owner_userid,
+                ...deputies,
+            ];
+        },
+
+        deputyRowUncancelable() {
+            // 副负责人行：防御性锁定主（理论上主不会出现在该 v-model 里）
+            if (!this.projectData) return [];
+            return [this.projectData.owner_userid];
+        },
+
+        deputyRowDisabledChoice() {
+            // 副负责人候选：排除主（不能任命主为副）
+            if (!this.projectData) return [];
+            return [this.projectData.owner_userid];
+        },
+
+        projectMemberUserids() {
+            return (this.projectData.project_user || []).map(({userid}) => userid);
+        },
+
         projectUser() {
             const {projectData, windowWidth} = this;
             if (!projectData.project_user) {
                 return [];
             }
-            let max = windowWidth > 1200 ? 8 : 3
-            let list = projectData.project_user.filter(({userid}) => userid != projectData.owner_userid)
+            const max = windowWidth > 1200 ? 8 : 3;
+            const deputyIds = projectData.deputy_userids || [];
+            const list = projectData.project_user
+                .filter(({userid}) => userid != projectData.owner_userid)
+                .slice()
+                .sort((a, b) => {
+                    const aD = deputyIds.includes(a.userid) ? 0 : 1;
+                    const bD = deputyIds.includes(b.userid) ? 0 : 1;
+                    return aD - bD;
+                });
             if (list.length <= max) {
-                return list
+                return list;
             }
-            let array = list.slice(0, max - 1);
-            array.push({userid: -1})
-            array.push(list[list.length - 1])
+            const array = list.slice(0, max - 1);
+            array.push({userid: -1});
+            array.push(list[list.length - 1]);
             return array;
         },
 
@@ -1089,6 +1167,16 @@ export default {
         },
         windowWidth() {
             this.handleColumnDebounce(100);
+        },
+        'userData.deputy_userids'(newDeputies) {
+            // 副负责人必须是项目成员：副行新增时自动并入成员行（罢免时不联动移除）
+            if (!Array.isArray(newDeputies) || !Array.isArray(this.userData.userids)) {
+                return;
+            }
+            const toAdd = newDeputies.filter(id => !this.userData.userids.includes(id));
+            if (toAdd.length > 0) {
+                this.userData.userids = [...this.userData.userids, ...toAdd];
+            }
         },
         projectData(newData, oldData) {
             this.sortData = this.getSort();
@@ -1419,12 +1507,23 @@ export default {
 
         onUser() {
             this.userLoad++;
+            // 副负责人必须是项目成员：把 deputy 并入 userid 列表（前端归一化）
+            const baseUserids = (this.userData.userids || []).slice();
+            const deputyUserids = (this.userData.deputy_userids || []).slice();
+            const mergedUserids = Array.from(new Set([...baseUserids, ...deputyUserids]));
+            //
+            const payload = {
+                project_id: this.projectId,
+                userid: mergedUserids,
+            };
+            // 仅主负责人发送 deputy_userid；副负责人/其他角色不发送（后端也会忽略）
+            if (this.canManageDeputy) {
+                payload.deputy_userid = deputyUserids;
+            }
+            //
             this.$store.dispatch("call", {
                 url: 'project/user',
-                data: {
-                    project_id: this.projectId,
-                    userid: this.userData.userids,
-                },
+                data: payload,
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.userShow = false;
@@ -1534,13 +1633,15 @@ export default {
                     break;
 
                 case "user":
-                    if (this.projectData.owner_userid !== this.userId) {
+                    if (!this.isOwnerOrDeputy) {
                         return;
                     }
                     const userids = this.projectData.project_user.map(({userid}) => userid);
+                    const deputyUserids = [...(this.projectData.deputy_userids || [])];
                     this.$set(this.userData, 'userids', userids);
                     this.$set(this.userData, 'useridbak', userids);
-                    this.$set(this.userData, 'uncancelable', [this.projectData.owner_userid]);
+                    this.$set(this.userData, 'deputy_userids', deputyUserids);
+                    this.$set(this.userData, 'deputy_useridbak', deputyUserids);
                     this.userShow = true;
                     break;
 
@@ -1591,6 +1692,14 @@ export default {
                     this.onExit();
                     break;
             }
+        },
+
+        isPrimaryOwnerUid(userid) {
+            return userid === this.projectData.owner_userid;
+        },
+
+        isDeputyUid(userid) {
+            return (this.projectData.deputy_userids || []).includes(userid);
         },
 
         openTask(task, receive) {

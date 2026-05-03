@@ -372,15 +372,16 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/user 修改项目成员
+     * @api {post} api/project/user 修改项目成员
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName user
      *
-     * @apiParam {Number} project_id        项目ID
-     * @apiParam {Number} userid            成员ID 或 成员ID组
+     * @apiParam {Number}   project_id    项目ID
+     * @apiParam {Number[]} userid        成员userid数组（最终完整列表）
+     * @apiParam {Number[]} [deputy_userid] 副负责人userid数组（可选，仅主负责人有效；必须是 userid 子集）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -393,6 +394,13 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $userid = Request::input('userid');
         $userid = is_array($userid) ? $userid : [$userid];
+        $userid = array_values(array_unique(array_map('intval', $userid)));
+        //
+        $deputy_userid = Request::input('deputy_userid');
+        if ($deputy_userid !== null) {
+            $deputy_userid = is_array($deputy_userid) ? $deputy_userid : [$deputy_userid];
+            $deputy_userid = array_values(array_unique(array_map('intval', $deputy_userid)));
+        }
         //
         if (count($userid) > 100) {
             return Base::retError('项目人数最多100个');
@@ -400,7 +408,20 @@ class ProjectController extends AbstractController
         //
         $project = Project::userProject($project_id, true, true);
         //
-        $deleteUser = AbstractModel::transaction(function() use ($project, $userid) {
+        // 仅主负责人可设置副负责人；副负责人/其他角色提交 deputy_userid 一律忽略
+        $isPrimary = (int)$project->owner === ProjectUser::OWNER_PRIMARY;
+        $applyDeputy = $isPrimary && $deputy_userid !== null;
+        //
+        if ($applyDeputy) {
+            if (!empty(array_diff($deputy_userid, $userid))) {
+                return Base::retError('项目管理员必须是项目成员');
+            }
+            if (in_array((int)$project->owner_userid, $deputy_userid, true)) {
+                return Base::retError('负责人不能任命为项目管理员');
+            }
+        }
+        //
+        $deleteUser = AbstractModel::transaction(function() use ($project, $userid, $applyDeputy, $deputy_userid) {
             $array = [];
             foreach ($userid as $uid) {
                 if ($project->joinProject($uid)) {
@@ -408,15 +429,37 @@ class ProjectController extends AbstractController
                 }
             }
             $deleteRows = ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array)->get();
-            $deleteUser = $deleteRows->pluck('userid');
+            $deleteUserids = $deleteRows->pluck('userid');
             foreach ($deleteRows as $row) {
                 $row->exitProject();
             }
+            //
+            // 副负责人 diff（仅主负责人有效）
+            if ($applyDeputy) {
+                $currentDeputies = ProjectUser::whereProjectId($project->id)
+                    ->where('owner', ProjectUser::OWNER_DEPUTY)
+                    ->pluck('userid')->toArray();
+                $toPromote = array_values(array_diff($deputy_userid, $currentDeputies));
+                $toDemote = array_values(array_diff($currentDeputies, $deputy_userid));
+                if (!empty($toPromote)) {
+                    ProjectUser::whereProjectId($project->id)
+                        ->whereIn('userid', $toPromote)
+                        ->where('owner', ProjectUser::OWNER_MEMBER)
+                        ->change(['owner' => ProjectUser::OWNER_DEPUTY]);
+                }
+                if (!empty($toDemote)) {
+                    ProjectUser::whereProjectId($project->id)
+                        ->whereIn('userid', $toDemote)
+                        ->where('owner', ProjectUser::OWNER_DEPUTY)
+                        ->change(['owner' => ProjectUser::OWNER_MEMBER]);
+                }
+            }
+            //
             $project->syncDialogUser();
             $project->addLog("修改项目成员");
             $project->user_simple = count($array) . "|" . implode(",", array_slice($array, 0, 3));
             $project->save();
-            return $deleteUser->toArray();
+            return $deleteUserids->toArray();
         });
         //
         $project->pushMsg('delete', null, $deleteUser);
@@ -574,26 +617,136 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $owner_userid = intval(Request::input('owner_userid'));
         //
-        $project = Project::userProject($project_id, true, true);
+        $project = Project::userProject($project_id, true, 'primary');
         //
         if (!User::whereUserid($owner_userid)->exists()) {
             return Base::retError('成员不存在');
         }
         //
         AbstractModel::transaction(function() use ($owner_userid, $project) {
-            ProjectUser::whereProjectId($project->id)->change(['owner' => 0]);
+            // 仅清除原主 owner=1（副 owner=2 保留）
+            ProjectUser::whereProjectId($project->id)
+                ->whereOwner(ProjectUser::OWNER_PRIMARY)
+                ->change(['owner' => 0]);
+            // 设新主 owner=1（如新主原本是副，从 2 升为 1）
             ProjectUser::updateInsert([
                 'project_id' => $project->id,
                 'userid' => $owner_userid,
             ], [
-                'owner' => 1,
+                'owner' => ProjectUser::OWNER_PRIMARY,
             ]);
+            // 同步项目群 owner_id
+            if ($project->dialog_id > 0) {
+                $dialog = WebSocketDialog::find($project->dialog_id);
+                if ($dialog) {
+                    $dialog->owner_id = $owner_userid;
+                    $dialog->save();
+                }
+            }
+            // 同步成员 + role（syncDialogUser 已根据 owner 设置 role）
             $project->syncDialogUser();
             $project->addLog("移交项目给", ['userid' => $owner_userid]);
         });
         //
-        $project->pushMsg('detail');
+        // pushMsg 带 deputy_userids，前端可直接更新副列表无需重拉
+        $project->pushMsg('detail', [
+            'owner_userid' => $project->fresh()->owner_userid,
+            'deputy_userids' => $project->fresh()->deputy_userids,
+        ]);
         return Base::retSuccess('移交成功', ['id' => $project->id]);
+    }
+
+    /**
+     * @api {post} api/project/adddeputy 任命副负责人（仅主负责人可操作）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName adddeputy
+     *
+     * @apiParam {Number} project_id    项目ID
+     * @apiParam {Number} userid        要任命的项目成员 userid
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function adddeputy()
+    {
+        User::auth();
+        $project_id = intval(Request::input('project_id'));
+        $userid = intval(Request::input('userid'));
+
+        if ($userid <= 0) {
+            return Base::retError('请选择有效的成员');
+        }
+
+        $project = Project::userProject($project_id, true, 'primary');
+
+        $member = ProjectUser::where('project_id', $project->id)
+            ->where('userid', $userid)->first();
+        if (!$member) {
+            return Base::retError('该用户不是项目成员');
+        }
+        if ((int)$member->owner === ProjectUser::OWNER_PRIMARY) {
+            return Base::retError('不能将负责人任命为项目管理员');
+        }
+        if ((int)$member->owner !== ProjectUser::OWNER_DEPUTY) {
+            AbstractModel::transaction(function() use ($project, $member) {
+                $member->owner = ProjectUser::OWNER_DEPUTY;
+                $member->save();
+                $project->syncDialogUser(); // 同步群 role
+                $project->addLog('任命项目管理员', ['userid' => $member->userid]);
+            });
+            $project->pushMsg('detail', [
+                'deputy_userids' => $project->fresh()->deputy_userids,
+            ]);
+        }
+
+        return Base::retSuccess('任命成功');
+    }
+
+    /**
+     * @api {post} api/project/deldeputy 罢免副负责人（仅主负责人可操作）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName deldeputy
+     *
+     * @apiParam {Number} project_id    项目ID
+     * @apiParam {Number} userid        要罢免的副负责人 userid
+     */
+    public function deldeputy()
+    {
+        User::auth();
+        $project_id = intval(Request::input('project_id'));
+        $userid = intval(Request::input('userid'));
+
+        if ($userid <= 0) {
+            return Base::retError('请选择有效的成员');
+        }
+
+        $project = Project::userProject($project_id, true, 'primary');
+
+        $member = ProjectUser::where('project_id', $project->id)
+            ->where('userid', $userid)->first();
+        if (!$member) {
+            return Base::retSuccess('罢免成功'); // 幂等：本来就不是成员
+        }
+        if ((int)$member->owner === ProjectUser::OWNER_DEPUTY) {
+            AbstractModel::transaction(function() use ($project, $member) {
+                $member->owner = ProjectUser::OWNER_MEMBER;
+                $member->save();
+                $project->syncDialogUser();
+                $project->addLog('罢免项目管理员', ['userid' => $member->userid]);
+            });
+            $project->pushMsg('detail', [
+                'deputy_userids' => $project->fresh()->deputy_userids,
+            ]);
+        }
+
+        return Base::retSuccess('罢免成功');
     }
 
     /**
@@ -784,7 +937,7 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::userProject($project_id, null, true);
+        $project = Project::userProject($project_id, null, 'primary');
         //
         $project->deleteProject();
         return Base::retSuccess('删除成功', ['id' => $project->id]);
@@ -1194,7 +1347,7 @@ class ProjectController extends AbstractController
         // 任务可见性条件
         $builder->leftJoin('project_users', function ($query) use($userid) {
             $query->on('project_tasks.project_id', '=', 'project_users.project_id');
-            $query->where('project_users.owner', 1);
+            $query->whereIn('project_users.owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY]);
             $query->where('project_users.userid', $userid);
         });
         $builder->leftJoin('project_task_visibility_users', function ($query) use($userid) {
@@ -1839,8 +1992,10 @@ class ProjectController extends AbstractController
         $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
         $task = ProjectTask::userTask($task_id, $isArchived, true, ['taskUser', 'taskTag']);
         // 项目可见性
-        $project_userid = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');     // 项目负责人
-        if ($task->visibility != 1 && $user->userid != $project_userid) {
+        $projectOwnerids = ProjectUser::whereProjectId($task->project_id)
+            ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
+            ->pluck('userid')->map(fn($v) => (int)$v)->toArray();     // 项目负责人（主+副）
+        if ($task->visibility != 1 && !in_array($user->userid, $projectOwnerids)) {
             $taskUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();                      //任务负责人、协助人
             $subTaskUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();                  //子任务负责人、协助人
             $visibleUserids = ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid')->toArray();         //可见人
@@ -2347,7 +2502,9 @@ class ProjectController extends AbstractController
         if ($data['visibility'] == 1) {
             $data['is_visible'] = 1;
         } else {
-            $projectOwner = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->pluck('userid')->toArray();  // 项目负责人
+            $projectOwner = ProjectUser::whereProjectId($task->project_id)
+                ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
+                ->pluck('userid')->toArray();  // 项目负责人（主+副）
             $taskOwnerAndAssists = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->pluck('userid')->toArray();
             $visibleIds = array_merge($projectOwner, $taskOwnerAndAssists);
             $data['is_visible'] = in_array($user->userid, $visibleIds) ? 1 : 0;
@@ -2398,7 +2555,10 @@ class ProjectController extends AbstractController
         ]);
         $data = ProjectTask::oneTask($task->id);
         $pushUserIds = ProjectTaskUser::whereTaskId($task->id)->pluck('userid')->toArray();
-        $pushUserIds[] = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');
+        $ownerids = ProjectUser::whereProjectId($task->project_id)
+            ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
+            ->pluck('userid')->toArray();
+        $pushUserIds = array_merge($pushUserIds, $ownerids);
         foreach ($pushUserIds as $userId) {
             $task->pushMsg('add', $data, $userId);
         }
