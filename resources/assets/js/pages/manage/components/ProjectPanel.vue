@@ -774,7 +774,7 @@ export default {
         },
 
         deputyWaitDemote() {
-            // 所有从副负责人列表中移出的人（即使同时被踢出项目，也在罢免段显示，避免操作隐身）
+            // 所有从项目管理员列表中移出的人（即使同时被踢出项目，也在罢免段显示，避免操作隐身）
             const {deputy_userids = [], deputy_useridbak = []} = this.userData;
             return deputy_useridbak.filter(id => !deputy_userids.includes(id));
         },
@@ -822,7 +822,7 @@ export default {
         },
 
         memberRowUncancelable() {
-            // 项目成员行：主+当前副选择（响应式）都不可移除
+            // 项目成员行：负责人 + 当前项目管理员选择（响应式）都不可移除
             if (!this.projectData) return [];
             const deputies = (this.userData && Array.isArray(this.userData.deputy_userids))
                 ? this.userData.deputy_userids
@@ -834,13 +834,13 @@ export default {
         },
 
         deputyRowUncancelable() {
-            // 副负责人行：防御性锁定主（理论上主不会出现在该 v-model 里）
+            // 项目管理员行：防御性锁定负责人（理论上负责人不会出现在该 v-model 里）
             if (!this.projectData) return [];
             return [this.projectData.owner_userid];
         },
 
         deputyRowDisabledChoice() {
-            // 副负责人候选：排除主（不能任命主为副）
+            // 项目管理员候选：排除负责人（不能任命负责人为项目管理员）
             if (!this.projectData) return [];
             return [this.projectData.owner_userid];
         },
@@ -1169,7 +1169,7 @@ export default {
             this.handleColumnDebounce(100);
         },
         'userData.deputy_userids'(newDeputies) {
-            // 副负责人必须是项目成员：副行新增时自动并入成员行（罢免时不联动移除）
+            // 项目管理员必须是项目成员：项目管理员行新增时自动并入成员行（罢免时不联动移除）
             if (!Array.isArray(newDeputies) || !Array.isArray(this.userData.userids)) {
                 return;
             }
@@ -1507,7 +1507,7 @@ export default {
 
         onUser() {
             this.userLoad++;
-            // 副负责人必须是项目成员：把 deputy 并入 userid 列表（前端归一化）
+            // 项目管理员必须是项目成员：把 deputy 并入 userid 列表（前端归一化）
             const baseUserids = (this.userData.userids || []).slice();
             const deputyUserids = (this.userData.deputy_userids || []).slice();
             const mergedUserids = Array.from(new Set([...baseUserids, ...deputyUserids]));
@@ -1516,7 +1516,7 @@ export default {
                 project_id: this.projectId,
                 userid: mergedUserids,
             };
-            // 仅主负责人发送 deputy_userid；副负责人/其他角色不发送（后端也会忽略）
+            // 仅项目负责人发送 deputy_userid；项目管理员/其他角色不发送（后端也会忽略）
             if (this.canManageDeputy) {
                 payload.deputy_userid = deputyUserids;
             }

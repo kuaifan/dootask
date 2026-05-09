@@ -2146,7 +2146,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/department/adddeputy 任命副负责人（限管理员）
+     * @api {post} api/users/department/adddeputy 任命部门管理员（限管理员）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2154,7 +2154,7 @@ class UsersController extends AbstractController
      * @apiName department__adddeputy
      *
      * @apiParam {Number} id          部门 id
-     * @apiParam {Number} userid      副负责人 userid
+     * @apiParam {Number} userid      部门管理员 userid
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -2178,7 +2178,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/department/deldeputy 罢免副负责人（限管理员）
+     * @api {post} api/users/department/deldeputy 罢免部门管理员（限管理员）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2186,7 +2186,7 @@ class UsersController extends AbstractController
      * @apiName department__deldeputy
      *
      * @apiParam {Number} id          部门 id
-     * @apiParam {Number} userid      要罢免的副负责人 userid
+     * @apiParam {Number} userid      要罢免的部门管理员 userid
      */
     public function department__deldeputy()
     {

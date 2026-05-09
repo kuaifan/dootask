@@ -39,13 +39,13 @@ class ProjectUser extends AbstractModel
 {
     /** @var int 普通成员编码 */
     const OWNER_MEMBER = 0;
-    /** @var int 主负责人编码 */
+    /** @var int 项目负责人编码 */
     const OWNER_PRIMARY = 1;
-    /** @var int 副负责人编码 */
+    /** @var int 项目管理员编码 */
     const OWNER_DEPUTY = 2;
 
     /**
-     * 是否主负责人（owner=1）
+     * 是否项目负责人（owner=1）
      */
     public function isPrimaryOwner(): bool
     {
@@ -53,7 +53,7 @@ class ProjectUser extends AbstractModel
     }
 
     /**
-     * 是否副负责人（owner=2）
+     * 是否项目管理员（owner=2）
      */
     public function isDeputyOwner(): bool
     {
@@ -61,7 +61,7 @@ class ProjectUser extends AbstractModel
     }
 
     /**
-     * 是否负责人（主或副）
+     * 是否负责人（含项目管理员）
      */
     public function isOwner(): bool
     {
@@ -91,8 +91,8 @@ class ProjectUser extends AbstractModel
             foreach ($list as $item) {
                 $row = self::whereProjectId($item->project_id)->whereUserid($newUserid)->first();
                 if ($row) {
-                    // 已存在：仅当离职用户是主（owner=1）时把接收人升为主；
-                    // 离职用户是副（owner=2）时不传副给接收人（spec：副不替补）
+                    // 已存在：仅当离职用户是项目负责人（owner=1）时把接收人升为项目负责人；
+                    // 离职用户是项目管理员（owner=2）时不传项目管理员身份给接收人（spec：项目管理员不替补）
                     if ((int)$item->owner === self::OWNER_PRIMARY) {
                         $row->owner = self::OWNER_PRIMARY;
                     }
@@ -100,7 +100,7 @@ class ProjectUser extends AbstractModel
                     $row->save();
                     $item->delete();
                 } else {
-                    // 不存在：转移时如果离职用户是副，降级为普通成员（不带副身份过户给接收人）
+                    // 不存在：转移时如果离职用户是项目管理员，降级为普通成员（不带项目管理员身份过户给接收人）
                     if ((int)$item->owner === self::OWNER_DEPUTY) {
                         $item->owner = self::OWNER_MEMBER;
                     }

@@ -520,7 +520,7 @@ class WebSocketDialog extends AbstractModel
                 foreach ($list as $item) {
                     if ($checkDelete) {
                         if ($type === 'remove') {
-                            // 移出时：如果是全员群仅允许管理员操作，其他群主/副群主/邀请人可以操作
+                            // 移出时：如果是全员群仅允许管理员操作，其他群主/群管理员/邀请人可以操作
                             if ($this->group_type === 'all') {
                                 User::auth("admin");
                             } else {
@@ -529,12 +529,12 @@ class WebSocketDialog extends AbstractModel
                                 if ($actor <= 0) {
                                     throw new ApiException('只有群主或邀请人可以移出成员');
                                 }
-                                // 主群主、副群主、邀请人可移出
+                                // 群主、群管理员、邀请人可移出
                                 $allowedActor = $this->isOwner($actor) || $actor === (int)$item->inviter;
                                 if (!$allowedActor) {
                                     throw new ApiException('只有群主或邀请人可以移出成员');
                                 }
-                                // 副群主不能移出主群主或其他副群主
+                                // 群管理员不能移出群主或其他群管理员
                                 if ($this->isDeputyOwner($actor)) {
                                     $targetIsOwner = $this->isPrimaryOwner($item->userid) || $this->isDeputyOwner($item->userid);
                                     if ($targetIsOwner) {
@@ -659,7 +659,7 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
-     * 是否主群主（与 owner_id 一致）
+     * 是否群主（与 owner_id 一致）
      */
     public function isPrimaryOwner($userid): bool
     {
@@ -667,7 +667,7 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
-     * 是否副群主（仅 web_socket_dialog_users.role=2）
+     * 是否群管理员（仅 web_socket_dialog_users.role=2）
      */
     public function isDeputyOwner($userid): bool
     {
@@ -681,7 +681,7 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
-     * 是否群主（主或副）
+     * 是否群主（含群管理员）
      */
     public function isOwner($userid): bool
     {
@@ -689,7 +689,7 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
-     * 副群主 userid 列表
+     * 群管理员 userid 列表
      *
      * @return array
      */

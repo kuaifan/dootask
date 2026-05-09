@@ -48,7 +48,7 @@ class MultiOwnerGroupTest extends TestCase
         $member = $this->makeUser('m2@test.local');
         $dialog = $this->makeGroup($owner->userid, [$deputy->userid, $member->userid]);
 
-        // 手工把 deputy 设为副群主
+        // 手工把 deputy 设为群管理员
         WebSocketDialogUser::where('dialog_id', $dialog->id)
             ->where('userid', $deputy->userid)
             ->update(['role' => 2]);
@@ -111,13 +111,13 @@ class MultiOwnerGroupTest extends TestCase
             ->where('userid', $deputy->userid)
             ->update(['role' => 2]);
 
-        // 模拟副群主退群（pushMsg=false 跳过 Swoole 推送，仅验证 DB 状态）
+        // 模拟群管理员退群（pushMsg=false 跳过 Swoole 推送，仅验证 DB 状态）
         $dialog->exitGroup($deputy->userid, 'exit', false, false);
 
         $exists = WebSocketDialogUser::where('dialog_id', $dialog->id)
             ->where('userid', $deputy->userid)
             ->exists();
-        $this->assertFalse($exists, '退群后副群主记录应被删除');
+        $this->assertFalse($exists, '退群后群管理员记录应被删除');
         $this->assertNotContains($deputy->userid, $dialog->fresh()->deputy_ids);
     }
 
@@ -358,13 +358,13 @@ class MultiOwnerGroupTest extends TestCase
             return ['allowed' => false, 'error' => '目标用户不在群内'];
         }
 
-        // 主群主、副群主、邀请人可移出
+        // 群主、群管理员、邀请人可移出
         $allowedActor = $dialog->isOwner($actorId) || $actorId === (int)$item->inviter;
         if (!$allowedActor) {
             return ['allowed' => false, 'error' => '只有群主或邀请人可以移出成员'];
         }
 
-        // 副群主不能移出主群主或其他副群主
+        // 群管理员不能移出群主或其他群管理员
         if ($dialog->isDeputyOwner($actorId)) {
             $targetIsOwner = $dialog->isPrimaryOwner($targetId) || $dialog->isDeputyOwner($targetId);
             if ($targetIsOwner) {
@@ -389,9 +389,9 @@ class MultiOwnerGroupTest extends TestCase
         WebSocketDialogUser::where('dialog_id', $dialog->id)
             ->where('userid', $deputy->userid)->update(['role' => 2]);
 
-        // 验证权限逻辑：副群主可移出普通成员
+        // 验证权限逻辑：群管理员可移出普通成员
         $result = $this->simulateRemovePermission($dialog, $deputy->userid, $member->userid);
-        $this->assertTrue($result['allowed'], '副群主应能移出普通成员，错误：' . ($result['error'] ?? ''));
+        $this->assertTrue($result['allowed'], '群管理员应能移出普通成员，错误：' . ($result['error'] ?? ''));
 
         // 验证实际移出操作（checkDelete=false 绕过 auth，直接测试 DB 状态）
         $dialog->exitGroup($member->userid, 'remove', false, false);
@@ -408,9 +408,9 @@ class MultiOwnerGroupTest extends TestCase
         WebSocketDialogUser::where('dialog_id', $dialog->id)
             ->where('userid', $deputy->userid)->update(['role' => 2]);
 
-        // 验证权限逻辑：副群主不可移出主群主
+        // 验证权限逻辑：群管理员不可移出群主
         $result = $this->simulateRemovePermission($dialog, $deputy->userid, $owner->userid);
-        $this->assertFalse($result['allowed'], '副群主不应能移出主群主');
+        $this->assertFalse($result['allowed'], '群管理员不应能移出群主');
         $this->assertNotNull($result['error']);
     }
 
@@ -424,9 +424,9 @@ class MultiOwnerGroupTest extends TestCase
             ->whereIn('userid', [$deputy1->userid, $deputy2->userid])
             ->update(['role' => 2]);
 
-        // 验证权限逻辑：副群主不可移出其他副群主
+        // 验证权限逻辑：群管理员不可移出其他群管理员
         $result = $this->simulateRemovePermission($dialog, $deputy1->userid, $deputy2->userid);
-        $this->assertFalse($result['allowed'], '副群主不应能移出其他副群主');
+        $this->assertFalse($result['allowed'], '群管理员不应能移出其他群管理员');
         $this->assertEquals('群管理员不能移出群主或其他群管理员', $result['error']);
     }
 
@@ -466,11 +466,11 @@ class MultiOwnerGroupTest extends TestCase
     }
 
     /**
-     * 验证离职移交时副群主角色被正确清除。
+     * 验证离职移交时群管理员角色被正确清除。
      *
      * UserTransfer::exitDialog() 对离职用户调用 exitGroup($original_userid, 'remove', false, false)，
      * exitGroup 内部直接 hard-delete web_socket_dialog_users 记录（$item->delete()），
-     * 因此副群主的 role 随记录一起消失，无需额外逻辑。
+     * 因此群管理员的 role 随记录一起消失，无需额外逻辑。
      *
      * 本测试直接调用 exitDialog()（通过 UserTransfer 实例），绕过 start() 中的项目/任务/文件迁移，
      * 以确保在无 Swoole 推送的 PHPUnit 环境中可以正常运行。
@@ -482,13 +482,13 @@ class MultiOwnerGroupTest extends TestCase
         $receiver = $this->makeUser('rec11@test.local');
         $dialog = $this->makeGroup($owner->userid, [$departing->userid, $receiver->userid]);
 
-        // 将离职用户设为副群主
+        // 将离职用户设为群管理员
         WebSocketDialogUser::where('dialog_id', $dialog->id)
             ->where('userid', $departing->userid)
             ->update(['role' => 2]);
 
         // 验证前置条件
-        $this->assertContains($departing->userid, $dialog->fresh()->deputy_ids, '前置条件：离职用户应是副群主');
+        $this->assertContains($departing->userid, $dialog->fresh()->deputy_ids, '前置条件：离职用户应是群管理员');
 
         // 通过 UserTransfer 触发 exitDialog（使用正确字段名 original_userid / new_userid）
         $transfer = \App\Models\UserTransfer::createInstance([
@@ -500,14 +500,14 @@ class MultiOwnerGroupTest extends TestCase
 
         $freshDialog = $dialog->fresh();
 
-        // 离职用户不应再出现在副群主列表中
-        $this->assertNotContains($departing->userid, $freshDialog->deputy_ids, '离职用户不应留在副群主列表');
+        // 离职用户不应再出现在群管理员列表中
+        $this->assertNotContains($departing->userid, $freshDialog->deputy_ids, '离职用户不应留在群管理员列表');
         // 离职用户的成员记录应已删除
         $exists = WebSocketDialogUser::where('dialog_id', $dialog->id)
             ->where('userid', $departing->userid)
             ->exists();
         $this->assertFalse($exists, 'exitDialog 后离职用户的成员记录应被删除');
-        // 接收方不应自动继承副群主角色
-        $this->assertNotContains($receiver->userid, $freshDialog->deputy_ids, '接收方不应自动继承副群主角色');
+        // 接收方不应自动继承群管理员角色
+        $this->assertNotContains($receiver->userid, $freshDialog->deputy_ids, '接收方不应自动继承群管理员角色');
     }
 }

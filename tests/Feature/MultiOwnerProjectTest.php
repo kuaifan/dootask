@@ -117,17 +117,17 @@ class MultiOwnerProjectTest extends TestCase
     }
 
     /**
-     * 模拟合并后的 ProjectController::user() 端点：同步成员 + 副负责人。
+     * 模拟合并后的 ProjectController::user() 端点：同步成员 + 项目管理员。
      *
      * @param Project $project          项目实例
      * @param int     $callerUserid     调用方 userid（用于权限判断）
-     * @param int[]   $userids          最终成员完整列表（必须包含主负责人）
-     * @param int[]|null $deputyUserids 最终副负责人完整列表；null 表示不设置（沿用既有副）
+     * @param int[]   $userids          最终成员完整列表（必须包含项目负责人）
+     * @param int[]|null $deputyUserids 最终项目管理员完整列表；null 表示不设置（沿用既有项目管理员）
      * @return int[]                    被移除的成员 userids
      */
     private function simulateMemberSync(Project $project, int $callerUserid, array $userids, ?array $deputyUserids): array
     {
-        // 鉴权：调用方必须是主或副
+        // 鉴权：调用方必须是项目负责人或项目管理员
         $callerRow = ProjectUser::where('project_id', $project->id)
             ->where('userid', $callerUserid)->first();
         if (!$callerRow || !in_array((int)$callerRow->owner, [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY], true)) {
@@ -474,12 +474,12 @@ class MultiOwnerProjectTest extends TestCase
 
         \App\Models\ProjectUser::transfer($departing->userid, $receiver->userid);
 
-        // 离职的副已不在 project_users
+        // 离职的项目管理员已不在 project_users
         $this->assertFalse(
             ProjectUser::where('project_id', $project->id)
                 ->where('userid', $departing->userid)->exists()
         );
-        // receiver 没有继承副身份
+        // receiver 没有继承项目管理员身份
         $row = ProjectUser::where('project_id', $project->id)->where('userid', $receiver->userid)->first();
         $this->assertNotEquals(2, (int)$row->owner);
         $this->assertNotContains($receiver->userid, $project->fresh()->deputy_userids);

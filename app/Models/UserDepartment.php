@@ -55,7 +55,7 @@ class UserDepartment extends AbstractModel
     }
 
     /**
-     * 副负责人 userid 列表
+     * 部门管理员 userid 列表
      * @return array
      */
     public function getDeputyUseridsAttribute(): array
@@ -71,7 +71,7 @@ class UserDepartment extends AbstractModel
     }
 
     /**
-     * 是否主负责人（与 owner_userid 一致）
+     * 是否部门负责人（与 owner_userid 一致）
      */
     public function isPrimaryOwner($userid): bool
     {
@@ -82,7 +82,7 @@ class UserDepartment extends AbstractModel
     }
 
     /**
-     * 是否副负责人（在 user_department_owners 表里）
+     * 是否部门管理员（在 user_department_owners 表里）
      */
     public function isDeputyOwner($userid): bool
     {
@@ -96,7 +96,7 @@ class UserDepartment extends AbstractModel
     }
 
     /**
-     * 是否负责人（主或副）
+     * 是否负责人（含部门管理员）
      */
     public function isOwner($userid): bool
     {
@@ -127,7 +127,7 @@ class UserDepartment extends AbstractModel
                     $dialog->owner_id = $this->owner_userid;
                     if ($dialog->save()) {
                         $dialog->joinGroup($this->owner_userid, 0, true);
-                        // 同步 role：原主 role=0、新主 role=1（副 role=2 保留不动）
+                        // 同步 role：原负责人 role=0、新负责人 role=1（部门管理员 role=2 保留不动）
                         if ($oldOwnerId > 0 && $oldOwnerId !== (int)$this->owner_userid) {
                             WebSocketDialogUser::where('dialog_id', $dialog->id)
                                 ->where('userid', $oldOwnerId)
@@ -156,9 +156,9 @@ class UserDepartment extends AbstractModel
                 $dialog->group_type = 'department';
                 if ($dialog->save()) {
                     $dialog->joinGroup($this->owner_userid, 0, true);
-                    // 同步 role：原主 role=0、新主 role=1、原副 role=0
-                    // 原副清零：避免 dialog_users.role=2 与 user_department_owners 不一致
-                    // （副关系不带过来，须通过 addDeputy 显式重新任命）
+                    // 同步 role：原负责人 role=0、新负责人 role=1、原部门管理员 role=0
+                    // 原部门管理员清零：避免 dialog_users.role=2 与 user_department_owners 不一致
+                    // （部门管理员关系不带过来，须通过 addDeputy 显式重新任命）
                     if ($oldOwnerId > 0 && $oldOwnerId !== (int)$this->owner_userid) {
                         WebSocketDialogUser::where('dialog_id', $dialog->id)
                             ->where('userid', $oldOwnerId)
@@ -214,10 +214,10 @@ class UserDepartment extends AbstractModel
     }
 
     /**
-     * 任命副负责人
-     * - 副自动加入 users.department（成为部门成员，与主对齐）
-     * - 副自动加入部门群 + 设 role=2
-     * - 幂等（已是副不报错）
+     * 任命部门管理员
+     * - 部门管理员自动加入 users.department（成为部门成员，与负责人对齐）
+     * - 部门管理员自动加入部门群 + 设 role=2
+     * - 幂等（已是部门管理员不报错）
      *
      * @param int $userid
      * @return void
@@ -237,13 +237,13 @@ class UserDepartment extends AbstractModel
         }
 
         AbstractModel::transaction(function () use ($userid, $user) {
-            // 写副表（unique key 自动幂等）
+            // 写部门管理员表（unique key 自动幂等）
             \DB::table('user_department_owners')->insertOrIgnore([
                 'department_id' => $this->id,
                 'userid' => $userid,
             ]);
 
-            // 加入 users.department（成为部门成员，与主对齐）
+            // 加入 users.department（成为部门成员，与负责人对齐）
             $userDeptIds = $user->department; // accessor 返回数组
             if (!in_array($this->id, $userDeptIds)) {
                 $userDeptIds = array_merge($userDeptIds, [$this->id]);
@@ -251,7 +251,7 @@ class UserDepartment extends AbstractModel
                 $user->save();
             }
 
-            // 加副入部门群 + 设 role=2
+            // 加部门管理员入部门群 + 设 role=2
             if ($this->dialog_id > 0) {
                 $dialog = WebSocketDialog::find($this->dialog_id);
                 if ($dialog) {
@@ -270,9 +270,9 @@ class UserDepartment extends AbstractModel
     }
 
     /**
-     * 罢免副负责人
-     * - 删副表记录
-     * - 从 users.department 移除该部门 ID（与主"离开部门"对齐）
+     * 罢免部门管理员
+     * - 删部门管理员表记录
+     * - 从 users.department 移除该部门 ID（与负责人"离开部门"对齐）
      * - 退出部门群（成员关系=群关系一致）
      * - 幂等
      *
@@ -341,7 +341,7 @@ class UserDepartment extends AbstractModel
         // 解散群组
         $dialog = WebSocketDialog::find($this->dialog_id);
         $dialog?->deleteDialog();
-        // 清理副负责人记录（防悬挂）
+        // 清理部门管理员记录（防悬挂）
         \DB::table('user_department_owners')->where('department_id', $this->id)->delete();
         //
         $this->delete();
@@ -355,7 +355,7 @@ class UserDepartment extends AbstractModel
      */
     public static function transfer($originalUserid, $newUserid)
     {
-        // 主转让（保持现有逻辑）
+        // 部门负责人转让（保持现有逻辑）
         self::whereOwnerUserid($originalUserid)->chunkById(100, function ($list) use ($originalUserid, $newUserid) {
             /** @var self $item */
             foreach ($list as $item) {
@@ -364,7 +364,7 @@ class UserDepartment extends AbstractModel
                 ]);
             }
         });
-        // 副离职清理（新增）：直接删除离职用户的所有副记录
+        // 部门管理员离职清理（新增）：直接删除离职用户的所有部门管理员记录
         // 不需要清群 role —— UserTransfer::exitDialog 会把人踢出所有群，role 随成员关系一起消失
         \DB::table('user_department_owners')
             ->where('userid', $originalUserid)

@@ -833,7 +833,7 @@ export default {
         },
 
         deputyDisabledChoice() {
-            // 主负责人不能同时是副；已是副的不需要再选
+            // 部门负责人不能同时是部门管理员；已是部门管理员的不需要再选
             return [
                 ...(this.departmentData.owner_userid || []),
             ];
@@ -1088,8 +1088,8 @@ export default {
                 });
                 $A.messageSuccess(res.msg);
 
-                // 副列表同步（编辑/新建都支持）
-                // 编辑场景：从 departmentList 取旧副；新建场景：从刚返回的列表反查刚创建的部门
+                // 部门管理员列表同步（编辑/新建都支持）
+                // 编辑场景：从 departmentList 取旧部门管理员；新建场景：从刚返回的列表反查刚创建的部门
                 let targetId = this.departmentData.id;
                 let oldDeputies = [];
                 if (targetId > 0) {

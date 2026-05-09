@@ -2897,7 +2897,7 @@ class DialogController extends AbstractController
         }
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
-        // 有群主（主或副）时，仅群主/副群主可邀请；无群主时，任意成员可邀请
+        // 有群主时，仅群主/群管理员可邀请；无群主时，任意成员可邀请
         if ($dialog->owner_id > 0 && !$dialog->isOwner($user->userid)) {
             throw new \App\Exceptions\ApiException('仅限群主或群管理员操作');
         }
@@ -3013,7 +3013,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 任命副群主（仅主群主可操作）
+     * 任命群管理员（仅群主可操作）
      *
      * @apiParam {Number} dialog_id 群对话ID
      * @apiParam {Number} userid 要任命的群成员 userid
@@ -3028,7 +3028,7 @@ class DialogController extends AbstractController
             return Base::retError('请选择有效的成员');
         }
 
-        $dialog = WebSocketDialog::checkDialog($dialog_id, true); // checkOwner=true：仅主群主
+        $dialog = WebSocketDialog::checkDialog($dialog_id, true); // checkOwner=true：仅群主
         $dialog->checkGroup('user'); // 仅普通群
 
         $member = WebSocketDialogUser::where('dialog_id', $dialog->id)
@@ -3054,10 +3054,10 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 罢免副群主（仅主群主可操作）
+     * 罢免群管理员（仅群主可操作）
      *
      * @apiParam {Number} dialog_id 群对话ID
-     * @apiParam {Number} userid 要罢免的副群主 userid
+     * @apiParam {Number} userid 要罢免的群管理员 userid
      */
     public function group__deldeputy()
     {

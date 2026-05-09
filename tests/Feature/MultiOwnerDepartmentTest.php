@@ -122,7 +122,7 @@ class MultiOwnerDepartmentTest extends TestCase
         $member = $this->makeUser('d3_m@test.local');
         $dept = $this->makeDepartment($owner->userid);
 
-        // 手动插入副记录（addDeputy 在 Task 5 才实现）
+        // 手动插入部门管理员记录（addDeputy 在 Task 5 才实现）
         DB::table('user_department_owners')->insert([
             'department_id' => $dept->id,
             'userid' => $deputy->userid,
@@ -184,7 +184,7 @@ class MultiOwnerDepartmentTest extends TestCase
         $deputy = $this->makeUser('d4b_dep@test.local');
         $dept = $this->makeDepartment($oldOwner->userid);
 
-        // 加 deputy 入群 + 副记录 + role=2（pushMsg=false 跳过 Swoole）
+        // 加 deputy 入群 + 部门管理员记录 + role=2（pushMsg=false 跳过 Swoole）
         $dialog = WebSocketDialog::find($dept->dialog_id);
         $dialog->joinGroup($deputy->userid, 0, null, false);
         DB::table('user_department_owners')->insert([
@@ -204,9 +204,9 @@ class MultiOwnerDepartmentTest extends TestCase
             'owner_userid' => $newOwner->userid,
         ]);
 
-        // 副表保留
+        // 部门管理员表保留
         $this->assertContains($deputy->userid, $dept->fresh()->deputy_userids);
-        // 副 role 保留
+        // 部门管理员 role 保留
         $depRole = WebSocketDialogUser::where('dialog_id', $dept->dialog_id)
             ->where('userid', $deputy->userid)->value('role');
         $this->assertEquals(2, (int)$depRole);
@@ -222,11 +222,11 @@ class MultiOwnerDepartmentTest extends TestCase
 
         $dept = $dept->fresh();
         $this->assertContains($deputy->userid, $dept->deputy_userids);
-        // 副已入群
+        // 部门管理员已入群
         $exists = WebSocketDialogUser::where('dialog_id', $dept->dialog_id)
             ->where('userid', $deputy->userid)->exists();
         $this->assertTrue($exists);
-        // 副 role=2
+        // 部门管理员 role=2
         $role = WebSocketDialogUser::where('dialog_id', $dept->dialog_id)
             ->where('userid', $deputy->userid)->value('role');
         $this->assertEquals(2, (int)$role);
@@ -272,23 +272,23 @@ class MultiOwnerDepartmentTest extends TestCase
         $dept = $this->makeDepartment($owner->userid);
         $this->simulateAddDeputy($dept, $deputy->userid);
 
-        // 任命后副应该入 users.department 并加入部门群
-        $this->assertContains($dept->id, User::find($deputy->userid)->department, '任命副后应加入 users.department');
+        // 任命后部门管理员应该入 users.department 并加入部门群
+        $this->assertContains($dept->id, User::find($deputy->userid)->department, '任命部门管理员后应加入 users.department');
         $this->assertTrue(
             WebSocketDialogUser::where('dialog_id', $dept->dialog_id)->where('userid', $deputy->userid)->exists(),
-            '任命副后应加入部门群'
+            '任命部门管理员后应加入部门群'
         );
 
         $this->simulateDelDeputy($dept, $deputy->userid);
 
         $dept = $dept->fresh();
         $this->assertNotContains($deputy->userid, $dept->deputy_userids);
-        // 罢免后从 users.department 移除（与主"离开部门"对齐）
-        $this->assertNotContains($dept->id, User::find($deputy->userid)->department, '罢免副后应从 users.department 移除');
+        // 罢免后从 users.department 移除（与负责人"离开部门"对齐）
+        $this->assertNotContains($dept->id, User::find($deputy->userid)->department, '罢免部门管理员后应从 users.department 移除');
         // 退出部门群（成员关系=群关系一致）
         $exists = WebSocketDialogUser::where('dialog_id', $dept->dialog_id)
             ->where('userid', $deputy->userid)->exists();
-        $this->assertFalse($exists, '罢免副后应退出部门群（成员关系=群关系）');
+        $this->assertFalse($exists, '罢免部门管理员后应退出部门群（成员关系=群关系）');
     }
 
     public function test_delDeputy_idempotent_for_non_deputy()
@@ -297,7 +297,7 @@ class MultiOwnerDepartmentTest extends TestCase
         $member = $this->makeUser('d6b_m@test.local');
         $dept = $this->makeDepartment($owner->userid);
 
-        // member 不是副，调 delDeputy 不应抛错
+        // member 不是部门管理员，调 delDeputy 不应抛错
         $this->simulateDelDeputy($dept, $member->userid);
         $this->assertTrue(true);
     }
@@ -326,15 +326,15 @@ class MultiOwnerDepartmentTest extends TestCase
 
         UserDepartment::transfer($departing->userid, $receiver->userid);
 
-        // 离职的副记录已删
+        // 离职的部门管理员记录已删
         $this->assertNotContains($departing->userid, $dept->fresh()->deputy_userids);
-        // receiver 没有继承副身份
+        // receiver 没有继承部门管理员身份
         $this->assertNotContains($receiver->userid, $dept->fresh()->deputy_userids);
     }
 
     public function test_user_transfer_inherits_departing_primary()
     {
-        // 主转让仍要把主权位传给接收人（保留现有行为）
+        // 部门负责人转让仍要把负责人身份传给接收人（保留现有行为）
         $departing = $this->makeUser('d7c_dep@test.local');
         $receiver = $this->makeUser('d7c_rec@test.local');
         $dept = $this->makeDepartment($departing->userid);
@@ -346,7 +346,7 @@ class MultiOwnerDepartmentTest extends TestCase
 
     public function test_deleteDepartment_recursively_cleans_child_deputies()
     {
-        // 父部门 + 子部门各有副，删父部门时副记录应级联清理
+        // 父部门 + 子部门各有部门管理员，删父部门时部门管理员记录应级联清理
         $owner = $this->makeUser('d7d_o@test.local');
         $deputyParent = $this->makeUser('d7d_dp@test.local');
         $deputyChild = $this->makeUser('d7d_dc@test.local');
@@ -365,7 +365,7 @@ class MultiOwnerDepartmentTest extends TestCase
 
         $parentId = $parent->id;
         $childId = $child->id;
-        $parent->deleteDepartment(); // 递归删子部门 + 清各自副
+        $parent->deleteDepartment(); // 递归删子部门 + 清各自部门管理员
 
         $this->assertEquals(0, DB::table('user_department_owners')->where('department_id', $parentId)->count());
         $this->assertEquals(0, DB::table('user_department_owners')->where('department_id', $childId)->count());

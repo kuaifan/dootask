@@ -94,7 +94,7 @@ class Project extends AbstractModel
     }
 
     /**
-     * 副负责人 userid 列表
+     * 项目管理员 userid 列表
      * @return array
      */
     public function getDeputyUseridsAttribute(): array
@@ -110,7 +110,7 @@ class Project extends AbstractModel
     }
 
     /**
-     * 是否主负责人（与 project_users.owner=1 一致）
+     * 是否项目负责人（与 project_users.owner=1 一致）
      */
     public function isPrimaryOwner($userid): bool
     {
@@ -124,7 +124,7 @@ class Project extends AbstractModel
     }
 
     /**
-     * 是否副负责人（与 project_users.owner=2 一致）
+     * 是否项目管理员（与 project_users.owner=2 一致）
      */
     public function isDeputyOwner($userid): bool
     {
@@ -138,7 +138,7 @@ class Project extends AbstractModel
     }
 
     /**
-     * 是否负责人（主或副）
+     * 是否负责人（含项目管理员）
      */
     public function isOwner($userid): bool
     {
@@ -693,8 +693,8 @@ class Project extends AbstractModel
      * 获取项目信息（用于判断会员是否存在项目内）
      * @param int $project_id
      * @param null|bool $archived true:仅限未归档, false:仅限已归档, null:不限制
-     * @param null|bool|string $mustOwner true:主或副都可（主+副共享操作）；
-     *                                    'primary':仅主（转让/删除/任命副等主独占操作）；
+     * @param null|bool|string $mustOwner true:负责人或项目管理员都可（共享操作）；
+     *                                    'primary':仅负责人（转让/删除/任命项目管理员等独占操作）；
      *                                    false:仅限非负责人；null:不限制
      * @return self
      */

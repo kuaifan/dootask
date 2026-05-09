@@ -1993,7 +1993,7 @@ class ProjectTask extends AbstractModel
         //
         $projectOwnerids = ProjectUser::whereProjectId($this->project_id)
             ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
-            ->pluck('userid')->toArray();  // 项目负责人（主+副）
+            ->pluck('userid')->toArray();  // 项目负责人（含项目管理员）
         //
         $array = [];
         if (empty($userids)) {
