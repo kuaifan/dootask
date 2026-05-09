@@ -118,6 +118,15 @@ class UserDepartment extends AbstractModel
             }
             $this->updateInstance($data);
             //
+            // 防御：新负责人若残留在 user_department_owners 中（如曾是该部门管理员），清理掉
+            // 否则后续 delDeputy / 罢免接口会把当前部门负责人误移出部门
+            if ($this->id && (int)$this->owner_userid > 0) {
+                \DB::table('user_department_owners')
+                    ->where('department_id', $this->id)
+                    ->where('userid', (int)$this->owner_userid)
+                    ->delete();
+            }
+            //
             if ($this->dialog_id > 0) {
                 // 已有群
                 $dialog = WebSocketDialog::find($this->dialog_id);
@@ -251,12 +260,13 @@ class UserDepartment extends AbstractModel
                 $user->save();
             }
 
-            // 加部门管理员入部门群 + 设 role=2
+            // 加部门管理员入部门群 + 设 role=2 + important=true
             if ($this->dialog_id > 0) {
                 $dialog = WebSocketDialog::find($this->dialog_id);
                 if ($dialog) {
                     // joinGroup($userid, $inviter, $important=null, $pushMsg=true)
-                    $dialog->joinGroup($userid, 0, null, true);
+                    // important=true：部门管理员成员关系不可被普通群操作打散
+                    $dialog->joinGroup($userid, 0, true, true);
                     WebSocketDialogUser::where('dialog_id', $dialog->id)
                         ->where('userid', $userid)
                         ->update(['role' => 2]);
@@ -282,6 +292,16 @@ class UserDepartment extends AbstractModel
     public function delDeputy($userid)
     {
         if ($userid <= 0) {
+            return;
+        }
+
+        // 防御：当前部门负责人不能被罢免（saveDepartment 应已清理残留，此处兜底）
+        // 仅清理 user_department_owners 中的悬挂记录，绝不联动移除其部门成员关系/部门群成员
+        if ((int)$this->owner_userid === (int)$userid) {
+            \DB::table('user_department_owners')
+                ->where('department_id', $this->id)
+                ->where('userid', $userid)
+                ->delete();
             return;
         }
 

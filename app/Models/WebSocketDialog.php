@@ -262,6 +262,15 @@ class WebSocketDialog extends AbstractModel
                 $data[$field] = $data[$field] ?? null;
             }
         }
+        // DB::table 列表/search/beyond 渠道进入的是 stdClass，不会触发 Eloquent $appends。
+        // 这里统一补齐 deputy_ids，保证群管理员入口和标识在所有会话来源中一致。
+        if (($data['type'] ?? null) === 'group' && !array_key_exists('deputy_ids', $data)) {
+            $data['deputy_ids'] = WebSocketDialogUser::whereDialogId($data['id'])
+                ->where('role', 2)
+                ->pluck('userid')
+                ->map(fn($v) => (int)$v)
+                ->toArray();
+        }
         $data['avatar'] = Base::fillUrl($data['avatar']);
 
         // 会员必要字段
@@ -529,17 +538,30 @@ class WebSocketDialog extends AbstractModel
                                 if ($actor <= 0) {
                                     throw new ApiException('只有群主或邀请人可以移出成员');
                                 }
-                                // 群主、群管理员、邀请人可移出
-                                $allowedActor = $this->isOwner($actor) || $actor === (int)$item->inviter;
-                                if (!$allowedActor) {
-                                    throw new ApiException('只有群主或邀请人可以移出成员');
-                                }
-                                // 群管理员不能移出群主或其他群管理员
-                                if ($this->isDeputyOwner($actor)) {
-                                    $targetIsOwner = $this->isPrimaryOwner($item->userid) || $this->isDeputyOwner($item->userid);
-                                    if ($targetIsOwner) {
+
+                                // 目标是群主或群管理员时的保护
+                                $targetIsPrimaryOwner = $this->isPrimaryOwner($item->userid);
+                                $targetIsDeputyOwner = $this->isDeputyOwner($item->userid);
+
+                                if ($targetIsPrimaryOwner || $targetIsDeputyOwner) {
+                                    // 普通邀请人不能移出群主或群管理员
+                                    $actorIsPrimaryOwner = $this->isPrimaryOwner($actor);
+                                    $actorIsDeputyOwner = $this->isDeputyOwner($actor);
+
+                                    if (!$actorIsPrimaryOwner && !$actorIsDeputyOwner) {
+                                        throw new ApiException('普通成员不能移出群主或群管理员');
+                                    }
+
+                                    // 群管理员不能移出群主或其他群管理员
+                                    if ($actorIsDeputyOwner && !$actorIsPrimaryOwner) {
                                         throw new ApiException('群管理员不能移出群主或其他群管理员');
                                     }
+                                }
+
+                                // 普通成员：群主、群管理员、邀请人可移出
+                                $allowedActor = $this->isOwner($actor) || $actor === (int)$item->inviter;
+                                if (!$allowedActor) {
+                                    throw new ApiException('只有群主、群管理员或邀请人可以移出成员');
                                 }
                             }
                         }

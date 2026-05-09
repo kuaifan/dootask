@@ -412,6 +412,31 @@ class ProjectController extends AbstractController
         $isPrimary = (int)$project->owner === ProjectUser::OWNER_PRIMARY;
         $applyDeputy = $isPrimary && $deputy_userid !== null;
         //
+        // 业务闭环：项目必须且只能有一个主负责人，最终成员列表必须包含该负责人
+        $primaryOwnerIds = ProjectUser::whereProjectId($project->id)
+            ->whereOwner(ProjectUser::OWNER_PRIMARY)
+            ->pluck('userid')
+            ->map(fn($v) => (int)$v)
+            ->toArray();
+        if (count($primaryOwnerIds) !== 1) {
+            return Base::retError('项目负责人数据异常，请先修复项目负责人');
+        }
+        $primaryOwnerId = $primaryOwnerIds[0];
+        if (!in_array($primaryOwnerId, $userid, true)) {
+            return Base::retError('项目成员列表必须包含项目负责人');
+        }
+        // 项目管理员可以管理普通成员，但不能借成员列表移除其他项目管理员
+        if (!$isPrimary) {
+            $currentDeputyIds = ProjectUser::whereProjectId($project->id)
+                ->whereOwner(ProjectUser::OWNER_DEPUTY)
+                ->pluck('userid')
+                ->map(fn($v) => (int)$v)
+                ->toArray();
+            if (!empty(array_diff($currentDeputyIds, $userid))) {
+                return Base::retError('项目管理员不能移除项目负责人或项目管理员');
+            }
+        }
+        //
         if ($applyDeputy) {
             if (!empty(array_diff($deputy_userid, $userid))) {
                 return Base::retError('项目管理员必须是项目成员');
