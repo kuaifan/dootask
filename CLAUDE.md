@@ -41,6 +41,10 @@ Laravel 8 (LaravelS/Swoole) + Vue 2 (Vite) + Electron。开源任务/项目管�
 - 新增用户可见文本须追加原文（简体中文）到：前端 `language/original-web.txt`，后端 `language/original-api.txt`（去重）
 - 前端翻译用 `$L("文本")`，动态值用 `(*)` 占位：`$L('共(*)条', n)`——禁止拼接翻译
 
+## Playwright 测试
+
+- Playwright 测试结果放在 `tests/playwright-results/`，包含测试环境、测试用例、结果截图等信息
+
 ## 交互规范
 
 - **提问时附带建议**：当需要向用户提问或请求澄清时，应同时提供具体的建议选项或推荐方案，帮助用户快速决策，而非仅抛出开放式问题
