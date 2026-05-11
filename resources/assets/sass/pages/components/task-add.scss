@@ -91,6 +91,33 @@
                 background-color: $primary-color;
                 color: white;
             }
+
+            &.cross {
+                // 跨项目 chip：左侧添加视觉 marker（小圆点）
+                position: relative;
+                padding-left: 20px;
+
+                &::before {
+                    content: '';
+                    position: absolute;
+                    left: 8px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 4px;
+                    height: 4px;
+                    border-radius: 50%;
+                    background: $primary-desc-color;
+                }
+            }
+
+            &.more {
+                font-style: italic;
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
         }
     }
     .task-add-form,

@@ -176,6 +176,7 @@ export default {
     taskOperation: {},
     taskRelatedCache: {},
     taskArchiveView: 0,
+    // 当前用户跨项目可见的全部任务模板（按 use_count 排序时机由消费者决定）
     taskTemplates: [],
     taskLatestId: 0,
 

@@ -12,13 +12,20 @@
                 @on-visible-change="cascaderShow=!cascaderShow"
                 filterable/>
         </div>
-        <ul v-if="taskTemplateList.length > 0" class="task-add-template">
+        <ul v-if="taskTemplateList.length > 0 || hasMoreTemplates" class="task-add-template">
             <li
                 v-for="item in taskTemplateList"
                 :key="item.id"
-                :class="{active:templateActiveID === item.id}"
+                :class="{active: templateActiveID === item.id, cross: item.project_id != addData.project_id}"
+                :title="item.project_id != addData.project_id ? $L('来自(*)', item.project_name || '') : ''"
                 @click="setTaskTemplate(item)">
                 {{ item.name }}
+            </li>
+            <li
+                v-if="hasMoreTemplates"
+                class="more"
+                @click="openTemplateBrowser">
+                {{ $L('更多') }}
             </li>
         </ul>
         <div class="task-add-form">
@@ -190,6 +197,10 @@
         </div>
 
         <TaskExistTips ref="taskExistTipsRef" @onContinue="onAdd(addContinue, true)"/>
+        <TaskTemplateBrowser
+            v-model="templateBrowserVisible"
+            :current-project-id="addData.project_id"
+            @pick="onPickFromBrowser" />
     </div>
 </template>
 
@@ -203,10 +214,11 @@ import nostyle from "../../../components/VMEditor/engine/nostyle";
 import {MarkdownConver} from "../../../utils/markdown";
 import {extractPlainText} from "../../../utils/text";
 import {AINormalizeJsonContent, TASK_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../../../utils/ai";
+import TaskTemplateBrowser from './TaskTemplateBrowser.vue'
 
 export default {
     name: "TaskAdd",
-    components: {TEditorTask, UserSelect, TaskExistTips},
+    components: {TEditorTask, UserSelect, TaskExistTips, TaskTemplateBrowser},
     props: {
         value: {
             type: Boolean,
@@ -258,6 +270,7 @@ export default {
 
             templateActiveID: 0,
             templateCompareData: {name: '', content: ''},
+            templateBrowserVisible: false,
         }
     },
 
@@ -297,9 +310,38 @@ export default {
             return 0;
         },
 
+        /**
+         * Chip 区显示规则：
+         * - 情况 A：本项目有模板 → 显示本项目全部模板（按 sort）
+         * - 情况 B：本项目无模板 → 显示其他项目前 5 个（按 use_count desc）
+         * - 完全无可见模板 → 空数组（外层 v-if 隐藏整块）
+         */
         taskTemplateList() {
-            return this.taskTemplates.filter(({project_id}) => project_id == this.addData.project_id) || []
-        }
+            const all = this.taskTemplates || []
+            const currentId = this.addData.project_id
+            const ownTemplates = all.filter(t => t.project_id == currentId)
+            if (ownTemplates.length > 0) {
+                return [...ownTemplates].sort((a, b) => (a.sort || 0) - (b.sort || 0) || a.id - b.id)
+            }
+            const others = all.filter(t => t.project_id != currentId)
+            return [...others]
+                .sort((a, b) => (b.use_count || 0) - (a.use_count || 0))
+                .slice(0, 5)
+        },
+
+        /**
+         * 是否存在"未在 chip 区展示的可见模板"——决定"更多"按钮显隐。
+         */
+        hasMoreTemplates() {
+            const all = this.taskTemplates || []
+            const currentId = this.addData.project_id
+            const ownCount = all.filter(t => t.project_id == currentId).length
+            const otherCount = all.filter(t => t.project_id != currentId).length
+            if (ownCount > 0) {
+                return otherCount > 0
+            }
+            return otherCount > 5
+        },
     },
 
     watch: {
@@ -538,7 +580,7 @@ export default {
             }
 
             this.loadIng++;
-            this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
+            this.$store.dispatch("taskAdd", Object.assign({}, this.addData, {template_id: this.templateActiveID || 0})).then(({msg}) => {
                 $A.messageSuccess(msg);
                 if (continued === true) {
                     this.addData = Object.assign({}, this.addData, this.templateCompareData, {subtasks: []});
@@ -600,6 +642,14 @@ export default {
             }
         },
 
+        openTemplateBrowser() {
+            this.templateBrowserVisible = true
+        },
+
+        onPickFromBrowser(item) {
+            this.setTaskTemplate(item)
+        },
+
         setTaskTemplate(item, force = false) {
             if (force) {
                 this.templateActiveID = item.id;
@@ -623,7 +673,8 @@ export default {
         },
 
         setTaskDefaultTemplate() {
-            const defaultTemplate = this.taskTemplateList.find(({is_default}) => is_default);
+            // 默认模板仅取本项目的，避免跨项目模板抢占本项目新任务
+            const defaultTemplate = (this.taskTemplates || []).find(t => t.is_default && t.project_id == this.addData.project_id);
             if (defaultTemplate) {
                 this.setTaskTemplate(defaultTemplate);
             }
@@ -656,7 +707,7 @@ export default {
             }
 
             const currentTemplate = this.templateActiveID
-                ? this.taskTemplateList.find(item => item.id === this.templateActiveID)
+                ? (this.taskTemplates || []).find(item => item.id === this.templateActiveID)
                 : null;
             if (currentTemplate) {
                 const templateName = (currentTemplate.name || currentTemplate.title || '').trim();

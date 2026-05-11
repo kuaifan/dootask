@@ -13,6 +13,8 @@ namespace App\Models;
  * @property int $sort 排序
  * @property int $is_default 是否默认模板
  * @property int $userid 创建人
+ * @property int $use_count 累计使用次数
+ * @property \Illuminate\Support\Carbon|null $last_used_at 最近一次使用时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Project $project
@@ -52,7 +54,18 @@ class ProjectTaskTemplate extends AbstractModel
         'content',
         'sort',
         'is_default',
-        'userid'
+        'userid',
+        'use_count',
+        'last_used_at'
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'last_used_at' => 'datetime',
     ];
 
     /**
@@ -73,5 +86,18 @@ class ProjectTaskTemplate extends AbstractModel
     public function user()
     {
         return $this->belongsTo(User::class, 'userid');
+    }
+
+    /**
+     * 原子递增使用次数并刷新最近使用时间。
+     */
+    public function incrementUsage(): void
+    {
+        $this->newQuery()
+            ->where('id', $this->id)
+            ->update([
+                'use_count' => \DB::raw('use_count + 1'),
+                'last_used_at' => now(),
+            ]);
     }
 }

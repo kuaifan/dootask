@@ -3047,20 +3047,21 @@ export default {
     },
 
     /**
-     * 更新任务模板
-     * @param state
-     * @param dispatch
-     * @param projectId
+     * 拉取当前用户跨项目可见的全部任务模板。
+     * 替代旧版按项目隔离取数。state.taskTemplates 现在存"我所有可见模板"（全量）。
+     *
+     * @param {Object} ctx
+     * @param {Number|null} currentProjectId  当前所在项目 ID（用于排序优先；可空）
      * @returns {Promise<void>}
      */
-    async updateTaskTemplates({state, dispatch}, projectId) {
+    async updateTaskTemplates({state, dispatch}, currentProjectId) {
         const {data} = await dispatch("call", {
-            url: 'project/task/template_list',
+            url: 'project/task/template_visible',
             data: {
-                project_id: projectId
+                current_project_id: currentProjectId || 0,
             },
         })
-        state.taskTemplates = state.taskTemplates.filter(template => template.project_id !== projectId).concat(data || [])
+        state.taskTemplates = Array.isArray(data) ? data : []
     },
 
     /** *****************************************************************************************/

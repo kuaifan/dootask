@@ -2537,6 +2537,20 @@ class ProjectController extends AbstractController
 
         $task->pushMsg('add', $data);
         $task->taskPush(null, 0);
+
+        // 应用任务模板使用统计（不影响主流程；非成员或模板已删除时静默忽略）
+        $templateId = intval(Request::input('template_id', 0));
+        if ($templateId > 0) {
+            $tpl = ProjectTaskTemplate::find($templateId);
+            if ($tpl) {
+                $isMember = ProjectUser::where('project_id', $tpl->project_id)
+                    ->where('userid', $user->userid)->exists();
+                if ($isMember) {
+                    $tpl->incrementUsage();
+                }
+            }
+        }
+
         return Base::retSuccess('添加成功', $data);
     }
 
@@ -3638,6 +3652,117 @@ class ProjectController extends AbstractController
             ->orderByDesc('id')
             ->get();
         return Base::retSuccess('success', $templates);
+    }
+
+    /**
+     * @api {get} api/project/task/template_visible          02. 当前用户跨项目可见的全部任务模板
+     *
+     * @apiDescription 返回当前用户加入的所有项目下的任务模板。当前项目的模板优先排序。
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__template_visible
+     *
+     * @apiParam {Number} [current_project_id]  当前项目 ID（用于排序优先；可空）
+     *
+     * @apiSuccess {Number} ret  返回状态码（1 正确、0 错误）
+     * @apiSuccess {String} msg  返回信息
+     * @apiSuccess {Object[]} data 模板列表，每条包含 project_id, project_name, name, title, content, sort, is_default, userid, use_count, last_used_at
+     */
+    public function task__template_visible()
+    {
+        $user = User::auth();
+        $currentProjectId = intval(Request::input('current_project_id', 0));
+
+        $projectIds = ProjectUser::where('userid', $user->userid)->pluck('project_id');
+
+        $rows = ProjectTaskTemplate::with(['project:id,name'])
+            ->whereIn('project_id', $projectIds)
+            ->orderByRaw('project_id = ? DESC', [$currentProjectId])
+            ->orderBy('sort')
+            ->orderBy('id')
+            ->get()
+            ->map(function ($tpl) {
+                return [
+                    'id' => $tpl->id,
+                    'project_id' => $tpl->project_id,
+                    'project_name' => $tpl->project->name ?? '',
+                    'name' => $tpl->name,
+                    'title' => $tpl->title,
+                    'content' => $tpl->content,
+                    'sort' => $tpl->sort,
+                    'is_default' => $tpl->is_default,
+                    'userid' => $tpl->userid,
+                    'use_count' => $tpl->use_count,
+                    'last_used_at' => $tpl->last_used_at,
+                ];
+            });
+
+        return Base::retSuccess('success', $rows);
+    }
+
+    /**
+     * @api {get} api/project/task/template_search           03. 跨项目模板搜索分页
+     *
+     * @apiDescription "更多"弹层用。返回当前用户跨项目可见模板，支持关键字 + 分页。
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__template_search
+     *
+     * @apiParam {String} [keyword]    关键字（在 name/title/content 上模糊匹配）
+     * @apiParam {Number} [page=1]     页码
+     * @apiParam {Number} [page_size=20] 每页条数（最大 50）
+     *
+     * @apiSuccess {Number} ret       返回状态码
+     * @apiSuccess {Object} data      含 total / page / page_size / items
+     */
+    public function task__template_search()
+    {
+        $user = User::auth();
+        $keyword = trim((string) Request::input('keyword', ''));
+        $page = max(1, intval(Request::input('page', 1)));
+        $pageSize = min(50, max(1, intval(Request::input('page_size', 20))));
+
+        $projectIds = ProjectUser::where('userid', $user->userid)->pluck('project_id');
+
+        $q = ProjectTaskTemplate::with(['project:id,name', 'user:userid,nickname'])
+            ->whereIn('project_id', $projectIds);
+
+        if ($keyword !== '') {
+            $like = '%' . $keyword . '%';
+            $q->where(function ($qq) use ($like) {
+                $qq->where('name', 'like', $like)
+                   ->orWhere('title', 'like', $like)
+                   ->orWhere('content', 'like', $like);
+            });
+        }
+
+        $total = (clone $q)->count();
+        $items = $q->orderByDesc('use_count')
+            ->orderByDesc('last_used_at')
+            ->orderByDesc('created_at')
+            ->forPage($page, $pageSize)
+            ->get()
+            ->map(function ($tpl) {
+                return [
+                    'id' => $tpl->id,
+                    'project_id' => $tpl->project_id,
+                    'project_name' => $tpl->project->name ?? '',
+                    'name' => $tpl->name,
+                    'title' => $tpl->title,
+                    'content' => $tpl->content,
+                    'use_count' => $tpl->use_count,
+                    'userid' => $tpl->userid,
+                    'user_name' => $tpl->user->nickname ?? '',
+                    'last_used_at' => $tpl->last_used_at,
+                ];
+            });
+
+        return Base::retSuccess('success', [
+            'total' => $total,
+            'page' => $page,
+            'page_size' => $pageSize,
+            'items' => $items,
+        ]);
     }
 
     /**
