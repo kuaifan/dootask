@@ -3655,7 +3655,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/template_visible          02. 当前用户跨项目可见的全部任务模板
+     * @api {get} api/project/task/template_visible 当前用户跨项目可见的全部任务模板
      *
      * @apiDescription 返回当前用户加入的所有项目下的任务模板。当前项目的模板优先排序。
      * @apiVersion 1.0.0
@@ -3701,7 +3701,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/template_search           03. 跨项目模板搜索分页
+     * @api {get} api/project/task/template_search  跨项目模板搜索分页
      *
      * @apiDescription "更多"弹层用。返回当前用户跨项目可见模板，支持关键字 + 分页。
      * @apiVersion 1.0.0
@@ -3731,8 +3731,8 @@ class ProjectController extends AbstractController
             $like = '%' . $keyword . '%';
             $q->where(function ($qq) use ($like) {
                 $qq->where('name', 'like', $like)
-                   ->orWhere('title', 'like', $like)
-                   ->orWhere('content', 'like', $like);
+                    ->orWhere('title', 'like', $like)
+                    ->orWhere('content', 'like', $like);
             });
         }
 
