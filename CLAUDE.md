@@ -6,9 +6,16 @@ Laravel 8 (LaravelS/Swoole) + Vue 2 (Vite) + Electron。开源任务/项目管�
 
 所有命令通过 `./cmd` 脚本执行（不要直接运行 `php artisan` 等）：
 
-- `./cmd dev` — 前端开发服务器（Node.js 20+）
-- `./cmd prod` — 构建前端生产版本
 - `./cmd artisan ...` / `./cmd composer ...` / `./cmd php ...` — PHP 相关命令
+
+### AI 不要主动执行的命令
+
+以下命令仅由用户人工触发，AI 不要主动跑——包括"任务完成后 sanity check"、"看下能不能编译"等场景：
+
+- `./cmd dev` — 用户已自行运行 dev server，改完会自己 reload；AI 再跑会争抢进程
+- `./cmd prod` / `./cmd build` — 发版才用，走 `/release` 流程
+
+前端代码改动只做 Edit/Write，不要为了"验证"启动 dev server。用户明确说"跑一下 / 出包"时除外。
 
 ## Gotchas
 
