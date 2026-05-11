@@ -1649,18 +1649,6 @@
                                 background-color: $primary-color;
                             }
                         }
-
-                        .markdown-body {
-                            table {
-                                thead {
-                                    th {
-                                        overflow: hidden;
-                                        text-overflow: ellipsis;
-                                        white-space: nowrap;
-                                    }
-                                }
-                            }
-                        }
                     }
 
                     .dialog-emoji {
