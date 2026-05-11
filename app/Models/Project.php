@@ -22,6 +22,8 @@ use Request;
  * @property int|null $personal 是否个人项目
  * @property string|null $archive_method 自动归档方式
  * @property int|null $archive_days 自动归档天数
+ * @property string|null $ai_auto_analyze AI自动分析
+ * @property string|null $task_template_share 共享模板开关
  * @property string|null $user_simple 成员总数|1,2,3
  * @property int|null $dialog_id 聊天会话ID
  * @property \Illuminate\Support\Carbon|null $archived_at 归档时间

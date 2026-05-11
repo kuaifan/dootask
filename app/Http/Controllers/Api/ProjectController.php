@@ -302,6 +302,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} [archive_method]  归档方式
      * @apiParam {Number} [archive_days]    自动归档天数
      * @apiParam {String} [ai_auto_analyze] AI自动分析（open|close）
+     * @apiParam {String} [task_template_share] 共享模板（open|close）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -317,6 +318,7 @@ class ProjectController extends AbstractController
         $archive_method = Request::input('archive_method');
         $archive_days = intval(Request::input('archive_days'));
         $ai_auto_analyze = Request::input('ai_auto_analyze');
+        $task_template_share = Request::input('task_template_share');
         if (mb_strlen($name) < 2) {
             return Base::retError('项目名称不可以少于2个字');
         } elseif (mb_strlen($name) > 32) {
@@ -332,7 +334,7 @@ class ProjectController extends AbstractController
         }
         //
         $project = Project::userProject($project_id, true, true);
-        AbstractModel::transaction(function () use ($archive_days, $archive_method, $ai_auto_analyze, $desc, $name, $project) {
+        AbstractModel::transaction(function () use ($archive_days, $archive_method, $ai_auto_analyze, $task_template_share, $desc, $name, $project) {
             if ($project->name != $name) {
                 $project->addLog("修改项目名称", [
                     'change' => [$project->name, $name]
@@ -363,6 +365,12 @@ class ProjectController extends AbstractController
                     'change' => [$project->ai_auto_analyze, $ai_auto_analyze]
                 ]);
                 $project->ai_auto_analyze = $ai_auto_analyze;
+            }
+            if (in_array($task_template_share, ['open', 'close']) && $project->task_template_share != $task_template_share) {
+                $project->addLog("修改共享模板", [
+                    'change' => [$project->task_template_share, $task_template_share]
+                ]);
+                $project->task_template_share = $task_template_share;
             }
             $project->save();
         });
@@ -2538,14 +2546,15 @@ class ProjectController extends AbstractController
         $task->pushMsg('add', $data);
         $task->taskPush(null, 0);
 
-        // 应用任务模板使用统计（不影响主流程；非成员或模板已删除时静默忽略）
+        // 应用任务模板使用统计（不影响主流程；非成员、模板已删除或共享模板已关闭时静默忽略）
         $templateId = intval(Request::input('template_id', 0));
         if ($templateId > 0) {
             $tpl = ProjectTaskTemplate::find($templateId);
             if ($tpl) {
                 $isMember = ProjectUser::where('project_id', $tpl->project_id)
                     ->where('userid', $user->userid)->exists();
-                if ($isMember) {
+                $shareEnabled = ($project->task_template_share ?: 'open') === 'open';
+                if ($isMember && ($tpl->project_id == $project->id || $shareEnabled)) {
                     $tpl->incrementUsage();
                 }
             }
@@ -3674,6 +3683,10 @@ class ProjectController extends AbstractController
         $currentProjectId = intval(Request::input('current_project_id', 0));
 
         $projectIds = ProjectUser::where('userid', $user->userid)->pluck('project_id');
+        $currentProject = $currentProjectId > 0 ? Project::find($currentProjectId) : null;
+        if ($currentProject && ($currentProject->task_template_share ?: 'open') === 'close') {
+            $projectIds = collect($projectIds)->filter(fn($id) => intval($id) === $currentProjectId)->values();
+        }
 
         $rows = ProjectTaskTemplate::with(['project:id,name'])
             ->whereIn('project_id', $projectIds)
@@ -3709,6 +3722,7 @@ class ProjectController extends AbstractController
      * @apiName task__template_search
      *
      * @apiParam {String} [keyword]    关键字（在 name/title/content 上模糊匹配）
+     * @apiParam {Number} [current_project_id] 当前项目 ID（共享模板关闭时仅返回本项目模板）
      * @apiParam {Number} [page=1]     页码
      * @apiParam {Number} [page_size=20] 每页条数（最大 50）
      *
@@ -3719,10 +3733,15 @@ class ProjectController extends AbstractController
     {
         $user = User::auth();
         $keyword = trim((string) Request::input('keyword', ''));
+        $currentProjectId = intval(Request::input('current_project_id', 0));
         $page = max(1, intval(Request::input('page', 1)));
         $pageSize = min(50, max(1, intval(Request::input('page_size', 20))));
 
         $projectIds = ProjectUser::where('userid', $user->userid)->pluck('project_id');
+        $currentProject = $currentProjectId > 0 ? Project::find($currentProjectId) : null;
+        if ($currentProject && ($currentProject->task_template_share ?: 'open') === 'close') {
+            $projectIds = collect($projectIds)->filter(fn($id) => intval($id) === $currentProjectId)->values();
+        }
 
         $q = ProjectTaskTemplate::with(['project:id,name', 'user:userid,nickname'])
             ->whereIn('project_id', $projectIds);

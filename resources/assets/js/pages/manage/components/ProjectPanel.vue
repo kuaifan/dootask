@@ -430,6 +430,14 @@
                     <div v-else-if="settingData.ai_auto_analyze === 'open'" class="form-tip">{{$L('新建任务后AI自动分析并给出建议。')}}</div>
                     <div v-else class="form-tip">{{$L('关闭后本项目将不再自动分析任务。')}}</div>
                 </FormItem>
+                <FormItem :label="$L('共享模板')" prop="task_template_share">
+                    <RadioGroup v-model="settingData.task_template_share">
+                        <Radio label="open">{{$L('开启')}}</Radio>
+                        <Radio label="close">{{$L('关闭')}}</Radio>
+                    </RadioGroup>
+                    <div v-if="settingData.task_template_share === 'open'" class="form-tip">{{$L('开启后，添加任务时可使用其他项目共享的任务模板。')}}</div>
+                    <div v-else class="form-tip">{{$L('关闭后，添加任务时仅加载本项目模板，不显示其他项目共享模板。')}}</div>
+                </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="settingShow=false">{{$L('取消')}}</Button>
@@ -1619,7 +1627,8 @@ export default {
                         desc: this.projectData.desc,
                         archive_method: this.projectData.archive_method,
                         archive_days: this.projectData.archive_days,
-                        ai_auto_analyze: this.projectData.ai_auto_analyze || 'open'
+                        ai_auto_analyze: this.projectData.ai_auto_analyze || 'open',
+                        task_template_share: this.projectData.task_template_share || 'open'
                     });
                     this.settingShow = true;
                     this.$nextTick(() => {

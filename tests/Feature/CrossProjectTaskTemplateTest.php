@@ -112,10 +112,44 @@ class CrossProjectTaskTemplateTest extends TestCase
     }
 
     /**
+     * 复刻共享模板关闭后的搜索范围：目标项目关闭共享模板时，仅返回目标项目自己的模板。
+     */
+    private function callTemplateSearchForProject(int $userid, int $currentProjectId, string $keyword = '', int $page = 1, int $pageSize = 20): array
+    {
+        $projectIds = ProjectUser::where('userid', $userid)->pluck('project_id');
+        $currentProject = Project::find($currentProjectId);
+        if ($currentProject && ($currentProject->task_template_share ?: 'open') === 'close') {
+            $projectIds = collect($projectIds)->filter(fn($id) => intval($id) === $currentProjectId)->values();
+        }
+        $q = ProjectTaskTemplate::with(['project:id,name'])
+            ->whereIn('project_id', $projectIds);
+        if ($keyword !== '') {
+            $q->where(function ($q2) use ($keyword) {
+                $like = '%' . $keyword . '%';
+                $q2->where('name', 'like', $like)
+                    ->orWhere('title', 'like', $like)
+                    ->orWhere('content', 'like', $like);
+            });
+        }
+        $total = $q->count();
+        $items = $q->orderByDesc('use_count')
+            ->orderByDesc('last_used_at')
+            ->orderByDesc('created_at')
+            ->forPage($page, $pageSize)
+            ->get()
+            ->map(fn($tpl) => [
+                'id' => $tpl->id,
+                'project_id' => $tpl->project_id,
+                'name' => $tpl->name,
+            ])->toArray();
+        return ['total' => $total, 'items' => $items, 'page' => $page, 'page_size' => $pageSize];
+    }
+
+    /**
      * 模拟 task__add 的"使用模板"副作用：检查 template_id 可见性，原子递增 use_count + 更新 last_used_at。
      * 不实际创建任务，只验证副作用。
      */
-    private function simulateUseTemplate(int $userid, int $templateId): void
+    private function simulateUseTemplate(int $userid, int $templateId, ?int $targetProjectId = null): void
     {
         if ($templateId <= 0) return;
         $tpl = ProjectTaskTemplate::find($templateId);
@@ -123,6 +157,13 @@ class CrossProjectTaskTemplateTest extends TestCase
         $isMember = ProjectUser::where('project_id', $tpl->project_id)
             ->where('userid', $userid)->exists();
         if (!$isMember) return;
+        if ($targetProjectId) {
+            $targetProject = Project::find($targetProjectId);
+            $shareEnabled = !$targetProject || ($targetProject->task_template_share ?: 'open') === 'open';
+            if ($tpl->project_id != $targetProjectId && !$shareEnabled) {
+                return;
+            }
+        }
         $tpl->incrementUsage();
     }
 
@@ -132,6 +173,10 @@ class CrossProjectTaskTemplateTest extends TestCase
     private function callTemplateVisible(int $userid, int $currentProjectId): array
     {
         $projectIds = ProjectUser::where('userid', $userid)->pluck('project_id');
+        $currentProject = Project::find($currentProjectId);
+        if ($currentProject && ($currentProject->task_template_share ?: 'open') === 'close') {
+            $projectIds = collect($projectIds)->filter(fn($id) => intval($id) === $currentProjectId)->values();
+        }
         return ProjectTaskTemplate::with(['project:id,name'])
             ->whereIn('project_id', $projectIds)
             ->orderByRaw('project_id = ? DESC', [$currentProjectId])
@@ -323,5 +368,56 @@ class CrossProjectTaskTemplateTest extends TestCase
         $this->simulateUseTemplate($alice->userid, 0);
         $this->simulateUseTemplate($alice->userid, 99999999);
         $this->assertTrue(true);
+    }
+
+    public function test_visible_returns_only_current_project_templates_when_share_closed()
+    {
+        $alice = $this->makeUser('alice-' . uniqid() . '@test.com');
+        $projectA = $this->makeProject($alice->userid);
+        $projectB = $this->makeProject($alice->userid);
+        $projectB->task_template_share = 'close';
+        $projectB->save();
+        $this->makeTemplate($projectA, $alice->userid, ['name' => 'A1']);
+        $this->makeTemplate($projectB, $alice->userid, ['name' => 'B1']);
+
+        $result = $this->callTemplateVisible($alice->userid, $projectB->id);
+
+        $names = array_column($result, 'name');
+        $this->assertNotContains('A1', $names);
+        $this->assertContains('B1', $names);
+    }
+
+    public function test_search_returns_only_current_project_templates_when_share_closed()
+    {
+        $alice = $this->makeUser('alice-' . uniqid() . '@test.com');
+        $projectA = $this->makeProject($alice->userid);
+        $projectB = $this->makeProject($alice->userid);
+        $projectB->task_template_share = 'close';
+        $projectB->save();
+        $this->makeTemplate($projectA, $alice->userid, ['name' => 'shared']);
+        $this->makeTemplate($projectB, $alice->userid, ['name' => 'own']);
+
+        $result = $this->callTemplateSearchForProject($alice->userid, $projectB->id);
+
+        $names = array_column($result['items'], 'name');
+        $this->assertNotContains('shared', $names);
+        $this->assertContains('own', $names);
+    }
+
+    public function test_cross_project_template_usage_ignored_when_target_project_share_closed()
+    {
+        $alice = $this->makeUser('alice-' . uniqid() . '@test.com');
+        $projectA = $this->makeProject($alice->userid);
+        $projectB = $this->makeProject($alice->userid);
+        $projectB->task_template_share = 'close';
+        $projectB->save();
+        $tplA = $this->makeTemplate($projectA, $alice->userid, ['use_count' => 7]);
+        $tplB = $this->makeTemplate($projectB, $alice->userid, ['use_count' => 3]);
+
+        $this->simulateUseTemplate($alice->userid, $tplA->id, $projectB->id);
+        $this->simulateUseTemplate($alice->userid, $tplB->id, $projectB->id);
+
+        $this->assertSame(7, (int) $tplA->fresh()->use_count);
+        $this->assertSame(4, (int) $tplB->fresh()->use_count);
     }
 }

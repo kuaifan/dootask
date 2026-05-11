@@ -3055,6 +3055,17 @@ export default {
      * @returns {Promise<void>}
      */
     async updateTaskTemplates({state, dispatch}, currentProjectId) {
+        const project = (state.cacheProjects || []).find(({id}) => id == currentProjectId)
+        if (project && project.task_template_share === 'close') {
+            const {data} = await dispatch("call", {
+                url: 'project/task/template_list',
+                data: {
+                    project_id: currentProjectId || 0,
+                },
+            })
+            state.taskTemplates = Array.isArray(data) ? data : []
+            return
+        }
         const {data} = await dispatch("call", {
             url: 'project/task/template_visible',
             data: {

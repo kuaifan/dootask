@@ -109,6 +109,7 @@ export default {
                     url: 'project/task/template_search',
                     data: {
                         keyword: this.keyword,
+                        current_project_id: this.currentProjectId || 0,
                         page: this.page,
                         page_size: this.pageSize,
                     },

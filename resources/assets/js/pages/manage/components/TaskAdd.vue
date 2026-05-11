@@ -196,7 +196,7 @@
         </div>
 
         <TaskExistTips ref="taskExistTipsRef" @onContinue="onAdd(addContinue, true)"/>
-        <TaskTemplateBrowser v-model="templateBrowserVisible" :current-project-id="addData.project_id" @pick="onPickFromBrowser" />
+        <TaskTemplateBrowser v-if="taskTemplateShareEnabled" v-model="templateBrowserVisible" :current-project-id="addData.project_id" @pick="onPickFromBrowser" />
     </div>
 </template>
 
@@ -294,6 +294,11 @@ export default {
     computed: {
         ...mapState(['cacheProjects', 'projectId', 'cacheColumns', 'taskPriority', 'taskTemplates', 'formOptions']),
 
+        taskTemplateShareEnabled() {
+            const project = (this.cacheProjects || []).find(({id}) => id == this.addData.project_id)
+            return !project || project.task_template_share !== 'close'
+        },
+
         taskDays() {
             const {times} = this.addData;
             const temp = $A.newDateString(times, "YYYY-MM-DD HH:mm");
@@ -316,6 +321,9 @@ export default {
             const all = this.taskTemplates || []
             const currentId = this.addData.project_id
             const ownTemplates = all.filter(t => t.project_id == currentId)
+            if (!this.taskTemplateShareEnabled) {
+                return [...ownTemplates].sort((a, b) => (a.sort || 0) - (b.sort || 0) || a.id - b.id)
+            }
             if (ownTemplates.length > 0) {
                 return [...ownTemplates].sort((a, b) => (a.sort || 0) - (b.sort || 0) || a.id - b.id)
             }
@@ -329,6 +337,9 @@ export default {
          * 是否存在"未在 chip 区展示的可见模板"——决定"更多"按钮显隐。
          */
         hasMoreTemplates() {
+            if (!this.taskTemplateShareEnabled) {
+                return false
+            }
             const all = this.taskTemplates || []
             const currentId = this.addData.project_id
             const ownCount = all.filter(t => t.project_id == currentId).length
@@ -576,7 +587,13 @@ export default {
             }
 
             this.loadIng++;
-            this.$store.dispatch("taskAdd", Object.assign({}, this.addData, {template_id: this.templateActiveID || 0})).then(({msg}) => {
+            const currentTemplate = this.templateActiveID
+                ? (this.taskTemplates || []).find(item => item.id === this.templateActiveID)
+                : null;
+            const templateId = currentTemplate && (this.taskTemplateShareEnabled || currentTemplate.project_id == this.addData.project_id)
+                ? this.templateActiveID
+                : 0;
+            this.$store.dispatch("taskAdd", Object.assign({}, this.addData, {template_id: templateId})).then(({msg}) => {
                 $A.messageSuccess(msg);
                 if (continued === true) {
                     this.addData = Object.assign({}, this.addData, this.templateCompareData, {subtasks: []});
@@ -639,6 +656,9 @@ export default {
         },
 
         openTemplateBrowser() {
+            if (!this.taskTemplateShareEnabled) {
+                return
+            }
             this.templateBrowserVisible = true
         },
 
@@ -647,6 +667,9 @@ export default {
         },
 
         setTaskTemplate(item, force = false) {
+            if (!this.taskTemplateShareEnabled && item.project_id != this.addData.project_id) {
+                return;
+            }
             if (force) {
                 this.templateActiveID = item.id;
                 this.addData.name = item.title;
