@@ -411,7 +411,8 @@
                         <Radio label="system">{{$L('系统默认')}}</Radio>
                         <Radio label="custom">{{$L('自定义')}}</Radio>
                     </RadioGroup>
-                    <template v-if="settingData.archive_method=='custom'">
+                    <div v-if="settingData.archive_method==='system'" class="form-tip">{{$L('根据系统设置的自动归档规则执行')}}</div>
+                    <template v-else-if="settingData.archive_method=='custom'">
                         <div class="form-tip">{{$L('任务完成 (*) 天后自动归档。', settingData.archive_days || 'n')}}</div>
                         <div class="setting-auto-day">
                             <Input v-model="settingData.archive_days" type="number">
