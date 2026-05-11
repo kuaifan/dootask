@@ -23,9 +23,8 @@
             </li>
             <li
                 v-if="hasMoreTemplates"
-                class="more"
                 @click="openTemplateBrowser">
-                {{ $L('更多') }}
+                {{ $L('更多') }}...
             </li>
         </ul>
         <div class="task-add-form">
@@ -197,10 +196,7 @@
         </div>
 
         <TaskExistTips ref="taskExistTipsRef" @onContinue="onAdd(addContinue, true)"/>
-        <TaskTemplateBrowser
-            v-model="templateBrowserVisible"
-            :current-project-id="addData.project_id"
-            @pick="onPickFromBrowser" />
+        <TaskTemplateBrowser v-model="templateBrowserVisible" :current-project-id="addData.project_id" @pick="onPickFromBrowser" />
     </div>
 </template>
 
@@ -326,7 +322,7 @@ export default {
             const others = all.filter(t => t.project_id != currentId)
             return [...others]
                 .sort((a, b) => (b.use_count || 0) - (a.use_count || 0))
-                .slice(0, 5)
+                .slice(0, 3)
         },
 
         /**
@@ -340,7 +336,7 @@ export default {
             if (ownCount > 0) {
                 return otherCount > 0
             }
-            return otherCount > 5
+            return otherCount > 3
         },
     },
 

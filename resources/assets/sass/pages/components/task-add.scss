@@ -93,29 +93,20 @@
             }
 
             &.cross {
-                // 跨项目 chip：左侧添加视觉 marker（小圆点）
                 position: relative;
-                padding-left: 20px;
+                padding-left: 24px;
 
                 &::before {
-                    content: '';
+                    content: "";
                     position: absolute;
                     left: 8px;
                     top: 50%;
                     transform: translateY(-50%);
-                    width: 4px;
-                    height: 4px;
-                    border-radius: 50%;
-                    background: $primary-desc-color;
-                }
-            }
-
-            &.more {
-                font-style: italic;
-                opacity: 0.7;
-
-                &:hover {
-                    opacity: 1;
+                    width: 12px;
+                    height: 12px;
+                    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoYXJlMi1pY29uIGx1Y2lkZS1zaGFyZS0yIj48Y2lyY2xlIGN4PSIxOCIgY3k9IjUiIHI9IjMiLz48Y2lyY2xlIGN4PSI2IiBjeT0iMTIiIHI9IjMiLz48Y2lyY2xlIGN4PSIxOCIgY3k9IjE5IiByPSIzIi8+PGxpbmUgeDE9IjguNTkiIHgyPSIxNS40MiIgeTE9IjEzLjUxIiB5Mj0iMTcuNDkiLz48bGluZSB4MT0iMTUuNDEiIHgyPSI4LjU5IiB5MT0iNi41MSIgeTI9IjEwLjQ5Ii8+PC9zdmc+);
+                    background-size: cover;
+                    background-repeat: no-repeat;
                 }
             }
         }

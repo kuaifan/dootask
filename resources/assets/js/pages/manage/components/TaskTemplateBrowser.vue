@@ -29,7 +29,10 @@
                     <span v-if="item.user_name" class="creator">· @{{ item.user_name }}</span>
                 </div>
             </div>
-            <div v-if="loading" class="loading">{{ $L('加载中') }}</div>
+            <div v-if="loading" class="loading">
+                <Loading />
+                {{ $L('加载中') }}
+            </div>
             <div v-if="!loading && items.length === 0" class="empty">{{ $L('暂无可用模板') }}</div>
         </div>
     </Modal>
@@ -137,11 +140,16 @@ export default {
 <style lang="scss" scoped>
 .task-template-browser {
     .search-wrap {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
     }
     .list-wrap {
         max-height: 420px;
         overflow-y: auto;
+        > div {
+            &:last-child {
+                margin-bottom: 12px;
+            }
+        }
     }
     .item {
         padding: 10px 12px;
@@ -160,6 +168,17 @@ export default {
             .creator {
                 margin-left: 4px;
             }
+        }
+    }
+    .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        .common-loading {
+            width: 18px;
+            height: 18px;
+            margin: 0;
         }
     }
     .loading, .empty {
