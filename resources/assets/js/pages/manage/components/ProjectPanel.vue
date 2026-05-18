@@ -427,7 +427,7 @@
                         <Radio label="open" :disabled="systemConfig.task_ai_auto_analyze === 'close'">{{$L('开启')}}</Radio>
                         <Radio label="close">{{$L('关闭')}}</Radio>
                     </RadioGroup>
-                    <div v-if="systemConfig.task_ai_auto_analyze === 'close'" class="form-tip">{{$L('系统已关闭AI任务分析功能。')}}</div>
+                    <div v-if="systemConfig.ai_auto_analyze === 'close'" class="form-tip">{{$L('系统已关闭AI任务分析功能。')}}</div>
                     <div v-else-if="settingData.ai_auto_analyze === 'open'" class="form-tip">{{$L('新建任务后AI自动分析并给出建议。')}}</div>
                     <div v-else class="form-tip">{{$L('关闭后本项目将不再自动分析任务。')}}</div>
                 </FormItem>
