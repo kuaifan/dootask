@@ -52,7 +52,7 @@
             {{expiresFormat(taskDetail.end_at)}}
         </div>
         <UserSelect
-            v-if="!isDepartmentReadonly"
+            v-if="!isDepartmentReadonly || (ownerData.owner_userid && ownerData.owner_userid.length > 0)"
             class="subtask-avatar"
             v-model="ownerData.owner_userid"
             :multiple-max="10"
@@ -60,12 +60,8 @@
             :title="$L('修改负责人')"
             :add-icon="false"
             :project-id="taskDetail.project_id"
+            :disabled="isDepartmentReadonly"
             :before-submit="onOwner"/>
-        <UserAvatar
-            v-else-if="ownerData.owner_userid && ownerData.owner_userid.length > 0"
-            class="subtask-avatar readonly-avatar"
-            :userid="ownerData.owner_userid[0]"
-            :size="20"/>
     </li>
     <!--主任务-->
     <div
@@ -207,11 +203,7 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6e4;</i>{{$L('负责人')}}
                         </div>
-                        <div v-if="isDepartmentReadonly" class="item-content user readonly-users">
-                            <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="28" showName/>
-                        </div>
                         <UserSelect
-                            v-else
                             class="item-content user"
                             v-model="ownerData.owner_userid"
                             :multiple-max="10"
@@ -219,17 +211,14 @@
                             :title="$L('修改负责人')"
                             :project-id="taskDetail.project_id"
                             :add-icon="false"
+                            :disabled="isDepartmentReadonly"
                             :before-submit="onOwner"/>
                     </FormItem>
                     <FormItem v-if="getAssist.length > 0 || assistForce">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe63f;</i>{{$L('协助人员')}}
                         </div>
-                        <div v-if="isDepartmentReadonly" class="item-content user readonly-users">
-                            <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28" showName/>
-                        </div>
                         <UserSelect
-                            v-else
                             ref="assist"
                             class="item-content user"
                             v-model="assistData.assist_userid"
@@ -239,6 +228,7 @@
                             :project-id="taskDetail.project_id"
                             :disabled-choice="assistData.disabled"
                             :add-icon="false"
+                            :disabled="isDepartmentReadonly"
                             :before-submit="onAssist"/>
                     </FormItem>
                     <FormItem v-if="taskDetail.visibility > 1 || visibleForce || visibleKeep">
@@ -248,17 +238,15 @@
                         </div>
                         <div class="item-content user">
                             <span v-if="taskDetail.visibility == 1 || taskDetail.visibility == 2" ref="visibilityText" class="visibility-text" @click="!isDepartmentReadonly && showCisibleDropdown($event)">{{ taskDetail.visibility == 1 ? $L('项目人员可见') : $L('任务人员可见') }}</span>
-                            <UserSelect v-else-if="!isDepartmentReadonly"
+                            <UserSelect v-else
                                 ref="visibleUserSelectRef"
                                 v-model="taskDetail.visibility_appointor"
                                 :avatar-size="28"
                                 :title="$L('选择指定人员')"
                                 :project-id="taskDetail.project_id"
                                 :add-icon="false"
+                                :disabled="isDepartmentReadonly"
                                 @on-show-change="visibleUserSelectShowChange"/>
-                            <div v-else class="readonly-users">
-                                <UserAvatar v-for="userid in taskDetail.visibility_appointor" :key="userid" :userid="userid" :size="28" showName/>
-                            </div>
                         </div>
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at || timeForce">
