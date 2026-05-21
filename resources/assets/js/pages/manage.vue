@@ -1,6 +1,10 @@
 <template>
     <div class="page-manage" :class="pageClass">
-        <div ref="boxMenu" class="manage-box-menu">
+        <div
+            ref="boxMenu"
+            class="manage-box-menu"
+            :class="{'menu-resizing': menuResizing}"
+            :style="menuStyle">
             <Dropdown
                 class="page-manage-menu-dropdown main-menu"
                 trigger="click"
@@ -101,33 +105,34 @@
                             </div>
                         </DropdownItem>
                         <!-- 其他菜单 -->
-                        <DropdownItem
-                            v-else-if="item.visible !== false"
-                            :key="`menu-${index}`"
-                            :divided="!!item.divided"
-                            :name="item.path"
-                            :style="item.style || {}">
-                            <div class="manage-menu-flex">
-                                <div class="manage-menu-title">
-                                    {{$L(item.name)}}
+                        <template v-else-if="item.visible !== false">
+                            <DropdownItem
+                                :key="`menu-${index}`"
+                                :divided="!!item.divided"
+                                :name="item.path"
+                                :style="item.style || {}">
+                                <div class="manage-menu-flex">
+                                    <div class="manage-menu-title">
+                                        {{$L(item.name)}}
+                                    </div>
+                                    <Icon
+                                        v-if="item.selected === true"
+                                        type="md-checkmark" />
+                                    <Badge
+                                        v-if="item.path === 'version'"
+                                        class="manage-menu-report-badge"
+                                        :text="clientNewVersion"/>
+                                    <Badge
+                                        v-else-if="item.path === 'workReport' && reportUnreadNumber > 0"
+                                        class="manage-menu-report-badge"
+                                        :count="reportUnreadNumber"/>
+                                    <Badge
+                                        v-else-if="item.path === 'approve' && approveUnreadNumber > 0"
+                                        class="manage-menu-report-badge"
+                                        :count="approveUnreadNumber"/>
                                 </div>
-                                <Icon
-                                    v-if="item.selected === true"
-                                    type="md-checkmark" />
-                                <Badge
-                                    v-if="item.path === 'version'"
-                                    class="manage-menu-report-badge"
-                                    :text="clientNewVersion"/>
-                                <Badge
-                                    v-else-if="item.path === 'workReport' && reportUnreadNumber > 0"
-                                    class="manage-menu-report-badge"
-                                    :count="reportUnreadNumber"/>
-                                <Badge
-                                    v-else-if="item.path === 'approve' && approveUnreadNumber > 0"
-                                    class="manage-menu-report-badge"
-                                    :count="approveUnreadNumber"/>
-                            </div>
-                        </DropdownItem>
+                            </DropdownItem>
+                        </template>
                     </template>
                 </DropdownMenu>
             </Dropdown>
@@ -278,6 +283,13 @@
                     </DropdownMenu>
                 </Dropdown>
             </ButtonGroup>
+            <ResizeLine
+                class="manage-menu-resize"
+                placement="right"
+                v-model="menuWidth"
+                :min="200"
+                :max="420"
+                @on-change="onMenuResizeChange"/>
         </div>
 
         <div class="manage-box-main" :role="routeName">
@@ -486,6 +498,7 @@ import TaskExport from "./manage/components/TaskExport";
 import ApproveExport from "./manage/components/ApproveExport";
 import ComplaintManagement from "./manage/components/ComplaintManagement";
 import MicroApps from "../components/MicroApps";
+import ResizeLine from "../components/ResizeLine.vue";
 import UserSelect from "../components/UserSelect.vue";
 import ImgUpload from "../components/ImgUpload.vue";
 import Approve from "./manage/approve/index.vue";
@@ -522,6 +535,7 @@ export default {
         RecentManagement,
         ProjectArchived,
         MicroApps,
+        ResizeLine,
         ComplaintManagement,
         Draggable,
         DepartmentOwnerView
@@ -595,6 +609,9 @@ export default {
 
             mcpHelperShow: false,
             departmentOwnerViewShow: false,
+
+            menuWidth: Math.min(420, Math.max(200, $A.getStorageInt("manage.menuWidth", 255))),
+            menuResizing: false,
         }
     },
 
@@ -691,6 +708,12 @@ export default {
             return {
                 'show-tabbar': mobileTabbar,
                 'not-logged': userId <= 0
+            }
+        },
+
+        menuStyle() {
+            return {
+                width: `${this.menuWidth}px`
             }
         },
 
@@ -1035,6 +1058,12 @@ export default {
 
     methods: {
         transformEmojiToHtml,
+        onMenuResizeChange({event}) {
+            this.menuResizing = event !== 'up';
+            if (event === 'up') {
+                $A.setStorage("manage.menuWidth", this.menuWidth);
+            }
+        },
         syncOwnerProjectTabByRoute() {
             if (!this.ownerProjectTabsVisible || !this.routeProject) {
                 return;
