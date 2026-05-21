@@ -25,6 +25,8 @@ const architectures = ["arm64", "x64"];
 let buildChecked = false,
     updaterChecked = false;
 
+const shellQuote = (value) => `'${String(value).replace(/'/g, `'\\''`)}'`;
+
 /**
  * 检测并下载更新器
  */
@@ -568,8 +570,8 @@ async function startBuild(data) {
     //
     if (data.id === 'app') {
         const eeuiDir = path.resolve(__dirname, "../resources/mobile");
-        const eeuiRun = `docker run --rm -v ${eeuiDir}:/work -w /work kuaifan/eeui-cli:0.0.1`
         const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
+        const containerName = `dootask-eeui-${Date.now()}-${process.pid}`;
         fse.removeSync(publicDir)
         fse.copySync(electronDir, publicDir)
         if (argv[3] === "publish") {
@@ -587,10 +589,19 @@ async function startBuild(data) {
             fs.writeFileSync(xcconfigFile, xcconfigResult, 'utf8')
         }
         if (['build', 'publish'].includes(argv[3])) {
-            if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
-                child_process.execSync(`${eeuiRun} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
+            child_process.execSync(
+                `docker run -d --name ${containerName} -v ${shellQuote(eeuiDir)}:/work -w /work kuaifan/eeui-cli:0.0.1 sleep infinity`,
+                {stdio: "ignore", cwd: "resources/mobile"}
+            );
+            try {
+                if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
+                    child_process.execSync(`docker exec ${containerName} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
+                }
+                child_process.execSync(`docker exec ${containerName} node /work/scripts/patch-eeui-build.js`, {stdio: "inherit", cwd: "resources/mobile"});
+                child_process.execSync(`docker exec ${containerName} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
+            } finally {
+                child_process.execSync(`docker rm -f ${containerName}`, {stdio: "ignore", cwd: "resources/mobile"});
             }
-            child_process.execSync(`${eeuiRun} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
         } else {
             [
                 path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),
