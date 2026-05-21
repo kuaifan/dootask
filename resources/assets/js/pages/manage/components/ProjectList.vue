@@ -169,7 +169,7 @@ export default {
         },
 
         ownerDepartmentIds() {
-            return (this.cacheDepartmentOwnerIds || []).map(id => parseInt(id));
+            return this.cacheDepartmentOwnerIds || [];
         },
 
         projectBaseLists() {

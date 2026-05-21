@@ -63,7 +63,7 @@ export default {
             immediate: true,
             handler(show) {
                 if (show) {
-                    this.draftIds = (this.cacheDepartmentOwnerIds || []).map(id => parseInt(id));
+                    this.draftIds = (this.cacheDepartmentOwnerIds || []).slice();
                 } else {
                     this.applyLoading = false;
                 }

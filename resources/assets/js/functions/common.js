@@ -27,6 +27,20 @@ const timezone = require("dayjs/plugin/timezone");
         },
 
         /**
+         * 规范化为整型数组
+         * @param data
+         * @returns {number[]}
+         */
+        normalizeIntArray(data) {
+            if (!this.isArray(data)) {
+                return [];
+            }
+            return [...new Set(data
+                .map(id => parseInt(id))
+                .filter(id => id > 0))]
+        },
+
+        /**
          * 是否数组对象
          * @param obj
          * @returns {boolean}

@@ -232,25 +232,9 @@ export default {
             ], true)) {
             params.encrypt = true
         }
-        const departmentOwnerReadonlyUrls = [
-            'project/lists',
-            'project/one',
-            'project/column/lists',
-            'project/task/lists',
-            'project/task/one',
-            'project/task/content',
-            'project/task/content_history',
-            'project/task/files',
-            'project/task/fileinfo',
-            'project/task/subdata',
-            'project/task/related',
-            'project/flow/list',
-            'project/log/lists',
-            'project/tag/list',
-        ]
         if (params.departmentOwner !== false
             && state.systemConfig.department_owner_project_view === 'open'
-            && departmentOwnerReadonlyUrls.includes(params.url)
+            && state.departmentOwnerReadonlyUrls.includes(params.url)
             && (state.cacheDepartmentOwnerIds || []).length > 0) {
             if (!$A.isJson(params.data)) params.data = {}
             if (params.data.department_owner_ids === undefined) {
@@ -1193,7 +1177,7 @@ export default {
      * @param dispatch
      * @returns {Promise<unknown>}
      */
-    handleReadCache({state}) {
+    handleReadCache({state, commit}) {
         return new Promise(async resolve => {
             // 定义需要获取的数据映射
             const dataMap = {
@@ -1238,7 +1222,11 @@ export default {
 
             // 更新 state
             [...dataMap.string, ...dataMap.array, ...dataMap.json].forEach((key, index) => {
-                state[key] = data[index];
+                if (key === 'cacheDepartmentOwnerIds') {
+                    commit('department/owner/ids/save', data[index]);
+                } else {
+                    state[key] = data[index];
+                }
             });
 
             // 特殊处理 cacheDialogs
@@ -1597,11 +1585,10 @@ export default {
      * @param dispatch
      * @returns {Promise<void>}
      */
-    async getProjectsForDepartmentOwnerView({state, dispatch}) {
+    async getProjectsForDepartmentOwnerView({state, dispatch, commit}) {
         await dispatch("systemSetting").catch(() => {});
         if (state.systemConfig.department_owner_project_view !== 'open') {
-            state.cacheDepartmentOwnerIds = [];
-            await $A.IDBSet("cacheDepartmentOwnerIds", []).catch(() => {});
+            commit('department/owner/ids/save', []);
             dispatch("getProjectByQueue");
             return;
         }
@@ -1611,8 +1598,7 @@ export default {
                 __replace: true,
                 department_owner_ids: restoredDepartmentOwnerIds.join(',')
             });
-            state.cacheDepartmentOwnerIds = restoredDepartmentOwnerIds;
-            await $A.IDBSet("cacheDepartmentOwnerIds", restoredDepartmentOwnerIds).catch(() => {});
+            commit('department/owner/ids/save', restoredDepartmentOwnerIds);
             return;
         }
         dispatch("getProjectByQueue");
@@ -1624,13 +1610,12 @@ export default {
      * @param dispatch
      * @returns {Promise<void>}
      */
-    async restoreDepartmentOwnerView({state, dispatch}) {
+    async restoreDepartmentOwnerView({state, dispatch, commit}) {
         if (state.departmentOwnerViewRestored) {
             return [];
         }
         if (state.systemConfig.department_owner_project_view !== 'open') {
-            state.cacheDepartmentOwnerIds = [];
-            await $A.IDBSet("cacheDepartmentOwnerIds", []).catch(() => {});
+            commit('department/owner/ids/save', []);
             return [];
         }
         state.departmentOwnerViewRestored = true;
@@ -1642,8 +1627,7 @@ export default {
         if (restored.length > 0) {
             state.departmentOwnerProjectsRefreshing = true;
         }
-        state.cacheDepartmentOwnerIds = restored;
-        await $A.IDBSet("cacheDepartmentOwnerIds", restored).catch(() => {});
+        commit('department/owner/ids/save', restored);
         return restored;
     },
 
@@ -1654,20 +1638,19 @@ export default {
      * @param ids
      * @returns {Promise<void>}
      */
-    async setDepartmentOwnerIds({state, dispatch}, ids) {
+    async setDepartmentOwnerIds({state, dispatch, commit}, ids) {
         if (state.systemConfig.department_owner_project_view !== 'open') {
             ids = [];
         }
         const normalized = await dispatch("normalizeDepartmentOwnerIds", ids);
-        const oldValue = (state.cacheDepartmentOwnerIds || []).map(id => parseInt(id)).sort().join(',');
+        const oldValue = (state.cacheDepartmentOwnerIds || []).slice().sort().join(',');
         const newValue = normalized.slice().sort().join(',');
         if (oldValue === newValue) {
             return;
         }
         state.departmentOwnerProjectsRefreshing = true;
         await dispatch("refreshDepartmentOwnerProjects", normalized);
-        state.cacheDepartmentOwnerIds = normalized;
-        await $A.IDBSet("cacheDepartmentOwnerIds", normalized).catch(() => {});
+        commit('department/owner/ids/save', normalized);
     },
 
     /**

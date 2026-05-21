@@ -678,7 +678,7 @@ export default {
         },
 
         cacheDepartmentOwnerIds() {
-            return (this.$store.state.cacheDepartmentOwnerIds || []).map(id => parseInt(id));
+            return this.$store.state.cacheDepartmentOwnerIds || [];
         },
 
         /**

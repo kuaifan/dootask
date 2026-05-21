@@ -106,6 +106,22 @@ export default {
     cacheDepartmentOwnerIds: [],
     departmentOwnerViewRestored: false,
     departmentOwnerProjectsRefreshing: false,
+    departmentOwnerReadonlyUrls: [
+        'project/lists',
+        'project/one',
+        'project/column/lists',
+        'project/task/lists',
+        'project/task/one',
+        'project/task/content',
+        'project/task/content_history',
+        'project/task/files',
+        'project/task/fileinfo',
+        'project/task/subdata',
+        'project/task/related',
+        'project/flow/list',
+        'project/log/lists',
+        'project/tag/list',
+    ],
 
     // Emoji
     cacheEmojis: [],
