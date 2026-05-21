@@ -76,6 +76,7 @@ if ($openAiKey === '') {
 }
 $openAiProxy = trim(language_env_value('OPENAI_PROXY_URL', $languageEnv) ?? '');
 $openAiBaseUrl = trim(language_env_value('OPENAI_BASE_URL', $languageEnv) ?? '');
+$openAiModel = trim(language_env_value('OPENAI_API_MODEL', $languageEnv) ?? '');
 
 // 读取所有要翻译的内容
 $originals = [];
@@ -178,7 +179,7 @@ if (count($needs) > 0) {
             $openAi->setProxy($openAiProxy);
         }
         $result = $openAi->chat([
-            "model" => "gpt-5.2",
+            "model" => $openAiModel,
             "reasoning_effort" => "low",
             'messages' => [
                 [
