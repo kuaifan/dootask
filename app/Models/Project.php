@@ -723,4 +723,31 @@ class Project extends AbstractModel
         }
         return $project;
     }
+
+    /**
+     * 获取项目（含部门负责人只读视角兜底）
+     * @param int $project_id
+     * @param null|bool $archived true:仅限未归档, false:仅限已归档, null:不限制
+     * @param null|bool|string $mustOwner 仅限 null 时尝试部门只读视角
+     * @return self
+     */
+    public static function findForDepartmentView($project_id, $archived = true, $mustOwner = null)
+    {
+        $user = User::auth();
+        $departmentView = UserDepartment::ownerViewContext($user, true);
+        if (UserDepartment::isDepartmentReadonlyProject($departmentView, intval($project_id)) && $mustOwner === null) {
+            $project = self::allData()->where('projects.id', intval($project_id))->first();
+            if (empty($project)) {
+                throw new ApiException('项目不存在或已被删除', [ 'project_id' => $project_id ], -4001);
+            }
+            if ($archived === true && $project->archived_at != null) {
+                throw new ApiException('项目已归档', [ 'project_id' => $project_id ], -4001);
+            }
+            if ($archived === false && $project->archived_at == null) {
+                throw new ApiException('项目未归档', [ 'project_id' => $project_id ]);
+            }
+            return $project;
+        }
+        return self::userProject($project_id, $archived, $mustOwner);
+    }
 }

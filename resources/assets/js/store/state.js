@@ -103,6 +103,9 @@ export default {
     cacheColumns: [],
     cacheTasks: [],
     cacheProjectParameter: [],
+    cacheDepartmentOwnerIds: [],
+    departmentOwnerViewRestored: false,
+    departmentOwnerProjectsRefreshing: false,
 
     // Emoji
     cacheEmojis: [],

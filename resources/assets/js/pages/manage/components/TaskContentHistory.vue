@@ -138,7 +138,7 @@ export default {
                 data: {
                     task_id: this.taskId,
                     page: Math.max(this.page, 1),
-                    pagesize: Math.max($A.runNum(this.pageSize), 10),
+                    pagesize: Math.max($A.runNum(this.pageSize), 10)
                 },
             }).then(({data}) => {
                 this.page = data.current_page;

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
+use App\Module\Base;
 use Cache;
+use Request;
 
 /**
  * App\Models\UserDepartment
@@ -412,6 +414,93 @@ class UserDepartment extends AbstractModel
     }
 
     /**
+     * 获取用户可切换负责人视角的部门（正负责人 + 部门管理员）
+     * @param int $userid
+     * @return \Illuminate\Support\Collection
+     */
+    public static function getManagedDepartments($userid)
+    {
+        $userid = intval($userid);
+        if ($userid <= 0) {
+            return collect();
+        }
+        $deputyDepartmentIds = \DB::table('user_department_owners')
+            ->where('userid', $userid)
+            ->pluck('department_id')
+            ->map(fn($v) => intval($v))
+            ->toArray();
+
+        return self::select(['id', 'name', 'parent_id', 'owner_userid'])
+            ->where(function ($query) use ($userid, $deputyDepartmentIds) {
+                $query->where('owner_userid', $userid);
+                if ($deputyDepartmentIds) {
+                    $query->orWhereIn('id', $deputyDepartmentIds);
+                }
+            })
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * 获取用户选择的负责人视角部门范围（含所有下级部门）
+     * @param int $userid
+     * @param array|string|null $selectedIds all/空表示全部可管理部门
+     * @return array
+     */
+    public static function getManagedDepartmentScopeIds($userid, $selectedIds = null): array
+    {
+        $managedIds = self::getManagedDepartments($userid)->pluck('id')->map(fn($v) => intval($v))->toArray();
+        if (empty($managedIds)) {
+            return [];
+        }
+        if ($selectedIds === 'all' || $selectedIds === null || $selectedIds === '' || $selectedIds === []) {
+            $selected = $managedIds;
+        } else {
+            if (!is_array($selectedIds)) {
+                $selectedIds = explode(',', (string)$selectedIds);
+            }
+            $selected = array_values(array_intersect(
+                array_map('intval', $selectedIds),
+                $managedIds
+            ));
+        }
+        if (empty($selected)) {
+            return [];
+        }
+        $scopeIds = [];
+        foreach ($selected as $departmentId) {
+            $scopeIds[] = $departmentId;
+            $scopeIds = array_merge($scopeIds, self::getAllSubDepartmentIds($departmentId));
+        }
+        return array_values(array_unique(array_map('intval', $scopeIds)));
+    }
+
+    /**
+     * 获取负责人视角可管理的成员 userid
+     * @param int $userid
+     * @param array|string|null $selectedIds
+     * @return array
+     */
+    public static function getManagedMemberUserids($userid, $selectedIds = null): array
+    {
+        $departmentIds = self::getManagedDepartmentScopeIds($userid, $selectedIds);
+        if (empty($departmentIds)) {
+            return [];
+        }
+        return User::select(['userid'])
+            ->where(function ($query) use ($departmentIds) {
+                foreach ($departmentIds as $departmentId) {
+                    $query->orWhere('department', 'like', "%,{$departmentId},%");
+                }
+            })
+            ->pluck('userid')
+            ->map(fn($v) => intval($v))
+            ->unique()
+            ->values()
+            ->toArray();
+    }
+
+    /**
      * 获取部门基本信息（缓存时间1小时）
      * @param int|array $ids
      * @return \Illuminate\Support\Collection|static|null
@@ -451,6 +540,72 @@ class UserDepartment extends AbstractModel
         }
 
         return is_array($ids) ? $result : $result->first();
+    }
+
+    /**
+     * 部门负责人视角上下文（只读）。
+     * $defaultAll=true 用于项目内只读辅助接口兜底：前端漏传部门选择时按全部可管理部门判断。
+     */
+    public static function ownerViewContext(User $user, bool $defaultAll = false): array
+    {
+        $ids = Request::input('department_owner_ids', Request::input('department_ids'));
+        if (($ids === null || $ids === '') && $defaultAll) {
+            $ids = 'all';
+        }
+        $empty = [
+            'enabled' => false,
+            'member_userids' => [],
+            'project_ids' => [],
+            'project_id_map' => [],
+            'own_project_ids' => [],
+            'own_project_id_map' => [],
+        ];
+        if ($ids === null || $ids === '' || Base::settingFind('system', 'department_owner_project_view', 'close') !== 'open') {
+            return $empty;
+        }
+        $memberUserids = self::getManagedMemberUserids($user->userid, $ids);
+        if (empty($memberUserids)) {
+            return $empty;
+        }
+        $projectIds = ProjectUser::whereIn('userid', $memberUserids)
+            ->pluck('project_id')
+            ->map(fn($v) => intval($v))
+            ->unique()
+            ->values()
+            ->toArray();
+        $ownProjectIds = ProjectUser::whereUserid($user->userid)
+            ->pluck('project_id')
+            ->map(fn($v) => intval($v))
+            ->unique()
+            ->values()
+            ->toArray();
+        return [
+            'enabled' => !empty($projectIds),
+            'member_userids' => $memberUserids,
+            'project_ids' => $projectIds,
+            'project_id_map' => array_fill_keys($projectIds, true),
+            'own_project_ids' => $ownProjectIds,
+            'own_project_id_map' => array_fill_keys($ownProjectIds, true),
+        ];
+    }
+
+    /**
+     * 判断项目是否属于部门只读范围（非本人项目）
+     */
+    public static function isDepartmentReadonlyProject(array $context, int $projectId): bool
+    {
+        return !empty($context['enabled'])
+            && isset($context['project_id_map'][$projectId])
+            && !isset($context['own_project_id_map'][$projectId]);
+    }
+
+    /**
+     * 为项目数据附加部门只读标记
+     */
+    public static function appendDepartmentReadonlyProject(array $project, array $context): array
+    {
+        $project['department_readonly'] = self::isDepartmentReadonlyProject($context, intval($project['id']));
+        return $project;
     }
 
 }

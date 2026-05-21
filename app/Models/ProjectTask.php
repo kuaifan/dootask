@@ -2259,6 +2259,39 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 获取任务（含部门负责人只读视角兜底）
+     * @param int $task_id
+     * @param null|bool $archived true:仅限未归档, false:仅限已归档, null:不限制
+     * @param null|bool $trashed true:仅限未删除, false:仅限已删除, null:不限制
+     * @param array $with
+     * @return self
+     */
+    public static function findForDepartmentView($task_id, $archived = true, $trashed = true, $with = [])
+    {
+        $user = User::auth();
+        $departmentView = UserDepartment::ownerViewContext($user, true);
+        if ($departmentView['enabled']) {
+            $builder = self::with($with)->allData()->where('project_tasks.id', intval($task_id));
+            if ($trashed === false) {
+                $builder->onlyTrashed();
+            } elseif ($trashed === null) {
+                $builder->withTrashed();
+            }
+            $task = $builder->first();
+            if (!empty($task) && UserDepartment::isDepartmentReadonlyProject($departmentView, intval($task->project_id))) {
+                if ($archived === true && $task->archived_at != null) {
+                    throw new ApiException('任务已归档', ['task_id' => $task_id]);
+                }
+                if ($archived === false && $task->archived_at == null) {
+                    throw new ApiException('任务未归档', ['task_id' => $task_id]);
+                }
+                return $task;
+            }
+        }
+        return self::userTask($task_id, $archived, $trashed, $with);
+    }
+
+    /**
      * 构建指定周期内的未完成任务查询（用于周报/日报等）
      * @param int $userid
      * @param Carbon $start_time

@@ -73,6 +73,10 @@ export default {
         itemWidth: {
             type: Number,
             default: 100
+        },
+        readonly: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -328,6 +332,12 @@ export default {
             this.onDateMove(e.clientX);
         },
         itemMouseDown(e, item) {
+            if (this.readonly) {
+                if (e.target.classList.contains('timeline-title')) {
+                    this.clickItem(item);
+                }
+                return;
+            }
             e.preventDefault();
             this.onItemMove(item, e.target, e.clientX);
         },
@@ -347,6 +357,9 @@ export default {
             };
         },
         onItemMove(item, target, clientX) {
+            if (this.readonly) {
+                return;
+            }
             let type = 'moveX';
             if (target.classList.contains('timeline-resizer')) {
                 type = 'moveW';
@@ -384,6 +397,11 @@ export default {
             }
         },
         onMoveOver(target) {
+            if (this.readonly) {
+                this.mouseItem = null;
+                this.dateMove = null;
+                return;
+            }
             if (this.mouseItem != null) {
                 const {start, end} = this.mouseItem.time;
                 let isM = false;

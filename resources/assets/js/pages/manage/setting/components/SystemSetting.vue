@@ -75,6 +75,13 @@
                         </RadioGroup>
                         <div v-if="formDatum.project_invite == 'open'" class="form-tip">{{$L('开启：项目管理员可生成链接邀请成员加入项目。')}}</div>
                     </FormItem>
+                    <FormItem :label="$L('部门负责人视角')" prop="department_owner_project_view">
+                        <RadioGroup v-model="formDatum.department_owner_project_view">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.department_owner_project_view == 'open'" class="form-tip">{{$L('开启后，部门负责人/部门管理员可只读查看本部门及下级部门成员参与的项目和项目内全部任务。')}}</div>
+                    </FormItem>
                 </div>
             </div>
             <div class="block-setting-box">
@@ -351,6 +358,7 @@ export default {
             }).then(({data}) => {
                 if (save) {
                     $A.messageSuccess('修改成功');
+                    this.$store.dispatch("getUserInfo").catch(() => {});
                 }
                 this.formDatum = data;
                 this.formDatum_bak = $A.cloneJSON(this.formDatum);

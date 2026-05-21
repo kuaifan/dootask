@@ -10,7 +10,7 @@
                 <div v-if="loading" class="project-load"><Loading/></div>
             </div>
             <ul class="project-icons">
-                <li class="project-avatar" :class="{'cursor-default': !isOwnerOrDeputy}" @click="projectDropdown('user')">
+                <li class="project-avatar" :class="{'cursor-default': !isOwnerOrDeputy || isDepartmentReadonly}" @click="projectDropdown('user')">
                     <ul>
                         <li>
                             <UserAvatarTip :userid="projectData.owner_userid" :size="36" :borderWidth="2" :openDelay="0">
@@ -32,7 +32,7 @@
                         </template>
                     </ul>
                 </li>
-                <li class="project-icon" @click="addTaskOpen(0)">
+                <li v-if="!projectData.department_readonly" class="project-icon" @click="addTaskOpen(0)">
                     <ETooltip :disabled="$isEEUIApp || windowTouch" :content="$L('添加任务')">
                         <Icon class="menu-icon" type="md-add" />
                     </ETooltip>
@@ -52,7 +52,13 @@
                 <li class="project-icon">
                     <EDropdown @command="projectDropdown" trigger="click" transfer>
                         <Icon class="menu-icon" type="ios-more" />
-                        <EDropdownMenu v-if="isOwnerOrDeputy" slot="dropdown" class="project-panel-project-menu-dropdown">
+                        <EDropdownMenu v-if="isDepartmentReadonly" slot="dropdown" class="project-panel-project-menu-dropdown">
+                            <EDropdownItem command="favorite">{{$L(projectData.favorited ? '取消收藏' : '收藏项目')}}</EDropdownItem>
+                            <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
+                            <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
+                            <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
+                        </EDropdownMenu>
+                        <EDropdownMenu v-else-if="isOwnerOrDeputy" slot="dropdown" class="project-panel-project-menu-dropdown">
                             <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                             <EDropdownItem command="permissions">{{$L('权限设置')}}</EDropdownItem>
                             <EDropdownItem command="task_template">{{$L('任务模板')}}</EDropdownItem>
@@ -83,6 +89,9 @@
                 </li>
             </ul>
         </div>
+        <Alert v-if="projectData.department_readonly" class="project-readonly-alert" type="info" show-icon>
+            {{$L('当前为负责人视角：你可查看项目和任务，并参与讨论，但不能编辑项目或任务。')}}
+        </Alert>
         <div class="project-subbox">
             <div class="project-subtitle user-select-auto" @click="showDesc">
                 <VMPreviewNostyle ref="descPreview" :value="projectData.desc"/>
@@ -112,7 +121,7 @@
             <Draggable
                 :list="columnList"
                 :animation="150"
-                :disabled="sortDisabled || $isEEUIApp || windowTouch"
+                :disabled="sortDisabled || isDepartmentReadonly || $isEEUIApp || windowTouch"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
@@ -133,7 +142,7 @@
                         <div class="column-head-icon">
                             <div v-if="columnLoad[column.id] === true" class="loading"><Loading /></div>
                             <EDropdown
-                                v-else
+                                v-else-if="!isDepartmentReadonly"
                                 trigger="click"
                                 size="medium"
                                 @command="dropColumn(column, $event)">
@@ -165,14 +174,14 @@
                                     </li>
                                 </EDropdownMenu>
                             </EDropdown>
-                            <Icon class="last" type="md-add" @click="addTopShow(column.id, true)" />
+                            <Icon v-if="!isDepartmentReadonly" class="last" type="md-add" @click="addTopShow(column.id, true)" />
                         </div>
                     </div>
                     <Scrollbar
                         class="column-task"
                         class-name="task-scrollbar"
                         @on-scroll="handleTaskScroll">
-                        <div v-if="!!columnTopShow[column.id]" class="task-item additem">
+                        <div v-if="!isDepartmentReadonly && !!columnTopShow[column.id]" class="task-item additem">
                             <TaskAddSimple
                                 :column-id="column.id"
                                 :project-id="projectId"
@@ -184,7 +193,7 @@
                         <Draggable
                             :list="column.tasks"
                             :animation="150"
-                            :disabled="sortDisabled || $isEEUIApp || windowTouch"
+                            :disabled="sortDisabled || isDepartmentReadonly || $isEEUIApp || windowTouch"
                             class="task-list"
                             draggable=".task-draggable"
                             filter=".complete"
@@ -207,7 +216,7 @@
                                             <pre>{{item.name}}</pre>
                                         </div>
                                         <div class="task-menu" @click.stop="">
-                                            <TaskMenu :ref="`taskMenu_${item.id}`" :task="item" icon="ios-more"/>
+                                            <TaskMenu v-if="!isDepartmentReadonly" :ref="`taskMenu_${item.id}`" :task="item" icon="ios-more"/>
                                         </div>
                                     </div>
                                     <template v-if="!item.complete_at">
@@ -241,7 +250,7 @@
                                     </template>
                                 </template>
                             </div>
-                            <div class="task-item additem">
+                            <div v-if="!isDepartmentReadonly" class="task-item additem">
                                 <TaskAddSimple
                                     :column-id="column.id"
                                     :project-id="projectId"
@@ -250,7 +259,7 @@
                         </Draggable>
                     </Scrollbar>
                 </li>
-                <li :class="['add-column', addColumnShow ? 'show-input' : '']">
+                <li v-if="!isDepartmentReadonly" :class="['add-column', addColumnShow ? 'show-input' : '']">
                     <div class="add-column-text" @click="addColumnOpen">
                         <Icon type="md-add" />{{$L('添加列表')}}
                     </div>
@@ -321,6 +330,7 @@
                     v-if="projectData.cacheParameter.showMy"
                     :list="transforTasks(myList)"
                     :task-visibilitys="taskRowVisibilitys"
+                    :readonly="isDepartmentReadonly"
                     open-key="my"
                     @on-priority="addTaskOpen"
                     fast-add-task/>
@@ -342,6 +352,7 @@
                     v-if="projectData.cacheParameter.showHelp"
                     :list="helpList"
                     :task-visibilitys="taskRowVisibilitys"
+                    :readonly="isDepartmentReadonly"
                     open-key="help"
                     @on-priority="addTaskOpen"/>
             </div>
@@ -362,6 +373,7 @@
                     v-if="projectData.cacheParameter.showUndone"
                     :list="unList"
                     :task-visibilitys="taskRowVisibilitys"
+                    :readonly="isDepartmentReadonly"
                     open-key="undone"
                     @on-priority="addTaskOpen"/>
             </div>
@@ -384,6 +396,7 @@
                     v-if="projectData.cacheParameter.showCompleted"
                     :list="completedList"
                     :task-visibilitys="taskRowVisibilitys"
+                    :readonly="isDepartmentReadonly"
                     open-key="completed"
                     @on-priority="addTaskOpen"
                     showCompleteAt/>
@@ -391,7 +404,7 @@
         </Scrollbar>
         <div v-else-if="tabTypeActive === 'gantt'" class="project-gantt">
             <!--甘特图-->
-            <ProjectGantt :projectColumn="columnList" :flowInfo="flowInfo"/>
+            <ProjectGantt :projectColumn="columnList" :flowInfo="flowInfo" :readonly="isDepartmentReadonly"/>
         </div>
 
         <!--项目设置-->
@@ -824,7 +837,12 @@ export default {
             return this.projectData?.owner_userid === this.userId;
         },
 
+        isDepartmentReadonly() {
+            return !!this.projectData?.department_readonly;
+        },
+
         isOwnerOrDeputy() {
+            if (this.isDepartmentReadonly) return false;
             if (!this.projectData) return false;
             if (this.projectData.owner_userid === this.userId) return true;
             return (this.projectData.deputy_userids || []).includes(this.userId);
@@ -1249,6 +1267,9 @@ export default {
         },
 
         sortUpdate(only_column) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             const oldSort = this.sortData;
             const newSort = this.getSort();
             if (JSON.stringify(oldSort) === JSON.stringify(newSort)) {
@@ -1315,14 +1336,23 @@ export default {
         },
 
         addTopShow(id, show) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             this.$set(this.columnTopShow, id, show);
         },
 
         addTaskOpen(params) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             emitter.emit('addTask', params);
         },
 
         addColumnOpen() {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             this.addColumnShow = true;
             this.$nextTick(() => {
                 this.$refs.addColumnName.focus();
@@ -1360,6 +1390,9 @@ export default {
         },
 
         dropColumn(column, command) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             if (command === 'title') {
                 this.titleColumn(column);
             }
@@ -1617,6 +1650,9 @@ export default {
         },
 
         projectDropdown(name) {
+            if (this.isDepartmentReadonly && !['favorite', 'log', 'archived_task', 'deleted_task'].includes(name)) {
+                return;
+            }
             switch (name) {
                 case "favorite":
                     this.toggleProjectFavorite();
@@ -1643,7 +1679,7 @@ export default {
                     break;
 
                 case "user":
-                    if (!this.isOwnerOrDeputy) {
+                    if (this.isDepartmentReadonly || !this.isOwnerOrDeputy) {
                         return;
                     }
                     const userids = this.projectData.project_user.map(({userid}) => userid);
@@ -1714,6 +1750,9 @@ export default {
 
         openTask(task, receive) {
             this.$store.dispatch("openTask", task)
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             if (receive === true) {
                 // 向任务窗口发送领取任务请求
                 setTimeout(() => {
@@ -1777,7 +1816,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/flow/list',
                 data: {
-                    project_id: this.projectId,
+                    project_id: this.projectId
                 },
             }).then(({data}) => {
                 this.flowList = data;

@@ -912,6 +912,12 @@ class WebSocketDialog extends AbstractModel
                 if ($projectId > 0 && ProjectUser::whereProjectId($projectId)->whereUserid($userid)->exists()) {
                     return $dialog;
                 }
+                if ($projectId > 0 && $checkOwner === false) {
+                    $departmentView = UserDepartment::ownerViewContext(User::auth(), true);
+                    if (UserDepartment::isDepartmentReadonlyProject($departmentView, $projectId)) {
+                        return $dialog;
+                    }
+                }
                 break;
 
             case 'okr':

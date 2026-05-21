@@ -82,6 +82,24 @@
                                 <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
+                        <!-- 部门负责人视角 -->
+                        <DropdownItem
+                            v-else-if="item.path === 'departmentOwnerView'"
+                            :key="`menu-${index}`"
+                            :divided="!!item.divided"
+                            :name="item.path"
+                            :style="item.style || {}">
+                            <div class="manage-menu-flex">
+                                <div class="manage-menu-title">
+                                    {{$L(item.name)}}
+                                </div>
+                                <Badge
+                                    v-if="item.selectedCount > 0"
+                                    class="manage-menu-report-badge"
+                                    :overflow-count="999"
+                                    :count="item.selectedCount"/>
+                            </div>
+                        </DropdownItem>
                         <!-- 其他菜单 -->
                         <DropdownItem
                             v-else-if="item.visible !== false"
@@ -146,12 +164,23 @@
                             <div class="menu-title">{{item.label}}</div>
                         </li>
                     </ul>
+                    <div v-if="ownerProjectTabsVisible" class="owner-project-tabs">
+                        <div
+                            v-for="item in ownerProjectTabs"
+                            :key="item.type"
+                            :class="['owner-project-tab', ownerProjectTab === item.type ? 'active' : '']"
+                            :title="$L(item.name)"
+                            @click="ownerProjectTab = item.type">
+                            <span>{{$L(item.name)}}</span>
+                            <Badge :overflow-count="999" :count="item.count"/>
+                        </div>
+                    </div>
                 </div>
                 <div ref="menuProject" class="menu-project">
                     <Draggable
                         :list="projectDraggableList"
                         :animation="150"
-                        :disabled="$isEEUIApp || windowTouch || !!projectKeyValue"
+                        :disabled="$isEEUIApp || windowTouch || !!projectKeyValue || ownerProjectTabsVisible"
                         tag="ul"
                         item-key="id"
                         draggable="li:not(.pinned)"
@@ -170,6 +199,12 @@
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
                                 <div class="title" v-html="transformEmojiToHtml(item.name)"></div>
+                                <ETooltip v-if="item.department_readonly && item.personal" :content="$L('个人项目，只读查看')" placement="right">
+                                    <UserAvatar class="readonly-owner-avatar" :userid="item.userid" :size="18"/>
+                                </ETooltip>
+                                <ETooltip v-else-if="item.department_readonly" :content="$L('负责人视角，只读查看')" placement="right">
+                                    <i class="taskfont readonly-project-avatar">&#xe75c;</i>
+                                </ETooltip>
                                 <div v-if="item.top_at" class="icon-top"></div>
                                 <div v-if="item.task_my_num - item.task_my_complete > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
                             </div>
@@ -186,7 +221,10 @@
                                 </p>
                             </div>
                         </li>
-                        <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
+                        <li v-if="projectKeyLoading > 0 || departmentOwnerProjectsRefreshing" class="loading"><Loading/></li>
+                        <li v-else-if="projectLists.length === 0" class="nothing">
+                            {{$L(projectKeyValue ? `没有任何与"${projectKeyValue}"相关的结果` : `没有任何项目`)}}
+                        </li>
                     </Draggable>
                 </div>
             </Scrollbar>
@@ -330,6 +368,9 @@
         <!--弹出 MCP 服务器信息-->
         <MCPHelper v-model="mcpHelperShow"/>
 
+        <!--负责人视角-->
+        <DepartmentOwnerView v-model="departmentOwnerViewShow"/>
+
         <!--导出任务统计-->
         <TaskExport v-model="exportTaskShow"/>
 
@@ -456,6 +497,7 @@ import transformEmojiToHtml from "../utils/emoji";
 import {languageName} from "../language";
 import {AINormalizeJsonContent, PROJECT_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../utils/ai";
 import Draggable from 'vuedraggable'
+import DepartmentOwnerView from "./manage/components/DepartmentOwnerView.vue";
 
 export default {
     components: {
@@ -481,7 +523,8 @@ export default {
         ProjectArchived,
         MicroApps,
         ComplaintManagement,
-        Draggable
+        Draggable,
+        DepartmentOwnerView
     },
     directives: {longpress, TransferDom},
     data() {
@@ -519,6 +562,7 @@ export default {
 
             projectDraggableList: [],
             projectDragging: false,
+            ownerProjectTab: 'mine',
 
             openMenu: {},
             visibleMenu: false,
@@ -550,6 +594,7 @@ export default {
             taskBrowseHistory: [],
 
             mcpHelperShow: false,
+            departmentOwnerViewShow: false,
         }
     },
 
@@ -613,8 +658,10 @@ export default {
 
             'dialogIns',
             'formOptions',
+            'systemConfig',
             'mobileTabbar',
             'longpressData',
+            'departmentOwnerProjectsRefreshing',
 
             'mcpServerStatus',
             'microAppsIds'
@@ -624,6 +671,14 @@ export default {
 
         aiInstalled() {
             return this.microAppsIds?.includes('ai');
+        },
+
+        departmentOwnerViewAvailable() {
+            return this.systemConfig.department_owner_project_view === 'open' && (this.userInfo.managed_departments || []).length > 0;
+        },
+
+        cacheDepartmentOwnerIds() {
+            return (this.$store.state.cacheDepartmentOwnerIds || []).map(id => parseInt(id));
         },
 
         /**
@@ -763,6 +818,16 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
                 ])
             }
+            if (this.departmentOwnerViewAvailable) {
+                array.push({
+                    path: 'departmentOwnerView',
+                    name: '负责人视角',
+                    divided: !userIsAdmin,
+                    visible: true,
+                    selected: this.cacheDepartmentOwnerIds.length > 0,
+                    selectedCount: this.cacheDepartmentOwnerIds.length,
+                });
+            }
             array.push(...[
                 {path: 'clearCache', name: '清除缓存', divided: true},
                 {path: 'logout', name: '退出登录', style: {color: '#f40'}}
@@ -787,7 +852,7 @@ export default {
          * 项目列表
          * @returns {Array}
          */
-        projectLists() {
+        projectBaseLists() {
             const {projectKeyValue, cacheProjects} = this;
             const data = $A.cloneJSON(cacheProjects).sort((a, b) => {
                 // 置顶优先
@@ -805,6 +870,36 @@ export default {
                 return data.filter(item => $A.strExists(`${item.name} ${item.desc}`, projectKeyValue));
             }
             return data;
+        },
+
+        ownerProjectTabsVisible() {
+            return this.departmentOwnerViewAvailable && this.cacheDepartmentOwnerIds.length > 0;
+        },
+
+        ownerProjectTabs() {
+            return [
+                {type: 'mine', name: '我的项目', count: this.projectBaseLists.filter(item => !item.department_readonly).length},
+                {type: 'readonly', name: '负责人视角', count: this.projectBaseLists.filter(item => item.department_readonly).length},
+            ];
+        },
+
+        routeProjectId() {
+            const {projectId} = this.$route.params;
+            return parseInt(/^\d+$/.test(projectId) ? projectId : 0);
+        },
+
+        routeProject() {
+            if (this.routeProjectId <= 0) {
+                return null;
+            }
+            return this.cacheProjects.find(({id}) => id == this.routeProjectId) || null;
+        },
+
+        projectLists() {
+            if (!this.ownerProjectTabsVisible) {
+                return this.projectBaseLists;
+            }
+            return this.projectBaseLists.filter(item => this.ownerProjectTab === 'readonly' ? item.department_readonly : !item.department_readonly);
         },
 
         /**
@@ -884,6 +979,31 @@ export default {
             immediate: true
         },
 
+        ownerProjectTabs: {
+            handler(tabs) {
+                if (!this.ownerProjectTabsVisible) {
+                    this.ownerProjectTab = 'mine';
+                    return;
+                }
+                const active = tabs.find(item => item.type === this.ownerProjectTab);
+                if (!active || active.count === 0) {
+                    const first = tabs.find(item => item.count > 0);
+                    if (first) {
+                        this.ownerProjectTab = first.type;
+                    }
+                }
+                this.syncOwnerProjectTabByRoute();
+            },
+            immediate: true
+        },
+
+        routeProject: {
+            handler() {
+                this.syncOwnerProjectTabByRoute();
+            },
+            immediate: true
+        },
+
         projectLists: {
             handler(val) {
                 if (!this.projectDragging) {
@@ -915,6 +1035,12 @@ export default {
 
     methods: {
         transformEmojiToHtml,
+        syncOwnerProjectTabByRoute() {
+            if (!this.ownerProjectTabsVisible || !this.routeProject) {
+                return;
+            }
+            this.ownerProjectTab = this.routeProject.department_readonly ? 'readonly' : 'mine';
+        },
         chackPass() {
             if (this.userInfo.changepass === 1) {
                 this.goForward({name: 'manage-setting-password'});
@@ -936,6 +1062,9 @@ export default {
 
         settingRoute(path) {
             switch (path) {
+                case 'departmentOwnerView':
+                    this.departmentOwnerViewShow = true;
+                    return;
                 case 'allUser':
                     this.allUserShow = true;
                     return;

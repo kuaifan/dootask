@@ -46,6 +46,7 @@ use App\Models\ProjectTaskTemplate;
 use App\Models\ProjectTag;
 use App\Models\ProjectTaskRelation;
 use App\Models\ProjectTaskAiEvent;
+use App\Models\UserDepartment;
 use App\Module\AiTaskSuggestion;
 use App\Observers\ProjectTaskObserver;
 
@@ -128,6 +129,7 @@ class ProjectController extends AbstractController
     public function lists()
     {
         $user = User::auth();
+        $departmentView = UserDepartment::ownerViewContext($user);
         //
         $all = Request::input('all');
         $type = Request::input('type', 'all');
@@ -141,6 +143,9 @@ class ProjectController extends AbstractController
         if ($all) {
             $user->identity('admin');
             $builder = Project::allData();
+        } elseif ($departmentView['enabled']) {
+            $projectIds = array_values(array_unique(array_merge($departmentView['own_project_ids'], $departmentView['project_ids'])));
+            $builder = Project::allData()->whereIn('projects.id', $projectIds);
         } else {
             $builder = Project::authData();
         }
@@ -180,8 +185,9 @@ class ProjectController extends AbstractController
             ->orderBy('project_users.sort')
             ->orderByDesc('projects.id')
             ->paginate(Base::getPaginate(100, 50));
-        $list->transform(function (Project $project) use ($getstatistics, $getuserid, $user) {
+        $list->transform(function (Project $project) use ($getstatistics, $getuserid, $user, $departmentView) {
             $array = $project->toArray();
+            $array = UserDepartment::appendDepartmentReadonlyProject($array, $departmentView);
             if ($getuserid == 'yes') {
                 $array['userid_list'] = ProjectUser::whereProjectId($project->id)->pluck('userid')->toArray();
             }
@@ -250,13 +256,15 @@ class ProjectController extends AbstractController
     public function one()
     {
         $user = User::auth();
+        $departmentView = UserDepartment::ownerViewContext($user, true);
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::userProject($project_id);
+        $project = Project::findForDepartmentView($project_id);
         $data = array_merge($project->toArray(), $project->getTaskStatistics($user->userid), [
             'project_user' => $project->projectUser,
         ]);
+        $data = UserDepartment::appendDepartmentReadonlyProject($data, $departmentView);
         //
         return Base::retSuccess('success', $data);
     }
@@ -999,7 +1007,7 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         // 项目
-        $project = Project::userProject($project_id);
+        $project = Project::findForDepartmentView($project_id);
         //
         $list = ProjectColumn::whereProjectId($project->id)
             ->orderBy('sort')
@@ -1230,6 +1238,7 @@ class ProjectController extends AbstractController
     {
         $user = User::auth();
         $userid = $user->userid;
+        $departmentView = UserDepartment::ownerViewContext($user, true);
         //
         $parent_id = intval(Request::input('parent_id'));
         $project_id = intval(Request::input('project_id'));
@@ -1294,7 +1303,7 @@ class ProjectController extends AbstractController
         if ($parent_id > 0) {
             $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
             $isDeleted = str_replace(['all', 'yes', 'no'], [null, false, true], $deleted);
-            ProjectTask::userTask($parent_id, $isArchived, $isDeleted);
+            ProjectTask::findForDepartmentView($parent_id, $isArchived, $isDeleted);
             $scopeAll = true;
             $archived = 'all';
             $builder->where('project_tasks.parent_id', $parent_id);
@@ -1302,17 +1311,23 @@ class ProjectController extends AbstractController
             $builder->where('project_tasks.parent_id', 0);
         }
         if ($project_id > 0) {
-            Project::userProject($project_id);
+            if (!UserDepartment::isDepartmentReadonlyProject($departmentView, $project_id)) {
+                Project::userProject($project_id);
+            }
             $scopeAll = true;
             $builder->where('project_tasks.project_id', $project_id);
         }
         if (!$scopeAll && $scope === 'all_project') {
             $scopeAll = true;
-            $builder->whereIn('project_tasks.project_id', function ($query) use ($userid) {
-                $query->select('project_id')
-                    ->from('project_users')
-                    ->where('userid', $userid);
-            });
+            if ($departmentView['enabled']) {
+                $builder->whereIn('project_tasks.project_id', array_values(array_unique(array_merge($departmentView['own_project_ids'], $departmentView['project_ids']))));
+            } else {
+                $builder->whereIn('project_tasks.project_id', function ($query) use ($userid) {
+                    $query->select('project_id')
+                        ->from('project_users')
+                        ->where('userid', $userid);
+                });
+            }
         }
         if ($scopeAll) {
             $builder->allData();
@@ -1391,12 +1406,15 @@ class ProjectController extends AbstractController
             $query->on('project_sub_task_visibility_users.task_id', '=', 'project_tasks.parent_id');
             $query->where('project_sub_task_visibility_users.userid', $userid);
         });
-        $builder->where(function ($query) use ($userid) {
+        $builder->where(function ($query) use ($userid, $departmentView) {
             $query->where("project_tasks.visibility", 1);
             $query->orWhere("project_users.userid", $userid);
             $query->orWhere("project_task_users.userid", $userid);
             $query->orWhere("project_task_visibility_users.userid", $userid);
             $query->orWhere("project_sub_task_visibility_users.userid", $userid);
+            if ($departmentView['enabled']) {
+                $query->orWhereIn('project_tasks.project_id', $departmentView['project_ids']);
+            }
         });
         // 优化子查询汇总
         $builder->leftJoinSub(function ($query) {
@@ -1439,6 +1457,7 @@ class ProjectController extends AbstractController
         $data = $list->toArray();
         // 还原字段
         foreach($data['data'] as &$item){
+            $item['department_readonly'] = UserDepartment::isDepartmentReadonlyProject($departmentView, intval($item['project_id']));
             $item['file_num'] = $item['_file_num'] ?: 0;
             $item['msg_num'] = $item['_msg_num'] ?: 0;
             $item['sub_num'] = $item['_sub_num'] ?: 0;
@@ -2018,17 +2037,18 @@ class ProjectController extends AbstractController
     public function task__one()
     {
         $user = User::auth();
+        $departmentView = UserDepartment::ownerViewContext($user, true);
         //
         $task_id = intval(Request::input('task_id'));
         $archived = Request::input('archived', 'no');
         //
         $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
-        $task = ProjectTask::userTask($task_id, $isArchived, true, ['taskUser', 'taskTag']);
+        $task = ProjectTask::findForDepartmentView($task_id, $isArchived, true, ['taskUser', 'taskTag']);
         // 项目可见性
         $projectOwnerids = ProjectUser::whereProjectId($task->project_id)
             ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
             ->pluck('userid')->map(fn($v) => (int)$v)->toArray();     // 项目负责人（含项目管理员）
-        if ($task->visibility != 1 && !in_array($user->userid, $projectOwnerids)) {
+        if (!UserDepartment::isDepartmentReadonlyProject($departmentView, intval($task->project_id)) && $task->visibility != 1 && !in_array($user->userid, $projectOwnerids)) {
             $taskUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();                      //任务负责人、协助人
             $subTaskUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();                  //子任务负责人、协助人
             $visibleUserids = ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid')->toArray();         //可见人
@@ -2039,6 +2059,7 @@ class ProjectController extends AbstractController
         }
         //
         $data = $task->toArray();
+        $data['department_readonly'] = UserDepartment::isDepartmentReadonlyProject($departmentView, intval($task->project_id));
         $data['project_name'] = $task->project?->name;
         $data['column_name'] = $task->projectColumn?->name;
         $data['visibility_appointor'] = $task->visibility == 1 ? [0] : ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid');
@@ -2067,7 +2088,7 @@ class ProjectController extends AbstractController
             return Base::retError('参数错误', ['task_id' => $task_id]);
         }
         //
-        $task = ProjectTask::userTask($task_id);
+        $task = ProjectTask::findForDepartmentView($task_id);
         //
         return Base::retSuccess('success', [
             'id' => $task->id,
@@ -2099,7 +2120,7 @@ class ProjectController extends AbstractController
             return Base::retError('参数错误', ['task_id' => $task_id]);
         }
 
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::findForDepartmentView($task_id, null);
 
         $relations = ProjectTaskRelation::whereTaskId($task->id)
             ->orderByDesc('updated_at')
@@ -2117,7 +2138,7 @@ class ProjectController extends AbstractController
         $relatedTasks = [];
         foreach ($relatedTaskIds as $relatedId) {
             try {
-                $relatedTask = ProjectTask::userTask($relatedId, null, true, ['project', 'projectColumn']);
+                $relatedTask = ProjectTask::findForDepartmentView($relatedId, null, true, ['project', 'projectColumn']);
 
                 $flowItemParts = explode('|', $relatedTask->flow_item_name ?: '');
                 $flowItemStatus = $flowItemParts[0] ?? '';
@@ -2243,7 +2264,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $history_id = intval(Request::input('history_id'));
         //
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::findForDepartmentView($task_id, null);
         //
         if ($history_id > 0) {
             $taskContent = ProjectTaskContent::whereTaskId($task->id)->whereId($history_id)->first();
@@ -2283,7 +2304,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::findForDepartmentView($task_id, null);
         //
         $data = ProjectTaskContent::select(['id', 'task_id', 'desc', 'userid', 'created_at'])
             ->whereTaskId($task->id)
@@ -2312,7 +2333,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::findForDepartmentView($task_id, null);
         //
         return Base::retSuccess('success', $task->taskFile);
     }
@@ -2401,7 +2422,7 @@ class ProjectController extends AbstractController
         $data = $file->toArray();
         $data['path'] = $file->getRawOriginal('path');
         //
-        ProjectTask::userTask($file->task_id, null);
+        ProjectTask::findForDepartmentView($file->task_id, null);
         //
         UserRecentItem::record(
             $user->userid,
@@ -2442,7 +2463,7 @@ class ProjectController extends AbstractController
         abort_if(empty($file), 403, "This file not exist.");
         //
         try {
-            ProjectTask::userTask($file->task_id, null);
+            ProjectTask::findForDepartmentView($file->task_id, null);
         } catch (\Throwable $e) {
             abort(403, $e->getMessage() ?: "This file not support download.");
         }
@@ -3389,7 +3410,7 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::userProject($project_id, true);
+        $project = Project::findForDepartmentView($project_id, true);
         //
         $list = ProjectFlow::with(['ProjectFlowItem'])->whereProjectId($project->id)->get();
         return Base::retSuccess('success', $list);
@@ -3488,10 +3509,10 @@ class ProjectController extends AbstractController
         //
         $builder = ProjectLog::select(["*"]);
         if ($task_id > 0) {
-            $task = ProjectTask::userTask($task_id, null);
+            $task = ProjectTask::findForDepartmentView($task_id, null);
             $builder->whereTaskId($task->id);
         } else {
-            $project = Project::userProject($project_id);
+            $project = Project::findForDepartmentView($project_id);
             $builder->with(['projectTask:id,parent_id,name'])->whereProjectId($project->id)->whereTaskOnly(0);
         }
         //

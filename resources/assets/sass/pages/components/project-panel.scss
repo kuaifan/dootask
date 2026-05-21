@@ -1,6 +1,9 @@
 .project-panel {
     display: flex !important;
     flex-direction: column;
+    .project-readonly-alert {
+        margin: 0 32px 8px;
+    }
     .project-titbox {
         width: 100%;
         padding: 32px 32px 4px;
@@ -1050,6 +1053,9 @@
 
 body.window-portrait {
     .project-panel {
+        .project-readonly-alert {
+            margin: 0 16px 8px;
+        }
         .project-titbox {
             position: sticky;
             top: 0;

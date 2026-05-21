@@ -94,6 +94,7 @@ class SystemController extends AbstractController
                     'unclaimed_task_reminder',
                     'unclaimed_task_reminder_time',
                     'task_ai_auto_analyze',
+                    'department_owner_project_view',
                 ])) {
                     unset($all[$key]);
                 }
@@ -148,6 +149,7 @@ class SystemController extends AbstractController
         $setting['unclaimed_task_reminder'] = $setting['unclaimed_task_reminder'] ?: 'close';
         $setting['unclaimed_task_reminder_time'] = $setting['unclaimed_task_reminder_time'] ?: '';
         $setting['task_ai_auto_analyze'] = $setting['task_ai_auto_analyze'] ?: 'open';
+        $setting['department_owner_project_view'] = $setting['department_owner_project_view'] ?: 'close';
         $setting['server_timezone'] = config('app.timezone');
         $setting['server_version'] = Base::getVersion();
         //

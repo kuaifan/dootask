@@ -467,6 +467,17 @@ body.dark-mode-reverse {
                     }
                 }
             }
+            .menu-project {
+                > ul {
+                    > li {
+                        .project-h1 {
+                            .readonly-project-avatar {
+                                color: #1c1917;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -775,6 +786,31 @@ body.dark-mode-reverse {
         .ivu-tag-text {
             -webkit-filter: invert(100%);
             filter: invert(100%);
+        }
+    }
+
+    .department-owner-view-modal {
+        .department-owner-view-icon {
+            color: #000;
+        }
+    }
+    .project-list {
+        .list-search {
+            .owner-view-button {
+                > em {
+                    box-shadow: 0 0 0 2px #1c1917;
+                    color: #000;
+                }
+            }
+        }
+        > ul {
+            > li {
+                .project-item {
+                    .readonly-project-avatar {
+                        color: #1c1917;
+                    }
+                }
+            }
         }
     }
 }

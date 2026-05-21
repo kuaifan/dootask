@@ -365,7 +365,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/flow/list',
                 data: {
-                    project_id: this.projectId,
+                    project_id: this.projectId
                 },
             }).then(({data}) => {
                 this.list = data.map(item => {
