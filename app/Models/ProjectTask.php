@@ -2278,7 +2278,8 @@ class ProjectTask extends AbstractModel
                 $builder->withTrashed();
             }
             $task = $builder->first();
-            if (!empty($task) && UserDepartment::isDepartmentReadonlyProject($departmentView, intval($task->project_id))) {
+            // 仅"全员可见"(visibility=1)的任务走负责人只读视角；指定成员可见的任务交由 userTask 按可见性校验
+            if (!empty($task) && intval($task->visibility) === 1 && UserDepartment::isDepartmentReadonlyProject($departmentView, intval($task->project_id))) {
                 if ($archived === true && $task->archived_at != null) {
                     throw new ApiException('任务已归档', ['task_id' => $task_id]);
                 }

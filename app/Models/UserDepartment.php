@@ -567,10 +567,17 @@ class UserDepartment extends AbstractModel
         if (empty($memberUserids)) {
             return $empty;
         }
-        $projectIds = ProjectUser::whereIn('userid', $memberUserids)
-            ->pluck('project_id')
+        // 项目可单独关闭"部门负责人视角可见"，关闭后对负责人隐藏（含项目和任务群聊）
+        $projectIds = ProjectUser::whereIn('project_users.userid', $memberUserids)
+            ->join('projects', 'projects.id', '=', 'project_users.project_id')
+            ->whereNull('projects.deleted_at')
+            ->where(function ($query) {
+                $query->where('projects.department_owner_view', '<>', 'close')
+                    ->orWhereNull('projects.department_owner_view');
+            })
+            ->distinct()
+            ->pluck('projects.id')
             ->map(fn($v) => intval($v))
-            ->unique()
             ->values()
             ->toArray();
         $ownProjectIds = ProjectUser::whereUserid($user->userid)

@@ -904,15 +904,19 @@ class WebSocketDialog extends AbstractModel
             case 'project':
             case 'task':
                 // 项目群、任务群对话校验是否在项目内
+                $taskVisibility = 1;    // 项目群不涉及任务可见性，按可见处理
                 if ($dialog->group_type === 'project') {
                     $projectId = intval(Project::whereDialogId($dialog->id)->value('id'));
                 } else {
-                    $projectId = intval(ProjectTask::whereDialogId($dialog->id)->value('project_id'));
+                    $taskRow = ProjectTask::select(['project_id', 'visibility'])->whereDialogId($dialog->id)->first();
+                    $projectId = intval($taskRow?->project_id);
+                    $taskVisibility = intval($taskRow?->visibility);
                 }
                 if ($projectId > 0 && ProjectUser::whereProjectId($projectId)->whereUserid($userid)->exists()) {
                     return $dialog;
                 }
-                if ($projectId > 0 && $checkOwner === false) {
+                // 部门负责人只读视角：项目群放行；任务群仅"全员可见"任务放行，指定成员可见任务不放行
+                if ($projectId > 0 && $checkOwner === false && ($dialog->group_type === 'project' || $taskVisibility === 1)) {
                     $departmentView = UserDepartment::ownerViewContext(User::auth(), true);
                     if (UserDepartment::isDepartmentReadonlyProject($departmentView, $projectId)) {
                         return $dialog;

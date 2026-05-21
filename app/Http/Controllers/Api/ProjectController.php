@@ -311,6 +311,7 @@ class ProjectController extends AbstractController
      * @apiParam {Number} [archive_days]    自动归档天数
      * @apiParam {String} [ai_auto_analyze] AI自动分析（open|close）
      * @apiParam {String} [task_template_share] 共享模板（open|close）
+     * @apiParam {String} [department_owner_view] 部门负责人视角可见（open|close）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -327,6 +328,7 @@ class ProjectController extends AbstractController
         $archive_days = intval(Request::input('archive_days'));
         $ai_auto_analyze = Request::input('ai_auto_analyze');
         $task_template_share = Request::input('task_template_share');
+        $department_owner_view = Request::input('department_owner_view');
         if (mb_strlen($name) < 2) {
             return Base::retError('项目名称不可以少于2个字');
         } elseif (mb_strlen($name) > 32) {
@@ -342,7 +344,7 @@ class ProjectController extends AbstractController
         }
         //
         $project = Project::userProject($project_id, true, true);
-        AbstractModel::transaction(function () use ($archive_days, $archive_method, $ai_auto_analyze, $task_template_share, $desc, $name, $project) {
+        AbstractModel::transaction(function () use ($archive_days, $archive_method, $ai_auto_analyze, $task_template_share, $department_owner_view, $desc, $name, $project) {
             if ($project->name != $name) {
                 $project->addLog("修改项目名称", [
                     'change' => [$project->name, $name]
@@ -379,6 +381,12 @@ class ProjectController extends AbstractController
                     'change' => [$project->task_template_share, $task_template_share]
                 ]);
                 $project->task_template_share = $task_template_share;
+            }
+            if (in_array($department_owner_view, ['open', 'close']) && $project->department_owner_view != $department_owner_view) {
+                $project->addLog("修改负责人视角可见", [
+                    'change' => [$project->department_owner_view, $department_owner_view]
+                ]);
+                $project->department_owner_view = $department_owner_view;
             }
             $project->save();
         });
@@ -1406,15 +1414,12 @@ class ProjectController extends AbstractController
             $query->on('project_sub_task_visibility_users.task_id', '=', 'project_tasks.parent_id');
             $query->where('project_sub_task_visibility_users.userid', $userid);
         });
-        $builder->where(function ($query) use ($userid, $departmentView) {
+        $builder->where(function ($query) use ($userid) {
             $query->where("project_tasks.visibility", 1);
             $query->orWhere("project_users.userid", $userid);
             $query->orWhere("project_task_users.userid", $userid);
             $query->orWhere("project_task_visibility_users.userid", $userid);
             $query->orWhere("project_sub_task_visibility_users.userid", $userid);
-            if ($departmentView['enabled']) {
-                $query->orWhereIn('project_tasks.project_id', $departmentView['project_ids']);
-            }
         });
         // 优化子查询汇总
         $builder->leftJoinSub(function ($query) {
@@ -2048,7 +2053,7 @@ class ProjectController extends AbstractController
         $projectOwnerids = ProjectUser::whereProjectId($task->project_id)
             ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
             ->pluck('userid')->map(fn($v) => (int)$v)->toArray();     // 项目负责人（含项目管理员）
-        if (!UserDepartment::isDepartmentReadonlyProject($departmentView, intval($task->project_id)) && $task->visibility != 1 && !in_array($user->userid, $projectOwnerids)) {
+        if ($task->visibility != 1 && !in_array($user->userid, $projectOwnerids)) {
             $taskUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();                      //任务负责人、协助人
             $subTaskUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();                  //子任务负责人、协助人
             $visibleUserids = ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid')->toArray();         //可见人

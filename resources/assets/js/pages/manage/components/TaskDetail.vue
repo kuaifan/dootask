@@ -117,7 +117,7 @@
             </div>
             <Scrollbar ref="scroller" class="scroller" :touch-content-blur="false">
                 <Alert v-if="taskDetail.department_readonly" class="task-readonly-alert" type="info" show-icon>
-                    {{$L('当前为负责人视角：你可查看任务内容、动态和附件，并参与讨论，但不能编辑任务。')}}
+                    {{$L('当前为负责人  ，并参与讨论，但不能编辑任务。')}}
                 </Alert>
                 <Alert v-if="!isDepartmentReadonly && taskDetail.task_user !== undefined && getOwner.length === 0" class="receive-box" type="warning">
                     <span class="receive-text">{{$L('该任务尚未被领取，点击这里')}}</span>

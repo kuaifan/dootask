@@ -452,6 +452,14 @@
                     <div v-if="settingData.task_template_share === 'open'" class="form-tip">{{$L('开启后，添加任务时可使用其他项目共享的任务模板。')}}</div>
                     <div v-else class="form-tip">{{$L('关闭后，添加任务时仅加载本项目模板，不显示其他项目共享模板。')}}</div>
                 </FormItem>
+                <FormItem v-if="systemConfig.department_owner_project_view === 'open'" :label="$L('负责人视角')" prop="department_owner_view">
+                    <RadioGroup v-model="settingData.department_owner_view">
+                        <Radio label="open">{{$L('开启')}}</Radio>
+                        <Radio label="close">{{$L('关闭')}}</Radio>
+                    </RadioGroup>
+                    <div v-if="settingData.department_owner_view === 'open'" class="form-tip">{{$L('开启后，部门负责人可只读查看本项目及其全员可见任务。')}}</div>
+                    <div v-else class="form-tip">{{$L('关闭后，本项目及其群聊对部门负责人视角隐藏。')}}</div>
+                </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="settingShow=false">{{$L('取消')}}</Button>
@@ -1665,7 +1673,8 @@ export default {
                         archive_method: this.projectData.archive_method,
                         archive_days: this.projectData.archive_days,
                         ai_auto_analyze: this.projectData.ai_auto_analyze || 'open',
-                        task_template_share: this.projectData.task_template_share || 'open'
+                        task_template_share: this.projectData.task_template_share || 'open',
+                        department_owner_view: this.projectData.department_owner_view || 'open'
                     });
                     this.settingShow = true;
                     this.$nextTick(() => {
