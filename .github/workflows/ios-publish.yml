@@ -146,6 +146,33 @@ jobs:
           APP_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$APP_PROFILE_PLIST")
           SHARE_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$SHARE_PROFILE_PLIST")
           IOS_TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" "$APP_PROFILE_PLIST")
+          APP_PROFILE_APP_ID=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" "$APP_PROFILE_PLIST")
+          SHARE_PROFILE_APP_ID=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" "$SHARE_PROFILE_PLIST")
+
+          if [ "$APP_PROFILE_APP_ID" != "$IOS_TEAM_ID.com.dootask.task" ]; then
+            echo "Expected app profile for $IOS_TEAM_ID.com.dootask.task, got $APP_PROFILE_APP_ID"
+            exit 1
+          fi
+
+          if [ "$SHARE_PROFILE_APP_ID" != "$IOS_TEAM_ID.com.dootask.task.shareExtension" ]; then
+            echo "Expected share extension profile for $IOS_TEAM_ID.com.dootask.task.shareExtension, got $SHARE_PROFILE_APP_ID"
+            exit 1
+          fi
+
+          if ! /usr/libexec/PlistBuddy -c "Print :Entitlements:aps-environment" "$APP_PROFILE_PLIST" >/dev/null; then
+            echo "The DooTask app profile must include Push Notifications."
+            exit 1
+          fi
+
+          if ! /usr/libexec/PlistBuddy -c "Print :Entitlements:com.apple.security.application-groups" "$APP_PROFILE_PLIST" | grep -q "group.im.dootask"; then
+            echo "The DooTask app profile must include App Group group.im.dootask."
+            exit 1
+          fi
+
+          if ! /usr/libexec/PlistBuddy -c "Print :Entitlements:com.apple.security.application-groups" "$SHARE_PROFILE_PLIST" | grep -q "group.im.dootask"; then
+            echo "The share extension profile must include App Group group.im.dootask."
+            exit 1
+          fi
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$APP_PROFILE_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
@@ -155,18 +182,57 @@ jobs:
           echo "SHARE_PROFILE_NAME=$SHARE_PROFILE_NAME" >> $GITHUB_ENV
           echo "IOS_TEAM_ID=$IOS_TEAM_ID" >> $GITHUB_ENV
 
+      - name: Configure manual signing
+        run: |
+          set -euo pipefail
+
+          ruby <<'RUBY'
+          require 'xcodeproj'
+
+          project_path = 'resources/mobile/platforms/ios/eeuiApp/eeuiApp.xcodeproj'
+          project = Xcodeproj::Project.open(project_path)
+
+          {
+            'DooTask' => ENV.fetch('APP_PROFILE_NAME'),
+            'ShareExtension' => ENV.fetch('SHARE_PROFILE_NAME')
+          }.each do |target_name, profile_name|
+            target = project.targets.find { |item| item.name == target_name }
+            abort "Target #{target_name} not found in #{project_path}" unless target
+
+            target.build_configurations.each do |config|
+              next unless config.name == 'Release'
+
+              config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+              config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('IOS_TEAM_ID')
+              config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+              config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = profile_name
+            end
+          end
+
+          project.save
+          RUBY
+
       - name: Build archive
         run: |
+          set -euo pipefail
+
           cd resources/mobile/platforms/ios/eeuiApp
           xcodebuild archive \
             -workspace eeuiApp.xcworkspace \
             -scheme eeuiApp \
             -configuration Release \
+            -destination "generic/platform=iOS" \
             -archivePath $RUNNER_TEMP/eeuiApp.xcarchive \
             -allowProvisioningUpdates \
             DEVELOPMENT_TEAM=$IOS_TEAM_ID \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             CODE_SIGN_STYLE=Manual \
             | xcpretty
+
+          if [ ! -d "$RUNNER_TEMP/eeuiApp.xcarchive" ]; then
+            echo "Archive was not created at $RUNNER_TEMP/eeuiApp.xcarchive"
+            exit 1
+          fi
 
       - name: Export IPA
         run: |
