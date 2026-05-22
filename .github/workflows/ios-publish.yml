@@ -212,6 +212,126 @@ jobs:
           project.save
           RUBY
 
+      - name: Resolve iOS build number
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          ruby <<'RUBY'
+          require 'base64'
+          require 'json'
+          require 'net/http'
+          require 'openssl'
+          require 'uri'
+
+          BUNDLE_ID = 'com.dootask.task'
+          VERSION_CONFIG_PATH = 'resources/mobile/platforms/ios/eeuiApp/Config/Version.xcconfig'
+
+          def base64url(value)
+            Base64.urlsafe_encode64(value).delete('=')
+          end
+
+          def jwt_es256_signature(private_key, unsigned)
+            der_signature = private_key.sign('SHA256', unsigned)
+            sequence = OpenSSL::ASN1.decode(der_signature)
+
+            sequence.value.map { |integer|
+              integer.value.to_s(2).rjust(32, "\0")[-32, 32]
+            }.join
+          end
+
+          def asc_token
+            key_id = ENV.fetch('ASC_API_KEY_ID')
+            issuer_id = ENV.fetch('ASC_ISSUER_ID')
+            private_key = OpenSSL::PKey.read(Base64.decode64(ENV.fetch('ASC_API_KEY_P8_BASE64')))
+            now = Time.now.to_i
+
+            header = { alg: 'ES256', kid: key_id, typ: 'JWT' }
+            payload = {
+              iss: issuer_id,
+              iat: now,
+              exp: now + 20 * 60,
+              aud: 'appstoreconnect-v1'
+            }
+
+            unsigned = "#{base64url(header.to_json)}.#{base64url(payload.to_json)}"
+            signature = jwt_es256_signature(private_key, unsigned)
+            "#{unsigned}.#{base64url(signature)}"
+          end
+
+          def asc_get(path, params, token)
+            uri = URI::HTTPS.build(
+              host: 'api.appstoreconnect.apple.com',
+              path: path,
+              query: URI.encode_www_form(params)
+            )
+
+            request_uri = uri
+            loop do
+              response = Net::HTTP.start(request_uri.host, request_uri.port, use_ssl: true) do |http|
+                request = Net::HTTP::Get.new(request_uri)
+                request['Authorization'] = "Bearer #{token}"
+                http.request(request)
+              end
+
+              unless response.is_a?(Net::HTTPSuccess)
+                abort "App Store Connect API request failed: #{response.code} #{response.body}"
+              end
+
+              parsed = JSON.parse(response.body)
+              yield parsed
+
+              next_link = parsed.dig('links', 'next')
+              break unless next_link
+
+              request_uri = URI(next_link)
+            end
+          end
+
+          token = asc_token
+          app_id = nil
+
+          asc_get('/v1/apps', { 'filter[bundleId]' => BUNDLE_ID, 'limit' => 1 }, token) do |page|
+            app_id = page.fetch('data').first&.fetch('id')
+          end
+
+          abort "App Store Connect app not found for bundle id #{BUNDLE_ID}" unless app_id
+
+          existing_versions = []
+          asc_get('/v1/builds', {
+            'filter[app]' => app_id,
+            'fields[builds]' => 'version',
+            'limit' => 200
+          }, token) do |page|
+            existing_versions.concat(
+              page.fetch('data').map { |build| build.dig('attributes', 'version').to_s }
+            )
+          end
+
+          max_build_number = existing_versions
+            .select { |version| version.match?(/\A\d+\z/) }
+            .map(&:to_i)
+            .max || 0
+
+          next_build_number = max_build_number + 1
+          config_content = File.exist?(VERSION_CONFIG_PATH) ? File.read(VERSION_CONFIG_PATH) : ''
+
+          if config_content.match?(/^VERSION_CODE\s*=/)
+            config_content = config_content.gsub(/^VERSION_CODE\s*=.*$/, "VERSION_CODE = #{next_build_number}")
+          else
+            config_content = "#{config_content.rstrip}\nVERSION_CODE = #{next_build_number}\n"
+          end
+
+          File.write(VERSION_CONFIG_PATH, config_content)
+          File.open(ENV.fetch('GITHUB_ENV'), 'a') { |file| file.puts "IOS_BUILD_NUMBER=#{next_build_number}" }
+
+          puts "Latest App Store Connect build number: #{max_build_number}"
+          puts "Resolved iOS build number: #{next_build_number}"
+          RUBY
+
       - name: Build archive
         run: |
           set -euo pipefail
