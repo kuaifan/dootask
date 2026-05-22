@@ -26,6 +26,7 @@ let buildChecked = false,
     updaterChecked = false;
 
 const shellQuote = (value) => `'${String(value).replace(/'/g, `'\\''`)}'`;
+const elapsedSeconds = (startTime) => `${((Date.now() - startTime) / 1000).toFixed(1)}s`;
 
 /**
  * 检测并下载更新器
@@ -368,6 +369,7 @@ class WebsitePublisher {
      */
     async uploadPackage(localFile, options = {}) {
         const filename = path.basename(localFile)
+        const startTime = Date.now()
         let spinner = ora(`Upload [0%] ${filename}`).start()
         const formData = new FormData()
         formData.append("version", this.version)
@@ -378,33 +380,41 @@ class WebsitePublisher {
             }
         }
         formData.append("file", fs.createReadStream(localFile))
-        const {status, data} = await axiosAutoTry({
-            axios: {
-                method: 'post',
-                url: `${this.baseUrl}/api/upload/package`,
-                data: formData,
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
+        let result
+        try {
+            result = await axiosAutoTry({
+                axios: {
+                    method: 'post',
+                    url: `${this.baseUrl}/api/upload/package`,
+                    data: formData,
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`,
+                        'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
+                    },
+                    onUploadProgress: progress => {
+                        const complete = Math.min(99, Math.round(progress.loaded / progress.total * 100 | 0)) + '%'
+                        spinner.text = `Upload [${complete}] ${filename}`
+                    },
                 },
-                onUploadProgress: progress => {
-                    const complete = Math.min(99, Math.round(progress.loaded / progress.total * 100 | 0)) + '%'
-                    spinner.text = `Upload [${complete}] ${filename}`
+                onRetry: (err) => {
+                    const reason = err?.response?.status || err?.code || err?.message || ''
+                    spinner.warn(`Upload [retry] ${filename} (${elapsedSeconds(startTime)})${reason ? ': ' + reason : ''}`)
+                    spinner = ora(`Upload [0%] ${filename}`).start()
                 },
-            },
-            onRetry: (err) => {
-                const reason = err?.response?.status || err?.code || err?.message || ''
-                spinner.warn(`Upload [retry] ${filename}${reason ? ': ' + reason : ''}`)
-                spinner = ora(`Upload [0%] ${filename}`).start()
-            },
-            retryNumber: 3
-        })
+                retryNumber: 3
+            })
+        } catch (error) {
+            const reason = error?.response?.status || error?.code || error?.message || 'unknown error'
+            spinner.fail(`Upload [fail] ${filename} (${elapsedSeconds(startTime)}): ${reason}`)
+            throw error
+        }
+        const {status, data} = result
         if (status !== 200 || !utils.isJson(data) || !data.success) {
             const reason = data?.message || `status ${status}`
-            spinner.fail(`Upload [fail] ${filename}: ${reason}`)
+            spinner.fail(`Upload [fail] ${filename} (${elapsedSeconds(startTime)}): ${reason}`)
             throw new Error(`Upload failed: ${filename}: ${reason}`)
         }
-        spinner.succeed(`Upload [100%] ${filename}`)
+        spinner.succeed(`Upload [100%] ${filename} (${elapsedSeconds(startTime)})`)
     }
 
     /**
