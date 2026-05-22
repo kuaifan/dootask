@@ -180,8 +180,11 @@ jobs:
       - name: (Android) Upload File
         if: matrix.build_type == 'android'
         env:
-          UPLOAD_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
-          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
         run: |
           node ./electron/build.js android-upload
 
@@ -219,8 +222,11 @@ jobs:
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          UPLOAD_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
-          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
@@ -230,8 +236,11 @@ jobs:
       - name: (Windows) Build Client
         if: matrix.build_type == 'windows'
         env:
-          UPLOAD_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
-          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         shell: bash
@@ -264,8 +273,11 @@ jobs:
 
       - name: Upload Changelog & Publish to Website
         env:
-          UPLOAD_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
-          UPLOAD_URL: ${{ secrets.UPLOAD_URL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
         run: |
           pushd electron || exit
           npm install
