@@ -1,7 +1,7 @@
 <template>
     <!--子任务-->
     <li v-if="ready && isSubTask">
-        <div class="subtask-icon">
+        <div v-if="!isDepartmentReadonly" class="subtask-icon">
             <TaskMenu
                 :ref="`taskMenu_${taskDetail.id}`"
                 :disabled="taskId === 0"
@@ -13,7 +13,7 @@
             v-if="taskDetail.flow_item_name"
             class="subtask-flow"
             :style="$A.generateColorVarStyle(taskDetail.flow_item_color, [10], 'flow-item-custom-color')">
-            <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
+            <span :class="taskDetail.flow_item_status" @click.stop="!isDepartmentReadonly && openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
         </div>
         <div class="subtask-name">
             <Input
@@ -24,11 +24,13 @@
                 :autosize="{ minRows: 1, maxRows: 8 }"
                 :maxlength="255"
                 enterkeyhint="done"
+                :readonly="isDepartmentReadonly"
                 @on-blur="updateBlur('name')"
                 @on-keydown="onNameKeydown"
             />
         </div>
         <DatePicker
+            v-if="!isDepartmentReadonly"
             v-model="timeValue"
             :open="timeOpen"
             :options="timeOptions"
@@ -46,7 +48,11 @@
             </div>
             <Icon v-else class="clock" type="ios-clock-outline" @click="openTime" />
         </DatePicker>
+        <div v-else-if="showSubTime" :class="['subtask-time readonly-time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
+            {{expiresFormat(taskDetail.end_at)}}
+        </div>
         <UserSelect
+            v-if="!isDepartmentReadonly || (ownerData.owner_userid && ownerData.owner_userid.length > 0)"
             class="subtask-avatar"
             v-model="ownerData.owner_userid"
             :multiple-max="10"
@@ -54,6 +60,7 @@
             :title="$L('修改负责人')"
             :add-icon="false"
             :project-id="taskDetail.project_id"
+            :disabled="isDepartmentReadonly"
             :before-submit="onOwner"/>
     </li>
     <!--主任务-->
@@ -65,6 +72,7 @@
         <div v-show="taskDetail.id > 0" class="task-info" v-resize-observer="scrollIntoInput">
             <div class="head">
                 <TaskMenu
+                    v-if="!isDepartmentReadonly"
                     :ref="`taskMenu_${taskDetail.id}`"
                     :disabled="taskId === 0"
                     :task="taskDetail"
@@ -76,10 +84,10 @@
                     v-if="taskDetail.flow_item_name"
                     class="flow"
                     :style="$A.generateColorVarStyle(taskDetail.flow_item_color, [10], 'flow-item-custom-color')">
-                    <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
+                    <span :class="taskDetail.flow_item_status" @click.stop="!isDepartmentReadonly && openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
                 </div>
                 <div v-if="taskDetail.archived_at" class="flow">
-                    <span class="archived" @click.stop="openMenu($event, taskDetail)">{{$L('已归档')}}</span>
+                    <span class="archived" @click.stop="!isDepartmentReadonly && openMenu($event, taskDetail)">{{$L('已归档')}}</span>
                 </div>
                 <div class="nav user-select-auto">
                     <p v-if="projectName"><span>{{projectName}}</span></p>
@@ -90,7 +98,7 @@
                     <ETooltip v-if="$Electron" :disabled="$isEEUIApp || windowTouch" :content="$L('独立窗口显示')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
-                    <div class="menu">
+                    <div v-if="!isDepartmentReadonly" class="menu">
                         <TaskMenu
                             :disabled="taskId === 0"
                             :task="taskDetail"
@@ -104,7 +112,10 @@
                 </div>
             </div>
             <Scrollbar ref="scroller" class="scroller" :touch-content-blur="false">
-                <Alert v-if="taskDetail.task_user !== undefined && getOwner.length === 0" class="receive-box" type="warning">
+                <Alert v-if="taskDetail.department_readonly" class="task-readonly-alert" type="info" show-icon>
+                    {{$L('当前为负责人，并参与讨论，但不能编辑任务。')}}
+                </Alert>
+                <Alert v-if="!isDepartmentReadonly && taskDetail.task_user !== undefined && getOwner.length === 0" class="receive-box" type="warning">
                     <span class="receive-text">{{$L('该任务尚未被领取，点击这里')}}</span>
                     <EPopover
                         v-model="receiveShow"
@@ -143,6 +154,7 @@
                         :autosize="{ minRows: 1, maxRows: 8 }"
                         :maxlength="255"
                         enterkeyhint="done"
+                        :readonly="isDepartmentReadonly"
                         @on-blur="updateBlur('name')"
                         @on-keydown="onNameKeydown"/>
                 </div>
@@ -151,6 +163,7 @@
                     class="desc"
                     :value="taskContent"
                     :placeholder="$L('详细描述...')"
+                    :readonly="isDepartmentReadonly"
                     @on-history="onHistory"
                     @on-blur="updateBlur('content', $event)"/>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
@@ -159,7 +172,8 @@
                             <i class="taskfont">&#xe61e;</i>{{$L('标签')}}
                         </div>
                         <div class="item-content tags">
-                            <EPopover v-model="tagShow" class="tags-select" placement="bottom">
+                            <TaskTag v-if="isDepartmentReadonly" :tags="getTag"/>
+                            <EPopover v-else v-model="tagShow" class="tags-select" placement="bottom">
                                 <TaskTagSelect
                                     ref="tagSelect"
                                     v-model="tagValue"
@@ -181,7 +195,7 @@
                         </div>
                         <ul class="item-content priority">
                             <li>
-                                <TaskPriority :backgroundColor="taskDetail.p_color"><span ref="priorityText" @click="onPriority">{{taskDetail.p_name}}</span></TaskPriority>
+                                <TaskPriority :backgroundColor="taskDetail.p_color"><span ref="priorityText" @click="!isDepartmentReadonly && onPriority($event)">{{taskDetail.p_name}}</span></TaskPriority>
                             </li>
                         </ul>
                     </FormItem>
@@ -197,6 +211,7 @@
                             :title="$L('修改负责人')"
                             :project-id="taskDetail.project_id"
                             :add-icon="false"
+                            :disabled="isDepartmentReadonly"
                             :before-submit="onOwner"/>
                     </FormItem>
                     <FormItem v-if="getAssist.length > 0 || assistForce">
@@ -213,15 +228,16 @@
                             :project-id="taskDetail.project_id"
                             :disabled-choice="assistData.disabled"
                             :add-icon="false"
+                            :disabled="isDepartmentReadonly"
                             :before-submit="onAssist"/>
                     </FormItem>
                     <FormItem v-if="taskDetail.visibility > 1 || visibleForce || visibleKeep">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe77b;</i>
-                            <span class="visibility-text color" @click="showCisibleDropdown">{{$L('可见性')}} <i class="taskfont">&#xe740;</i></span>
+                            <span class="visibility-text color" @click="!isDepartmentReadonly && showCisibleDropdown($event)">{{$L('可见性')}} <i class="taskfont">&#xe740;</i></span>
                         </div>
                         <div class="item-content user">
-                            <span v-if="taskDetail.visibility == 1 || taskDetail.visibility == 2" ref="visibilityText" class="visibility-text" @click="showCisibleDropdown">{{ taskDetail.visibility == 1 ? $L('项目人员可见') : $L('任务人员可见') }}</span>
+                            <span v-if="taskDetail.visibility == 1 || taskDetail.visibility == 2" ref="visibilityText" class="visibility-text" @click="!isDepartmentReadonly && showCisibleDropdown($event)">{{ taskDetail.visibility == 1 ? $L('项目人员可见') : $L('任务人员可见') }}</span>
                             <UserSelect v-else
                                 ref="visibleUserSelectRef"
                                 v-model="taskDetail.visibility_appointor"
@@ -229,14 +245,15 @@
                                 :title="$L('选择指定人员')"
                                 :project-id="taskDetail.project_id"
                                 :add-icon="false"
+                                :disabled="isDepartmentReadonly"
                                 @on-show-change="visibleUserSelectShowChange"/>
                         </div>
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at || timeForce">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6e8;</i>
-                            <span v-if="!taskDetail.end_at" @click="timeOpen = true" class="visibility-text color">{{$L('截止时间')}}</span>
-                            <span v-else class="visibility-text color" @click="showAtDropdown">{{$L('截止时间')}}</span>
+                            <span v-if="!taskDetail.end_at" @click="!isDepartmentReadonly && (timeOpen = true)" class="visibility-text color">{{$L('截止时间')}}</span>
+                            <span v-else class="visibility-text color" @click="!isDepartmentReadonly && showAtDropdown($event)">{{$L('截止时间')}}</span>
                         </div>
                         <ul class="item-content">
                             <li>
@@ -253,13 +270,13 @@
                                     @on-ok="timeOk"
                                     transfer>
                                     <div class="picker-time">
-                                        <div v-if="!taskDetail.end_at" @click="timeOpen = true" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-                                        <div v-else @click="showAtDropdown" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
+                                        <div v-if="!taskDetail.end_at" @click="!isDepartmentReadonly && (timeOpen = true)" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
+                                        <div v-else @click="!isDepartmentReadonly && showAtDropdown($event)" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
                                         <template v-if="!taskDetail.complete_at && taskDetail.end_at">
-                                            <Tag v-if="within24Hours(taskDetail.end_at)" :color="tagColor(taskDetail)" @on-click="showAtDropdown">
+                                            <Tag v-if="within24Hours(taskDetail.end_at)" :color="tagColor(taskDetail)" @on-click="!isDepartmentReadonly && showAtDropdown($event)">
                                                 <i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}
                                             </Tag>
-                                            <Tag v-if="taskDetail.overdue" color="red" @on-click="showAtDropdown">{{$L('超期未完成')}}</Tag>
+                                            <Tag v-if="taskDetail.overdue" color="red" @on-click="!isDepartmentReadonly && showAtDropdown($event)">{{$L('超期未完成')}}</Tag>
                                         </template>
                                     </div>
                                 </DatePicker>
@@ -273,7 +290,7 @@
                         <ul class="item-content loop">
                             <li>
                                 <ETooltip :disabled="$isEEUIApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
-                                    <span ref="loopText" @click="onLoop">{{$L(loopLabel(taskDetail.loop))}}</span>
+                                    <span ref="loopText" @click="!isDepartmentReadonly && onLoop($event)">{{$L(loopLabel(taskDetail.loop))}}</span>
                                 </ETooltip>
                             </li>
                         </ul>
@@ -291,7 +308,7 @@
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
                             </li>
                         </ul>
-                        <ul class="item-content file-up">
+                        <ul v-if="!isDepartmentReadonly" class="item-content file-up">
                             <li>
                                 <div class="add-button" @click="onUploadClick(true)">
                                     <i class="taskfont">&#xe6f2;</i>
@@ -314,7 +331,7 @@
                                 :main-end-at="taskDetail.end_at"
                                 :can-update-blur="canUpdateBlur"/>
                         </ul>
-                        <ul class="item-content subtask-add">
+                        <ul v-if="!isDepartmentReadonly" class="item-content subtask-add">
                             <li>
                                 <Input
                                     v-if="addsubShow"
@@ -377,6 +394,7 @@
                                     {{$L('已归档')}}
                                 </span>
                                 <Icon
+                                    v-if="!isDepartmentReadonly"
                                     type="md-close"
                                     class="related-remove"
                                     @click.native.stop="removeRelatedTask(item)"/>
@@ -384,7 +402,7 @@
                         </ul>
                     </FormItem>
                 </Form>
-                <div v-if="menuList.length > 0" class="add">
+                <div v-if="!isDepartmentReadonly && menuList.length > 0" class="add">
                     <div class="add-wrap">
                         <div class="add-button" @click="onAddItem">
                             <i class="taskfont">&#xe6f2;</i>
@@ -484,6 +502,7 @@
                         <div class="drag-text">{{$L('拖动到这里发送')}}</div>
                     </div>
                 </div>
+
             </div>
         </div>
         <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
@@ -884,6 +903,9 @@ export default {
         },
 
         menuList() {
+            if (this.isDepartmentReadonly) {
+                return [];
+            }
             const {taskDetail} = this;
             const list = [];
             if ($A.arrayLength(taskDetail.task_tag) === 0) {
@@ -961,6 +983,10 @@ export default {
 
         visibleKeep() {
             return this.systemConfig.task_visible === 'open'    // 可见性保持显示
+        },
+
+        isDepartmentReadonly() {
+            return !!this.taskDetail?.department_readonly;
         },
 
         isSubTask({taskDetail}) {
@@ -1137,6 +1163,9 @@ export default {
         },
 
         onNameKeydown(e) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             if (e.keyCode === 13) {
                 if (!e.shiftKey) {
                     e.preventDefault();
@@ -1146,6 +1175,9 @@ export default {
         },
 
         checkUpdate(action) {
+            if (this.isDepartmentReadonly) {
+                return false;
+            }
             let isModify = false;
             if (this.openTask.name != this.taskDetail.name) {
                 isModify = true;
@@ -1187,12 +1219,20 @@ export default {
         },
 
         updateBlur(action, params) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             if (this.canUpdateBlur) {
                 this.updateData(action, params)
             }
         },
 
         updateData(action, params) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             let successCallback = null;
             switch (action) {
                 case 'priority':
@@ -1396,6 +1436,10 @@ export default {
         },
 
         async onOwner(pick) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             let data = {
                 task_id: this.taskDetail.id,
                 owner: this.ownerData.owner_userid
@@ -1440,6 +1484,10 @@ export default {
         },
 
         onAssist() {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             if ($A.jsonStringify(this.taskDetail.assist_userid) === $A.jsonStringify(this.assistData.assist_userid)) {
                 return;
             }
@@ -1484,6 +1532,10 @@ export default {
         },
 
         openTime() {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             this.timeOpen = !this.timeOpen;
             if (this.timeOpen) {
                 this.timeValue = this.taskDetail.end_at ? [this.taskDetail.start_at, this.taskDetail.end_at] : [];
@@ -1497,6 +1549,10 @@ export default {
         },
 
         timeClear() {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             this.updateData('times', {
                 start_at: false,
                 end_at: false,
@@ -1505,6 +1561,10 @@ export default {
         },
 
         timeOk() {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             const times = $A.newDateString(this.timeValue, "YYYY-MM-DD HH:mm");
             this.updateData('times', {
                 start_at: times[0],
@@ -1514,6 +1574,10 @@ export default {
         },
 
         addsubOpen() {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             this.addsubShow = true;
             this.$nextTick(() => {
                 this.$refs.addsub.focus()
@@ -1537,6 +1601,10 @@ export default {
         },
 
         onAddsub() {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             if (this.addsubName == '') {
                 $A.messageError('任务描述不能为空');
                 return;
@@ -1602,6 +1670,10 @@ export default {
         },
 
         removeRelatedTask(item) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             if (!item || !item.related_task_id) {
                 return;
             }
@@ -1636,6 +1708,10 @@ export default {
         },
 
         onPriority(event) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             const list = this.taskPriority.map(item => {
                 return {
                     label: item.name,
@@ -1655,6 +1731,10 @@ export default {
         },
 
         onLoop(event) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             const list = this.loops.map(item => {
                 return {
                     label: item.label,
@@ -1684,6 +1764,10 @@ export default {
         },
 
         onAddItem(event) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             const list = this.menuList.map(item => {
                 return {
                     label: item.name,
@@ -1702,6 +1786,10 @@ export default {
         },
 
         dropAddItem(command) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             switch (command) {
                 case 'tag':
                     this.tagForce = true;
@@ -1765,6 +1853,7 @@ export default {
         },
 
         onEventMore(e) {
+
             if (['image', 'file'].includes(e)) {
                 this.onUploadClick(false)
             }
@@ -1776,6 +1865,7 @@ export default {
         },
 
         msgDialog(sendType = null) {
+
             if (this.sendLoad > 0 || this.openLoad > 0) {
                 return;
             }
@@ -1895,6 +1985,10 @@ export default {
         },
 
         deleteFile(file) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             this.$set(file, '_show_menu', false);
             this.$store.dispatch("forgetTaskFile", file.id)
             //
@@ -1910,6 +2004,9 @@ export default {
         },
 
         openMenu(event, task) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             const el = this.$refs[`taskMenu_${task.id}`];
             el && el.handleClick(event)
         },
@@ -2010,12 +2107,18 @@ export default {
                 okText: this.$L('立即下载'),
                 content: `${file.name} (${$A.bytesToSize(file.size)})`,
                 onOk: () => {
-                    this.$store.dispatch('downUrl', $A.apiUrl(`project/task/filedown?file_id=${file.id}`))
+                    const departmentOwnerIds = (this.$store.state.cacheDepartmentOwnerIds || []).join(',')
+                    const url = $A.urlAddParams(`project/task/filedown?file_id=${file.id}`, departmentOwnerIds ? {department_owner_ids: departmentOwnerIds} : {})
+                    this.$store.dispatch('downUrl', $A.apiUrl(url))
                 }
             });
         },
 
         showCisibleDropdown(event){
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             const list = [
                 {label: '项目人员', value: 1},
                 {label: '任务人员', value: 2},
@@ -2033,6 +2136,10 @@ export default {
         },
 
         showAtDropdown(event){
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             this.timeOpen = false
             const list = [
                 {label: '任务延期', value: 1},
@@ -2060,6 +2167,10 @@ export default {
         },
 
         dropVisible(command) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             switch (command) {
                 case 1:
                 case 2:
@@ -2077,6 +2188,10 @@ export default {
         },
 
         dropDeadline(command) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             switch (command) {
                 case 1:
                     this.delayTaskQuicks = [
@@ -2108,6 +2223,10 @@ export default {
         },
 
         onDelay(){
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             this.$refs.formDelayTaskRef.validate((valid) => {
                 if (!valid) {
                     return
@@ -2137,8 +2256,10 @@ export default {
             const list = [
                 {label: '查看附件', value: 1},
                 {label: '下载附件', value: 2},
-                {label: '删除附件', value: 3, style: {color:'#FF7070'}},
             ];
+            if (!this.isDepartmentReadonly) {
+                list.push({label: '删除附件', value: 3, style: {color:'#FF7070'}});
+            }
             this.$store.commit('menu/operation', {
                 event,
                 list,
@@ -2179,6 +2300,10 @@ export default {
         },
 
         onTagAdd(tagName) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             // 避免关闭选择框时触发更新
             this.tagValue = this.getTag;
             this.tagBakValue = $A.cloneJSON(this.tagValue);
@@ -2188,6 +2313,10 @@ export default {
         },
 
         onTagAddSave(result) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
+
             const current = this.tagValue;
             const addData = result.filter(({data}) => data && data.id > 0).map(({data}) => data);
             // 合并数组，如果有重名标签则使用新添加的标签数据

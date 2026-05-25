@@ -113,7 +113,9 @@ class ProjectTaskObserver extends AbstractObserver
             return ProjectUser::whereProjectId($projectTask->project_id)->pluck('userid')->toArray();
         }
         if (in_array('projectOwnerUser', $dataType)) {
-            return ProjectUser::whereProjectId($projectTask->project_id)->where('owner', 1)->pluck('userid')->toArray();
+            return ProjectUser::whereProjectId($projectTask->project_id)
+                ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
+                ->pluck('userid')->toArray();
         }
         $array = [];
         if (in_array('task', $dataType)) {

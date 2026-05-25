@@ -57,6 +57,80 @@
                 }
             }
         }
+
+        .owner-view-button {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            margin-left: 8px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(47, 128, 237, 0.08);
+            color: #808695;
+            > i {
+                font-size: 18px;
+            }
+            > em {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                min-width: 16px;
+                height: 16px;
+                padding: 0 4px;
+                border-radius: 8px;
+                background: #ff4d4f;
+                color: #ffffff;
+                font-style: normal;
+                font-size: 10px;
+                line-height: 16px;
+                text-align: center;
+                box-shadow: 0 0 0 2px #ffffff;
+            }
+        }
+    }
+
+    .owner-project-wrapper {
+        width: 100%;
+        flex-shrink: 0;
+    }
+    .owner-project-tabs {
+        display: flex;
+        align-items: center;
+        margin: 8px 12px;
+        padding: 3px;
+        border-radius: 12px;
+        background: #f7f7f7;
+        .owner-project-tab {
+            flex: 1;
+            min-width: 0;
+            height: 30px;
+            padding: 0 12px;
+            border-radius: 9px;
+            color: #808695;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            > span {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .ivu-badge {
+                flex-shrink: 0;
+                transform: scale(0.8);
+                transform-origin: left center;
+            }
+            &.active {
+                background: #ffffff;
+                color: #17233d;
+                font-weight: 500;
+            }
+        }
     }
 
     > ul {
@@ -201,6 +275,25 @@
                         height: 20px;
                         pointer-events: none;
                     }
+                }
+                .readonly-owner-avatar {
+                    margin-left: 6px;
+                    flex-shrink: 0;
+                }
+                .readonly-project-avatar {
+                    width: 18px;
+                    height: 18px;
+                    margin-top: 2px;
+                    margin-left: 6px;
+                    flex-shrink: 0;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    font-size: 12px;
+                    line-height: 18px;
+                    background-color: #5BC7B0;
+                    color: #ffffff;
                 }
             }
         }

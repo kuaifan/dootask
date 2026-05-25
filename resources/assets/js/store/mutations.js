@@ -248,6 +248,12 @@ export default {
         $A.IDBSave("cacheProjectParameter", state.cacheProjectParameter);
     },
 
+    // 部门负责人视角
+    'department/owner/ids/save': function(state, data) {
+        state.cacheDepartmentOwnerIds = $A.normalizeIntArray(data)
+        $A.IDBSet("cacheDepartmentOwnerIds", state.cacheDepartmentOwnerIds).catch(() => {});
+    },
+
     // 文件管理
     'file/push': function(state, data) {
         state.fileLists.push(data)

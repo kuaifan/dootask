@@ -404,7 +404,20 @@ class UsersController extends AbstractController
         $data['nickname_original'] = $user->getRawOriginal('nickname');
         $data['department_name'] = $user->getDepartmentName();
         $data['department_owner'] = UserDepartment::where('parent_id',0)->where('owner_userid', $user->userid)->exists(); // 适用默认部门下第1级负责人才能添加部门OKR
+        $data['managed_departments'] = UserDepartment::getManagedDepartments($user->userid)->toArray();
         return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/users/info/managed_departments 获取我可切换负责人视角的部门列表
+     */
+    public function info__managed_departments()
+    {
+        $user = User::auth();
+        if (Base::settingFind('system', 'department_owner_project_view', 'close') !== 'open') {
+            return Base::retSuccess('success', []);
+        }
+        return Base::retSuccess('success', UserDepartment::getManagedDepartments($user->userid));
     }
 
     /**
@@ -2146,6 +2159,65 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @api {post} api/users/department/adddeputy 任命部门管理员（限管理员）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName department__adddeputy
+     *
+     * @apiParam {Number} id          部门 id
+     * @apiParam {Number} userid      部门管理员 userid
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     */
+    public function department__adddeputy()
+    {
+        User::auth('admin');
+        $id = intval(Request::input('id'));
+        $userid = intval(Request::input('userid'));
+
+        $dept = UserDepartment::find($id);
+        if (empty($dept)) {
+            return Base::retError('部门不存在或已被删除');
+        }
+
+        // ApiException 由框架统一捕获并 retError 转换
+        $dept->addDeputy($userid);
+
+        Cache::forever("UserDepartment::rand", Base::generatePassword());
+        return Base::retSuccess('任命成功');
+    }
+
+    /**
+     * @api {post} api/users/department/deldeputy 罢免部门管理员（限管理员）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName department__deldeputy
+     *
+     * @apiParam {Number} id          部门 id
+     * @apiParam {Number} userid      要罢免的部门管理员 userid
+     */
+    public function department__deldeputy()
+    {
+        User::auth('admin');
+        $id = intval(Request::input('id'));
+        $userid = intval(Request::input('userid'));
+
+        $dept = UserDepartment::find($id);
+        if (empty($dept)) {
+            return Base::retError('部门不存在或已被删除');
+        }
+
+        $dept->delDeputy($userid);
+        Cache::forever("UserDepartment::rand", Base::generatePassword());
+        return Base::retSuccess('罢免成功');
+    }
+
+    /**
      * @api {get} api/users/department/del 删除部门（限管理员）
      *
      * @apiDescription 需要token身份
@@ -3213,7 +3285,7 @@ class UsersController extends AbstractController
             return Base::retError('参数错误');
         }
         //
-        ProjectTask::userTask($task_id, null, null);
+        ProjectTask::findForDepartmentView($task_id, null, null);
         //
         UserTaskBrowse::recordBrowse($user->userid, $task_id);
         //

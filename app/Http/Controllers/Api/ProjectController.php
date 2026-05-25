@@ -46,6 +46,7 @@ use App\Models\ProjectTaskTemplate;
 use App\Models\ProjectTag;
 use App\Models\ProjectTaskRelation;
 use App\Models\ProjectTaskAiEvent;
+use App\Models\UserDepartment;
 use App\Module\AiTaskSuggestion;
 use App\Observers\ProjectTaskObserver;
 
@@ -128,6 +129,7 @@ class ProjectController extends AbstractController
     public function lists()
     {
         $user = User::auth();
+        $departmentView = UserDepartment::ownerViewContext($user);
         //
         $all = Request::input('all');
         $type = Request::input('type', 'all');
@@ -141,6 +143,9 @@ class ProjectController extends AbstractController
         if ($all) {
             $user->identity('admin');
             $builder = Project::allData();
+        } elseif ($departmentView['enabled']) {
+            $projectIds = array_values(array_unique(array_merge($departmentView['own_project_ids'], $departmentView['project_ids'])));
+            $builder = Project::allData()->whereIn('projects.id', $projectIds);
         } else {
             $builder = Project::authData();
         }
@@ -180,8 +185,9 @@ class ProjectController extends AbstractController
             ->orderBy('project_users.sort')
             ->orderByDesc('projects.id')
             ->paginate(Base::getPaginate(100, 50));
-        $list->transform(function (Project $project) use ($getstatistics, $getuserid, $user) {
+        $list->transform(function (Project $project) use ($getstatistics, $getuserid, $user, $departmentView) {
             $array = $project->toArray();
+            $array = UserDepartment::appendDepartmentReadonlyProject($array, $departmentView);
             if ($getuserid == 'yes') {
                 $array['userid_list'] = ProjectUser::whereProjectId($project->id)->pluck('userid')->toArray();
             }
@@ -250,13 +256,15 @@ class ProjectController extends AbstractController
     public function one()
     {
         $user = User::auth();
+        $departmentView = UserDepartment::ownerViewContext($user, true);
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::userProject($project_id);
+        $project = Project::findForDepartmentView($project_id);
         $data = array_merge($project->toArray(), $project->getTaskStatistics($user->userid), [
             'project_user' => $project->projectUser,
         ]);
+        $data = UserDepartment::appendDepartmentReadonlyProject($data, $departmentView);
         //
         return Base::retSuccess('success', $data);
     }
@@ -302,6 +310,8 @@ class ProjectController extends AbstractController
      * @apiParam {String} [archive_method]  归档方式
      * @apiParam {Number} [archive_days]    自动归档天数
      * @apiParam {String} [ai_auto_analyze] AI自动分析（open|close）
+     * @apiParam {String} [task_template_share] 共享模板（open|close）
+     * @apiParam {String} [department_owner_view] 部门负责人视角可见（open|close）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -317,6 +327,8 @@ class ProjectController extends AbstractController
         $archive_method = Request::input('archive_method');
         $archive_days = intval(Request::input('archive_days'));
         $ai_auto_analyze = Request::input('ai_auto_analyze');
+        $task_template_share = Request::input('task_template_share');
+        $department_owner_view = Request::input('department_owner_view');
         if (mb_strlen($name) < 2) {
             return Base::retError('项目名称不可以少于2个字');
         } elseif (mb_strlen($name) > 32) {
@@ -332,7 +344,7 @@ class ProjectController extends AbstractController
         }
         //
         $project = Project::userProject($project_id, true, true);
-        AbstractModel::transaction(function () use ($archive_days, $archive_method, $ai_auto_analyze, $desc, $name, $project) {
+        AbstractModel::transaction(function () use ($archive_days, $archive_method, $ai_auto_analyze, $task_template_share, $department_owner_view, $desc, $name, $project) {
             if ($project->name != $name) {
                 $project->addLog("修改项目名称", [
                     'change' => [$project->name, $name]
@@ -364,6 +376,18 @@ class ProjectController extends AbstractController
                 ]);
                 $project->ai_auto_analyze = $ai_auto_analyze;
             }
+            if (in_array($task_template_share, ['open', 'close']) && $project->task_template_share != $task_template_share) {
+                $project->addLog("修改共享模板", [
+                    'change' => [$project->task_template_share, $task_template_share]
+                ]);
+                $project->task_template_share = $task_template_share;
+            }
+            if (in_array($department_owner_view, ['open', 'close']) && $project->department_owner_view != $department_owner_view) {
+                $project->addLog("修改负责人视角可见", [
+                    'change' => [$project->department_owner_view, $department_owner_view]
+                ]);
+                $project->department_owner_view = $department_owner_view;
+            }
             $project->save();
         });
         $project->pushMsg('update');
@@ -372,15 +396,16 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/user 修改项目成员
+     * @api {post} api/project/user 修改项目成员
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName user
      *
-     * @apiParam {Number} project_id        项目ID
-     * @apiParam {Number} userid            成员ID 或 成员ID组
+     * @apiParam {Number}   project_id    项目ID
+     * @apiParam {Number[]} userid        成员userid数组（最终完整列表）
+     * @apiParam {Number[]} [deputy_userid] 项目管理员userid数组（可选，仅负责人有效；必须是 userid 子集）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -393,6 +418,13 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $userid = Request::input('userid');
         $userid = is_array($userid) ? $userid : [$userid];
+        $userid = array_values(array_unique(array_map('intval', $userid)));
+        //
+        $deputy_userid = Request::input('deputy_userid');
+        if ($deputy_userid !== null) {
+            $deputy_userid = is_array($deputy_userid) ? $deputy_userid : [$deputy_userid];
+            $deputy_userid = array_values(array_unique(array_map('intval', $deputy_userid)));
+        }
         //
         if (count($userid) > 100) {
             return Base::retError('项目人数最多100个');
@@ -400,7 +432,45 @@ class ProjectController extends AbstractController
         //
         $project = Project::userProject($project_id, true, true);
         //
-        $deleteUser = AbstractModel::transaction(function() use ($project, $userid) {
+        // 仅负责人可设置项目管理员；项目管理员/其他角色提交 deputy_userid 一律忽略
+        $isPrimary = (int)$project->owner === ProjectUser::OWNER_PRIMARY;
+        $applyDeputy = $isPrimary && $deputy_userid !== null;
+        //
+        // 业务闭环：项目必须且只能有一个主负责人，最终成员列表必须包含该负责人
+        $primaryOwnerIds = ProjectUser::whereProjectId($project->id)
+            ->whereOwner(ProjectUser::OWNER_PRIMARY)
+            ->pluck('userid')
+            ->map(fn($v) => (int)$v)
+            ->toArray();
+        if (count($primaryOwnerIds) !== 1) {
+            return Base::retError('项目负责人数据异常，请先修复项目负责人');
+        }
+        $primaryOwnerId = $primaryOwnerIds[0];
+        if (!in_array($primaryOwnerId, $userid, true)) {
+            return Base::retError('项目成员列表必须包含项目负责人');
+        }
+        // 项目管理员可以管理普通成员，但不能借成员列表移除其他项目管理员
+        if (!$isPrimary) {
+            $currentDeputyIds = ProjectUser::whereProjectId($project->id)
+                ->whereOwner(ProjectUser::OWNER_DEPUTY)
+                ->pluck('userid')
+                ->map(fn($v) => (int)$v)
+                ->toArray();
+            if (!empty(array_diff($currentDeputyIds, $userid))) {
+                return Base::retError('项目管理员不能移除项目负责人或项目管理员');
+            }
+        }
+        //
+        if ($applyDeputy) {
+            if (!empty(array_diff($deputy_userid, $userid))) {
+                return Base::retError('项目管理员必须是项目成员');
+            }
+            if (in_array((int)$project->owner_userid, $deputy_userid, true)) {
+                return Base::retError('负责人不能任命为项目管理员');
+            }
+        }
+        //
+        $deleteUser = AbstractModel::transaction(function() use ($project, $userid, $applyDeputy, $deputy_userid) {
             $array = [];
             foreach ($userid as $uid) {
                 if ($project->joinProject($uid)) {
@@ -408,15 +478,37 @@ class ProjectController extends AbstractController
                 }
             }
             $deleteRows = ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array)->get();
-            $deleteUser = $deleteRows->pluck('userid');
+            $deleteUserids = $deleteRows->pluck('userid');
             foreach ($deleteRows as $row) {
                 $row->exitProject();
             }
+            //
+            // 项目管理员 diff（仅负责人有效）
+            if ($applyDeputy) {
+                $currentDeputies = ProjectUser::whereProjectId($project->id)
+                    ->where('owner', ProjectUser::OWNER_DEPUTY)
+                    ->pluck('userid')->toArray();
+                $toPromote = array_values(array_diff($deputy_userid, $currentDeputies));
+                $toDemote = array_values(array_diff($currentDeputies, $deputy_userid));
+                if (!empty($toPromote)) {
+                    ProjectUser::whereProjectId($project->id)
+                        ->whereIn('userid', $toPromote)
+                        ->where('owner', ProjectUser::OWNER_MEMBER)
+                        ->change(['owner' => ProjectUser::OWNER_DEPUTY]);
+                }
+                if (!empty($toDemote)) {
+                    ProjectUser::whereProjectId($project->id)
+                        ->whereIn('userid', $toDemote)
+                        ->where('owner', ProjectUser::OWNER_DEPUTY)
+                        ->change(['owner' => ProjectUser::OWNER_MEMBER]);
+                }
+            }
+            //
             $project->syncDialogUser();
             $project->addLog("修改项目成员");
             $project->user_simple = count($array) . "|" . implode(",", array_slice($array, 0, 3));
             $project->save();
-            return $deleteUser->toArray();
+            return $deleteUserids->toArray();
         });
         //
         $project->pushMsg('delete', null, $deleteUser);
@@ -574,26 +666,136 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $owner_userid = intval(Request::input('owner_userid'));
         //
-        $project = Project::userProject($project_id, true, true);
+        $project = Project::userProject($project_id, true, 'primary');
         //
         if (!User::whereUserid($owner_userid)->exists()) {
             return Base::retError('成员不存在');
         }
         //
         AbstractModel::transaction(function() use ($owner_userid, $project) {
-            ProjectUser::whereProjectId($project->id)->change(['owner' => 0]);
+            // 仅清除原负责人 owner=1（项目管理员 owner=2 保留）
+            ProjectUser::whereProjectId($project->id)
+                ->whereOwner(ProjectUser::OWNER_PRIMARY)
+                ->change(['owner' => 0]);
+            // 设新负责人 owner=1（如新负责人原本是项目管理员，从 2 升为 1）
             ProjectUser::updateInsert([
                 'project_id' => $project->id,
                 'userid' => $owner_userid,
             ], [
-                'owner' => 1,
+                'owner' => ProjectUser::OWNER_PRIMARY,
             ]);
+            // 同步项目群 owner_id
+            if ($project->dialog_id > 0) {
+                $dialog = WebSocketDialog::find($project->dialog_id);
+                if ($dialog) {
+                    $dialog->owner_id = $owner_userid;
+                    $dialog->save();
+                }
+            }
+            // 同步成员 + role（syncDialogUser 已根据 owner 设置 role）
             $project->syncDialogUser();
             $project->addLog("移交项目给", ['userid' => $owner_userid]);
         });
         //
-        $project->pushMsg('detail');
+        // pushMsg 带 deputy_userids，前端可直接更新项目管理员列表无需重拉
+        $project->pushMsg('detail', [
+            'owner_userid' => $project->fresh()->owner_userid,
+            'deputy_userids' => $project->fresh()->deputy_userids,
+        ]);
         return Base::retSuccess('移交成功', ['id' => $project->id]);
+    }
+
+    /**
+     * @api {post} api/project/adddeputy 任命项目管理员（仅负责人可操作）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName adddeputy
+     *
+     * @apiParam {Number} project_id    项目ID
+     * @apiParam {Number} userid        要任命的项目成员 userid
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function adddeputy()
+    {
+        User::auth();
+        $project_id = intval(Request::input('project_id'));
+        $userid = intval(Request::input('userid'));
+
+        if ($userid <= 0) {
+            return Base::retError('请选择有效的成员');
+        }
+
+        $project = Project::userProject($project_id, true, 'primary');
+
+        $member = ProjectUser::where('project_id', $project->id)
+            ->where('userid', $userid)->first();
+        if (!$member) {
+            return Base::retError('该用户不是项目成员');
+        }
+        if ((int)$member->owner === ProjectUser::OWNER_PRIMARY) {
+            return Base::retError('不能将负责人任命为项目管理员');
+        }
+        if ((int)$member->owner !== ProjectUser::OWNER_DEPUTY) {
+            AbstractModel::transaction(function() use ($project, $member) {
+                $member->owner = ProjectUser::OWNER_DEPUTY;
+                $member->save();
+                $project->syncDialogUser(); // 同步群 role
+                $project->addLog('任命项目管理员', ['userid' => $member->userid]);
+            });
+            $project->pushMsg('detail', [
+                'deputy_userids' => $project->fresh()->deputy_userids,
+            ]);
+        }
+
+        return Base::retSuccess('任命成功');
+    }
+
+    /**
+     * @api {post} api/project/deldeputy 罢免项目管理员（仅负责人可操作）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName deldeputy
+     *
+     * @apiParam {Number} project_id    项目ID
+     * @apiParam {Number} userid        要罢免的项目管理员 userid
+     */
+    public function deldeputy()
+    {
+        User::auth();
+        $project_id = intval(Request::input('project_id'));
+        $userid = intval(Request::input('userid'));
+
+        if ($userid <= 0) {
+            return Base::retError('请选择有效的成员');
+        }
+
+        $project = Project::userProject($project_id, true, 'primary');
+
+        $member = ProjectUser::where('project_id', $project->id)
+            ->where('userid', $userid)->first();
+        if (!$member) {
+            return Base::retSuccess('罢免成功'); // 幂等：本来就不是成员
+        }
+        if ((int)$member->owner === ProjectUser::OWNER_DEPUTY) {
+            AbstractModel::transaction(function() use ($project, $member) {
+                $member->owner = ProjectUser::OWNER_MEMBER;
+                $member->save();
+                $project->syncDialogUser();
+                $project->addLog('罢免项目管理员', ['userid' => $member->userid]);
+            });
+            $project->pushMsg('detail', [
+                'deputy_userids' => $project->fresh()->deputy_userids,
+            ]);
+        }
+
+        return Base::retSuccess('罢免成功');
     }
 
     /**
@@ -784,7 +986,7 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::userProject($project_id, null, true);
+        $project = Project::userProject($project_id, null, 'primary');
         //
         $project->deleteProject();
         return Base::retSuccess('删除成功', ['id' => $project->id]);
@@ -813,7 +1015,7 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         // 项目
-        $project = Project::userProject($project_id);
+        $project = Project::findForDepartmentView($project_id);
         //
         $list = ProjectColumn::whereProjectId($project->id)
             ->orderBy('sort')
@@ -1044,6 +1246,7 @@ class ProjectController extends AbstractController
     {
         $user = User::auth();
         $userid = $user->userid;
+        $departmentView = UserDepartment::ownerViewContext($user, true);
         //
         $parent_id = intval(Request::input('parent_id'));
         $project_id = intval(Request::input('project_id'));
@@ -1108,7 +1311,7 @@ class ProjectController extends AbstractController
         if ($parent_id > 0) {
             $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
             $isDeleted = str_replace(['all', 'yes', 'no'], [null, false, true], $deleted);
-            ProjectTask::userTask($parent_id, $isArchived, $isDeleted);
+            ProjectTask::findForDepartmentView($parent_id, $isArchived, $isDeleted);
             $scopeAll = true;
             $archived = 'all';
             $builder->where('project_tasks.parent_id', $parent_id);
@@ -1116,17 +1319,23 @@ class ProjectController extends AbstractController
             $builder->where('project_tasks.parent_id', 0);
         }
         if ($project_id > 0) {
-            Project::userProject($project_id);
+            if (!UserDepartment::isDepartmentReadonlyProject($departmentView, $project_id)) {
+                Project::userProject($project_id);
+            }
             $scopeAll = true;
             $builder->where('project_tasks.project_id', $project_id);
         }
         if (!$scopeAll && $scope === 'all_project') {
             $scopeAll = true;
-            $builder->whereIn('project_tasks.project_id', function ($query) use ($userid) {
-                $query->select('project_id')
-                    ->from('project_users')
-                    ->where('userid', $userid);
-            });
+            if ($departmentView['enabled']) {
+                $builder->whereIn('project_tasks.project_id', array_values(array_unique(array_merge($departmentView['own_project_ids'], $departmentView['project_ids']))));
+            } else {
+                $builder->whereIn('project_tasks.project_id', function ($query) use ($userid) {
+                    $query->select('project_id')
+                        ->from('project_users')
+                        ->where('userid', $userid);
+                });
+            }
         }
         if ($scopeAll) {
             $builder->allData();
@@ -1194,7 +1403,7 @@ class ProjectController extends AbstractController
         // 任务可见性条件
         $builder->leftJoin('project_users', function ($query) use($userid) {
             $query->on('project_tasks.project_id', '=', 'project_users.project_id');
-            $query->where('project_users.owner', 1);
+            $query->whereIn('project_users.owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY]);
             $query->where('project_users.userid', $userid);
         });
         $builder->leftJoin('project_task_visibility_users', function ($query) use($userid) {
@@ -1253,6 +1462,7 @@ class ProjectController extends AbstractController
         $data = $list->toArray();
         // 还原字段
         foreach($data['data'] as &$item){
+            $item['department_readonly'] = UserDepartment::isDepartmentReadonlyProject($departmentView, intval($item['project_id']));
             $item['file_num'] = $item['_file_num'] ?: 0;
             $item['msg_num'] = $item['_msg_num'] ?: 0;
             $item['sub_num'] = $item['_sub_num'] ?: 0;
@@ -1832,15 +2042,18 @@ class ProjectController extends AbstractController
     public function task__one()
     {
         $user = User::auth();
+        $departmentView = UserDepartment::ownerViewContext($user, true);
         //
         $task_id = intval(Request::input('task_id'));
         $archived = Request::input('archived', 'no');
         //
         $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
-        $task = ProjectTask::userTask($task_id, $isArchived, true, ['taskUser', 'taskTag']);
+        $task = ProjectTask::findForDepartmentView($task_id, $isArchived, true, ['taskUser', 'taskTag']);
         // 项目可见性
-        $project_userid = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');     // 项目负责人
-        if ($task->visibility != 1 && $user->userid != $project_userid) {
+        $projectOwnerids = ProjectUser::whereProjectId($task->project_id)
+            ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
+            ->pluck('userid')->map(fn($v) => (int)$v)->toArray();     // 项目负责人（含项目管理员）
+        if ($task->visibility != 1 && !in_array($user->userid, $projectOwnerids)) {
             $taskUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();                      //任务负责人、协助人
             $subTaskUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();                  //子任务负责人、协助人
             $visibleUserids = ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid')->toArray();         //可见人
@@ -1851,6 +2064,7 @@ class ProjectController extends AbstractController
         }
         //
         $data = $task->toArray();
+        $data['department_readonly'] = UserDepartment::isDepartmentReadonlyProject($departmentView, intval($task->project_id));
         $data['project_name'] = $task->project?->name;
         $data['column_name'] = $task->projectColumn?->name;
         $data['visibility_appointor'] = $task->visibility == 1 ? [0] : ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid');
@@ -1879,7 +2093,7 @@ class ProjectController extends AbstractController
             return Base::retError('参数错误', ['task_id' => $task_id]);
         }
         //
-        $task = ProjectTask::userTask($task_id);
+        $task = ProjectTask::findForDepartmentView($task_id);
         //
         return Base::retSuccess('success', [
             'id' => $task->id,
@@ -1911,7 +2125,7 @@ class ProjectController extends AbstractController
             return Base::retError('参数错误', ['task_id' => $task_id]);
         }
 
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::findForDepartmentView($task_id, null);
 
         $relations = ProjectTaskRelation::whereTaskId($task->id)
             ->orderByDesc('updated_at')
@@ -1929,7 +2143,7 @@ class ProjectController extends AbstractController
         $relatedTasks = [];
         foreach ($relatedTaskIds as $relatedId) {
             try {
-                $relatedTask = ProjectTask::userTask($relatedId, null, true, ['project', 'projectColumn']);
+                $relatedTask = ProjectTask::findForDepartmentView($relatedId, null, true, ['project', 'projectColumn']);
 
                 $flowItemParts = explode('|', $relatedTask->flow_item_name ?: '');
                 $flowItemStatus = $flowItemParts[0] ?? '';
@@ -2055,7 +2269,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $history_id = intval(Request::input('history_id'));
         //
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::findForDepartmentView($task_id, null);
         //
         if ($history_id > 0) {
             $taskContent = ProjectTaskContent::whereTaskId($task->id)->whereId($history_id)->first();
@@ -2095,7 +2309,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::findForDepartmentView($task_id, null);
         //
         $data = ProjectTaskContent::select(['id', 'task_id', 'desc', 'userid', 'created_at'])
             ->whereTaskId($task->id)
@@ -2124,7 +2338,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::findForDepartmentView($task_id, null);
         //
         return Base::retSuccess('success', $task->taskFile);
     }
@@ -2213,7 +2427,7 @@ class ProjectController extends AbstractController
         $data = $file->toArray();
         $data['path'] = $file->getRawOriginal('path');
         //
-        ProjectTask::userTask($file->task_id, null);
+        ProjectTask::findForDepartmentView($file->task_id, null);
         //
         UserRecentItem::record(
             $user->userid,
@@ -2254,7 +2468,7 @@ class ProjectController extends AbstractController
         abort_if(empty($file), 403, "This file not exist.");
         //
         try {
-            ProjectTask::userTask($file->task_id, null);
+            ProjectTask::findForDepartmentView($file->task_id, null);
         } catch (\Throwable $e) {
             abort(403, $e->getMessage() ?: "This file not support download.");
         }
@@ -2347,7 +2561,9 @@ class ProjectController extends AbstractController
         if ($data['visibility'] == 1) {
             $data['is_visible'] = 1;
         } else {
-            $projectOwner = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->pluck('userid')->toArray();  // 项目负责人
+            $projectOwner = ProjectUser::whereProjectId($task->project_id)
+                ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
+                ->pluck('userid')->toArray();  // 项目负责人（含项目管理员）
             $taskOwnerAndAssists = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->pluck('userid')->toArray();
             $visibleIds = array_merge($projectOwner, $taskOwnerAndAssists);
             $data['is_visible'] = in_array($user->userid, $visibleIds) ? 1 : 0;
@@ -2355,6 +2571,21 @@ class ProjectController extends AbstractController
 
         $task->pushMsg('add', $data);
         $task->taskPush(null, 0);
+
+        // 应用任务模板使用统计（不影响主流程；非成员、模板已删除或共享模板已关闭时静默忽略）
+        $templateId = intval(Request::input('template_id', 0));
+        if ($templateId > 0) {
+            $tpl = ProjectTaskTemplate::find($templateId);
+            if ($tpl) {
+                $isMember = ProjectUser::where('project_id', $tpl->project_id)
+                    ->where('userid', $user->userid)->exists();
+                $shareEnabled = ($project->task_template_share ?: 'open') === 'open';
+                if ($isMember && ($tpl->project_id == $project->id || $shareEnabled)) {
+                    $tpl->incrementUsage();
+                }
+            }
+        }
+
         return Base::retSuccess('添加成功', $data);
     }
 
@@ -2398,7 +2629,10 @@ class ProjectController extends AbstractController
         ]);
         $data = ProjectTask::oneTask($task->id);
         $pushUserIds = ProjectTaskUser::whereTaskId($task->id)->pluck('userid')->toArray();
-        $pushUserIds[] = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');
+        $ownerids = ProjectUser::whereProjectId($task->project_id)
+            ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
+            ->pluck('userid')->toArray();
+        $pushUserIds = array_merge($pushUserIds, $ownerids);
         foreach ($pushUserIds as $userId) {
             $task->pushMsg('add', $data, $userId);
         }
@@ -3181,7 +3415,7 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::userProject($project_id, true);
+        $project = Project::findForDepartmentView($project_id, true);
         //
         $list = ProjectFlow::with(['ProjectFlowItem'])->whereProjectId($project->id)->get();
         return Base::retSuccess('success', $list);
@@ -3280,10 +3514,10 @@ class ProjectController extends AbstractController
         //
         $builder = ProjectLog::select(["*"]);
         if ($task_id > 0) {
-            $task = ProjectTask::userTask($task_id, null);
+            $task = ProjectTask::findForDepartmentView($task_id, null);
             $builder->whereTaskId($task->id);
         } else {
-            $project = Project::userProject($project_id);
+            $project = Project::findForDepartmentView($project_id);
             $builder->with(['projectTask:id,parent_id,name'])->whereProjectId($project->id)->whereTaskOnly(0);
         }
         //
@@ -3453,6 +3687,127 @@ class ProjectController extends AbstractController
             ->orderByDesc('id')
             ->get();
         return Base::retSuccess('success', $templates);
+    }
+
+    /**
+     * @api {get} api/project/task/template_visible 当前用户跨项目可见的全部任务模板
+     *
+     * @apiDescription 返回当前用户加入的所有项目下的任务模板。当前项目的模板优先排序。
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__template_visible
+     *
+     * @apiParam {Number} [current_project_id]  当前项目 ID（用于排序优先；可空）
+     *
+     * @apiSuccess {Number} ret  返回状态码（1 正确、0 错误）
+     * @apiSuccess {String} msg  返回信息
+     * @apiSuccess {Object[]} data 模板列表，每条包含 project_id, project_name, name, title, content, sort, is_default, userid, use_count, last_used_at
+     */
+    public function task__template_visible()
+    {
+        $user = User::auth();
+        $currentProjectId = intval(Request::input('current_project_id', 0));
+
+        $projectIds = ProjectUser::where('userid', $user->userid)->pluck('project_id');
+        $currentProject = $currentProjectId > 0 ? Project::find($currentProjectId) : null;
+        if ($currentProject && ($currentProject->task_template_share ?: 'open') === 'close') {
+            $projectIds = collect($projectIds)->filter(fn($id) => intval($id) === $currentProjectId)->values();
+        }
+
+        $rows = ProjectTaskTemplate::with(['project:id,name'])
+            ->whereIn('project_id', $projectIds)
+            ->orderByRaw('project_id = ? DESC', [$currentProjectId])
+            ->orderBy('sort')
+            ->orderBy('id')
+            ->get()
+            ->map(function ($tpl) {
+                return [
+                    'id' => $tpl->id,
+                    'project_id' => $tpl->project_id,
+                    'project_name' => $tpl->project->name ?? '',
+                    'name' => $tpl->name,
+                    'title' => $tpl->title,
+                    'content' => $tpl->content,
+                    'sort' => $tpl->sort,
+                    'is_default' => $tpl->is_default,
+                    'userid' => $tpl->userid,
+                    'use_count' => $tpl->use_count,
+                    'last_used_at' => $tpl->last_used_at,
+                ];
+            });
+
+        return Base::retSuccess('success', $rows);
+    }
+
+    /**
+     * @api {get} api/project/task/template_search  跨项目模板搜索分页
+     *
+     * @apiDescription "更多"弹层用。返回当前用户跨项目可见模板，支持关键字 + 分页。
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__template_search
+     *
+     * @apiParam {String} [keyword]    关键字（在 name/title/content 上模糊匹配）
+     * @apiParam {Number} [current_project_id] 当前项目 ID（共享模板关闭时仅返回本项目模板）
+     * @apiParam {Number} [page=1]     页码
+     * @apiParam {Number} [page_size=20] 每页条数（最大 50）
+     *
+     * @apiSuccess {Number} ret       返回状态码
+     * @apiSuccess {Object} data      含 total / page / page_size / items
+     */
+    public function task__template_search()
+    {
+        $user = User::auth();
+        $keyword = trim((string) Request::input('keyword', ''));
+        $currentProjectId = intval(Request::input('current_project_id', 0));
+        $page = max(1, intval(Request::input('page', 1)));
+        $pageSize = min(50, max(1, intval(Request::input('page_size', 20))));
+
+        $projectIds = ProjectUser::where('userid', $user->userid)->pluck('project_id');
+        $currentProject = $currentProjectId > 0 ? Project::find($currentProjectId) : null;
+        if ($currentProject && ($currentProject->task_template_share ?: 'open') === 'close') {
+            $projectIds = collect($projectIds)->filter(fn($id) => intval($id) === $currentProjectId)->values();
+        }
+
+        $q = ProjectTaskTemplate::with(['project:id,name', 'user:userid,nickname'])
+            ->whereIn('project_id', $projectIds);
+
+        if ($keyword !== '') {
+            $like = '%' . $keyword . '%';
+            $q->where(function ($qq) use ($like) {
+                $qq->where('name', 'like', $like)
+                    ->orWhere('title', 'like', $like)
+                    ->orWhere('content', 'like', $like);
+            });
+        }
+
+        $total = (clone $q)->count();
+        $items = $q->orderByDesc('use_count')
+            ->orderByDesc('last_used_at')
+            ->orderByDesc('created_at')
+            ->forPage($page, $pageSize)
+            ->get()
+            ->map(function ($tpl) {
+                return [
+                    'id' => $tpl->id,
+                    'project_id' => $tpl->project_id,
+                    'project_name' => $tpl->project->name ?? '',
+                    'name' => $tpl->name,
+                    'title' => $tpl->title,
+                    'content' => $tpl->content,
+                    'use_count' => $tpl->use_count,
+                    'userid' => $tpl->userid,
+                    'user_name' => $tpl->user->nickname ?? '',
+                    'last_used_at' => $tpl->last_used_at,
+                ];
+            });
+
+        return Base::retSuccess('success', [
+            'total' => $total,
+            'page' => $page,
+            'page_size' => $pageSize,
+            'items' => $items,
+        ]);
     }
 
     /**

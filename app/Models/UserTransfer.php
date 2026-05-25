@@ -90,9 +90,15 @@ class UserTransfer extends AbstractModel
                     $dialog->owner_id = $this->new_userid;
                     if ($dialog->save()) {
                         $dialog->joinGroup($this->new_userid, 0);
+                        // 同步 role=1：保证 deputy_ids 与 owner_id 一致
+                        // 若 new_userid 之前是群管理员（role=2），升为群主后必须从 deputy 列表移出
+                        WebSocketDialogUser::where('dialog_id', $dialog->id)
+                            ->where('userid', $this->new_userid)
+                            ->update(['role' => 1]);
                         $dialog->pushMsg("groupUpdate", [
                             'id' => $dialog->id,
                             'owner_id' => $dialog->owner_id,
+                            'deputy_ids' => $dialog->fresh()->deputy_ids,
                         ]);
                     }
                 }

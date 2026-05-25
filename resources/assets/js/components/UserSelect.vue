@@ -6,7 +6,7 @@
                     <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName"/>
                 </li>
             </template>
-            <li v-if="addIcon || values.length === 0" class="add-icon" :style="addStyle" @click="onSelection"></li>
+            <li v-if="!disabled && (addIcon || values.length === 0)" class="add-icon" :style="addStyle" @click="onSelection"></li>
         </ul>
 
         <Modal
@@ -300,7 +300,6 @@ export default {
             type: Boolean,
             default: false
         },
-
         // 仅显示群组
         onlyGroup: {
             type: Boolean,
@@ -442,6 +441,7 @@ export default {
                 'select-module': this.module,
                 'select-border': this.border,
                 'select-whole': this.isWhole,
+                'select-disabled': this.disabled,
             }
         },
 

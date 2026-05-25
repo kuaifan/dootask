@@ -11,11 +11,31 @@
                     <Input type="search" v-model="projectKeyValue" :placeholder="$L(loadProjects > 0 ? '更新中...' : '搜索')" clearable/>
                 </Form>
             </div>
+            <div
+                v-if="ownerViewAvailable"
+                class="owner-view-button"
+                @click="departmentOwnerViewShow=true">
+                <i class="taskfont">&#xe75c;</i>
+                <em v-if="ownerDepartmentIds.length > 0">{{ownerDepartmentIds.length}}</em>
+            </div>
+        </div>
+        <div class="owner-project-wrapper">
+            <div v-if="ownerProjectTabsVisible" class="owner-project-tabs">
+                <div
+                    v-for="item in ownerProjectTabs"
+                    :key="item.type"
+                    :class="['owner-project-tab', ownerProjectTab === item.type ? 'active' : '']"
+                    :title="$L(item.name)"
+                    @click="ownerProjectTab = item.type">
+                    <span>{{$L(item.name)}}</span>
+                    <Badge :overflow-count="999" :count="item.count"/>
+                </div>
+            </div>
         </div>
         <Draggable
             :list="projectDraggableList"
             :animation="150"
-            :disabled="!(isDragging && !projectKeyValue)"
+            :disabled="!(isDragging && !projectKeyValue) || ownerProjectTabsVisible"
             tag="ul"
             item-key="id"
             draggable="li:not(.pinned)"
@@ -36,6 +56,12 @@
                     <div class="item-left">
                         <div class="project-h1">
                             <div class="project-name" v-html="transformEmojiToHtml(item.name)"></div>
+                            <ETooltip v-if="item.department_readonly && item.personal" :content="$L('个人项目，只读查看')" placement="right">
+                                <UserAvatar class="readonly-owner-avatar" :userid="item.userid" :size="18"/>
+                            </ETooltip>
+                            <ETooltip v-else-if="item.department_readonly" :content="$L('负责人视角，只读查看')" placement="right">
+                                <i class="taskfont readonly-project-avatar">&#xe75c;</i>
+                            </ETooltip>
                             <div v-if="item.top_at" class="icon-top"></div>
                             <div v-if="item.task_my_num - item.task_my_complete > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
                         </div>
@@ -62,7 +88,7 @@
                 </div>
             </li>
             <template v-if="projectLists.length === 0">
-                <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
+                <li v-if="projectKeyLoading > 0 || departmentOwnerProjectsRefreshing" class="loading"><Loading/></li>
                 <li v-else class="nothing">
                     {{$L(projectKeyValue ? `没有任何与"${projectKeyValue}"相关的结果` : `没有任何项目`)}}
                 </li>
@@ -88,12 +114,14 @@
                     <DropdownItem @click.native="handleChatClick">
                         {{ $L('项目讨论') }}
                     </DropdownItem>
-                    <DropdownItem v-if="!projectKeyValue && !operateItem.top_at" @click.native="isDragging=!isDragging">
+                    <DropdownItem v-if="!projectKeyValue && !operateItem.top_at && !ownerProjectTabsVisible" @click.native="isDragging=!isDragging">
                         {{ $L(isDragging ? '退出排序' : '调整排序') }}
                     </DropdownItem>
                 </DropdownMenu>
             </Dropdown>
         </div>
+        <DepartmentOwnerView v-model="departmentOwnerViewShow"/>
+
     </div>
 </template>
 
@@ -103,10 +131,11 @@ import Draggable from 'vuedraggable'
 import longpress from "../../../directives/longpress";
 import TransferDom from "../../../directives/transfer-dom";
 import transformEmojiToHtml from "../../../utils/emoji";
+import DepartmentOwnerView from "./DepartmentOwnerView.vue";
 
 export default {
     name: "ProjectList",
-    components: {Draggable},
+    components: {Draggable, DepartmentOwnerView},
     directives: {longpress, TransferDom},
     data() {
         return {
@@ -120,13 +149,30 @@ export default {
             isDragging: false,
             projectDraggableList: [],
             projectDragging: false,
+            ownerProjectTab: 'mine',
+            departmentOwnerViewShow: false,
         }
     },
 
     computed: {
-        ...mapState(['cacheProjects', 'loadProjects', 'longpressData']),
+        ...mapState(['cacheProjects', 'loadProjects', 'longpressData', 'userInfo', 'systemConfig', 'cacheDepartmentOwnerIds', 'departmentOwnerProjectsRefreshing']),
 
-        projectLists() {
+        managedDepartments() {
+            return (this.userInfo.managed_departments || []).map(item => ({
+                ...item,
+                id: parseInt(item.id)
+            }));
+        },
+
+        ownerViewAvailable() {
+            return this.systemConfig.department_owner_project_view === 'open' && this.managedDepartments.length > 0;
+        },
+
+        ownerDepartmentIds() {
+            return this.cacheDepartmentOwnerIds || [];
+        },
+
+        projectBaseLists() {
             const {projectKeyValue, cacheProjects} = this;
             const data = $A.cloneJSON(cacheProjects).sort((a, b) => {
                 // 置顶优先
@@ -145,9 +191,44 @@ export default {
             }
             return data;
         },
+
+        ownerProjectTabsVisible() {
+            return this.ownerViewAvailable && this.ownerDepartmentIds.length > 0;
+        },
+
+        ownerProjectTabs() {
+            return [
+                {type: 'mine', name: '我的项目', count: this.projectBaseLists.filter(item => !item.department_readonly).length},
+                {type: 'readonly', name: '负责人视角', count: this.projectBaseLists.filter(item => item.department_readonly).length},
+            ];
+        },
+
+        projectLists() {
+            if (!this.ownerProjectTabsVisible) {
+                return this.projectBaseLists;
+            }
+            return this.projectBaseLists.filter(item => this.ownerProjectTab === 'readonly' ? item.department_readonly : !item.department_readonly);
+        },
     },
 
     watch: {
+        ownerProjectTabs: {
+            handler(tabs) {
+                if (!this.ownerProjectTabsVisible) {
+                    this.ownerProjectTab = 'mine';
+                    return;
+                }
+                const active = tabs.find(item => item.type === this.ownerProjectTab);
+                if (!active || active.count === 0) {
+                    const first = tabs.find(item => item.count > 0);
+                    if (first) {
+                        this.ownerProjectTab = first.type;
+                    }
+                }
+            },
+            immediate: true
+        },
+
         projectLists: {
             handler(val) {
                 if (!this.projectDragging) {

@@ -10,7 +10,7 @@
                 <div v-if="loading" class="project-load"><Loading/></div>
             </div>
             <ul class="project-icons">
-                <li class="project-avatar" :class="{'cursor-default': projectData.owner_userid !== userId}" @click="projectDropdown('user')">
+                <li class="project-avatar" :class="{'cursor-default': !isOwnerOrDeputy || isDepartmentReadonly}" @click="projectDropdown('user')">
                     <ul>
                         <li>
                             <UserAvatarTip :userid="projectData.owner_userid" :size="36" :borderWidth="2" :openDelay="0">
@@ -24,13 +24,15 @@
                                     <Icon type="ios-more"/>
                                 </ETooltip>
                             </li>
-                            <li v-else>
-                                <UserAvatarTip :userid="item.userid" :size="36" :borderWidth="2" :openDelay="0"/>
+                            <li v-else :class="{'is-deputy': isDeputyUid(item.userid)}">
+                                <UserAvatarTip :userid="item.userid" :size="36" :borderWidth="2" :openDelay="0">
+                                    <p v-if="isDeputyUid(item.userid)">{{$L('项目管理员')}}</p>
+                                </UserAvatarTip>
                             </li>
                         </template>
                     </ul>
                 </li>
-                <li class="project-icon" @click="addTaskOpen(0)">
+                <li v-if="!projectData.department_readonly" class="project-icon" @click="addTaskOpen(0)">
                     <ETooltip :disabled="$isEEUIApp || windowTouch" :content="$L('添加任务')">
                         <Icon class="menu-icon" type="md-add" />
                     </ETooltip>
@@ -50,7 +52,13 @@
                 <li class="project-icon">
                     <EDropdown @command="projectDropdown" trigger="click" transfer>
                         <Icon class="menu-icon" type="ios-more" />
-                        <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown" class="project-panel-project-menu-dropdown">
+                        <EDropdownMenu v-if="isDepartmentReadonly" slot="dropdown" class="project-panel-project-menu-dropdown">
+                            <EDropdownItem command="favorite">{{$L(projectData.favorited ? '取消收藏' : '收藏项目')}}</EDropdownItem>
+                            <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
+                            <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
+                            <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
+                        </EDropdownMenu>
+                        <EDropdownMenu v-else-if="isOwnerOrDeputy" slot="dropdown" class="project-panel-project-menu-dropdown">
                             <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                             <EDropdownItem command="permissions">{{$L('权限设置')}}</EDropdownItem>
                             <EDropdownItem command="task_template">{{$L('任务模板')}}</EDropdownItem>
@@ -62,9 +70,12 @@
                             <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
                             <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
                             <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
-                            <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
                             <EDropdownItem command="archived">{{$L('归档项目')}}</EDropdownItem>
-                            <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
+                            <!--主独占（仅主负责人可见）-->
+                            <template v-if="canManageDeputy">
+                                <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
+                                <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
+                            </template>
                         </EDropdownMenu>
                         <EDropdownMenu v-else slot="dropdown">
                             <EDropdownItem command="task_tag">{{$L('任务标签')}}</EDropdownItem>
@@ -78,6 +89,9 @@
                 </li>
             </ul>
         </div>
+        <Alert v-if="projectData.department_readonly" class="project-readonly-alert" type="info" show-icon>
+            {{$L('当前为负责人视角：你可查看项目和任务，并参与讨论，但不能编辑项目或任务。')}}
+        </Alert>
         <div class="project-subbox">
             <div class="project-subtitle user-select-auto" @click="showDesc">
                 <VMPreviewNostyle ref="descPreview" :value="projectData.desc"/>
@@ -107,7 +121,7 @@
             <Draggable
                 :list="columnList"
                 :animation="150"
-                :disabled="sortDisabled || $isEEUIApp || windowTouch"
+                :disabled="sortDisabled || isDepartmentReadonly || $isEEUIApp || windowTouch"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
@@ -128,7 +142,7 @@
                         <div class="column-head-icon">
                             <div v-if="columnLoad[column.id] === true" class="loading"><Loading /></div>
                             <EDropdown
-                                v-else
+                                v-else-if="!isDepartmentReadonly"
                                 trigger="click"
                                 size="medium"
                                 @command="dropColumn(column, $event)">
@@ -160,14 +174,14 @@
                                     </li>
                                 </EDropdownMenu>
                             </EDropdown>
-                            <Icon class="last" type="md-add" @click="addTopShow(column.id, true)" />
+                            <Icon v-if="!isDepartmentReadonly" class="last" type="md-add" @click="addTopShow(column.id, true)" />
                         </div>
                     </div>
                     <Scrollbar
                         class="column-task"
                         class-name="task-scrollbar"
                         @on-scroll="handleTaskScroll">
-                        <div v-if="!!columnTopShow[column.id]" class="task-item additem">
+                        <div v-if="!isDepartmentReadonly && !!columnTopShow[column.id]" class="task-item additem">
                             <TaskAddSimple
                                 :column-id="column.id"
                                 :project-id="projectId"
@@ -179,7 +193,7 @@
                         <Draggable
                             :list="column.tasks"
                             :animation="150"
-                            :disabled="sortDisabled || $isEEUIApp || windowTouch"
+                            :disabled="sortDisabled || isDepartmentReadonly || $isEEUIApp || windowTouch"
                             class="task-list"
                             draggable=".task-draggable"
                             filter=".complete"
@@ -202,7 +216,7 @@
                                             <pre>{{item.name}}</pre>
                                         </div>
                                         <div class="task-menu" @click.stop="">
-                                            <TaskMenu :ref="`taskMenu_${item.id}`" :task="item" icon="ios-more"/>
+                                            <TaskMenu v-if="!isDepartmentReadonly" :ref="`taskMenu_${item.id}`" :task="item" icon="ios-more"/>
                                         </div>
                                     </div>
                                     <template v-if="!item.complete_at">
@@ -236,7 +250,7 @@
                                     </template>
                                 </template>
                             </div>
-                            <div class="task-item additem">
+                            <div v-if="!isDepartmentReadonly" class="task-item additem">
                                 <TaskAddSimple
                                     :column-id="column.id"
                                     :project-id="projectId"
@@ -245,7 +259,7 @@
                         </Draggable>
                     </Scrollbar>
                 </li>
-                <li :class="['add-column', addColumnShow ? 'show-input' : '']">
+                <li v-if="!isDepartmentReadonly" :class="['add-column', addColumnShow ? 'show-input' : '']">
                     <div class="add-column-text" @click="addColumnOpen">
                         <Icon type="md-add" />{{$L('添加列表')}}
                     </div>
@@ -316,6 +330,7 @@
                     v-if="projectData.cacheParameter.showMy"
                     :list="transforTasks(myList)"
                     :task-visibilitys="taskRowVisibilitys"
+                    :readonly="isDepartmentReadonly"
                     open-key="my"
                     @on-priority="addTaskOpen"
                     fast-add-task/>
@@ -337,6 +352,7 @@
                     v-if="projectData.cacheParameter.showHelp"
                     :list="helpList"
                     :task-visibilitys="taskRowVisibilitys"
+                    :readonly="isDepartmentReadonly"
                     open-key="help"
                     @on-priority="addTaskOpen"/>
             </div>
@@ -357,6 +373,7 @@
                     v-if="projectData.cacheParameter.showUndone"
                     :list="unList"
                     :task-visibilitys="taskRowVisibilitys"
+                    :readonly="isDepartmentReadonly"
                     open-key="undone"
                     @on-priority="addTaskOpen"/>
             </div>
@@ -379,6 +396,7 @@
                     v-if="projectData.cacheParameter.showCompleted"
                     :list="completedList"
                     :task-visibilitys="taskRowVisibilitys"
+                    :readonly="isDepartmentReadonly"
                     open-key="completed"
                     @on-priority="addTaskOpen"
                     showCompleteAt/>
@@ -386,7 +404,7 @@
         </Scrollbar>
         <div v-else-if="tabTypeActive === 'gantt'" class="project-gantt">
             <!--甘特图-->
-            <ProjectGantt :projectColumn="columnList" :flowInfo="flowInfo"/>
+            <ProjectGantt :projectColumn="columnList" :flowInfo="flowInfo" :readonly="isDepartmentReadonly"/>
         </div>
 
         <!--项目设置-->
@@ -406,7 +424,8 @@
                         <Radio label="system">{{$L('系统默认')}}</Radio>
                         <Radio label="custom">{{$L('自定义')}}</Radio>
                     </RadioGroup>
-                    <template v-if="settingData.archive_method=='custom'">
+                    <div v-if="settingData.archive_method==='system'" class="form-tip">{{$L('根据系统设置的自动归档规则执行')}}</div>
+                    <template v-else-if="settingData.archive_method=='custom'">
                         <div class="form-tip">{{$L('任务完成 (*) 天后自动归档。', settingData.archive_days || 'n')}}</div>
                         <div class="setting-auto-day">
                             <Input v-model="settingData.archive_days" type="number">
@@ -421,9 +440,25 @@
                         <Radio label="open" :disabled="systemConfig.task_ai_auto_analyze === 'close'">{{$L('开启')}}</Radio>
                         <Radio label="close">{{$L('关闭')}}</Radio>
                     </RadioGroup>
-                    <div v-if="systemConfig.task_ai_auto_analyze === 'close'" class="form-tip">{{$L('系统已关闭AI任务分析功能。')}}</div>
+                    <div v-if="systemConfig.ai_auto_analyze === 'close'" class="form-tip">{{$L('系统已关闭AI任务分析功能。')}}</div>
                     <div v-else-if="settingData.ai_auto_analyze === 'open'" class="form-tip">{{$L('新建任务后AI自动分析并给出建议。')}}</div>
                     <div v-else class="form-tip">{{$L('关闭后本项目将不再自动分析任务。')}}</div>
+                </FormItem>
+                <FormItem :label="$L('共享模板')" prop="task_template_share">
+                    <RadioGroup v-model="settingData.task_template_share">
+                        <Radio label="open">{{$L('开启')}}</Radio>
+                        <Radio label="close">{{$L('关闭')}}</Radio>
+                    </RadioGroup>
+                    <div v-if="settingData.task_template_share === 'open'" class="form-tip">{{$L('开启后，添加任务时可使用其他项目共享的任务模板。')}}</div>
+                    <div v-else class="form-tip">{{$L('关闭后，添加任务时仅加载本项目模板，不显示其他项目共享模板。')}}</div>
+                </FormItem>
+                <FormItem v-if="systemConfig.department_owner_project_view === 'open'" :label="$L('负责人视角')" prop="department_owner_view">
+                    <RadioGroup v-model="settingData.department_owner_view">
+                        <Radio label="open">{{$L('开启')}}</Radio>
+                        <Radio label="close">{{$L('关闭')}}</Radio>
+                    </RadioGroup>
+                    <div v-if="settingData.department_owner_view === 'open'" class="form-tip">{{$L('开启后，部门负责人可只读查看本项目及其全员可见任务。')}}</div>
+                    <div v-else class="form-tip">{{$L('关闭后，本项目及其群聊对部门负责人视角隐藏。')}}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -446,14 +481,27 @@
             :title="$L('成员管理')"
             :mask-closable="false">
             <Form :model="userData" v-bind="formOptions" @submit.native.prevent>
+                <FormItem v-if="canManageDeputy" prop="deputy_userids" :label="$L('项目管理员')">
+                    <UserSelect
+                        v-model="userData.deputy_userids"
+                        :uncancelable="deputyRowUncancelable"
+                        :disabledChoice="deputyRowDisabledChoice"
+                        :multiple="true"
+                        :multiple-max="20"
+                        :title="$L('选择项目管理员')"/>
+                </FormItem>
                 <FormItem prop="userids" :label="$L('项目成员')">
-                    <UserSelect v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :title="$L('选择项目成员')"/>
+                    <UserSelect
+                        v-model="userData.userids"
+                        :uncancelable="memberRowUncancelable"
+                        :multiple-max="100"
+                        :title="$L('选择项目成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="userShow=false">{{$L('取消')}}</Button>
                 <Poptip
-                    v-if="userWaitRemove.length > 0"
+                    v-if="userWaitRemove.length > 0 || deputyWaitDemote.length > 0"
                     confirm
                     placement="bottom"
                     style="margin-left:8px"
@@ -462,11 +510,19 @@
                     @on-ok="onUser"
                     transfer>
                     <div slot="title">
-                        <p><strong>{{$L('移除成员负责的任务将变成无负责人，')}}</strong></p>
-                        <p>{{$L('注意此操作不可逆！')}}</p>
-                        <ul class="project-panel-wait-remove">
-                            <li>{{$L('即将移除')}}：</li>
-                            <li v-for="id in userWaitRemove" :key="id">
+                        <p><strong>{{$L('请确认以下操作，注意此操作不可逆！')}}</strong></p>
+                        <template v-if="userWaitRemove.length > 0">
+                            <p>{{$L('移除成员负责的任务将变成无负责人。')}}</p>
+                            <ul class="project-panel-wait-remove">
+                                <li>{{$L('即将移除')}}：</li>
+                                <li v-for="id in userWaitRemove" :key="'r'+id">
+                                    <UserAvatar :userid="id" :size="20" showName/>
+                                </li>
+                            </ul>
+                        </template>
+                        <ul v-if="deputyWaitDemote.length > 0" class="project-panel-wait-remove">
+                            <li>{{$L('即将罢免项目管理员')}}：</li>
+                            <li v-for="id in deputyWaitDemote" :key="'d'+id">
                                 <UserAvatar :userid="id" :size="20" showName/>
                             </li>
                         </ul>
@@ -747,6 +803,12 @@ export default {
             return wait;
         },
 
+        deputyWaitDemote() {
+            // 所有从项目管理员列表中移出的人（即使同时被踢出项目，也在罢免段显示，避免操作隐身）
+            const {deputy_userids = [], deputy_useridbak = []} = this.userData;
+            return deputy_useridbak.filter(id => !deputy_userids.includes(id));
+        },
+
         msgUnread() {
             const {cacheDialogs, projectData} = this;
             const dialog = cacheDialogs.find(({id}) => id === projectData.dialog_id);
@@ -779,19 +841,70 @@ export default {
             }
         },
 
+        canManageDeputy() {
+            return this.projectData?.owner_userid === this.userId;
+        },
+
+        isDepartmentReadonly() {
+            return !!this.projectData?.department_readonly;
+        },
+
+        isOwnerOrDeputy() {
+            if (this.isDepartmentReadonly) return false;
+            if (!this.projectData) return false;
+            if (this.projectData.owner_userid === this.userId) return true;
+            return (this.projectData.deputy_userids || []).includes(this.userId);
+        },
+
+        memberRowUncancelable() {
+            // 项目成员行：负责人 + 当前项目管理员选择（响应式）都不可移除
+            if (!this.projectData) return [];
+            const deputies = (this.userData && Array.isArray(this.userData.deputy_userids))
+                ? this.userData.deputy_userids
+                : (this.projectData.deputy_userids || []);
+            return [
+                this.projectData.owner_userid,
+                ...deputies,
+            ];
+        },
+
+        deputyRowUncancelable() {
+            // 项目管理员行：防御性锁定负责人（理论上负责人不会出现在该 v-model 里）
+            if (!this.projectData) return [];
+            return [this.projectData.owner_userid];
+        },
+
+        deputyRowDisabledChoice() {
+            // 项目管理员候选：排除负责人（不能任命负责人为项目管理员）
+            if (!this.projectData) return [];
+            return [this.projectData.owner_userid];
+        },
+
+        projectMemberUserids() {
+            return (this.projectData.project_user || []).map(({userid}) => userid);
+        },
+
         projectUser() {
             const {projectData, windowWidth} = this;
             if (!projectData.project_user) {
                 return [];
             }
-            let max = windowWidth > 1200 ? 8 : 3
-            let list = projectData.project_user.filter(({userid}) => userid != projectData.owner_userid)
+            const max = windowWidth > 1200 ? 8 : 3;
+            const deputyIds = projectData.deputy_userids || [];
+            const list = projectData.project_user
+                .filter(({userid}) => userid != projectData.owner_userid)
+                .slice()
+                .sort((a, b) => {
+                    const aD = deputyIds.includes(a.userid) ? 0 : 1;
+                    const bD = deputyIds.includes(b.userid) ? 0 : 1;
+                    return aD - bD;
+                });
             if (list.length <= max) {
-                return list
+                return list;
             }
-            let array = list.slice(0, max - 1);
-            array.push({userid: -1})
-            array.push(list[list.length - 1])
+            const array = list.slice(0, max - 1);
+            array.push({userid: -1});
+            array.push(list[list.length - 1]);
             return array;
         },
 
@@ -1090,6 +1203,16 @@ export default {
         windowWidth() {
             this.handleColumnDebounce(100);
         },
+        'userData.deputy_userids'(newDeputies) {
+            // 项目管理员必须是项目成员：项目管理员行新增时自动并入成员行（罢免时不联动移除）
+            if (!Array.isArray(newDeputies) || !Array.isArray(this.userData.userids)) {
+                return;
+            }
+            const toAdd = newDeputies.filter(id => !this.userData.userids.includes(id));
+            if (toAdd.length > 0) {
+                this.userData.userids = [...this.userData.userids, ...toAdd];
+            }
+        },
         projectData(newData, oldData) {
             this.sortData = this.getSort();
             if (newData && newData.id && (!oldData || newData.id !== oldData.id)) {
@@ -1152,6 +1275,9 @@ export default {
         },
 
         sortUpdate(only_column) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             const oldSort = this.sortData;
             const newSort = this.getSort();
             if (JSON.stringify(oldSort) === JSON.stringify(newSort)) {
@@ -1218,14 +1344,23 @@ export default {
         },
 
         addTopShow(id, show) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             this.$set(this.columnTopShow, id, show);
         },
 
         addTaskOpen(params) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             emitter.emit('addTask', params);
         },
 
         addColumnOpen() {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             this.addColumnShow = true;
             this.$nextTick(() => {
                 this.$refs.addColumnName.focus();
@@ -1263,6 +1398,9 @@ export default {
         },
 
         dropColumn(column, command) {
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             if (command === 'title') {
                 this.titleColumn(column);
             }
@@ -1419,12 +1557,23 @@ export default {
 
         onUser() {
             this.userLoad++;
+            // 项目管理员必须是项目成员：把 deputy 并入 userid 列表（前端归一化）
+            const baseUserids = (this.userData.userids || []).slice();
+            const deputyUserids = (this.userData.deputy_userids || []).slice();
+            const mergedUserids = Array.from(new Set([...baseUserids, ...deputyUserids]));
+            //
+            const payload = {
+                project_id: this.projectId,
+                userid: mergedUserids,
+            };
+            // 仅项目负责人发送 deputy_userid；项目管理员/其他角色不发送（后端也会忽略）
+            if (this.canManageDeputy) {
+                payload.deputy_userid = deputyUserids;
+            }
+            //
             this.$store.dispatch("call", {
                 url: 'project/user',
-                data: {
-                    project_id: this.projectId,
-                    userid: this.userData.userids,
-                },
+                data: payload,
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.userShow = false;
@@ -1509,6 +1658,9 @@ export default {
         },
 
         projectDropdown(name) {
+            if (this.isDepartmentReadonly && !['favorite', 'log', 'archived_task', 'deleted_task'].includes(name)) {
+                return;
+            }
             switch (name) {
                 case "favorite":
                     this.toggleProjectFavorite();
@@ -1520,7 +1672,9 @@ export default {
                         desc: this.projectData.desc,
                         archive_method: this.projectData.archive_method,
                         archive_days: this.projectData.archive_days,
-                        ai_auto_analyze: this.projectData.ai_auto_analyze || 'open'
+                        ai_auto_analyze: this.projectData.ai_auto_analyze || 'open',
+                        task_template_share: this.projectData.task_template_share || 'open',
+                        department_owner_view: this.projectData.department_owner_view || 'open'
                     });
                     this.settingShow = true;
                     this.$nextTick(() => {
@@ -1534,13 +1688,15 @@ export default {
                     break;
 
                 case "user":
-                    if (this.projectData.owner_userid !== this.userId) {
+                    if (this.isDepartmentReadonly || !this.isOwnerOrDeputy) {
                         return;
                     }
                     const userids = this.projectData.project_user.map(({userid}) => userid);
+                    const deputyUserids = [...(this.projectData.deputy_userids || [])];
                     this.$set(this.userData, 'userids', userids);
                     this.$set(this.userData, 'useridbak', userids);
-                    this.$set(this.userData, 'uncancelable', [this.projectData.owner_userid]);
+                    this.$set(this.userData, 'deputy_userids', deputyUserids);
+                    this.$set(this.userData, 'deputy_useridbak', deputyUserids);
                     this.userShow = true;
                     break;
 
@@ -1593,8 +1749,19 @@ export default {
             }
         },
 
+        isPrimaryOwnerUid(userid) {
+            return userid === this.projectData.owner_userid;
+        },
+
+        isDeputyUid(userid) {
+            return (this.projectData.deputy_userids || []).includes(userid);
+        },
+
         openTask(task, receive) {
             this.$store.dispatch("openTask", task)
+            if (this.isDepartmentReadonly) {
+                return;
+            }
             if (receive === true) {
                 // 向任务窗口发送领取任务请求
                 setTimeout(() => {
@@ -1658,7 +1825,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/flow/list',
                 data: {
-                    project_id: this.projectId,
+                    project_id: this.projectId
                 },
             }).then(({data}) => {
                 this.flowList = data;

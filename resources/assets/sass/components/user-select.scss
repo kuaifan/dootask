@@ -9,6 +9,12 @@
         padding: 0 6px;
     }
 
+    &.select-disabled {
+        > ul > li {
+            cursor: default;
+        }
+    }
+
     > ul {
         display: flex;
         flex-direction: row;

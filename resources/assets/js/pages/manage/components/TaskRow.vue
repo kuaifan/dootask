@@ -17,10 +17,10 @@
                             :class="['sub-icon', taskOpen[item.id] ? 'active' : '']"
                             type="ios-arrow-forward"
                             @click="getSublist(item)"/>
-                        <TaskMenu :ref="`taskMenu_${item.id}`" :task="item"/>
+                        <TaskMenu v-if="!readonly" :ref="`taskMenu_${item.id}`" :task="item"/>
                         <div class="item-title" @click="openTask(item)">
                             <!--工作流状态-->
-                            <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu($event, item)">{{item.flow_item_name}}</span>
+                            <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="!readonly && openMenu($event, item)">{{item.flow_item_name}}</span>
                             <!--是否子任务-->
                             <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
                             <!--有多少个子任务-->
@@ -51,7 +51,7 @@
                             trigger="click"
                             size="small"
                             placement="bottom"
-                            :disabled="item.sub_top === true"
+                            :disabled="readonly || item.sub_top === true"
                             @command="dropTask(item, $event)">
                             <div class="task-column">{{columnName(item.column_id)}}</div>
                             <EDropdownMenu slot="dropdown">
@@ -66,7 +66,7 @@
                             trigger="click"
                             size="small"
                             placement="bottom"
-                            :disabled="item.sub_top === true"
+                            :disabled="readonly || item.sub_top === true"
                             @command="dropTask(item, $event)">
                             <TaskPriority :backgroundColor="item.p_color">{{item.p_name || $L('未设置')}}</TaskPriority>
                             <EDropdownMenu slot="dropdown">
@@ -85,7 +85,7 @@
                             <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu" v-if="keyu < 3">
                                 <UserAvatar :userid="user.userid" size="32" :borderWidth="2" :borderColor="item.color" :showName="ownerUser(item.task_user).length === 1"/>
                             </li>
-                            <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
+                            <li v-if="!readonly && ownerUser(item.task_user).length === 0" class="no-owner">
                                 <Button type="primary" size="small" @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
                             </li>
                         </ul>
@@ -107,11 +107,12 @@
                 v-if="taskOpen[item.id]===true"
                 :list="subTask(item.id)"
                 :parent-id="item.id"
-                :fast-add-task="item.parent_id===0 && fastAddTask"
+                :fast-add-task="!readonly && item.parent_id===0 && fastAddTask"
                 :open-key="openKey"
-                @command="dropTask"/>
+                @command="dropTask"
+                :readonly="readonly"/>
         </div>
-        <TaskAddSimple v-if="fastAddTask || parentId > 0" :parent-id="parentId" row-mode @on-priority="onPriority"/>
+        <TaskAddSimple v-if="!readonly && (fastAddTask || parentId > 0)" :parent-id="parentId" row-mode @on-priority="onPriority"/>
     </div>
 </template>
 
@@ -151,6 +152,10 @@ export default {
         taskVisibilitys: {
             type: Object,
             default: () => ({})
+        },
+        readonly: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -202,6 +207,9 @@ export default {
         },
 
         dropTask(task, command) {
+            if (this.readonly) {
+                return;
+            }
             const el = this.$refs[`taskMenu_${task.id}`];
             if (!el) {
                 return;
@@ -228,6 +236,9 @@ export default {
         },
 
         onPriority(data) {
+            if (this.readonly) {
+                return;
+            }
             this.$emit("on-priority", data)
         },
 
@@ -260,6 +271,9 @@ export default {
 
         openTask(task, receive) {
             this.$store.dispatch("openTask", task)
+            if (this.readonly) {
+                return;
+            }
             if (receive === true) {
                 // 向任务窗口发送领取任务请求
                 setTimeout(() => {
@@ -269,6 +283,9 @@ export default {
         },
 
         openMenu(event, task) {
+            if (this.readonly) {
+                return;
+            }
             const el = this.$refs[`taskMenu_${task.id}`];
             if (el) {
                 el[0].handleClick(event)

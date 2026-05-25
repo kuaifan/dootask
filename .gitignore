@@ -61,3 +61,6 @@ laravels.pid
 
 # Documentation
 README_LOCAL.md
+
+# playwright
+.playwright-mcp/

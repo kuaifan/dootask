@@ -8,7 +8,7 @@
             :option-full="optionFull"
             :placeholder="placeholder"
             :placeholderFull="placeholderFull"
-            :readOnly="windowTouch"
+            :readOnly="readonly || windowTouch"
             :readOnlyFull="false"
             :readOnlyImagePreview="false"
             @on-blur="onBlur"
@@ -24,10 +24,10 @@
                 transfer>
                 <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                 <DropdownMenu slot="list">
-                    <DropdownItem v-if="operateMenu.checked" @click.native="onLiPreview">{{ $L(operateMenu.checked === 'checked' ? '标记未选' : '标记已选') }}</DropdownItem>
+                    <DropdownItem v-if="operateMenu.checked && !readonly" @click.native="onLiPreview">{{ $L(operateMenu.checked === 'checked' ? '标记未选' : '标记已选') }}</DropdownItem>
                     <DropdownItem v-if="operateMenu.link" @click.native="onLinkPreview">{{ $L('打开链接') }}</DropdownItem>
                     <DropdownItem v-if="operateMenu.img" @click.native="onImagePreview">{{ $L('查看图片') }}</DropdownItem>
-                    <DropdownItem @click.native="onEditing">{{ $L('编辑描述') }}</DropdownItem>
+                    <DropdownItem v-if="!readonly" @click.native="onEditing">{{ $L('编辑描述') }}</DropdownItem>
                     <DropdownItem v-if="operateMenu.history" @click.native="onHistory">{{ $L('历史记录') }}</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
@@ -98,6 +98,10 @@ export default {
         },
         placeholderFull: {
             default: ''
+        },
+        readonly: {
+            type: Boolean,
+            default: false
         },
     },
 
@@ -202,6 +206,9 @@ export default {
         },
 
         onEditing() {
+            if (this.readonly) {
+                return;
+            }
             this.$refs.desc.onFull()
         },
 
@@ -210,6 +217,9 @@ export default {
         },
 
         onBlur() {
+            if (this.readonly) {
+                return;
+            }
             this.$emit('on-blur');
         },
 
@@ -319,6 +329,9 @@ export default {
         },
 
         onLiPreview() {
+            if (this.readonly) {
+                return;
+            }
             if (!this.operateMenu.checked) {
                 return;
             }

@@ -1,5 +1,5 @@
 <template>
-    <div @click="onCLick" class="markdown-body" v-html="html"></div>
+    <div @click="onCLick" class="markdown-body dialog-markdown" v-html="html"></div>
 </template>
 
 <script>

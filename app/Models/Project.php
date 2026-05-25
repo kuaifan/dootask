@@ -22,6 +22,9 @@ use Request;
  * @property int|null $personal 是否个人项目
  * @property string|null $archive_method 自动归档方式
  * @property int|null $archive_days 自动归档天数
+ * @property string|null $ai_auto_analyze AI自动分析
+ * @property string|null $task_template_share 共享模板开关
+ * @property string|null $department_owner_view 部门负责人视角可见开关
  * @property string|null $user_simple 成员总数|1,2,3
  * @property int|null $dialog_id 聊天会话ID
  * @property \Illuminate\Support\Carbon|null $archived_at 归档时间
@@ -77,6 +80,7 @@ class Project extends AbstractModel
 
     protected $appends = [
         'owner_userid',
+        'deputy_userids',
     ];
 
     /**
@@ -90,6 +94,58 @@ class Project extends AbstractModel
             $this->appendattrs['owner_userid'] = $ownerUser ? $ownerUser->userid : 0;
         }
         return $this->appendattrs['owner_userid'];
+    }
+
+    /**
+     * 项目管理员 userid 列表
+     * @return array
+     */
+    public function getDeputyUseridsAttribute(): array
+    {
+        if (empty($this->id)) {
+            return [];
+        }
+        return ProjectUser::whereProjectId($this->id)
+            ->whereOwner(ProjectUser::OWNER_DEPUTY)
+            ->pluck('userid')
+            ->map(fn($v) => (int)$v)
+            ->toArray();
+    }
+
+    /**
+     * 是否项目负责人（与 project_users.owner=1 一致）
+     */
+    public function isPrimaryOwner($userid): bool
+    {
+        if (empty($this->id) || $userid <= 0) {
+            return false;
+        }
+        return ProjectUser::whereProjectId($this->id)
+            ->whereUserid($userid)
+            ->whereOwner(ProjectUser::OWNER_PRIMARY)
+            ->exists();
+    }
+
+    /**
+     * 是否项目管理员（与 project_users.owner=2 一致）
+     */
+    public function isDeputyOwner($userid): bool
+    {
+        if (empty($this->id) || $userid <= 0) {
+            return false;
+        }
+        return ProjectUser::whereProjectId($this->id)
+            ->whereUserid($userid)
+            ->whereOwner(ProjectUser::OWNER_DEPUTY)
+            ->exists();
+    }
+
+    /**
+     * 是否负责人（含项目管理员）
+     */
+    public function isOwner($userid): bool
+    {
+        return $this->isPrimaryOwner($userid) || $this->isDeputyOwner($userid);
     }
 
     /**
@@ -227,21 +283,40 @@ class Project extends AbstractModel
             return;
         }
         AbstractModel::transaction(function() {
-            $userids = $this->relationUserids();
+            // 拉所有项目成员 + 各自 owner 值
+            $userOwnerMap = ProjectUser::whereProjectId($this->id)
+                ->pluck('owner', 'userid');
+            $userids = $userOwnerMap->keys()->map(fn($v) => (int)$v)->toArray();
             foreach ($userids as $userid) {
+                $owner = (int)$userOwnerMap[$userid];
+                // 巧合：编码完全一致 owner 0/1/2 → role 0/1/2
+                $role = $owner;
                 WebSocketDialogUser::updateInsert([
                     'dialog_id' => $this->dialog_id,
                     'userid' => $userid,
                 ], [
-                    'important' => 1
-                ], function () use ($userid) {
+                    'important' => 1,
+                    'role' => $role,
+                ], function () use ($userid, $role) {
                     return [
                         'important' => 1,
+                        'role' => $role,
                         'bot' => User::isBot($userid) ? 1 : 0,
                     ];
                 });
             }
-            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->whereImportant(1)->remove();
+            WebSocketDialogUser::whereDialogId($this->dialog_id)
+                ->whereNotIn('userid', $userids)
+                ->whereImportant(1)
+                ->remove();
+            // 同步 dialog.owner_id 到主负责人（owner=1）：前端「群主」标签依赖此字段，
+            // 必须随项目主负责人变更（含用户离职转移）一起刷新，否则会显示已离职用户
+            $primaryUserid = $userOwnerMap->search(ProjectUser::OWNER_PRIMARY);
+            if ($primaryUserid !== false && (int)$primaryUserid > 0) {
+                WebSocketDialog::whereId($this->dialog_id)
+                    ->where('owner_id', '!=', (int)$primaryUserid)
+                    ->update(['owner_id' => (int)$primaryUserid]);
+            }
         });
     }
 
@@ -378,7 +453,7 @@ class Project extends AbstractModel
         // 处理所有者权限
         if (isset($data['owner'])) {
             $owners = ProjectUser::whereProjectId($data['id'])
-                ->whereOwner(1)
+                ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
                 ->pluck('userid')
                 ->toArray();
             $recipients = [
@@ -599,7 +674,7 @@ class Project extends AbstractModel
                 $column['project_id'] = $project->id;
                 ProjectColumn::createInstance($column)->save();
             }
-            $dialog = WebSocketDialog::createGroup($project->name, $project->userid, 'project');
+            $dialog = WebSocketDialog::createGroup($project->name, $project->userid, 'project', $project->userid);
             if (empty($dialog)) {
                 throw new ApiException('创建项目聊天室失败');
             }
@@ -621,7 +696,9 @@ class Project extends AbstractModel
      * 获取项目信息（用于判断会员是否存在项目内）
      * @param int $project_id
      * @param null|bool $archived true:仅限未归档, false:仅限已归档, null:不限制
-     * @param null|bool $mustOwner true:仅限项目负责人, false:仅限非项目负责人, null:不限制
+     * @param null|bool|string $mustOwner true:负责人或项目管理员都可（共享操作）；
+     *                                    'primary':仅负责人（转让/删除/任命项目管理员等独占操作）；
+     *                                    false:仅限非负责人；null:不限制
      * @return self
      */
     public static function userProject($project_id, $archived = true, $mustOwner = null)
@@ -639,9 +716,39 @@ class Project extends AbstractModel
         if ($mustOwner === true && !$project->owner) {
             throw new ApiException('仅限项目负责人操作', [ 'project_id' => $project_id ]);
         }
+        if ($mustOwner === 'primary' && (int)$project->owner !== 1) {
+            throw new ApiException('仅限项目负责人操作', [ 'project_id' => $project_id ]);
+        }
         if ($mustOwner === false && $project->owner) {
             throw new ApiException('禁止项目负责人操作', [ 'project_id' => $project_id ]);
         }
         return $project;
+    }
+
+    /**
+     * 获取项目（含部门负责人只读视角兜底）
+     * @param int $project_id
+     * @param null|bool $archived true:仅限未归档, false:仅限已归档, null:不限制
+     * @param null|bool|string $mustOwner 仅限 null 时尝试部门只读视角
+     * @return self
+     */
+    public static function findForDepartmentView($project_id, $archived = true, $mustOwner = null)
+    {
+        $user = User::auth();
+        $departmentView = UserDepartment::ownerViewContext($user, true);
+        if (UserDepartment::isDepartmentReadonlyProject($departmentView, intval($project_id)) && $mustOwner === null) {
+            $project = self::allData()->where('projects.id', intval($project_id))->first();
+            if (empty($project)) {
+                throw new ApiException('项目不存在或已被删除', [ 'project_id' => $project_id ], -4001);
+            }
+            if ($archived === true && $project->archived_at != null) {
+                throw new ApiException('项目已归档', [ 'project_id' => $project_id ], -4001);
+            }
+            if ($archived === false && $project->archived_at == null) {
+                throw new ApiException('项目未归档', [ 'project_id' => $project_id ]);
+            }
+            return $project;
+        }
+        return self::userProject($project_id, $archived, $mustOwner);
     }
 }

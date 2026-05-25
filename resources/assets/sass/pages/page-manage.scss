@@ -19,6 +19,17 @@
         flex-direction: column;
         align-items: center;
         transition: all 0.2s;
+        &.menu-resizing {
+            transition: none;
+        }
+        .manage-menu-resize {
+            position: absolute;
+            top: 0;
+            right: -3px;
+            bottom: 0;
+            width: 6px;
+            z-index: 3;
+        }
         .scrollbar-container {
             flex: 1;
             width: 100%;
@@ -29,7 +40,7 @@
         .menu-base {
             position: sticky;
             top: 0;
-            z-index: 1;
+            z-index: 2;
             margin: 0 auto;
             width: 80%;
             background: #F4F5F7;
@@ -78,6 +89,44 @@
                     }
                     &.active {
                         background-color: #ffffff;
+                    }
+                }
+            }
+            .owner-project-tabs {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                margin: 8px 0 0;
+                padding: 3px;
+                border-radius: 12px;
+                background: #eeeeee;
+                .owner-project-tab {
+                    flex: 1;
+                    min-width: 0;
+                    height: 30px;
+                    padding: 0 10px;
+                    border-radius: 9px;
+                    color: #808695;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 4px;
+                    cursor: pointer;
+                    > span {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                    .ivu-badge {
+                        flex-shrink: 0;
+                        transform: scale(0.8);
+                        transform-origin: left center;
+                    }
+                    &.active {
+                        background: #ffffff;
+                        color: #17233d;
+                        font-weight: 500;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
                     }
                 }
             }
@@ -148,6 +197,24 @@
                             padding-left: 8px;
                             font-size: 12px;
                         }
+                        .readonly-owner-avatar {
+                            margin-left: 4px;
+                            flex-shrink: 0;
+                        }
+                        .readonly-project-avatar {
+                            width: 18px;
+                            height: 18px;
+                            margin-left: 4px;
+                            flex-shrink: 0;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            border-radius: 50%;
+                            font-size: 12px;
+                            line-height: 18px;
+                            background-color: #5BC7B0;
+                            color: #ffffff;
+                        }
                     }
                     .project-h2 {
                         display: none;
@@ -204,6 +271,12 @@
                             width: 22px;
                             height: 22px;
                         }
+                    }
+                    &.nothing {
+                        padding: 18px 8px;
+                        color: #999999;
+                        text-align: center;
+                        cursor: default;
                     }
                 }
             }
@@ -515,7 +588,7 @@
     }
 }
 
-@media (height <= 640px) {
+@media (height <= 800px) {
     .page-manage {
         .manage-box-menu {
             .menu-base {

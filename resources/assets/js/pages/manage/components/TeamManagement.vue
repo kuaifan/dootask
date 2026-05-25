@@ -37,9 +37,21 @@
                         :key="item.id"
                         :class="[`level-${item.level}`, departmentSelect === item.id || departmentOperation === item.id ? 'active' : '']"
                         @click="onSelectDepartment(item.id)">
-                        <UserAvatarTip :userid="item.owner_userid" :size="20" class="department-icon">
-                            <p><strong>{{$L('部门负责人')}}</strong></p>
-                        </UserAvatarTip>
+                        <div class="department-owner-wrap">
+                            <template v-if="item.owner_userid > 0">
+                                <UserAvatarTip :userid="item.owner_userid" :size="20" class="department-icon">
+                                    <p><strong>{{$L('部门负责人')}}</strong></p>
+                                </UserAvatarTip>
+                                <div v-if="(item.deputy_userids || []).length > 0" class="department-owner-more">+{{ item.deputy_userids.length }}</div>
+                            </template>
+                            <template v-else-if="(item.deputy_userids || []).length > 0">
+                                <UserAvatarTip :userid="item.deputy_userids[0]" :size="20" class="department-icon">
+                                    <p>{{$L('部门管理员')}}</p>
+                                </UserAvatarTip>
+                                <div v-if="item.deputy_userids.length > 1" class="department-owner-more">+{{ item.deputy_userids.length - 1 }}</div>
+                            </template>
+                            <UserAvatarTip v-else :userid="0" :size="20" class="department-icon"/>
+                        </div>
                         <div class="department-title">{{item.name}}</div>
                         <EDropdown
                             size="medium"
@@ -208,6 +220,15 @@
                 </FormItem>
                 <FormItem prop="owner_userid" :label="$L('部门负责人')">
                     <UserSelect v-model="departmentData.owner_userid" :multiple-max="1" :title="$L('请选择部门负责人')"/>
+                </FormItem>
+                <FormItem :label="$L('部门管理员')">
+                    <UserSelect
+                        v-model="departmentData.deputy_userids"
+                        :multiple="true"
+                        :multiple-max="20"
+                        :disabled-choice="deputyDisabledChoice"
+                        :title="$L('请选择部门管理员')"/>
+                    <div class="form-tip">{{$L('部门管理员享有部门群的群管理员权限')}}</div>
                 </FormItem>
                 <template v-if="departmentData.id == 0">
                     <Divider orientation="left">{{$L('群组设置')}}</Divider>
@@ -690,6 +711,7 @@ export default {
                 name: '',
                 parent_id: 0,
                 owner_userid: [],
+                deputy_userids: [],
                 dialog_group: 'new',
                 dialog_useid: 0
             },
@@ -808,6 +830,13 @@ export default {
                 style.minWidth = (minWidth - 40) + 'px'
             }
             return style
+        },
+
+        deputyDisabledChoice() {
+            // 部门负责人不能同时是部门管理员；已是部门管理员的不需要再选
+            return [
+                ...(this.departmentData.owner_userid || []),
+            ];
         }
     },
     methods: {
@@ -1032,28 +1061,83 @@ export default {
                 name: '',
                 parent_id: 0,
                 owner_userid: [],
+                deputy_userids: [],
                 dialog_group: 'new'
             }, data || {})
+            // 编辑场景：将 owner_userid 转为数组（API 返回单值）
+            if (this.departmentData.owner_userid && !Array.isArray(this.departmentData.owner_userid)) {
+                this.departmentData.owner_userid = [this.departmentData.owner_userid];
+            }
+            // 编辑场景：deputy_userids 后端返回数组
+            if (!Array.isArray(this.departmentData.deputy_userids)) {
+                this.departmentData.deputy_userids = [];
+            }
             this.departmentShow = true
         },
 
-        onSaveDepartment() {
+        async onSaveDepartment() {
             this.departmentLoading++;
-            this.$store.dispatch("call", {
-                url: 'users/department/add',
-                data: Object.assign(this.departmentData, {
-                    owner_userid: this.departmentData.owner_userid[0],
-                }),
-            }).then(({msg}) => {
-                $A.messageSuccess(msg)
-                this.getDepartmentLists()
-                this.getLists()
-                this.departmentShow = false
-            }).catch(({msg}) => {
+            try {
+                // 先保存基本信息（保持现有行为）
+                // store.dispatch("call",...) 成功时 resolve {data,msg,xhr}（无 ret 字段），失败时 reject
+                const res = await this.$store.dispatch("call", {
+                    url: 'users/department/add',
+                    data: Object.assign({}, this.departmentData, {
+                        owner_userid: this.departmentData.owner_userid[0],
+                    }),
+                });
+                $A.messageSuccess(res.msg);
+
+                // 部门管理员列表同步（编辑/新建都支持）
+                // 编辑场景：从 departmentList 取旧部门管理员；新建场景：从刚返回的列表反查刚创建的部门
+                let targetId = this.departmentData.id;
+                let oldDeputies = [];
+                if (targetId > 0) {
+                    const oldList = this.departmentList.find(d => d.id === targetId);
+                    oldDeputies = (oldList && Array.isArray(oldList.deputy_userids)) ? oldList.deputy_userids : [];
+                } else {
+                    // 新建：从最新部门列表中找刚创建的（按 name + parent_id 匹配，取最大 id 防同名旧部门）
+                    const list = await this.$store.dispatch('call', { url: 'users/department/list', method: 'get' });
+                    const matched = (list.data || [])
+                        .filter(d => d.name === this.departmentData.name && d.parent_id === this.departmentData.parent_id)
+                        .sort((a, b) => b.id - a.id);
+                    if (matched.length > 0) targetId = matched[0].id;
+                }
+
+                if (targetId > 0) {
+                    const newDeputies = this.departmentData.deputy_userids || [];
+                    const toAdd = newDeputies.filter(uid => !oldDeputies.includes(uid));
+                    const toDel = oldDeputies.filter(uid => !newDeputies.includes(uid));
+
+                    const adds = toAdd.map(uid => this.$store.dispatch('call', {
+                        url: 'users/department/adddeputy',
+                        data: { id: targetId, userid: uid },
+                        method: 'post',
+                    }));
+                    const dels = toDel.map(uid => this.$store.dispatch('call', {
+                        url: 'users/department/deldeputy',
+                        data: { id: targetId, userid: uid },
+                        method: 'post',
+                    }));
+                    const results = await Promise.allSettled([...adds, ...dels]);
+                    const errors = results
+                        .filter(r => r.status === 'rejected')
+                        .map(r => (r.reason && r.reason.msg) || '部门管理员同步失败');
+                    if (errors.length > 0) {
+                        $A.modalError(errors[0]);
+                    }
+                }
+
+                // 刷新列表
+                await this.getDepartmentLists();
+                this.getLists();
+                this.departmentShow = false;
+            } catch (e) {
+                const msg = (e && e.msg) || (e && e.message) || '保存失败';
                 $A.modalError(msg);
-            }).finally(_ => {
+            } finally {
                 this.departmentLoading--;
-            })
+            }
         },
 
         onSelectDepartment(id) {

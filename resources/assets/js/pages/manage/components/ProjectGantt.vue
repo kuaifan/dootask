@@ -5,7 +5,8 @@
             :menuWidth="menuWidth"
             :itemWidth="80"
             @on-change="onChange"
-            @on-click="onClick">
+            @on-click="onClick"
+            :readonly="readonly">
             <template #titleTool>
                 <Dropdown class="project-gstc-dropdown-filtr" trigger="click" @on-click="onSwitchColumn">
                     <Icon class="project-gstc-dropdown-icon" :class="{filtr:filtrProjectId > 0}" type="md-funnel" />
@@ -54,6 +55,10 @@ export default {
         },
         flowInfo: {
             default: {}
+        },
+        readonly: {
+            type: Boolean,
+            default: false
         },
     },
 
@@ -215,6 +220,9 @@ export default {
         },
 
         onChange(item) {
+            if (this.readonly) {
+                return;
+            }
             const {time, baktime} = item;
             if (Math.abs(baktime.end - time.end) > 1000 || Math.abs(baktime.start - time.start) > 1000) {
                 //修改时间（变化超过1秒钟)
@@ -238,6 +246,10 @@ export default {
         },
 
         editSubmit(save) {
+            if (this.readonly) {
+                this.editData = [];
+                return;
+            }
             this.editData && this.editData.forEach(item => {
                 let task = this.lists.find(({id}) => id == item.id)
                 if (save) {

@@ -62,6 +62,8 @@ class WebSocketDialog extends AbstractModel
 {
     use SoftDeletes;
 
+    protected $appends = ['deputy_ids'];
+
     /**
      * 头像地址
      * @param $value
@@ -260,6 +262,15 @@ class WebSocketDialog extends AbstractModel
                 $data[$field] = $data[$field] ?? null;
             }
         }
+        // DB::table 列表/search/beyond 渠道进入的是 stdClass，不会触发 Eloquent $appends。
+        // 这里统一补齐 deputy_ids，保证群管理员入口和标识在所有会话来源中一致。
+        if (($data['type'] ?? null) === 'group' && !array_key_exists('deputy_ids', $data)) {
+            $data['deputy_ids'] = WebSocketDialogUser::whereDialogId($data['id'])
+                ->where('role', 2)
+                ->pluck('userid')
+                ->map(fn($v) => (int)$v)
+                ->toArray();
+        }
         $data['avatar'] = Base::fillUrl($data['avatar']);
 
         // 会员必要字段
@@ -457,11 +468,12 @@ class WebSocketDialog extends AbstractModel
      * @param int|array $userid         加入的会员ID或会员ID组
      * @param int $inviter              邀请人
      * @param bool|null $important      重要人员(null不修改、bool修改)
+     * @param bool $pushMsg             是否推送消息
      * @return bool
      */
-    public function joinGroup($userid, $inviter, $important = null)
+    public function joinGroup($userid, $inviter, $important = null, $pushMsg = true)
     {
-        AbstractModel::transaction(function () use ($important, $inviter, $userid) {
+        AbstractModel::transaction(function () use ($important, $inviter, $userid, $pushMsg) {
             foreach (is_array($userid) ? $userid : [$userid] as $value) {
                 if ($value > 0) {
                     $updateData = [
@@ -479,7 +491,7 @@ class WebSocketDialog extends AbstractModel
                             'bot' => User::isBot($value) ? 1 : 0
                         ]);
                     }, $isInsert);
-                    if ($isInsert) {
+                    if ($isInsert && $pushMsg) {
                         WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', [
                             'notice' => User::userid2nickname($value) . " 已加入群组"
                         ], $inviter, true, true);
@@ -487,9 +499,11 @@ class WebSocketDialog extends AbstractModel
                 }
             }
         });
-        $data = WebSocketDialog::generatePeople($this->id);
-        $data['id'] = $this->id;
-        $this->pushMsg("groupUpdate", $data);
+        if ($pushMsg) {
+            $data = WebSocketDialog::generatePeople($this->id);
+            $data['id'] = $this->id;
+            $this->pushMsg("groupUpdate", $data);
+        }
         return true;
     }
 
@@ -515,11 +529,40 @@ class WebSocketDialog extends AbstractModel
                 foreach ($list as $item) {
                     if ($checkDelete) {
                         if ($type === 'remove') {
-                            // 移出时：如果是全员群仅允许管理员操作，其他群仅群主或邀请人可以操作
+                            // 移出时：如果是全员群仅允许管理员操作，其他群主/群管理员/邀请人可以操作
                             if ($this->group_type === 'all') {
                                 User::auth("admin");
-                            } elseif (!in_array(User::userid(), [$this->owner_id, $item->inviter])) {
-                                throw new ApiException('只有群主或邀请人可以移出成员');
+                            } else {
+                                $actor = User::userid();
+                                // 未认证时拒绝
+                                if ($actor <= 0) {
+                                    throw new ApiException('只有群主或邀请人可以移出成员');
+                                }
+
+                                // 目标是群主或群管理员时的保护
+                                $targetIsPrimaryOwner = $this->isPrimaryOwner($item->userid);
+                                $targetIsDeputyOwner = $this->isDeputyOwner($item->userid);
+
+                                if ($targetIsPrimaryOwner || $targetIsDeputyOwner) {
+                                    // 普通邀请人不能移出群主或群管理员
+                                    $actorIsPrimaryOwner = $this->isPrimaryOwner($actor);
+                                    $actorIsDeputyOwner = $this->isDeputyOwner($actor);
+
+                                    if (!$actorIsPrimaryOwner && !$actorIsDeputyOwner) {
+                                        throw new ApiException('普通成员不能移出群主或群管理员');
+                                    }
+
+                                    // 群管理员不能移出群主或其他群管理员
+                                    if ($actorIsDeputyOwner && !$actorIsPrimaryOwner) {
+                                        throw new ApiException('群管理员不能移出群主或其他群管理员');
+                                    }
+                                }
+
+                                // 普通成员：群主、群管理员、邀请人可移出
+                                $allowedActor = $this->isOwner($actor) || $actor === (int)$item->inviter;
+                                if (!$allowedActor) {
+                                    throw new ApiException('只有群主、群管理员或邀请人可以移出成员');
+                                }
                             }
                         }
                         if ($item->userid == $this->owner_id) {
@@ -547,9 +590,11 @@ class WebSocketDialog extends AbstractModel
             });
         });
         //
-        $data = WebSocketDialog::generatePeople($this->id);
-        $data['id'] = $this->id;
-        $this->pushMsg("groupUpdate", $data);
+        if ($pushMsg) {
+            $data = WebSocketDialog::generatePeople($this->id);
+            $data['id'] = $this->id;
+            $this->pushMsg("groupUpdate", $data);
+        }
     }
 
     /**
@@ -633,6 +678,53 @@ class WebSocketDialog extends AbstractModel
                 throw new ApiException('操作的群组类型错误');
             }
         }
+    }
+
+    /**
+     * 是否群主（与 owner_id 一致）
+     */
+    public function isPrimaryOwner($userid): bool
+    {
+        return $userid > 0 && (int)$this->owner_id === (int)$userid;
+    }
+
+    /**
+     * 是否群管理员（仅 web_socket_dialog_users.role=2）
+     */
+    public function isDeputyOwner($userid): bool
+    {
+        if ($userid <= 0) {
+            return false;
+        }
+        return WebSocketDialogUser::where('dialog_id', $this->id)
+            ->where('userid', $userid)
+            ->where('role', 2)
+            ->exists();
+    }
+
+    /**
+     * 是否群主（含群管理员）
+     */
+    public function isOwner($userid): bool
+    {
+        return $this->isPrimaryOwner($userid) || $this->isDeputyOwner($userid);
+    }
+
+    /**
+     * 群管理员 userid 列表
+     *
+     * @return array
+     */
+    public function getDeputyIdsAttribute(): array
+    {
+        if (!$this->id) {
+            return [];
+        }
+        return WebSocketDialogUser::where('dialog_id', $this->id)
+            ->where('role', 2)
+            ->pluck('userid')
+            ->map(fn($v) => (int)$v)
+            ->toArray();
     }
 
     /**
@@ -820,6 +912,13 @@ class WebSocketDialog extends AbstractModel
                 if ($projectId > 0 && ProjectUser::whereProjectId($projectId)->whereUserid($userid)->exists()) {
                     return $dialog;
                 }
+                // 部门负责人只读视角：项目/任务群按项目级共享放行（任务数据另按可见性校验，与普通成员一致）
+                if ($projectId > 0 && $checkOwner === false) {
+                    $departmentView = UserDepartment::ownerViewContext(User::auth(), true);
+                    if (UserDepartment::isDepartmentReadonlyProject($departmentView, $projectId)) {
+                        return $dialog;
+                    }
+                }
                 break;
 
             case 'okr':
@@ -857,6 +956,7 @@ class WebSocketDialog extends AbstractModel
                     WebSocketDialogUser::createInstance([
                         'dialog_id' => $dialog->id,
                         'userid' => $value,
+                        'role' => ($owner_id > 0 && (int)$value === (int)$owner_id) ? 1 : 0,
                         'bot' => User::isBot($value) ? 1 : 0,
                         'important' => !in_array($group_type, ['user', 'all']),
                         'last_at' => in_array($group_type, ['user', 'department', 'all']) ? Carbon::now() : null,

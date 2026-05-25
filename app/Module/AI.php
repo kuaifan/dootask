@@ -233,6 +233,10 @@ class AI
             $authParams['agency'] = $agency;
         }
 
+        // 从模型名末尾剥离思考标记，支持以下写法：
+        //   模型名 think / 模型名-thinking / 模型名_reasoning  (空格、- 、_ 作分隔)
+        //   模型名(think) / 模型名 ( reasoning )              (括号包裹)
+        // 关键词三选一：think | thinking | reasoning
         $thinkPatterns = [
             "/^(.+?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/",
             "/^(.+?)\s*\(\s*(think|thinking|reasoning)\s*\)\s*$/"
@@ -243,6 +247,7 @@ class AI
                 break;
             }
         }
+        // 命中后把关键词剥掉，只保留前面的真实模型名
         if ($thinkMatch && !empty($thinkMatch[1])) {
             $authParams['model_name'] = $thinkMatch[1];
         }

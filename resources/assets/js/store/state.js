@@ -103,6 +103,25 @@ export default {
     cacheColumns: [],
     cacheTasks: [],
     cacheProjectParameter: [],
+    cacheDepartmentOwnerIds: [],
+    departmentOwnerViewRestored: false,
+    departmentOwnerProjectsRefreshing: false,
+    departmentOwnerReadonlyUrls: [
+        'project/lists',
+        'project/one',
+        'project/column/lists',
+        'project/task/lists',
+        'project/task/one',
+        'project/task/content',
+        'project/task/content_history',
+        'project/task/files',
+        'project/task/fileinfo',
+        'project/task/subdata',
+        'project/task/related',
+        'project/flow/list',
+        'project/log/lists',
+        'project/tag/list',
+    ],
 
     // Emoji
     cacheEmojis: [],
@@ -176,6 +195,7 @@ export default {
     taskOperation: {},
     taskRelatedCache: {},
     taskArchiveView: 0,
+    // 当前用户跨项目可见的全部任务模板（按 use_count 排序时机由消费者决定）
     taskTemplates: [],
     taskLatestId: 0,
 

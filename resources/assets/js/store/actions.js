@@ -232,6 +232,15 @@ export default {
             ], true)) {
             params.encrypt = true
         }
+        if (params.departmentOwner !== false
+            && state.systemConfig.department_owner_project_view === 'open'
+            && state.departmentOwnerReadonlyUrls.includes(params.url)
+            && (state.cacheDepartmentOwnerIds || []).length > 0) {
+            if (!$A.isJson(params.data)) params.data = {}
+            if (params.data.department_owner_ids === undefined) {
+                params.data.department_owner_ids = state.cacheDepartmentOwnerIds.join(',')
+            }
+        }
         if (params.encrypt) {
             const userAgent = window.navigator.userAgent;
             if (window.systemInfo.debug === "yes"
@@ -620,7 +629,7 @@ export default {
      * @param dispatch
      * @param timeout
      */
-    getBasicData({state, dispatch}, timeout) {
+    async getBasicData({state, dispatch}, timeout) {
         if (typeof timeout === "number") {
             window.__getBasicDataTimer && clearTimeout(window.__getBasicDataTimer)
             if (timeout > -1) {
@@ -640,7 +649,7 @@ export default {
         dispatch("getTaskPriority", 1000);
         dispatch("getReportUnread", 1000);
         dispatch("getApproveUnread", 1000);
-        dispatch("getProjectByQueue");
+        dispatch("getProjectsForDepartmentOwnerView").catch(() => {});
         dispatch("getTaskForDashboard");
         dispatch("dialogMsgRead");
         dispatch("updateMicroAppsStatus");
@@ -1168,7 +1177,7 @@ export default {
      * @param dispatch
      * @returns {Promise<unknown>}
      */
-    handleReadCache({state}) {
+    handleReadCache({state, commit}) {
         return new Promise(async resolve => {
             // 定义需要获取的数据映射
             const dataMap = {
@@ -1181,6 +1190,7 @@ export default {
                 array: [
                     'cacheUserBasic',
                     'cacheProjects',
+                    'cacheDepartmentOwnerIds',
                     'cacheColumns',
                     'cacheTasks',
                     'cacheProjectParameter',
@@ -1212,7 +1222,11 @@ export default {
 
             // 更新 state
             [...dataMap.string, ...dataMap.array, ...dataMap.json].forEach((key, index) => {
-                state[key] = data[index];
+                if (key === 'cacheDepartmentOwnerIds') {
+                    commit('department/owner/ids/save', data[index]);
+                } else {
+                    state[key] = data[index];
+                }
             });
 
             // 特殊处理 cacheDialogs
@@ -1551,6 +1565,141 @@ export default {
         });
     },
 
+    /**
+     * 获取有效的部门负责人视角部门ID
+     * @param state
+     * @param ids
+     * @returns {Array<number>}
+     */
+    normalizeDepartmentOwnerIds({state}, ids) {
+        const validIds = (state.userInfo.managed_departments || []).map(item => parseInt(item.id));
+        if (!$A.isArray(ids)) ids = [];
+        return ids
+            .map(id => parseInt(id))
+            .filter(id => id > 0 && (validIds.length === 0 || validIds.includes(id)));
+    },
+
+    /**
+     * 加载负责人视角下的项目列表
+     * @param state
+     * @param dispatch
+     * @returns {Promise<void>}
+     */
+    async getProjectsForDepartmentOwnerView({state, dispatch, commit}) {
+        await dispatch("systemSetting").catch(() => {});
+        if (state.systemConfig.department_owner_project_view !== 'open') {
+            commit('department/owner/ids/save', []);
+            dispatch("getProjectByQueue");
+            return;
+        }
+        const restoredDepartmentOwnerIds = await dispatch("restoreDepartmentOwnerView");
+        if ((restoredDepartmentOwnerIds || []).length > 0) {
+            await dispatch("getProjects", {
+                __replace: true,
+                department_owner_ids: restoredDepartmentOwnerIds.join(',')
+            });
+            commit('department/owner/ids/save', restoredDepartmentOwnerIds);
+            return;
+        }
+        dispatch("getProjectByQueue");
+    },
+
+    /**
+     * 恢复部门负责人视角
+     * @param state
+     * @param dispatch
+     * @returns {Promise<void>}
+     */
+    async restoreDepartmentOwnerView({state, dispatch, commit}) {
+        if (state.departmentOwnerViewRestored) {
+            return [];
+        }
+        if (state.systemConfig.department_owner_project_view !== 'open') {
+            commit('department/owner/ids/save', []);
+            return [];
+        }
+        state.departmentOwnerViewRestored = true;
+        const ids = await $A.IDBArray("cacheDepartmentOwnerIds", []);
+        if (!ids.length) {
+            return [];
+        }
+        const restored = await dispatch("normalizeDepartmentOwnerIds", ids);
+        if (restored.length > 0) {
+            state.departmentOwnerProjectsRefreshing = true;
+        }
+        commit('department/owner/ids/save', restored);
+        return restored;
+    },
+
+    /**
+     * 设置部门负责人视角
+     * @param state
+     * @param dispatch
+     * @param ids
+     * @returns {Promise<void>}
+     */
+    async setDepartmentOwnerIds({state, dispatch, commit}, ids) {
+        if (state.systemConfig.department_owner_project_view !== 'open') {
+            ids = [];
+        }
+        const normalized = await dispatch("normalizeDepartmentOwnerIds", ids);
+        const oldValue = (state.cacheDepartmentOwnerIds || []).slice().sort().join(',');
+        const newValue = normalized.slice().sort().join(',');
+        if (oldValue === newValue) {
+            return;
+        }
+        state.departmentOwnerProjectsRefreshing = true;
+        await dispatch("refreshDepartmentOwnerProjects", normalized);
+        commit('department/owner/ids/save', normalized);
+    },
+
+    /**
+     * 切换部门负责人视角后刷新项目数据
+     * @param state
+     * @param dispatch
+     * @returns {Promise<void>}
+     */
+    async refreshDepartmentOwnerProjects({state, dispatch}, ownerIds = state.cacheDepartmentOwnerIds) {
+        const currentProjectId = state.projectId;
+        ownerIds = (ownerIds || []).map(id => parseInt(id)).filter(id => id > 0);
+        state.departmentOwnerProjectsRefreshing = true;
+        state.callAt = state.callAt.filter(item => {
+            const key = String(item.key);
+            return !key.startsWith('projects::') && !key.startsWith('tasks::');
+        });
+        try {
+            await dispatch("getProjects", {
+                __replace: true,
+                department_owner_ids: ownerIds.join(',')
+            });
+            if (currentProjectId > 0) {
+                const exists = state.cacheProjects.find(({id}) => id == currentProjectId);
+                if (!exists) {
+                    const project = $A.cloneJSON(state.cacheProjects).sort((a, b) => {
+                        if (a.top_at || b.top_at) {
+                            return $A.sortDay(b.top_at, a.top_at);
+                        }
+                        return b.id - a.id;
+                    }).find(({id}) => id);
+                    if (project) {
+                        $A.goForward({name: 'manage-project', params: {projectId: project.id}});
+                    } else {
+                        $A.goForward({name: 'manage-dashboard'});
+                    }
+                    return;
+                }
+                await dispatch("getProjectOne", currentProjectId).catch(() => {});
+                await dispatch("getTaskForProject", currentProjectId).catch(() => {});
+            }
+        } catch (e) {
+            if ((state.cacheDepartmentOwnerIds || []).length === 0 && currentProjectId > 0) {
+                $A.goForward({name: 'manage-dashboard'});
+            }
+        } finally {
+            state.departmentOwnerProjectsRefreshing = false;
+        }
+    },
+
     /** *****************************************************************************************/
     /** ************************************** 项目 **********************************************/
     /** *****************************************************************************************/
@@ -1642,6 +1791,24 @@ export default {
      * @returns {Promise<unknown>}
      */
     getProjects({state, dispatch}, requestData) {
+        if (!$A.isJson(requestData)) {
+            requestData = {}
+        }
+        const replace = requestData.__replace === true;
+        delete requestData.__replace;
+        if (state.systemConfig.department_owner_project_view !== 'open') {
+            delete requestData.department_owner_ids
+        } else if (requestData.department_owner_ids === undefined) {
+            if ((state.cacheDepartmentOwnerIds || []).length > 0) {
+                requestData.department_owner_ids = state.cacheDepartmentOwnerIds.join(',')
+            } else {
+                delete requestData.department_owner_ids
+            }
+        }
+        if (replace) {
+            state.callAt = state.callAt.filter(item => !String(item.key).startsWith('projects::'))
+            $A.IDBSet("callAt", state.callAt).catch(() => {})
+        }
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheProjects = [];
@@ -1657,6 +1824,9 @@ export default {
                 url: 'project/lists',
                 data: callData.get()
             }).then(({data}) => {
+                if (replace) {
+                    state.cacheProjects = [];
+                }
                 dispatch("saveProject", data.data);
                 callData.save(data).then(ids => dispatch("forgetProject", {id: ids}))
                 state.projectTotal = data.total_all;
@@ -1666,6 +1836,9 @@ export default {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
+                if (replace) {
+                    state.departmentOwnerProjectsRefreshing = false;
+                }
                 state.loadProjects--;
             });
         });
@@ -1702,7 +1875,7 @@ export default {
             dispatch("call", {
                 url: 'project/one',
                 data: {
-                    project_id,
+                    project_id
                 },
             }).then(result => {
                 setTimeout(() => {
@@ -2133,8 +2306,13 @@ export default {
      * @returns {Promise<unknown>}
      */
     getTasks({state, dispatch}, requestData) {
-        if (requestData === null) {
+        if (!$A.isJson(requestData)) {
             requestData = {}
+        }
+        if ((state.cacheDepartmentOwnerIds || []).length > 0) {
+            requestData.department_owner_ids = state.cacheDepartmentOwnerIds.join(',')
+        } else {
+            delete requestData.department_owner_ids
         }
         const callData = $callData('tasks', requestData, state)
         //
@@ -2435,7 +2613,7 @@ export default {
         dispatch("call", {
             url: 'project/task/content',
             data: {
-                task_id,
+                task_id
             },
         }).then(result => {
             dispatch("saveTaskContent", result.data)
@@ -2483,7 +2661,7 @@ export default {
         dispatch("call", {
             url: 'project/task/files',
             data: {
-                task_id,
+                task_id
             },
         }).then(result => {
             result.data.forEach((data) => {
@@ -3047,20 +3225,32 @@ export default {
     },
 
     /**
-     * 更新任务模板
-     * @param state
-     * @param dispatch
-     * @param projectId
+     * 拉取当前用户跨项目可见的全部任务模板。
+     * 替代旧版按项目隔离取数。state.taskTemplates 现在存"我所有可见模板"（全量）。
+     *
+     * @param {Object} ctx
+     * @param {Number|null} currentProjectId  当前所在项目 ID（用于排序优先；可空）
      * @returns {Promise<void>}
      */
-    async updateTaskTemplates({state, dispatch}, projectId) {
+    async updateTaskTemplates({state, dispatch}, currentProjectId) {
+        const project = (state.cacheProjects || []).find(({id}) => id == currentProjectId)
+        if (project && project.task_template_share === 'close') {
+            const {data} = await dispatch("call", {
+                url: 'project/task/template_list',
+                data: {
+                    project_id: currentProjectId || 0,
+                },
+            })
+            state.taskTemplates = Array.isArray(data) ? data : []
+            return
+        }
         const {data} = await dispatch("call", {
-            url: 'project/task/template_list',
+            url: 'project/task/template_visible',
             data: {
-                project_id: projectId
+                current_project_id: currentProjectId || 0,
             },
         })
-        state.taskTemplates = state.taskTemplates.filter(template => template.project_id !== projectId).concat(data || [])
+        state.taskTemplates = Array.isArray(data) ? data : []
     },
 
     /** *****************************************************************************************/

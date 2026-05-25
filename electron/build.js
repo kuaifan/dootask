@@ -6,13 +6,14 @@ const child_process = require('child_process');
 const ora = require('ora');
 const yauzl = require('yauzl');
 const axios = require('axios');
-const FormData =require('form-data');
 const tar = require('tar');
 const utils = require('./lib/utils');
+const r2 = require('./lib/r2');
+const { buildReleaseIndex } = require('./lib/release-index');
 const config = require('../package.json')
 const env = require('dotenv').config({ path: './.env' })
 const argv = process.argv;
-const {BUILD_FRONTEND, APPLEID, APPLEIDPASS, GITHUB_TOKEN, GITHUB_REPOSITORY, UPLOAD_TOKEN, UPLOAD_URL} = process.env;
+const {BUILD_FRONTEND, APPLEID, APPLEIDPASS, GITHUB_TOKEN, GITHUB_REPOSITORY} = process.env;
 
 const electronDir = path.resolve(__dirname, "public");
 const nativeCachePath = path.resolve(__dirname, ".native");
@@ -24,6 +25,9 @@ const architectures = ["arm64", "x64"];
 
 let buildChecked = false,
     updaterChecked = false;
+
+const shellQuote = (value) => `'${String(value).replace(/'/g, `'\\''`)}'`;
+const elapsedSeconds = (startTime) => `${((Date.now() - startTime) / 1000).toFixed(1)}s`;
 
 /**
  * 检测并下载更新器
@@ -308,193 +312,23 @@ function changeLog() {
 }
 
 /**
- * 封装 axios 自动重试
- * @param data // {axios: object{}, onRetry: function, retryNumber: number}
- * @returns {Promise<unknown>}
+ * 上传单个文件到 R2 的 draft/<version>/ 目录（带进度/spinner）
  */
-function axiosAutoTry(data) {
-    return new Promise((resolve, reject) => {
-        axios(data.axios).then(result => {
-            resolve(result)
-        }).catch(error => {
-            if (typeof data.retryNumber == 'number' && data.retryNumber > 0) {
-                data.retryNumber--;
-                if (typeof data.onRetry === "function") {
-                    data.onRetry(error)
-                }
-                if (error.code == 'ECONNABORTED' || error.code == 'ECONNRESET') {
-                    // 中止，超时
-                    return resolve(axiosAutoTry(data))
-                } else {
-                    if (error.response && error.response.status == 407) {
-                        // 代理407
-                        return setTimeout(v => {
-                            resolve(axiosAutoTry(data))
-                        }, 500 + Math.random() * 500)
-                    } else if (error.response && error.response.status == 503) {
-                        // 服务器异常
-                        return setTimeout(v => {
-                            resolve(axiosAutoTry(data))
-                        }, 1000 + Math.random() * 500)
-                    } else if (error.response && error.response.status == 429) {
-                        // 并发超过限制
-                        return setTimeout(v => {
-                            resolve(axiosAutoTry(data))
-                        }, 1000 + Math.random() * 1000)
-                    }
-                }
-            }
-            reject(error)
-        })
-    })
-}
-
-/**
- * 官网发布器
- */
-class WebsitePublisher {
-    constructor({baseUrl, token, version}) {
-        this.baseUrl = baseUrl
-        this.token = token
-        this.version = version
+async function uploadDraftFile(client, localFile, version) {
+    const filename = path.basename(localFile);
+    const key = `draft/${version}/${filename}`;
+    const startTime = Date.now();
+    const spinner = ora(`Upload [0%] ${filename}`).start();
+    try {
+        await r2.uploadFile(client, localFile, key, (loaded, total) => {
+            const pct = Math.min(99, Math.round((loaded / total) * 100)) + '%';
+            spinner.text = `Upload [${pct}] ${filename}`;
+        });
+    } catch (error) {
+        spinner.fail(`Upload [fail] ${filename} (${elapsedSeconds(startTime)}): ${error.message || error}`);
+        throw error;
     }
-
-    /**
-     * 上传单个文件
-     * @param localFile 本地文件路径
-     * @param options { platform, arch } 可选，有则为安装包
-     */
-    async uploadPackage(localFile, options = {}) {
-        const filename = path.basename(localFile)
-        let spinner = ora(`Upload [0%] ${filename}`).start()
-        const formData = new FormData()
-        formData.append("version", this.version)
-        if (options.platform) {
-            formData.append("platform", options.platform)
-            if (options.arch) {
-                formData.append("arch", options.arch)
-            }
-        }
-        formData.append("file", fs.createReadStream(localFile))
-        const {status, data} = await axiosAutoTry({
-            axios: {
-                method: 'post',
-                url: `${this.baseUrl}/api/upload/package`,
-                data: formData,
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
-                },
-                onUploadProgress: progress => {
-                    const complete = Math.min(99, Math.round(progress.loaded / progress.total * 100 | 0)) + '%'
-                    spinner.text = `Upload [${complete}] ${filename}`
-                },
-            },
-            onRetry: (err) => {
-                const reason = err?.response?.status || err?.code || err?.message || ''
-                spinner.warn(`Upload [retry] ${filename}${reason ? ': ' + reason : ''}`)
-                spinner = ora(`Upload [0%] ${filename}`).start()
-            },
-            retryNumber: 3
-        })
-        if (status !== 200 || !utils.isJson(data) || !data.success) {
-            const reason = data?.message || `status ${status}`
-            spinner.fail(`Upload [fail] ${filename}: ${reason}`)
-            throw new Error(`Upload failed: ${filename}: ${reason}`)
-        }
-        spinner.succeed(`Upload [100%] ${filename}`)
-    }
-
-    /**
-     * 上传 changelog
-     */
-    async uploadChangelog(content) {
-        const spinner = ora('Uploading changelog...').start()
-        const {status, data} = await axiosAutoTry({
-            axios: {
-                method: 'post',
-                url: `${this.baseUrl}/api/upload/changelog`,
-                data: { content },
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json',
-                },
-            },
-            retryNumber: 3
-        })
-        if (status !== 200 || !data.success) {
-            spinner.fail('Changelog upload failed')
-            throw new Error('Changelog upload failed')
-        }
-        spinner.succeed('Changelog uploaded')
-    }
-
-    /**
-     * 通知发布完成
-     */
-    async release() {
-        const spinner = ora('Publishing release...').start()
-        const {status, data} = await axiosAutoTry({
-            axios: {
-                method: 'post',
-                url: `${this.baseUrl}/api/upload/release`,
-                data: { version: this.version },
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json',
-                },
-            },
-            retryNumber: 3
-        })
-        if (status !== 200 || !data.success) {
-            spinner.fail(`Release failed: ${data?.message || status}`)
-            throw new Error(`Release failed: ${data?.message || status}`)
-        }
-        spinner.succeed('Release published')
-    }
-}
-
-// 安装包扩展名
-const INSTALLER_EXTS = ['.dmg', '.exe', '.msi', '.appimage', '.deb', '.rpm', '.apk']
-
-/**
- * 创建 WebsitePublisher 实例（如果环境变量齐全）
- */
-function createPublisher() {
-    if (!UPLOAD_TOKEN || !UPLOAD_URL) {
-        return null
-    }
-    return new WebsitePublisher({
-        baseUrl: UPLOAD_URL.replace(/\/+$/, ''),
-        token: UPLOAD_TOKEN,
-        version: config.version
-    })
-}
-
-/**
- * 从文件名判断是否为安装包
- */
-function isInstaller(filename) {
-    return INSTALLER_EXTS.some(ext => filename.toLowerCase().endsWith(ext))
-}
-
-/**
- * 从文件名提取 arch
- */
-function parseArchFromFilename(filename) {
-    if (/-arm64[.-]/i.test(filename)) return 'arm64'
-    if (/-x64[.-]/i.test(filename)) return 'x64'
-    return null
-}
-
-/**
- * 将构建平台名映射为 API platform
- */
-function mapPlatform(buildPlatform) {
-    if (buildPlatform.includes('mac')) return 'mac'
-    if (buildPlatform.includes('win')) return 'win'
-    if (buildPlatform.includes('linux')) return 'linux'
-    return null
+    spinner.succeed(`Upload [100%] ${filename} (${elapsedSeconds(startTime)})`);
 }
 
 /**
@@ -568,8 +402,8 @@ async function startBuild(data) {
     //
     if (data.id === 'app') {
         const eeuiDir = path.resolve(__dirname, "../resources/mobile");
-        const eeuiRun = `docker run --rm -v ${eeuiDir}:/work -w /work kuaifan/eeui-cli:0.0.1`
         const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
+        const containerName = `dootask-eeui-${Date.now()}-${process.pid}`;
         fse.removeSync(publicDir)
         fse.copySync(electronDir, publicDir)
         if (argv[3] === "publish") {
@@ -587,10 +421,19 @@ async function startBuild(data) {
             fs.writeFileSync(xcconfigFile, xcconfigResult, 'utf8')
         }
         if (['build', 'publish'].includes(argv[3])) {
-            if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
-                child_process.execSync(`${eeuiRun} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
+            child_process.execSync(
+                `docker run -d --name ${containerName} -v ${shellQuote(eeuiDir)}:/work -w /work kuaifan/eeui-cli:0.0.1 sleep infinity`,
+                {stdio: "ignore", cwd: "resources/mobile"}
+            );
+            try {
+                if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
+                    child_process.execSync(`docker exec ${containerName} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
+                }
+                child_process.execSync(`docker exec ${containerName} node /work/scripts/patch-eeui-build.js`, {stdio: "inherit", cwd: "resources/mobile"});
+                child_process.execSync(`docker exec ${containerName} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
+            } finally {
+                child_process.execSync(`docker rm -f ${containerName}`, {stdio: "ignore", cwd: "resources/mobile"});
             }
-            child_process.execSync(`${eeuiRun} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
         } else {
             [
                 path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),
@@ -657,30 +500,22 @@ async function startBuild(data) {
         fs.writeFileSync(packageFile, JSON.stringify(appConfig, null, 4), 'utf8');
         child_process.execSync(`npm run ${platform}-publish`, {stdio: "inherit", cwd: "electron"});
     }
-    // generic (build or publish)
-    appConfig.build.publish = data.publish
+    // generic (build or publish) —— 有 R2_PUBLIC_URL 时自动更新源指向 R2 release/
+    appConfig.build.publish = r2.R2_PUBLIC_URL
+        ? { provider: 'generic', url: `${r2.R2_PUBLIC_URL.replace(/\/+$/, '')}/release` }
+        : data.publish
     appConfig.build.directories.output = `${output}-generic`;
     fs.writeFileSync(packageFile, JSON.stringify(appConfig, null, 4), 'utf8');
     child_process.execSync(`npm run ${platform}`, {stdio: "inherit", cwd: "electron"});
-    if (publish === true) {
-        const publisher = createPublisher()
-        if (publisher) {
-            const outputDir = path.resolve(__dirname, appConfig.build.directories.output)
-            if (fs.existsSync(outputDir)) {
-                const apiPlatform = mapPlatform(platform)
-                const files = fs.readdirSync(outputDir)
-                for (const filename of files) {
-                    const localFile = path.join(outputDir, filename)
-                    const fileStat = fs.statSync(localFile)
-                    if (!fileStat.isFile()) continue
-
-                    if (isInstaller(filename) && apiPlatform) {
-                        const arch = parseArchFromFilename(filename)
-                        await publisher.uploadPackage(localFile, { platform: apiPlatform, arch })
-                    } else {
-                        await publisher.uploadPackage(localFile)
-                    }
-                }
+    if (publish === true && r2.r2Configured()) {
+        const client = r2.createR2Client()
+        const outputDir = path.resolve(__dirname, appConfig.build.directories.output)
+        if (fs.existsSync(outputDir)) {
+            const files = fs.readdirSync(outputDir)
+            for (const filename of files) {
+                const localFile = path.join(outputDir, filename)
+                if (!fs.statSync(localFile).isFile()) continue
+                await uploadDraftFile(client, localFile, config.version)
             }
         }
     }
@@ -718,13 +553,13 @@ if (["dev"].includes(argv[2])) {
         }
     })
 } else if (["android-upload"].includes(argv[2])) {
-    // 上传安卓文件（GitHub Actions）
+    // 上传安卓文件到 R2 draft（GitHub Actions）
     (async () => {
-        const publisher = createPublisher()
-        if (!publisher) {
-            console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
+        if (!r2.r2Configured()) {
+            console.error("缺少 R2_* 环境变量（R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_ENDPOINT/R2_BUCKET）")
             process.exit(1)
         }
+        const client = r2.createR2Client()
         const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
         if (!fs.existsSync(releaseDir)) {
             console.error("发布文件未找到")
@@ -734,7 +569,7 @@ if (["dev"].includes(argv[2])) {
         for (const filename of files) {
             const localFile = path.join(releaseDir, filename)
             if (/\.apk$/.test(filename) && fs.existsSync(localFile) && fs.statSync(localFile).isFile()) {
-                await publisher.uploadPackage(localFile, { platform: 'android' })
+                await uploadDraftFile(client, localFile, config.version)
             }
         }
     })().catch(err => {
@@ -742,24 +577,63 @@ if (["dev"].includes(argv[2])) {
         process.exit(1)
     })
 } else if (["release"].includes(argv[2])) {
-    // 通知官网发布完成（GitHub Actions）
+    // R2 内提升：draft/<version> → release/（当前版扁平，旧版归档 release/<prev>/）
     (async () => {
-        const publisher = createPublisher()
-        if (!publisher) {
-            console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
+        if (!r2.r2Configured()) {
+            console.error("缺少 R2_* 环境变量")
             process.exit(1)
         }
-        await publisher.release()
+        const client = r2.createR2Client()
+        const version = config.version
+        const draftPrefix = `draft/${version}/`
+        const draftKeys = await r2.listKeys(client, draftPrefix)
+        if (!draftKeys.length) {
+            console.error(`draft/${version}/ 为空，无法发布`)
+            process.exit(1)
+        }
+        const names = draftKeys.map(k => k.slice(draftPrefix.length))
+
+        // 读 manifest 取上一发布版
+        const manifest = JSON.parse(await r2.getText(client, 'manifest.json') || '{"draft":null,"release":null}')
+        const prev = manifest.release
+
+        // 1. 归档上一版扁平文件 → release/<prev>/
+        if (prev && prev !== version) {
+            const prevRootKeys = await r2.listKeys(client, 'release/', '/')
+            for (const key of prevRootKeys) {
+                const name = key.slice('release/'.length)
+                await r2.copyObject(client, key, `release/${prev}/${name}`)
+            }
+        }
+
+        // 2. 清空扁平根层（仅根层对象，版本归档子目录不动）
+        const rootKeys = await r2.listKeys(client, 'release/', '/')
+        await r2.deleteKeys(client, rootKeys)
+
+        // 3. 铺新扁平：安装包/blockmap/zip 先，latest*.yml 最后
+        const ymls = names.filter(n => /\.ya?ml$/i.test(n))
+        const others = names.filter(n => !/\.ya?ml$/i.test(n))
+        for (const name of others) await r2.copyObject(client, `${draftPrefix}${name}`, `release/${name}`)
+        for (const name of ymls) await r2.copyObject(client, `${draftPrefix}${name}`, `release/${name}`)
+
+        // 4. 下载索引
+        const index = buildReleaseIndex(names)
+        await r2.putText(client, 'release/index.json', JSON.stringify({ version, files: index }, null, 2))
+
+        // 5. 更新 manifest，清理 draft
+        await r2.putText(client, 'manifest.json', JSON.stringify({ draft: null, release: version }, null, 2))
+        await r2.deleteKeys(client, draftKeys)
+
+        console.log(`Release published: v${version}`)
     })().catch(err => {
         console.error(err.message || err)
         process.exit(1)
     })
 } else if (["upload-changelog"].includes(argv[2])) {
-    // 上传 changelog（GitHub Actions）
+    // 上传 changelog 到 R2（GitHub Actions）
     (async () => {
-        const publisher = createPublisher()
-        if (!publisher) {
-            console.error("缺少 UPLOAD_TOKEN 或 UPLOAD_URL 环境变量")
+        if (!r2.r2Configured()) {
+            console.error("缺少 R2_* 环境变量")
             process.exit(1)
         }
         const changelogPath = path.resolve(__dirname, "../CHANGELOG.md")
@@ -767,8 +641,10 @@ if (["dev"].includes(argv[2])) {
             console.error("CHANGELOG.md 未找到")
             process.exit(1)
         }
+        const client = r2.createR2Client()
         const content = fs.readFileSync(changelogPath, 'utf8')
-        await publisher.uploadChangelog(content)
+        await r2.putText(client, 'changelog.md', content)
+        console.log('Changelog uploaded')
     })().catch(err => {
         console.error(err.message || err)
         process.exit(1)
@@ -922,8 +798,8 @@ if (["dev"].includes(argv[2])) {
 
             // 发布判断环境变量
             if (answers.publish) {
-                if (!(UPLOAD_TOKEN && UPLOAD_URL) && !(GITHUB_TOKEN && utils.strExists(GITHUB_REPOSITORY, "/"))) {
-                    console.error("发布需要 UPLOAD_TOKEN + UPLOAD_URL 或 GITHUB_TOKEN + GITHUB_REPOSITORY, 请检查环境变量!");
+                if (!r2.r2Configured() && !(GITHUB_TOKEN && utils.strExists(GITHUB_REPOSITORY, "/"))) {
+                    console.error("发布需要 R2_* 或 GITHUB_TOKEN + GITHUB_REPOSITORY, 请检查环境变量!");
                     process.exit()
                 }
             }

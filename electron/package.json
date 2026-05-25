@@ -42,6 +42,8 @@
         "ora": "^4.1.1"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.1052.0",
+        "@aws-sdk/lib-storage": "^3.1052.0",
         "@dootask/electron-dl": "^4.0.0-rc.2",
         "axios": "^1.11.0",
         "crc": "^3.8.0",
@@ -60,8 +62,8 @@
         "request": "^2.88.2",
         "tar": "^7.4.3",
         "turndown": "^7.2.2",
-        "zod": "^3.23.8",
-        "yauzl": "^3.2.0"
+        "yauzl": "^3.2.0",
+        "zod": "^3.23.8"
     },
     "trayIcon": {
         "dev": {
