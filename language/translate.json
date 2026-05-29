@@ -34248,18 +34248,6 @@
         "ru": "Будет удалено"
     },
     {
-        "key": "当前为负责人，并参与讨论，但不能编辑任务。",
-        "zh": "",
-        "zh-CHT": "目前為負責人，並參與討論，但不能編輯任務。",
-        "en": "Currently a manager and participates in discussions, but cannot edit tasks.",
-        "ko": "현재 책임자이며 토론에 참여하지만, 작업을 편집할 수는 없습니다.",
-        "ja": "現在は責任者としてディスカッションに参加できますが、タスクを編集することはできません。",
-        "de": "Derzeit Verantwortlicher und an Diskussionen beteiligt, kann jedoch keine Aufgaben bearbeiten.",
-        "fr": "Actuellement responsable et participant aux discussions, mais ne peut pas modifier les tâches.",
-        "id": "Saat ini sebagai penanggung jawab dan berpartisipasi dalam diskusi, tetapi tidak dapat mengedit tugas.",
-        "ru": "В настоящее время является ответственным и участвует в обсуждениях, но не может редактировать задачи."
-    },
-    {
         "key": "部门负责人视角",
         "zh": "",
         "zh-CHT": "部門負責人視角",
@@ -34558,5 +34546,17 @@
         "fr": "Seuls le propriétaire du groupe, les administrateurs du groupe ou l’invitant peuvent retirer des membres",
         "id": "Hanya pemilik grup, administrator grup, atau pengundang yang dapat mengeluarkan anggota",
         "ru": "Только владелец группы, администраторы группы или пригласивший пользователь могут удалять участников"
+    },
+    {
+        "key": "当前为负责人视角，并参与讨论，但不能编辑任务。",
+        "zh": "",
+        "zh-CHT": "目前為負責人視角，並參與討論，但不能編輯任務。",
+        "en": "Currently in the assignee view, participating in discussions, but cannot edit tasks.",
+        "ko": "현재 담당자 관점이며 토론에 참여하고 있지만 작업을 편집할 수 없습니다.",
+        "ja": "現在は担当者視点で、ディスカッションに参加していますが、タスクは編集できません。",
+        "de": "Derzeit in der Verantwortlichenansicht und an Diskussionen beteiligt, kann jedoch Aufgaben nicht bearbeiten.",
+        "fr": "Actuellement en vue du responsable et participant aux discussions, mais ne peut pas modifier les tâches.",
+        "id": "Saat ini dalam tampilan penanggung jawab dan ikut berdiskusi, tetapi tidak dapat mengedit tugas.",
+        "ru": "Сейчас отображается представление ответственного лица; участие в обсуждении возможно, но редактировать задачи нельзя."
     }
 ]
