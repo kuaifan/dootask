@@ -95,6 +95,7 @@ class SystemController extends AbstractController
                     'unclaimed_task_reminder_time',
                     'task_ai_auto_analyze',
                     'department_owner_project_view',
+                    'todo_set_permission',
                 ])) {
                     unset($all[$key]);
                 }
@@ -142,6 +143,7 @@ class SystemController extends AbstractController
         $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
         $setting['task_visible'] = $setting['task_visible'] ?: 'close';
         $setting['all_group_mute'] = $setting['all_group_mute'] ?: 'open';
+        $setting['todo_set_permission'] = $setting['todo_set_permission'] ?: 'open';
         $setting['all_group_autoin'] = $setting['all_group_autoin'] ?: 'yes';
         $setting['user_private_chat_mute'] = $setting['user_private_chat_mute'] ?: 'open';
         $setting['user_group_chat_mute'] = $setting['user_group_chat_mute'] ?: 'open';

@@ -207,6 +207,14 @@
                         <div v-if="formDatum.anon_message == 'open'" class="form-tip">{{$L('允许匿名发送消息给其他成员。')}}</div>
                         <div v-else class="form-tip">{{$L('禁止匿名发送消息。')}}</div>
                     </FormItem>
+                    <FormItem :label="$L('待办设置权限')" prop="todoSetPermission">
+                        <RadioGroup v-model="formDatum.todo_set_permission">
+                            <Radio label="open">{{$L('允许')}}</Radio>
+                            <Radio label="close">{{$L('禁止')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.todo_set_permission == 'open'" class="form-tip">{{$L('允许：所有成员可设置/取消他人待办。')}}</div>
+                        <div v-else class="form-tip">{{$L('禁止：仅本人、群主（含群管理员）、项目负责人（含项目管理员）、任务负责人可设置/取消待办。')}}</div>
+                    </FormItem>
                     <FormItem :label="$L('视频转换')" prop="convertVideo">
                         <RadioGroup v-model="formDatum.convert_video">
                             <Radio label="open">{{$L('开启')}}</Radio>

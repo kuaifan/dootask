@@ -423,6 +423,14 @@ class WebSocketDialogMsg extends AbstractModel
         $current = WebSocketDialogMsgTodo::whereMsgId($this->id)->pluck('userid')->toArray();
         $cancel = array_diff($current, $userids);
         $setup = array_diff($userids, $current);
+        // 待办操作权限管控（系统开关：禁止其他人员设置/取消待办）
+        if (Base::settingFind('system', 'todo_set_permission') === 'close') {
+            $affected = array_unique(array_merge($cancel, $setup)); // 本次真正影响到的用户
+            $others = array_diff($affected, [$sender]);             // 排除"自己"
+            if ($others && !$dialog->checkTodoOwnerPermission($sender)) {
+                return Base::retError('仅群主、项目/任务负责人可设置或取消他人待办');
+            }
+        }
         //
         $this->todo = $setup || count($current) > count($cancel) ? $sender : 0;
         $this->save();

@@ -711,6 +711,42 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 是否有权限设置/取消本会话内「他人」的待办
+     * 放行：群主/群管理员、关联项目负责人/项目管理员、关联任务负责人(及任务所属项目负责人/管理员)
+     *
+     * @param int $userid
+     * @return bool
+     */
+    public function checkTodoOwnerPermission($userid): bool
+    {
+        $userid = intval($userid);
+        if ($userid <= 0) {
+            return false;
+        }
+        // 群主 / 群管理员
+        if ($this->isOwner($userid)) {
+            return true;
+        }
+        // 关联项目（项目群）负责人 / 项目管理员
+        $project = Project::whereDialogId($this->id)->first();
+        if ($project && $project->isOwner($userid)) {
+            return true;
+        }
+        // 关联任务（任务群）负责人，及任务所属项目负责人 / 管理员
+        $task = ProjectTask::whereDialogId($this->id)->first();
+        if ($task) {
+            if (ProjectTaskUser::whereTaskId($task->id)->whereUserid($userid)->whereOwner(1)->exists()) {
+                return true;
+            }
+            $taskProject = Project::find($task->project_id);
+            if ($taskProject && $taskProject->isOwner($userid)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 群管理员 userid 列表
      *
      * @return array
