@@ -28,7 +28,8 @@ Laravel 8 (LaravelS/Swoole) + Vue 2 (Vite) + Electron。开源任务/项目管�
 
 ### 后端
 
-- **非 REST 路由**：所有 API 通过 `Route::any('api/{resource}/{method}')` 路由到 `InvokeController`，URL 段映射为控制器方法（如 `api/project/lists` → `lists()`，带 action 则用双下划线：`api/project/invite/join` → `invite__join()`）
+- **非 REST 路由**：API 控制器（继承 `InvokeController`）在 `routes/web.php` 按资源注册路由，URL 段映射为控制器方法（如 `api/project/lists` → `lists()`，带 action 则用双下划线：`api/project/invite/join` → `invite__join()`）
+  - 路由最多两段：方法名最多一个双下划线（`method__action`），不支持 `method__action__xxx`（无对应路由，访问 404）
 - **响应格式**：统一使用 `Base::retSuccess($msg, $data)` / `Base::retError($msg)`，返回 `{"ret": 1, "msg": "...", "data": {...}}`——不要用 `response()->json()`
 - 业务异常通过 `App\Exceptions\ApiException` 抛出，不要用通用 Exception
 - 模型继承 `AbstractModel`，使用 `Model::createInstance($params)` 创建——不要用 `new Model()` 或 `Model::create()`
