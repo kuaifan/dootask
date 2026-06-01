@@ -35,6 +35,15 @@ class TodoSetPermissionTest extends TestCase
         return $user;
     }
 
+    /** 系统管理员（identity 含 admin） */
+    private function makeAdmin(string $email): User
+    {
+        $user = $this->makeUser($email);
+        $user->identity = Base::arrayImplode(['admin']);
+        $user->save();
+        return $user->fresh();
+    }
+
     /** 普通群（group_type=user），设置群主与群管理员 */
     private function makeUserGroup(int $ownerUserid, array $members, array $deputyUserids = []): WebSocketDialog
     {
@@ -137,6 +146,29 @@ class TodoSetPermissionTest extends TestCase
         $this->assertFalse($taskDialog->checkTodoOwnerPermission($member->userid), '普通成员应拒绝');
     }
 
+    public function test_admin_allowed_in_any_group()
+    {
+        $admin = $this->makeAdmin('t_admin@test.local');
+        $owner = $this->makeUser('t_admin_o@test.local');
+        $member = $this->makeUser('t_admin_m@test.local');
+
+        // 普通群：管理员既非群主也非成员，仍放行；普通成员仍拒绝
+        $userGroup = $this->makeUserGroup($owner->userid, [$member->userid]);
+        $this->assertTrue($userGroup->checkTodoOwnerPermission($admin->userid), '管理员在普通群应放行');
+        $this->assertFalse($userGroup->checkTodoOwnerPermission($member->userid), '普通成员仍应拒绝');
+
+        // 项目群：管理员非项目负责人，仍放行
+        $project = $this->makeProjectWithDialog($owner->userid, [$member->userid]);
+        $pdialog = WebSocketDialog::find($project->dialog_id);
+        $this->assertTrue($pdialog->checkTodoOwnerPermission($admin->userid), '管理员在项目群应放行');
+
+        // 全员群（无群主）：管理员放行，普通成员拒绝
+        $allGroup = WebSocketDialog::createGroup('Test_all', [$owner->userid, $member->userid], 'all')->fresh();
+        $this->assertSame(0, (int)$allGroup->owner_id, '全员群应无群主');
+        $this->assertTrue($allGroup->checkTodoOwnerPermission($admin->userid), '管理员在全员群应放行');
+        $this->assertFalse($allGroup->checkTodoOwnerPermission($member->userid), '全员群普通成员应拒绝');
+    }
+
     /**
      * 镜像 WebSocketDialogMsg::toggleTodoMsg 内的权限闸门决策。
      * @param string $switch  开关值 open|close
@@ -234,7 +266,7 @@ class TodoSetPermissionTest extends TestCase
 
         $this->assertTrue(Base::isError($res), '被拦截路径应返回错误响应');
         $this->assertSame(0, $res['ret']);
-        $this->assertStringContainsString('仅群主、项目/任务负责人可设置或取消他人待办', $res['msg']);
+        $this->assertStringContainsString('仅群主、项目/任务负责人或系统管理员可设置或取消他人待办', $res['msg']);
 
         // 被拦截后不应写入任何待办记录
         $this->assertSame(0, WebSocketDialogMsgTodo::whereMsgId($msg->id)->count());

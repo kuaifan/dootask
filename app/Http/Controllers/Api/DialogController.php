@@ -2647,7 +2647,7 @@ class DialogController extends AbstractController
         if (Base::settingFind('system', 'todo_set_permission') === 'close') {
             $others = array_diff($userids, [$user->userid]);
             if ($others && !$dialog->checkTodoOwnerPermission($user->userid)) {
-                return Base::retError('仅群主、项目/任务负责人可设置或取消他人待办');
+                return Base::retError('仅群主、项目/任务负责人或系统管理员可设置或取消他人待办');
             }
         }
         //

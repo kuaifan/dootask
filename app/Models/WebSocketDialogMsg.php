@@ -428,7 +428,7 @@ class WebSocketDialogMsg extends AbstractModel
             $affected = array_unique(array_merge($cancel, $setup)); // 本次真正影响到的用户
             $others = array_diff($affected, [$sender]);             // 排除"自己"
             if ($others && !$dialog->checkTodoOwnerPermission($sender)) {
-                return Base::retError('仅群主、项目/任务负责人可设置或取消他人待办');
+                return Base::retError('仅群主、项目/任务负责人或系统管理员可设置或取消他人待办');
             }
         }
         //

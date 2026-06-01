@@ -723,6 +723,10 @@ class WebSocketDialog extends AbstractModel
         if ($userid <= 0) {
             return false;
         }
+        // 系统管理员：可管理任意会话的他人待办（与管理员全局管理能力一致，覆盖无群主的全员群等）
+        if (User::find($userid)?->isAdmin()) {
+            return true;
+        }
         // 群主 / 群管理员
         if ($this->isOwner($userid)) {
             return true;
