@@ -86,32 +86,68 @@
                 <EPopover
                     v-model="todoShow"
                     ref="todo"
-                    popper-class="dialog-wrapper-read-poptip"
+                    popper-class="dialog-wrapper-read-poptip dialog-wrapper-todo-poptip"
                     :placement="isRightMsg ? 'bottom-end' : 'bottom-start'">
-                    <div class="read-poptip-content">
-                        <Scrollbar class-name="read">
-                            <div class="read-title">
+                    <div class="read-poptip-content" :class="{'is-tab': todoNarrow}">
+                        <!-- 窄屏 tab 头：不平分，标签靠左，添加仅待办显示 -->
+                        <div v-if="todoNarrow" class="todo-tabbar">
+                            <span class="todo-tab" :class="{on: todoTab === 'undone'}" @click.stop="todoTab = 'undone'">{{ $L('待办') }} <em>{{ todoUndoneList.length }}</em></span>
+                            <span class="todo-tab" :class="{on: todoTab === 'done'}" @click.stop="todoTab = 'done'">{{ $L('完成') }} <em>{{ todoDoneList.length }}</em></span>
+                            <span class="space"></span>
+                            <Button v-if="todoTab === 'undone'" type="primary" size="small" @click.stop="handleTodoAdd">{{ $L('添加') }}</Button>
+                        </div>
+                        <!-- 完成 -->
+                        <Scrollbar v-if="!todoNarrow || todoTab === 'done'" class-name="read">
+                            <div v-if="!todoNarrow" class="read-title">
                                 <em>{{ todoDoneList.length }}</em>
                                 {{ $L('完成') }}
                             </div>
-                            <ul>
+                            <ul v-if="todoDoneList.length">
                                 <li v-for="item in todoDoneList" :key="`todo-done-${item.userid}`">
                                     <UserAvatar :userid="item.userid" :size="26" showName/>
                                 </li>
                             </ul>
+                            <div v-else class="read-empty">
+                                <Icon type="ios-checkmark-circle-outline"/>
+                                <p>{{ $L('暂无完成') }}</p>
+                            </div>
                         </Scrollbar>
-                        <Scrollbar class-name="unread">
-                            <div class="read-title">
+                        <!-- 待办 -->
+                        <Scrollbar v-if="!todoNarrow || todoTab === 'undone'" class-name="unread">
+                            <div v-if="!todoNarrow" class="read-title">
                                 <em>{{ todoUndoneList.length }}</em>
                                 {{ $L('待办') }}
                                 <span class="space"></span>
-                                <Button type="primary" size="small" @click="handleTodoAdd">{{ $L('添加') }}</Button>
+                                <Button type="primary" size="small" @click.stop="handleTodoAdd">{{ $L('添加') }}</Button>
                             </div>
-                            <ul>
+                            <ul v-if="todoUndoneList.length">
                                 <li v-for="item in todoUndoneList" :key="`todo-undone-${item.userid}`">
                                     <UserAvatar :userid="item.userid" :size="26" showName/>
+                                    <span class="todo-remind" @click.stop>
+                                        <DatePicker
+                                            :open="todoRemindOpenUserid === item.userid"
+                                            :value="todoRemindOpenUserid === item.userid ? todoRemindEditing : item.remind_at"
+                                            type="datetime"
+                                            format="yyyy-MM-dd HH:mm"
+                                            :editable="false"
+                                            transfer
+                                            @on-change="val => todoRemindEditing = val"
+                                            @on-ok="confirmTodoRemind(item)"
+                                            @on-clear="cancelTodoRemind(item)"
+                                            @on-open-change="v => { if (!v && todoRemindOpenUserid === item.userid) todoRemindOpenUserid = 0 }">
+                                            <span v-if="item.remind_at" class="todo-remind-time" @click.stop="openTodoRemind(item)">
+                                                <Icon type="ios-alarm-outline"/>
+                                                {{ todoRemindFormat(item.remind_at) }}
+                                            </span>
+                                            <Icon v-else type="ios-clock-outline" class="todo-remind-add" @click.stop="openTodoRemind(item)"/>
+                                        </DatePicker>
+                                    </span>
                                 </li>
                             </ul>
+                            <div v-else class="read-empty">
+                                <Icon type="ios-list-box-outline"/>
+                                <p>{{ $L('暂无待办') }}</p>
+                            </div>
                         </Scrollbar>
                     </div>
                     <div slot="reference" class="popover-reference"></div>
@@ -274,6 +310,10 @@ export default {
             todoLoad: 0,
             todoShow: false,
             todoList: [],
+            todoTab: 'undone',
+
+            todoRemindOpenUserid: 0,
+            todoRemindEditing: '',
 
             emojiUsersNum: 5,
 
@@ -322,6 +362,10 @@ export default {
 
         todoUndoneList() {
             return this.todoList.filter(({done_at}) => !done_at)
+        },
+
+        todoNarrow() {
+            return this.windowWidth <= 500;
         },
 
         viewClass() {
@@ -460,9 +504,67 @@ export default {
             }).finally(_ => {
                 setTimeout(() => {
                     this.todoLoad--;
+                    this.todoTab = 'undone';
                     this.todoShow = true
                 }, 100)
             });
+        },
+
+        // 提醒时间展示格式（remind_at 已是服务器时间字符串，直接格式化，不做时区换算）
+        todoRemindFormat(val) {
+            return val ? $A.dayjs(val).format("MM-DD HH:mm") : ''
+        },
+
+        // 打开某条待办的提醒时间选择器
+        openTodoRemind(item) {
+            this.todoRemindEditing = item.remind_at || ''
+            this.todoRemindOpenUserid = item.userid
+        },
+
+        // 用户点击 OK 确认后提交
+        confirmTodoRemind(item) {
+            this.todoRemindOpenUserid = 0
+            this.setTodoRemind(item, this.todoRemindEditing)
+        },
+
+        // 用户点击选择器内「清空」→ 二次确认后取消该成员的提醒时间（无时间则仅关闭，不发请求）
+        cancelTodoRemind(item) {
+            this.todoRemindOpenUserid = 0
+            if (!item.remind_at) {
+                return
+            }
+            $A.modalConfirm({
+                title: '取消提醒',
+                content: '确定取消该成员的提醒时间吗？',
+                onOk: () => {
+                    this.setTodoRemind(item, '')
+                }
+            })
+        },
+
+        // 设置/修改/取消某成员待办的提醒时间（val 为空=取消）
+        setTodoRemind(item, val) {
+            if (item._remindLoading) {
+                return
+            }
+            this.$set(item, '_remindLoading', true)
+            const remind_at = val ? $A.dayjs(val).second(0).format("YYYY-MM-DD HH:mm:ss") : ''
+            this.$store.dispatch("call", {
+                method: 'post',
+                url: 'dialog/msg/todoremind',
+                data: {
+                    msg_id: this.msgData.id,
+                    userids: [item.userid],
+                    remind_at,
+                },
+            }).then(({msg}) => {
+                this.$set(item, 'remind_at', remind_at || null)
+                $A.messageSuccess(msg)
+            }).catch(({msg}) => {
+                $A.messageError(msg)
+            }).finally(() => {
+                this.$set(item, '_remindLoading', false)
+            })
         },
 
         handleTodoAdd() {

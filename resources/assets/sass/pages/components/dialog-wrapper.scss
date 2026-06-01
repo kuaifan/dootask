@@ -2378,6 +2378,136 @@ body:not(.window-touch) {
     }
 }
 
+// 待办浮层专属样式（仅 todo popover 有此 class，不影响已读/未读浮层）
+// 用组合选择器提高特异性，确保覆盖 .dialog-wrapper-read-poptip 的基础宽度（与定义顺序无关）
+.dialog-wrapper-read-poptip.dialog-wrapper-todo-poptip {
+    // 浮层宽度由内容决定（宽屏 460 / 窄屏 300），避免窄屏容器仍按宽屏宽度导致过宽
+    width: auto;
+    max-width: 90vw;
+
+    .read-poptip-content {
+        // 宽屏默认：双列加宽，让名字+时间有足够空间
+        width: 460px;
+        max-width: 90vw;
+
+        // 窄屏单列
+        &.is-tab {
+            display: block;
+            width: 300px;
+            max-width: 90vw;
+            margin: -12px;
+            padding: 0 12px 12px;
+
+            // 隐藏双列分隔线
+            &:before {
+                display: none;
+            }
+
+            // 窄屏：待办列取消左侧 padding（原双列右栏缩进）
+            .unread {
+                .read-title,
+                ul > li {
+                    padding-left: 0;
+                }
+            }
+        }
+
+        // tab 头（窄屏显示）
+        .todo-tabbar {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #F4F4F5;
+            margin-bottom: 16px;
+
+            > .space {
+                flex: 1;
+            }
+
+            > button {
+                margin-right: 8px;
+                transform: scale(0.96);
+                transform-origin: right center;
+            }
+
+            .todo-tab {
+                padding: 11px 12px;
+                font-size: 14px;
+                color: #808695;
+                cursor: pointer;
+                position: relative;
+                white-space: nowrap;
+
+                em {
+                    font-style: normal;
+                    font-size: 13px;
+                    color: inherit;
+                }
+
+                &.on {
+                    color: #2d8cf0;
+                    font-weight: 600;
+
+                    &::after {
+                        content: "";
+                        position: absolute;
+                        bottom: 0;
+                        left: 12px;
+                        right: 12px;
+                        height: 2px;
+                        border-radius: 2px;
+                        background-color: #2d8cf0;
+                    }
+                }
+            }
+        }
+
+        // 空状态占位（完成/待办列表为空时显示）
+        .read-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+            color: #c5c8ce;
+
+            > i {
+                font-size: 32px;
+                line-height: 1;
+            }
+
+            > p {
+                margin: 6px 0 0;
+                font-size: 12px;
+            }
+        }
+
+        // 行内：名字省略，时间固定靠右
+        ul > li {
+            .common-avatar {
+                .avatar-name {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+            }
+
+            .todo-remind {
+                flex: none;
+                margin-left: 8px;
+
+                .todo-remind-time {
+                    display: flex;
+                    align-items: center;
+                    gap: 3px;
+                    > i {
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+}
+
 .dialog-wrapper-read-poptip {
     width: 360px;
     max-width: 72%;
@@ -2422,13 +2552,42 @@ body:not(.window-touch) {
             ul > li {
                 min-height: 26px;
                 list-style: none;
+                display: flex;
+                align-items: center;
 
                 .common-avatar {
-                    width: 100%;
+                    flex: 1;
+                    width: 0;
                     .avatar-name {
                         flex: 1;
                         width: 0;
                         margin-left: 6px;
+                    }
+                }
+
+                .todo-remind {
+                    margin-left: auto;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    font-size: 12px;
+                    color: #999;
+                    cursor: pointer;
+
+                    .todo-remind-time {
+                        color: #515a6e;
+                        white-space: nowrap;
+                        &:hover {
+                            color: #2d8cf0;
+                        }
+                    }
+
+                    .todo-remind-add {
+                        font-size: 16px;
+                        &:hover {
+                            color: #2d8cf0;
+                        }
                     }
                 }
 

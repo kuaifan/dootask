@@ -552,6 +552,23 @@
                 <FormItem prop="userids" :label="$L('指定成员')" v-if="todoSettingData.type === 'user'">
                     <UserSelect ref="userSelect" v-model="todoSettingData.userids" :dialog-id="dialogId" :title="$L('选择指定成员')"/>
                 </FormItem>
+                <FormItem prop="remind_at" :label="$L('提醒时间')">
+                    <RadioGroup v-model="todoRemindPreset">
+                        <Radio label="none">{{$L('不提醒')}}</Radio>
+                        <Radio label="1h">{{$L('1 小时后')}}</Radio>
+                        <Radio label="tonight">{{$L('今晚 20:00')}}</Radio>
+                        <Radio label="tomorrow">{{$L('明早 9:00')}}</Radio>
+                        <Radio label="custom">{{$L('自定义')}}</Radio>
+                    </RadioGroup>
+                    <DatePicker
+                        v-if="todoRemindPreset === 'custom'"
+                        v-model="todoRemindCustom"
+                        type="datetime"
+                        format="yyyy-MM-dd HH:mm"
+                        :placeholder="$L('请选择提醒时间')"
+                        style="margin-top:8px;width:200px"
+                        transfer/>
+                </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="todoSettingShow=false">{{$L('取消')}}</Button>
@@ -871,6 +888,8 @@ export default {
                 userids: [],
                 quick_value: [],
             },
+            todoRemindPreset: 'none',
+            todoRemindCustom: '',
             todoSpecifyShow: false,
             todoSpecifyData: {
                 type: 'user',
@@ -4201,6 +4220,7 @@ export default {
                     $A.messageWarning("选择指定成员");
                     return
                 }
+                todoData.remind_at = this.computeTodoRemindAt()
                 this.todoSettingLoad++
                 this.onTodoSubmit(todoData).then(msg => {
                     $A.messageSuccess(msg)
@@ -4249,6 +4269,8 @@ export default {
                         quick_value: [],
                         quick_list: Object.values(quickList),
                     }
+                    this.todoRemindPreset = 'none'
+                    this.todoRemindCustom = ''
                     this.todoSettingShow = true
                 }
             }
@@ -4264,6 +4286,29 @@ export default {
                     reject()
                 })
             });
+        },
+
+        // 根据预设/自定义算出提醒时间字符串（空=不提醒）
+        computeTodoRemindAt() {
+            const fmt = 'YYYY-MM-DD HH:mm:ss'
+            switch (this.todoRemindPreset) {
+                case '1h':
+                    return $A.daytz().add(1, 'hour').second(0).format(fmt)
+                case 'tonight': {
+                    let t = $A.daytz().hour(20).minute(0).second(0)
+                    if (t.isBefore($A.daytz())) {
+                        t = t.add(1, 'day')
+                    }
+                    return t.format(fmt)
+                }
+                case 'tomorrow':
+                    return $A.daytz().add(1, 'day').hour(9).minute(0).second(0).format(fmt)
+                case 'custom':
+                    // 自定义为用户从 DatePicker 选取的值，按服务器时区原值写入（与任务计划时间约定一致，不做换算）
+                    return this.todoRemindCustom ? $A.dayjs(this.todoRemindCustom).second(0).format(fmt) : ''
+                default:
+                    return ''
+            }
         },
 
         onTodoSubmit(data) {

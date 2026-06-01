@@ -414,7 +414,7 @@ class WebSocketDialogMsg extends AbstractModel
      * @param array $userids    设置给指定会员
      * @return mixed
      */
-    public function toggleTodoMsg($sender, $userids = [])
+    public function toggleTodoMsg($sender, $userids = [], $remindAt = false)
     {
         if (in_array($this->type, ['tag', 'todo', 'notice'])) {
             return Base::retError('此消息不支持设待办');
@@ -485,10 +485,37 @@ class WebSocketDialogMsg extends AbstractModel
         ];
         $dialog->pushMsg('update', $upData);
         //
+        // 提醒时间：仅当调用方显式传入时处理（false=不传则不动既有提醒）
+        if ($remindAt !== false) {
+            $this->setTodoRemind($userids, $remindAt ?: null);
+        }
+        //
         return Base::retSuccess($this->todo ? '设置成功' : '取消成功', [
             'add' => $addData,
             'update' => $upData,
         ]);
+    }
+
+    /**
+     * 设置/取消本消息指定成员待办的提醒时间（纯数据，无推送）。
+     * 改动会把 reminded_at 重置为 null，使其可再次到点提醒。
+     *
+     * @param array       $userids  目标成员
+     * @param string|null $remindAt 提醒时间字符串；null/空 表示取消提醒
+     * @return int 受影响行数
+     */
+    public function setTodoRemind(array $userids, $remindAt = null)
+    {
+        $userids = array_values(array_filter(array_map('intval', $userids)));
+        if (empty($userids)) {
+            return 0;
+        }
+        return WebSocketDialogMsgTodo::whereMsgId($this->id)
+            ->whereIn('userid', $userids)
+            ->update([
+                'remind_at' => $remindAt ?: null,
+                'reminded_at' => null,
+            ]);
     }
 
     /**

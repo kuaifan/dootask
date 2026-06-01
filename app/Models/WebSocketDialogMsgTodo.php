@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+
 /**
  * App\Models\WebSocketDialogMsgTodo
  *
@@ -49,5 +51,22 @@ class WebSocketDialogMsgTodo extends AbstractModel
             $this->appendattrs['msgData'] = WebSocketDialogMsg::select(['id', 'type', 'msg'])->whereId($this->msg_id)->first()?->cancelAppend();
         }
         return $this->appendattrs['msgData'];
+    }
+
+    /**
+     * 取到点待提醒的待办行：有提醒时间、未提醒、未完成、提醒时间已到。
+     * 纯查询，无副作用，供 TodoRemindTask 使用。
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function dueReminders()
+    {
+        return self::whereNotNull('remind_at')
+            ->whereNull('reminded_at')
+            ->whereNull('done_at')
+            ->where('remind_at', '<=', Carbon::now())
+            ->orderBy('msg_id')
+            ->orderBy('id')
+            ->limit(500)
+            ->get();
     }
 }

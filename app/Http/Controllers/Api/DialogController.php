@@ -1670,6 +1670,7 @@ class DialogController extends AbstractController
         if (!in_array($botType, [
             'system-msg',
             'task-alert',
+            'todo-alert',
             'check-in',
             'approval-alert',
             'meeting-alert',
@@ -2571,7 +2572,8 @@ class DialogController extends AbstractController
         } else {
             $userids = is_array($userids) ? $userids : [];
         }
-        return $msg->toggleTodoMsg($user->userid, $userids);
+        $remindAt = Request::exists('remind_at') ? (trim(Request::input('remind_at', '')) ?: null) : false;
+        return $msg->toggleTodoMsg($user->userid, $userids, $remindAt);
     }
 
     /**
@@ -2602,6 +2604,64 @@ class DialogController extends AbstractController
         //
         $todo = WebSocketDialogMsgTodo::whereMsgId($msg_id)->get();
         return Base::retSuccess('success', $todo ?: []);
+    }
+
+    /**
+     * @api {post} api/dialog/msg/todoremind 设置/修改/取消待办提醒时间
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__todoremind
+     *
+     * @apiParam {Number} msg_id        消息ID
+     * @apiParam {Array}  userids       目标成员ID组
+     * @apiParam {String} remind_at     提醒时间（空表示取消提醒）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__todoremind()
+    {
+        $user = User::auth();
+        //
+        $msg_id = intval(Request::input("msg_id"));
+        $userids = Request::input('userids');
+        $userids = is_array($userids) ? array_values(array_filter(array_map('intval', $userids))) : [];
+        $remindAt = trim(Request::input('remind_at', '')) ?: null;
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        if (in_array($msg->type, ['tag', 'todo', 'notice'])) {
+            return Base::retError('此消息不支持设待办');
+        }
+        $dialog = WebSocketDialog::checkDialog($msg->dialog_id);
+        //
+        if (empty($userids)) {
+            return Base::retError("请选择成员");
+        }
+        // 权限管控（与设/取消待办同一开关与放行规则）
+        if (Base::settingFind('system', 'todo_set_permission') === 'close') {
+            $others = array_diff($userids, [$user->userid]);
+            if ($others && !$dialog->checkTodoOwnerPermission($user->userid)) {
+                return Base::retError('仅群主、项目/任务负责人可设置或取消他人待办');
+            }
+        }
+        //
+        $msg->setTodoRemind($userids, $remindAt);
+        //
+        $upData = [
+            'id' => $msg->id,
+            'todo' => $msg->todo,
+            'todo_done' => $msg->isTodoDone(true),
+            'dialog_id' => $msg->dialog_id,
+        ];
+        $dialog->pushMsg('update', $upData);
+        //
+        return Base::retSuccess($remindAt ? '设置成功' : '取消成功', $upData);
     }
 
     /**

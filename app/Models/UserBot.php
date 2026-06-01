@@ -151,6 +151,7 @@ class UserBot extends AbstractModel
         $name = match ($name) {
             'system-msg' => '系统消息',
             'task-alert' => '任务提醒',
+            'todo-alert' => '待办提醒',
             'check-in' => '签到打卡',
             'anon-msg' => '匿名消息',
             'approval-alert' => '审批',

@@ -51,6 +51,8 @@ class AbstractModel extends Model
 
         'read_at',
         'done_at',
+        'remind_at',
+        'reminded_at',
 
         'created_at',
         'updated_at',
