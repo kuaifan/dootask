@@ -22,6 +22,7 @@ English | **[中文文档](./README_CN.md)**
 - Required: `Docker v20.10+` and `Docker Compose v2.0+`
 - Supported Systems: `CentOS/Debian/Ubuntu/macOS` and other Linux/Unix systems
 - Hardware Recommendation: 2+ cores, 4GB+ memory
+- Database: MariaDB (provided by the default Docker Compose `mariadb` service)
 - Special Note: Windows users can install Linux environment using WSL2 before installing DooTask.
 
 ### Deploy Project
@@ -115,12 +116,14 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
 After installing the new project, follow these steps to complete migration:
 
-1、Backup original database
+1、Backup the MariaDB database
 
 ```bash
 # Run command in the old project
 ./cmd mysql backup
 ```
+
+> `./cmd mysql` is the CLI subcommand name; backups run against the MariaDB container.
 
 2、Copy the following files and directories from old project to the same paths in new project
 
