@@ -1,5 +1,5 @@
 ---
-name: release
+name: dootask-release
 description: Use when releasing a new DooTask frontend version from the `pro` branch. Rigid sequential workflow (translate → version → build → commit → push) with strict pre-checks (branch, clean worktree, Node 20+) and per-step user confirmation. Use when user says "发布新版本", "release", "出新版本", "打版本". Stop on any failure; do NOT auto-fix dirty worktree, do NOT add tag step, do NOT use `git add -A`.
 ---
 
@@ -43,6 +43,12 @@ npm run build
 ```
 构建前端生产版本。
 
+> **已知失败**：若 build 报 `public/uploads/...` 的 `EACCES: permission denied, copyfile`，是 vite 复制 `public/` 目录时碰到运行时残留的上传文件——这些文件常为 **root 属主**（容器内 root 进程写入），复制需覆盖写入，构建用户没有写权限。报错路径可能落在 `public/uploads` 下任意子目录（`tmp`、`avatar` 等），不限于 `tmp`。这不是代码问题。**补救（赋权，不删数据）**：把整个 uploads 的属主改回当前用户后重试 build：
+> ```shell
+> sudo chown -R "$(id -u):$(id -g)" public/uploads
+> ```
+> 需 root（本机可免密 sudo；或经 docker 以 root 改权限）。**优先赋权，不要删**——`public/uploads` 含真实上传数据。即便用户要求清理，也只清临时目录 `public/uploads/tmp`，切勿删 uploads 下其他内容。
+
 ## 最终：提交并推送
 
 所有步骤完成后：
@@ -55,6 +61,26 @@ npm run build
 提交规范：
 - 提交信息使用 `release: v<新版本号>`（与历史提交风格一致，参见 `git log --oneline | grep '^release:'`）
 - **只 add 本次发布相关改动**，按文件名显式添加（例如 `git add package.json public/js/...`），**不要用 `git add -A` 或 `git add .`**，以免卷入未跟踪的本地实验文件
+
+## push 之后：确认发布工作流（CI 才是真正出包）
+
+push 到 `pro` 只是触发器，真正的构建/出包由 GitHub Actions 完成——**push 成功 ≠ 发布完成**：
+
+- **Publish**（`.github/workflows/publish.yml`，push→pro 触发）跑完才算出包；成功后会自动触发 **Sync to Gitee**（镜像同步）。
+- push 完成后**主动确认** Publish 工作流 `conclusion=success`。优先用 `gh`（未装可临时装；公开仓库也可用 GitHub REST API 免鉴权读取 runs）：
+  ```shell
+  gh run list --workflow=publish.yml -R kuaifan/dootask -L 1
+  gh run view <run-id> -R kuaifan/dootask --json status,conclusion,url
+  ```
+- 工作流仍在跑时，挂后台轮询、结束即通知用户，**不要在前台死等**。
+
+### 可选：iOS 发布
+
+`ios-publish.yml` 是**独立的手动工作流**（`workflow_dispatch`），不随 push 触发。**仅当用户明确要求**发 iOS 时执行：
+```shell
+gh workflow run ios-publish.yml --ref pro -R kuaifan/dootask
+```
+需 `gh` 已登录且 token 含 `workflow` 权限。触发后同样可挂后台轮询其结果。
 
 ## 失败处理
 
@@ -81,3 +107,5 @@ npm run build
 - "`git add -A` 省事" → 不，显式 add
 - "翻译这步没改动可以跳" → 不，按顺序执行、执行后报告结果即可
 - "一起 commit + push 一气呵成" → 必须先让用户确认
+- "push 上去了，发布就完成了" → 不，push 只是触发器，要确认 GitHub Actions 的 Publish 工作流 success
+- "build 报 uploads 权限错，我直接删掉" → 优先 `chown` 赋权整个 `public/uploads`（不丢数据）；真要删也只删 `tmp`，别碰 uploads 下真实上传数据
