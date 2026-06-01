@@ -394,6 +394,10 @@ env_set() {
         echo "" >> $WORK_DIR/.env
         echo "$key=$val" >> $WORK_DIR/.env
     else
+        # 值未变化则直接返回，避免无谓重写 .env（重写会改 mtime，触发 vite 全量重启/前端刷新）
+        if [[ "$(env_get "$key")" == "$val" ]]; then
+            return 0
+        fi
         if [[ `uname` == 'Linux' ]]; then
             sed -i "/^${key}=/c\\${key}=${val}" ${WORK_DIR}/.env
         else
