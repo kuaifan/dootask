@@ -11,7 +11,7 @@ const packageFile = path.resolve(process.cwd(), "package.json");
 const changeFile = path.resolve(process.cwd(), "CHANGELOG.md");
 
 const verOffset = 6394; // 版本号偏移量
-const codeOffset = 34;  // 代码版本号偏移量
+const codeOffset = 35;  // 代码版本号偏移量
 
 const envFilePath = path.resolve(process.cwd(), ".env");
 const defaultAiSystemPrompt = "你是一位软件发布日志编辑专家。请产出 Markdown 更新日志，面向普通用户，以通俗友好的简体中文描述更新带来的直接好处，避免技术术语。所有章节标题必须以 `### ` 开头并保持英文 Title Case（例如 `### Features`、`### Bug Fixes`、`### Performance`、`### Documentation` 等）。每个章节内的条目按用户价值和影响范围排序，将更重要、影响更广的更新放在前面。";
