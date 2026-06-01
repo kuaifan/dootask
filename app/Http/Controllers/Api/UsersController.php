@@ -41,6 +41,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\UserEmailVerification;
 use App\Module\AgoraIO\AgoraTokenGenerator;
 use Swoole\Coroutine;
+use App\Module\UserImport;
+use App\Module\UserImportTemplate;
+use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * @apiDefine users
@@ -1263,7 +1266,7 @@ class UsersController extends AbstractController
             User::passwordPolicy($password);
             $upArray['encrypt'] = Base::generatePassword(6);
             $upArray['password'] = Doo::md5s($password, $upArray['encrypt']);
-            $upArray['changepass'] = 1;
+            $upArray['changepass'] = intval($data['changepass'] ?? 1) === 1 ? 1 : 0;
             $upLdap['userPassword'] = $password;
         }
         // 昵称
@@ -1338,6 +1341,98 @@ class UsersController extends AbstractController
         }
         //
         return Base::retSuccess($msg, $userInfo);
+    }
+
+    /**
+     * @api {post} api/users/createuser 创建用户（管理员）
+     *
+     * @apiDescription 需要token身份（管理员）
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName createuser
+     *
+     * @apiParam {String} email     邮箱
+     * @apiParam {String} password  初始密码
+     * @apiParam {String} nickname  昵称
+     * @apiParam {String} [profession]  职位/职称（可选，2-20字）
+     * @apiParam {Array}  [department]   部门ID列表（可选，最多10个）
+     */
+    public function createuser()
+    {
+        User::auth('admin');
+        $email = trim(Request::input('email'));
+        $password = trim(Request::input('password'));
+        $nickname = trim(Request::input('nickname'));
+        $changePass = intval(Request::input('changepass', 1)) === 1;
+        $profession = trim((string)Request::input('profession', ''));
+        $department = Request::input('department', []);
+        $user = User::createByAdmin($email, $password, $nickname, [
+            'changePass' => $changePass,
+            'profession' => $profession,
+            'department' => is_array($department) ? $department : [],
+        ]);
+        return Base::retSuccess('创建成功', $user);
+    }
+
+    /**
+     * @api {post} api/users/import/preview 批量导入预览（管理员）
+     *
+     * @apiDescription 需要token身份（管理员）。上传 Excel/CSV（列顺序：邮箱、昵称、初始密码、职位(选填)），仅解析+校验、不创建账号
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName import__preview
+     */
+    public function import__preview()
+    {
+        User::auth('admin');
+        $file = Request::file('file');
+        if (empty($file)) {
+            return Base::retError('请选择文件');
+        }
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (!in_array($ext, ['xls', 'xlsx', 'csv'])) {
+            return Base::retError('仅支持 xls/xlsx/csv 文件');
+        }
+        $sheets = Excel::toArray(new UserImport, $file);
+        $sheet = $sheets[0] ?? [];
+        $rows = User::parseImportRows($sheet);
+        if (empty($rows)) {
+            return Base::retError('文件中没有可导入的数据');
+        }
+        return Base::retSuccess('解析完成', User::importPreview($rows));
+    }
+
+    /**
+     * @api {post} api/users/import 批量导入用户（管理员）
+     *
+     * @apiDescription 需要token身份（管理员）。提交预览确认后的行数据 rows（每行 {email,nickname,password,profession}，可选 department[]）进行创建
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName import
+     */
+    public function import()
+    {
+        User::auth('admin');
+        $rows = Request::input('rows');
+        if (!is_array($rows) || empty($rows)) {
+            return Base::retError('没有可导入的数据');
+        }
+        $changePass = intval(Request::input('changepass', 1)) === 1;
+        $result = User::importUsers($rows, $changePass);
+        return Base::retSuccess('导入完成', $result);
+    }
+
+    /**
+     * @api {get} api/users/import/template 下载批量导入模板（管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName import__template
+     */
+    public function import__template()
+    {
+        User::auth('admin');
+        return Excel::download(new UserImportTemplate, 'user_import_template.xlsx');
     }
 
     /**

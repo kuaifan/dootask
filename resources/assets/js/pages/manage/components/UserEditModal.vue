@@ -42,6 +42,9 @@
                     type="password"
                     password
                     :placeholder="$L('留空则不修改密码')"/>
+                <Checkbox v-if="formData.password" v-model="formData.changepass" style="margin-top:8px">
+                    {{ $L('员工下次登录需修改密码') }}
+                </Checkbox>
             </FormItem>
 
             <FormItem :label="$L('所属部门')">
@@ -177,6 +180,7 @@ export default {
                 profession: '',
                 email: '',
                 password: '',
+                changepass: true,
                 department: [],
                 introduction: '',
                 faceimg: [],
@@ -249,6 +253,7 @@ export default {
                 profession: profession || '',
                 email: email || '',
                 password: '',
+                changepass: true,
                 department: Array.isArray(department)
                     ? department.map(id => parseInt(id))
                     : [],
@@ -377,6 +382,7 @@ export default {
                 }
                 if (this.formData.password) {
                     data.password = this.formData.password;
+                    data.changepass = this.formData.changepass ? 1 : 0;
                 }
                 this.$store.dispatch("call", {
                     url: 'users/operation',

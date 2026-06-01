@@ -89,6 +89,8 @@ use Carbon\Carbon;
  */
 class User extends AbstractModel
 {
+    const IMPORT_MAX = 500;
+
     protected $primaryKey = 'userid';
 
     protected $hidden = [
@@ -423,6 +425,283 @@ class User extends AbstractModel
             Apps::dispatchUserHook($createdUser, 'user_onboard', 'onboard');
         }
         return $createdUser;
+    }
+
+    /**
+     * 管理员创建员工账号（复用注册逻辑，强制正式身份，可选首登改密 / 部门 / 职位）
+     * @param string $email
+     * @param string $password
+     * @param string $nickname
+     * @param array  $options  changePass(bool,默认true) / department(int[]) / profession(string)
+     * @return self
+     * @throws ApiException
+     */
+    public static function createByAdmin(string $email, $password, string $nickname, array $options = []): self
+    {
+        $nickname = trim($nickname);
+        if (mb_strlen($nickname) < 2 || mb_strlen($nickname) > 20) {
+            throw new ApiException('昵称需为2-20个字');
+        }
+        $changePass = ($options['changePass'] ?? true) ? 1 : 0;
+        $profession = trim((string)($options['profession'] ?? ''));
+        // 校验前置（reg 之前快速失败，且可在无 Swoole 环境单测）
+        self::assertValidProfession($profession);
+        $departmentIds = self::assertValidDepartments($options['department'] ?? []);
+        // 复用 reg：邮箱校验/查重、passwordPolicy、Doo::userCreate、az/pinyin、全员群、索引同步、user_onboard hook
+        $user = self::reg($email, $password, ['nickname' => $nickname]);
+        // 管理员显式创建的账号视为正式员工，去除系统 reg_identity 可能带上的 temp
+        if (in_array('temp', $user->identity)) {
+            $user->identity = Base::arrayImplode(array_diff($user->identity, ['temp']));
+        }
+        $user->changepass = $changePass; // 复用现有首登强制改密机制
+        if ($profession !== '') {
+            $user->profession = $profession;
+        }
+        if ($departmentIds) {
+            $user->department = Base::arrayImplode($departmentIds);
+        }
+        $user->save();
+        // 设置了部门 → 加入对应部门群（复刻 operation 的 type=department 入群逻辑）
+        if ($departmentIds) {
+            $departments = UserDepartment::whereIn('id', $departmentIds)->get();
+            foreach ($departments as $department) {
+                try {
+                    if ($department->dialog_id > 0 && $dialog = WebSocketDialog::find($department->dialog_id)) {
+                        $dialog->joinGroup([$user->userid], 0, true);
+                        $dialog->pushMsg("groupJoin", null, [$user->userid]);
+                    }
+                } catch (\Throwable $e) {
+                    // 部门入群为尽力投递：单个部门失败不影响账号创建与其他部门
+                    \Log::warning('createByAdmin: 部门入群失败', [
+                        'userid'        => $user->userid,
+                        'department_id' => $department->id,
+                        'error'         => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
+        return $user;
+    }
+
+    /**
+     * 将上传表格（Excel::toArray 的二维数组）归一化为导入行
+     * @param array $sheet
+     * @return array  [{line, email, nickname, password}]
+     */
+    public static function parseImportRows(array $sheet): array
+    {
+        $rows = [];
+        foreach ($sheet as $index => $cells) {
+            if ($index === 0) {
+                continue; // 表头
+            }
+            $email = trim((string)($cells[0] ?? ''));
+            $nickname = trim((string)($cells[1] ?? ''));
+            $password = trim((string)($cells[2] ?? ''));
+            $profession = trim((string)($cells[3] ?? ''));
+            if ($email === '' && $nickname === '' && $password === '') {
+                continue; // 空行（仅职位有值也视为空行跳过）
+            }
+            $rows[] = [
+                'line' => $index + 1, // 电子表格行号（从 1 开始）
+                'email' => $email,
+                'nickname' => $nickname,
+                'password' => $password,
+                'profession' => $profession,
+            ];
+        }
+        return $rows;
+    }
+
+    /**
+     * 校验单条导入行
+     * @param array $row  ['email'=>,'nickname'=>,'password'=>,'profession'=>(选填)]
+     * @return string|null  错误文案；null 表示通过
+     */
+    public static function validateImportRow(array $row): ?string
+    {
+        $email = trim((string)($row['email'] ?? ''));
+        $nickname = trim((string)($row['nickname'] ?? ''));
+        $password = trim((string)($row['password'] ?? ''));
+        if ($email === '' || $nickname === '' || $password === '') {
+            return '邮箱、昵称、初始密码均为必填';
+        }
+        if (!Base::isEmail($email)) {
+            return '邮箱格式不正确';
+        }
+        if (mb_strlen($nickname) < 2 || mb_strlen($nickname) > 20) {
+            return '昵称需为2-20个字';
+        }
+        try {
+            self::passwordPolicy($password);
+        } catch (ApiException $e) {
+            return $e->getMessage();
+        }
+        // 职位/职称选填，填写则校验 2-20 字
+        try {
+            self::assertValidProfession((string)($row['profession'] ?? ''));
+        } catch (ApiException $e) {
+            return $e->getMessage();
+        }
+        return null;
+    }
+
+    /**
+     * 校验职位/职称：非空时必须 2-20 字（复用 operation 的现有文案）
+     * @param string $profession
+     * @return void
+     * @throws ApiException
+     */
+    public static function assertValidProfession(string $profession): void
+    {
+        $profession = trim($profession);
+        if ($profession === '') {
+            return;
+        }
+        if (mb_strlen($profession) < 2) {
+            throw new ApiException('职位/职称不可以少于2个字');
+        }
+        if (mb_strlen($profession) > 20) {
+            throw new ApiException('职位/职称最多只能设置20个字');
+        }
+    }
+
+    /**
+     * 规整并校验部门 ID 列表：转正整数去重、最多 10 个、且每个必须存在
+     * @param mixed $ids
+     * @return int[]
+     * @throws ApiException
+     */
+    public static function assertValidDepartments($ids): array
+    {
+        if (!is_array($ids)) {
+            $ids = [];
+        }
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), fn($v) => $v > 0)));
+        if (count($ids) > 10) {
+            throw new ApiException('最多只可加入10个部门');
+        }
+        if ($ids) {
+            $existing = UserDepartment::whereIn('id', $ids)->pluck('id')->map(fn($v) => (int)$v)->all();
+            if (count($existing) < count($ids)) {
+                throw new ApiException('修改部门不存在');
+            }
+        }
+        return $ids;
+    }
+
+    /**
+     * 批量导入用户（部门/职位逐行：department 来自前端逐行设置，profession 来自 Excel 行）
+     * @param array $rows  每行含 email/nickname/password/profession，可选 department(int[])
+     * @param bool  $changePass  是否要求首登改密（对本批所有账号生效）
+     * @return array  ['total'=>int, 'success'=>int, 'failed'=>[['line','email','reason']]]
+     * @throws ApiException 行数超限
+     */
+    public static function importUsers(array $rows, bool $changePass = true): array
+    {
+        if (count($rows) > self::IMPORT_MAX) {
+            throw new ApiException('单次最多导入' . self::IMPORT_MAX . '条');
+        }
+        $success = 0;
+        $failed = [];
+        $seen = [];
+        foreach ($rows as $row) {
+            $error = self::validateImportRow($row);
+            if ($error === null) {
+                $emailLower = strtolower(trim((string)$row['email']));
+                if (isset($seen[$emailLower])) {
+                    $error = '文件内邮箱重复';
+                } else {
+                    $seen[$emailLower] = true;
+                }
+            }
+            if ($error === null) {
+                try {
+                    self::createByAdmin($row['email'], $row['password'], $row['nickname'], [
+                        'changePass' => $changePass,
+                        'department' => $row['department'] ?? [],
+                        'profession' => $row['profession'] ?? '',
+                    ]);
+                    $success++;
+                    continue;
+                } catch (ApiException $e) {
+                    $error = $e->getMessage();
+                }
+            }
+            $failed[] = [
+                'line' => $row['line'] ?? 0,
+                'email' => $row['email'] ?? '',
+                'reason' => $error,
+            ];
+        }
+        return [
+            'total' => count($rows),
+            'success' => $success,
+            'failed' => $failed,
+        ];
+    }
+
+    /**
+     * 批量导入预览（只解析+校验，不创建任何账号）
+     * 逐行判定 ok/error：必填/邮箱格式/昵称长度/密码策略、文件内邮箱重复、系统中邮箱已存在
+     * @param array $rows  parseImportRows 的输出
+     * @return array  ['total'=>int,'valid'=>int,'invalid'=>int,'rows'=>[['line','email','nickname','password','status','reason']]]
+     */
+    public static function importPreview(array $rows): array
+    {
+        if (count($rows) > self::IMPORT_MAX) {
+            throw new ApiException('单次最多导入' . self::IMPORT_MAX . '条');
+        }
+        // 预查系统中已存在的邮箱（小写比较）
+        $emails = [];
+        foreach ($rows as $row) {
+            $e = strtolower(trim((string)($row['email'] ?? '')));
+            if ($e !== '') {
+                $emails[$e] = true;
+            }
+        }
+        $existing = [];
+        if ($emails) {
+            foreach (self::whereIn('email', array_keys($emails))->pluck('email') as $em) {
+                $existing[strtolower($em)] = true;
+            }
+        }
+        $seen = [];
+        $valid = 0;
+        $list = [];
+        foreach ($rows as $row) {
+            $reason = self::validateImportRow($row);
+            $emailLower = strtolower(trim((string)($row['email'] ?? '')));
+            if ($reason === null) {
+                if (isset($seen[$emailLower])) {
+                    $reason = '文件内邮箱重复';
+                } else {
+                    $seen[$emailLower] = true;
+                    if (isset($existing[$emailLower])) {
+                        $reason = '邮箱地址已存在';
+                    }
+                }
+            }
+            $ok = $reason === null;
+            if ($ok) {
+                $valid++;
+            }
+            $list[] = [
+                'line' => $row['line'] ?? 0,
+                'email' => $row['email'] ?? '',
+                'nickname' => $row['nickname'] ?? '',
+                'password' => $row['password'] ?? '',
+                'profession' => $row['profession'] ?? '',
+                'status' => $ok ? 'ok' : 'error',
+                'reason' => $reason ?? '',
+            ];
+        }
+        return [
+            'total' => count($rows),
+            'valid' => $valid,
+            'invalid' => count($rows) - $valid,
+            'rows' => $list,
+        ];
     }
 
     /**

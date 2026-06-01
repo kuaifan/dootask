@@ -169,6 +169,10 @@
                                 @refresh="getLists"
                                 @cancelFilter="keyIs=false"/>
                         </li>
+                        <li class="search-button">
+                            <Button type="primary" icon="md-person-add" @click="createUserShow=true">{{$L('创建用户')}}</Button>
+                            <Button style="margin-left:8px" icon="md-cloud-upload" @click="importUserShow=true">{{$L('批量导入')}}</Button>
+                        </li>
                     </ul>
                 </div>
                 <div class="table-page-box">
@@ -269,6 +273,8 @@
             :checkin-mode="checkinMode"
             :department-list="departmentList"
             @updated="getLists"/>
+        <CreateUserModal v-model="createUserShow" :department-list="departmentList" @created="getLists"/>
+        <ImportUserModal v-model="importUserShow" :department-list="departmentList" @imported="getLists"/>
 
         <!--操作离职-->
         <Modal
@@ -319,11 +325,13 @@ import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import ResizeLine from "../../../components/ResizeLine.vue";
 import SearchButton from "../../../components/SearchButton.vue";
 import UserEditModal from "./UserEditModal.vue";
+import CreateUserModal from "./CreateUserModal.vue";
+import ImportUserModal from "./ImportUserModal.vue";
 import {mapState} from "vuex";
 
 export default {
     name: "TeamManagement",
-    components: {SearchButton, ResizeLine, UserAvatarTip, UserSelect, UserEditModal},
+    components: {SearchButton, ResizeLine, UserAvatarTip, UserSelect, UserEditModal, CreateUserModal, ImportUserModal},
     props: {
         checkinMode: {
             type: Boolean,
@@ -644,6 +652,8 @@ export default {
 
             userEditShow: false,
             userEditData: {},
+            createUserShow: false,
+            importUserShow: false,
 
             departmentWidth: $A.getStorageInt('management.departmentWidth', 239),
 
