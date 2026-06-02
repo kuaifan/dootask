@@ -2,7 +2,7 @@
     <div class="dialog-view" :class="viewClass" :data-id="msgData.id">
         <!--昵称-->
         <div v-if="dialogType === 'group'" class="dialog-username" @pointerdown="handleOperation($event, 'mention')">
-            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" :click-open-detail="msgData.userid !== -1"/>
+            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" :name-text="msgData.userid === -1 ? (msgData.msg.nickname || '') : ''" :click-open-detail="msgData.userid !== -1"/>
         </div>
 
         <div
@@ -13,7 +13,7 @@
             <!--回复-->
             <div v-if="!hideReply && msgData.reply_id && showReplyData(msgData.msg.reply_data)" class="dialog-reply no-dark-content" :class="replyClass" @click="viewReply">
                 <div class="reply-avatar">
-                    <UserAvatar :userid="msgData.msg.reply_data.userid" :show-icon="false" :show-name="true"/>
+                    <UserAvatar :userid="msgData.msg.reply_data.userid" :show-icon="false" :show-name="true" :name-text="msgData.msg.reply_data.userid === -1 ? ((msgData.msg.reply_data.msg && msgData.msg.reply_data.msg.nickname) || '') : ''"/>
                 </div>
                 <div class="reply-desc" v-html="$A.getMsgSimpleDesc(msgData.msg.reply_data, 'image-preview')"></div>
             </div>

@@ -1716,6 +1716,7 @@ class DialogController extends AbstractController
      * @apiParam {String} text                 消息内容
      * @apiParam {String} [text_type=md]       消息格式：md 或 html
      * @apiParam {String} [silence=no]         是否静默发送：yes/no
+     * @apiParam {String} [nickname]           自定义发送者昵称（最多20字，留空则显示"AI 助手"）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1730,6 +1731,7 @@ class DialogController extends AbstractController
         $text = trim(Request::input('text'));
         $text_type = strtolower(trim(Request::input('text_type'))) ?: 'md';
         $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
+        $nickname = trim(Request::input('nickname'));
         $markdown = in_array($text_type, ['md', 'markdown']);
         //
         if (empty($dialog_id) && empty($task_id)) {
@@ -1740,6 +1742,9 @@ class DialogController extends AbstractController
         }
         if (mb_strlen($text) > 200000) {
             return Base::retError('消息内容最大不能超过200000字');
+        }
+        if (mb_strlen($nickname) > 20) {
+            return Base::retError('发送者昵称最多不能超过20字');
         }
         //
         if ($dialog_id) {
@@ -1786,6 +1791,9 @@ class DialogController extends AbstractController
         $msgData = ['text' => $text];
         if ($markdown) {
             $msgData['type'] = 'md';
+        }
+        if ($nickname !== '') {
+            $msgData['nickname'] = $nickname;
         }
         //
         $result = WebSocketDialogMsg::sendMsg(
