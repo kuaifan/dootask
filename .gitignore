@@ -7,6 +7,7 @@
 /public/hot
 /public/tmp
 /tmp
+/backup
 
 # Uploads and user-generated content
 /public/summary
