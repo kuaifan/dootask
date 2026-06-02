@@ -14,7 +14,7 @@ use Overtrue\Pinyin\Pinyin;
 use Redirect;
 use Request;
 use Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\File;
 use Validator;
@@ -2868,9 +2868,15 @@ class Base
 
     /**
      * DownloadFileResponse 下载文件
+     *
+     * 返回 Symfony BinaryFileResponse，在 LaravelS/Swoole 环境下由 StaticResponse 走原生
+     * sendfile() 发送——OS 级零拷贝、不占用 PHP 内存，可支持任意大小文件（如几百 MB 的大文件）。
+     * 切勿改回 StreamedResponse：它会被 LaravelS 用 ob_start()/ob_get_clean() 把整个响应体
+     * 缓冲进 PHP 内存，大文件会撞 memory_limit 导致下载失败。
+     *
      * @param File|\SplFileInfo|string $file 文件对象或路径
      * @param string|null $name 下载文件名
-     * @return StreamedResponse
+     * @return BinaryFileResponse
      */
     public static function DownloadFileResponse($file, $name = null)
     {
@@ -2887,12 +2893,6 @@ class Base
             // 检查文件是否可读和存在
             if (!$file->isReadable() || !$file->isFile()) {
                 throw new FileException('File must be readable and exist.');
-            }
-
-            // 获取文件信息
-            $size = $file->getSize();
-            if ($size === false || $size < 0) {
-                throw new FileException('Unable to determine file size.');
             }
 
             // 处理文件名
@@ -2912,83 +2912,27 @@ class Base
                 $mimeType = 'application/octet-stream';
             }
 
-            // 处理 Range 请求
-            $start = 0;
-            $end = $size - 1;
-            $length = $size;
-            $isRangeRequest = false;
+            // BinaryFileResponse：autoEtag=false 避免对大文件做 md5/sha1 全文件哈希，autoLastModified=true 取 mtime（开销极小）
+            $response = new BinaryFileResponse($file, 200, [], true, null, false, true);
+            $response->headers->set('Content-Type', $mimeType);
+            $response->headers->set('Cache-Control', 'private, no-transform, no-store, must-revalidate, max-age=0');
+            // filename 兜底为纯 ASCII，filename* 用 UTF-8 编码，兼容含中文/特殊字符的文件名
+            $asciiName = preg_replace('/[^\x20-\x7e]/', '_', $name);
+            $response->headers->set('Content-Disposition', sprintf(
+                'attachment; filename="%s"; filename*=UTF-8\'\'%s',
+                $asciiName,
+                rawurlencode($name)
+            ));
 
-            if (isset($_SERVER['HTTP_RANGE'])) {
-                $range = str_replace('bytes=', '', $_SERVER['HTTP_RANGE']);
-                if (preg_match('/^(\d+)-(\d*)$/', $range, $matches)) {
-                    $start = intval($matches[1]);
-                    $end = !empty($matches[2]) ? intval($matches[2]) : $size - 1;
-
-                    // 验证范围的有效性
-                    if ($start >= 0 && $end < $size && $start <= $end) {
-                        $length = $end - $start + 1;
-                        $isRangeRequest = true;
-                    } else {
-                        $start = 0;
-                        $end = $size - 1;
-                    }
-                }
+            // LaravelS/Swoole 下 StaticResponse 用 sendfile() 整文件发送，不支持分段；
+            // 若放任 Symfony 处理 Range 会返回 206 头却仍发送完整文件，导致内容错位/损坏。
+            // 故在 Swoole 环境下移除 Range 请求头，始终以 200 返回完整文件。
+            if (app()->bound('swoole')) {
+                Request::instance()->headers->remove('Range');
+                $response->headers->set('Accept-Ranges', 'none');
             }
 
-            // 设置基本响应头
-            $headers = [
-                'Content-Type' => $mimeType,
-                'Content-Disposition' => sprintf(
-                    'attachment; filename="%s"; filename*=UTF-8\'\'%s',
-                    $name,
-                    rawurlencode($name)
-                ),
-                'Accept-Ranges' => 'bytes',
-                'Cache-Control' => 'private, no-transform, no-store, must-revalidate, max-age=0',
-                'Content-Length' => $length,
-                'Last-Modified' => gmdate('D, d M Y H:i:s', $file->getMTime()) . ' GMT',
-                'ETag' => sprintf('"%s"', md5_file($file->getPathname()))
-            ];
-
-            if ($isRangeRequest) {
-                $headers['Content-Range'] = "bytes {$start}-{$end}/{$size}";
-                $statusCode = 206;
-            } else {
-                $statusCode = 200;
-            }
-
-            // 创建流式响应
-            return new StreamedResponse(
-                function () use ($file, $start, $length) {
-                    $handle = fopen($file->getPathname(), 'rb');
-                    if ($handle === false) {
-                        throw new FileException('Cannot open file for reading');
-                    }
-
-                    if (fseek($handle, $start) === -1) {
-                        fclose($handle);
-                        throw new FileException('Cannot seek to position ' . $start);
-                    }
-
-                    $remaining = $length;
-                    $bufferSize = 8192; // 8KB chunks
-
-                    while ($remaining > 0 && !feof($handle)) {
-                        $readSize = min($bufferSize, $remaining);
-                        $buffer = fread($handle, $readSize);
-                        if ($buffer === false) {
-                            break;
-                        }
-                        echo $buffer;
-                        flush();
-                        $remaining -= strlen($buffer);
-                    }
-
-                    fclose($handle);
-                },
-                $statusCode,
-                $headers
-            );
+            return $response;
         } catch (\Exception $e) {
             \Log::error('File download failed', [
                 'error' => $e->getMessage(),
