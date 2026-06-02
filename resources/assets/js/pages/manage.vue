@@ -1620,6 +1620,14 @@ export default {
             this.__notificationId = id;
             //
             const notificationFuncA = async (title, body) => {
+                if (userid === -1) {
+                    // AI 助手虚拟用户没有会员记录，取自定义昵称或默认名称
+                    if (dialog_type === 'group') {
+                        body = ((data.msg && data.msg.nickname) || this.$L('AI 助手')) + ': ' + body;
+                    }
+                    notificationFuncB(title, body, $A.mainUrl('images/avatar/default_assistant.png'))
+                    return;
+                }
                 const tempUser = await this.$store.dispatch("getUserData", userid).catch(_ => {});
                 if (dialog_type === 'group' && tempUser) {
                     body = tempUser.nickname + ': ' + body;

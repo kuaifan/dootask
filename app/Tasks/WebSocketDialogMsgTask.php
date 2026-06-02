@@ -189,7 +189,12 @@ class WebSocketDialogMsgTask extends AbstractTask
         if ($umengUserid) {
             $setting = Base::setting('appPushSetting');
             if ($setting['push'] === 'open') {
-                $umengTitle = User::userid2nickname($msg->userid);
+                if ($msg->userid == -1) {
+                    // AI 助手虚拟用户没有会员记录，取自定义昵称或默认名称
+                    $umengTitle = ($msg->msg['nickname'] ?? '') ?: Doo::translate('AI 助手');
+                } else {
+                    $umengTitle = User::userid2nickname($msg->userid);
+                }
                 $umengBody = WebSocketDialogMsg::previewMsg($msg);
                 if ($dialog->type == 'group') {
                     $umengBody = $umengTitle . ': ' . $umengBody;
