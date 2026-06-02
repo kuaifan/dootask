@@ -4,7 +4,7 @@
  * DooTask 的 Electron 客户端集成了 Model Context Protocol (MCP) 服务，
  * 允许 AI 助手(如 Claude)直接与 DooTask 任务进行交互。
  *
- * 提供的工具（共 27 个）:
+ * 提供的工具（共 29 个）:
  *
  * === 用户管理 ===
  * - get_users_basic   - 批量获取用户基础信息（1-50个），便于匹配负责人/协助人
@@ -43,6 +43,7 @@
  * === 消息通知 ===
  * - search_dialogs       - 按名称搜索群聊或联系人，返回 dialog_id/userid
  * - send_message         - 发送消息到对话（支持 dialog_id 或 userid）
+ * - send_task_ai_message - 以AI助手身份发送消息到任务对话，支持自定义发送者昵称
  * - get_message_list     - 获取对话消息记录（支持 dialog_id 或 userid）
  *
  * === 智能搜索 ===
@@ -228,7 +229,7 @@ class DooTaskMCP {
                             return { error: 'Result contains non-serializable data' };
                         }
                     } catch (error) {
-                        return { error: error.msg || error.message || String(error) || 'API request failed' };
+                        return { error: error.msg || error.message || String(error) || 'API request failed', ret: error.ret, data: error.data };
                     }
                 })()
             `);
@@ -242,6 +243,10 @@ class DooTaskMCP {
             const result = await Promise.race([executePromise, timeoutPromise]);
 
             if (result && result.error) {
+                // 多结束/开始状态(-4005/-4006)：保留 ret 与 flow_items 交给工具处理，不直接抛错
+                if (result.ret === -4005 || result.ret === -4006) {
+                    return result;
+                }
                 throw new Error(result.error);
             }
 
@@ -591,14 +596,38 @@ class DooTaskMCP {
                 task_id: z.number()
                     .min(1)
                     .describe('要标记完成的任务ID'),
+                flow_item_id: z.number()
+                    .optional()
+                    .describe('工作流状态ID'),
             }),
             execute: async (params) => {
                 const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-                const result = await this.request('POST', 'project/task/update', {
+                const requestData = {
                     task_id: params.task_id,
                     complete_at: now,
-                });
+                };
+                if (params.flow_item_id) {
+                    requestData.flow_item_id = params.flow_item_id;
+                }
+
+                const result = await this.request('POST', 'project/task/update', requestData);
+
+                // 处理多结束状态的情况
+                if (result.ret === -4005) {
+                    const flowItems = result.data?.flow_items || [];
+                    return {
+                        content: [{
+                            type: 'text',
+                            text: JSON.stringify({
+                                success: false,
+                                message: '存在多个结束状态，请选择要使用的状态后重新调用此工具，并指定flow_item_id参数',
+                                task_id: params.task_id,
+                                flow_items: flowItems,
+                            }, null, 2)
+                        }]
+                    };
+                }
 
                 if (result.error) {
                     throw new Error(result.error);
@@ -720,6 +749,9 @@ class DooTaskMCP {
                 complete_at: z.union([z.string(), z.boolean()])
                     .optional()
                     .describe('完成时间。传时间字符串标记完成，传false标记未完成'),
+                flow_item_id: z.number()
+                    .optional()
+                    .describe('工作流状态ID'),
             }),
             execute: async (params) => {
                 const requestData = {
@@ -734,8 +766,41 @@ class DooTaskMCP {
                 if (params.start_at !== undefined) requestData.start_at = params.start_at;
                 if (params.end_at !== undefined) requestData.end_at = params.end_at;
                 if (params.complete_at !== undefined) requestData.complete_at = params.complete_at;
+                if (params.flow_item_id !== undefined) requestData.flow_item_id = params.flow_item_id;
 
                 const result = await this.request('POST', 'project/task/update', requestData);
+
+                // 处理多结束状态的情况（标记完成时）
+                if (result.ret === -4005) {
+                    const flowItems = result.data?.flow_items || [];
+                    return {
+                        content: [{
+                            type: 'text',
+                            text: JSON.stringify({
+                                success: false,
+                                message: '存在多个结束状态，请选择要使用的状态后重新调用此工具，并指定flow_item_id参数',
+                                task_id: params.task_id,
+                                flow_items: flowItems,
+                            }, null, 2)
+                        }]
+                    };
+                }
+
+                // 处理多开始状态的情况（取消完成时）
+                if (result.ret === -4006) {
+                    const flowItems = result.data?.flow_items || [];
+                    return {
+                        content: [{
+                            type: 'text',
+                            text: JSON.stringify({
+                                success: false,
+                                message: '存在多个开始状态，请选择要使用的状态后重新调用此工具，并指定flow_item_id参数',
+                                task_id: params.task_id,
+                                flow_items: flowItems,
+                            }, null, 2)
+                        }]
+                    };
+                }
 
                 if (result.error) {
                     throw new Error(result.error);
@@ -1285,6 +1350,58 @@ class DooTaskMCP {
                             success: true,
                             dialog_id: dialogId,
                             message: sendResult.data,
+                        }, null, 2)
+                    }]
+                };
+            }
+        });
+
+        // 以AI助手身份发送消息到任务对话
+        this.mcp.addTool({
+            name: 'send_task_ai_message',
+            description: '以AI助手身份发送消息到任务对话。应在每个重要里程碑、遇到阻塞、以及全部完成时主动调用。',
+            parameters: z.object({
+                task_id: z.number()
+                    .describe('目标任务ID'),
+                text: z.string()
+                    .min(1)
+                    .describe('消息内容，支持 Markdown'),
+                nickname: z.string()
+                    .max(20)
+                    .optional()
+                    .describe('自定义发送者昵称（最多20字），不传或留空时默认显示“AI 助手”'),
+                silence: z.boolean()
+                    .optional()
+                    .describe('静默发送，不触发推送提醒'),
+            }),
+            execute: async (params) => {
+                const payload = {
+                    task_id: params.task_id,
+                    text: params.text,
+                    text_type: 'md',
+                };
+
+                if (params.nickname !== undefined) {
+                    payload.nickname = params.nickname;
+                }
+
+                if (params.silence !== undefined) {
+                    payload.silence = params.silence ? 'yes' : 'no';
+                }
+
+                const result = await this.request('POST', 'dialog/msg/send_ai_assistant', payload);
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+
+                return {
+                    content: [{
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            task_id: params.task_id,
+                            message: result.data,
                         }, null, 2)
                     }]
                 };
