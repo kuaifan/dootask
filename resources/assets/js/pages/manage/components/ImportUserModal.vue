@@ -38,6 +38,7 @@
                     @on-selection-change="onSelectionChange"/>
                 <!-- 勾选行后批量设置部门（错误行不可勾选） -->
                 <div class="import-setdept">
+                    <span class="import-batch-label">{{$L('所属部门')}}</span>
                     <Select
                         v-model="setDepartmentIds"
                         multiple
@@ -54,8 +55,18 @@
                             <div :class="`department-level-name level-${item.level - 1}`">{{ item.name }}</div>
                         </Option>
                     </Select>
-                    <Button type="primary" :disabled="selectedRows.length === 0" @click="onApplyDepartment">
+                    <Button :type="selectedRows.length === 0 ? 'default' : 'primary'" :disabled="selectedRows.length === 0" @click="onApplyDepartment">
                         {{$L('设置部门到选中(*)项', selectedRows.length)}}
+                    </Button>
+                </div>
+                <!-- 勾选行后批量设置邮箱认证状态（错误行不可勾选） -->
+                <div class="import-setverity">
+                    <span class="import-batch-label">{{$L('邮箱认证')}}</span>
+                    <Button :type="selectedRows.length === 0 ? 'default' : 'primary'" :disabled="selectedRows.length === 0" @click="onApplyVerity(1)">
+                        {{$L('标记选中(*)项为已认证', selectedRows.length)}}
+                    </Button>
+                    <Button :type="selectedRows.length === 0 ? 'default' : 'primary'" :disabled="selectedRows.length === 0" @click="onApplyVerity(0)">
+                        {{$L('标记选中(*)项为未认证', selectedRows.length)}}
                     </Button>
                 </div>
                 <div class="import-option">
@@ -117,7 +128,22 @@ export default {
             previewColumns: [
                 {type: 'selection', width: 50, align: 'center'},
                 {title: this.$L('行号'), key: 'line', width: 64, align: 'center'},
-                {title: this.$L('邮箱'), minWidth: 150, render: (h, {row}) => h('AutoTip', row.email || '-')},
+                {
+                    title: this.$L('邮箱'),
+                    minWidth: 150,
+                    render: (h, {row}) => {
+                        // 列渲染发生在 Table 的上下文，scoped 样式不生效，故图标颜色/布局内联（与会员列表 $primary-color 一致）
+                        const arr = [h('AutoTip', {style: {minWidth: '50px'}}, row.email || '-')];
+                        if (row.email_verity && row.status === 'ok') {
+                            arr.push(h('Icon', {
+                                props: {type: 'md-mail'},
+                                attrs: {title: this.$L('已邮箱认证')},
+                                style: {color: '#84C56A', marginLeft: '6px', fontSize: '16px', flexShrink: 0},
+                            }));
+                        }
+                        return h('div', {style: {display: 'flex', alignItems: 'center'}}, arr);
+                    }
+                },
                 {title: this.$L('昵称'), width: 90, render: (h, {row}) => h('AutoTip', row.nickname || '-')},
                 {
                     title: this.$L('初始密码'),
@@ -254,6 +280,7 @@ export default {
                 const data = res.data;
                 (data.rows || []).forEach(row => {
                     this.$set(row, 'department', []);     // 逐行部门，默认空
+                    this.$set(row, 'email_verity', row.email_verity ? 1 : 0); // 逐行邮箱认证，默认已认证
                     if (row.status !== 'ok') {
                         this.$set(row, '_disabled', true); // 错误行不可勾选
                     }
@@ -280,19 +307,32 @@ export default {
                 }
             });
         },
+        onApplyVerity(verity) {
+            if (this.selectedRows.length === 0) {
+                return;
+            }
+            // 与 onApplyDepartment 一致：按唯一 line 匹配回 preview.rows 的原始对象再写入
+            const selectedLines = new Set(this.selectedRows.map(row => row.line));
+            (this.preview && this.preview.rows ? this.preview.rows : []).forEach(row => {
+                if (selectedLines.has(row.line)) {
+                    this.$set(row, 'email_verity', verity ? 1 : 0);
+                }
+            });
+        },
         onConfirmImport() {
             if (!this.preview || this.preview.valid === 0) {
                 return;
             }
             const rows = this.preview.rows
                 .filter(row => row.status === 'ok')
-                .map(({line, email, nickname, password, profession, department}) => ({
+                .map(({line, email, nickname, password, profession, department, email_verity}) => ({
                     line,
                     email,
                     nickname,
                     password,
                     profession: profession || '',
                     department: Array.isArray(department) ? department : [],
+                    email_verity: email_verity ? 1 : 0,
                 }));
             this.importing = true;
             this.$store.dispatch("call", {
@@ -336,14 +376,25 @@ export default {
     .import-tip { color: #808695; margin-bottom: 12px; }
     .import-actions { display: flex; gap: 12px; align-items: center; }
     .import-option { margin-top: 12px; }
+    .import-batch-label {
+        flex-shrink: 0;
+        min-width: 64px;
+        color: #515a6e;
+    }
     .import-setdept {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         gap: 8px;
         margin-top: 12px;
         .import-setdept-select {
             width: auto;
         }
+    }
+    .import-setverity {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
     }
     .import-preview { margin-top: 16px; }
     .import-result { margin-top: 16px; }

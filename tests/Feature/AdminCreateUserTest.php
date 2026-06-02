@@ -141,6 +141,20 @@ class AdminCreateUserTest extends TestCase
         $this->assertSame(0, User::whereEmail('newp1@test.local')->count());
     }
 
+    public function test_import_preview_defaults_email_verity_to_verified()
+    {
+        // 预览默认逐行标记为已认证（email_verity=1），前端可再按行调整
+        $rows = [
+            ['line' => 2, 'email' => 'verity1@test.local', 'nickname' => '张三', 'password' => 'Abc123456'],
+            ['line' => 3, 'email' => 'bad', 'nickname' => '李四', 'password' => 'Abc123456'], // 错误行同样带默认值
+        ];
+
+        $preview = User::importPreview($rows);
+
+        $this->assertSame(1, $preview['rows'][0]['email_verity']);
+        $this->assertSame(1, $preview['rows'][1]['email_verity']);
+    }
+
     public function test_import_collects_all_invalid_rows_without_creating()
     {
         // 全部非法 → 不触发 createByAdmin/SO，可在无 Swoole 环境稳定运行

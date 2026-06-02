@@ -432,7 +432,7 @@ class User extends AbstractModel
      * @param string $email
      * @param string $password
      * @param string $nickname
-     * @param array  $options  changePass(bool,默认true) / department(int[]) / profession(string)
+     * @param array  $options  changePass(bool,默认true) / emailVerity(bool,默认false,标记邮箱已认证) / department(int[]) / profession(string)
      * @return self
      * @throws ApiException
      */
@@ -443,6 +443,7 @@ class User extends AbstractModel
             throw new ApiException('昵称需为2-20个字');
         }
         $changePass = ($options['changePass'] ?? true) ? 1 : 0;
+        $emailVerity = ($options['emailVerity'] ?? false) ? 1 : 0;
         $profession = trim((string)($options['profession'] ?? ''));
         // 校验前置（reg 之前快速失败，且可在无 Swoole 环境单测）
         self::assertValidProfession($profession);
@@ -454,6 +455,7 @@ class User extends AbstractModel
             $user->identity = Base::arrayImplode(array_diff($user->identity, ['temp']));
         }
         $user->changepass = $changePass; // 复用现有首登强制改密机制
+        $user->email_verity = $emailVerity; // 管理员可在创建时直接标记邮箱认证状态
         if ($profession !== '') {
             $user->profession = $profession;
         }
@@ -619,6 +621,7 @@ class User extends AbstractModel
                 try {
                     self::createByAdmin($row['email'], $row['password'], $row['nickname'], [
                         'changePass' => $changePass,
+                        'emailVerity' => !empty($row['email_verity']),
                         'department' => $row['department'] ?? [],
                         'profession' => $row['profession'] ?? '',
                     ]);
@@ -692,6 +695,7 @@ class User extends AbstractModel
                 'nickname' => $row['nickname'] ?? '',
                 'password' => $row['password'] ?? '',
                 'profession' => $row['profession'] ?? '',
+                'email_verity' => 1, // 默认标记为已认证，前端可在预览中按行调整
                 'status' => $ok ? 'ok' : 'error',
                 'reason' => $reason ?? '',
             ];

@@ -7,12 +7,14 @@
         <Form ref="form" :model="formData" :label-width="80" @submit.native.prevent>
             <FormItem :label="$L('邮箱')" required>
                 <Input v-model="formData.email" :placeholder="$L('请输入邮箱')" clearable/>
+                <Checkbox v-model="formData.email_verity" style="margin-top:8px">{{$L('标记邮箱为已认证')}}</Checkbox>
             </FormItem>
             <FormItem :label="$L('昵称')" required>
                 <Input v-model="formData.nickname" :placeholder="$L('请输入昵称')" clearable/>
             </FormItem>
             <FormItem :label="$L('初始密码')" required>
                 <Input v-model="formData.password" type="password" password :placeholder="$L('请输入初始密码')" clearable/>
+                <Checkbox v-model="formData.changepass" style="margin-top:8px">{{$L('员工首次登录需修改密码')}}</Checkbox>
             </FormItem>
             <FormItem :label="$L('职位')">
                 <Input v-model="formData.profession" :maxlength="20" :placeholder="$L('请输入职位/职称')" clearable/>
@@ -32,9 +34,6 @@
                         <div :class="`department-level-name level-${item.level - 1}`">{{ item.name }}</div>
                     </Option>
                 </Select>
-            </FormItem>
-            <FormItem>
-                <Checkbox v-model="formData.changepass">{{$L('员工首次登录需修改密码')}}</Checkbox>
             </FormItem>
         </Form>
         <div slot="footer">
@@ -61,14 +60,14 @@ export default {
         return {
             show: false,
             loading: false,
-            formData: {email: '', nickname: '', password: '', changepass: true, profession: '', department: []},
+            formData: {email: '', nickname: '', password: '', changepass: true, email_verity: true, profession: '', department: []},
         }
     },
     watch: {
         value(val) {
             this.show = val;
             if (val) {
-                this.formData = {email: '', nickname: '', password: '', changepass: true, profession: '', department: []};
+                this.formData = {email: '', nickname: '', password: '', changepass: true, email_verity: true, profession: '', department: []};
             }
         },
         show(val) {
@@ -115,7 +114,7 @@ export default {
             this.show = false;
         },
         onSubmit() {
-            const {email, nickname, password, changepass, profession, department} = this.formData;
+            const {email, nickname, password, changepass, email_verity, profession, department} = this.formData;
             if (!email || !nickname || !password) {
                 $A.messageWarning('邮箱、昵称、初始密码均为必填');
                 return;
@@ -123,7 +122,7 @@ export default {
             this.loading = true;
             this.$store.dispatch("call", {
                 url: 'users/createuser',
-                data: {email, nickname, password, changepass: changepass ? 1 : 0, profession, department},
+                data: {email, nickname, password, changepass: changepass ? 1 : 0, email_verity: email_verity ? 1 : 0, profession, department},
             }).then(() => {
                 this.loading = false;
                 $A.messageSuccess('创建成功');

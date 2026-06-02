@@ -1094,6 +1094,8 @@ class UsersController extends AbstractController
      * - clearadmin           取消管理员
      * - settemp              设为临时帐号
      * - cleartemp            取消临时身份（取消临时帐号）
+     * - setverity            标记邮箱为已认证
+     * - clearverity          标记邮箱为未认证
      * - checkin_macs         修改自动签到mac地址（需要参数 checkin_macs）
      * - checkin_face         修改签到人脸图片（需要参数 checkin_face）
      * - department           修改部门（需要参数 department）
@@ -1155,6 +1157,16 @@ class UsersController extends AbstractController
             case 'cleartemp':
                 $msg = '取消成功';
                 $upArray['identity'] = array_diff($userInfo->identity, ['temp']);
+                break;
+
+            case 'setverity':
+                $msg = '设置成功';
+                $upArray['email_verity'] = 1;
+                break;
+
+            case 'clearverity':
+                $msg = '取消成功';
+                $upArray['email_verity'] = 0;
                 break;
 
             case 'checkin_macs':
@@ -1354,6 +1366,7 @@ class UsersController extends AbstractController
      * @apiParam {String} email     邮箱
      * @apiParam {String} password  初始密码
      * @apiParam {String} nickname  昵称
+     * @apiParam {Number} [email_verity] 是否标记邮箱为已认证（1是、0否，默认1）
      * @apiParam {String} [profession]  职位/职称（可选，2-20字）
      * @apiParam {Array}  [department]   部门ID列表（可选，最多10个）
      */
@@ -1364,10 +1377,12 @@ class UsersController extends AbstractController
         $password = trim(Request::input('password'));
         $nickname = trim(Request::input('nickname'));
         $changePass = intval(Request::input('changepass', 1)) === 1;
+        $emailVerity = intval(Request::input('email_verity', 1)) === 1;
         $profession = trim((string)Request::input('profession', ''));
         $department = Request::input('department', []);
         $user = User::createByAdmin($email, $password, $nickname, [
             'changePass' => $changePass,
+            'emailVerity' => $emailVerity,
             'profession' => $profession,
             'department' => is_array($department) ? $department : [],
         ]);
@@ -1405,7 +1420,7 @@ class UsersController extends AbstractController
     /**
      * @api {post} api/users/import 批量导入用户（管理员）
      *
-     * @apiDescription 需要token身份（管理员）。提交预览确认后的行数据 rows（每行 {email,nickname,password,profession}，可选 department[]）进行创建
+     * @apiDescription 需要token身份（管理员）。提交预览确认后的行数据 rows（每行 {email,nickname,password,profession}，可选 department[]、email_verity(1已认证/0未认证，默认0)）进行创建
      * @apiVersion 1.0.0
      * @apiGroup users
      * @apiName import

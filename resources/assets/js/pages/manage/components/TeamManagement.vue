@@ -538,7 +538,7 @@ export default {
                     align: 'center',
                     width: 100,
                     render: (h, params) => {
-                        const identity = params.row.identity;
+                        const {identity, email_verity} = params.row;
                         const dropdownItems = [];
                         dropdownItems.push(h('EDropdownItem', {
                             props: {
@@ -572,6 +572,20 @@ export default {
                                     command: 'settemp',
                                 },
                             }, [h('div', this.$L('设为临时帐号'))]));
+                        }
+                        // 邮箱认证状态
+                        if (email_verity) {
+                            dropdownItems.push(h('EDropdownItem', {
+                                props: {
+                                    command: 'clearverity',
+                                },
+                            }, [h('div', this.$L('标记邮箱为未认证'))]));
+                        } else {
+                            dropdownItems.push(h('EDropdownItem', {
+                                props: {
+                                    command: 'setverity',
+                                },
+                            }, [h('div', this.$L('标记邮箱为已认证'))]));
                         }
                         // 编辑用户信息
                         dropdownItems.push(h('EDropdownItem', {
@@ -951,6 +965,32 @@ export default {
                 case 'cleartemp':
                     $A.modalConfirm({
                         content: `你确定取消【ID:${row.userid}, ${row.nickname}】临时身份吗？`,
+                        loading: true,
+                        onOk: () => {
+                            return this.operationUser({
+                                userid: row.userid,
+                                type: name
+                            });
+                        }
+                    });
+                    break;
+
+                case 'setverity':
+                    $A.modalConfirm({
+                        content: `你确定将【ID:${row.userid}, ${row.nickname}】的邮箱标记为已认证吗？`,
+                        loading: true,
+                        onOk: () => {
+                            return this.operationUser({
+                                userid: row.userid,
+                                type: name
+                            });
+                        }
+                    });
+                    break;
+
+                case 'clearverity':
+                    $A.modalConfirm({
+                        content: `你确定将【ID:${row.userid}, ${row.nickname}】的邮箱标记为未认证吗？`,
                         loading: true,
                         onOk: () => {
                             return this.operationUser({
