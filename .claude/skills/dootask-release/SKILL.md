@@ -1,6 +1,6 @@
 ---
 name: dootask-release
-description: Use when releasing a new DooTask frontend version from the `pro` branch. Rigid sequential workflow (translate → version → build → commit → push) with strict pre-checks (branch, clean worktree, Node 20+) and per-step user confirmation. Use when user says "发布新版本", "release", "出新版本", "打版本". Stop on any failure; do NOT auto-fix dirty worktree, do NOT add tag step, do NOT use `git add -A`.
+description: 从 `pro` 分支发布 DooTask 前端新版本：刚性顺序流程 translate → version → build → commit → push，前置检查 + 每步确认、失败即停。
 ---
 
 # DooTask 发布流程
