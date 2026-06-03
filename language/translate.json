@@ -34584,18 +34584,6 @@
         "ru": "Разрешить: все участники могут создавать\/отменять задачи для других."
     },
     {
-        "key": "禁止：仅本人、群主（含群管理员）、项目负责人（含项目管理员）、任务负责人可设置\/取消待办。",
-        "zh": "",
-        "zh-CHT": "禁止：僅本人、群主（含群管理員）、專案負責人（含專案管理員）、任務負責人可設定\/取消待辦。",
-        "en": "Prohibit: Only the user, group owner (including group admins), project owner (including project admins), and task owner can set\/cancel to-dos.",
-        "ko": "금지: 본인, 그룹 소유자(그룹 관리자 포함), 프로젝트 책임자(프로젝트 관리자 포함), 작업 책임자만 할 일을 설정\/취소할 수 있습니다.",
-        "ja": "禁止：本人、グループオーナー（グループ管理者を含む）、プロジェクト責任者（プロジェクト管理者を含む）、タスク責任者のみがToDoを設定\/取消できます。",
-        "de": "Verbieten: Nur der Benutzer selbst, der Gruppeninhaber (einschließlich Gruppenadministratoren), der Projektverantwortliche (einschließlich Projektadministratoren) und der Aufgabenverantwortliche können Aufgaben festlegen\/abbrechen.",
-        "fr": "Interdire : seuls l’utilisateur lui-même, le propriétaire du groupe (y compris les administrateurs du groupe), le responsable du projet (y compris les administrateurs du projet) et le responsable de la tâche peuvent définir\/annuler des tâches à faire.",
-        "id": "Larang: Hanya pengguna sendiri, pemilik grup (termasuk admin grup), penanggung jawab proyek (termasuk admin proyek), dan penanggung jawab tugas yang dapat mengatur\/membatalkan tugas.",
-        "ru": "Запретить: только сам пользователь, владелец группы (включая администраторов группы), ответственный за проект (включая администраторов проекта) и ответственный за задачу могут создавать\/отменять задачи."
-    },
-    {
         "key": "批量导入用户",
         "zh": "",
         "zh-CHT": "批次匯入使用者",
@@ -35028,18 +35016,6 @@
         "ru": "Вы уверены, что хотите отменить время напоминания для этого участника?"
     },
     {
-        "key": "仅群主、项目\/任务负责人可设置或取消他人待办",
-        "zh": "",
-        "zh-CHT": "僅群主、專案\/任務負責人可設定或取消他人待辦",
-        "en": "Only the group owner and project\/task owners can set or cancel others' to-dos",
-        "ko": "그룹 소유자 및 프로젝트\/작업 담당자만 다른 사람의 할 일을 설정하거나 취소할 수 있습니다",
-        "ja": "グループオーナーおよびプロジェクト\/タスクの責任者のみ、他のメンバーのToDoを設定またはキャンセルできます",
-        "de": "Nur der Gruppeninhaber sowie Projekt-\/Aufgabenverantwortliche können To-dos anderer festlegen oder abbrechen",
-        "fr": "Seuls le propriétaire du groupe et les responsables de projet\/tâche peuvent définir ou annuler les tâches à faire des autres",
-        "id": "Hanya pemilik grup dan penanggung jawab proyek\/tugas yang dapat mengatur atau membatalkan tugas orang lain",
-        "ru": "Только владелец группы и ответственные за проект\/задачу могут устанавливать или отменять задачи других пользователей"
-    },
-    {
         "key": "请选择文件",
         "zh": "",
         "zh-CHT": "請選擇檔案",
@@ -35170,5 +35146,113 @@
         "fr": "Vous avez une tâche dont l’heure de rappel est arrivée",
         "id": "Anda memiliki satu tugas yang telah mencapai waktu pengingat",
         "ru": "У вас есть задача, для которой наступило время напоминания"
+    },
+    {
+        "key": "你确定将【(%T1)】的邮箱标记为已认证吗？",
+        "zh": "",
+        "zh-CHT": "你確定將【(%T1)】的郵箱標記為已認證嗎？",
+        "en": "Are you sure you want to mark the email address of 【(%T1)】 as verified?",
+        "ko": "【(%T1)】의 이메일을 인증됨으로 표시하시겠습니까?",
+        "ja": "【(%T1)】のメールアドレスを認証済みにしますか？",
+        "de": "Möchten Sie die E-Mail-Adresse von 【(%T1)】 wirklich als verifiziert markieren?",
+        "fr": "Voulez-vous vraiment marquer l’adresse e-mail de 【(%T1)】 comme vérifiée ?",
+        "id": "Apakah Anda yakin ingin menandai email 【(%T1)】 sebagai terverifikasi?",
+        "ru": "Вы уверены, что хотите отметить адрес электронной почты 【(%T1)】 как подтвержденный?"
+    },
+    {
+        "key": "你确定将【(%T1)】的邮箱标记为未认证吗？",
+        "zh": "",
+        "zh-CHT": "你確定將【(%T1)】的郵箱標記為未認證嗎？",
+        "en": "Are you sure you want to mark the email address of 【(%T1)】 as unverified?",
+        "ko": "【(%T1)】의 이메일을 미인증으로 표시하시겠습니까?",
+        "ja": "【(%T1)】のメールアドレスを未認証にしますか？",
+        "de": "Möchten Sie die E-Mail-Adresse von 【(%T1)】 wirklich als nicht verifiziert markieren?",
+        "fr": "Voulez-vous vraiment marquer l’adresse e-mail de 【(%T1)】 comme non vérifiée ?",
+        "id": "Apakah Anda yakin ingin menandai email 【(%T1)】 sebagai belum terverifikasi?",
+        "ru": "Вы уверены, что хотите отметить адрес электронной почты 【(%T1)】 как неподтвержденный?"
+    },
+    {
+        "key": "标记邮箱为已认证",
+        "zh": "",
+        "zh-CHT": "標記郵箱為已認證",
+        "en": "Mark email as verified",
+        "ko": "이메일을 인증됨으로 표시",
+        "ja": "メールアドレスを認証済みにする",
+        "de": "E-Mail als verifiziert markieren",
+        "fr": "Marquer l’adresse e-mail comme vérifiée",
+        "id": "Tandai email sebagai terverifikasi",
+        "ru": "Отметить адрес электронной почты как подтвержденный"
+    },
+    {
+        "key": "标记邮箱为未认证",
+        "zh": "",
+        "zh-CHT": "標記郵箱為未認證",
+        "en": "Mark email as unverified",
+        "ko": "이메일을 미인증으로 표시",
+        "ja": "メールアドレスを未認証にする",
+        "de": "E-Mail als nicht verifiziert markieren",
+        "fr": "Marquer l’adresse e-mail comme non vérifiée",
+        "id": "Tandai email sebagai belum terverifikasi",
+        "ru": "Отметить адрес электронной почты как неподтвержденный"
+    },
+    {
+        "key": "标记选中(%T1)项为已认证",
+        "zh": "",
+        "zh-CHT": "標記選中(%T1)項為已認證",
+        "en": "Mark the selected (%T1) items as verified",
+        "ko": "선택한 (%T1)개 항목을 인증됨으로 표시",
+        "ja": "選択した(%T1)件を認証済みにする",
+        "de": "Ausgewählte (%T1) Elemente als verifiziert markieren",
+        "fr": "Marquer les (%T1) éléments sélectionnés comme vérifiés",
+        "id": "Tandai (%T1) item yang dipilih sebagai terverifikasi",
+        "ru": "Отметить выбранные элементы (%T1) как подтвержденные"
+    },
+    {
+        "key": "标记选中(%T1)项为未认证",
+        "zh": "",
+        "zh-CHT": "標記選中(%T1)項為未認證",
+        "en": "Mark the selected (%T1) items as unverified",
+        "ko": "선택한 (%T1)개 항목을 미인증으로 표시",
+        "ja": "選択した(%T1)件を未認証にする",
+        "de": "Ausgewählte (%T1) Elemente als nicht verifiziert markieren",
+        "fr": "Marquer les (%T1) éléments sélectionnés comme non vérifiés",
+        "id": "Tandai (%T1) item yang dipilih sebagai belum terverifikasi",
+        "ru": "Отметить выбранные элементы (%T1) как неподтвержденные"
+    },
+    {
+        "key": "禁止：仅本人、系统管理员、群主（含群管理员）、项目负责人（含项目管理员）、任务负责人可设置\/取消待办。",
+        "zh": "",
+        "zh-CHT": "禁止：僅本人、系統管理員、群主（含群管理員）、專案負責人（含專案管理員）、任務負責人可設定\/取消待辦。",
+        "en": "Prohibited: Only the user themself, system administrators, group owners (including group administrators), project owners (including project administrators), and task owners can set\/cancel to-dos.",
+        "ko": "금지: 본인, 시스템 관리자, 그룹 소유자(그룹 관리자 포함), 프로젝트 책임자(프로젝트 관리자 포함), 작업 책임자만 할 일을 설정\/취소할 수 있습니다.",
+        "ja": "禁止：本人、システム管理者、グループオーナー（グループ管理者を含む）、プロジェクト責任者（プロジェクト管理者を含む）、タスク責任者のみがToDoを設定\/取消できます。",
+        "de": "Unzulässig: Nur die Person selbst, Systemadministratoren, Gruppenbesitzer (einschließlich Gruppenadministratoren), Projektverantwortliche (einschließlich Projektadministratoren) und Aufgabenverantwortliche können To-dos festlegen\/abbrechen.",
+        "fr": "Interdit : seuls l’utilisateur lui-même, les administrateurs système, les propriétaires de groupe (y compris les administrateurs de groupe), les responsables de projet (y compris les administrateurs de projet) et les responsables de tâche peuvent définir\/annuler des tâches à faire.",
+        "id": "Dilarang: Hanya pengguna itu sendiri, administrator sistem, pemilik grup (termasuk administrator grup), penanggung jawab proyek (termasuk administrator proyek), dan penanggung jawab tugas yang dapat mengatur\/membatalkan to-do.",
+        "ru": "Запрещено: только сам пользователь, системные администраторы, владельцы групп (включая администраторов групп), ответственные за проект (включая администраторов проекта) и ответственные за задачу могут устанавливать\/отменять задачи."
+    },
+    {
+        "key": "仅群主、项目\/任务负责人或系统管理员可设置或取消他人待办",
+        "zh": "",
+        "zh-CHT": "僅群主、專案\/任務負責人或系統管理員可設定或取消他人待辦",
+        "en": "Only group owners, project\/task owners, or system administrators can set or cancel others' to-dos",
+        "ko": "그룹 소유자, 프로젝트\/작업 책임자 또는 시스템 관리자만 다른 사람의 할 일을 설정하거나 취소할 수 있습니다.",
+        "ja": "グループオーナー、プロジェクト\/タスク責任者、またはシステム管理者のみが他人のToDoを設定または取消できます",
+        "de": "Nur Gruppenbesitzer, Projekt-\/Aufgabenverantwortliche oder Systemadministratoren können To-dos anderer festlegen oder abbrechen",
+        "fr": "Seuls les propriétaires de groupe, les responsables de projet\/tâche ou les administrateurs système peuvent définir ou annuler les tâches à faire d’autres personnes",
+        "id": "Hanya pemilik grup, penanggung jawab proyek\/tugas, atau administrator sistem yang dapat mengatur atau membatalkan to-do orang lain",
+        "ru": "Только владельцы групп, ответственные за проект\/задачу или системные администраторы могут устанавливать или отменять задачи других пользователей"
+    },
+    {
+        "key": "发送者昵称最多不能超过20字",
+        "zh": "",
+        "zh-CHT": "發送者暱稱最多不能超過20字",
+        "en": "The sender nickname cannot exceed 20 characters",
+        "ko": "발신자 닉네임은 최대 20자를 초과할 수 없습니다.",
+        "ja": "送信者のニックネームは20文字を超えることはできません",
+        "de": "Der Spitzname des Absenders darf höchstens 20 Zeichen lang sein",
+        "fr": "Le pseudonyme de l’expéditeur ne peut pas dépasser 20 caractères",
+        "id": "Nama panggilan pengirim tidak boleh melebihi 20 karakter",
+        "ru": "Псевдоним отправителя не может превышать 20 символов"
     }
 ]

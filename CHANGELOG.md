@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.81]
+
+### Features
+
+- 团队管理中可标记成员邮箱认证状态，成员信息更易管理。
+- 系统管理员可在任意群组中设置或取消他人的待办，协作管理更灵活。
+
+### Bug Fixes
+
+- 修复 AI 助手消息推送中发送者身份不完整的问题。
+
+### Performance
+
+- 优化大文件下载方式，下载更稳定、更高效。
+
 ## [1.7.67]
 
 ### Features
