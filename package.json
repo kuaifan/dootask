@@ -5,9 +5,7 @@
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
-        "build": "./cmd prod",
-        "version": "node ./bin/version.js",
-        "translate": "./cmd translate"
+        "build": "./cmd prod"
     },
     "author": {
         "name": "KuaiFan",

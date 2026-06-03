@@ -9,9 +9,9 @@
 
 ## 发布版本
 
+> 翻译、版本号、更新日志改由 `dootask-release` 技能完成（见 `.claude/skills/dootask-release/`）。
+
 ```shell
-npm run translate   # 翻译（可选）
-npm run version     # 生成版本
 npm run build       # 编译前端
 ```
 

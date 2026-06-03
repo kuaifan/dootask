@@ -931,10 +931,6 @@ case "$1" in
         container_exec php "php app/Models/clearHelper.php"
         container_exec php "php artisan ide-helper:models -W"
         ;;
-    "translate")
-        shift 1
-        container_exec php "cd /var/www/language && php translate.php"
-        ;;
     "restart")
         shift 1
         $COMPOSE stop "$@"
