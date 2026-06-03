@@ -349,6 +349,37 @@ class ApproveController extends AbstractController
     }
 
     /**
+     * @api {post} api/approve/process/delById 删除审批（流程实例）
+     *
+     * @apiDescription 需要token身份；仅可删除已结束的审批，且仅发起人或管理员可删
+     * @apiVersion 1.0.0
+     * @apiGroup approve
+     * @apiName process__delById
+     *
+     * @apiQuery {Number} proc_inst_id          流程实例ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function process__delById()
+    {
+        $user = User::auth();
+        $data['userid'] = (string)$user->userid;
+        $data['proc_inst_id'] = intval(Request::input('proc_inst_id'));
+        $data['is_admin'] = $user->isAdmin();
+        if ($data['proc_inst_id'] <= 0) {
+            return Base::retError('参数错误');
+        }
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/delById', json_encode(Base::arrayKeyToCamel($data)));
+        $task = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$task || $task['status'] != 200) {
+            return Base::retError($task['message'] ?? '删除失败');
+        }
+        return Base::retSuccess('已删除');
+    }
+
+    /**
      * @api {post} api/approve/process/findTask 查询需要我审批的流程（审批中）
      *
      * @apiDescription 需要token身份

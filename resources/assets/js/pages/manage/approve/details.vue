@@ -181,6 +181,7 @@
             <Button type="primary" v-if="isShowAgreeBtn && !loadIng" @click="approve(1)">{{$L('同意')}}</Button>
             <Button type="error" v-if="isShowAgreeBtn && !loadIng"  @click="approve(2)">{{$L('拒绝')}}</Button>
             <Button type="warning" v-if="isShowWarningBtn && !loadIng" @click="revocation">{{$L('撤销')}}</Button>
+            <Button type="error" v-if="isShowDeleteBtn && !loadIng" @click="remove">{{$L('删除')}}</Button>
             <Button type="primary" @click="comment" :loading="loadIng > 0" ghost>+{{$L('添加评论')}}</Button>
         </div>
 
@@ -259,7 +260,7 @@ export default {
         },
     },
     computed: {
-        ...mapState(['formOptions']),
+        ...mapState(['formOptions', 'userIsAdmin']),
 
         isShowAgreeBtn() {
             return (this.datas.candidate || '').split(',').indexOf(this.userId + '') != -1 && !this.datas.is_finished
@@ -272,6 +273,11 @@ export default {
                 }
             })
             return is;
+        },
+        // 仅已结束的审批（已通过2/已拒绝3/已撤回4）可删，且仅发起人或管理员
+        isShowDeleteBtn() {
+            return (this.userId == this.datas.start_user_id || this.userIsAdmin)
+                && [2, 3, 4].includes(Number(this.datas.state));
         },
     },
     mounted() {
@@ -405,6 +411,36 @@ export default {
                             resolve();
                             if (this.routeName == 'manage-approve-details' || this.routeName == 'manage-messenger') {
                                 this.getInfo()
+                            } else {
+                                this.$emit('revocation')
+                            }
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
+                },
+            });
+        },
+        // 删除审批
+        remove() {
+            $A.modalConfirm({
+                content: "删除后不可恢复，确定要删除该审批吗？",
+                loading: true,
+                okType: "error",
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'approve/process/delById',
+                            method: 'post',
+                            data: {
+                                proc_inst_id: this.datas.id,
+                            }
+                        }).then(({msg}) => {
+                            $A.messageSuccess(msg);
+                            resolve();
+                            // 删除后记录已不存在：独立路由返回上一页，嵌入模式通知父级刷新列表
+                            if (this.routeName == 'manage-approve-details' || this.routeName == 'manage-messenger') {
+                                this.$router.back()
                             } else {
                                 this.$emit('revocation')
                             }
