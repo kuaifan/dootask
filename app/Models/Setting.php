@@ -59,6 +59,14 @@ class Setting extends AbstractModel
                 if (!is_array($value['task_default_time']) || count($value['task_default_time']) != 2 || !Timer::isTime($value['task_default_time'][0]) || !Timer::isTime($value['task_default_time'][1])) {
                     $value['task_default_time'] = ['09:00', '18:00'];
                 }
+                // 项目创建权限：范围（all/departmentOwner/appoint，默认 all）+ 指定人员
+                $value['project_add_permission'] = array_values(array_intersect(
+                    is_array($value['project_add_permission'] ?? null) ? $value['project_add_permission'] : [],
+                    ['all', 'departmentOwner', 'appoint']
+                )) ?: ['all'];
+                $value['project_add_userids'] = is_array($value['project_add_userids'] ?? null)
+                    ? array_values(array_unique(array_filter(array_map('intval', $value['project_add_userids']))))
+                    : [];
                 break;
 
             // 文件设置

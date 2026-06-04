@@ -69,6 +69,8 @@ class SystemController extends AbstractController
                     'login_code',
                     'password_policy',
                     'project_invite',
+                    'project_add_permission',
+                    'project_add_userids',
                     'chat_information',
                     'anon_message',
                     'convert_video',
@@ -154,6 +156,10 @@ class SystemController extends AbstractController
         $setting['department_owner_project_view'] = $setting['department_owner_project_view'] ?: 'close';
         $setting['server_timezone'] = config('app.timezone');
         $setting['server_version'] = Base::getVersion();
+        // 指定人员名单仅管理员可见
+        if ($type != 'all' && $type != 'save') {
+            unset($setting['project_add_userids']);
+        }
         //
         return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }

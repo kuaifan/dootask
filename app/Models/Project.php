@@ -606,6 +606,38 @@ class Project extends AbstractModel
     }
 
     /**
+     * 判断用户是否有权限创建项目（依据系统设置「项目创建权限」）
+     * @param int $userid
+     * @return bool
+     */
+    public static function userCanCreate($userid)
+    {
+        // 范围已在 Setting::getSettingAttribute() 归一化（默认 ['all']）
+        $modes = Base::settingFind('system', 'project_add_permission', ['all']);
+        // 「所有人」：放行（与具体用户无关，避免未携带身份时被误判为无权）
+        if (in_array('all', $modes)) {
+            return true;
+        }
+        $user = User::find(intval($userid));
+        if (empty($user)) {
+            return false;
+        }
+        // 系统管理员始终可创建项目（不受开关限制）
+        if ($user->isAdmin()) {
+            return true;
+        }
+        // 部门负责人/部门管理员
+        if (in_array('departmentOwner', $modes) && UserDepartment::getManagedDepartments($user->userid)->isNotEmpty()) {
+            return true;
+        }
+        // 指定人员
+        if (in_array('appoint', $modes)) {
+            return in_array($user->userid, Base::settingFind('system', 'project_add_userids', []));
+        }
+        return false;
+    }
+
+    /**
      * 创建项目
      * @param $params
      * - name   项目名称
@@ -621,6 +653,10 @@ class Project extends AbstractModel
         $desc = trim(Arr::get($params, 'desc', ''));
         $flow = trim(Arr::get($params, 'flow', 'close'));
         $isPersonal = intval(Arr::get($params, 'personal'));
+        // 个人项目为系统自动创建，不受创建权限限制
+        if (!$isPersonal && !self::userCanCreate($userid)) {
+            return Base::retError('当前仅指定人员可以创建项目');
+        }
         if (mb_strlen($name) < 2) {
             return Base::retError('项目名称不可以少于2个字');
         } elseif (mb_strlen($name) > 32) {

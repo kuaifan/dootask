@@ -75,6 +75,26 @@
                         </RadioGroup>
                         <div v-if="formDatum.project_invite == 'open'" class="form-tip">{{$L('开启：项目管理员可生成链接邀请成员加入项目。')}}</div>
                     </FormItem>
+                    <FormItem :label="$L('创建项目')" prop="project_add_permission">
+                        <CheckboxGroup :value="formDatum.project_add_permission || []" @on-change="onProjectAddPermissionChange">
+                            <Checkbox label="all">{{$L('所有人')}}</Checkbox>
+                            <Checkbox label="departmentOwner">{{$L('部门负责人')}}</Checkbox>
+                            <Checkbox label="appoint">{{$L('指定人员')}}</Checkbox>
+                        </CheckboxGroup>
+                        <div v-if="projectAddAll" class="form-tip">{{$L('所有人：所有成员均可创建项目。')}}</div>
+                        <div v-else class="form-tip form-list">
+                            <p>{{$L('可创建项目的人员')}}：</p>
+                            <ol>
+                                <li>{{$L('系统管理员（始终可创建，不受开关限制）。')}}</li>
+                                <li v-if="(formDatum.project_add_permission || []).includes('departmentOwner')">{{$L('部门负责人与部门管理员。')}}</li>
+                                <li v-if="(formDatum.project_add_permission || []).includes('appoint')">{{$L('下方指定的人员。')}}</li>
+                            </ol>
+                        </div>
+                        <template v-if="(formDatum.project_add_permission || []).includes('appoint')">
+                            <UserSelect v-model="formDatum.project_add_userids" :multiple-max="200" avatar-name show-disable :title="$L('请选择指定人员')" style="margin-top:6px"/>
+                            <div class="form-tip">{{$L('指定人员最多可选择200人')}}</div>
+                        </template>
+                    </FormItem>
                     <FormItem :label="$L('部门负责人视角')" prop="department_owner_project_view">
                         <RadioGroup v-model="formDatum.department_owner_project_view">
                             <Radio label="open">{{$L('开启')}}</Radio>
@@ -316,9 +336,12 @@
 
 <script>
 import {mapState} from "vuex";
+import UserSelect from "../../../../components/UserSelect.vue";
 
 export default {
     name: 'SystemSetting',
+
+    components: {UserSelect},
 
     data() {
         return {
@@ -334,9 +357,26 @@ export default {
 
     computed: {
         ...mapState(['formOptions']),
+
+        projectAddAll() {
+            return (this.formDatum.project_add_permission || []).includes('all');
+        },
     },
 
     methods: {
+        onProjectAddPermissionChange(value) {
+            const prev = this.formDatum.project_add_permission || [];
+            let next = value;
+            if (value.includes('all') && value.length > 1) {
+                // “所有人”与其它范围互斥
+                next = prev.includes('all') ? value.filter(v => v !== 'all') : ['all'];
+            }
+            if (next.length === 0) {
+                next = ['all'];
+            }
+            this.$set(this.formDatum, 'project_add_permission', next);
+        },
+
         submitForm() {
             this.$refs.formDatum.validate((valid) => {
                 if (valid) {
