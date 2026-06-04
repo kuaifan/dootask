@@ -62,6 +62,9 @@ class WebSocketDialog extends AbstractModel
 {
     use SoftDeletes;
 
+    // 全员群初始化默认名称（双语字面量），用于识别"管理员尚未自定义"的状态
+    const ALL_GROUP_DEFAULT_NAME = '全体成员 All members';
+
     protected $appends = ['deputy_ids'];
 
     /**
@@ -366,7 +369,9 @@ class WebSocketDialog extends AbstractModel
                         }
                         break;
                     case 'all':
-                        $data['name'] = Doo::translate('全体成员');
+                        $data['name'] = ($data['name'] && $data['name'] !== self::ALL_GROUP_DEFAULT_NAME)
+                            ? $data['name']
+                            : Doo::translate('全体成员');
                         $data['dialog_mute'] = Base::settingFind('system', 'all_group_mute');
                         break;
                 }
@@ -824,7 +829,9 @@ class WebSocketDialog extends AbstractModel
                         $name = \DB::table('project_tasks')->where('dialog_id', $this->id)->value('name');
                         break;
                     case 'all':
-                        $name = Doo::translate('全体成员');
+                        $name = ($name && $name !== self::ALL_GROUP_DEFAULT_NAME)
+                            ? $name
+                            : Doo::translate('全体成员');
                         break;
                 }
             }

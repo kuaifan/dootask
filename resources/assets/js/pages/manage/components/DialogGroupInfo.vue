@@ -6,7 +6,7 @@
                 <div class="quick-edit">
                     <div class="quick-text" :title="dialogData.name">{{dialogData.name}}</div>
                     <Icon
-                        v-if="isOwnerOrDeputy"
+                        v-if="isOwnerOrDeputy || (dialogData.group_type === 'all' && userIsAdmin)"
                         class="quick-icon"
                         type="ios-create-outline"
                         @click.stop="onEditName"/>

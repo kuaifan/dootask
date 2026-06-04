@@ -2916,7 +2916,9 @@ class DialogController extends AbstractController
             $data['avatar'] = Base::fillUrl($array['avatar'] = $avatar);
         }
         $existName = Request::exists('chat_name') || Request::exists('name');
-        if ($existName && $dialog->group_type === 'user') {
+        // 个人群组群主可改名；全员群仅系统管理员可改名
+        $canEditName = $dialog->group_type === 'user' || ($dialog->group_type === 'all' && $admin === 1);
+        if ($existName && $canEditName) {
             $chatName = trim(Request::input('chat_name') ?: Request::input('name'));
             if (mb_strlen($chatName) < 2) {
                 return Base::retError('群名称至少2个字');

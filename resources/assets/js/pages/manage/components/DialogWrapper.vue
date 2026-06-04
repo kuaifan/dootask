@@ -1028,6 +1028,10 @@ export default {
             if (this.modifyData.userid) {
                 return true
             }
+            if (this.dialogData.group_type === 'all') {
+                // 全员群仅系统管理员可改名
+                return this.userIsAdmin
+            }
             return this.dialogData.group_type === 'user'
         },
 
@@ -2872,6 +2876,10 @@ export default {
                         dialog_id: this.dialogData.id,
                         avatar: this.dialogData.avatar,
                         name: this.dialogData.name
+                    }
+                    if (this.dialogData.group_type === 'all') {
+                        // 全员群走系统管理员权限校验
+                        this.modifyData.admin = 1
                     }
                     if (this.dialogData.type === 'user') {
                         // 机器人

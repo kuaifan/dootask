@@ -218,6 +218,6 @@ class WebSocketDialogsTableSeeder extends Seeder
         User::botGetOrCreate('ai-claude');
 
         $userids = User::whereBot(0)->whereNull('disable_at')->pluck('userid')->toArray();
-        WebSocketDialog::createGroup("全体成员 All members", $userids, 'all');
+        WebSocketDialog::createGroup(WebSocketDialog::ALL_GROUP_DEFAULT_NAME, $userids, 'all');
     }
 }
