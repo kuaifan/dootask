@@ -884,7 +884,8 @@ class UsersController extends AbstractController
      */
     public function extra()
     {
-        $user = User::auth();
+        $viewer = User::auth();
+        $user = $viewer;
         //
         $userid = intval(Request::input('userid'));
         if ($userid <= 0) {
@@ -919,6 +920,8 @@ class UsersController extends AbstractController
 
         $tagMeta = UserTag::listWithMeta($userid, $user);
 
+        $worksContext = UserDepartment::userWorksContext($viewer, $userid);
+
         $data = [
             'userid' => $userid,
             'birthday' => $birthday,
@@ -926,6 +929,7 @@ class UsersController extends AbstractController
             'introduction' => $introduction,
             'personal_tags' => $tagMeta['top'],
             'personal_tags_total' => $tagMeta['total'],
+            'works_visible' => $worksContext['allowed'],
         ];
 
         return Base::retSuccess('success', $data);

@@ -1491,6 +1491,214 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {get} api/project/user/projects 会员参与的项目列表
+     *
+     * @apiDescription 需要token身份。用于会员卡片查看「该会员参与的项目」。
+     * 权限：本人 / 系统管理员 / 对该会员具有部门负责人只读视角。
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName user__projects
+     *
+     * @apiParam {Number} userid            目标会员ID
+     * @apiParam {String} [archived]        是否归档（all/yes/no），默认no
+     * @apiParam {Object} [keys]            搜索条件（keys.name 项目名称）
+     * @apiParam {Number} [page]            当前页，默认1
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function user__projects()
+    {
+        $viewer = User::auth();
+        $targetId = intval(Request::input('userid'));
+        $context = UserDepartment::userWorksContext($viewer, $targetId);
+        if (!$context['allowed']) {
+            return Base::retError('没有查看权限');
+        }
+        $readonly = !$context['is_self'] && !$context['is_admin'];
+        //
+        $archived = Request::input('archived', 'no');
+        $keys = Request::input('keys');
+        //
+        $builder = Project::select(['projects.*', 'project_users.owner', 'project_users.top_at', 'project_users.sort'])
+            ->join('project_users', function ($join) use ($targetId) {
+                $join->on('projects.id', '=', 'project_users.project_id')
+                    ->where('project_users.userid', '=', $targetId);
+            });
+        // 部门负责人视角：限定在允许可见的项目集合内
+        if ($readonly) {
+            $builder->whereIn('projects.id', $context['project_ids'] ?: [0]);
+        }
+        //
+        if ($archived == 'yes') {
+            $builder->whereNotNull('projects.archived_at');
+        } elseif ($archived == 'no') {
+            $builder->whereNull('projects.archived_at');
+        }
+        if (is_array($keys) && !empty($keys['name'])) {
+            $builder->where('projects.name', 'like', "%{$keys['name']}%");
+        }
+        //
+        $list = $builder
+            ->orderByDesc('project_users.top_at')
+            ->orderBy('project_users.sort')
+            ->orderByDesc('projects.id')
+            ->paginate(Base::getPaginate(100, 50));
+        $list->transform(function (Project $project) use ($targetId, $readonly) {
+            $array = $project->toArray();
+            $array['department_readonly'] = $readonly;
+            $array = array_merge($array, $project->getTaskStatistics($targetId));
+            return $array;
+        });
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * @api {get} api/project/user/tasks 会员参与的任务列表
+     *
+     * @apiDescription 需要token身份。用于会员卡片查看「该会员参与的任务」（负责的 / 协作的）。
+     * 权限：本人 / 系统管理员 / 对该会员具有部门负责人只读视角。
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName user__tasks
+     *
+     * @apiParam {Number} userid            目标会员ID
+     * @apiParam {Number} [owner]           任务身份筛选：1=负责的，0=协作的，不传=全部
+     * @apiParam {Number} [project_id]      仅查询指定项目
+     * @apiParam {Object} [keys]            搜索条件（keys.name 任务名称，keys.status completed/uncompleted）
+     * @apiParam {Number} [page]            当前页，默认1
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function user__tasks()
+    {
+        $viewer = User::auth();
+        $targetId = intval(Request::input('userid'));
+        $context = UserDepartment::userWorksContext($viewer, $targetId);
+        if (!$context['allowed']) {
+            return Base::retError('没有查看权限');
+        }
+        $readonly = !$context['is_self'] && !$context['is_admin'];
+        //
+        $owner = Request::input('owner');
+        $owner = is_numeric($owner) ? intval($owner) : null;
+        $project_id = intval(Request::input('project_id'));
+        $keys = Request::input('keys');
+        $keys = is_array($keys) ? $keys : [];
+        //
+        $builder = ProjectTask::with(['taskUser', 'taskTag', 'project:id,name'])
+            ->select(['project_tasks.*', 'project_task_users.owner'])
+            ->join('project_task_users', function ($join) use ($targetId) {
+                $join->on('project_tasks.id', '=', 'project_task_users.task_id')
+                    ->where('project_task_users.userid', '=', $targetId);
+            });
+        if ($owner !== null) {
+            $builder->where('project_task_users.owner', $owner);
+        }
+        // 部门负责人视角：限定可见项目集合，且仅"全员可见"(visibility=1)的任务（与 findForDepartmentView 一致，避免列出打不开的任务）
+        if ($readonly) {
+            $builder->whereIn('project_tasks.project_id', $context['project_ids'] ?: [0]);
+            $builder->where('project_tasks.visibility', 1);
+        }
+        if ($project_id > 0) {
+            $builder->where('project_tasks.project_id', $project_id);
+        }
+        if (!empty($keys['name'])) {
+            $builder->where(function ($query) use ($keys) {
+                $query->where('project_tasks.name', 'like', "%{$keys['name']}%")
+                    ->orWhere('project_tasks.desc', 'like', "%{$keys['name']}%");
+            });
+        }
+        if (!empty($keys['status'])) {
+            if ($keys['status'] == 'completed') {
+                $builder->whereNotNull('project_tasks.complete_at');
+            } elseif ($keys['status'] == 'uncompleted') {
+                $builder->whereNull('project_tasks.complete_at');
+            }
+        }
+        $builder->whereNull('project_tasks.archived_at');
+        //
+        $list = $builder->orderByDesc('project_tasks.id')->paginate(Base::getPaginate(100, 50));
+        $list->transform(function (ProjectTask $task) use ($readonly) {
+            $task->setAppends(['today', 'overdue']);
+            $array = $task->toArray();
+            $array['project_name'] = $array['project']['name'] ?? '';
+            $array['department_readonly'] = $readonly;
+            unset($array['project']);
+            return $array;
+        });
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * @api {get} api/project/user/counts 会员参与的项目/任务数量
+     *
+     * @apiDescription 需要token身份。用于会员卡片「项目与任务」弹窗的 Tab 角标，仅返回数量（轻量）。
+     * 权限：本人 / 系统管理员 / 对该会员具有部门负责人只读视角。
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName user__counts
+     *
+     * @apiParam {Number} userid            目标会员ID
+     * @apiParam {Number} [owner]           任务身份筛选：1=负责的，0=协作的，不传=全部（仅影响任务数量）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    {project, todo, done}
+     */
+    public function user__counts()
+    {
+        $viewer = User::auth();
+        $targetId = intval(Request::input('userid'));
+        $context = UserDepartment::userWorksContext($viewer, $targetId);
+        if (!$context['allowed']) {
+            return Base::retError('没有查看权限');
+        }
+        $readonly = !$context['is_self'] && !$context['is_admin'];
+        $owner = Request::input('owner');
+        $owner = is_numeric($owner) ? intval($owner) : null;
+        //
+        $projectBuilder = Project::join('project_users', function ($join) use ($targetId) {
+                $join->on('projects.id', '=', 'project_users.project_id')
+                    ->where('project_users.userid', '=', $targetId);
+            })
+            ->whereNull('projects.archived_at');
+        if ($readonly) {
+            $projectBuilder->whereIn('projects.id', $context['project_ids'] ?: [0]);
+        }
+        $projectCount = $projectBuilder->distinct()->count('projects.id');
+        //
+        $taskBuilder = function () use ($targetId, $owner, $readonly, $context) {
+            $builder = ProjectTask::join('project_task_users', function ($join) use ($targetId) {
+                    $join->on('project_tasks.id', '=', 'project_task_users.task_id')
+                        ->where('project_task_users.userid', '=', $targetId);
+                })
+                ->whereNull('project_tasks.archived_at');
+            if ($owner !== null) {
+                $builder->where('project_task_users.owner', $owner);
+            }
+            if ($readonly) {
+                $builder->whereIn('project_tasks.project_id', $context['project_ids'] ?: [0]);
+                $builder->where('project_tasks.visibility', 1);
+            }
+            return $builder;
+        };
+        $todoCount = $taskBuilder()->whereNull('project_tasks.complete_at')->count();
+        $doneCount = $taskBuilder()->whereNotNull('project_tasks.complete_at')->count();
+        //
+        return Base::retSuccess('success', [
+            'project' => $projectCount,
+            'todo' => $todoCount,
+            'done' => $doneCount,
+        ]);
+    }
+
+    /**
      * @api {get} api/project/task/easylists 任务列表-简单的
      *
      * @apiDescription 需要token身份，主要用于判断是否有时间冲突的任务

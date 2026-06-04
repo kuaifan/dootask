@@ -615,4 +615,69 @@ class UserDepartment extends AbstractModel
         return $project;
     }
 
+    /**
+     * 会员卡片「查看该会员项目/任务」的权限上下文。
+     * 允许条件：本人 / 系统管理员 / 对该会员具有部门负责人只读视角。
+     * @param User $viewer        当前登录用户
+     * @param int  $targetUserid  目标会员
+     * @return array ['allowed'=>bool, 'is_self'=>bool, 'is_admin'=>bool, 'project_ids'=>int[]]
+     *               project_ids 仅在部门负责人视角下有意义（限定可见项目集合）；本人/管理员为空数组表示不限制
+     */
+    public static function userWorksContext(User $viewer, int $targetUserid): array
+    {
+        $result = [
+            'allowed' => false,
+            'is_self' => false,
+            'is_admin' => false,
+            'project_ids' => [],
+        ];
+        if ($targetUserid <= 0) {
+            return $result;
+        }
+        // 机器人/系统账号（或不存在）不展示项目与任务
+        $target = User::select(['userid', 'bot'])->whereUserid($targetUserid)->first();
+        if (empty($target) || $target->bot) {
+            return $result;
+        }
+        // 本人
+        if ($viewer->userid === $targetUserid) {
+            $result['allowed'] = true;
+            $result['is_self'] = true;
+            return $result;
+        }
+        // 系统管理员
+        if ($viewer->isAdmin()) {
+            $result['allowed'] = true;
+            $result['is_admin'] = true;
+            return $result;
+        }
+        // 部门负责人只读视角
+        if (Base::settingFind('system', 'department_owner_project_view', 'close') !== 'open') {
+            return $result;
+        }
+        $memberUserids = self::getManagedMemberUserids($viewer->userid, 'all');
+        if (!in_array($targetUserid, $memberUserids, true)) {
+            return $result;
+        }
+        // 目标会员参与、且未关闭「部门负责人视角可见」的项目
+        $projectIds = ProjectUser::where('project_users.userid', $targetUserid)
+            ->join('projects', 'projects.id', '=', 'project_users.project_id')
+            ->whereNull('projects.deleted_at')
+            ->where(function ($query) {
+                $query->where('projects.department_owner_view', '<>', 'close')
+                    ->orWhereNull('projects.department_owner_view');
+            })
+            ->distinct()
+            ->pluck('projects.id')
+            ->map(fn($v) => intval($v))
+            ->values()
+            ->toArray();
+        if (empty($projectIds)) {
+            return $result;
+        }
+        $result['allowed'] = true;
+        $result['project_ids'] = $projectIds;
+        return $result;
+    }
+
 }

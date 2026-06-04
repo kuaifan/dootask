@@ -813,4 +813,18 @@ body.dark-mode-reverse {
             }
         }
     }
+
+    .user-works-modal {
+        .user-works-content {
+            .works-list {
+                .works-item {
+                    .works-icon {
+                        > i {
+                            color: #000000;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

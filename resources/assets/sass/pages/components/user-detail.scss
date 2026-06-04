@@ -360,3 +360,229 @@
         padding: 12px 0;
     }
 }
+
+// 会员项目与任务弹窗样式
+.user-works-modal {
+    .ivu-modal-body {
+        padding: 0 !important;
+        position: relative;
+    }
+
+
+    .task-owner-filter {
+        position: absolute;
+        top: 48px;
+        right: 12px;
+        z-index: 10;
+    }
+
+    .user-works-tabs {
+        .ivu-tabs-bar {
+            margin-bottom: 8px;
+        }
+    }
+
+    .user-works-content {
+
+        &.tasks {
+            .works-list {
+                > div:first-child {
+                    margin-top: 28px;
+                }
+            }
+        }
+
+        .loading-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 60px;
+            padding-bottom: 100px;
+        }
+
+        .empty-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 40px;
+            padding-bottom: 80px;
+
+            .empty-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                width: 100%;
+                color: #999;
+                > i {
+                    opacity: 0.3;
+                }
+            }
+        }
+
+        .works-list {
+            overflow-y: auto;
+            max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 310px);
+
+            @media (height <= 900px) {
+                max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 180px);
+            }
+
+            .works-item {
+                display: flex;
+                align-items: center;
+                padding: 12px;
+                cursor: pointer;
+                border-radius: 6px;
+                margin: 4px 0;
+                transition: background-color 0.2s;
+
+                &:hover {
+                    background-color: #f5f7fa;
+                }
+
+                .works-icon {
+                    flex-shrink: 0;
+                    margin-right: 12px;
+                    width: 42px;
+                    height: 42px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    color: #ffffff;
+
+                    > i {
+                        font-size: 24px;
+                    }
+
+                    &.project {
+                        background-color: #6E99EB;
+                    }
+
+                    &.task {
+                        background-color: #9B96DF;
+
+                        &.completed {
+                            background-color: #c5c8ce;
+                        }
+                    }
+                }
+
+                .works-info {
+                    flex: 1;
+                    min-width: 0;
+
+                    .works-name {
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: #17233d;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        margin-bottom: 4px;
+
+                        &.completed {
+                            color: #808695;
+                            text-decoration: line-through;
+                        }
+                    }
+
+                    .works-meta {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 12px;
+                        color: #808695;
+
+                        .role-badge {
+                            flex-shrink: 0;
+                            padding: 0 6px;
+                            line-height: 18px;
+                            border-radius: 3px;
+                            font-size: 12px;
+                            background-color: #f0f2f5;
+                            color: #808695;
+
+                            &.owner {
+                                background-color: #e8f4ff;
+                                color: #2d8cf0;
+                            }
+
+                            &.deputy {
+                                background-color: #fff3e0;
+                                color: #ff9900;
+                            }
+                        }
+
+                        // 工作流状态徽章（与项目面板/收藏列表保持一致）
+                        .flow-name {
+                            flex-shrink: 0;
+                            padding: 0 6px;
+                            line-height: 18px;
+                            border-radius: 3px;
+                            font-size: 12px;
+                            border: 1px solid transparent;
+
+                            &.start {
+                                background-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                                border-color: var(--flow-item-custom-color-10, rgba($flow-status-start-color, 0.1));
+                                color: var(--flow-item-custom-color-100, $flow-status-start-color);
+                            }
+                            &.progress {
+                                background-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                                border-color: var(--flow-item-custom-color-10, rgba($flow-status-progress-color, 0.1));
+                                color: var(--flow-item-custom-color-100, $flow-status-progress-color);
+                            }
+                            &.test {
+                                background-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                                border-color: var(--flow-item-custom-color-10, rgba($flow-status-test-color, 0.1));
+                                color: var(--flow-item-custom-color-100, $flow-status-test-color);
+                            }
+                            &.end {
+                                background-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+                                border-color: var(--flow-item-custom-color-10, rgba($flow-status-end-color, 0.1));
+                                color: var(--flow-item-custom-color-100, $flow-status-end-color);
+                            }
+                            &.archived {
+                                background-color: var(--flow-item-custom-color-10, rgba($flow-status-archived-color, 0.1));
+                                border-color: var(--flow-item-custom-color-10, rgba($flow-status-archived-color, 0.1));
+                                color: var(--flow-item-custom-color-100, $flow-status-archived-color);
+                            }
+                        }
+
+                        .works-project,
+                        .works-stat {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+
+                        .works-time {
+                            flex-shrink: 0;
+
+                            &.overdue {
+                                color: #ed4014;
+                            }
+                        }
+                    }
+                }
+
+                .enter-icon {
+                    flex-shrink: 0;
+                    color: #c5c8ce;
+                    font-size: 16px;
+                    margin-left: 8px;
+                }
+            }
+        }
+
+        .load-more-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 0;
+        }
+    }
+}

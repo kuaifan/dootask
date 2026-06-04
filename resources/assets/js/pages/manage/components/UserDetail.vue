@@ -26,8 +26,12 @@
                     </h1>
                     <div class="meta">
                         <span @click="commonDialogShow = true" class="common-dialog">{{ $L(userId == userData.userid ? "我的群组" : "共同群组") }}:<em>{{ $L("(*)个", commonDialog.total) }}</em></span>
+                        <template v-if="worksVisible">
+                            <span class="separator">|</span>
+                            <span @click="worksModalShow = true" class="common-dialog works-entry">{{ $L("项目与任务") }}</span>
+                        </template>
                         <span class="separator">|</span>
-                        <span>{{ $L("最后在线") }}: {{$A.newDateString( userData.line_at, "YYYY-MM-DD HH:mm") || "-"}}</span>
+                        <span :title="lineAtDisplay.title">{{ $L("最后在线") }}: {{ lineAtDisplay.text }}</span>
                     </div>
                 </div>
 
@@ -115,6 +119,13 @@
             :total-count="commonDialog.total || 0"
             @open-chat="onOpenCommonDialogChat"
         />
+
+        <UserWorksModal
+            v-if="worksVisible && userData.userid"
+            v-model="worksModalShow"
+            :target-user-id="userData.userid"
+            @navigate="onHide"
+        />
     </ModalAlive>
 </template>
 
@@ -124,11 +135,12 @@ import { mapState } from "vuex";
 import transformEmojiToHtml from "../../../utils/emoji";
 import UserTagsModal from "./UserTagsModal.vue";
 import CommonDialogModal from "./CommonDialogModal.vue";
+import UserWorksModal from "./UserWorksModal.vue";
 
 export default {
     name: "UserDetail",
 
-    components: { UserTagsModal, CommonDialogModal },
+    components: { UserTagsModal, CommonDialogModal, UserWorksModal },
 
     data() {
         return {
@@ -146,6 +158,7 @@ export default {
             },
             commonDialogShow: false,
             commonDialogLoading: 0,
+            worksModalShow: false,
         };
     },
 
@@ -189,6 +202,36 @@ export default {
         commonDialogList() {
             return this.commonDialog.list || [];
         },
+
+        worksVisible() {
+            return !!this.userData.works_visible;
+        },
+
+        lineAtDisplay({ userData }) {
+            const value = userData.line_at;
+            if (!value) {
+                return { text: "-", title: "" };
+            }
+            const now = $A.daytz();
+            const line = $A.dayjs(value);
+            const title = line.format("YYYY-MM-DD HH:mm");
+            const seconds = now.unix() - line.unix();
+            let text;
+            if (seconds < 60) {
+                text = this.$L("刚刚");
+            } else if (seconds < 3600) {
+                text = this.$L("(*)分钟前", Math.floor(seconds / 60));
+            } else if (seconds < 3600 * 24) {
+                text = this.$L("(*)小时前", Math.floor(seconds / 3600));
+            } else if (seconds < 3600 * 24 * 7) {
+                text = this.$L("(*)天前", Math.floor(seconds / 86400));
+            } else if (line.isAfter(now.clone().subtract(1, "month"))) {
+                text = line.format("MM-DD HH:mm");
+            } else {
+                text = line.format("YYYY-MM-DD");
+            }
+            return { text, title };
+        },
     },
 
     methods: {
@@ -219,6 +262,7 @@ export default {
             this.showModal = false;
             this.tagModalVisible = false;
             this.commonDialogShow = false;
+            this.worksModalShow = false;
         },
 
         onOpenAvatar() {
