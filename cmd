@@ -882,7 +882,7 @@ case "$1" in
         else
             https_auto
         fi
-        restart_php
+        $COMPOSE up -d
         ;;
     "artisan")
         shift 1

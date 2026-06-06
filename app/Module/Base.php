@@ -848,6 +848,13 @@ class Base
      */
     public static function getSchemeAndHost()
     {
+        // 优先用当前请求的协议+主机：getScheme() 会经 TrustProxies 采信 X-Forwarded-Proto，
+        // 从而正确识别 https；host 取自 Host 头（不信 X-Forwarded-Host，避免 Host 注入）
+        $request = request();
+        if ($request && $request->getHttpHost()) {
+            return $request->getSchemeAndHttpHost();
+        }
+        // 非请求上下文（Task/命令行等）的兜底
         $scheme = isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443' ? 'https://' : 'http://';
         return $scheme.($_SERVER['HTTP_HOST'] ?? '');
     }

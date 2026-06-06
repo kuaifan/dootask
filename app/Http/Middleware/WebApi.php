@@ -25,14 +25,6 @@ class WebApi
         RequestContext::set('start_time', microtime(true));
         RequestContext::set('header_language', $request->header('language'));
 
-        // 强制 https
-        $APP_SCHEME = env('APP_SCHEME', 'auto');
-        if (in_array(strtolower($APP_SCHEME), ['https', 'on', 'ssl', '1', 'true', 'yes'], true)) {
-            $request->server->set('HTTPS', 'on');
-            $request->headers->set('X-Forwarded-Proto', 'https');
-            $request->setTrustedProxies([$request->getClientIp()], $request::HEADER_X_FORWARDED_PROTO);
-        }
-
         // 更新请求的基本URL
         RequestContext::updateBaseUrl($request);
 
