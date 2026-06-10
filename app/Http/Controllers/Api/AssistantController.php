@@ -32,6 +32,7 @@ class AssistantController extends AbstractController
      * @apiParam {String} model_type  模型类型
      * @apiParam {String} model_name  模型名称
      * @apiParam {JSON} context       上下文数组
+     * @apiParam {String} [locale]    ai-kb 检索语种：zh、en（缺省取请求语言 language，包含 zh 视为 zh，否则 en）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -46,12 +47,8 @@ class AssistantController extends AbstractController
         $modelType = trim(Request::input('model_type', ''));
         $modelName = trim(Request::input('model_name', ''));
         $contextInput = Request::input('context', []);
-        // ai-kb 检索语种；缺省 zh，前端传 'zh' / 'en'
-        $supportedLocales = config('ai.rag_supported_locales', ['zh', 'en']);
-        $locale = trim(Request::input('locale', 'zh'));
-        if (!in_array($locale, $supportedLocales, true)) {
-            $locale = 'zh';
-        }
+        $locale = trim(Request::input('locale', '')) ?: trim(Base::headerOrInput('language'));
+        $locale = str_contains(strtolower($locale), 'zh') ? 'zh' : 'en';
 
         // 灰度判定（参考 config/ai.php）：总开关 + canary 白名单
         $ragEnabled = AI::ragEnabledFor((int) $user->userid);

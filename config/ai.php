@@ -5,7 +5,7 @@
 | DooTask AI 助手灰度配置
 |--------------------------------------------------------------------------
 |
-| RAG（帮助知识库检索）功能上线时按以下顺序灰度（参考 plan §八）：
+| RAG（帮助知识库检索）功能上线时按以下顺序灰度：
 |   Stage 1 — staging：RAG_ENABLED=true 仅 staging 环境，全体可用
 |   Stage 2 — canary：RAG_ENABLED=true + RAG_CANARY_USERIDS="1,2,3,4,5"
 |                     仅白名单 user 命中 RAG
@@ -45,13 +45,4 @@ return [
     | 有值表示 仅白名单 userid 命中 RAG（Stage 2 canary）。
     */
     'rag_canary_userids' => env('RAG_CANARY_USERIDS', ''),
-
-    /*
-    |--------------------------------------------------------------------------
-    | RAG 检索语种受控集合
-    |--------------------------------------------------------------------------
-    | 前端可传的 locale 值；不在集合内默认回退到 zh。
-    | P0 仅启用 zh；P1 起开放 en。
-    */
-    'rag_supported_locales' => ['zh', 'en'],
 ];

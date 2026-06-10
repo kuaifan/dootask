@@ -30,7 +30,7 @@ AI 助手发送提问前必须先调用 `POST api/assistant/auth` 生成一次�
 
 ## 数据流
 1. 用户点发送
-2. 前端 `POST api/assistant/auth`，参数：`model_type`、`model_name`、`context`（JSON）、`locale`（zh/en）
+2. 前端 `POST api/assistant/auth`，参数：`model_type`、`model_name`、`context`（JSON）、`locale`（zh/en，缺省取请求语言，语言包含 zh 视为 zh，否则 en）
 3. 后端 `AssistantController::auth` 校验登录 + 聊天权限，写入临时凭证
 4. 返回 `{stream_key: "xxx"}`
 5. 前端开 SSE：`ai/invoke/stream/{stream_key}`

@@ -11,7 +11,7 @@ ai-kb/
 ├── _schema/                    写作规范（必读）
 │   ├── frontmatter.md          frontmatter 字段规范 + 受控词表
 │   └── chunk-style.md          chunk 写作风格 + 正反例
-├── _meta/                      元数据（CI 与脚本读取）
+├── _meta/                      元数据（lint / eval 脚本读取）
 │   ├── feature-map.yaml        feature 全集 + 每个 feature 的 chunk 清单
 │   └── tool-binding.yaml       chunk ↔ MCP 工具映射
 ├── _eval/                      回归测试
@@ -46,7 +46,7 @@ ai-kb/
 2. 通读 [`_schema/chunk-style.md`](./_schema/chunk-style.md) — 写作风格与正反例
 3. 在 [`_meta/feature-map.yaml`](./_meta/feature-map.yaml) 找到对应 feature 的 chunk 清单和归属批次
 4. 在对应 `zh/<type>/<feature>/<id>.md` 路径下新建文件
-5. 提交 PR，CI 会自动跑 lint；通过且 review 完毕后合入 main，CI 自动触发 AI 插件的 `POST /kb/reindex` 入库
+5. 提交 PR、review 后合入。内容进索引不需要额外操作：AI 插件容器每次启动会按文件 hash 对账（reconcile），自动增量收敛新增/变更/删除；想免重启即时生效可手动调 `POST /kb/reindex`
 
 ## 改 DooTask 主程序后必须同步更新这里
 
@@ -64,14 +64,12 @@ volumes:
   - ../../../dootask/resources/ai-kb:/app/kb-content:ro
 ```
 
-触发入库（CI 或运维手动）：
+内容同步机制：容器每次启动按文件 hash 对账（reconcile），自动增量收敛新增/变更/删除的 markdown——客户实例更新 DooTask 后重启插件容器即生效。需要免重启即时生效时手动触发：
 ```bash
 curl -X POST 'http://ai-service/kb/reindex' \
   -H "X-Ingest-Token: $KB_INGEST_TOKEN" \
-  -d '{"paths":["zh/howto/task-create.md"], "mode":"incremental"}'
+  -d '{"mode":"reconcile"}'
 ```
-
-容器启动时 lifespan 会自动跑一次 `ingest_all` 作为兜底。
 
 ## 维护责任
 
