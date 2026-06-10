@@ -71,6 +71,46 @@ curl -X POST 'http://ai-service/kb/reindex' \
   -d '{"mode":"reconcile"}'
 ```
 
+## 用检索打点与用户反馈数据迭代内容
+
+主程序记录了两类质量数据（mariadb，表前缀以实际 `DB_PREFIX` 为准，下例用 `pre_`）：
+
+- `pre_ai_assistant_search_logs` — 每次 `search_help_docs` 检索一行（query、命中 source、分数、是否空结果）
+- `pre_ai_assistant_feedbacks` — 用户对 AI 回复的 👍/👎（含回复引用的 source id 列表）
+
+**口径 1 —— 近 14 天低质量检索 top 问题（直接产出待补 chunk 清单）：**
+
+注意：向量 KNN 检索几乎总能返回 top-5（胡乱提问也会命中分数偏低的近邻），所以 `empty=1`
+基本只在所查语种库为空时出现（如英文库未起草）。"知识库覆盖不到"的主信号是 **top_score 低**。
+
+```sql
+SELECT query, locale, ROUND(AVG(top_score),3) AS avg_score, COUNT(*) AS cnt
+FROM pre_ai_assistant_search_logs
+WHERE (empty = 1 OR top_score < 0.8) AND created_at >= NOW() - INTERVAL 14 DAY
+GROUP BY query, locale ORDER BY cnt DESC LIMIT 30;
+```
+
+**口径 2 —— 分数阈值校准（先看全局分布再定口径 1 的阈值）：**
+```sql
+SELECT ROUND(top_score,1) AS bucket, COUNT(*) AS cnt
+FROM pre_ai_assistant_search_logs
+WHERE created_at >= NOW() - INTERVAL 14 DAY
+GROUP BY bucket ORDER BY bucket;
+```
+
+**口径 3 —— 👎 最多的 source（待修订清单）：**
+```sql
+SELECT jt.sid, COUNT(*) AS dislikes
+FROM pre_ai_assistant_feedbacks f
+JOIN JSON_TABLE(f.source_ids, '$[*]' COLUMNS (sid VARCHAR(191) PATH '$')) jt
+WHERE f.feedback = 'dislike' AND f.created_at >= NOW() - INTERVAL 30 DAY
+GROUP BY jt.sid ORDER BY dislikes DESC LIMIT 20;
+```
+
+钻取某条 👎 当时检索到了什么：`SELECT * FROM pre_ai_assistant_search_logs WHERE context_key = '<feedback.session_id>'`。
+
+**迭代流程**：每周跑口径 1/3 → 空结果高频 query 补新 chunk 或给现有 chunk 加 aliases → 👎 集中的 source 重写正文/negative → 提 PR → 容器重启 reconcile（或手动 `/kb/reindex`）→ 下周对比同 query 的 empty 率与 👎 数验证收效。
+
 ## 维护责任
 
 - **内容**：产品功能负责人 / PM / 技术写作者按 `_meta/feature-map.yaml` 中的 `owner` 列认领

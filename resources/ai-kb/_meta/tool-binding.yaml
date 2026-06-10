@@ -9,7 +9,7 @@
 # 加 helper/tools.py 中的内置工具（GetSessionImageTool 等）
 
 version: 1
-last_updated: 2026-06-09
+last_updated: 2026-06-10
 
 tools:
 
@@ -185,6 +185,11 @@ tools:
     description: 操作页面元素（点击/输入/选择/聚焦/滚动/悬停）
     related_features: [ai-assistant]
     typical_chunk_types: [howto]
+
+  show_guide:
+    description: 在用户页面启动分步操作引导（高亮元素+解说气泡，上一步/下一步推进）
+    related_features: [ai-assistant]
+    typical_chunk_types: [howto, concept]
 
   # ===== 内置工具（AI 插件 helper/tools.py）=====
   get_session_image:

@@ -234,7 +234,7 @@ function getAvailableActions(routeName, store) {
  * @param {string} options.query - 搜索关键词
  * @returns {Object} { elements, refMap, totalCount, hasMore, keywordMatched }
  */
-function collectElements(options = {}) {
+export function collectElements(options = {}) {
     const {
         interactiveOnly = false,
         maxElements = 50,
@@ -536,7 +536,7 @@ function getElementRole(el) {
  * @param {Element} el
  * @returns {string}
  */
-function getElementName(el) {
+export function getElementName(el) {
     // 优先级：aria-label > aria-labelledby > 内容文本 > title > placeholder > alt
 
     const ariaLabel = el.getAttribute('aria-label');
@@ -597,7 +597,7 @@ function getTextContent(el) {
  * @param {Element} el
  * @returns {boolean}
  */
-function isElementVisible(el) {
+export function isElementVisible(el) {
     if (!el) return false;
 
     // 检查元素本身

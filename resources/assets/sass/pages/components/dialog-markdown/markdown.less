@@ -122,6 +122,38 @@ body {
             margin-left: 8px;
             color: #909399;
         }
+
+        .ai-guide-block {
+            display: block;
+            margin: 8px 0;
+
+            .ai-guide-btn {
+                display: inline-flex;
+                align-items: center;
+                padding: 6px 14px;
+                border-radius: 16px;
+                background: rgba(22, 119, 255, 0.08);
+                color: #1677ff;
+                text-decoration: none;
+                cursor: pointer;
+                font-size: 13px;
+                transition: background 0.2s;
+
+                &:hover {
+                    background: rgba(22, 119, 255, 0.15);
+                }
+            }
+        }
+
+        .ai-guide-pending {
+            display: inline-block;
+            margin: 8px 0;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.04);
+            color: #999;
+            font-size: 12px;
+        }
     }
 
     .self {

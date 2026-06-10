@@ -139,6 +139,22 @@
                     <div v-else class="ai-assistant-output-placeholder">
                         {{ response.status === 'error' ? (response.error || $L('发送失败')) : $L('等待 AI 回复...') }}
                     </div>
+                    <div
+                        v-if="response.rawOutput && response.status === 'completed'"
+                        class="ai-assistant-output-feedback">
+                        <span
+                            :class="['ai-assistant-feedback-btn', {active: response.feedback === 'like'}]"
+                            :title="$L('有帮助')"
+                            @click="submitFeedback(response, 'like')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V3a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m1.729-7.5a8.97 8.97 0 0 0-.621 4.72c.063.504.123 1.012.182 1.52.04.35.05.703.05 1.06v.27c0 .415-.336.75-.75.75h-2.25a.75.75 0 0 1-.75-.75v-7.5a.75.75 0 0 1 .75-.75h2.25c.414 0 .75.335.75.75v.198Z"/></svg>
+                        </span>
+                        <span
+                            :class="['ai-assistant-feedback-btn ai-assistant-feedback-btn-down', {active: response.feedback === 'dislike'}]"
+                            :title="$L('没帮助')"
+                            @click="submitFeedback(response, 'dislike')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V3a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m1.729-7.5a8.97 8.97 0 0 0-.621 4.72c.063.504.123 1.012.182 1.52.04.35.05.703.05 1.06v.27c0 .415-.336.75-.75.75h-2.25a.75.75 0 0 1-.75-.75v-7.5a.75.75 0 0 1 .75-.75h2.25c.414 0 .75.335.75.75v.198Z"/></svg>
+                        </span>
+                    </div>
                 </div>
             </div>
             <div v-else-if="displayMode === 'chat'" class="ai-assistant-welcome" @click="onFocus">
@@ -343,6 +359,7 @@ export default {
     },
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
+        emitter.on('aiGuideStarted', this.onGuideStarted);
         this.loadCachedModel();
         this.loadInputHistory();
         this.mountFloatButton();
@@ -350,6 +367,7 @@ export default {
     },
     beforeDestroy() {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
+        emitter.off('aiGuideStarted', this.onGuideStarted);
         this.clearActiveSSEClients();
         this.clearAutoSubmitTimer();
         this.unmountFloatButton();
@@ -1011,6 +1029,8 @@ export default {
                 model_name,
                 context: JSON.stringify(context || []),
                 locale,
+                // 前端会话ID，链路透传为 AI 服务 context_key，用于检索打点关联
+                session_id: this.currentSessionId || '',
             };
             const {data} = await this.$store.dispatch("call", {
                 url: 'assistant/auth',
@@ -1306,6 +1326,7 @@ export default {
                 status: 'waiting',
                 error: '',
                 applyLoading: false,
+                feedback: '',
             };
             this.responses.push(entry);
             if (this.responses.length > this.maxResponses) {
@@ -1390,6 +1411,58 @@ export default {
         },
 
         /**
+         * 从回复末尾的引用行提取 ai-kb source id
+         * 主格式（RAG hint 要求）："参考：howto.task-create, faq.xxx" / "References: ..."
+         * 同时兼容 LLM 偶发输出的 markdown 链接形态 "[标题](howto.task-create)"
+         */
+        extractSourceIds(text) {
+            if (typeof text !== 'string' || !text) {
+                return [];
+            }
+            const cleaned = this.removeReasoningSections(text);
+            const m = cleaned.match(/(?:参考|References?)\s*[:：]\s*(.+?)\s*$/im);
+            if (!m) {
+                return [];
+            }
+            const ids = m[1].match(/[a-z0-9][\w-]*(?:\.[a-z0-9][\w-]*)+/gi) || [];
+            return [...new Set(ids)].slice(0, 10);
+        },
+
+        /**
+         * 提交 👍/👎 反馈（可改票：点另一个值覆盖更新）
+         */
+        async submitFeedback(response, value) {
+            if (!response || response.feedbackLoading || response.feedback === value) {
+                return;
+            }
+            const prev = response.feedback;
+            this.$set(response, 'feedback', value);
+            this.$set(response, 'feedbackLoading', true);
+            try {
+                await this.$store.dispatch("call", {
+                    url: 'assistant/feedback/save',
+                    method: 'post',
+                    data: {
+                        session_key: this.currentSessionKey,
+                        session_id: this.currentSessionId || '',
+                        local_id: response.localId,
+                        feedback: value,
+                        prompt: this.parsePromptContent(response.prompt).text.substring(0, 1000),
+                        answer: (this.removeReasoningSections(response.rawOutput) || '').substring(0, 2000),
+                        source_ids: this.extractSourceIds(response.rawOutput),
+                        model: response.model,
+                    },
+                });
+                this.saveCurrentSession();
+            } catch (e) {
+                this.$set(response, 'feedback', prev);
+                $A.messageError(e?.msg || '反馈失败，请重试');
+            } finally {
+                this.$set(response, 'feedbackLoading', false);
+            }
+        },
+
+        /**
          * 根据 onRender 回调生成展示文本
          */
         updateResponseDisplayOutput(response) {
@@ -1431,6 +1504,15 @@ export default {
             setTimeout(() => {
                 this.closing = false;
             }, 300);
+        },
+
+        /**
+         * 页面引导启动时收起浮窗，避免遮挡目标元素
+         */
+        onGuideStarted() {
+            if (this.showModal) {
+                this.closeAssistant();
+            }
         },
 
         /**
@@ -2630,6 +2712,51 @@ export default {
         padding: 8px;
         border-radius: 6px;
         background: rgba(0, 0, 0, 0.02);
+    }
+
+    .ai-assistant-output-feedback {
+        margin-top: 6px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 4px;
+
+        .ai-assistant-feedback-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s;
+
+            svg {
+                width: 15px;
+                height: 15px;
+            }
+
+            &:hover {
+                color: #666;
+                background: rgba(0, 0, 0, 0.05);
+            }
+
+            &.active {
+                color: var(--primary-color, #1677ff);
+                background: rgba(22, 119, 255, 0.08);
+            }
+
+            &.ai-assistant-feedback-btn-down {
+                svg {
+                    transform: rotate(180deg);
+                }
+
+                &.active {
+                    color: #f56c6c;
+                    background: rgba(245, 108, 108, 0.08);
+                }
+            }
+        }
     }
 
     .ai-assistant-output-markdown {

@@ -823,8 +823,10 @@ features:
       - ai-assistant.disabled.faq
       - ai-assistant.element-action.howto
       - ai-assistant.embed-entry.concept
+      - ai-assistant.feedback.howto
       - ai-assistant.float-button.concept
       - ai-assistant.float-button.howto
+      - ai-assistant.guide.concept
       - ai-assistant.image-upload.howto
       - ai-assistant.intelligent-search.howto
       - ai-assistant.list-tasks.howto
@@ -854,6 +856,7 @@ features:
       - ai-assistant.session-save.howto
       - ai-assistant.session.concept
       - ai-assistant.shortcut.howto
+      - ai-assistant.start-guide.howto
       - ai-assistant.stop.howto
       - ai-assistant.streaming.concept
       - ai-assistant.subtask-suggest.howto

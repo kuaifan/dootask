@@ -91,5 +91,8 @@
                 "url": "https://www.dootask.com/api/download/update"
             }
         }
-    ]
+    ],
+    "dependencies": {
+        "driver.js": "^1.4.0"
+    }
 }

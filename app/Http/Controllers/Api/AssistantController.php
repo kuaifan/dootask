@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\AiAssistantFeedback;
+use App\Models\AiAssistantSearchLog;
 use App\Models\AiAssistantSession;
 use App\Models\User;
 use App\Module\AI;
@@ -33,6 +35,7 @@ class AssistantController extends AbstractController
      * @apiParam {String} model_name  模型名称
      * @apiParam {JSON} context       上下文数组
      * @apiParam {String} [locale]    ai-kb 检索语种：zh、en（缺省取请求语言 language，包含 zh 视为 zh，否则 en）
+     * @apiParam {String} [session_id] 前端会话ID（透传给 AI 服务作 context_key，用于检索打点关联）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -49,11 +52,12 @@ class AssistantController extends AbstractController
         $contextInput = Request::input('context', []);
         $locale = trim(Request::input('locale', '')) ?: trim(Base::headerOrInput('language'));
         $locale = str_contains(strtolower($locale), 'zh') ? 'zh' : 'en';
+        $contextKey = mb_substr(trim(Request::input('session_id', '')), 0, 100);
 
         // 灰度判定（参考 config/ai.php）：总开关 + canary 白名单
         $ragEnabled = AI::ragEnabledFor((int) $user->userid);
 
-        return AI::createStreamKey($modelType, $modelName, $contextInput, $locale, $ragEnabled);
+        return AI::createStreamKey($modelType, $modelName, $contextInput, $locale, $ragEnabled, $contextKey);
     }
 
     /**
@@ -161,6 +165,139 @@ class AssistantController extends AbstractController
             return 0;
         }
         return $dotProduct / $denominator;
+    }
+
+    /**
+     * @api {post} api/assistant/log/search 记录帮助知识库检索日志
+     *
+     * @apiDescription 需要token身份（AI 插件透传用户 token 服务端回调）。记录一次 search_help_docs 检索，用于分析检索质量、反哺 ai-kb 内容迭代
+     * @apiVersion 1.0.0
+     * @apiGroup assistant
+     * @apiName log__search
+     *
+     * @apiParam {String} query          检索query
+     * @apiParam {String} [locale]       语种 zh|en
+     * @apiParam {String} [source]       来源 chat|invoke
+     * @apiParam {String} [context_key]  上下文标识
+     * @apiParam {Number} [dialog_id]    对话ID
+     * @apiParam {Array}  [source_ids]   命中source id列表
+     * @apiParam {Number} [top_score]    最高相似度
+     * @apiParam {Number} [result_count] 命中数量
+     * @apiParam {Number} [duration_ms]  检索耗时毫秒
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     */
+    public function log__search()
+    {
+        $user = User::auth();
+
+        $query = mb_substr(trim(Request::input('query', '')), 0, 500);
+        $locale = trim(Request::input('locale', ''));
+        $source = trim(Request::input('source', ''));
+        $contextKey = mb_substr(trim(Request::input('context_key', '')), 0, 191);
+        $dialogId = intval(Request::input('dialog_id', 0));
+        $sourceIds = Request::input('source_ids', []);
+        $topScore = floatval(Request::input('top_score', 0));
+        $resultCount = intval(Request::input('result_count', 0));
+        $durationMs = intval(Request::input('duration_ms', 0));
+
+        if ($query === '') {
+            return Base::retError('参数错误');
+        }
+        if (!in_array($source, ['chat', 'invoke'])) {
+            $source = '';
+        }
+        if (!is_array($sourceIds)) {
+            $sourceIds = [];
+        }
+
+        $log = AiAssistantSearchLog::createInstance([
+            'userid' => $user->userid,
+            'dialog_id' => max(0, $dialogId),
+            'context_key' => $contextKey,
+            'source' => $source,
+            'query' => $query,
+            'locale' => in_array($locale, ['zh', 'en']) ? $locale : '',
+            'source_ids' => Base::array2json(array_slice(array_values($sourceIds), 0, 10)),
+            'top_score' => max(0, min(1, $topScore)),
+            'result_count' => max(0, $resultCount),
+            'duration_ms' => max(0, $durationMs),
+            'empty' => $resultCount > 0 ? 0 : 1,
+        ]);
+        $log->save();
+
+        return Base::retSuccess('success');
+    }
+
+    /**
+     * @api {post} api/assistant/feedback/save 保存回复反馈
+     *
+     * @apiDescription 需要token身份。保存用户对一条 AI 回复的 👍/👎 反馈，同一条回复可改票（覆盖更新）
+     * @apiVersion 1.0.0
+     * @apiGroup assistant
+     * @apiName feedback__save
+     *
+     * @apiParam {String} session_key   场景分类key
+     * @apiParam {String} session_id    前端会话ID
+     * @apiParam {Number} local_id      回复条目localId
+     * @apiParam {String} feedback      like|dislike
+     * @apiParam {String} [prompt]      用户问题
+     * @apiParam {String} [answer]      回复摘录
+     * @apiParam {Array}  [source_ids]  回复引用的kb source id列表
+     * @apiParam {String} [model]       模型名
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {String} data.feedback 已保存的反馈值
+     */
+    public function feedback__save()
+    {
+        $user = User::auth();
+
+        $sessionKey = mb_substr(trim(Request::input('session_key', 'default')), 0, 100);
+        $sessionId = mb_substr(trim(Request::input('session_id', '')), 0, 100);
+        $localId = intval(Request::input('local_id', 0));
+        $feedback = trim(Request::input('feedback', ''));
+        $prompt = mb_substr(trim(Request::input('prompt', '')), 0, 1000);
+        $answer = mb_substr(trim(Request::input('answer', '')), 0, 2000);
+        $sourceIds = Request::input('source_ids', []);
+        $model = mb_substr(trim(Request::input('model', '')), 0, 100);
+
+        if (empty($sessionId) || $localId <= 0) {
+            return Base::retError('参数错误');
+        }
+        if (!in_array($feedback, ['like', 'dislike'])) {
+            return Base::retError('反馈类型错误');
+        }
+        if (!is_array($sourceIds)) {
+            $sourceIds = [];
+        }
+
+        $exist = AiAssistantFeedback::where('userid', $user->userid)
+            ->where('session_key', $sessionKey)
+            ->where('session_id', $sessionId)
+            ->where('local_id', $localId)
+            ->first();
+
+        $row = AiAssistantFeedback::createInstance([
+            'userid' => $user->userid,
+            'session_key' => $sessionKey,
+            'session_id' => $sessionId,
+            'local_id' => $localId,
+            'feedback' => $feedback,
+            'prompt' => $prompt,
+            'answer' => $answer,
+            'answer_digest' => md5($answer),
+            'source_ids' => Base::array2json(array_slice(array_values($sourceIds), 0, 10)),
+            'model' => $model,
+        ], $exist?->id);
+        $row->save();
+
+        return Base::retSuccess('success', [
+            'feedback' => $feedback,
+        ]);
     }
 
     /**

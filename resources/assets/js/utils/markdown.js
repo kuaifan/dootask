@@ -70,6 +70,29 @@ const MarkdownUtils = {
     },
 
     /**
+     * 渲染 ai-guide 围栏块（AI 回复中嵌入的页面引导脚本）
+     * JSON 合法 → 「带我去」按钮（脚本存 data-guide，点击由 DialogMarkdown 处理）
+     * JSON 不合法（流式中间态/畸形）→ 灰色占位，原文永不直出
+     * @param {string} content 围栏内容
+     * @returns {string}
+     */
+    renderAiGuide: (content) => {
+        try {
+            const script = JSON.parse(content);
+            if (script && script.version === 1 && Array.isArray(script.steps) && script.steps.length > 0) {
+                const escaped = typeof script.title === 'string'
+                    ? script.title.replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]))
+                    : '';
+                const title = escaped ? `${escaped} · ` : '';
+                return `<span class="ai-guide-block"><a href="javascript:;" class="ai-guide-btn" data-guide="${encodeURIComponent(content)}">${title}${$A.L('带我去')} →</a></span>`;
+            }
+        } catch (e) {
+            // 流式未闭合/JSON 畸形，走占位
+        }
+        return `<span class="ai-guide-pending">${$A.L('正在生成操作引导…')}</span>`;
+    },
+
+    /**
      * 解析Markdown
      * @param {*} text
      * @returns
@@ -425,6 +448,15 @@ export function MarkdownConver(text) {
         MarkdownUtils.mdi.use(mila, {attrs: {target: '_blank', rel: 'noopener noreferrer'}})
         MarkdownUtils.mdi.use(mdKatex, {blockClass: 'katexmath-block rounded-md p-[10px]', errorColor: ' #cc0000'})
         MarkdownPluginUtils.initReasoningPlugin(MarkdownUtils.mdi);
+        // ai-guide 围栏分流：未闭合围栏 markdown-it 照常产出 fence token，天然覆盖流式中间态
+        const defaultFence = MarkdownUtils.mdi.renderer.rules.fence
+            || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options));
+        MarkdownUtils.mdi.renderer.rules.fence = (tokens, idx, options, env, self) => {
+            if (tokens[idx].info.trim() === 'ai-guide') {
+                return MarkdownUtils.renderAiGuide(tokens[idx].content);
+            }
+            return defaultFence(tokens, idx, options, env, self);
+        };
     }
     text = MarkdownPluginUtils.clearEmptyReasoning(text);
     text = mergeConsecutiveToolUse(text);

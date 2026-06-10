@@ -164,7 +164,7 @@ class AI
         return in_array($userid, $allow, true);
     }
 
-    public static function createStreamKey($modelType, $modelName, $contextInput = [], $locale = 'zh', $ragEnabled = true)
+    public static function createStreamKey($modelType, $modelName, $contextInput = [], $locale = 'zh', $ragEnabled = true, $contextKey = '')
     {
         $modelType = trim((string)$modelType);
         $modelName = trim((string)$modelName);
@@ -248,6 +248,8 @@ class AI
             'locale' => $locale,
             // ai-kb 灰度透传：1 启用 RAG（hint + search_help_docs tool），0 关闭
             'rag_enabled' => $ragEnabled ? '1' : '0',
+            // 前端会话ID，AI 服务存为 context_key 用于检索打点关联
+            'context_key' => mb_substr(trim((string)$contextKey), 0, 100),
         ];
 
         $baseUrl = trim((string)($setting[$modelType . '_base_url'] ?? ''));

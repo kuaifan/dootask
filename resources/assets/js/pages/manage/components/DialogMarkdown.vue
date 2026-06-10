@@ -5,6 +5,7 @@
 <script>
 import '../../../../sass/pages/components/dialog-markdown/markdown.less'
 import {MarkdownConver} from "../../../utils/markdown";
+import {startGuide} from "../../../components/AIAssistant/guide/guide-renderer";
 
 export default {
     name: "DialogMarkdown",
@@ -78,6 +79,22 @@ export default {
 
         onCLick(e) {
             const target = e.target;
+            // AI 页面引导「带我去」按钮
+            const guideBtn = target.closest?.('.ai-guide-btn');
+            if (guideBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const raw = guideBtn.getAttribute('data-guide');
+                if (raw) {
+                    try {
+                        this.beforeNavigate?.();
+                        startGuide(decodeURIComponent(raw), {store: this.$store, router: this.$router});
+                    } catch (err) {
+                        $A.messageError(err?.message || '操作引导启动失败');
+                    }
+                }
+                return;
+            }
             if (target.tagName === 'A') {
                 const href = target.getAttribute('href');
                 if (href && href.startsWith('dootask://')) {
