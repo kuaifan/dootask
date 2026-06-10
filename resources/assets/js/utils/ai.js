@@ -180,11 +180,37 @@ const withLanguagePreferencePrompt = (prompt) => {
 
 /**
  * 解析模型列表文本为选项数组
- * 支持以 "|" 分隔显示名
+ * 新格式：JSON 数组 [{id,name,thinking}]；旧格式：每行 "id|name"
  */
 const AIModelNames = (str) => {
-    const lines = str.split('\n').filter(line => line.trim());
+    if (typeof str !== 'string') {
+        return [];
+    }
+    const trimmed = str.trim();
 
+    // 新的 JSON 数组格式
+    if (trimmed.startsWith('[')) {
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) {
+                return parsed
+                    .map(item => ({
+                        value: String(item?.id ?? item?.value ?? '').trim(),
+                        label: String(item?.name ?? item?.label ?? '').trim()
+                    }))
+                    .filter(item => item.value)
+                    .map(item => ({
+                        value: item.value,
+                        label: item.label || item.value
+                    }));
+            }
+        } catch (e) {
+            // 解析失败回退到旧格式
+        }
+    }
+
+    // 兼容旧的 "id|name" 换行格式
+    const lines = str.split('\n').filter(line => line.trim());
     return lines.map(line => {
         const [value, label] = line.split('|').map(s => s.trim());
 

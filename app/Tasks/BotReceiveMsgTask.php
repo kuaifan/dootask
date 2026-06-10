@@ -6,6 +6,7 @@ use App\Models\FileContent;
 use App\Models\Project;
 use App\Models\ProjectTask;
 use App\Models\Report;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserBot;
 use App\Models\UserDepartment;
@@ -469,21 +470,29 @@ class BotReceiveMsgTask extends AbstractTask
                 if ($msg->msg['model_name']) {
                     $extras['model_name'] = $msg->msg['model_name'];
                 }
-                // 提取模型“思考”参数
-                $thinkPatterns = [
-                    "/^(.+?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/",
-                    "/^(.+?)\s*\(\s*(think|thinking|reasoning)\s*\)\s*$/"
-                ];
-                $thinkMatch = [];
-                foreach ($thinkPatterns as $pattern) {
-                    if (preg_match($pattern, $extras['model_name'], $thinkMatch)) {
-                        break;
+                // 优先读取模型列表中按模型配置的思考档位（off|low|medium|high）
+                $thinkingEffort = Setting::AIBotModelThinking($setting[$type . '_models'] ?? '', $extras['model_name']);
+                // 兼容旧约定：模型名带 (thinking)/-reasoning 等后缀时，剥离后缀并视为 medium 档
+                if ($thinkingEffort === 'off') {
+                    $thinkPatterns = [
+                        "/^(.+?)(\s+|\s*[_-]\s*)(think|thinking|reasoning)\s*$/",
+                        "/^(.+?)\s*\(\s*(think|thinking|reasoning)\s*\)\s*$/"
+                    ];
+                    $thinkMatch = [];
+                    foreach ($thinkPatterns as $pattern) {
+                        if (preg_match($pattern, $extras['model_name'], $thinkMatch)) {
+                            break;
+                        }
+                    }
+                    if ($thinkMatch && !empty($thinkMatch[1])) {
+                        $extras['model_name'] = $thinkMatch[1];
+                        $thinkingEffort = 'medium';
                     }
                 }
-                if ($thinkMatch && !empty($thinkMatch[1])) {
-                    $extras['model_name'] = $thinkMatch[1];
+                if ($thinkingEffort !== 'off') {
+                    $extras['thinking_effort'] = $thinkingEffort;
                     $extras['max_tokens'] = 20000;
-                    $extras['thinking'] = 4096;
+                    $extras['thinking'] = 4096; // 兼容旧版插件
                     $extras['temperature'] = 1.0;
                 }
                 // 设定会话ID

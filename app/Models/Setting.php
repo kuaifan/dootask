@@ -89,11 +89,13 @@ class Setting extends AbstractModel
                         $content = !empty($value[$key]) ? trim($value[$key]) : '';
                         switch ($fieldName) {
                             case 'models':
-                                if ($content) {
+                                // 新 JSON 数组格式原样保留；仅旧的换行格式按行清洗
+                                if ($content && !str_starts_with($content, '[')) {
                                     $content = explode("\n", $content);
                                     $content = array_filter($content);
+                                    $content = implode("\n", $content);
                                 }
-                                $content = is_array($content) ? implode("\n", $content) : '';
+                                $content = is_string($content) ? $content : '';
                                 break;
                             case 'model':
                                 $models = Setting::AIBotModels2Array($array[$key . 's'], true);
@@ -219,21 +221,75 @@ class Setting extends AbstractModel
      */
     public static function AIBotModels2Array($models, $retValue = false)
     {
-        $list = is_array($models) ? $models : explode("\n", $models);
+        $list = null;
+        if (is_array($models)) {
+            $list = $models;
+        } else {
+            $text = trim((string)$models);
+            if ($text !== '' && str_starts_with($text, '[')) {
+                $decoded = json_decode($text, true);
+                if (is_array($decoded)) {
+                    $list = $decoded;
+                }
+            }
+            if ($list === null) {
+                $list = explode("\n", (string)$models);
+            }
+        }
         $array = [];
         foreach ($list as $item) {
-            $arr = Base::newTrim(explode('|', $item . '|'));
-            if ($arr[0]) {
+            if (is_array($item)) {
+                // 新 JSON 记录格式：{id,name,thinking}（兼容 {value,label}）
+                $value = trim((string)($item['id'] ?? $item['value'] ?? ''));
+                if ($value === '') {
+                    continue;
+                }
+                $label = trim((string)($item['name'] ?? $item['label'] ?? ''));
+                $thinking = strtolower(trim((string)($item['thinking'] ?? 'off')));
+                if (!in_array($thinking, ['off', 'low', 'medium', 'high'], true)) {
+                    $thinking = 'off';
+                }
                 $array[] = [
-                    'value' => $arr[0],
-                    'label' => $arr[1] ?: $arr[0]
+                    'value' => $value,
+                    'label' => $label !== '' ? $label : $value,
+                    'thinking' => $thinking,
                 ];
+            } else {
+                // 兼容旧字符串格式 "id|name"
+                $arr = Base::newTrim(explode('|', $item . '|'));
+                if ($arr[0]) {
+                    $array[] = [
+                        'value' => $arr[0],
+                        'label' => $arr[1] ?: $arr[0],
+                        'thinking' => 'off',
+                    ];
+                }
             }
         }
         if ($retValue) {
             return array_column($array, 'value');
         }
         return $array;
+    }
+
+    /**
+     * 获取指定模型的思考档位（off|low|medium|high），未配置返回 off
+     * @param string|array $models 模型列表设置（JSON 字符串或旧格式）
+     * @param string $modelName 模型 ID
+     * @return string
+     */
+    public static function AIBotModelThinking($models, $modelName)
+    {
+        $modelName = trim((string)$modelName);
+        if ($modelName === '') {
+            return 'off';
+        }
+        foreach (self::AIBotModels2Array($models) as $item) {
+            if ($item['value'] === $modelName) {
+                return $item['thinking'] ?? 'off';
+            }
+        }
+        return 'off';
     }
 
     /**
