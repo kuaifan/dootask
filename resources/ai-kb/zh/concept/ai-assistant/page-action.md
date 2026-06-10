@@ -1,0 +1,53 @@
+---
+id: ai-assistant.page-action.concept
+title: AI 操作页面的机制
+type: concept
+feature: ai-assistant
+scope: end-user
+locale: zh
+aliases:
+  - AI 控制页面
+  - AI 自动操作
+  - execute_action 是什么
+  - AI 跳转页面
+  - 页面自动化
+  - AI 点按钮
+related_tools: []
+related_pages: []
+prerequisites:
+  - 应用市场已安装 ai 插件
+  - 应用市场已安装 mcp_server 插件
+negative:
+  - AI 的页面操作仅在浏览器/桌面端会话窗口内生效，无法控制其他用户的页面
+  - 一次只能操作当前会话所在的页面，不能开新标签页
+  - 关闭浏览器或切到别的标签页时，页面操作会断连失败
+last_verified: v1.7.90
+---
+
+# AI 操作页面的机制
+
+## 定义
+AI 助手通过 `execute_action`（高层导航）和 `execute_element_action`（低层元素操作）两个 MCP 工具操作用户当前页面。后端通过 WebSocket 把指令推给前端，前端的 `action-executor.js` 执行真实 DOM 行为或路由跳转，结果回传给 AI 让对话继续。
+
+## 两层接口
+- **高层 execute_action**：语义化命名（如 `open_task`、`navigate_to_dashboard`），参数明确（任务 ID），由前端封装好 router 调用；优先用这层，稳定不易错
+- **低层 execute_element_action**：基于元素 ref 的通用动作（click/type/select/focus/scroll/hover），用于没封装好的细节操作
+
+## 受支持的高层动作
+- `open_task`、`open_dialog`、`open_project`、`open_file`、`open_folder`
+- `navigate_to_dashboard / messenger / calendar / files`
+
+## 受支持的低层元素动作
+- `click`、`type`、`select`、`focus`、`scroll`、`hover`
+
+## 不支持
+- 不能模拟键盘组合键、不能拖拽
+- 不能操作 iframe 内的内容
+- 不能跳转外部 URL（goForward 只走应用内路由）
+- 不能伪造非用户主动触发的事件（如自动提交表单审批通过）
+
+## 相关
+- 让 AI 跳页面：[[ai-assistant.page-action.howto]]
+- AI 操作元素：[[ai-assistant.element-action.howto]]
+- 元素查找接口：[[ai-assistant.match-elements.concept]]
+- 取页面上下文：[[ai-assistant.page-context-tool.concept]]

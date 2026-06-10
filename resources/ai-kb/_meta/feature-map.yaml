@@ -1,0 +1,1087 @@
+# feature 受控词表 + 每个 feature 的 chunk 清单骨架
+#
+# 字段说明:
+#   id             feature 受控词表项；frontmatter 的 feature 字段必须取自这里
+#   name           中文显示名（仅人读，不进 RAG）
+#   scope          主 scope（个别 chunk 可不同）
+#   batch          B1-B6，对应 plan §1.6 内容起草批次
+#   priority       P0 / P1 / P2
+#   chunk_count_est 估算 chunk 数（实际起草时可±20%）
+#   owner          认领的 reviewer（待 PM 填）
+#   status         pending / drafting / reviewing / done
+#   chunks         实际起草后填入的 chunk id 清单（增量）
+
+version: 1
+last_updated: 2026-06-09
+
+features:
+
+  # ===== A. 一级导航 (左侧栏 5 大块, B1) =====
+  - id: dashboard
+    name: 仪表盘
+    scope: end-user
+    batch: B1
+    priority: P0
+    chunk_count_est: 8
+    owner: ~
+    status: drafted
+    chunks:
+      - dashboard.entry.menu-map
+      - dashboard.concept
+      - dashboard.today.howto
+      - dashboard.overdue.howto
+      - dashboard.todo.howto
+      - dashboard.assist.howto
+      - dashboard.collapse.howto
+      - dashboard.refresh.faq
+
+  - id: calendar
+    name: 日历
+    scope: end-user
+    batch: B1
+    priority: P0
+    chunk_count_est: 12
+    owner: ~
+    status: drafted
+    chunks:
+      - calendar.entry.menu-map
+      - calendar.concept
+      - calendar.view.howto
+      - calendar.task.concept
+      - calendar.allday.concept
+      - calendar.drag.howto
+      - calendar.create.howto
+      - calendar.filter.concept
+      - calendar.timezone.concept
+      - calendar.edit.concept
+      - calendar.mobile.faq
+      - calendar.meeting-not-shown.faq
+      - calendar.ical.faq
+
+  - id: messenger
+    name: 即时通讯
+    scope: end-user
+    batch: B1
+    priority: P0
+    chunk_count_est: 40
+    owner: ~
+    status: drafted
+    chunks:
+      - messenger.group.howto.create
+      - messenger.group.howto.rename
+      - messenger.group.howto.member
+      - messenger.group.howto.transfer
+      - messenger.group.howto.dissolve
+      - messenger.group.howto.exit
+      - messenger.send.howto.text
+      - messenger.send.howto.file
+      - messenger.send.howto.image
+      - messenger.send.howto.mention
+      - messenger.send.howto.quote
+      - messenger.recall.howto
+      - messenger.vote.howto
+      - messenger.chain.howto
+      - messenger.todo.howto
+      - messenger.pin.howto
+      - messenger.mute.howto
+      - messenger.search.howto
+      - messenger.history.howto
+      - messenger.entry.menu-map
+      - messenger.dialog-type.concept
+      - messenger.read-receipt.concept
+      - messenger.notify.concept
+      - messenger.task-mention.concept
+      - messenger.bot.concept
+      - messenger.unread.concept
+
+  - id: file
+    name: 文件
+    scope: end-user
+    batch: B1
+    priority: P0
+    chunk_count_est: 25
+    owner: ~
+    status: drafted
+    chunks:
+      - file.entry.menu-map
+      - file.tree.concept
+      - file.upload.howto
+      - file.create.howto
+      - file.rename.howto
+      - file.move.howto
+      - file.delete-restore.howto
+      - file.share.howto
+      - file.public-link.howto
+      - file.preview.concept
+      - file.search.howto
+      - file.version.concept
+
+  - id: application
+    name: 应用中心（导航入口）
+    scope: end-user
+    batch: B3
+    priority: P0
+    chunk_count_est: 5
+    owner: ~
+    status: drafted
+    chunks:
+      - application.center.concept
+      - application.classify.concept
+      - application.menu-admin.howto
+      - application.sort.howto
+      - application.entry.menu-map
+
+  # ===== B. 项目 / 任务 / 视图 / 会议 (B1/B2) =====
+  - id: project
+    name: 项目
+    scope: end-user
+    batch: B1
+    priority: P0
+    chunk_count_est: 30
+    owner: ~
+    status: drafted
+    chunks:
+      - project.create.howto
+      - project.update.howto
+      - project.archive-delete.howto
+      - project.member.howto
+      - project.transfer.howto
+      - project.invite.howto
+      - project.exit.howto
+      - project.flow.howto.create
+      - project.flow.howto.edit
+      - project.column.howto.add
+      - project.column.howto.edit
+      - project.column.howto.remove
+      - project.sort.howto
+      - project.search.howto
+      - project.export.howto
+      - project.personal.concept
+      - project.role.concept
+      - project.permission.concept
+      - project.flow.concept.default
+      - project.dialog.concept
+      - project.statistics.concept
+      - project.permission-to-create.faq
+      - project.permission-denied-task.faq
+      - project.entry.menu-map
+
+  - id: task
+    name: 任务
+    scope: end-user
+    batch: B1
+    priority: P0
+    chunk_count_est: 40
+    owner: ~
+    status: drafted
+    chunks:
+      - task.create.howto.quick
+      - task.create.howto.full
+      - task.create.howto.via-mention
+      - task.template.howto
+      - task.copy.howto
+      - task.recurring.howto
+      - task.edit.howto.basic
+      - task.complete.howto
+      - task.move.howto.column
+      - task.move.howto.cross-project
+      - task.sort.howto
+      - task.subtask.howto.create
+      - task.archive.howto
+      - task.delete-restore.howto
+      - task.attachment.howto
+      - task.subtask.concept
+      - task.subtask.limits.concept
+      - task.field.priority.concept
+      - task.field.deadline.concept
+      - task.field.visibility.concept
+      - task.field.tag.concept
+      - task.field.color.concept
+      - task.field.owner-assist.concept
+      - task.field.description.concept
+      - task.related.concept
+      - task.flow.concept
+      - task.dialog.concept
+      - task.notify.concept
+
+  - id: view
+    name: 视图（看板/列表/甘特图/工作流）
+    scope: end-user
+    batch: B2
+    priority: P0
+    chunk_count_est: 12
+    owner: ~
+    status: drafted
+    chunks:
+      - view.kanban.howto.add-column
+      - view.entry.concept
+      - view.kanban.concept
+      - view.list.howto
+      - view.gantt.howto
+      - view.flow.howto
+      - view.filter.howto
+      - view.sort.howto
+      - view.switch.howto
+      - view.kanban.howto.column-color
+      - view.mobile.faq
+
+  - id: meeting
+    name: 会议
+    scope: end-user
+    batch: B2
+    priority: P0
+    chunk_count_est: 12
+    owner: ~
+    status: drafted
+    chunks:
+      - meeting.entry.menu-map
+      - meeting.concept
+      - meeting.create.howto
+      - meeting.join.howto
+      - meeting.invite.howto
+      - meeting.share.howto
+      - meeting.chat.howto
+      - meeting.close.howto
+      - meeting.tourist.concept
+      - meeting.from-dialog.howto
+      - meeting.cannot-join.faq
+      - meeting.audio-video.howto
+
+  # ===== C. 独立功能模块 (B2) =====
+  - id: report
+    name: 工作报告
+    scope: end-user
+    batch: B2
+    priority: P0
+    chunk_count_est: 15
+    owner: ~
+    status: drafted
+    chunks:
+      - report.entry.menu-map
+      - report.concept
+      - report.type.concept
+      - report.create.howto
+      - report.template.howto
+      - report.submit.howto
+      - report.edit.howto
+      - report.my.howto
+      - report.receive.howto
+      - report.read-unread.howto
+      - report.share.howto
+      - report.link.concept
+      - report.ai-generate.howto
+      - report.analysis.concept
+      - report.permission.faq
+
+  - id: approve
+    name: 审批
+    scope: end-user
+    batch: B2
+    priority: P0
+    chunk_count_est: 20
+    owner: ~
+    status: drafted
+    chunks:
+      - approve.plugin.concept
+      - approve.install.howto
+      - approve.template.concept
+      - approve.template.howto
+      - approve.node.concept
+      - approve.form.concept
+      - approve.delete.howto
+      - approve.export.howto
+      - approve.entry.menu-map
+      - approve.concept
+      - approve.start.howto
+      - approve.my-start.howto
+      - approve.my-todo.howto
+      - approve.doto.howto
+      - approve.cc.howto
+      - approve.detail.howto
+      - approve.process-inst.concept
+      - approve.history.concept
+      - approve.notify.concept
+      - approve.comment.howto
+
+  - id: checkin
+    name: 签到打卡
+    scope: end-user
+    batch: B2
+    priority: P1
+    chunk_count_est: 15
+    owner: ~
+    status: drafted
+    chunks:
+      - checkin.entry.menu-map
+      - checkin.concept
+      - checkin.regular.howto
+      - checkin.wifi.howto
+      - checkin.face.howto
+      - checkin.face.concept
+      - checkin.record.howto
+      - checkin.remind.concept
+      - checkin.setting.howto
+      - checkin.rule.concept
+      - checkin.export.howto
+      - checkin.late.faq
+      - checkin.face-fail.faq
+      - checkin.mac-not-match.faq
+      - checkin.plugin.concept
+
+  - id: okr
+    name: OKR
+    scope: end-user
+    batch: B2
+    priority: P1
+    chunk_count_est: 12
+    owner: ~
+    status: drafted
+    chunks:
+      - okr.entry.menu-map
+      - okr.concept
+      - okr.plugin.concept
+      - okr.objective.concept
+      - okr.kr.concept
+      - okr.create.howto
+      - okr.update-progress.howto
+      - okr.cycle.concept
+      - okr.align.howto
+      - okr.review.howto
+      - okr.team.concept
+      - okr.cannot-install.faq
+
+  # ===== A5. 应用中心（系统应用 + 管理员应用 + 微应用） (B3) =====
+  - id: app-system
+    name: 内置系统应用（11 个，含审批/签到/报告/收藏/最近/机器人/创建群/会议/创建项目/添加任务/导出）
+    scope: end-user
+    batch: B3
+    priority: P0
+    chunk_count_est: 15
+    owner: ~
+    status: drafted
+    chunks:
+      - app-system.approve.howto
+      - app-system.list.concept
+      - app-system.relation.concept
+      - app-system.visibility.concept
+      - app-system.add-task.howto
+      - app-system.bot.howto
+      - app-system.checkin.howto
+      - app-system.create-group.howto
+      - app-system.create-project.howto
+      - app-system.export.howto
+      - app-system.favorite.howto
+      - app-system.meeting.howto
+      - app-system.recent.howto
+      - app-system.report.howto
+      - app-system.entry.menu-map
+
+  - id: app-admin
+    name: 管理员应用（LDAP/邮件/推送/举报/导出/团队管理）
+    scope: admin
+    batch: B3
+    priority: P0
+    chunk_count_est: 10
+    owner: ~
+    status: drafted
+    chunks:
+      - app-admin.list.concept
+      - app-admin.visibility.concept
+      - app-admin.checkin-setting.howto
+      - app-admin.email.howto
+      - app-admin.export.howto
+      - app-admin.ldap.howto
+      - app-admin.meeting-mgmt.howto
+      - app-admin.push.howto
+      - app-admin.report.howto
+      - app-admin.team.howto
+      - app-admin.entry.menu-map
+
+  - id: micro-app
+    name: 微应用通用概念（安装/卸载/排序/自定义菜单）
+    scope: end-user
+    batch: B3
+    priority: P0
+    chunk_count_est: 8
+    owner: ~
+    status: drafted
+    chunks:
+      - micro-app.list.concept
+      - micro-app.menu.concept
+      - micro-app.concept
+      - micro-app.permission.concept
+      - micro-app.install.howto
+      - micro-app.sort.howto
+      - micro-app.uninstall.howto
+      - micro-app.entry.menu-map
+
+  - id: minder
+    name: 思维导图（minder 插件）
+    scope: end-user
+    batch: B3
+    priority: P1
+    chunk_count_est: 5
+    owner: ~
+    status: drafted
+    chunks:
+      - minder.collaboration.concept
+      - minder.concept
+      - minder.plugin.concept
+      - minder.create.howto
+      - minder.entry.menu-map
+
+  - id: drawio
+    name: 流程图（drawio 插件）
+    scope: end-user
+    batch: B3
+    priority: P1
+    chunk_count_est: 5
+    owner: ~
+    status: drafted
+    chunks:
+      - drawio.concept
+      - drawio.plugin.concept
+      - drawio.template.concept
+      - drawio.create.howto
+      - drawio.entry.menu-map
+
+  - id: office
+    name: OnlyOffice 在线文档（office 插件）
+    scope: end-user
+    batch: B3
+    priority: P1
+    chunk_count_est: 5
+    owner: ~
+    status: drafted
+    chunks:
+      - office.collaboration.concept
+      - office.concept
+      - office.plugin.concept
+      - office.create.howto
+      - office.entry.menu-map
+
+  - id: fileview
+    name: 文件预览（fileview 插件）
+    scope: end-user
+    batch: B3
+    priority: P2
+    chunk_count_est: 3
+    owner: ~
+    status: drafted
+    chunks:
+      - fileview.concept
+      - fileview.plugin.concept
+      - fileview.supported.concept
+
+  - id: memos
+    name: Memos 笔记（memos 插件）
+    scope: end-user
+    batch: B3
+    priority: P1
+    chunk_count_est: 5
+    owner: ~
+    status: drafted
+    chunks:
+      - memos.concept
+      - memos.plugin.concept
+      - memos.tag.concept
+      - memos.create.howto
+      - memos.entry.menu-map
+
+  - id: kpi
+    name: KPI 绩效（kpi 插件）
+    scope: end-user
+    batch: B3
+    priority: P1
+    chunk_count_est: 5
+    owner: ~
+    status: drafted
+    chunks:
+      - kpi.concept
+      - kpi.plugin.concept
+      - kpi.scoring.concept
+      - kpi.create.howto
+      - kpi.entry.menu-map
+
+  # ===== F. 通信通知 (B3) =====
+  - id: email-notice
+    name: 邮件通知
+    scope: admin
+    batch: B3
+    priority: P1
+    chunk_count_est: 6
+    owner: ~
+    status: drafted
+    chunks:
+      - email-notice.concept
+      - email-notice.scenarios.concept
+      - email-notice.troubleshoot.faq
+      - email-notice.config.howto
+      - email-notice.send-test.howto
+      - email-notice.user-opt.howto
+
+  - id: push-notice
+    name: APP 推送（UMENG）
+    scope: admin
+    batch: B3
+    priority: P1
+    chunk_count_est: 6
+    owner: ~
+    status: drafted
+    chunks:
+      - push-notice.alias.concept
+      - push-notice.concept
+      - push-notice.scenarios.concept
+      - push-notice.troubleshoot.faq
+      - push-notice.config.howto
+      - push-notice.silent.howto
+
+  - id: desktop-notify
+    name: 桌面端通知（Electron）
+    scope: end-user
+    batch: B3
+    priority: P1
+    chunk_count_est: 4
+    owner: ~
+    status: drafted
+    chunks:
+      - desktop-notify.concept
+      - desktop-notify.tray.concept
+      - desktop-notify.permission.faq
+      - desktop-notify.toggle.howto
+
+  - id: mobile-notify
+    name: 移动端通知
+    scope: end-user
+    batch: B3
+    priority: P1
+    chunk_count_est: 4
+    owner: ~
+    status: drafted
+    chunks:
+      - mobile-notify.concept
+      - mobile-notify.permission.faq
+      - mobile-notify.silent.howto
+      - mobile-notify.toggle.howto
+
+  - id: bot
+    name: 机器人
+    scope: end-user
+    batch: B3
+    priority: P0
+    chunk_count_est: 8
+    owner: ~
+    status: drafted
+    chunks:
+      - bot.concept
+      - bot.system-list.concept
+      - bot.webhook.concept
+      - bot.permission.faq
+      - bot.create.howto
+      - bot.invite.howto
+      - bot.mention.howto
+      - bot.entry.menu-map
+
+  # ===== E. 用户与组织 (B4) =====
+  - id: user-account
+    name: 账号（注册/登录/邮箱验证/密码/设备/注销）
+    scope: end-user
+    batch: B4
+    priority: P0
+    chunk_count_est: 15
+    owner: ~
+    status: drafted
+    chunks:
+      - user-account.info.concept
+      - user-account.reg-need-invite.concept
+      - user-account.delete-restore.faq
+      - user-account.delete.howto
+      - user-account.device.howto
+      - user-account.email-verify.howto
+      - user-account.import.howto
+      - user-account.login-codeimg.howto
+      - user-account.login-qrcode.howto
+      - user-account.login.howto
+      - user-account.logout.howto
+      - user-account.password.howto
+      - user-account.register.howto
+      - user-account.search.howto
+      - user-account.entry.menu-map
+
+  - id: user-settings
+    name: 个人设置（资料/语言/主题/快捷键/签到设置）
+    scope: end-user
+    batch: B4
+    priority: P0
+    chunk_count_est: 12
+    owner: ~
+    status: drafted
+    chunks:
+      - user-settings.privacy.concept
+      - user-settings.shortcut.concept
+      - user-settings.app-sort.howto
+      - user-settings.checkin.howto
+      - user-settings.email.howto
+      - user-settings.language.howto
+      - user-settings.notification.howto
+      - user-settings.password.howto
+      - user-settings.profile.howto
+      - user-settings.tags.howto
+      - user-settings.theme.howto
+      - user-settings.entry.menu-map
+
+  - id: org-department
+    name: 部门 + 部门负责人 + 负责人视角
+    scope: admin
+    batch: B4
+    priority: P0
+    chunk_count_est: 10
+    owner: ~
+    status: drafted
+    chunks:
+      - org-department.deputy.concept
+      - org-department.concept
+      - org-department.add-deputy.howto
+      - org-department.add.howto
+      - org-department.del-deputy.howto
+      - org-department.delete.howto
+      - org-department.deputy-view.howto
+      - org-department.list.howto
+      - org-department.sync.howto
+      - org-department.entry.menu-map
+
+  - id: role-permission
+    name: 角色与权限
+    scope: admin
+    batch: B4
+    priority: P0
+    chunk_count_est: 10
+    owner: ~
+    status: drafted
+    chunks:
+      - role-permission.permission-denied.faq
+      - role-permission.admin.concept
+      - role-permission.department-role.concept
+      - role-permission.concept
+      - role-permission.project-role.concept
+      - role-permission.super-admin.concept
+      - role-permission.task-role.concept
+      - role-permission.grant-admin.howto
+      - role-permission.transfer-owner.howto
+      - role-permission.entry.menu-map
+
+  - id: favorite
+    name: 收藏与最近
+    scope: end-user
+    batch: B4
+    priority: P0
+    chunk_count_est: 6
+    owner: ~
+    status: drafted
+    chunks:
+      - favorite.concept
+      - favorite.recent.concept
+      - favorite.add.howto
+      - favorite.list.howto
+      - favorite.remove.howto
+      - favorite.entry.menu-map
+
+  # ===== H. 系统管理 (B4) =====
+  - id: system-setting
+    name: 系统设置（通用/安全/注册策略）
+    scope: admin
+    batch: B4
+    priority: P1
+    chunk_count_est: 10
+    owner: ~
+    status: drafted
+    chunks:
+      - system-setting.ai-bot.howto
+      - system-setting.ai-model.howto
+      - system-setting.checkin.howto
+      - system-setting.column-template.howto
+      - system-setting.file.howto
+      - system-setting.general.howto
+      - system-setting.meeting.howto
+      - system-setting.priority.howto
+      - system-setting.third-access.howto
+      - system-setting.e2e-encryption.howto
+      - system-setting.password-policy.howto
+      - system-setting.registration.howto
+      - system-setting.msg-time-limit.howto
+      - system-setting.auto-archive.howto
+      - system-setting.task-ai-analyze.howto
+      - system-setting.file-upload-limit.howto
+      - system-setting.video-process.howto
+      - system-setting.task-visibility.howto
+      - system-setting.chat-mute.howto
+      - system-setting.todo-permission.howto
+      - system-setting.entry.menu-map
+      - system-setting.menu-map
+
+  - id: license
+    name: License Key
+    scope: super-admin
+    batch: B4
+    priority: P1
+    chunk_count_est: 3
+    owner: ~
+    status: drafted
+    chunks:
+      - license.concept
+      - license.expire.faq
+      - license.howto
+
+  - id: ldap
+    name: LDAP 集成
+    scope: admin
+    batch: B4
+    priority: P1
+    chunk_count_est: 4
+    owner: ~
+    status: drafted
+    chunks:
+      - ldap.concept
+      - ldap.troubleshoot.faq
+      - ldap.config.howto
+      - ldap.sync.howto
+
+  - id: data-export
+    name: 数据导出（6 种类型）
+    scope: admin
+    batch: B4
+    priority: P1
+    chunk_count_est: 8
+    owner: ~
+    status: drafted
+    chunks:
+      - data-export.concept
+      - data-export.approve.howto
+      - data-export.checkin.howto
+      - data-export.project.howto
+      - data-export.report.howto
+      - data-export.task.howto
+      - data-export.user.howto
+      - data-export.entry.menu-map
+
+  - id: abuse-report
+    name: 举报管理
+    scope: admin
+    batch: B4
+    priority: P2
+    chunk_count_est: 3
+    owner: ~
+    status: drafted
+    chunks:
+      - abuse-report.concept
+      - abuse-report.handle.howto
+      - abuse-report.entry.menu-map
+
+  - id: compliance
+    name: 合规设置
+    scope: admin
+    batch: B4
+    priority: P2
+    chunk_count_est: 3
+    owner: ~
+    status: drafted
+    chunks:
+      - compliance.concept
+      - compliance.howto
+      - compliance.entry.menu-map
+
+  - id: appstore
+    name: 应用市场（AppStore 管理）
+    scope: admin
+    batch: B4
+    priority: P0
+    chunk_count_est: 6
+    owner: ~
+    status: drafted
+    chunks:
+      - appstore.concept
+      - appstore.cannot-install.faq
+      - appstore.install.howto
+      - appstore.uninstall.howto
+      - appstore.update.howto
+      - appstore.entry.menu-map
+
+  # ===== D. AI 助手 (B5) =====
+  - id: ai-assistant
+    name: AI 助手（入口/模型/对话/工具/任务集成）
+    scope: end-user
+    batch: B5
+    priority: P0
+    chunk_count_est: 48
+    owner: ~
+    status: drafted
+    chunks:
+      - ai-assistant.entry.howto
+      - ai-assistant.auth.concept
+      - ai-assistant.close.howto
+      - ai-assistant.create-task.howto
+      - ai-assistant.disabled.faq
+      - ai-assistant.element-action.howto
+      - ai-assistant.embed-entry.concept
+      - ai-assistant.float-button.concept
+      - ai-assistant.float-button.howto
+      - ai-assistant.image-upload.howto
+      - ai-assistant.intelligent-search.howto
+      - ai-assistant.list-tasks.howto
+      - ai-assistant.match-elements.concept
+      - ai-assistant.mcp-down.faq
+      - ai-assistant.mobile-entry.concept
+      - ai-assistant.modal.concept
+      - ai-assistant.model-empty.faq
+      - ai-assistant.model-switch.howto
+      - ai-assistant.model.concept
+      - ai-assistant.multimodal.concept
+      - ai-assistant.new-chat.howto
+      - ai-assistant.no-tool-call.faq
+      - ai-assistant.page-action.concept
+      - ai-assistant.page-action.howto
+      - ai-assistant.page-context-tool.concept
+      - ai-assistant.page-context.concept
+      - ai-assistant.privacy.concept
+      - ai-assistant.project-init.howto
+      - ai-assistant.report-draft.howto
+      - ai-assistant.search-files.howto
+      - ai-assistant.search-help-docs.howto
+      - ai-assistant.search-users.howto
+      - ai-assistant.send-message.howto
+      - ai-assistant.session-delete.howto
+      - ai-assistant.session-list.howto
+      - ai-assistant.session-save.howto
+      - ai-assistant.session.concept
+      - ai-assistant.shortcut.howto
+      - ai-assistant.stop.howto
+      - ai-assistant.streaming.concept
+      - ai-assistant.subtask-suggest.howto
+      - ai-assistant.task-mention.howto
+      - ai-assistant.task-summary.howto
+      - ai-assistant.tool-call.concept
+      - ai-assistant.tool-failed.faq
+      - ai-assistant.tool-permission.faq
+      - ai-assistant.tools-list.concept
+      - ai-assistant.tools.concept
+      - ai-assistant.welcome-prompts.concept
+
+  # ===== G. 搜索 (B5) =====
+  - id: search
+    name: 全局搜索（Manticore）
+    scope: end-user
+    batch: B5
+    priority: P0
+    chunk_count_est: 10
+    owner: ~
+    status: drafted
+    chunks:
+      - search.concept
+      - search.contact.howto
+      - search.engine.concept
+      - search.entry.menu-map
+      - search.file.howto
+      - search.intelligent.concept
+      - search.message.howto
+      - search.no-result.faq
+      - search.project.howto
+      - search.task.howto
+
+  # ===== I. 终端 (B5) =====
+  - id: web-client
+    name: Web 端
+    scope: end-user
+    batch: B5
+    priority: P1
+    chunk_count_est: 3
+    owner: ~
+    status: drafted
+    chunks:
+      - web-client.compatibility.concept
+      - web-client.concept
+      - web-client.shortcut.concept
+
+  - id: electron-client
+    name: 桌面端（Electron）
+    scope: end-user
+    batch: B5
+    priority: P1
+    chunk_count_est: 12
+    owner: ~
+    status: drafted
+    chunks:
+      - electron-client.auto-start.howto
+      - electron-client.concept
+      - electron-client.download.howto
+      - electron-client.logs.faq
+      - electron-client.notify.concept
+      - electron-client.platforms.concept
+      - electron-client.proxy.concept
+      - electron-client.shortcut.concept
+      - electron-client.tray.concept
+      - electron-client.uninstall.howto
+      - electron-client.update.howto
+      - electron-client.window.howto
+
+  - id: mobile-client
+    name: 移动端（iOS / Android）
+    scope: end-user
+    batch: B5
+    priority: P1
+    chunk_count_est: 10
+    owner: ~
+    status: drafted
+    chunks:
+      - mobile-client.cannot-login.faq
+      - mobile-client.concept
+      - mobile-client.download.howto
+      - mobile-client.feature-diff.concept
+      - mobile-client.gesture.concept
+      - mobile-client.login.howto
+      - mobile-client.notify.concept
+      - mobile-client.offline.concept
+      - mobile-client.push-fail.faq
+      - mobile-client.update.howto
+
+  # ===== J. 横向元资源 (B6) =====
+  - id: shortcut
+    name: 快捷键 / 移动端手势
+    scope: end-user
+    batch: B6
+    priority: P0
+    chunk_count_est: 5
+    owner: ~
+    status: drafted
+    chunks:
+      - shortcut.dialog.shortcut
+      - shortcut.global.shortcut
+      - shortcut.messenger.shortcut
+      - shortcut.mobile-gesture.shortcut
+      - shortcut.task.shortcut
+
+  - id: glossary
+    name: 术语表 + 别名
+    scope: end-user
+    batch: B6
+    priority: P0
+    chunk_count_est: 1   # 单一大表
+    owner: ~
+    status: drafted
+    chunks:
+      - glossary.main
+
+  - id: menu-navigation
+    name: 菜单导航（"X 入口在哪"索引）
+    scope: end-user
+    batch: B6
+    priority: P0
+    chunk_count_est: 35
+    owner: ~
+    status: drafted
+    chunks:
+      - menu-navigation.ai-assistant.menu-map
+      - menu-navigation.ai-config.menu-map
+      - menu-navigation.apps-sort.menu-map
+      - menu-navigation.apps.menu-map
+      - menu-navigation.appstore.menu-map
+      - menu-navigation.bot-mgmt.menu-map
+      - menu-navigation.calendar.menu-map
+      - menu-navigation.checkin-rule.menu-map
+      - menu-navigation.checkin.menu-map
+      - menu-navigation.dashboard.menu-map
+      - menu-navigation.data-export-mgmt.menu-map
+      - menu-navigation.email-config.menu-map
+      - menu-navigation.favorite.menu-map
+      - menu-navigation.files.menu-map
+      - menu-navigation.language.menu-map
+      - menu-navigation.license.menu-map
+      - menu-navigation.logout.menu-map
+      - menu-navigation.messages.menu-map
+      - menu-navigation.my-projects.menu-map
+      - menu-navigation.my-tasks.menu-map
+      - menu-navigation.new-approve.menu-map
+      - menu-navigation.new-group.menu-map
+      - menu-navigation.new-meeting.menu-map
+      - menu-navigation.new-project.menu-map
+      - menu-navigation.new-report.menu-map
+      - menu-navigation.new-task.menu-map
+      - menu-navigation.notification-setting.menu-map
+      - menu-navigation.notifications.menu-map
+      - menu-navigation.password-change.menu-map
+      - menu-navigation.profile.menu-map
+      - menu-navigation.recent.menu-map
+      - menu-navigation.search.menu-map
+      - menu-navigation.system-setting.menu-map
+      - menu-navigation.team-mgmt.menu-map
+      - menu-navigation.theme.menu-map
+
+  - id: common-faq
+    name: 通用 FAQ（权限/上传/通知/AI/同步/部署）
+    scope: end-user
+    batch: B6
+    priority: P0
+    chunk_count_est: 40
+    owner: ~
+    status: drafted
+    chunks:
+      - common-faq.account-cant-login.faq
+      - common-faq.account-email-not-verified.faq
+      - common-faq.account-forget-password.faq
+      - common-faq.account-locked.faq
+      - common-faq.account-multi-device-conflict.faq
+      - common-faq.ai-no-models.faq
+      - common-faq.ai-slow.faq
+      - common-faq.ai-token-cost.faq
+      - common-faq.ai-tool-permission.faq
+      - common-faq.ai-wrong-answer.faq
+      - common-faq.data-import.faq
+      - common-faq.deploy-backup.faq
+      - common-faq.deploy-perf.faq
+      - common-faq.deploy-ssl.faq
+      - common-faq.deploy-storage.faq
+      - common-faq.deploy-update.faq
+      - common-faq.language-cant-change.faq
+      - common-faq.notify-desktop-fail.faq
+      - common-faq.notify-email-fail.faq
+      - common-faq.notify-mobile-fail.faq
+      - common-faq.notify-no-receive.faq
+      - common-faq.notify-too-many.faq
+      - common-faq.permission-admin-area.faq
+      - common-faq.permission-cannot-add-member.faq
+      - common-faq.permission-cannot-edit-project.faq
+      - common-faq.permission-cannot-see-task.faq
+      - common-faq.permission-readonly.faq
+      - common-faq.plugin-not-loaded.faq
+      - common-faq.search-no-result.faq
+      - common-faq.sync-ldap.faq
+      - common-faq.sync-multi-device.faq
+      - common-faq.sync-offline-data.faq
+      - common-faq.sync-task-not-update.faq
+      - common-faq.sync-websocket-disconnect.faq
+      - common-faq.theme-cant-change.faq
+      - common-faq.upload-disk-full.faq
+      - common-faq.upload-image-error.faq
+      - common-faq.upload-size-limit.faq
+      - common-faq.upload-stuck.faq
+      - common-faq.upload-type-block.faq
+
+# ----------------------------------------------------------------
+# 总览（P0 估算; 实际起草时按需调整）
+#
+#   B1: dashboard(8) + calendar(12) + messenger(40) + file(25)
+#       + project(30) + task(40) = 155
+#   B2: view(12) + meeting(12) + report(15) + approve(20)
+#       + checkin(15) + okr(12) = 86
+#   B3: application(5) + app-system(15) + app-admin(10) + micro-app(8)
+#       + minder(5) + drawio(5) + office(5) + fileview(3) + memos(5) + kpi(5)
+#       + email-notice(6) + push-notice(6) + desktop-notify(4) + mobile-notify(4)
+#       + bot(8) = 94
+#   B4: user-account(15) + user-settings(12) + org-department(10) + role-permission(10)
+#       + favorite(6) + system-setting(10) + license(3) + ldap(4) + data-export(8)
+#       + abuse-report(3) + compliance(3) + appstore(6) = 90
+#   B5: ai-assistant(48) + search(10) + web-client(3) + electron-client(12)
+#       + mobile-client(10) = 83
+#   B6: shortcut(5) + glossary(1 大表) + menu-navigation(35) + common-faq(40) = 81
+#
+#   合计 ~589；P0 实施时按 priority 砍 P2 + 适度合并，目标 ~380
+# ----------------------------------------------------------------

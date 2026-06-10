@@ -46,8 +46,17 @@ class AssistantController extends AbstractController
         $modelType = trim(Request::input('model_type', ''));
         $modelName = trim(Request::input('model_name', ''));
         $contextInput = Request::input('context', []);
+        // ai-kb 检索语种；缺省 zh，前端传 'zh' / 'en'
+        $supportedLocales = config('ai.rag_supported_locales', ['zh', 'en']);
+        $locale = trim(Request::input('locale', 'zh'));
+        if (!in_array($locale, $supportedLocales, true)) {
+            $locale = 'zh';
+        }
 
-        return AI::createStreamKey($modelType, $modelName, $contextInput);
+        // 灰度判定（参考 config/ai.php）：总开关 + canary 白名单
+        $ragEnabled = AI::ragEnabledFor((int) $user->userid);
+
+        return AI::createStreamKey($modelType, $modelName, $contextInput, $locale, $ragEnabled);
     }
 
     /**

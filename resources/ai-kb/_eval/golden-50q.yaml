@@ -1,0 +1,575 @@
+# 50 题回归测试集（S5 完整验收）
+#
+# 字段：
+#   id              测试题 id
+#   q               用户提问
+#   locale          zh / en
+#   expected_chunk_ids  期望被 retriever 召回的 chunk id（≥1 条命中即 recall=1）
+#   expected_answer 期望答案要点（LLM-judge 用，自然语言描述关键事实）
+#   must_say        正例：答案必须包含的关键词中至少 1 条 / 拒答桶：拒答关键词
+#   must_not_say    答案禁止出现的内容（编造点）
+#   bucket          easy / medium / hard / honest-negative
+#   feature         对应 feature（追溯定位）
+#
+# 分布（plan §4.1）：
+#   一级导航 + 项目/任务核心 12  (easy 6 / med 6)
+#   视图/会议/报告/审批/签到/OKR 10
+#   应用中心                    6  (easy 4 / med 2)
+#   用户/组织/系统管理          6  (med 4 / hard 2)
+#   AI/搜索/终端                4  (medium)
+#   快捷键/术语                 4  (easy)
+#   跨模块组合                  3  (hard)
+#   中英混合                    2  (medium)
+#   诚实性 negative             3
+#   ---合计---                  50
+
+version: 3
+last_updated: 2026-06-10
+
+tests:
+
+  # ----- 桶 1: 一级导航 + 项目/任务核心 12 -----
+
+  - id: q1
+    q: "看板列怎么改名？"
+    locale: zh
+    expected_chunk_ids: [project.column.howto.edit, view.kanban.howto.column-color]
+    expected_answer: "在项目看板视图，点击列标题右侧「···」菜单选「修改」，在弹窗中输入新列表名保存；同一菜单还可设置列颜色、归档、删除列，列顺序通过拖拽调整。"
+    must_say: [列, 改名, 重命名]
+    must_not_say: []
+    bucket: easy
+    feature: project
+
+  - id: q2
+    q: "怎么快速创建一个任务？"
+    locale: zh
+    expected_chunk_ids: [task.create.howto.quick]
+    expected_answer: "在项目看板任意列底部点击添加区域，输入任务描述回车即可创建；或左上角「新建任务」按钮（快捷键 Ctrl/Cmd+K 或 Ctrl/Cmd+N）。"
+    must_say: [快速, 创建, 任务]
+    must_not_say: []
+    bucket: easy
+    feature: task
+
+  - id: q3
+    q: "DooTask 的默认工作流是什么样的？"
+    locale: zh
+    expected_chunk_ids: [project.flow.concept.default]
+    expected_answer: "默认 5 个流程节点：待处理 / 进行中 / 待测试 / 已完成 / 已取消，可自定义。"
+    must_say: [待处理, 进行中, 已完成]
+    must_not_say: []
+    bucket: easy
+    feature: project
+
+  - id: q4
+    q: "仪表盘上有哪些卡片？"
+    locale: zh
+    expected_chunk_ids: [dashboard.concept]
+    expected_answer: "仪表盘顶部有「今日到期 / 超期任务 / 待完成任务」3 个统计卡片，下方按今日到期、超期、待完成、协助的任务分组列出任务，是个人工作台。"
+    must_say: [仪表盘, 卡片]
+    must_not_say: []
+    bucket: easy
+    feature: dashboard
+
+  - id: q5
+    q: "日历入口在哪？"
+    locale: zh
+    expected_chunk_ids: [calendar.entry.menu-map, menu-navigation.calendar.menu-map]
+    expected_answer: "左侧主导航点击「日历」即可进入（与仪表盘、消息、文件、应用并列）。"
+    must_say: [日历]
+    must_not_say: []
+    bucket: easy
+    feature: calendar
+
+  - id: q6
+    q: "子任务可以再嵌套子任务吗？"
+    locale: zh
+    expected_chunk_ids: [task.subtask.limits.concept]
+    expected_answer: "DooTask 子任务只支持单层，不能继续嵌套子子任务。"
+    must_say: [子任务, 不支持嵌套, 不能嵌套, 单层, 只支持]
+    must_not_say: [支持多层嵌套, 可以无限嵌套]
+    bucket: easy
+    feature: task
+
+  - id: q7
+    q: "想改任务负责人怎么改？"
+    locale: zh
+    expected_chunk_ids: [task.edit.howto.basic, role-permission.task-role.concept]
+    expected_answer: "打开任务详情，在「负责人」字段下拉选择新成员；只有项目成员可被指派。"
+    must_say: [负责人]
+    must_not_say: []
+    bucket: medium
+    feature: task
+
+  - id: q8
+    q: "我要离职了，能不能把项目移交给同事？"
+    locale: zh
+    expected_chunk_ids: [project.transfer.howto]
+    expected_answer: "项目页右上角「···」菜单选「移交项目」，选择新负责人确认即可；仅项目主负责人可操作，移交后项目群归属同步变更。"
+    must_say: [移交, 转让, 项目]
+    must_not_say: []
+    bucket: medium
+    feature: project
+
+  - id: q9
+    q: "任务快到截止时间会怎么提醒我？"
+    locale: zh
+    expected_chunk_ids: [task.notify.concept, mobile-client.notify.concept]
+    expected_answer: "到期前约 1 小时和超期约 1 小时后，「task-alert」任务提醒机器人会私聊发送「任务即将超时 / 已超时」提醒（需管理员开启 APP 推送设置）；消息经站内/桌面通知和移动端推送触达。"
+    must_say: [提醒]
+    must_not_say: []
+    bucket: hard
+    feature: task
+
+  - id: q10
+    q: "项目里的任务能导出 Excel 吗？"
+    locale: zh
+    expected_chunk_ids: [project.export.howto]
+    expected_answer: "限管理员：左上角菜单「团队管理」子菜单（或应用中心「数据导出」）选「导出任务统计」，选成员（最多 100 人）和时间范围（最长 90 天）导出 Excel；另有「导出超期任务」。"
+    must_say: [导出, Excel]
+    must_not_say: []
+    bucket: medium
+    feature: project
+
+  - id: q11
+    q: "删除看板列时，列里已有的任务怎么办？"
+    locale: zh
+    expected_chunk_ids: [project.column.howto.remove]
+    expected_answer: "删除列会级联删除（软删除）该列下未归档的任务；被删任务可在项目菜单「已删除任务」中查看并「还原」。删除前也可先把任务拖到其他列。"
+    must_say: [删除, 任务]
+    must_not_say: [自动迁移到其它列]
+    bucket: medium
+    feature: project
+
+  - id: q12
+    q: "把任务从一个项目搬到另一个项目"
+    locale: zh
+    expected_chunk_ids: [task.move.howto.cross-project]
+    expected_answer: "任务操作菜单选「移动」，在「移动任务」弹窗选择目标项目与列表，可同时重设任务状态、负责人、协助人后确认；任务主要字段保留。"
+    must_say: [跨项目, 移动]
+    must_not_say: []
+    bucket: medium
+    feature: task
+
+  # ----- 桶 2: 视图/会议/报告/审批/签到/OKR 10 -----
+
+  - id: q13
+    q: "甘特图视图怎么用？"
+    locale: zh
+    expected_chunk_ids: [view.gantt.howto]
+    expected_answer: "在项目视图切换器选「甘特图」，可拖动任务条调整开始/结束时间。"
+    must_say: [甘特图]
+    must_not_say: []
+    bucket: easy
+    feature: view
+
+  - id: q14
+    q: "怎么创建一个会议？"
+    locale: zh
+    expected_chunk_ids: [meeting.create.howto]
+    expected_answer: "左上角「+」下拉选「新会议」（Ctrl/Cmd+J），或应用中心「在线会议」；填会议主题、邀请成员后点「开始会议」；他人可凭会议频道 ID 加入。"
+    must_say: [会议, 创建, 新建]
+    must_not_say: []
+    bucket: easy
+    feature: meeting
+
+  - id: q15
+    q: "怎么写一份工作报告？"
+    locale: zh
+    expected_chunk_ids: [report.create.howto]
+    expected_answer: "应用中心打开「工作报告」新建汇报，选「周报 / 日报」，系统按任务数据自动生成「已完成工作 / 未完成的工作」内容模板，编辑后选择汇报对象提交。"
+    must_say: [报告]
+    must_not_say: []
+    bucket: easy
+    feature: report
+
+  - id: q16
+    q: "审批流可以分支吗？"
+    locale: zh
+    expected_chunk_ids: [approve.node.concept, approve.template.howto]
+    expected_answer: "DooTask 审批支持单人 / 会签（多人同意/否决）/ 抄送等节点；P0 版本暂不支持按表单条件路由的「条件分支」，需拆为多个流程模板。"
+    must_say: [分支, 不支持, 节点]
+    must_not_say: [完全支持条件分支, 可以任意配置条件路由]
+    verify_note: "审批为 AppStore 插件（docker/appstore/apps/approve），流程设计器以 iframe 加载（approve/setting.vue:24），源码不在主仓库；主仓库仅可证实存在「抄送」节点（approve/details.vue:117-124），会签/条件分支能力无法用代码裁决"
+    bucket: medium
+    feature: approve
+
+  - id: q17
+    q: "签到打卡数据怎么导出？"
+    locale: zh
+    expected_chunk_ids: [checkin.export.howto, data-export.checkin.howto]
+    expected_answer: "限管理员：应用中心「数据导出」（或左上角菜单 → 团队管理）选「导出签到数据」，选成员（最多 100 人）、日期范围（最长 35 天）和时间段导出 Excel；普通员工没有此权限。"
+    must_say: [签到, 导出]
+    must_not_say: []
+    bucket: easy
+    feature: checkin
+
+  - id: q18
+    q: "OKR 怎么和上级对齐？"
+    locale: zh
+    expected_chunk_ids: [okr.align.howto]
+    expected_answer: "在 OKR 详情勾选「对齐到」选择上级 O；个人 OKR 拆解自团队 / 部门 / 公司 OKR。"
+    must_say: [OKR, 对齐]
+    must_not_say: []
+    verify_note: "OKR 为 AppStore 插件（docker/appstore/apps/okr），源码不在主仓库，「对齐到」具体交互无法用主仓库代码裁决"
+    bucket: medium
+    feature: okr
+
+  - id: q19
+    q: "让 AI 帮我写周报"
+    locale: zh
+    expected_chunk_ids: [report.ai-generate.howto, ai-assistant.report-draft.howto]
+    expected_answer: "在工作报告编辑页点「AI 整理汇报」（需先填写汇报内容，新建时系统已按任务自动生成内容），AI 助手会在此基础上整理润色，结果可应用回编辑器继续编辑。"
+    must_say: [AI, 周报, 报告]
+    must_not_say: []
+    bucket: medium
+    feature: report
+
+  - id: q20
+    q: "WiFi 自动签到怎么用？"
+    locale: zh
+    expected_chunk_ids: [checkin.wifi.howto, checkin.mac-not-match.faq]
+    expected_answer: "前提：管理员开启签到功能并在公司 OpenWrt 路由器执行系统生成的安装脚本（路由器每分钟上报在线设备 MAC）。个人在「签到打卡」→ 签到设置 → WiFi 签到中填写自己设备的 MAC 地址，设备连上该 WiFi 即自动打卡；不在该网络时不会自动签到。"
+    must_say: [WiFi, MAC, 自动]
+    must_not_say: []
+    bucket: medium
+    feature: checkin
+
+  - id: q21
+    q: "我加入会议失败怎么办？"
+    locale: zh
+    expected_chunk_ids: [meeting.cannot-join.faq]
+    expected_answer: "常见原因：会议号已结束 / 无效；分享链接过期；网络受限（声网 Agora 域名被拦截）；管理员未配置 Agora。"
+    must_say: [会议, 失败]
+    must_not_say: []
+    bucket: hard
+    feature: meeting
+
+  - id: q22
+    q: "在群聊里能直接开会议吗？"
+    locale: zh
+    expected_chunk_ids: [meeting.from-dialog.howto]
+    expected_answer: "聊天输入框右侧「展开（+）」工具菜单选「新会议」，会自动把当前会话成员（不含机器人）填入邀请名单；会话列表右键联系人也有「发起会议」。"
+    must_say: [会议, 对话, 发起]
+    must_not_say: []
+    bucket: medium
+    feature: meeting
+
+  # ----- 桶 3: 应用中心 6 -----
+
+  - id: q23
+    q: "微应用是什么？"
+    locale: zh
+    expected_chunk_ids: [micro-app.concept]
+    expected_answer: "微应用是 DooTask 中以独立卡片/页面形式嵌入的插件式应用，从「应用商店」安装，登录态（用户 token）自动继承。"
+    must_say: [微应用, 插件]
+    must_not_say: []
+    bucket: easy
+    feature: micro-app
+
+  - id: q24
+    q: "怎么装一个新的应用？"
+    locale: zh
+    expected_chunk_ids: [micro-app.install.howto]
+    expected_answer: "管理员在应用页的「应用商店」（仅管理员可见）找到目标应用点击安装，安装后应用出现在所有用户的应用面板。"
+    must_say: [安装, 应用]
+    must_not_say: []
+    bucket: easy
+    feature: micro-app
+
+  - id: q25
+    q: "系统应用和微应用有什么区别？"
+    locale: zh
+    expected_chunk_ids: [app-system.relation.concept]
+    expected_answer: "系统应用是内置卡片（工作报告/签到打卡/在线会议/我的收藏等），无需安装；微应用来自应用商店安装（如审批中心、OKR、AI 助手）；管理员应用（LDAP/邮件通知/APP 推送/数据导出/团队管理等）仅管理员可见。"
+    must_say: [系统应用, 微应用, 区别]
+    must_not_say: []
+    bucket: medium
+    feature: app-system
+
+  - id: q26
+    q: "我的收藏应用入口在哪？"
+    locale: zh
+    expected_chunk_ids: [app-system.favorite.howto, menu-navigation.favorite.menu-map]
+    expected_answer: "应用中心「我的收藏」卡片，或左上角主菜单「我的收藏」；里面是你收藏的任务、项目、文件、消息。"
+    must_say: [收藏]
+    must_not_say: []
+    bucket: easy
+    feature: app-system
+
+  - id: q27
+    q: "应用顺序能调整吗？"
+    locale: zh
+    expected_chunk_ids: [micro-app.sort.howto]
+    expected_answer: "应用页右上角「···」菜单选「调整排序」进入排序模式，拖动卡片调整顺序后点「保存」；排序仅自己可见，可「恢复默认」。"
+    must_say: [应用, 排序, 拖]
+    must_not_say: []
+    bucket: easy
+    feature: micro-app
+
+  - id: q28
+    q: "为什么我的 DooTask 看不到 OKR？"
+    locale: zh
+    expected_chunk_ids: [okr.cannot-install.faq]
+    expected_answer: "OKR 是应用商店插件，需管理员先在「应用商店」安装后才会显示；安装失败可查看应用商店安装日志、检查网络能否拉取镜像。"
+    must_say: [OKR, 安装, 应用市场]
+    must_not_say: []
+    bucket: medium
+    feature: okr
+
+  # ----- 桶 4: 用户/组织/系统管理 6 -----
+
+  - id: q29
+    q: "注销账号以后还能恢复吗？"
+    locale: zh
+    expected_chunk_ids: [user-account.delete-restore.faq]
+    expected_answer: "注销（删除帐号）不可恢复，系统仅保留昵称等基础信息用于历史消息展示；管理员能恢复的是「已离职」状态的帐号（且离职时移交的数据无法恢复），与注销不同。"
+    must_say: [注销, 不可恢复, 无法恢复]
+    must_not_say: []
+    bucket: medium
+    feature: user-account
+
+  - id: q30
+    q: "AI 模型在哪里配置？"
+    locale: zh
+    expected_chunk_ids: [menu-navigation.ai-config.menu-map, system-setting.ai-model.howto]
+    expected_answer: "管理员打开应用中的「AI 助手」，在助手设置面板（仅管理员可见）配置各模型提供商的 API Key / Base URL / 模型列表与默认模型，可一键获取默认模型列表。"
+    must_say: [AI, 模型, 配置]
+    must_not_say: []
+    bucket: medium
+    feature: system-setting
+
+  - id: q31
+    q: "操作时提示「权限不足」，是哪里没设？"
+    locale: zh
+    expected_chunk_ids: [role-permission.permission-denied.faq]
+    expected_answer: "通常因为操作超出当前角色权限。可能：非项目负责人无法修改项目设置；非管理员无法访问系统设置；任务可见用户名单未包含你。建议联系管理员或项目负责人调整。"
+    must_say: [权限, 角色]
+    must_not_say: []
+    bucket: medium
+    feature: role-permission
+
+  - id: q32
+    q: "怎么把超级管理员转给别人？"
+    locale: zh
+    expected_chunk_ids: [role-permission.transfer-owner.howto]
+    expected_answer: "DooTask 没有单独的「转让超级管理员」功能，采用多管理员模型：管理员在「团队管理」成员操作菜单中对目标成员「设为管理员」，如需移交可再取消自己的管理员身份。"
+    must_say: [管理员, 团队管理]
+    must_not_say: []
+    bucket: medium
+    feature: role-permission
+
+  - id: q33
+    q: "LDAP 用户同步不到 DooTask 怎么办？"
+    locale: zh
+    expected_chunk_ids: [ldap.troubleshoot.faq, ldap.sync.howto]
+    expected_answer: "检查 LDAP 配置（Host / Port / Base DN / 绑定 DN 及密码）是否正确，可用「测试连接」验证；确认网络/防火墙放通；注意 LDAP 用户是在登录 DooTask 时才同步创建，不是批量预同步。"
+    must_say: [LDAP]
+    must_not_say: []
+    bucket: hard
+    feature: ldap
+
+  - id: q34
+    q: "管理员怎么一次性批量导入员工？"
+    locale: zh
+    expected_chunk_ids: [user-account.import.howto]
+    expected_answer: "管理员在「团队管理」点「批量导入」，上传 xls/xlsx/csv 文件（列顺序：邮箱、昵称、初始密码、职位(选填)），先预览校验再确认导入；可下载官方模板。"
+    must_say: [批量, 导入, 用户, Excel]
+    must_not_say: []
+    bucket: hard
+    feature: user-account
+
+  # ----- 桶 5: AI / 搜索 / 终端 4 -----
+
+  - id: q35
+    q: "AI 助手怎么换一个模型？"
+    locale: zh
+    expected_chunk_ids: [ai-assistant.model-switch.howto, ai-assistant.model.concept]
+    expected_answer: "在 AI 助手浮窗底部输入区的模型下拉切换；可选模型由管理员在「AI 助手」应用的设置面板配置。"
+    must_say: [AI, 模型, 切换]
+    must_not_say: []
+    bucket: medium
+    feature: ai-assistant
+
+  - id: q36
+    q: "智能搜索是什么？"
+    locale: zh
+    expected_chunk_ids: [search.intelligent.concept]
+    expected_answer: "智能搜索基于 Manticore Search 插件，支持关键词 / 语义（向量）/ 混合搜索，可搜任务、项目、文件内容、消息、联系人；未安装插件时回退普通 MySQL 关键词搜索。"
+    must_say: [智能搜索, 语义]
+    must_not_say: []
+    bucket: medium
+    feature: search
+
+  - id: q37
+    q: "桌面端怎么设置开机自启？"
+    locale: zh
+    expected_chunk_ids: [electron-client.auto-start.howto]
+    expected_answer: "桌面端没有内置「开机自启」开关，需在操作系统的启动项中手动添加（如 Windows 启动文件夹 / 任务计划、macOS 系统设置的登录项）。"
+    must_say: [开机自启, 桌面端]
+    must_not_say: []
+    bucket: medium
+    feature: electron-client
+
+  - id: q38
+    q: "手机端收不到推送通知"
+    locale: zh
+    expected_chunk_ids: [mobile-client.push-fail.faq]
+    expected_answer: "检查：App 通知权限是否开启、系统省电模式是否限制后台、UMENG 推送是否配置完成、网络是否受限。"
+    must_say: [推送, 移动端, App]
+    must_not_say: []
+    bucket: medium
+    feature: mobile-client
+
+  # ----- 桶 6: 快捷键 / 术语 4 -----
+
+  - id: q39
+    q: "任务编辑时有什么快捷键？"
+    locale: zh
+    expected_chunk_ids: [shortcut.task.shortcut]
+    expected_answer: "任务编辑快捷键：Ctrl/Cmd + S 保存任务修改；任务名输入框回车直接保存（Shift+回车换行）；详细描述为 TinyMCE 富文本编辑器，支持 Ctrl/Cmd + B 加粗等通用富文本快捷键。"
+    must_say: [快捷键, 任务]
+    must_not_say: []
+    bucket: easy
+    feature: shortcut
+
+  - id: q40
+    q: "DooTask 全局快捷键有哪些？"
+    locale: zh
+    expected_chunk_ids: [shortcut.global.shortcut]
+    expected_answer: "全局快捷键（Ctrl/Cmd 组合）：B 新建项目、F 或 / 搜索、K 或 N 新建任务、U 创建群组、J 新会议、I 呼出 AI 助手（需安装 AI 插件）、S 保存任务、, 打开设置；Ctrl/Cmd+Alt+L 下载内容（桌面端）。"
+    must_say: [快捷键]
+    must_not_say: []
+    bucket: easy
+    feature: shortcut
+
+  - id: q41
+    q: "怎么关掉当前弹窗？"
+    locale: zh
+    expected_chunk_ids: [shortcut.dialog.shortcut]
+    expected_answer: "按 Esc 关闭弹窗或抽屉；某些表单弹窗需要先取消编辑态再 Esc。"
+    must_say: [Esc, 关闭]
+    must_not_say: []
+    bucket: easy
+    feature: shortcut
+
+  - id: q42
+    q: "手机上有什么手势操作？"
+    locale: zh
+    expected_chunk_ids: [shortcut.mobile-gesture.shortcut, mobile-client.gesture.concept]
+    expected_answer: "移动端主要手势：长按列表项（会话、项目、文件等）弹出操作菜单；列表滚动到底自动加载更多。"
+    must_say: [手势, 移动, 长按]
+    must_not_say: [左滑显示任务操作菜单]
+    verify_note: "代码仅证实长按手势（v-longpress 指令，manage.vue/messenger.vue/file.vue）与滚动加载；未找到左滑操作菜单、下拉刷新手势的实现（移动端为 WebView 壳加载同一 SPA）"
+    bucket: easy
+    feature: shortcut
+
+  # ----- 桶 7: 跨模块组合 3 -----
+
+  - id: q43
+    q: "任务到期了 DooTask 通过哪些方式通知我？涉及桌面端、手机端、邮件？"
+    locale: zh
+    expected_chunk_ids:
+      - task.notify.concept
+      - mobile-client.notify.concept
+      - electron-client.notify.concept
+    expected_answer: "到期前/超期后约 1 小时，task-alert 机器人私聊发送提醒（依赖管理员开启「APP 推送」设置）：桌面端收到站内消息并弹系统通知（依赖系统通知权限）、移动端走 UMENG 推送；任务到期提醒不发邮件——邮件通知仅覆盖未读聊天消息（文本/文件/语音/会议类），不含此类模板提醒。"
+    must_say: [桌面, 移动, 推送, 提醒]
+    must_not_say: []
+    bucket: hard
+    feature: task
+
+  - id: q44
+    q: "项目里我改不了任务，提示权限不足，怎么排查？"
+    locale: zh
+    expected_chunk_ids:
+      - project.permission-denied-task.faq
+      - role-permission.permission-denied.faq
+      - role-permission.project-role.concept
+    expected_answer: "首先确认你在该项目里的角色（负责人/管理员/成员）和任务权限点；其次检查该项目自定义权限规则；若仍受限请联系项目负责人或管理员调整。"
+    must_say: [权限, 项目, 角色]
+    must_not_say: []
+    bucket: hard
+    feature: role-permission
+
+  - id: q45
+    q: "在群聊里讨论时直接派一个任务出去要怎么操作？"
+    locale: zh
+    expected_chunk_ids:
+      - task.create.howto.via-mention
+      - messenger.task-mention.concept
+    expected_answer: "右键（移动端长按）群里某条文本消息选「新任务」，消息内容自动填入任务描述，可设项目、负责人、截止时间后添加；输入框输入 # 只能引用/关联已有任务，不能新建。"
+    must_say: [任务, 对话]
+    must_not_say: []
+    bucket: hard
+    feature: task
+
+  # ----- 桶 8: 中英混合提问 2（locale=zh，测中英查询鲁棒性）-----
+
+  - id: q46
+    q: "How to create a quick task in DooTask?"
+    locale: zh
+    expected_chunk_ids: [task.create.howto.quick]
+    expected_answer: "On the Kanban board, click the add area at the bottom of any column, type the task name and press Enter; or use the top-left New Task button (Ctrl/Cmd+K or N)."
+    must_say: [quick, task, create]
+    must_not_say: []
+    bucket: medium
+    feature: task
+
+  - id: q47
+    q: "checkin export 怎么用？"
+    locale: zh
+    expected_chunk_ids: [checkin.export.howto, data-export.checkin.howto]
+    expected_answer: "Admin opens the Data Export app (or top-left menu → Team Management) → Export Checkin Data, picks members and a date range (max 35 days) and downloads Excel; regular users have no permission."
+    must_say: [签到, 导出, export]
+    must_not_say: []
+    bucket: medium
+    feature: checkin
+
+  # ----- 桶 9: 诚实性 negative 3 -----
+
+  - id: q48
+    q: "DooTask 怎么训练一个自己的大语言模型？"
+    locale: zh
+    expected_chunk_ids: []
+    expected_answer: "（拒答类）DooTask 不提供训练大语言模型的能力，仅支持配置 / 接入外部 LLM 提供商的 API。必须明确说明帮助文档中没有相关内容。"
+    must_say: [未找到, 没找到, 不提供, 无相关]
+    must_not_say: [训练步骤, 训练流程, 训练数据集准备]
+    bucket: honest-negative
+    feature: ai-assistant
+
+  - id: q49
+    q: "怎么把全公司员工的工资数据导出来？"
+    locale: zh
+    expected_chunk_ids: []
+    expected_answer: "（拒答类）DooTask 是项目协作工具，不存储工资数据，没有此导出能力。必须明确说明帮助文档中没有相关内容，建议用户去 HR / 薪资系统查询。"
+    must_say: [未找到, 没找到, 不存储, 没有此功能]
+    must_not_say: [工资导出步骤, 工资导出按钮]
+    bucket: honest-negative
+    feature: data-export
+
+  - id: q50
+    q: "DooTask 怎么接入 SAP ERP？"
+    locale: zh
+    expected_chunk_ids: []
+    expected_answer: "（拒答类）DooTask 目前没有内置 SAP / ERP 集成能力。必须明确说明帮助文档中没有相关内容，可考虑自建桥接服务或等待 P1 接入。"
+    must_say: [未找到, 没找到, 不支持, 暂无]
+    must_not_say: [SAP 集成步骤, ERP 接入步骤]
+    bucket: honest-negative
+    feature: ai-assistant
+
+
+# 运行说明：
+#   # 仅 recall@5（无需 LLM）
+#   docker exec dootask-3bed84-app-ai-ai-1 \
+#     python -m helper.kb.eval --suite /app/kb-content/_eval/golden-50q.yaml
+#
+#   # 端到端：recall + answer + honest（需要 LLM-judge，见 §下方）
+#   docker exec dootask-3bed84-app-ai-ai-1 \
+#     python -m helper.kb.eval --suite /app/kb-content/_eval/golden-50q.yaml \
+#     --judge claude-3-5-sonnet --judge-base-url <openai-compatible-url> --judge-api-key <key>
+#
+# DoD（§六）：
+#   recall@5 ≥ 85% (40/47 题, 3 题为 honest-negative 不参评)
+#   answer_correct (LLM judge) ≥ 80% (40/50)
+#   honest_refuse 100% (3/3)
+#   tool_call_rate ≥ 90%（main.py 集成度，需要灰度上线后看真实流量）

@@ -1,0 +1,50 @@
+---
+id: common-faq.ai-wrong-answer.faq
+title: AI 答错怎么办
+type: faq
+feature: common-faq
+scope: end-user
+locale: zh
+aliases:
+  - AI 答错
+  - AI 胡说
+  - AI 编造
+  - 回答不对
+  - AI 幻觉
+  - 信息不准确
+related_tools: []
+related_pages: [ai_assistant_panel]
+prerequisites: []
+negative:
+  - AI 助手不保证 100% 正确，关键决策需用户自己核对
+  - DooTask 不会自动检测 AI 输出是否合规
+  - 已发送的 AI 回复不会自动更正——需要用户重新提问或纠正
+last_verified: v1.7.90
+---
+
+# AI 答错怎么办
+
+## 问题
+AI 助手回答与事实不符，编了不存在的功能 / 菜单 / 快捷键；或工具调用结果被 AI 总结错；或回答风格 / 语言不对。
+
+## 原因
+- **训练截止**：模型训练数据有截止日期，可能不知道最新版本变化
+- **知识库未命中**：DooTask 内 RAG 知识库（ai-kb）没收录该问题，AI 退回基础模型猜
+- **工具调用结果误读**：AI 拿到结构化结果后做了错误归纳
+- **歧义提问**：模糊的问题（如「这个怎么用」无上下文）容易引导错方向
+- **被旧上下文带偏**：长会话中早期错误信息持续影响后续回答
+
+## 解决
+1. **明确再问一次**：补充具体场景、版本、所在页面（如「v1.7.90 任务详情页里 X 字段在哪」）
+2. **重启会话**：上下文污染时点「新对话」清空再问
+3. **直接告诉 AI 它错了**：「上一条不对，正确情况是 X」，AI 会在后续回复矫正
+4. **核对 ai-kb**：知识库里有官方答案的 AI 应该引用——没引就是没命中
+5. **换模型**：让管理员试不同模型对比效果 [[system-setting.ai-bot.howto]]
+6. **反馈给团队**：DooTask 团队会定期更新 ai-kb，错误高频问题会被收录修正
+
+## 不支持
+- 用户端不能直接编辑 AI 知识库（仅维护者可改 `resources/ai-kb/`）
+- AI 不会拒绝回答它不熟的问题（可能编造），需用户保持警惕
+- AI 不会自动跨会话学习——「你上次错过的」对新会话无影响
+
+[[ai-assistant.search-help-docs.howto]] 触发知识库检索；[[ai-assistant.tool-call.concept]] 看真实工具调用判断 AI 是否真做了。

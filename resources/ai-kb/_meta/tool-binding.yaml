@@ -1,0 +1,198 @@
+# MCP 工具 ↔ chunk 关联
+#
+# 用途：
+#   1. chunk frontmatter 的 related_tools 字段取值受控（lint 校验）
+#   2. ingest 期把 related_tools 写入 chunk metadata，retriever 可联动工具
+#   3. 让 AI 在调 search_help_docs 时同时知道"还能调哪个工具直接操作"
+#
+# 工具清单来自 dootask-plugins/mcp/server/src/dootaskMcpServer.ts（33 个 MCP 工具）
+# 加 helper/tools.py 中的内置工具（GetSessionImageTool 等）
+
+version: 1
+last_updated: 2026-06-09
+
+tools:
+
+  # ===== 用户 =====
+  get_users_basic:
+    description: 批量获取用户基本信息（昵称/邮箱/头像）
+    related_features: [user-account, org-department]
+    typical_chunk_types: [concept]
+
+  search_users:
+    description: 按关键词搜索用户，支持按项目/对话范围筛选
+    related_features: [user-account, search]
+    typical_chunk_types: [howto]
+
+  # ===== 任务 =====
+  list_tasks:
+    description: 列表获取用户相关任务，支持状态/项目/时间范围筛选
+    related_features: [task]
+    typical_chunk_types: [howto]
+
+  get_task:
+    description: 获取任务完整详情
+    related_features: [task]
+    typical_chunk_types: [concept, howto]
+
+  create_task:
+    description: 在指定项目创建新任务
+    related_features: [task]
+    typical_chunk_types: [howto]
+
+  update_task:
+    description: 更新任务属性
+    related_features: [task]
+    typical_chunk_types: [howto]
+
+  complete_task:
+    description: 标记任务完成
+    related_features: [task]
+    typical_chunk_types: [howto]
+
+  delete_task:
+    description: 删除或恢复任务
+    related_features: [task]
+    typical_chunk_types: [howto]
+
+  create_sub_task:
+    description: 为父任务添加子任务
+    related_features: [task]
+    typical_chunk_types: [howto]
+
+  get_task_files:
+    description: 获取任务附件列表
+    related_features: [task, file]
+    typical_chunk_types: [howto]
+
+  # ===== 项目 =====
+  list_projects:
+    description: 列表获取用户可访问项目
+    related_features: [project]
+    typical_chunk_types: [howto]
+
+  get_project:
+    description: 获取项目完整详情
+    related_features: [project]
+    typical_chunk_types: [concept, howto]
+
+  create_project:
+    description: 创建新项目
+    related_features: [project]
+    typical_chunk_types: [howto]
+
+  update_project:
+    description: 更新项目信息
+    related_features: [project]
+    typical_chunk_types: [howto]
+
+  # ===== 消息 / 对话 =====
+  search_dialogs:
+    description: 搜索群聊或个人对话
+    related_features: [messenger, search]
+    typical_chunk_types: [howto]
+
+  send_message:
+    description: 向对话发送消息
+    related_features: [messenger]
+    typical_chunk_types: [howto]
+
+  send_task_ai_message:
+    description: 作为 AI 助手向任务对话发送消息
+    related_features: [messenger, task, ai-assistant]
+    typical_chunk_types: [howto]
+
+  get_message_list:
+    description: 获取对话消息历史
+    related_features: [messenger]
+    typical_chunk_types: [howto]
+
+  # ===== 文件 =====
+  list_files:
+    description: 列表获取用户文件
+    related_features: [file]
+    typical_chunk_types: [howto]
+
+  search_files:
+    description: 搜索文件
+    related_features: [file, search]
+    typical_chunk_types: [howto]
+
+  get_file_detail:
+    description: 获取文件详情
+    related_features: [file]
+    typical_chunk_types: [howto]
+
+  fetch_file_content:
+    description: 按文件路径获取文本内容
+    related_features: [file]
+    typical_chunk_types: [howto]
+
+  # ===== 工作报告 =====
+  list_received_reports:
+    description: 列表获取收到的工作报告
+    related_features: [report]
+    typical_chunk_types: [howto]
+
+  get_report_detail:
+    description: 获取报告详情
+    related_features: [report]
+    typical_chunk_types: [howto]
+
+  generate_report_template:
+    description: 基于任务完成情况自动生成报告模板
+    related_features: [report, ai-assistant]
+    typical_chunk_types: [howto]
+
+  create_report:
+    description: 创建并提交工作报告
+    related_features: [report]
+    typical_chunk_types: [howto]
+
+  list_my_reports:
+    description: 列表获取发送的报告
+    related_features: [report]
+    typical_chunk_types: [howto]
+
+  mark_reports_read:
+    description: 批量标记报告为已读/未读
+    related_features: [report]
+    typical_chunk_types: [howto]
+
+  # ===== 搜索 / 内容提取 =====
+  intelligent_search:
+    description: 统一搜索（任务/项目/文件/联系人/消息），支持语义搜索
+    related_features: [search]
+    typical_chunk_types: [howto, concept]
+
+  extract_image_text:
+    description: 图片文字提取（OCR），支持中英文
+    related_features: [file]
+    typical_chunk_types: [howto]
+
+  # ===== 页面操作 (UI 自动化, WebSocket) =====
+  get_page_context:
+    description: 获取当前页面上下文（页面类型/可交互元素/可用操作）
+    related_features: [ai-assistant]
+    typical_chunk_types: [concept]
+
+  execute_action:
+    description: 在用户页面执行操作（打开任务/对话/切换项目/页面跳转）
+    related_features: [ai-assistant]
+    typical_chunk_types: [howto]
+
+  execute_element_action:
+    description: 操作页面元素（点击/输入/选择/聚焦/滚动/悬停）
+    related_features: [ai-assistant]
+    typical_chunk_types: [howto]
+
+  # ===== 内置工具（AI 插件 helper/tools.py）=====
+  get_session_image:
+    description: 获取用户上传的会话图片（多模态用）
+    related_features: [ai-assistant, file]
+    typical_chunk_types: [howto]
+
+  search_help_docs:
+    description: 本知识库自身的检索工具；当用户询问 DooTask 功能用法/概念/操作步骤时调用
+    related_features: [ai-assistant]
+    typical_chunk_types: [howto]

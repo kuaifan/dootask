@@ -1,0 +1,129 @@
+# 10 题初版回归测试集（S1 联调早期 smoke test 用）
+# P0 S5 阶段扩展到 50 题（golden-50q.yaml）
+#
+# 字段：
+#   id              测试题 id
+#   q               用户提问
+#   locale          zh / en
+#   expected_chunk_ids  期望被 retriever 召回的 chunk id（≥1 条命中即 recall=1）
+#   expected_answer 期望答案要点（LLM-judge 用，自然语言描述关键事实）
+#   must_say        答案必须包含的关键词（正例桶）/ 拒答关键词（negative 桶）
+#   must_not_say    答案禁止出现的内容
+#   bucket          easy / medium / hard / honest-negative
+#   feature         对应 feature（追溯定位）
+
+version: 1
+last_updated: 2026-06-09
+
+tests:
+
+  - id: q1
+    q: "看板列怎么改名？"
+    locale: zh
+    expected_chunk_ids: [view.kanban.column.howto.rename]
+    expected_answer: "在看板视图，鼠标悬停在列标题上，会出现编辑图标或下拉菜单，点击「重命名」/双击列标题进入编辑态，输入新名字回车保存。"
+    must_say: [列, 重命名]
+    must_not_say: []
+    bucket: easy
+    feature: view
+
+  - id: q2
+    q: "怎么快速创建一个任务？"
+    locale: zh
+    expected_chunk_ids: [task.create.howto.quick]
+    expected_answer: "项目详情页右上角「+」按钮选「快速添加任务」，输入任务名回车即可创建。"
+    must_say: [快速, 创建]
+    must_not_say: []
+    bucket: easy
+    feature: task
+
+  - id: q3
+    q: "签到应用怎么导出数据？"
+    locale: zh
+    expected_chunk_ids: [app-admin.data-export.howto.checkin, checkin.export.howto]
+    expected_answer: "管理员视角通过应用中心的「导出管理」选择「导出签到数据」，按日期范围导出 Excel。"
+    must_say: [导出, 签到]
+    must_not_say: []
+    bucket: easy
+    feature: data-export
+
+  - id: q4
+    q: "我提示「权限不足」是为什么？"
+    locale: zh
+    expected_chunk_ids: [role-permission.permission-denied.faq]
+    expected_answer: "通常因为操作超出当前角色范围。常见原因：非项目负责人无法修改项目设置；非管理员无法访问系统设置；任务可见用户名单未包含当前用户。建议联系管理员或项目负责人调整角色/权限。"
+    must_say: [权限, 角色]
+    must_not_say: []
+    bucket: medium
+    feature: role-permission
+
+  - id: q5
+    q: "审批流可以分支吗？"
+    locale: zh
+    expected_chunk_ids: [approve.process.concept, approve.faq.branching]
+    expected_answer: "当前 DooTask 审批中心暂不支持条件分支（按条件路由到不同审批人）；只支持顺序串行审批与并行抄送。如需分支建议拆成多个审批模板。"
+    must_say: [分支]
+    must_not_say: [支持条件路由, 可以配置分支]
+    bucket: medium
+    feature: approve
+
+  - id: q6
+    q: "AI 助手怎么换模型？"
+    locale: zh
+    expected_chunk_ids: [ai-assistant.model.howto.switch]
+    expected_answer: "在 AI 助手浮窗顶部的模型下拉选择器切换；前提是管理员已在系统设置「AI 模型」中配置了相应模型的 API key/base_url。"
+    must_say: [模型, 切换]
+    must_not_say: []
+    bucket: medium
+    feature: ai-assistant
+
+  - id: q7
+    q: "任务到截止时间会怎么提醒我？"
+    locale: zh
+    expected_chunk_ids: [task.deadline.concept, notification.task-deadline.howto, mobile-notify.task.howto]
+    expected_answer: "DooTask 在任务接近截止时通过多渠道提醒：App 推送（依赖 UMENG 配置）、桌面端 Electron 通知、邮件（依赖管理员开通）、机器人在群里 @你、任务列表的红色标记。可在个人设置关闭部分通道。"
+    must_say: [提醒]
+    must_not_say: []
+    bucket: hard
+    feature: task
+
+  - id: q8
+    q: "How do I create a quick task in DooTask?"
+    locale: en
+    expected_chunk_ids: [task.create.howto.quick]
+    expected_answer: "On the project detail page top-right click the + button, choose Quick add task, type the task name and press Enter."
+    must_say: [quick, create]
+    must_not_say: []
+    bucket: medium
+    feature: task
+
+  - id: q9
+    q: "DooTask 怎么训练一个自己的大语言模型？"
+    locale: zh
+    expected_chunk_ids: []
+    expected_answer: "（拒答类）DooTask 不提供训练大语言模型的能力，仅支持配置 / 接入外部 LLM 提供商的 API。请明确说明帮助文档中没有相关内容。"
+    must_say: [未找到, 没找到]    # 命中任一即可（运行时取并集）
+    must_not_say: [训练步骤, 训练流程]
+    bucket: honest-negative
+    feature: ai-assistant
+
+  - id: q10
+    q: "怎么把所有员工的工资数据导出？"
+    locale: zh
+    expected_chunk_ids: []
+    expected_answer: "（拒答类）DooTask 是项目协作工具，不存储工资数据，没有此导出能力。要明确说明帮助文档中没有相关内容，建议用户检查薪资 HR 系统。"
+    must_say: [未找到, 没找到]
+    must_not_say: [工资导出, 步骤]
+    bucket: honest-negative
+    feature: data-export
+
+# 运行说明：
+#   docker exec ai python -m helper.kb.eval --suite /app/kb-content/_eval/golden-v0.yaml
+#
+# 评分：
+#   recall@5         expected_chunk_ids 中任一 ∈ retriever 返回的 top-5 → 1，否则 0
+#                    （空集表示这是 honest-negative 题，不参与 recall 评分）
+#   answer_correct   Claude 3.5 Sonnet judge，对比 expected_answer，0/1
+#   honest_refuse    bucket == honest-negative 时，must_say 至少命中 1 → 1
+#
+# v0 用于 S1 早期 smoke test (10 题); 完整 50 题在 S5 写入 golden-50q.yaml

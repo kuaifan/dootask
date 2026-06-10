@@ -49,6 +49,32 @@ Laravel 8 (LaravelS/Swoole) + Vue 2 (Vite) + Electron。开源任务/项目管�
 - 新增用户可见文本须追加原文（简体中文）到：前端 `language/original-web.txt`，后端 `language/original-api.txt`（去重）
 - 前端翻译用 `$L("文本")`，动态值用 `(*)` 占位：`$L('共(*)条', n)`——禁止拼接翻译
 
+## DooTask AI 知识库 (ai-kb) 同步规则
+
+`dootask/resources/ai-kb/` 是**专给 AI 助手 RAG 检索的功能知识库**，与人类文档（`dootask-website`）独立。它直接影响产品内 AI 助手能否正确回答用户的「X 怎么用」。
+
+**何时必须同步更新 ai-kb**：
+
+- 新增、修改、删除任何用户可见的功能、菜单、按钮、流程、字段
+- 调整 API 行为（错误码、参数含义、返回结构）
+- 引入新插件 / 微应用，或修改权限 / 角色定义
+
+**操作步骤**：
+
+1. 在 `resources/ai-kb/_meta/feature-map.yaml` 找到对应 `feature` 的 chunk 清单
+2. 按 `resources/ai-kb/_schema/chunk-style.md` 风格修改对应 markdown
+3. 更新 frontmatter 的 `last_verified` 字段为当前主程序版本号
+4. 该功能没有对应 chunk 时，按 `resources/ai-kb/_schema/frontmatter.md` 规范新建
+
+**禁止**：
+
+- 跨章节指代（"如上图所示"、"在前面一节"）——RAG 切块后会丢失上下文
+- 把 dootask-website 的人类教程或截图直接复制过来
+- 单独提交「只改 ai-kb」的 PR——应与触发它的主代码改动同一个 PR
+- 改产品代码但不改 ai-kb（PR review 应拦截）
+
+**自动化**：合入 main 后 CI 自动调用 AI 插件的 `POST /kb/reindex` 增量入库；失败由 AI 容器重启自动 `ingest_all` 兜底。
+
 ## Playwright 测试
 
 - Playwright 测试结果放在 `tests/playwright-results/`，包含测试环境、测试用例、结果截图等信息

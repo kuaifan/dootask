@@ -140,7 +140,31 @@ class AI
      * @param mixed $contextInput
      * @return array
      */
-    public static function createStreamKey($modelType, $modelName, $contextInput = [])
+    /**
+     * 判定当前用户是否启用 ai-kb RAG（灰度判定）
+     *
+     * 规则（参考 config/ai.php）：
+     *   - 总开关 rag_enabled=false → 关闭所有（kill switch）
+     *   - rag_canary_userids 为空 → 全员启用
+     *   - 否则仅白名单 userid 启用
+     */
+    public static function ragEnabledFor(int $userid): bool
+    {
+        if (!config('ai.rag_enabled', true)) {
+            return false;
+        }
+        $raw = trim((string) config('ai.rag_canary_userids', ''));
+        if ($raw === '') {
+            return true;
+        }
+        $allow = array_filter(array_map(
+            fn($v) => (int) trim($v),
+            explode(',', $raw)
+        ), fn($v) => $v > 0);
+        return in_array($userid, $allow, true);
+    }
+
+    public static function createStreamKey($modelType, $modelName, $contextInput = [], $locale = 'zh', $ragEnabled = true)
     {
         $modelType = trim((string)$modelType);
         $modelName = trim((string)$modelName);
@@ -221,6 +245,9 @@ class AI
             'model_type' => $remoteModelType,
             'model_name' => $modelName,
             'context' => $contextJson,
+            'locale' => $locale,
+            // ai-kb 灰度透传：1 启用 RAG（hint + search_help_docs tool），0 关闭
+            'rag_enabled' => $ragEnabled ? '1' : '0',
         ];
 
         $baseUrl = trim((string)($setting[$modelType . '_base_url'] ?? ''));

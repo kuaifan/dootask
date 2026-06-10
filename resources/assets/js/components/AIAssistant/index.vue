@@ -1004,10 +1004,14 @@ export default {
          * 请求 stream_key
          */
         async fetchStreamKey({model_type, model_name, context}) {
+            // ai-kb 检索语种；'zh' / 'en'。基于 localStorage 当前语言简单映射
+            const lang = (window.localStorage.getItem('__system:languageName__') || 'zh').toLowerCase();
+            const locale = lang.startsWith('en') ? 'en' : 'zh';
             const payload = {
                 model_type,
                 model_name,
                 context: JSON.stringify(context || []),
+                locale,
             };
             const {data} = await this.$store.dispatch("call", {
                 url: 'assistant/auth',
