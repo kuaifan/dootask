@@ -5,7 +5,7 @@
 <script>
 import '../../../../sass/pages/components/dialog-markdown/markdown.less'
 import {MarkdownConver} from "../../../utils/markdown";
-import {startGuide} from "../../../components/AIAssistant/guide/guide-renderer";
+import {isDeepLinkId, openDeepLink} from "../../../components/AIAssistant/deep-links";
 
 export default {
     name: "DialogMarkdown",
@@ -79,22 +79,6 @@ export default {
 
         onCLick(e) {
             const target = e.target;
-            // AI 页面引导「带我去」按钮
-            const guideBtn = target.closest?.('.ai-guide-btn');
-            if (guideBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                const raw = guideBtn.getAttribute('data-guide');
-                if (raw) {
-                    try {
-                        this.beforeNavigate?.();
-                        startGuide(decodeURIComponent(raw), {store: this.$store, router: this.$router});
-                    } catch (err) {
-                        $A.messageError(err?.message || '操作引导启动失败');
-                    }
-                }
-                return;
-            }
             if (target.tagName === 'A') {
                 const href = target.getAttribute('href');
                 if (href && href.startsWith('dootask://')) {
@@ -114,6 +98,11 @@ export default {
          * AI 建议链接: dootask://ai-apply/{type}/{task_id}/{msg_id} 或 dootask://ai-dismiss/...
          */
         handleDooTaskLink(href) {
+            // AI 回复内联深链：dootask://link/<id> → 导航到目录目的地
+            if (href.startsWith('dootask://link/')) {
+                this.handleDeepLink(href);
+                return;
+            }
             // 优先处理 AI 建议链接（格式与其他类型不同）
             if (href.startsWith('dootask://ai-apply/')) {
                 this.handleAiApply(href);
@@ -175,6 +164,19 @@ export default {
                     });
                     break;
             }
+        },
+
+        /**
+         * 处理 AI 回复内联深链
+         * 格式: dootask://link/<id>（id 取自深链目录 deep-links.js）
+         */
+        handleDeepLink(href) {
+            const match = href.match(/^dootask:\/\/link\/([a-z_]+)/);
+            if (!match || !isDeepLinkId(match[1])) {
+                return;
+            }
+            this.beforeNavigate?.();
+            openDeepLink(match[1]);
         },
 
         /**

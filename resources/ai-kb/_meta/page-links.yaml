@@ -1,0 +1,124 @@
+# AI 回复内联深链目录（语义层，供 AI 选择）
+#
+# 用途：
+#   1. 注入 AI system prompt：AI 把回复正文里"可定位的页面/面板"词包成深链
+#      [显示文字](dootask://link/<id>) —— id 只能取本目录值（闭集，硬约束）
+#   2. 前端 resources/assets/js/components/AIAssistant/deep-links.js 是对应的「可执行映射」
+#      （id → 路由）；两份的 id 集合必须一致
+#
+# 边界：本期仅收录"无需运行时 id 的纯导航目的地"（送到某页面/面板）。
+#   - 打开具体任务/对话/项目（需 task_id 等运行时 id）不在此，由 execute_action 承担
+#   - 项目内弹窗类（project_settings/member/flow 等需组件接线）二期再加
+
+version: 1
+last_updated: 2026-06-10
+
+links:
+
+  # ===== 顶层功能页 =====
+  dashboard:
+    title: 仪表盘
+    aliases: [仪表盘, 工作台, 首页]
+    description: 个人工作台首页（待办、项目概览）
+
+  messenger:
+    title: 消息
+    aliases: [消息, 聊天, 对话列表, 消息页]
+    description: 消息/聊天页面
+
+  calendar:
+    title: 日历
+    aliases: [日历, 日程]
+    description: 日历日程页面
+
+  files:
+    title: 文件
+    aliases: [文件, 文件管理, 我的文件, 网盘]
+    description: 文件管理页面
+
+  application:
+    title: 应用
+    aliases: [应用, 应用中心, 微应用, 应用市场]
+    description: 应用/微应用中心
+
+  project_list:
+    title: 项目
+    aliases: [项目, 项目列表, 所有项目]
+    description: 项目列表页（不定位到具体项目）
+
+  # ===== 设置（独立路由）=====
+  setting_personal:
+    title: 个人设置
+    aliases: [个人设置, 个人资料, 我的资料, 账号设置]
+    description: 个人资料设置
+
+  setting_checkin:
+    title: 签到设置
+    aliases: [签到, 签到设置, 打卡设置]
+    description: 签到/打卡设置
+
+  setting_language:
+    title: 语言设置
+    aliases: [语言, 语言设置, 切换语言]
+    description: 界面语言设置
+
+  setting_theme:
+    title: 主题设置
+    aliases: [主题, 主题设置, 深色模式, 外观]
+    description: 主题/外观设置
+
+  setting_keyboard:
+    title: 快捷键设置
+    aliases: [快捷键, 键盘快捷键]
+    description: 键盘快捷键设置
+
+  setting_license:
+    title: 授权许可
+    aliases: [授权, 许可证, license]
+    description: 授权许可信息
+
+  setting_password:
+    title: 密码设置
+    aliases: [密码, 修改密码, 改密码]
+    description: 登录密码修改
+
+  setting_email:
+    title: 邮箱设置
+    aliases: [邮箱, 修改邮箱, 绑定邮箱]
+    description: 邮箱修改/绑定
+
+  setting_system:
+    title: 系统设置
+    aliases: [系统设置, 后台设置, 全局设置, 消息相关, 端到端加密]
+    description: 系统设置主页（含消息相关、端到端加密等，仅管理员）
+
+  setting_device:
+    title: 登录设备
+    aliases: [登录设备, 设备管理, 在线设备]
+    description: 登录设备管理
+
+  setting_version:
+    title: 更新日志
+    aliases: [更新日志, 版本, 版本信息, 关于]
+    description: 版本更新日志
+
+  setting_delete:
+    title: 注销账号
+    aliases: [注销, 注销账号, 删除账号]
+    description: 账号注销
+
+  # ===== 系统设置内二级 Tab =====
+  setting_system_task_priority:
+    title: 任务优先级
+    aliases: [任务优先级, 优先级设置]
+    description: 系统设置 → 任务优先级
+
+  setting_system_column_template:
+    title: 项目模板
+    aliases: [项目模板, 列模板, 看板模板]
+    description: 系统设置 → 项目模板
+
+  setting_system_file:
+    title: 文件设置
+    aliases: [文件设置, 系统文件设置]
+    description: 系统设置 → 文件设置

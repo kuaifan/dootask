@@ -8,7 +8,6 @@
 import { OperationClient } from './operation-client';
 import { collectPageContext, searchByVector } from './page-context-collector';
 import { createActionExecutor } from './action-executor';
-import { startGuide } from './guide/guide-renderer';
 
 /**
  * 创建操作模块实例
@@ -107,21 +106,9 @@ class OperationModule {
             case 'execute_element_action':
                 return this.executeElementAction(payload);
 
-            case 'show_guide':
-                return this.showGuide(payload);
-
             default:
                 throw new Error(`未知的操作类型: ${action}`);
         }
-    }
-
-    /**
-     * 启动分步操作引导
-     * 校验失败 throw（错误经 WS 回传给 AI）；成功立即返回，不等引导走完（避免 requestTimeout）
-     */
-    async showGuide(payload) {
-        const result = startGuide(payload, { store: this.store, router: this.router });
-        return { success: true, total_steps: result.total_steps };
     }
 
     /**

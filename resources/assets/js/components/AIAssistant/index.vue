@@ -359,7 +359,6 @@ export default {
     },
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
-        emitter.on('aiGuideStarted', this.onGuideStarted);
         this.loadCachedModel();
         this.loadInputHistory();
         this.mountFloatButton();
@@ -367,7 +366,6 @@ export default {
     },
     beforeDestroy() {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
-        emitter.off('aiGuideStarted', this.onGuideStarted);
         this.clearActiveSSEClients();
         this.clearAutoSubmitTimer();
         this.unmountFloatButton();
@@ -1509,12 +1507,6 @@ export default {
         /**
          * 页面引导启动时收起浮窗，避免遮挡目标元素
          */
-        onGuideStarted() {
-            if (this.showModal) {
-                this.closeAssistant();
-            }
-        },
-
         /**
          * 滚动结果区域到底部
          */

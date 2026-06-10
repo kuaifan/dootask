@@ -186,10 +186,8 @@ tools:
     related_features: [ai-assistant]
     typical_chunk_types: [howto]
 
-  show_guide:
-    description: 在用户页面启动分步操作引导（高亮元素+解说气泡，上一步/下一步推进）
-    related_features: [ai-assistant]
-    typical_chunk_types: [howto, concept]
+  # 注：原 show_guide（driver.js 分步引导）已下线，改为 AI 回复内联深链
+  # [显示文字](dootask://link/<id>)，目录见 _meta/page-links.yaml（前端渲染，非 MCP 工具）
 
   # ===== 内置工具（AI 插件 helper/tools.py）=====
   get_session_image:
