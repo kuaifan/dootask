@@ -62,11 +62,11 @@
                 </div>
             </div>
             <div
-                v-if="responses.length"
+                v-if="visibleResponses.length"
                 ref="responseContainer"
                 class="ai-assistant-output">
                 <div
-                    v-for="response in responses"
+                    v-for="response in visibleResponses"
                     :key="response.localId"
                     class="ai-assistant-output-item">
                     <div class="ai-assistant-output-apply">
@@ -235,11 +235,12 @@ import Vue from "vue";
 import {debounce} from "lodash";
 import emitter from "../../store/events";
 import {SSEClient} from "../../utils";
-import {AIBotMap, AIModelNames} from "../../utils/ai";
+import {AIBotMap, AIModelNames, BASE_ASSISTANT_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../../utils/ai";
 import DialogMarkdown from "../../pages/manage/components/DialogMarkdown.vue";
 import FloatButton from "./float-button.vue";
 import AssistantModal from "./modal.vue";
 import PromptImage from "./prompt-image.vue";
+import {buildWeakPrompt, renderWeakPromptText} from "./page-context";
 import {getWelcomePrompts} from "./welcome-prompts";
 
 export default {
@@ -272,6 +273,8 @@ export default {
             applyHook: null,
             beforeSendHook: null,
             renderHook: null,
+            // 运行时附加 system 内容(每次发送时调用,返回 string 则追加;不入库)
+            dynamicSystemHook: null,
 
             // 模型选择
             inputModel: '',
@@ -297,7 +300,6 @@ export default {
             sessionStore: [],
             currentSessionKey: 'default',
             currentSessionId: null,
-            currentSceneKey: null,
             sessionCacheKeyPrefix: 'aiAssistant.sessions',
             maxSessionsPerKey: 20,
             sessionStoreLoaded: false,
@@ -336,9 +338,7 @@ export default {
         this.refreshWelcomePromptsDebounced = debounce(() => {
             this.displayWelcomePrompts = getWelcomePrompts(this.$store, this.$route?.params || {});
         }, 100);
-        this.saveSessionStoreDebounced = debounce(() => {
-            this.saveSessionStore();
-        }, 2000);
+        this.saveSessionStoreDebouncedMap = {};
     },
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
@@ -359,8 +359,12 @@ export default {
         selectedModelOption({modelMap, inputModel}) {
             return modelMap[inputModel] || null;
         },
+        // 渲染时跳过 role==='system' 的弱提示词条目
+        visibleResponses() {
+            return this.responses.filter(r => r.role !== 'system');
+        },
         shouldCreateNewSession() {
-            return this.responses.length === 0;
+            return this.visibleResponses.length === 0;
         },
         currentSessionList() {
             return this.sessionStore || [];
@@ -479,6 +483,7 @@ export default {
             this.inputMaxlength = params.maxlength || null;
             this.applyHook = params.onApply || null;
             this.beforeSendHook = params.onBeforeSend || null;
+            this.dynamicSystemHook = params.onDynamicSystem || null;
             this.modalTitle = params.title || null;
             this.applyButtonText = params.applyButtonText || null;
             this.submitButtonText = params.submitButtonText || null;
@@ -487,12 +492,11 @@ export default {
             this.renderHook = params.onRender || null;
             this.pendingAutoSubmit = !!params.autoSubmit;
 
-            // 会话管理
-            await this.initSession(params.sessionKey, params.sceneKey, params.resumeSession);
+            // 会话管理(不再按场景分桶,统一对话池)
+            await this.initSession(params.sessionKey);
 
             this.showModal = true;
             this.fetchModelOptions();
-            this.clearActiveSSEClients();
             this.clearAutoSubmitTimer();
             this.$nextTick(() => {
                 this.scheduleAutoSubmit();
@@ -711,6 +715,11 @@ export default {
             this.loadIng++;
             let responseEntry = null;
             try {
+                // 浮窗普通对话(无 beforeSendHook):按需在历史尾部追加一条页面弱提示词(role:system,UI 隐藏)
+                // 专用入口(ChatInput/TaskAdd/ReportEdit 等)走 beforeSendHook 自定义 context,不参与该机制
+                if (this.sessionEnabled && !this.beforeSendHook) {
+                    this.injectWeakPromptIfNeeded();
+                }
                 const baseContext = await this.collectBaseContext(prompt);
                 const context = await this.buildPayloadData(baseContext);
 
@@ -803,6 +812,9 @@ export default {
 
         /**
          * 汇总当前会话的基础上下文
+         * 浮窗普通对话:context[0] 永远是默认系统提示词;之后可选地追加一条
+         * 动态附加 system(operationSessionId 等运行时信息,不入库);再后是历史
+         * 消息(其中 role==='system' 的弱提示词原样穿插);末尾是本次用户消息。
          */
         async collectBaseContext(prompt) {
             const pushEntry = (context, role, value) => {
@@ -822,12 +834,35 @@ export default {
                 }
             };
             const context = [];
+
+            // 默认系统提示词只在"浮窗普通对话"场景注入(无 beforeSendHook)
+            // 专用入口走 beforeSendHook 完全重建 context,不应受默认 prompt 干扰
+            if (this.sessionEnabled && !this.beforeSendHook) {
+                pushEntry(context, 'system', withLanguagePreferencePrompt(BASE_ASSISTANT_SYSTEM_PROMPT));
+                // 运行时附加 system(如操作模块的 session_id),不入库
+                if (typeof this.dynamicSystemHook === 'function') {
+                    try {
+                        const extra = this.dynamicSystemHook();
+                        if (extra) {
+                            pushEntry(context, 'system', String(extra));
+                        }
+                    } catch (e) {
+                        console.warn('[AIAssistant] dynamicSystemHook error:', e);
+                    }
+                }
+            }
+
             const windowSize = Number(this.contextWindowSize) || 0;
             const recentResponses = windowSize > 0
                 ? this.responses.slice(-windowSize)
                 : this.responses;
             // 处理历史消息（还原图片 base64）
             for (const item of recentResponses) {
+                if (item.role === 'system') {
+                    // 弱提示词等持久化的 system 节点
+                    pushEntry(context, 'system', item.content);
+                    continue;
+                }
                 if (item.prompt) {
                     const restoredPrompt = await this.restorePromptImages(item.prompt);
                     pushEntry(context, 'human', restoredPrompt);
@@ -842,6 +877,58 @@ export default {
                 pushEntry(context, 'human', currentContent);
             }
             return context;
+        },
+
+        /**
+         * 在 responses 中从后向前查找最后一条 role==='system' 节点
+         */
+        findLastSystemEntry(kind) {
+            for (let i = this.responses.length - 1; i >= 0; i--) {
+                const r = this.responses[i];
+                if (r.role === 'system' && (!kind || r.systemKind === kind)) {
+                    return r;
+                }
+            }
+            return null;
+        },
+
+        /**
+         * 浮窗普通对话:按需追加一条页面弱提示词节点
+         * - 与最后一条 pageContext system 的 contextKey 不同(或没有)才追加
+         * - 首次追加用 [当前页面] 前缀,后续追加用 [页面切换]
+         *
+         * 为什么穿插进历史而不是"只在顶部放当前页":
+         * 用户可能在不同项目/任务页连续提问,如果只放当前页,历史里两个"这个项目"
+         * 会失去锚点,AI 可能把旧问题也归到当前页。穿插能给历史每一条 user 消息
+         * 打上"问题发生时所在的页面",AI 才能正确分辨各自指向哪个实体。
+         */
+        injectWeakPromptIfNeeded() {
+            let weak = null;
+            try {
+                weak = buildWeakPrompt(this.$store, this.$route?.params || {});
+            } catch (e) {
+                console.warn('[AIAssistant] buildWeakPrompt error:', e);
+                return;
+            }
+            if (!weak || !weak.contextKey) {
+                return;
+            }
+            const lastWeak = this.findLastSystemEntry('pageContext');
+            if (lastWeak && lastWeak.contextKey === weak.contextKey) {
+                return;
+            }
+            const switching = !!lastWeak;
+            const content = renderWeakPromptText(weak, switching);
+            if (!content) {
+                return;
+            }
+            this.responses.push({
+                localId: this.responseSeed++,
+                role: 'system',
+                systemKind: 'pageContext',
+                contextKey: weak.contextKey,
+                content,
+            });
         },
 
         /**
@@ -941,57 +1028,117 @@ export default {
             if (!streamKey) {
                 throw new Error('获取 stream_key 失败');
             }
-            this.clearActiveSSEClients();
+            const owner = {
+                sessionKey: this.currentSessionKey,
+                sessionId: this.currentSessionId,
+                localId: responseEntry.localId,
+            };
+            // 只清理同一会话的残留流，保留其它会话的后台流以支持并发续推
+            this.clearOwnerSSEClients(owner.sessionKey, owner.sessionId);
             const sse = new SSEClient($A.mainUrl(`ai/invoke/stream/${streamKey}`));
-            this.registerSSEClient(sse);
+            this.registerSSEClient(sse, owner);
             sse.subscribe(['append', 'replace', 'done'], (type, event) => {
                 switch (type) {
                     case 'append':
                     case 'replace':
-                        this.handleStreamChunk(responseEntry, type, event);
+                        this.handleStreamChunk(owner, type, event);
                         break;
                     case 'done':
-                        // 检查 done 事件是否携带错误信息
-                        const donePayload = this.parseStreamPayload(event);
-                        if (donePayload && donePayload.error) {
-                            this.markResponseError(responseEntry, donePayload.error);
-                        } else if (responseEntry && responseEntry.status !== 'error') {
-                            responseEntry.status = 'completed';
-                        }
-                        this.releaseSSEClient(sse);
-                        // 响应完成后保存会话
-                        this.saveCurrentSession();
+                        this.handleStreamDone(owner, sse, event);
                         break;
                 }
             }, () => {
-                // SSE 连接失败（重试次数用完）时的回调
-                if (responseEntry && ['streaming', 'waiting'].includes(responseEntry.status)) {
-                    this.markResponseError(responseEntry, this.$L('连接失败，请重试'));
-                }
-                this.releaseSSEClient(sse);
-                this.saveCurrentSession();
+                this.handleStreamFailed(owner, sse);
             });
             return sse;
         },
 
         /**
+         * 定位流式回调应写入的目标（前台当前会话或已切走的后台会话）
+         */
+        locateStreamTarget(owner) {
+            // 归属会话正好在前台，直接写当前视图
+            if (this.currentSessionKey === owner.sessionKey
+                && this.currentSessionId === owner.sessionId) {
+                return {
+                    entry: this.responses.find(r => r.localId === owner.localId) || null,
+                    isCurrent: true,
+                    session: null,
+                };
+            }
+            // 已切到后台但仍是同一场景，写回存储里的会话
+            if (this.currentSessionKey === owner.sessionKey) {
+                const session = this.sessionStore.find(s => s.id === owner.sessionId) || null;
+                const entry = session
+                    ? (session.responses || []).find(r => r.localId === owner.localId) || null
+                    : null;
+                return {entry, isCurrent: false, session};
+            }
+            // 场景已切换，存储已被替换，放弃归位避免写串到别的场景
+            return {entry: null, isCurrent: false, session: null};
+        },
+
+        /**
+         * 流式完成
+         */
+        handleStreamDone(owner, sse, event) {
+            const donePayload = this.parseStreamPayload(event);
+            const target = this.locateStreamTarget(owner);
+            if (target.entry) {
+                if (donePayload && donePayload.error) {
+                    this.markResponseError(target.entry, donePayload.error);
+                } else if (target.entry.status !== 'error') {
+                    target.entry.status = 'completed';
+                }
+            }
+            this.releaseSSEClient(sse);
+            this.persistStreamTarget(target);
+        },
+
+        /**
+         * 流式失败（重试用尽）
+         */
+        handleStreamFailed(owner, sse) {
+            const target = this.locateStreamTarget(owner);
+            if (target.entry && ['streaming', 'waiting'].includes(target.entry.status)) {
+                this.markResponseError(target.entry, this.$L('连接失败，请重试'));
+            }
+            this.releaseSSEClient(sse);
+            this.persistStreamTarget(target);
+        },
+
+        /**
+         * 按归属持久化：前台存当前会话，后台存对应会话
+         */
+        persistStreamTarget(target) {
+            if (target.isCurrent) {
+                this.saveCurrentSession();
+            } else if (target.session) {
+                target.session.updatedAt = Date.now();
+                this.saveSessionStore(target.session.id);
+            }
+        },
+
+        /**
          * 处理 SSE 片段
          */
-        handleStreamChunk(responseEntry, type, event) {
-            if (!responseEntry) {
+        handleStreamChunk(owner, type, event) {
+            const target = this.locateStreamTarget(owner);
+            const entry = target.entry;
+            if (!entry) {
                 return;
             }
-            const stickToBottom = this.shouldStickToBottom();
+            const stickToBottom = target.isCurrent && this.shouldStickToBottom();
             const payload = this.parseStreamPayload(event);
             const chunk = this.resolveStreamContent(payload);
             if (type === 'replace') {
-                responseEntry.rawOutput = chunk;
+                entry.rawOutput = chunk;
             } else {
-                responseEntry.rawOutput += chunk;
+                entry.rawOutput += chunk;
             }
-            this.updateResponseDisplayOutput(responseEntry);
-            responseEntry.status = 'streaming';
-            if (stickToBottom) {
+            this.updateResponseDisplayOutput(entry);
+            entry.status = 'streaming';
+            if (target.isCurrent && stickToBottom) {
                 this.scrollResponsesToBottom();
             }
         },
@@ -1027,20 +1174,25 @@ export default {
         },
 
         /**
-         * 将 SSE 客户端加入活跃列表，方便后续清理
+         * 将 SSE 客户端加入活跃列表，记录归属以便定向清理
          */
-        registerSSEClient(sse) {
+        registerSSEClient(sse, owner = {}) {
             if (!sse) {
                 return;
             }
-            this.activeSSEClients.push(sse);
+            this.activeSSEClients.push({
+                sse,
+                sessionKey: owner.sessionKey,
+                sessionId: owner.sessionId,
+                localId: owner.localId,
+            });
         },
 
         /**
          * 从活跃列表移除 SSE 客户端并执行注销
          */
         releaseSSEClient(sse) {
-            const index = this.activeSSEClients.indexOf(sse);
+            const index = this.activeSSEClients.findIndex(item => item.sse === sse);
             if (index > -1) {
                 this.activeSSEClients.splice(index, 1);
             }
@@ -1051,13 +1203,45 @@ export default {
          * 关闭所有活跃的 SSE 连接
          */
         clearActiveSSEClients() {
-            this.activeSSEClients.forEach(sse => {
+            this.activeSSEClients.forEach(item => {
                 try {
-                    sse.unsunscribe();
+                    item.sse.unsunscribe();
                 } catch (e) {
                 }
             });
             this.activeSSEClients = [];
+        },
+
+        /**
+         * 仅关闭指定会话的活跃 SSE 连接
+         */
+        clearOwnerSSEClients(sessionKey, sessionId) {
+            this.activeSSEClients = this.activeSSEClients.filter(item => {
+                if (item.sessionKey === sessionKey && item.sessionId === sessionId) {
+                    this.cancelStreamOwner(item);
+                    try {
+                        item.sse.unsunscribe();
+                    } catch (e) {
+                    }
+                    return false;
+                }
+                return true;
+            });
+        },
+
+        /**
+         * 取消归属的流式条目
+         */
+        cancelStreamOwner(item) {
+            const target = this.locateStreamTarget({
+                sessionKey: item.sessionKey,
+                sessionId: item.sessionId,
+                localId: item.localId,
+            });
+            if (target.entry && ['streaming', 'waiting'].includes(target.entry.status)) {
+                this.markResponseError(target.entry, this.$L('已取消'));
+                this.persistStreamTarget(target);
+            }
         },
 
         /**
@@ -1238,11 +1422,9 @@ export default {
             this.closing = true;
             this.pendingAutoSubmit = false;
             this.clearAutoSubmitTimer();
-            this.clearActiveSSEClients();
             this.resetInputHistoryNavigation();
             this.clearPendingImages();
             this.showModal = false;
-            this.responses = [];
             setTimeout(() => {
                 this.closing = false;
             }, 300);
@@ -1279,22 +1461,30 @@ export default {
         // ==================== 会话管理方法 ====================
 
         /**
-         * 加载指定场景的会话数据
+         * 加载会话列表(按 sessionKey 桶过滤;浮窗固定 'global' 桶,专用入口用各自的桶)
          */
         async loadSessionStore(sessionKey) {
             try {
                 const {data} = await this.$store.dispatch("call", {
                     url: 'assistant/session/list',
-                    data: {session_key: sessionKey},
+                    data: {session_key: sessionKey || this.currentSessionKey},
                 });
                 if (Array.isArray(data)) {
-                    this.sessionStore = data;
-                    // 缓存服务端返回的图片URL映射
                     data.forEach(session => {
+                        if (Array.isArray(session.responses)) {
+                            session.responses.forEach(r => {
+                                if (r.status === 'streaming' || r.status === 'waiting') {
+                                    r.status = 'error';
+                                    r.error = r.error || this.$L('会话中断');
+                                }
+                            });
+                        }
+                        // 缓存服务端返回的图片URL映射
                         if (session.images) {
                             Object.assign(this.serverImageMap, session.images);
                         }
                     });
+                    this.sessionStore = data;
                 } else {
                     this.sessionStore = [];
                 }
@@ -1306,11 +1496,23 @@ export default {
         },
 
         /**
+         * 持久化前归一未完成态(streaming/waiting)为 error,避免服务端残留卡死状态
+         */
+        sanitizeResponsesForPersist(responses) {
+            return (responses || []).map(r => {
+                if (r.status === 'streaming' || r.status === 'waiting') {
+                    return {...r, status: 'error', error: r.error || this.$L('会话中断')};
+                }
+                return r;
+            });
+        },
+
+        /**
          * 持久化当前场景的会话数据
          */
-        async saveSessionStore() {
-            if (!this.currentSessionId) return;
-            const session = this.sessionStore.find(s => s.id === this.currentSessionId);
+        async saveSessionStore(sessionId = this.currentSessionId) {
+            if (!sessionId) return;
+            const session = this.sessionStore.find(s => s.id === sessionId);
             if (!session) return;
 
             // 收集本次需要上传的新图片（在 imageCache 中有 base64 但 serverImageMap 中没有的）
@@ -1332,9 +1534,8 @@ export default {
                     data: {
                         session_key: this.currentSessionKey,
                         session_id: session.id,
-                        scene_key: session.sceneKey || '',
                         title: session.title || '',
-                        data: session.responses || [],
+                        data: this.sanitizeResponsesForPersist(session.responses),
                         new_images: newImages,
                     },
                 });
@@ -1362,7 +1563,7 @@ export default {
             if (!responses || responses.length === 0) {
                 return this.$L('新会话');
             }
-            const firstPrompt = responses.find(r => r.prompt)?.prompt || '';
+            const firstPrompt = responses.find(r => r.role !== 'system' && r.prompt)?.prompt || '';
             if (!firstPrompt) {
                 return this.$L('新会话');
             }
@@ -1385,52 +1586,43 @@ export default {
 
         /**
          * 初始化会话
-         * @param {string} sessionKey - 会话场景标识，不传则不启用会话管理
-         * @param {string} sceneKey - 场景标识，用于判断是否恢复会话
-         * @param {number} resumeTimeout - 恢复超时时间（秒），默认1天
+         * sessionKey 传值即启用会话管理(浮窗用 'global',专用入口用各自 key,如 'chat-message')
+         * 切换 sessionKey 时切换桶并保存当前会话
+         * 不再按 scene_key 自动恢复:同一桶内打开时保留当前 session_id,没有则建新会话
          */
-        async initSession(sessionKey, sceneKey = null, resumeTimeout = 86400) {
-            // 保存当前会话
-            if (this.responses.length > 0) {
+        async initSession(sessionKey) {
+            // 专用入口未传 sessionKey 的兼容路径(不启用会话管理)
+            if (!sessionKey) {
+                this.sessionEnabled = false;
+                this.currentSessionKey = 'default';
+                this.currentSessionId = null;
+                this.responses = [];
+                this.sessionStoreLoaded = false;
+                return;
+            }
+
+            // 切到不同的 sessionKey 桶(浮窗 ↔ 专用入口):先保存当前会话
+            const switchingBucket = this.sessionEnabled && this.currentSessionKey !== sessionKey;
+            if (switchingBucket && this.responses.length > 0) {
                 this.saveCurrentSession();
             }
 
-            this.sessionEnabled = !!sessionKey;
-            this.currentSceneKey = sceneKey;
+            this.sessionEnabled = true;
 
-            if (this.sessionEnabled) {
-                // 如果切换到不同的场景，需要加载新场景的数据
-                if (this.currentSessionKey !== sessionKey || !this.sessionStoreLoaded) {
-                    this.currentSessionKey = sessionKey;
-                    await this.loadSessionStore(sessionKey);
+            if (switchingBucket || this.currentSessionKey !== sessionKey || !this.sessionStoreLoaded) {
+                this.currentSessionKey = sessionKey;
+                await this.loadSessionStore(sessionKey);
+                // 切桶后清空当前会话指针,下面再决定新建/恢复
+                if (switchingBucket) {
+                    this.currentSessionId = null;
+                    this.responses = [];
                 }
+            }
 
-                // 如果传入了 sceneKey，从历史中查找相同场景的最新会话
-                if (sceneKey) {
-                    const sessions = this.getSessionList();
-                    // 找到相同场景标识的最新一条记录
-                    const matchedSession = sessions.find(s => s.sceneKey === sceneKey);
-                    if (matchedSession) {
-                        const elapsed = (Date.now() - matchedSession.updatedAt) / 1000;
-                        // 在超时时间内则恢复
-                        if (elapsed <= resumeTimeout) {
-                            this.currentSessionId = matchedSession.id;
-                            this.responses = JSON.parse(JSON.stringify(matchedSession.responses));
-                            this.syncResponseSeed();
-                            return;
-                        }
-                    }
-                }
-
-                // 无匹配会话、超时或无 sceneKey，创建新会话
+            // 已有当前会话则保留;否则建一个空的新会话
+            if (!this.currentSessionId) {
                 this.currentSessionId = this.generateSessionId();
                 this.responses = [];
-            } else {
-                this.currentSessionKey = 'default';
-                this.currentSessionId = null;
-                this.currentSceneKey = null;
-                this.responses = [];
-                this.sessionStoreLoaded = false;
             }
         },
 
@@ -1465,7 +1657,6 @@ export default {
                 id: this.currentSessionId,
                 title: this.generateSessionTitle(this.responses),
                 responses: JSON.parse(JSON.stringify(this.responses)),
-                sceneKey: this.currentSceneKey,
                 createdAt: existingIndex > -1 ? this.sessionStore[existingIndex].createdAt : Date.now(),
                 updatedAt: Date.now(),
             };
@@ -1481,7 +1672,22 @@ export default {
                 this.sessionStore.splice(this.maxSessionsPerKey);
             }
 
-            this.saveSessionStoreDebounced();
+            this.saveSessionStoreDebounced(this.currentSessionId);
+        },
+
+        /**
+         * 防抖保存指定 sessionId 的会话
+         */
+        saveSessionStoreDebounced(sessionId) {
+            if (!sessionId) return;
+            let fn = this.saveSessionStoreDebouncedMap[sessionId];
+            if (!fn) {
+                fn = debounce(() => {
+                    this.saveSessionStore(sessionId);
+                }, 2000);
+                this.saveSessionStoreDebouncedMap[sessionId] = fn;
+            }
+            fn();
         },
 
         /**
@@ -1496,7 +1702,6 @@ export default {
                     this.saveCurrentSession();
                 }
                 this.currentSessionId = session.id;
-                this.currentSceneKey = session.sceneKey || null;
                 this.responses = JSON.parse(JSON.stringify(session.responses));
                 this.syncResponseSeed();
                 this.scrollResponsesToBottom();
@@ -1547,7 +1752,7 @@ export default {
         clearSessionHistory() {
             $A.modalConfirm({
                 title: this.$L('清空历史会话'),
-                content: this.$L('确定要清空当前场景的所有历史会话吗？'),
+                content: this.$L('确定要清空所有历史会话吗？'),
                 onOk: () => {
                     this.serverImageMap = {};
                     this.imageCache = {};
@@ -2052,6 +2257,7 @@ export default {
             const imageIds = [];
             if (!session?.responses) return imageIds;
             for (const response of session.responses) {
+                if (response.role === 'system') continue;
                 if (response.prompt) {
                     const parsed = this.parsePromptContent(response.prompt);
                     for (const img of parsed.images) {
@@ -2664,6 +2870,15 @@ export default {
     }
 }
 
+.ai-assistant-chat-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(55, 55, 55, 0.6);
+}
+
 .ai-assistant-chat {
     position: fixed;
     width: 460px;
@@ -2916,6 +3131,24 @@ export default {
             cursor: default;
         }
     }
+
+    // 移动端沉浸式:参考全局搜索,顶部留 status-bar + 46px,顶部圆角
+    &.is-mobile-fullscreen {
+        top: calc(var(--status-bar-height, 0px) + 46px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 18px 18px 0 0;
+        box-shadow: none;
+
+        .ai-assistant-header {
+            margin-right: 52px;
+        }
+
+        .ai-assistant-input {
+            padding-bottom: calc(12px + var(--navigation-bar-height, 0px));
+        }
+    }
 }
 
 .ai-assistant-modal {
@@ -2933,6 +3166,31 @@ export default {
         max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 266px);
         @media (height <= 900px) {
             max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 136px);
+        }
+    }
+
+    // 移动端 fullscreen Modal:参考全局搜索,顶部留 status-bar + 46px,顶部圆角
+    &.is-mobile-fullscreen {
+        .ivu-modal-content {
+            margin-top: calc(var(--status-bar-height, 0px) + 46px);
+            margin-bottom: 0;
+            border-top-left-radius: 18px !important;
+            border-top-right-radius: 18px !important;
+        }
+        .ivu-modal-body {
+            display: flex;
+            flex-direction: column;
+        }
+        .ai-assistant-header {
+            margin-right: 24px;
+        }
+        .ai-assistant-content {
+            flex: 1;
+            min-height: 0;
+            max-height: none;
+        }
+        .ai-assistant-input {
+            padding-bottom: calc(12px + var(--navigation-bar-height, 0px));
         }
     }
 }

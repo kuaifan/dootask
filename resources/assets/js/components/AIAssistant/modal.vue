@@ -2,12 +2,18 @@
     <div v-if="displayMode === 'chat'" v-transfer-dom :data-transfer="true">
         <transition name="fade">
             <div
+                v-if="visible && isMobile"
+                class="ai-assistant-chat-mask"
+                :style="{zIndex: zIndex - 1}"></div>
+        </transition>
+        <transition name="fade">
+            <div
                 v-if="visible"
                 ref="chatWindow"
                 class="ai-assistant-chat"
-                :class="{'is-fullscreen': isFullscreen}"
+                :class="{'is-fullscreen': effectiveFullscreen, 'is-mobile-fullscreen': isMobile}"
                 :style="chatStyle">
-                <div class="ai-assistant-fullscreen" @click="toggleFullscreen">
+                <div v-if="!isMobile" class="ai-assistant-fullscreen" @click="toggleFullscreen">
                     <svg v-if="isFullscreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="4 10 10 10 10 4"/><polyline points="14 4 14 10 20 10"/>
                         <polyline points="10 20 10 14 4 14"/><polyline points="20 14 14 14 14 20"/>
@@ -26,7 +32,7 @@
                 </div>
                 <slot></slot>
                 <!-- 调整大小的控制点 -->
-                <template v-if="!isFullscreen">
+                <template v-if="!effectiveFullscreen">
                     <div class="ai-assistant-resize-handle ai-assistant-resize-n" @mousedown.stop.prevent="onResizeMouseDown($event, 'n')"></div>
                     <div class="ai-assistant-resize-handle ai-assistant-resize-s" @mousedown.stop.prevent="onResizeMouseDown($event, 's')"></div>
                     <div class="ai-assistant-resize-handle ai-assistant-resize-e" @mousedown.stop.prevent="onResizeMouseDown($event, 'e')"></div>
@@ -43,9 +49,10 @@
         v-else
         v-model="visible"
         :width="shouldCreateNewSession ? '440px' : '600px'"
+        :fullscreen="isMobile"
         :mask-closable="false"
         :footer-hide="true"
-        class-name="ai-assistant-modal">
+        :class-name="isMobile ? 'ai-assistant-modal is-mobile-fullscreen' : 'ai-assistant-modal'">
         <template #header>
             <slot name="header"></slot>
         </template>
@@ -139,6 +146,14 @@ export default {
             return this.windowHeight;
         },
 
+        isMobile() {
+            return this.windowWidth < 576;
+        },
+
+        effectiveFullscreen() {
+            return this.isFullscreen || this.isMobile;
+        },
+
         // 计算实际的 left 值
         left() {
             if (this.position.fromRight) {
@@ -163,7 +178,7 @@ export default {
                 };
             }
             // 全屏时不应用自定义尺寸和位置
-            if (this.isFullscreen) {
+            if (this.effectiveFullscreen) {
                 return {
                     zIndex: this.zIndex,
                 };
@@ -284,7 +299,7 @@ export default {
          */
         onDragMouseDown(e) {
             // 只响应鼠标左键，全屏时禁用拖动
-            if (e.button !== 0 || this.isFullscreen) return;
+            if (e.button !== 0 || this.effectiveFullscreen) return;
 
             this.updateWindowSize();
             this.record = {
@@ -302,6 +317,7 @@ export default {
          * 切换全屏
          */
         toggleFullscreen() {
+            if (this.isMobile) return;
             this.isFullscreen = !this.isFullscreen;
         },
 

@@ -141,6 +141,16 @@ const SEARCH_AI_SYSTEM_PROMPT = `你是一个智能搜索助手，帮助用户�
 4. 如有需要，可以进行多次搜索以获取更全面的结果`;
 
 /**
+ * 浮窗 AI 助手默认系统提示词（基础人设）
+ * 始终位于上下文最前面，配合后续按需注入的"页面弱提示词"使用
+ */
+const BASE_ASSISTANT_SYSTEM_PROMPT = `你是 DooTask（任务 / 项目 / 消息 / 日历 / 文件 / 汇报）的 AI 助手。
+
+- 回答简洁、可执行
+- 对话中以 [当前页面] / [页面切换] 开头的 system 消息标记用户当前场景；涉及具体任务、项目、成员、统计或最新状态时调用工具获取，不要根据页面标题或历史对话臆测细节
+- 不确定就直说不知道`;
+
+/**
  * 系统条件性提示块占位符
  * 后端会将此占位符替换为：用户上下文 + 资源格式指南
  */
@@ -228,6 +238,7 @@ export {
     REPORT_AI_SYSTEM_PROMPT,
     REPORT_ANALYSIS_SYSTEM_PROMPT,
     SEARCH_AI_SYSTEM_PROMPT,
+    BASE_ASSISTANT_SYSTEM_PROMPT,
     withLanguagePreferencePrompt,
     AIModelNames,
     AINormalizeJsonContent,

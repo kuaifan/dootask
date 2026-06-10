@@ -1,409 +1,167 @@
 /**
- * AI 助手页面上下文配置
+ * AI 助手页面上下文（弱提示词工厂）
  *
- * 设计原则：
- * - 提供当前页面/场景的上下文数据
- * - 传递实体 ID 和关键信息（让 AI 能调用 MCP 工具或理解场景）
- * - 不限定 AI 的能力范围
+ * 只输出"页面类型 / 实体 id / 实体名称 / 对话类型"四类核心字段；
+ * 详细数据（描述、统计、成员等）由 AI 通过工具（MCP）自取。
+ *
+ * - buildWeakPrompt(store, routeParams) → {contextKey, pageLabel, entity} | null
+ * - renderWeakPromptText(weak, switching) → "[当前页面|页面切换] 页面类型(实体_id=xx,名称:xx)"
  */
 
 /**
- * 获取当前页面的 AI 上下文
- * @param {Object} store - Vuex store 实例
- * @param {Object} routeParams - 路由参数
- * @returns {Object} { systemPrompt }
+ * 根据当前页面 / 弹窗构建弱提示词数据
+ * @returns {{contextKey: string, pageLabel: string, entity: Object|null}|null}
  */
-export function getPageContext(store, routeParams = {}) {
-    // 优先检测弹窗场景
+export function buildWeakPrompt(store, routeParams = {}) {
+    // 弹窗优先（任务详情 / 对话详情）
     const taskId = store.state.taskId;
     if (taskId > 0) {
-        return getSingleTaskContext(store, { taskId });
+        return buildTaskWeak(store, taskId);
     }
-
     const dialogModalShow = store.state.dialogModalShow;
     const dialogId = store.state.dialogId;
     if (dialogModalShow && dialogId > 0) {
-        return getSingleDialogContext(store, { dialogId });
+        return buildDialogWeak(store, dialogId);
     }
 
     const routeName = store.state.routeName;
-
-    const contextMap = {
-        // 主要管理页面
-        'manage-dashboard': getDashboardContext,
-        'manage-project': getProjectContext,
-        'manage-messenger': getMessengerContext,
-        'manage-calendar': getCalendarContext,
-        'manage-file': getFileContext,
-        // 独立页面
-        'single-task': getSingleTaskContext,
-        'single-task-content': getSingleTaskContext,
-        'single-dialog': getSingleDialogContext,
-        'single-file': getSingleFileContext,
-        'single-file-task': getSingleFileTaskContext,
-        'single-report-edit': getSingleReportEditContext,
-        'single-report-detail': getSingleReportDetailContext,
-    };
-
-    const getContext = contextMap[routeName];
-    if (getContext) {
-        return getContext(store, routeParams);
-    }
-
-    return getDefaultContext();
-}
-
-/**
- * 仪表盘上下文
- */
-function getDashboardContext(store) {
-    const dashboardTask = store.getters.dashboardTask || {};
-    const assistTask = store.getters.assistTask || [];
-
-    const overdueCount = dashboardTask.overdue_count || 0;
-    const todayCount = dashboardTask.today_count || 0;
-    const todoCount = dashboardTask.todo_count || 0;
-    const assistCount = assistTask.length || 0;
-
-    const lines = ['用户正在查看工作仪表盘。'];
-
-    if (overdueCount > 0 || todayCount > 0 || todoCount > 0 || assistCount > 0) {
-        lines.push('', '任务概况：');
-        if (overdueCount > 0) lines.push(`- 逾期任务：${overdueCount} 个`);
-        if (todayCount > 0) lines.push(`- 今日到期：${todayCount} 个`);
-        if (todoCount > 0) lines.push(`- 待办任务：${todoCount} 个`);
-        if (assistCount > 0) lines.push(`- 协助任务：${assistCount} 个`);
-    }
-
-    return {
-        systemPrompt: lines.join('\n'),
-    };
-}
-
-/**
- * 项目详情上下文
- */
-function getProjectContext(store) {
-    const project = store.getters.projectData || {};
-    const columns = store.state.cacheColumns || [];
-    const tasks = store.state.cacheTasks || [];
-
-    if (!project.id) {
-        return {
-            systemPrompt: '用户正在查看项目列表。',
-        };
-    }
-
-    const lines = [
-        '用户正在查看项目详情页面。',
-        '',
-        '当前项目：',
-        `- project_id：${project.id}`,
-    ];
-
-    if (project.name) {
-        lines.push(`- 名称：${project.name}`);
-    }
-    if (project.desc) {
-        const desc = project.desc.length > 200 ? project.desc.substring(0, 200) + '...' : project.desc;
-        lines.push(`- 描述：${desc}`);
-    }
-
-    // 任务统计
-    const projectTasks = tasks.filter(t => t.project_id === project.id);
-    if (projectTasks.length > 0) {
-        const completedCount = projectTasks.filter(t => t.complete_at).length;
-        const overdueCount = projectTasks.filter(t => !t.complete_at && t.end_at && new Date(t.end_at) < new Date()).length;
-
-        lines.push('', '任务统计：');
-        lines.push(`- 总任务：${projectTasks.length} 个`);
-        lines.push(`- 已完成：${completedCount} 个`);
-        if (overdueCount > 0) {
-            lines.push(`- 已逾期：${overdueCount} 个`);
-        }
-    }
-
-    // 看板列
-    const projectColumns = columns.filter(c => c.project_id === project.id);
-    if (projectColumns.length > 0) {
-        const columnNames = projectColumns.map(c => c.name).join('、');
-        lines.push('', `看板列：${columnNames}`);
-    }
-
-    return {
-        systemPrompt: lines.join('\n'),
-    };
-}
-
-/**
- * 消息对话上下文
- */
-function getMessengerContext(store) {
-    const dialogId = store.state.dialogId;
-    const dialogs = store.state.cacheDialogs || [];
-    const dialog = dialogs.find(d => d.id === dialogId);
-
-    if (!dialog) {
-        return {
-            systemPrompt: '用户正在查看消息列表。',
-        };
-    }
-
-    const dialogType = dialog.type === 'group' ? '群聊' : '私聊';
-    const lines = [
-        '用户正在使用消息功能。',
-        '',
-        '当前对话：',
-        `- dialog_id：${dialog.id}`,
-        `- 类型：${dialogType}`,
-    ];
-
-    if (dialog.name) {
-        lines.push(`- 名称：${dialog.name}`);
-    }
-
-    return {
-        systemPrompt: lines.join('\n'),
-    };
-}
-
-/**
- * 日历上下文
- */
-function getCalendarContext() {
-    return {
-        systemPrompt: '用户正在查看日历。',
-    };
-}
-
-/**
- * 文件管理上下文
- */
-function getFileContext() {
-    return {
-        systemPrompt: '用户正在查看文件管理页面。',
-    };
-}
-
-/**
- * 单任务页面上下文
- */
-function getSingleTaskContext(store, routeParams) {
-    const taskId = routeParams.taskId;
-
-    if (!taskId) {
-        return {
-            systemPrompt: '用户正在查看任务页面。',
-        };
-    }
-
-    return {
-        systemPrompt: [
-            '用户正在查看任务详情页面。',
-            '',
-            '当前任务：',
-            `- task_id：${taskId}`,
-        ].join('\n'),
-    };
-}
-
-/**
- * 单对话页面上下文
- */
-function getSingleDialogContext(store, routeParams) {
-    const dialogId = routeParams.dialogId;
-
-    if (!dialogId) {
-        return {
-            systemPrompt: '用户正在查看对话页面。',
-        };
-    }
-
-    return {
-        systemPrompt: [
-            '用户正在查看对话窗口。',
-            '',
-            '当前对话：',
-            `- dialog_id：${dialogId}`,
-        ].join('\n'),
-    };
-}
-
-/**
- * 单文件页面上下文
- */
-function getSingleFileContext(store, routeParams) {
-    const fileId = routeParams.codeOrFileId;
-
-    if (!fileId) {
-        return {
-            systemPrompt: '用户正在查看文件页面。',
-        };
-    }
-
-    return {
-        systemPrompt: [
-            '用户正在查看文件。',
-            '',
-            '当前文件：',
-            `- file_id：${fileId}`,
-        ].join('\n'),
-    };
-}
-
-/**
- * 任务附件文件页面上下文
- */
-function getSingleFileTaskContext(store, routeParams) {
-    const fileId = routeParams.fileId;
-
-    if (!fileId) {
-        return {
-            systemPrompt: '用户正在查看文件页面。',
-        };
-    }
-
-    return {
-        systemPrompt: [
-            '用户正在查看任务附件。',
-            '',
-            '当前文件：',
-            `- file_id：${fileId}`,
-        ].join('\n'),
-    };
-}
-
-/**
- * 工作汇报编辑页面上下文
- */
-function getSingleReportEditContext(store, routeParams) {
-    const reportId = routeParams.reportEditId;
-
-    if (!reportId) {
-        return {
-            systemPrompt: '用户正在编辑工作汇报。',
-        };
-    }
-
-    return {
-        systemPrompt: [
-            '用户正在编辑工作汇报。',
-            '',
-            '当前汇报：',
-            `- report_id：${reportId}`,
-        ].join('\n'),
-    };
-}
-
-/**
- * 工作汇报详情页面上下文
- */
-function getSingleReportDetailContext(store, routeParams) {
-    const reportId = routeParams.reportDetailId;
-
-    if (!reportId) {
-        return {
-            systemPrompt: '用户正在查看工作汇报。',
-        };
-    }
-
-    return {
-        systemPrompt: [
-            '用户正在查看工作汇报。',
-            '',
-            '当前汇报：',
-            `- report_id：${reportId}`,
-        ].join('\n'),
-    };
-}
-
-/**
- * 默认上下文
- */
-function getDefaultContext() {
-    return {
-        systemPrompt: '',
-    };
-}
-
-/**
- * 获取当前场景的唯一标识
- * 用于判断打开 AI 助手时是否需要新建会话
- * 场景相同则恢复上次会话，场景不同则新建会话
- *
- * @param {Object} store - Vuex store 实例
- * @param {Object} routeParams - 路由参数
- * @returns {string} 场景标识，格式如 "routeName/entityType:entityId"
- */
-export function getSceneKey(store, routeParams = {}) {
-    // 优先检测弹窗场景
-    const taskId = store.state.taskId;
-    if (taskId > 0) {
-        return `modal-task/task:${taskId}`;
-    }
-
-    const dialogModalShow = store.state.dialogModalShow;
-    const dialogId = store.state.dialogId;
-    if (dialogModalShow && dialogId > 0) {
-        return `modal-dialog/dialog:${dialogId}`;
-    }
-
-    const routeName = store.state.routeName;
-    const parts = [routeName || 'unknown'];
-
     switch (routeName) {
-        case 'manage-project': {
-            const project = store.getters.projectData;
-            if (project?.id) {
-                parts.push(`project:${project.id}`);
-            }
-            break;
-        }
-        case 'manage-messenger': {
-            const dialogId = store.state.dialogId;
-            if (dialogId) {
-                parts.push(`dialog:${dialogId}`);
-            }
-            break;
-        }
+        case 'manage-dashboard':
+            return weak('dashboard', '工作仪表盘');
+        case 'manage-project':
+            return buildProjectWeak(store);
+        case 'manage-messenger':
+            return buildMessengerWeak(store);
+        case 'manage-calendar':
+            return weak('calendar', '日历页');
+        case 'manage-file':
+            return weak('file-list', '文件列表页');
         case 'single-task':
-        case 'single-task-content': {
-            if (routeParams.taskId) {
-                parts.push(`task:${routeParams.taskId}`);
-            }
-            break;
+        case 'single-task-content':
+            return buildTaskWeak(store, routeParams.taskId);
+        case 'single-dialog':
+            return buildDialogWeak(store, routeParams.dialogId);
+        case 'single-file':
+            return buildFileWeak(routeParams.codeOrFileId);
+        case 'single-file-task':
+            return buildFileWeak(routeParams.fileId);
+        case 'single-report-edit':
+            return buildReportWeak(routeParams.reportEditId, '工作汇报编辑');
+        case 'single-report-detail':
+            return buildReportWeak(routeParams.reportDetailId, '工作汇报详情');
+        default:
+            return null;
+    }
+}
+
+/**
+ * 渲染弱提示词文本
+ * @param {Object|null} weak - buildWeakPrompt 返回值
+ * @param {boolean} switching - true=[页面切换] / false=[当前页面]
+ * @returns {string}
+ */
+export function renderWeakPromptText(weak, switching) {
+    if (!weak) {
+        return '';
+    }
+    const prefix = switching ? '[页面切换]' : '[当前页面]';
+    const segments = [];
+    const entity = weak.entity;
+    if (entity) {
+        if (entity.id !== undefined && entity.id !== null && entity.id !== '') {
+            segments.push(`${entity.type}_id=${entity.id}`);
         }
-        case 'single-dialog': {
-            if (routeParams.dialogId) {
-                parts.push(`dialog:${routeParams.dialogId}`);
-            }
-            break;
+        if (entity.name) {
+            segments.push(`名称:${entity.name}`);
         }
-        case 'single-file': {
-            if (routeParams.codeOrFileId) {
-                parts.push(`file:${routeParams.codeOrFileId}`);
-            }
-            break;
-        }
-        case 'single-file-task': {
-            if (routeParams.fileId) {
-                parts.push(`file:${routeParams.fileId}`);
-            }
-            break;
-        }
-        case 'single-report-edit': {
-            if (routeParams.reportEditId) {
-                parts.push(`report:${routeParams.reportEditId}`);
-            }
-            break;
-        }
-        case 'single-report-detail': {
-            if (routeParams.reportDetailId) {
-                parts.push(`report:${routeParams.reportDetailId}`);
-            }
-            break;
+        if (entity.dialogType) {
+            segments.push(`对话类型:${entity.dialogType}`);
         }
     }
+    const detail = segments.length ? `(${segments.join(',')})` : '';
+    return `${prefix} ${weak.pageLabel}${detail}`;
+}
 
-    return parts.join('/');
+// ===== 内部构造器 =====
+
+function weak(contextKey, pageLabel, entity = null) {
+    return {contextKey, pageLabel, entity};
+}
+
+function buildTaskWeak(store, taskId) {
+    const id = Number(taskId);
+    if (!id) {
+        return weak('task', '任务详情页');
+    }
+    const task = (store.state.cacheTasks || []).find(t => t.id === id);
+    return weak(`task:${id}`, '任务详情页', {
+        type: 'task',
+        id,
+        name: task?.name || '',
+    });
+}
+
+function buildDialogWeak(store, dialogId) {
+    const id = Number(dialogId);
+    if (!id) {
+        return weak('dialog', '对话页');
+    }
+    const dialog = (store.state.cacheDialogs || []).find(d => d.id === id);
+    return weak(`dialog:${id}`, '对话页', {
+        type: 'dialog',
+        id,
+        name: dialog?.name || '',
+        dialogType: mapDialogType(dialog?.type),
+    });
+}
+
+function buildProjectWeak(store) {
+    const project = store.getters.projectData;
+    if (!project?.id) {
+        return weak('project-list', '项目列表页');
+    }
+    return weak(`project:${project.id}`, '项目详情页', {
+        type: 'project',
+        id: project.id,
+        name: project.name || '',
+    });
+}
+
+function buildMessengerWeak(store) {
+    const dialogId = store.state.dialogId;
+    if (!dialogId) {
+        return weak('messenger', '消息列表页');
+    }
+    return buildDialogWeak(store, dialogId);
+}
+
+function buildFileWeak(fileId) {
+    if (!fileId) {
+        return weak('file', '文件页');
+    }
+    return weak(`file:${fileId}`, '文件页', {
+        type: 'file',
+        id: fileId,
+        name: '',
+    });
+}
+
+function buildReportWeak(reportId, label) {
+    if (!reportId) {
+        return weak('report', label);
+    }
+    return weak(`report:${reportId}`, label, {
+        type: 'report',
+        id: reportId,
+        name: '',
+    });
+}
+
+function mapDialogType(type) {
+    if (!type) {
+        return '';
+    }
+    if (type === 'group') return '群聊';
+    if (type === 'user') return '私聊';
+    return String(type);
 }
