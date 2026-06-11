@@ -175,7 +175,10 @@ export default {
             if (!match || !isDeepLinkId(match[1])) {
                 return;
             }
-            this.beforeNavigate?.();
+            // 移动端浮窗全屏会遮挡目标页，需收起；桌面端为侧浮窗，保留以便继续对话
+            if (this.$store.state.windowPortrait) {
+                this.beforeNavigate?.();
+            }
             openDeepLink(match[1]);
         },
 
