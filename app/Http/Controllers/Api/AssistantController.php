@@ -58,10 +58,17 @@ class AssistantController extends AbstractController
         $locale = str_contains(strtolower($locale), 'zh') ? 'zh' : 'en';
         $contextKey = mb_substr(trim(Request::input('session_id', '')), 0, 100);
 
+        // 当前用户 WebSocket fd：供 AI 经 doo page 操作本人浏览器（页面操作用）。
+        // 复用 operation__dispatch 同款归属校验：在表即在线、归属即本人，否则置 0。
+        $fd = intval(Base::headerOrInput('fd'));
+        if ($fd > 0 && intval(WebSocket::whereFd($fd)->value('userid')) !== intval($user->userid)) {
+            $fd = 0;
+        }
+
         // 灰度判定（参考 config/ai.php）：总开关 + canary 白名单
         $ragEnabled = AI::ragEnabledFor((int) $user->userid);
 
-        return AI::createStreamKey($modelType, $modelName, $contextInput, $locale, $ragEnabled, $contextKey);
+        return AI::createStreamKey($modelType, $modelName, $contextInput, $locale, $ragEnabled, $contextKey, $fd);
     }
 
     /**

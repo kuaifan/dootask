@@ -164,7 +164,7 @@ class AI
         return in_array($userid, $allow, true);
     }
 
-    public static function createStreamKey($modelType, $modelName, $contextInput = [], $locale = 'zh', $ragEnabled = true, $contextKey = '')
+    public static function createStreamKey($modelType, $modelName, $contextInput = [], $locale = 'zh', $ragEnabled = true, $contextKey = '', $fd = 0)
     {
         $modelType = trim((string)$modelType);
         $modelName = trim((string)$modelName);
@@ -250,6 +250,9 @@ class AI
             'rag_enabled' => $ragEnabled ? '1' : '0',
             // 前端会话ID，AI 服务存为 context_key 用于检索打点关联
             'context_key' => mb_substr(trim((string)$contextKey), 0, 100),
+            // AI 助手路径启用 doo 执行工具；fd 为用户当前 WebSocket 连接（页面操作用，0 表示无）
+            'doo_enabled' => '1',
+            'fd' => intval($fd),
         ];
 
         $baseUrl = trim((string)($setting[$modelType . '_base_url'] ?? ''));

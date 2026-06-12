@@ -34,6 +34,7 @@ DooTask AI 助手通过 MCP（Model Context Protocol）协议调用工具，把"
 ## 工具来源
 - **dootask-mcp 内置工具**：29 个，覆盖任务/项目/消息/文件/报告/搜索
 - **AI 助手内置工具**：`search_help_docs`（检索本知识库）、`get_session_image`（取多模态图片）
+- **doo 命令行工具**：AI 助手还可经内置的 `doo` 命令行（以你的身份、在你的权限内）直接完成任务/项目/消息/文件/报告/搜索/页面等操作；它是把上述能力统一成一个命令行入口，权限同样由后端校验
 - 工具清单维护在仓库 `resources/ai-kb/_meta/tool-binding.yaml`
 
 ## 数据工具与页面操作
