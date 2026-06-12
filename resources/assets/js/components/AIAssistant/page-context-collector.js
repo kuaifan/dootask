@@ -74,6 +74,7 @@ const ELEMENT_ROLE_MAP = {
  */
 export function collectPageContext(store, options = {}) {
     const routeName = store?.state?.routeName;
+    const doc = options.doc || document;
     const includeElements = options.include_elements !== false;
     const interactiveOnly = options.interactive_only || false;
     const maxElements = options.max_elements || 50;
@@ -84,8 +85,8 @@ export function collectPageContext(store, options = {}) {
     // 基础上下文
     const context = {
         page_type: routeName || 'unknown',
-        page_url: window.location.href,
-        page_title: document.title,
+        page_url: (doc.location && doc.location.href) || window.location.href,
+        page_title: doc.title,
         timestamp: Date.now(),
         elements: [],
         element_count: 0,
@@ -98,6 +99,7 @@ export function collectPageContext(store, options = {}) {
     // 收集可交互元素
     if (includeElements) {
         const result = collectElements({
+            doc,
             interactiveOnly,
             maxElements,
             offset,
@@ -236,6 +238,7 @@ function getAvailableActions(routeName, store) {
  */
 export function collectElements(options = {}) {
     const {
+        doc = document,
         interactiveOnly = false,
         maxElements = 50,
         offset = 0,
@@ -244,9 +247,9 @@ export function collectElements(options = {}) {
     } = options;
 
     // 确定查询的根元素
-    let rootElement = document;
+    let rootElement = doc;
     if (container) {
-        rootElement = document.querySelector(container);
+        rootElement = doc.querySelector(container);
         if (!rootElement) {
             return { elements: [], refMap: {}, totalCount: 0, hasMore: false };
         }
@@ -337,7 +340,7 @@ export function collectElements(options = {}) {
         if (processedElements.has(el)) continue;
 
         // 检查是否有 cursor: pointer 样式
-        const computedStyle = window.getComputedStyle(el);
+        const computedStyle = (el.ownerDocument.defaultView || window).getComputedStyle(el);
         if (computedStyle.cursor !== 'pointer') continue;
 
         // 跳过不可见或禁用元素
@@ -524,7 +527,7 @@ function getElementRole(el) {
     // 检查是否可点击
     if (el.onclick || el.hasAttribute('onclick') ||
         el.style.cursor === 'pointer' ||
-        window.getComputedStyle(el).cursor === 'pointer') {
+        (el.ownerDocument.defaultView || window).getComputedStyle(el).cursor === 'pointer') {
         return 'button';
     }
 
@@ -544,7 +547,7 @@ export function getElementName(el) {
 
     const ariaLabelledBy = el.getAttribute('aria-labelledby');
     if (ariaLabelledBy) {
-        const labelEl = document.getElementById(ariaLabelledBy);
+        const labelEl = el.ownerDocument.getElementById(ariaLabelledBy);
         if (labelEl) {
             return getTextContent(labelEl).substring(0, 100);
         }
@@ -552,7 +555,7 @@ export function getElementName(el) {
 
     // 对于输入元素，查找关联的 label
     if (el.id) {
-        const label = document.querySelector(`label[for="${el.id}"]`);
+        const label = el.ownerDocument.querySelector(`label[for="${el.id}"]`);
         if (label) {
             return getTextContent(label).substring(0, 100);
         }
@@ -600,8 +603,11 @@ function getTextContent(el) {
 export function isElementVisible(el) {
     if (!el) return false;
 
+    // 元素所在的 window（主文档或微应用 iframe 文档），视口尺寸与样式都取它自己的
+    const win = el.ownerDocument.defaultView || window;
+
     // 检查元素本身
-    const style = window.getComputedStyle(el);
+    const style = win.getComputedStyle(el);
 
     if (style.display === 'none') return false;
     if (style.visibility === 'hidden') return false;
@@ -612,8 +618,8 @@ export function isElementVisible(el) {
     if (rect.width === 0 && rect.height === 0) return false;
 
     // 检查是否在视口内或附近（允许稍微超出）
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
+    const viewportHeight = win.innerHeight;
+    const viewportWidth = win.innerWidth;
 
     // 元素完全在视口外
     if (rect.bottom < -100 || rect.top > viewportHeight + 100) return false;
@@ -622,7 +628,7 @@ export function isElementVisible(el) {
     // 检查父元素的可见性
     let parent = el.parentElement;
     while (parent) {
-        const parentStyle = window.getComputedStyle(parent);
+        const parentStyle = win.getComputedStyle(parent);
         if (parentStyle.display === 'none') return false;
         if (parentStyle.visibility === 'hidden') return false;
         parent = parent.parentElement;
@@ -673,7 +679,7 @@ function generateSelector(el) {
     let current = el;
     let depth = 0;
 
-    while (current && current !== document.body && depth < 5) {
+    while (current && current !== el.ownerDocument.body && depth < 5) {
         let selector = current.tagName.toLowerCase();
 
         // 添加重要的类名（排除动态类）
@@ -710,7 +716,7 @@ function generateSelector(el) {
  * @param {Object} refMap - 引用映射表
  * @returns {Element|null}
  */
-export function findElementByRef(ref, refMap) {
+export function findElementByRef(ref, refMap, doc = document) {
     const refData = refMap[ref];
     if (!refData) {
         return null;
@@ -718,7 +724,7 @@ export function findElementByRef(ref, refMap) {
 
     // 首先尝试使用选择器 + name 双重匹配
     if (refData.selector) {
-        const elements = document.querySelectorAll(refData.selector);
+        const elements = doc.querySelectorAll(refData.selector);
 
         if (elements.length === 1) {
             return elements[0];
@@ -746,7 +752,7 @@ export function findElementByRef(ref, refMap) {
 
     // 回退到角色+名称匹配
     const roleSelector = `[role="${refData.role}"]`;
-    const candidates = document.querySelectorAll(roleSelector);
+    const candidates = doc.querySelectorAll(roleSelector);
 
     for (const candidate of candidates) {
         if (refData.name) {
@@ -815,14 +821,22 @@ export default collectPageContext;
 // 暴露到 window 供调试使用
 if (typeof window !== 'undefined') {
     window.__testPageContext = (options = {}) => {
-        // 简化版，不需要 store
+        // 简化版，不需要 store；传 frameSrc 可在匹配的微应用 iframe 内采集（验证用）
+        let doc = document;
+        if (options.frameSrc) {
+            const f = [...document.querySelectorAll('iframe')].find(x => (x.src || '').includes(options.frameSrc));
+            if (f && f.contentDocument) {
+                doc = f.contentDocument;
+            }
+        }
         const context = {
-            page_url: window.location.href,
-            page_title: document.title,
+            page_url: (doc.location && doc.location.href) || window.location.href,
+            page_title: doc.title,
             timestamp: Date.now(),
         };
 
         const result = collectElements({
+            doc,
             interactiveOnly: options.interactive_only || false,
             maxElements: options.max_elements || 50,
             offset: options.offset || 0,

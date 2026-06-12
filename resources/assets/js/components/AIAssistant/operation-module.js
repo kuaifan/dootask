@@ -9,6 +9,7 @@
 
 import { collectPageContext, searchByVector } from './page-context-collector';
 import { createActionExecutor } from './action-executor';
+import { resolveActiveContext } from './active-context';
 
 /**
  * 创建操作模块实例
@@ -71,8 +72,39 @@ class OperationModule {
         const query = payload?.query || '';
         const offset = payload?.offset || 0;
         const container = payload?.container || null;
+        const scope = payload?.scope || 'auto';
+
+        // 解析当前活动上下文：主界面，或最前打开的同源微应用 iframe
+        const active = resolveActiveContext(this.store, scope);
+
+        // 微应用打开但不可读（跨源 / 未就绪 / 指定 app 但无应用）：优雅降级，不采集
+        if (active.kind === 'app' && !active.reachable) {
+            const reasonText = active.reason === 'cross_origin'
+                ? '当前应用为跨源页面，无法读取其内部元素'
+                : active.reason === 'no_app'
+                    ? '当前没有打开任何微应用'
+                    : '当前应用尚未加载完成';
+            const base = collectPageContext(this.store, { include_elements: false });
+            base.elements = [];
+            base.element_count = 0;
+            base.total_count = 0;
+            base.has_more = false;
+            base.frame = {
+                scope: 'app',
+                app_name: active.appName || null,
+                operable: false,
+                reachable: false,
+                reason: active.reason,
+            };
+            base.hint = `${reasonText}。可改用主界面（scope=main）操作，或改用数据命令完成。`;
+            this.executor.setRefMap({}, null);
+            return base;
+        }
+
+        const doc = active.doc || document;
 
         let context = collectPageContext(this.store, {
+            doc,
             include_elements: includeElements,
             interactive_only: interactiveOnly,
             max_elements: maxElements,
@@ -84,6 +116,7 @@ class OperationModule {
         // 如果有 query 且关键词匹配失败，尝试向量搜索
         if (query && !context.keyword_matched) {
             const allContext = collectPageContext(this.store, {
+                doc,
                 include_elements: true,
                 interactive_only: interactiveOnly,
                 max_elements: 200,
@@ -114,9 +147,16 @@ class OperationModule {
             }
         }
 
-        // 将 refMap 存储到 executor，供后续元素操作使用
+        // 标注本次采集所在的上下文（主界面 / 微应用），让模型清楚在操作谁
+        context.frame = {
+            scope: active.scope,
+            app_name: active.appName || null,
+            operable: true,
+        };
+
+        // 将 refMap 与活动上下文一并存入 executor，供后续元素操作使用（含失效守卫）
         if (context.ref_map && this.executor) {
-            this.executor.setRefMap(context.ref_map);
+            this.executor.setRefMap(context.ref_map, active);
         }
 
         return context;

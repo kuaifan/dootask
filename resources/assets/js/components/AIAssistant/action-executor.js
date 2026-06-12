@@ -10,6 +10,7 @@
  */
 
 import { findElementByRef } from './page-context-collector';
+import { resolveActiveContext } from './active-context';
 
 /**
  * 创建操作执行器
@@ -216,10 +217,30 @@ class ActionExecutor {
     // ========== 元素级操作 ==========
 
     /**
-     * 设置当前的 refMap（由 operation-module 在获取上下文后调用）
+     * 设置当前的 refMap 与活动上下文（由 operation-module 在获取上下文后调用）
      */
-    setRefMap(refMap) {
+    setRefMap(refMap, context = null) {
         this.currentRefMap = refMap;
+        this.currentContext = context;
+    }
+
+    /**
+     * 解析当前应执行元素操作的文档，并做失效守卫校验。
+     * 当上次采集发生在某个微应用 iframe 内时，执行前重新解析最前上下文，
+     * 若 frameKey 不一致（用户切了应用 / 重开过 / 刷新了页面）则拒绝，避免误操作。
+     * @returns {Document}
+     */
+    resolveContextDoc() {
+        const saved = this.currentContext;
+        // 无上下文信息或主文档：直接用主文档
+        if (!saved || saved.kind === 'main' || saved.frameKey === 'main') {
+            return document;
+        }
+        const now = resolveActiveContext(this.store, saved.scope || 'auto');
+        if (now.frameKey !== saved.frameKey || !now.reachable || !now.doc) {
+            throw new Error('页面上下文已变更（用户切换了应用或刷新了页面），请重新获取页面上下文后再操作');
+        }
+        return now.doc;
     }
 
     /**
@@ -230,10 +251,14 @@ class ActionExecutor {
      * @returns {Promise<Object>} 执行结果
      */
     async executeElementAction(elementUid, action, value) {
-        const element = this.findElement(elementUid);
+        const doc = this.resolveContextDoc();
+        const element = this.findElement(elementUid, doc);
         if (!element) {
             throw new Error(`找不到元素: ${elementUid}`);
         }
+
+        // 元素所在 window（主文档或微应用 iframe），事件需用它的构造器才被框架信任
+        const win = element.ownerDocument.defaultView || window;
 
         switch (action) {
             case 'click':
@@ -248,8 +273,8 @@ class ActionExecutor {
                     } else {
                         element.value = value || '';
                     }
-                    element.dispatchEvent(new Event('input', { bubbles: true }));
-                    element.dispatchEvent(new Event('change', { bubbles: true }));
+                    element.dispatchEvent(new win.Event('input', { bubbles: true }));
+                    element.dispatchEvent(new win.Event('change', { bubbles: true }));
                     return { success: true, action: 'type', value, element: elementUid };
                 }
                 throw new Error('元素不支持输入操作');
@@ -257,13 +282,13 @@ class ActionExecutor {
             case 'select':
                 if (element.tagName === 'SELECT') {
                     element.value = value;
-                    element.dispatchEvent(new Event('change', { bubbles: true }));
+                    element.dispatchEvent(new win.Event('change', { bubbles: true }));
                     return { success: true, action: 'select', value, element: elementUid };
                 }
                 // iView Select 组件 - 先点击打开下拉
                 element.click();
                 await this.delay(200);
-                const options = document.querySelectorAll('.ivu-select-dropdown-list .ivu-select-item');
+                const options = element.ownerDocument.querySelectorAll('.ivu-select-dropdown-list .ivu-select-item');
                 for (const option of options) {
                     if (option.textContent.trim().includes(value)) {
                         option.click();
@@ -281,8 +306,8 @@ class ActionExecutor {
                 return { success: true, action: 'scroll', element: elementUid };
 
             case 'hover':
-                element.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
-                element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+                element.dispatchEvent(new win.MouseEvent('mouseenter', { bubbles: true }));
+                element.dispatchEvent(new win.MouseEvent('mouseover', { bubbles: true }));
                 return { success: true, action: 'hover', element: elementUid };
 
             default:
@@ -294,7 +319,7 @@ class ActionExecutor {
      * 查找元素
      * 支持多种格式：e1, @e1, ref=e1, CSS选择器
      */
-    findElement(identifier) {
+    findElement(identifier, doc = document) {
         let ref = null;
         if (identifier.startsWith('@')) {
             ref = identifier.slice(1);
@@ -306,13 +331,13 @@ class ActionExecutor {
 
         // 如果是 ref 格式，使用 refMap 查找
         if (ref && this.currentRefMap) {
-            const element = findElementByRef(ref, this.currentRefMap);
+            const element = findElementByRef(ref, this.currentRefMap, doc);
             if (element) return element;
         }
 
         // 尝试作为 CSS 选择器
         try {
-            const element = document.querySelector(identifier);
+            const element = doc.querySelector(identifier);
             if (element) return element;
         } catch (e) {
             // 选择器无效，忽略
