@@ -1,7 +1,7 @@
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0.rc21"
+    image: "kuaifan/php:8.4-swoole-8.0.rc21"
     shm_size: 2G
     ulimits:
       core:
