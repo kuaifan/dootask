@@ -2590,6 +2590,23 @@ class Base
     }
 
     /**
+     * 创建 zip 压缩包并添加文件，条目名取文件 basename（等价旧 Madzipper::make()->add()->close()）
+     * @param string $zipPath 压缩包路径
+     * @param string|array $files 要添加的文件路径
+     */
+    public static function zipAddFiles($zipPath, $files)
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE) !== true) {
+            throw new \RuntimeException("Unable to open zip file: " . $zipPath);
+        }
+        foreach ((array)$files as $file) {
+            $zip->addFile($file, basename($file));
+        }
+        $zip->close();
+    }
+
+    /**
      * 获取中文字符拼音首字母
      * @param $str
      * @return string
@@ -2604,8 +2621,7 @@ class Base
             return '#';
         }
         if (!preg_match("/^[a-zA-Z]$/", $first)) {
-            $pinyin = new Pinyin();
-            $first = $pinyin->abbr($first, '', PINYIN_NAME);
+            $first = Pinyin::abbr($first, true)->join('');
         }
         return $first ? strtoupper($first) : '#';
     }
@@ -2623,8 +2639,7 @@ class Base
         }
         if (!preg_match("/^[a-zA-Z0-9_.]+$/", $str)) {
             $str = Cache::rememberForever("cn2pinyin:" . md5($str . '_' . $delim), function () use ($delim, $str) {
-                $pinyin = new Pinyin();
-                return $pinyin->permalink($str, $delim);
+                return Pinyin::permalink($str, $delim);
             });
         }
         return $str;

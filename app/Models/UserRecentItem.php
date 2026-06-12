@@ -57,8 +57,8 @@ class UserRecentItem extends AbstractModel
         'browsed_at',
     ];
 
-    protected $dates = [
-        'browsed_at',
+    protected $casts = [
+        'browsed_at' => 'datetime',
     ];
 
     public static function record(int $userid, string $targetType, int $targetId, string $sourceType = '', int $sourceId = 0): self

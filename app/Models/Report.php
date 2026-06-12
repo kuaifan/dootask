@@ -156,7 +156,7 @@ class Report extends AbstractModel
      * @param User|null $user
      * @return Builder|Model|\Illuminate\Database\Query\Builder|object
      */
-    public static function getLastOne(User $user = null)
+    public static function getLastOne(?User $user = null)
     {
         $user === null && $user = User::auth();
         $one = self::whereUserid($user->userid)->orderByDesc("created_at")->first();

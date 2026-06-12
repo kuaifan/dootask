@@ -322,7 +322,7 @@ class UsersController extends AbstractController
         $expiredAtCarbon = $expiredAt ? Carbon::parse($expiredAt) : null;
         $data = [
             'expired_at' => $expiredAtCarbon?->toDateTimeString(),
-            'remaining_seconds' => $expiredAtCarbon ? Carbon::now()->diffInSeconds($expiredAtCarbon, false) : null,
+            'remaining_seconds' => $expiredAtCarbon ? (int)Carbon::now()->diffInSeconds($expiredAtCarbon, false) : null,
             'expired' => $expired,
             'server_time' => Carbon::now()->toDateTimeString(),
         ];

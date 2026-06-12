@@ -26,7 +26,7 @@ use App\Tasks\UnclaimedTaskRemindTask;
 use App\Tasks\TodoRemindTask;
 use App\Tasks\AiTaskLoopTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
-use Laravolt\Avatar\Avatar;
+use App\Module\PatchedAvatar as Avatar;
 
 
 /**
@@ -221,11 +221,13 @@ class IndexController extends InvokeController
                 'radius' => 0,
             ],
         ]);
-        return response($avatar->create($name)->save($file))
-            ->header('Pragma', 'public')
-            ->header('Cache-Control', 'max-age=1814400')
-            ->header('Content-type', 'image/png')
-            ->header('Expires', gmdate('D, d M Y H:i:s \G\M\T', time() + 1814400));
+        $avatar->create($name)->save($file);
+        return response()->file($file, [
+            'Pragma' => 'public',
+            'Cache-Control' => 'max-age=1814400',
+            'Content-type' => 'image/png',
+            'Expires' => gmdate('D, d M Y H:i:s \G\M\T', time() + 1814400),
+        ]);
     }
 
     /**

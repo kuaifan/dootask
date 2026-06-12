@@ -40,8 +40,8 @@ class UserTaskBrowse extends AbstractModel
         'browsed_at',
     ];
 
-    protected $dates = [
-        'browsed_at',
+    protected $casts = [
+        'browsed_at' => 'datetime',
     ];
 
     /**

@@ -9,7 +9,6 @@ use App\Module\AI;
 use App\Module\Down;
 use Request;
 use Response;
-use Madzipper;
 use Carbon\Carbon;
 use App\Module\Doo;
 use App\Models\User;
@@ -1445,7 +1444,7 @@ class SystemController extends AbstractController
                 Base::deleteDirAndFile($zipPath, true);
             }
             try {
-                Madzipper::make($zipPath)->add($xlsPath)->close();
+                Base::zipAddFiles($zipPath, $xlsPath);
             } catch (\Throwable) {
             }
             //

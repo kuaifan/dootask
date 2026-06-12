@@ -51,12 +51,12 @@ class Setting extends AbstractModel
         switch ($this->name) {
             // 系统设置
             case 'system':
-                $value['system_alias'] = $value['system_alias'] ?: env('APP_NAME');
-                $value['image_compress'] = $value['image_compress'] ?: 'open';
-                $value['image_quality'] = min(100, max(0, intval($value['image_quality']) ?: 90));
-                $value['image_save_local'] = $value['image_save_local'] ?: 'open';
-                $value['task_user_limit'] = min(2000, max(1, intval($value['task_user_limit']) ?: 500));
-                if (!is_array($value['task_default_time']) || count($value['task_default_time']) != 2 || !Timer::isTime($value['task_default_time'][0]) || !Timer::isTime($value['task_default_time'][1])) {
+                $value['system_alias'] = ($value['system_alias'] ?? null) ?: env('APP_NAME');
+                $value['image_compress'] = ($value['image_compress'] ?? null) ?: 'open';
+                $value['image_quality'] = min(100, max(0, intval($value['image_quality'] ?? 0) ?: 90));
+                $value['image_save_local'] = ($value['image_save_local'] ?? null) ?: 'open';
+                $value['task_user_limit'] = min(2000, max(1, intval($value['task_user_limit'] ?? 0) ?: 500));
+                if (!is_array($value['task_default_time'] ?? null) || count($value['task_default_time']) != 2 || !Timer::isTime($value['task_default_time'][0]) || !Timer::isTime($value['task_default_time'][1])) {
                     $value['task_default_time'] = ['09:00', '18:00'];
                 }
                 // 项目创建权限：范围（all/departmentOwner/appoint，默认 all）+ 指定人员
@@ -71,8 +71,8 @@ class Setting extends AbstractModel
 
             // 文件设置
             case 'fileSetting':
-                $value['permission_pack_type'] = $value['permission_pack_type'] ?: 'all';
-                $value['permission_pack_userids'] = is_array($value['permission_pack_userids']) ? $value['permission_pack_userids'] : [];
+                $value['permission_pack_type'] = ($value['permission_pack_type'] ?? null) ?: 'all';
+                $value['permission_pack_userids'] = is_array($value['permission_pack_userids'] ?? null) ? $value['permission_pack_userids'] : [];
                 break;
 
             // AI 机器人设置

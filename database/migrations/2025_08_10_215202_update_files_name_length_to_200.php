@@ -14,7 +14,8 @@ class UpdateFilesNameLengthTo200 extends Migration
     public function up()
     {
         Schema::table('files', function (Blueprint $table) {
-            $table->string('name', 255)->change();
+            // Laravel 11+ 的 change() 会丢弃未声明的修饰符，须重申 nullable/default/comment
+            $table->string('name', 255)->nullable()->default('')->comment('名称')->change();
         });
     }
 

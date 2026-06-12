@@ -14,6 +14,8 @@ class Ihttp
         }
         if(!empty($urlset['query'])) {
             $urlset['query'] = "?{$urlset['query']}";
+        } else {
+            $urlset['query'] = '';
         }
         if(empty($urlset['port'])) {
             $urlset['port'] = $urlset['scheme'] == 'https' ? '443' : '80';

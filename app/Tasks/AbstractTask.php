@@ -30,6 +30,19 @@ abstract class AbstractTask extends Task
     }
 
     /**
+     * 重写投递：非 Swoole 运行时（artisan/测试）无 swoole 绑定，无法投递异步任务，跳过（与 AbstractObserver 守卫一致）
+     * @param mixed $task
+     * @return bool
+     */
+    protected function task($task)
+    {
+        if (!app()->bound('swoole')) {
+            return false;
+        }
+        return parent::task($task);
+    }
+
+    /**
      * 开始执行任务
      */
     abstract public function start();

@@ -31,7 +31,10 @@ class AbstractModel extends Model
 
     const ID = 'id';
 
-    protected $dates = [
+    /**
+     * 全局日期字段（Laravel 10 移除 $dates 属性后改经 getCasts 合并，子模型 $casts 同名键优先）
+     */
+    protected $defaultDatetimeCasts = [
         'top_at',
         'last_at',
 
@@ -58,6 +61,15 @@ class AbstractModel extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    public function getCasts(): array
+    {
+        $casts = parent::getCasts();
+        foreach ($this->defaultDatetimeCasts as $field) {
+            $casts[$field] ??= 'datetime';
+        }
+        return $casts;
+    }
 
     protected $appendattrs = [];
 

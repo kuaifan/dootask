@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use Request;
 use Response;
-use Madzipper;
 use Carbon\Carbon;
 use App\Module\Down;
 use App\Models\User;
@@ -951,7 +950,7 @@ class ApproveController extends AbstractController
                 Base::deleteDirAndFile($zipPath, true);
             }
             try {
-                Madzipper::make($zipPath)->add($xlsPath)->close();
+                Base::zipAddFiles($zipPath, $xlsPath);
             } catch (\Throwable) {
             }
             //

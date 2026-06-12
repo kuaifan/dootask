@@ -17,6 +17,9 @@ class OnlineData extends AbstractData
      */
     public static function online($userid)
     {
+        if (!self::instance()->getTable()) {
+            return 0;
+        }
         $key = "online::" . $userid;
         $value = self::instance()->getTable()->incr($key, 'value');
         if ($value === 1) {
@@ -35,6 +38,9 @@ class OnlineData extends AbstractData
      */
     public static function offline($userid)
     {
+        if (!self::instance()->getTable()) {
+            return 0;
+        }
         $key = "online::" . $userid;
         $value = self::instance()->getTable()->decr($key, 'value');
         if ($value === 0) {
@@ -57,6 +63,9 @@ class OnlineData extends AbstractData
      */
     public static function live($userid)
     {
+        if (!self::instance()->getTable()) {
+            return 0;
+        }
         $key = "online::" . $userid;
         return intval(self::instance()->getTable()->get($key));
     }

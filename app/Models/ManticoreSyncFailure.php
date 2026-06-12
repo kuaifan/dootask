@@ -28,10 +28,8 @@ class ManticoreSyncFailure extends AbstractModel
         'last_retry_at',
     ];
 
-    protected $dates = [
-        'last_retry_at',
-        'created_at',
-        'updated_at',
+    protected $casts = [
+        'last_retry_at' => 'datetime',
     ];
 
     /**

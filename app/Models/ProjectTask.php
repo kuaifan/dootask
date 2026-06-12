@@ -937,7 +937,7 @@ class ProjectTask extends AbstractModel
                         'cache' => [
                             'task_at' => $oldStringAt,
                             'change_at' => $newStringAt,
-                            'over_sec' => $effectiveEndTime->diffInSeconds($oldAt[1]),
+                            'over_sec' => (int)$effectiveEndTime->diffInSeconds($oldAt[1], true),
                             'owners' => $this->taskUser->where('owner', 1)->pluck('userid')->toArray(),
                             'assists' => $this->taskUser->where('owner', 0)->pluck('userid')->toArray(),
                         ]
@@ -1633,7 +1633,7 @@ class ProjectTask extends AbstractModel
                     $this->addLog("{任务}超期未完成", [
                         'cache' => [
                             'task_at' => $this->start_at . '~' . $this->end_at,
-                            'over_sec' => Carbon::now()->diffInSeconds($this->end_at),
+                            'over_sec' => (int)Carbon::now()->diffInSeconds($this->end_at, true),
                             'owners' => $this->taskUser->where('owner', 1)->pluck('userid')->toArray(),
                             'assists' => $this->taskUser->where('owner', 0)->pluck('userid')->toArray(),
                         ]

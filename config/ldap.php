@@ -35,8 +35,9 @@ return [
             'port' => env('LDAP_PORT', 389),
             'base_dn' => env('LDAP_BASE_DN', 'dc=local,dc=com'),
             'timeout' => env('LDAP_TIMEOUT', 5),
-            'use_ssl' => env('LDAP_SSL', false),
-            'use_tls' => env('LDAP_TLS', false),
+            // LdapRecord v4：use_tls=ldaps（沿用旧 LDAP_SSL 变量），use_starttls=StartTLS（沿用旧 LDAP_TLS 变量）
+            'use_tls' => env('LDAP_SSL', false),
+            'use_starttls' => env('LDAP_TLS', false),
         ],
 
     ],

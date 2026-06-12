@@ -3,10 +3,14 @@
 namespace Tests\Unit;
 
 use App\Models\User;
+use App\Models\UserDepartment;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class UserImportParseTest extends TestCase
 {
+    use DatabaseTransactions;
+
     public function test_parse_skips_header_and_empty_rows()
     {
         $sheet = [
@@ -98,8 +102,14 @@ class UserImportParseTest extends TestCase
         // 空/非数组 → 返回空数组
         $this->assertSame([], User::assertValidDepartments([]));
         $this->assertSame([], User::assertValidDepartments('not-array'));
-        // 去重 + 转 int + 过滤非正数（这些路径不查库）
-        $this->assertSame([3, 5], User::assertValidDepartments(['3', 3, 5, 0, -1]));
+        // 去重 + 转 int + 过滤非正数（存在性校验会查库，需用真实部门 ID）
+        $deptA = UserDepartment::createInstance(['name' => 'ImportParseDeptA_' . uniqid()]);
+        $deptA->save();
+        $deptB = UserDepartment::createInstance(['name' => 'ImportParseDeptB_' . uniqid()]);
+        $deptB->save();
+        $a = $deptA->id;
+        $b = $deptB->id;
+        $this->assertSame([$a, $b], User::assertValidDepartments([(string)$a, $a, $b, 0, -1]));
     }
 
     public function test_assert_valid_departments_rejects_over_limit()

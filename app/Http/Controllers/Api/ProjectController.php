@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use Request;
 use Redirect;
 use Response;
-use Madzipper;
 use Carbon\Carbon;
 use App\Module\Down;
 use App\Module\Doo;
@@ -2003,7 +2002,7 @@ class ProjectController extends AbstractController
                 Base::deleteDirAndFile($zipPath, true);
             }
             try {
-                Madzipper::make($zipPath)->add($xlsPath)->close();
+                Base::zipAddFiles($zipPath, $xlsPath);
             } catch (\Throwable) {
             }
             //
@@ -2171,7 +2170,7 @@ class ProjectController extends AbstractController
                 Base::deleteDirAndFile($zipPath, true);
             }
             try {
-                Madzipper::make($zipPath)->add($xlsPath)->close();
+                Base::zipAddFiles($zipPath, $xlsPath);
             } catch (\Throwable) {
             }
             //

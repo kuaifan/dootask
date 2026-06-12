@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.0",
+        "php": "^8.3",
         "ext-curl": "*",
         "ext-dom": "*",
         "ext-ffi": "*",
@@ -20,40 +20,35 @@
         "ext-openssl": "*",
         "ext-simplexml": "*",
         "ext-zip": "*",
-        "directorytree/ldaprecord-laravel": "^2.7",
-        "fideloper/proxy": "^4.4.1",
+        "directorytree/ldaprecord-laravel": "^4.0",
         "firebase/php-jwt": "^6.9",
-        "fruitcake/laravel-cors": "^2.0.4",
-        "guanguans/notify": "^1.21.1",
+        "guanguans/notify": "~1.28.0",
         "guzzlehttp/guzzle": "^7.3.0",
         "hedeqiang/umeng": "^2.1",
-        "laravel/framework": "^v8.83.27",
-        "laravel/tinker": "^v2.6.1",
-        "laravolt/avatar": "^5.1",
+        "laravel/framework": "^13.0",
+        "laravel/tinker": "^3.0",
+        "laravolt/avatar": "^6.5",
         "league/commonmark": "^2.5",
         "league/html-to-markdown": "^5.1",
-        "maatwebsite/excel": "^3.1.31",
-        "madnest/madzipper": "^v1.1.0",
+        "maatwebsite/excel": "^3.1.69",
         "matomo/device-detector": "^6.4",
-        "mews/captcha": "^3.2.6",
-        "orangehill/iseed": "^3.0.1",
-        "overtrue/pinyin": "^4.0",
-        "phpoffice/phppresentation": "^1.1",
-        "phpoffice/phpword": "^1.3",
-        "predis/predis": "^1.1.7",
+        "mews/captcha": "^3.5",
+        "orangehill/iseed": "^3.8",
+        "overtrue/pinyin": "^5.3",
+        "phpoffice/phppresentation": "^1.2",
+        "phpoffice/phpword": "^1.4",
+        "predis/predis": "^2.3",
         "smalot/pdfparser": "^2.11",
-        "symfony/mailer": "^6.0"
+        "symfony/console": "^7.4"
     },
     "require-dev": {
-        "barryvdh/laravel-ide-helper": "^v2.10.0",
-        "facade/ignition": "^2.10.2",
-        "fakerphp/faker": "^v1.14.1",
-        "hhxsv5/laravel-s": "^v3.7.19",
-        "kitloong/laravel-migrations-generator": "^4.4.2",
-        "laravel/sail": "^v1.8.1",
-        "mockery/mockery": "^1.4.3",
-        "nunomaduro/collision": "^v5.5.0",
-        "phpunit/phpunit": "^9.5.6"
+        "barryvdh/laravel-ide-helper": "^3.7",
+        "fakerphp/faker": "^1.24",
+        "hhxsv5/laravel-s": "~3.8.0",
+        "kitloong/laravel-migrations-generator": "^7.4",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.6",
+        "phpunit/phpunit": "^11.5"
     },
     "autoload": {
         "psr-4": {
@@ -95,7 +90,7 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "repositories": {
     }

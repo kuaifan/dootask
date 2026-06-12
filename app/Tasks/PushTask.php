@@ -116,6 +116,10 @@ class PushTask extends AbstractTask
         if (!Base::isTwoArray($lists)) {
             $lists = [$lists];
         }
+        // 非 Swoole 运行时（artisan/测试）无 swoole 绑定，无法推送，直接跳过（与 AbstractObserver 守卫一致）
+        if (!app()->bound('swoole')) {
+            return;
+        }
         $swoole = app('swoole');
         foreach ($lists AS $item) {
             if (!is_array($item) || empty($item)) {

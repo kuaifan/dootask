@@ -60,7 +60,7 @@ class LoopTask extends AbstractTask
                     }
                     // 新任务时间、周期
                     if ($task->start_at) {
-                        $diffSecond = Carbon::parse($task->start_at)->diffInSeconds(Carbon::parse($task->end_at), true);
+                        $diffSecond = (int)Carbon::parse($task->start_at)->diffInSeconds(Carbon::parse($task->end_at), true);
                         $task->start_at = Carbon::parse($task->loop_at);
                         $task->end_at = $task->start_at->clone()->addSeconds($diffSecond);
                     }

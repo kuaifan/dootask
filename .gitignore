@@ -65,3 +65,4 @@ README_LOCAL.md
 
 # playwright
 .playwright-mcp/
+/.phpunit.cache

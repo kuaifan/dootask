@@ -52,9 +52,18 @@ trait ManticoreSyncLock
     }
 
     /**
-     * 信号处理器（SIGINT/SIGTERM）
+     * 信号处理器（SIGINT/SIGTERM），签名须兼容 Symfony Console 的 Command::handleSignal
      */
-    public function handleSignal(int $signal): void
+    public function handleSignal(int $signal, int|false $previousExitCode = 0): int|false
+    {
+        $this->markShouldStop();
+        return false; // 继续执行，由批次循环优雅退出
+    }
+
+    /**
+     * 标记优雅退出（pcntl 回调第二参是 siginfo，不能直接复用 handleSignal）
+     */
+    private function markShouldStop(): void
     {
         $this->info("\n收到信号，将在当前批次完成后退出...");
         $this->shouldStop = true;
@@ -67,8 +76,8 @@ trait ManticoreSyncLock
     {
         if (extension_loaded('pcntl')) {
             pcntl_async_signals(true);
-            pcntl_signal(SIGINT, [$this, 'handleSignal']);
-            pcntl_signal(SIGTERM, [$this, 'handleSignal']);
+            pcntl_signal(SIGINT, fn () => $this->markShouldStop());
+            pcntl_signal(SIGTERM, fn () => $this->markShouldStop());
         }
     }
 
