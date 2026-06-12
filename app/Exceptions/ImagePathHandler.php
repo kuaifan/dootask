@@ -4,94 +4,18 @@ namespace App\Exceptions;
 
 use App\Module\Base;
 use App\Module\Image;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Throwable;
 
-class Handler extends ExceptionHandler
+/**
+ * 图片路径处理（原 Exceptions\Handler::ImagePathHandler，新结构下由 bootstrap/app.php
+ * 的 withExceptions 在 NotFoundHttpException 时调用）
+ */
+class ImagePathHandler
 {
     /**
-     * A list of the exception types that are not reported.
-     *
-     * @var array
+     * @param \Illuminate\Http\Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|null 命中返回图片响应，未命中返回 null（继续默认 404）
      */
-    protected $dontReport = [
-        //
-    ];
-
-    /**
-     * A list of the inputs that are never flashed for validation exceptions.
-     *
-     * @var array
-     */
-    protected $dontFlash = [
-        'current_password',
-        'password',
-        'password_confirmation',
-    ];
-
-    /**
-     * Register the exception handling callbacks for the application.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
-    }
-
-    /**
-     * 将异常转换为 HTTP 响应。
-     * @param $request
-     * @param Throwable $e
-     * @return array|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response|\Symfony\Component\HttpFoundation\Response
-     * @throws Throwable
-     */
-    public function render($request, Throwable $e)
-    {
-        if ($e instanceof NotFoundHttpException) {
-            if ($result = $this->ImagePathHandler($request)) {
-                return $result;
-            }
-        }
-        if ($e instanceof ApiException) {
-            return response()->json(Base::retError($e->getMessage(), $e->getData(), $e->getCode()));
-        } elseif ($e instanceof ModelNotFoundException) {
-            return response()->json(Base::retError('Interface error'));
-        }
-        return parent::render($request, $e);
-    }
-
-    /**
-     * 重写report优雅记录
-     * @param Throwable $e
-     * @throws Throwable
-     */
-    public function report(Throwable $e)
-    {
-        if ($e instanceof ApiException) {
-            if ($e->isWriteLog()) {
-                Log::error($e->getMessage(), [
-                    'code' => $e->getCode(),
-                    'data' => $e->getData(),
-                    'exception' => ' at ' . $e->getFile() . ':' . $e->getLine()
-                ]);
-            }
-        } else {
-            parent::report($e);
-        }
-    }
-
-    /**
-     * 图片路径处理
-     * @param $request
-     * @return \Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse|null
-     */
-    private function ImagePathHandler($request)
+    public static function render($request)
     {
         $path = $request->path();
 
