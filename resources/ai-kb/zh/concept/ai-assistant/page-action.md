@@ -8,7 +8,7 @@ locale: zh
 aliases:
   - AI 控制页面
   - AI 自动操作
-  - execute_action 是什么
+  - AI 怎么帮我操作页面
   - AI 跳转页面
   - 页面自动化
   - AI 点按钮
@@ -27,11 +27,11 @@ last_verified: v1.7.90
 # AI 操作页面的机制
 
 ## 定义
-AI 助手通过 `execute_action`（高层导航）和 `execute_element_action`（低层元素操作）两个 MCP 工具操作用户当前页面。后端通过 WebSocket 把指令推给前端，前端的 `action-executor.js` 执行真实 DOM 行为或路由跳转，结果回传给 AI 让对话继续。
+AI 助手通过高层导航和低层元素操作两类能力操作用户当前页面。主程序常驻 WebSocket（`/ws`）把指令派发给前端，前端的 `action-executor.js` 执行真实 DOM 行为或路由跳转，结果回传给 AI 让对话继续。这类页面操作不是 MCP 工具，由 AI 助手在你的页面上执行。
 
-## 两层接口
-- **高层 execute_action**：语义化命名（如 `open_task`、`navigate_to_dashboard`），参数明确（任务 ID），由前端封装好 router 调用；优先用这层，稳定不易错
-- **低层 execute_element_action**：基于元素 ref 的通用动作（click/type/select/focus/scroll/hover），用于没封装好的细节操作
+## 两层能力
+- **高层导航**：语义化命名（如 `open_task`、`navigate_to_dashboard`），参数明确（任务 ID），由前端封装好 router 调用；优先用这层，稳定不易错
+- **低层元素操作**：基于元素 ref 的通用动作（click/type/select/focus/scroll/hover），用于没封装好的细节操作
 
 ## 受支持的高层动作
 - `open_task`、`open_dialog`、`open_project`、`open_file`、`open_folder`

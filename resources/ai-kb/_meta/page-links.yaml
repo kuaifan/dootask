@@ -7,7 +7,7 @@
 #      （id → 路由）；两份的 id 集合必须一致
 #
 # 边界：本期仅收录"无需运行时 id 的纯导航目的地"（送到某页面/面板）。
-#   - 打开具体任务/对话/项目（需 task_id 等运行时 id）不在此，由 execute_action 承担
+#   - 打开具体任务/对话/项目（需 task_id 等运行时 id）不在此，由 AI 助手的页面操作承担
 #   - 项目内弹窗类（project_settings/member/flow 等需组件接线）二期再加
 
 version: 1

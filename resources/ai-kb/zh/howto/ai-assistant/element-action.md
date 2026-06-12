@@ -12,7 +12,7 @@ aliases:
   - AI 滚动页面
   - AI 自动填表
   - AI 点击 X
-related_tools: [execute_element_action]
+related_tools: []
 related_pages: []
 prerequisites:
   - 应用市场已安装 ai 插件
@@ -28,7 +28,7 @@ last_verified: v1.7.90
 # 让 AI 操作页面元素
 
 ## 这是什么
-让 AI 调 `execute_element_action` 工具直接操作当前页面的具体元素，包括点击按钮、输入文本、选下拉项、聚焦、滚动、悬停。常用于完成详细表单或触发某个隐藏在多级菜单里的功能。
+让 AI 助手在你当前页面上直接操作具体元素，包括点击按钮、输入文本、选下拉项、聚焦、滚动、悬停。常用于完成详细表单或触发某个隐藏在多级菜单里的功能。操作由 AI 助手在你的浏览器/桌面端页面上执行。
 
 ## 怎么问
 - "点击『保存』按钮"
@@ -38,9 +38,9 @@ last_verified: v1.7.90
 - "悬停在第一个项目卡片上"
 
 ## AI 的执行链路
-1. 先调 `get_page_context` 取当前页面元素清单
+1. 先采集当前页面的可交互元素清单
 2. 用 `match_elements` 接口按描述（"保存按钮"、"标题输入框"）找到目标 ref
-3. 调 `execute_element_action` 触发 click / type / select / focus / scroll / hover
+3. 在你的页面上触发 click / type / select / focus / scroll / hover
 
 ## 支持的动作
 | 动作 | 说明 |

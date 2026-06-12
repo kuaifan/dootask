@@ -136,6 +136,20 @@ class WebSocketService implements WebSocketHandlerInterface
                 }
                 Cache::put("User::encrypt:" . $frame->fd, Base::array2json($data), Carbon::now()->addDay());
                 return;
+
+            // AI 助手页面操作结果回包（由 assistant/operation/dispatch 派发，前端执行后回传）
+            case 'operationResult':
+                $requestId = trim($data['requestId'] ?? '');
+                if ($requestId !== '') {
+                    $row = WebSocket::whereFd($frame->fd)->first();
+                    Cache::put("ai_op_result:{$requestId}", [
+                        'userid' => $row?->userid ?: 0,
+                        'success' => !empty($data['success']),
+                        'result' => $data['result'] ?? null,
+                        'error' => $data['error'] ?? null,
+                    ], 60);
+                }
+                return;
         }
 
         // 返回消息

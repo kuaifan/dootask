@@ -6,13 +6,12 @@ feature: ai-assistant
 scope: end-user
 locale: zh
 aliases:
-  - get_page_context
   - AI 看页面
   - 页面上下文
   - AI 怎么知道当前页
   - AI 读取页面
   - AI 上下文采集
-related_tools: [get_page_context]
+related_tools: []
 related_pages: []
 prerequisites:
   - 应用市场已安装 ai 插件
@@ -27,7 +26,7 @@ last_verified: v1.7.90
 # AI 怎么知道你在哪个页面
 
 ## 定义
-AI 通过 MCP 工具 `get_page_context` 向当前用户的浏览器请求页面上下文，包括：当前路由名（如 `manage-project`）、URL、标题、可交互元素清单（带 ref / name / role）、该页可用的高层动作。结果由前端 `page-context-collector.js` 实时收集后回传。
+当你在 AI 浮窗里问"这页有什么操作""帮我点这页的某个按钮"时，AI 助手会向你当前的浏览器/桌面端页面请求页面上下文，包括：当前路由名（如 `manage-project`）、URL、标题、可交互元素清单（带 ref / name / role）、该页可用的高层动作。结果由前端 `page-context-collector.js` 实时收集后回传给 AI。
 
 ## 返回字段
 - `page_type`：路由名（如 `manage-task`）
@@ -43,7 +42,7 @@ AI 通过 MCP 工具 `get_page_context` 向当前用户的浏览器请求页面�
 - **搜索**：传 `query` 先关键词后向量匹配
 
 ## 隐式触发
-用户在浮窗里问"这个页面有什么操作"、"帮我点这页的某按钮"、"切到下一项目"时，AI 都会先调 `get_page_context` 再决定下一步。
+用户在浮窗里问"这个页面有什么操作"、"帮我点这页的某按钮"、"切到下一项目"时，AI 都会先采集当前页面上下文再决定下一步。
 
 ## 不支持
 - 不返回每个元素的位置坐标（仅 selector）

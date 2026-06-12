@@ -152,6 +152,7 @@ export default {
         window.addEventListener('resize', this.onResize);
         emitter.on('openAIAssistantGlobal', this.onClick);
         emitter.on('aiAssistantClosed', this.onAssistantClosed);
+        emitter.on('aiOperationRequest', this.onOperationRequest);
         this.initOperationModule();
     },
 
@@ -159,6 +160,7 @@ export default {
         window.removeEventListener('resize', this.onResize);
         emitter.off('openAIAssistantGlobal', this.onClick);
         emitter.off('aiAssistantClosed', this.onAssistantClosed);
+        emitter.off('aiOperationRequest', this.onOperationRequest);
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('mouseup', this.onMouseUp);
         document.removeEventListener('contextmenu', this.onContextMenu);
@@ -499,46 +501,57 @@ export default {
             if (this.operationModule) {
                 return;
             }
-
             this.operationModule = createOperationModule({
                 store: this.$store,
                 router: this.$router,
-                onSessionReady: (sessionId) => {
-                    this.operationSessionId = sessionId;
-                },
-                onSessionLost: () => {
-                    this.operationSessionId = null;
-                },
             });
         },
 
         /**
-         * 启用操作模块
+         * 启用操作模块（绑定当前 WebSocket 会话 fd 作为页面操作会话）
          */
         enableOperationModule() {
-            if (this.operationModule) {
-                this.operationModule.enable();
-            }
+            this.operationSessionId = $A.getSessionStorageString("userWsFd") || null;
         },
 
         /**
          * 禁用操作模块
          */
         disableOperationModule() {
-            if (this.operationModule) {
-                this.operationModule.disable();
-                this.operationSessionId = null;
-            }
+            this.operationSessionId = null;
         },
 
         /**
          * 销毁操作模块
          */
         destroyOperationModule() {
-            if (this.operationModule) {
-                this.operationModule.disable();
-                this.operationModule = null;
-                this.operationSessionId = null;
+            this.operationModule = null;
+            this.operationSessionId = null;
+        },
+
+        /**
+         * 收到后端派发的页面操作（type=operation），执行后经 /ws 回包
+         */
+        async onOperationRequest(data) {
+            const {requestId, action, payload} = data || {};
+            if (!requestId || !action) {
+                return;
+            }
+            if (!this.operationModule) {
+                this.initOperationModule();
+            }
+            try {
+                const result = await this.operationModule.handleRequest(action, payload);
+                this.$store.dispatch('websocketSend', {
+                    type: 'operationResult',
+                    data: {requestId, success: true, result},
+                }).catch(_ => {});
+            } catch (e) {
+                // catch 必须回发失败，让 doo 端快速失败而非干等超时
+                this.$store.dispatch('websocketSend', {
+                    type: 'operationResult',
+                    data: {requestId, success: false, error: e?.message || '操作执行失败'},
+                }).catch(_ => {});
             }
         },
     },

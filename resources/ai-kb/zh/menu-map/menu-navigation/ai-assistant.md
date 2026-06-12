@@ -11,7 +11,7 @@ aliases:
   - 智能助手入口
   - Claude 在哪
   - 怎么找 AI
-related_tools: [search_help_docs, get_page_context]
+related_tools: [search_help_docs]
 related_pages: []
 prerequisites:
   - 应用市场已安装 ai 插件

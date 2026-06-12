@@ -44,7 +44,7 @@ last_verified: v1.7.90
 - 入口：全局搜索框 → 选择「文件」标签
 - 索引由 Manticore 提供，仅文档类（document / txt / code / pdf 抽取出的文本）被索引
 - office 文件（doc/xls/ppt）已索引后可按内容关键词命中
-- 图片可走 OCR（extract_image_text 工具）后再搜索
+- 图片本身不参与内容索引；如需理解图中文字，可把图片交给 AI 助手直接识别（多模态）
 
 ## 不支持
 - 不支持模糊匹配 / 拼音搜索

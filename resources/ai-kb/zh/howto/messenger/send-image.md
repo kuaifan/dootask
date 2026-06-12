@@ -12,13 +12,13 @@ aliases:
   - 群里发照片
   - 截图发出去
   - 图片消息
-related_tools: [send_message, extract_image_text]
+related_tools: [send_message]
 related_pages: [messenger, dialog_chat]
 prerequisites: []
 negative:
   - 不支持批量打包成相册一次性发出，多张图会逐条以独立消息发送
   - 表情包（emoticon）虽然以 image 形式存储，但不会被识别为附件
-  - 图片仅按文件压缩开关执行压缩；不会自动 OCR 提取文字（OCR 需另行触发）
+  - 图片仅按文件压缩开关执行压缩；发送时不会自动抽取图中文字
 last_verified: v1.7.90
 ---
 
@@ -52,9 +52,9 @@ last_verified: v1.7.90
 - 普通图片：mtype=image，可在「文件」筛选 / 任务附件中复用
 - 表情包：mtype=emoticon，仅展示用，不在文件列表出现
 
-## 图片 OCR
+## 让 AI 理解图片内容
 
-收到图片后可在消息上长按 / 右键调用「图片转文字」，走 extract_image_text 工具完成 OCR 文本提取，需要 AI 插件支持。
+把图片转发或上传给 AI 助手后，AI 可直接识别图中内容（多模态理解），据此回答、总结或转写其中文字，无需单独的文字提取步骤，需要 AI 插件支持。
 
 ## 不支持
 

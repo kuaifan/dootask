@@ -12,7 +12,7 @@ aliases:
   - 让 AI 帮我开 X
   - AI 跳转
   - AI 帮我打开
-related_tools: [execute_action]
+related_tools: []
 related_pages: []
 prerequisites:
   - 应用市场已安装 ai 插件
@@ -28,7 +28,7 @@ last_verified: v1.7.90
 # 让 AI 帮我跳页面/打开任务
 
 ## 这是什么
-在 AI 浮窗用自然语言让 AI 把当前页跳转到任务详情、对话、项目、文件预览或功能页。AI 调 `execute_action` 工具，通过 WebSocket 让前端执行真实路由跳转。
+在 AI 浮窗用自然语言让 AI 把当前页跳转到任务详情、对话、项目、文件预览或功能页。AI 助手会在你当前的浏览器/桌面端页面上执行真实路由跳转。
 
 ## 怎么问
 - "打开任务 1234"
@@ -55,7 +55,7 @@ last_verified: v1.7.90
 
 - "把它标完成" → 调 `complete_task`
 - "看下讨论" → 调 `get_message_list`
-- "拉到底部" → 调 `execute_element_action` 滚动
+- "拉到底部" → AI 在你的页面上滚动到底部
 
 ## 不支持
 - 不能跳到外部网址（如 google.com）

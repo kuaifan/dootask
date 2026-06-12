@@ -4776,6 +4776,11 @@ export default {
                     dispatch("streamMsgSubscribe", msgDetail.stream_url);
                     break
 
+                case "operation":
+                    // AI 助手页面操作派发（assistant/operation/dispatch）：交给浮窗组件执行后回包
+                    emitter.emit('aiOperationRequest', msgDetail.data);
+                    break
+
                 default:
                     msgId && dispatch("websocketSend", {type: 'receipt', msgId}).catch(_ => {});
                     emitter.emit('websocketMsg', msgDetail);

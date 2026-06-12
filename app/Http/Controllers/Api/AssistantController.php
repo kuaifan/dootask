@@ -6,9 +6,13 @@ use App\Models\AiAssistantFeedback;
 use App\Models\AiAssistantSearchLog;
 use App\Models\AiAssistantSession;
 use App\Models\User;
+use App\Models\WebSocket;
 use App\Module\AI;
 use App\Module\Apps;
 use App\Module\Base;
+use App\Tasks\PushTask;
+use Cache;
+use Illuminate\Support\Str;
 use Request;
 
 /**
@@ -297,6 +301,106 @@ class AssistantController extends AbstractController
 
         return Base::retSuccess('success', [
             'feedback' => $feedback,
+        ]);
+    }
+
+    /**
+     * @api {post} api/assistant/operation/dispatch 派发页面操作
+     *
+     * @apiDescription 需要token身份。通过用户常驻 WebSocket（/ws）向其浏览器派发一次页面操作（获取页面上下文 / 执行动作 / 操作元素），由前端 AI 助手执行后经 operationResult 回传，结果写入缓存供 operation/result 轮询取走。复用主程序 /ws，无需为页面操作另开 WebSocket。
+     * @apiVersion 1.0.0
+     * @apiGroup assistant
+     * @apiName operation__dispatch
+     *
+     * @apiParam {Number} fd        目标会话 fd（须为当前用户在线的 WebSocket 连接）
+     * @apiParam {String} action    操作类型，如 get_page_context|execute_action|execute_element_action
+     * @apiParam {Object} [payload] 操作参数
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {String} data.requestId 本次操作的请求ID，用于轮询 operation/result
+     */
+    public function operation__dispatch()
+    {
+        $user = User::auth();
+
+        $fd = intval(Base::headerOrInput('fd'));
+        $action = trim(Request::input('action', ''));
+        $payload = Request::input('payload', []);
+
+        if ($fd <= 0 || $action === '') {
+            return Base::retError('参数错误');
+        }
+        if (!is_array($payload)) {
+            $payload = [];
+        }
+
+        // fd 归属校验：在表即在线，归属即本人
+        $ownerId = WebSocket::whereFd($fd)->value('userid');
+        if (intval($ownerId) !== intval($user->userid)) {
+            return Base::retError('会话不存在或无权限');
+        }
+
+        $requestId = Str::random(24);
+
+        // 精确推送到该 fd，不补发离线消息
+        PushTask::push([
+            'fd' => $fd,
+            'msg' => [
+                'type' => 'operation',
+                'data' => [
+                    'requestId' => $requestId,
+                    'action' => $action,
+                    'payload' => $payload,
+                ],
+            ],
+        ], false);
+
+        return Base::retSuccess('success', [
+            'requestId' => $requestId,
+        ]);
+    }
+
+    /**
+     * @api {get} api/assistant/operation/result 取页面操作结果
+     *
+     * @apiDescription 需要token身份。轮询取走 operation/dispatch 派发的一次页面操作结果（取走即删）；未回传时返回 status=pending。
+     * @apiVersion 1.0.0
+     * @apiGroup assistant
+     * @apiName operation__result
+     *
+     * @apiParam {String} request_id 操作请求ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {String} data.status ready|pending
+     */
+    public function operation__result()
+    {
+        $user = User::auth();
+
+        $requestId = trim(Base::headerOrInput('request_id'));
+        if ($requestId === '') {
+            return Base::retError('参数错误');
+        }
+
+        $row = Cache::get("ai_op_result:{$requestId}");
+        if (!is_array($row)) {
+            return Base::retSuccess('success', ['status' => 'pending']);
+        }
+        // 命中后校验归属再取走，避免越权读取他人结果
+        if (intval($row['userid']) !== intval($user->userid)) {
+            return Base::retError('无权限');
+        }
+        Cache::forget("ai_op_result:{$requestId}");
+
+        return Base::retSuccess('success', [
+            'status' => 'ready',
+            'success' => !empty($row['success']),
+            'result' => $row['result'] ?? null,
+            'error' => $row['error'] ?? null,
         ]);
     }
 

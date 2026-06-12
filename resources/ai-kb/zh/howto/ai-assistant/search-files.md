@@ -41,7 +41,7 @@ last_verified: v1.7.90
 - 提问含"包含…"、"提到…"、"关于…"时按内容关键词匹配（需后端文件内容索引可用）
 
 ## 找到文件能继续做什么
-- "打开第一个" → 调 `execute_action` 跳文件预览
+- "打开第一个" → AI 在你的页面上跳到文件预览
 - "下载它" → AI 会给下载链接（无法直接触发浏览器下载）
 - "把摘要发我" → 调 `fetch_file_content` 取文本，再让模型总结
 
@@ -52,5 +52,4 @@ last_verified: v1.7.90
 
 ## 相关
 - 取文件文字内容：`fetch_file_content`（暂未单独 chunk）
-- 图片 OCR：`extract_image_text`（暂未单独 chunk）
 - 跨类型语义搜索：[[ai-assistant.intelligent-search.howto]]

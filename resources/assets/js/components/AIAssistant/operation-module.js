@@ -1,11 +1,12 @@
 /**
  * AI 助手前端操作模块
  *
- * 集成 WebSocket 客户端、页面上下文收集器和操作执行器，
- * 提供给 AI 助手组件使用。
+ * 集成页面上下文收集器和操作执行器，供 AI 助手组件执行页面操作。
+ * 传输层已并入主程序常驻 WebSocket（/ws）：后端经 assistant/operation/dispatch
+ * 推送 type=operation 消息，浮窗组件收到后调用本模块 handleRequest 执行并回包，
+ * 不再单独连接 MCP 的 operation WebSocket。
  */
 
-import { OperationClient } from './operation-client';
 import { collectPageContext, searchByVector } from './page-context-collector';
 import { createActionExecutor } from './action-executor';
 
@@ -24,76 +25,23 @@ class OperationModule {
     constructor(options) {
         this.store = options.store;
         this.router = options.router;
-        this.enabled = false;
-        this.client = null;
         this.executor = null;
-        this.sessionId = null;
-
-        // 回调函数
-        this.onSessionReady = options.onSessionReady;
-        this.onSessionLost = options.onSessionLost;
-        this.onError = options.onError;
     }
 
     /**
-     * 启用操作模块
+     * 确保操作执行器已创建（惰性初始化）
      */
-    enable() {
-        if (this.enabled) {
-            return;
+    ensureExecutor() {
+        if (!this.executor) {
+            this.executor = createActionExecutor(this.store, this.router);
         }
-
-        this.enabled = true;
-
-        // 创建操作执行器
-        this.executor = createActionExecutor(this.store, this.router);
-
-        // 创建 WebSocket 客户端
-        this.client = new OperationClient({
-            getToken: () => this.store.state.userToken,
-            onRequest: this.handleRequest.bind(this),
-            onConnected: this.handleConnected.bind(this),
-            onDisconnected: this.handleDisconnected.bind(this),
-            onError: this.handleError.bind(this),
-        });
-
-        // 建立连接
-        this.client.connect();
-
-        // 设置心跳
-        this.heartbeatTimer = setInterval(() => {
-            if (this.client) {
-                this.client.ping();
-            }
-        }, 30000);
+        return this.executor;
     }
 
     /**
-     * 禁用操作模块
-     */
-    disable() {
-        if (!this.enabled) {
-            return;
-        }
-
-        this.enabled = false;
-
-        if (this.heartbeatTimer) {
-            clearInterval(this.heartbeatTimer);
-            this.heartbeatTimer = null;
-        }
-
-        if (this.client) {
-            this.client.disconnect();
-            this.client = null;
-        }
-
-        this.executor = null;
-        this.sessionId = null;
-    }
-
-    /**
-     * 处理来自 MCP 的请求
+     * 处理一次页面操作请求
+     * @param {string} action 操作类型
+     * @param {Object} payload 操作参数
      */
     async handleRequest(action, payload) {
         switch (action) {
@@ -115,6 +63,8 @@ class OperationModule {
      * 获取页面上下文
      */
     async getPageContext(payload) {
+        this.ensureExecutor();
+
         const includeElements = payload?.include_elements !== false;
         const interactiveOnly = payload?.interactive_only || false;
         const maxElements = payload?.max_elements || 100;
@@ -176,9 +126,7 @@ class OperationModule {
      * 执行业务操作
      */
     async executeAction(payload) {
-        if (!this.executor) {
-            throw new Error('操作执行器未初始化');
-        }
+        this.ensureExecutor();
 
         const actionName = payload?.name;
         const params = payload?.params || {};
@@ -194,9 +142,7 @@ class OperationModule {
      * 执行元素操作
      */
     async executeElementAction(payload) {
-        if (!this.executor) {
-            throw new Error('操作执行器未初始化');
-        }
+        this.ensureExecutor();
 
         const elementUid = payload?.element_uid;
         const action = payload?.action;
@@ -207,52 +153,6 @@ class OperationModule {
         }
 
         return this.executor.executeElementAction(elementUid, action, value);
-    }
-
-    /**
-     * 处理连接成功
-     */
-    handleConnected(sessionId) {
-        this.sessionId = sessionId;
-        this.onSessionReady?.(sessionId);
-    }
-
-    /**
-     * 处理连接断开
-     */
-    handleDisconnected() {
-        this.sessionId = null;
-        this.onSessionLost?.();
-    }
-
-    /**
-     * 处理错误
-     */
-    handleError(error) {
-        this.onError?.(error);
-    }
-
-    /**
-     * 获取当前 session ID
-     */
-    getSessionId() {
-        return this.sessionId;
-    }
-
-    /**
-     * 检查是否已连接
-     */
-    isConnected() {
-        return this.client?.isConnected() || false;
-    }
-
-    /**
-     * 重新连接
-     */
-    reconnect() {
-        if (this.client) {
-            this.client.connect();
-        }
     }
 }
 

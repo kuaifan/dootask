@@ -47,7 +47,6 @@ last_verified: v1.7.90
 
 ## 文件
 - `list_files`、`search_files`、`get_file_detail`、`fetch_file_content`
-- `extract_image_text`：图片 OCR
 
 ## 工作报告
 - `list_received_reports`、`list_my_reports`、`get_report_detail`、`create_report`、`mark_reports_read`
@@ -56,10 +55,11 @@ last_verified: v1.7.90
 ## 搜索
 - `intelligent_search`：跨任务/项目/文件/联系人/消息统一语义搜索
 
-## 页面自动化
-- `get_page_context`：取当前页面结构与可交互元素
-- `execute_action`：打开任务/项目/对话或跳功能页
-- `execute_element_action`：点击/输入/选择/聚焦/滚动/悬停
+## 页面操作（非 MCP 工具）
+AI 助手还能在你当前的浏览器/桌面端页面上帮你打开任务/项目/对话、跳功能页、点击/输入/选择/滚动页面元素。这类页面操作不在 MCP 工具清单内，由 AI 助手在你的页面上直接执行。
+
+## 图片理解（非 MCP 工具）
+把图片交给 AI 助手后，AI 可直接识别图中内容（多模态），无需单独的图片文字提取工具。
 
 ## 知识库
 - `search_help_docs`：检索本知识库（DooTask 功能说明）

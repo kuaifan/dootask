@@ -5,11 +5,15 @@
 #   2. ingest 期把 related_tools 写入 chunk metadata，retriever 可联动工具
 #   3. 让 AI 在调 search_help_docs 时同时知道"还能调哪个工具直接操作"
 #
-# 工具清单来自 dootask-plugins/mcp/server/src/dootaskMcpServer.ts（33 个 MCP 工具）
+# 工具清单来自 dootask-plugins/mcp/server/src/dootaskMcpServer.ts（29 个 MCP 工具）
 # 加 helper/tools.py 中的内置工具（GetSessionImageTool 等）
+#
+# 注：页面操作（打开任务/页面跳转/操作元素）已从 MCP 迁出，改由主程序常驻
+# WebSocket（/ws）派发、doo CLI（doo page）触发，不再是 MCP 工具；图片文字提取
+# （OCR）已下线，改由多模态模型直接理解图片。
 
 version: 1
-last_updated: 2026-06-10
+last_updated: 2026-06-12
 
 tools:
 
@@ -159,32 +163,18 @@ tools:
     related_features: [report]
     typical_chunk_types: [howto]
 
-  # ===== 搜索 / 内容提取 =====
+  # ===== 搜索 =====
   intelligent_search:
     description: 统一搜索（任务/项目/文件/联系人/消息），支持语义搜索
     related_features: [search]
     typical_chunk_types: [howto, concept]
 
-  extract_image_text:
-    description: 图片文字提取（OCR），支持中英文
-    related_features: [file]
-    typical_chunk_types: [howto]
+  # 注：图片文字提取（OCR / 原 extract_image_text）已下线，改由多模态模型直接理解图片，
+  # 不再是 MCP 工具。
 
-  # ===== 页面操作 (UI 自动化, WebSocket) =====
-  get_page_context:
-    description: 获取当前页面上下文（页面类型/可交互元素/可用操作）
-    related_features: [ai-assistant]
-    typical_chunk_types: [concept]
-
-  execute_action:
-    description: 在用户页面执行操作（打开任务/对话/切换项目/页面跳转）
-    related_features: [ai-assistant]
-    typical_chunk_types: [howto]
-
-  execute_element_action:
-    description: 操作页面元素（点击/输入/选择/聚焦/滚动/悬停）
-    related_features: [ai-assistant]
-    typical_chunk_types: [howto]
+  # 注：页面操作（原 get_page_context / execute_action / execute_element_action）已从 MCP
+  # 迁出，改由主程序常驻 WebSocket（/ws）派发、doo CLI（doo page context|action|element）触发，
+  # 不再是 MCP 工具。
 
   # 注：原 show_guide（driver.js 分步引导）已下线，改为 AI 回复内联深链
   # [显示文字](dootask://link/<id>)，目录见 _meta/page-links.yaml（前端渲染，非 MCP 工具）

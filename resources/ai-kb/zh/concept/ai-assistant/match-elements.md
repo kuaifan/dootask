@@ -26,13 +26,13 @@ last_verified: v1.7.90
 # AI 怎么找到页面元素
 
 ## 定义
-当 AI 想操作页面元素（点按钮、填表）时，先调 `get_page_context` 拿到候选元素列表（每条含 ref / name / role），再通过后端 API `POST api/assistant/match-elements` 把"用户意图描述"和"候选列表"提交给 embedding 服务，返回按余弦相似度排序的命中元素。
+当 AI 想操作页面元素（点按钮、填表）时，先采集当前页面上下文拿到候选元素列表（每条含 ref / name / role），再通过后端 API `POST api/assistant/match-elements` 把"用户意图描述"和"候选列表"提交给 embedding 服务，返回按余弦相似度排序的命中元素。
 
 ## 工作流
 1. **采集**：前端按 ARIA 角色扫描，给每个可交互元素分配 ref（e1, e2...）和 name
 2. **关键词过滤**：先用 query 做子串匹配
 3. **向量匹配**：关键词没命中时对 query 和元素 name 求 embedding，取相似度 top-K（默认 10，最多 50）
-4. **执行**：模型拿匹配元素的 ref 调 `execute_element_action`
+4. **执行**：模型拿匹配元素的 ref，让 AI 助手在你的页面上操作该元素
 
 ## 元素信息字段
 - `ref`：本轮唯一标识（e1, e2...）
@@ -46,7 +46,7 @@ last_verified: v1.7.90
 - 隐藏元素：默认不采集
 
 ## 不支持
-- 不支持图像 OCR 识图（仅基于文本）
+- 元素匹配仅基于元素文本，不靠图像识别
 - 不支持「按位置」找元素（"左上角第三个"）
 - 不能跨 iframe 匹配
 
