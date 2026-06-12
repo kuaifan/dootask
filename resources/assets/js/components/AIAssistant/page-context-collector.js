@@ -302,6 +302,13 @@ export function collectElements(options = {}) {
         'tr[onclick]',
     ];
 
+    // 基于 INTERACTIVE_ROLES 补全所有 ARIA 可交互角色（与上面重复的选择器会被 querySelectorAll 按元素自动去重）
+    for (const role of INTERACTIVE_ROLES) {
+        selectors.push(`[role="${role}"]`);
+    }
+    // 可聚焦 / 自定义可交互元素（显式 tabindex 且非 -1）
+    selectors.push('[tabindex]:not([tabindex="-1"])');
+
     // 如果不仅限交互元素，添加内容元素选择器
     if (!interactiveOnly) {
         selectors.push(
@@ -338,6 +345,9 @@ export function collectElements(options = {}) {
 
     for (const el of potentialClickables) {
         if (processedElements.has(el)) continue;
+
+        // label[for] 或包裹表单控件的 label：点击等价于其控件（已单独采集），跳过避免重复
+        if (el.tagName === 'LABEL' && (el.htmlFor || el.querySelector('input, textarea, select'))) continue;
 
         // 检查是否有 cursor: pointer 样式
         const computedStyle = (el.ownerDocument.defaultView || window).getComputedStyle(el);
