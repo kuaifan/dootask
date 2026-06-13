@@ -21,7 +21,7 @@
     "resources/assets/js/**/*",
     "resources/assets/**/*.vue",
     "resources/assets/sass/**/*",
-    "types/**/*.d.ts"
+    "types/**/*"
   ],
   "exclude": [
     "node_modules",

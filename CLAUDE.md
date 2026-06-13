@@ -1,6 +1,6 @@
 ## 项目概述
 
-Laravel 8 (LaravelS/Swoole) + Vue 2 (Vite) + Electron。开源任务/项目管理系统。
+Laravel 13 (LaravelS/Swoole, PHP 8.4) + Vue 2 (Vite) + Electron。开源任务/项目管理系统。
 
 ## 开发命令
 
@@ -17,11 +17,31 @@ Laravel 8 (LaravelS/Swoole) + Vue 2 (Vite) + Electron。开源任务/项目管�
 
 前端代码改动只做 Edit/Write，不要为了"验证"启动 dev server。用户明确说"跑一下 / 出包"时除外。
 
+### 质量门禁（改完代码必须自查，CI 同步在跑，见 .github/workflows/tests.yml）
+
+- `./cmd composer stan` — phpstan（level 1 + baseline，存量已封存，新增错误必须清零）
+- `npm run lint` — ESLint（error 必须为 0；warn 是存量遗留，见 eslint.config.mjs 注释）
+- `npm run check:lang` — 校验前端 `$L()` 字面量是否已登记到 `language/original-web.txt`
+- 改动控制器 public 方法或路由后跑 `./cmd artisan doc:api-map` 重新生成对照表
+
+## 代码检索地图（先查表，再 grep）
+
+- API URL ↔ 控制器方法对照：`routes/api-map.md`（生成式文件，勿手改）
+- 前端事件总线（mitt）收发对照：`docs/events-map.md`（`npm run events:map` 重新生成）
+- `$A` / `$L` 全局工具类型声明：`types/dootask-globals.d.ts`（新增 `$A` 方法须同步此文件）
+
+## 架构增量规则（只约束新增代码，存量"动到哪迁到哪"）
+
+- **巨型文件冻结**：不再往 `ProjectController`、`UsersController`、`DialogController`、`app/Module/Base.php`、`resources/assets/js/store/actions.js` 新增方法/函数；新功能领域开新控制器或新模块文件（动态路由天然支持多控制器）
+- **业务编排归层**：跨模型的业务流程写在 `app/Module/`（或 `app/Services/`），模型只保留数据访问与自身状态变更；Swoole Task 只做投递与调用，不直接编排业务
+- **配置读取**：业务代码禁止直接 `env()`，统一走 `config()`（项目自有配置集中在 `config/dootask.php`）
+
 ## Gotchas
 
 ### LaravelS/Swoole
 
 - **避免在静态属性、单例、全局变量中存储请求级状态**——请求间共享进程，会导致数据串联和内存泄漏
+  - 要存请求级状态，用 `RequestContext::save('key', $value)` / `RequestContext::get('key')`（参考 `User::authInfo()` 的用法，见 `app/Services/RequestContext.php`）
 - 构造函数、服务提供者、`boot()` 方法不会在每个请求重新执行
 - 配置/路由变更需要 `./cmd php restart` 或容器重启才能生效
 - 长生命周期逻辑（WebSocket、定时器）应复用现有模式，避免阻塞协程/事件循环

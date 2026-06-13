@@ -1,0 +1,12 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 1
+    paths:
+        - app
+    excludePaths:
+        - app/Http/Controllers/Api/apidoc.php
+    # 允许单文件分析(.claude hooks 用),baseline 中未命中的忽略项不报错
+    reportUnmatchedIgnoredErrors: false

@@ -46,6 +46,7 @@
         "fakerphp/faker": "^1.24",
         "hhxsv5/laravel-s": "~3.8.0",
         "kitloong/laravel-migrations-generator": "^7.4",
+        "larastan/larastan": "^3.10",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "phpunit/phpunit": "^11.5"
@@ -75,7 +76,9 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
-        ]
+        ],
+        "stan": "phpstan analyse --no-progress --memory-limit=-1",
+        "stan-baseline": "phpstan analyse --generate-baseline --memory-limit=-1"
     },
     "extra": {
         "laravel": {

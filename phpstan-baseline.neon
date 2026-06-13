@@ -1,0 +1,349 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Variable \$rules in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Exceptions/ImagePathHandler.php
+
+		-
+			message: '#^Anonymous function has an unused use \$user\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Http/Controllers/Api/ApproveController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Controllers/Api/ApproveController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 2
+			path: app/Http/Controllers/Api/DialogController.php
+
+		-
+			message: '#^Variable \$dialog in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Http/Controllers/Api/DialogController.php
+
+		-
+			message: '#^Variable \$user might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Http/Controllers/Api/DialogController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Controllers/Api/FileController.php
+
+		-
+			message: '#^Anonymous function has an unused use \$user\.$#'
+			identifier: closure.unusedUse
+			count: 2
+			path: app/Http/Controllers/Api/ProjectController.php
+
+		-
+			message: '#^Variable \$column in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Http/Controllers/Api/ProjectController.php
+
+		-
+			message: '#^Relation ''sendUser'' is not found in App\\Models\\Report model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Api/ReportController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 14
+			path: app/Http/Controllers/Api/SystemController.php
+
+		-
+			message: '#^Anonymous function has an unused use \$keys\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Http/Controllers/Api/UsersController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Controllers/Api/UsersController.php
+
+		-
+			message: '#^Variable \$basic in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Http/Controllers/Api/UsersController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Controllers/IndexController.php
+
+		-
+			message: '#^Access to an undefined property App\\Ldap\\LdapUser\:\:\$displayName\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Ldap/LdapUser.php
+
+		-
+			message: '#^Access to an undefined property App\\Ldap\\LdapUser\:\:\$jpegPhoto\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Ldap/LdapUser.php
+
+		-
+			message: '#^Access to an undefined property App\\Ldap\\LdapUser\:\:\$uid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Ldap/LdapUser.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Ldap/LdapUser.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 3
+			path: app/Models/AbstractModel.php
+
+		-
+			message: '#^Variable \$arr in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Models/File.php
+
+		-
+			message: '#^Variable \$dirRow in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Models/File.php
+
+		-
+			message: '#^Variable \$filePath might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: app/Models/File.php
+
+		-
+			message: '#^Variable \$filePath in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.variable
+			count: 1
+			path: app/Models/FileContent.php
+
+		-
+			message: '#^Deprecated in PHP 8\.4\: Parameter \#3 \$task \(App\\Models\\ProjectTask\) is implicitly nullable via default value null\.$#'
+			identifier: parameter.implicitlyNullable
+			count: 1
+			path: app/Models/ProjectPermission.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ProjectTask\:\:\$owner\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/ProjectTask.php
+
+		-
+			message: '#^Class App\\Models\\ProjectFlowItem referenced with incorrect case\: App\\Models\\projectFlowItem\.$#'
+			identifier: class.nameCase
+			count: 1
+			path: app/Models/ProjectTask.php
+
+		-
+			message: '#^Variable \$receivers in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Models/ProjectTask.php
+
+		-
+			message: '#^Deprecated in PHP 8\.4\: Parameter \#3 \$time \(Carbon\\Carbon\) is implicitly nullable via default value null\.$#'
+			identifier: parameter.implicitlyNullable
+			count: 1
+			path: app/Models/Report.php
+
+		-
+			message: '#^Property ''receives'' does not exist in model\.$#'
+			identifier: rules.modelAppends
+			count: 1
+			path: app/Models/Report.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Models/Setting.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 2
+			path: app/Models/User.php
+
+		-
+			message: '#^Anonymous function has an unused use \$originalUserid\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Models/UserDepartment.php
+
+		-
+			message: '#^Anonymous function has an unused use \$token\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Models/UserDevice.php
+
+		-
+			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$token \(App\\Models\\UserDevice\|string\|int\) is implicitly nullable via default value null\.$#'
+			identifier: parameter.implicitlyNullable
+			count: 1
+			path: app/Models/UserDevice.php
+
+		-
+			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$token \(string\) is implicitly nullable via default value null\.$#'
+			identifier: parameter.implicitlyNullable
+			count: 1
+			path: app/Models/UserDevice.php
+
+		-
+			message: '#^Variable \$emailVerify in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Models/UserEmailVerification.php
+
+		-
+			message: '#^Relation ''task'' is not found in App\\Models\\UserTaskBrowse model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Models/UserTaskBrowse.php
+
+		-
+			message: '#^Anonymous function has an unused use \$reserves\.$#'
+			identifier: closure.unusedUse
+			count: 2
+			path: app/Models/WebSocketDialogMsg.php
+
+		-
+			message: '#^Variable \$embedding in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Module/AI.php
+
+		-
+			message: '#^Variable \$headers on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Module/AI.php
+
+		-
+			message: '#^Variable \$post on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Module/AI.php
+
+		-
+			message: '#^Call to static method parseFile\(\) on an unknown class Symfony\\Component\\Yaml\\Yaml\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Module/Apps.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Module/Apps.php
+
+		-
+			message: '#^Variable \$deptIds in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Module/Apps.php
+
+		-
+			message: '#^Variable \$file on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Module/Base.php
+
+		-
+			message: '#^Variable \$url in empty\(\) always exists and is always falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Module/Base.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Module/Doo.php
+
+		-
+			message: '#^Static method Redis\:\:eval\(\) invoked with 4 parameters, 1\-3 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Module/Lock.php
+
+		-
+			message: '#^Static method Redis\:\:set\(\) invoked with 5 parameters, 2\-3 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: app/Module/Lock.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 2
+			path: app/Module/Manticore/ManticoreBase.php
+
+		-
+			message: '#^Variable \$idsToUpdate in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Module/Manticore/ManticoreBase.php
+
+		-
+			message: '#^Variable \$h might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: app/Module/RandomColor.php
+
+		-
+			message: '#^Variable \$s might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: app/Module/RandomColor.php
+
+		-
+			message: '#^Variable \$v might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: app/Module/RandomColor.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Module/Table/AbstractData.php
+
+		-
+			message: '#^Variable \$strArr in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Module/Timer.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 2
+			path: app/Tasks/DeleteTmpTask.php

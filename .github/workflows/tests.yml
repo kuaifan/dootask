@@ -1,0 +1,81 @@
+name: Tests
+
+on:
+  push:
+    branches: [pro, master]
+  pull_request:
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, gd, xml, zip, swoole, redis
+          tools: composer:v2
+
+      - name: Install Composer Dependencies
+        run: composer install --prefer-dist --no-interaction
+
+      - name: PHPStan
+        run: composer stan
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install NPM Dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: ESLint
+        run: npm run lint
+
+      # 存量缺失文案 93 条(见 scripts/check-language.mjs 输出),清零后移除 continue-on-error 改为强制
+      - name: Language Check
+        run: npm run check:lang
+        continue-on-error: true
+
+  phpunit:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.7.3
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: dootask
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ptest"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 用项目自身的 PHP 镜像跑测试(内含 /usr/lib/doo/doo.so FFI 库,裸 runner 无法运行)
+      - name: Run PHPUnit in DooTask PHP image
+        run: |
+          docker run --rm --network host -v "$GITHUB_WORKSPACE":/var/www -w /var/www \
+            kuaifan/php:swoole-8.4 sh -c '
+              composer install --prefer-dist --no-interaction &&
+              cp .env.example .env &&
+              sed -i "s/^DB_HOST=.*/DB_HOST=127.0.0.1/" .env &&
+              sed -i "s/^DB_DATABASE=.*/DB_DATABASE=dootask/" .env &&
+              sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=test/" .env &&
+              sed -i "s/^REDIS_HOST=.*/REDIS_HOST=127.0.0.1/" .env &&
+              php artisan key:generate &&
+              php artisan migrate --seed --force &&
+              php vendor/bin/phpunit
+            '
