@@ -68,6 +68,10 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Project withoutTrashed()
+ * @property-read array $deputy_userids
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereAiAutoAnalyze($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereDepartmentOwnerView($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Project whereTaskTemplateShare($value)
  * @mixin \Eloquent
  */
 class Project extends AbstractModel

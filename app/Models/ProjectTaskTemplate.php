@@ -38,6 +38,8 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTemplate whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTemplate whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTemplate whereUserid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskTemplate whereLastUsedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskTemplate whereUseCount($value)
  * @mixin \Eloquent
  */
 class ProjectTaskTemplate extends AbstractModel

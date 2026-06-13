@@ -18,6 +18,28 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $executed_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\ProjectTask|null $task
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent getKeyValue()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent remove()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereError($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereEventType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereExecutedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereMsgId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereResult($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereRetryCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereTaskId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProjectTaskAiEvent whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class ProjectTaskAiEvent extends AbstractModel
 {

@@ -14,6 +14,25 @@ namespace App\Models;
  * @property \Carbon\Carbon|null $last_retry_at 最后重试时间
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure getKeyValue()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure remove()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure whereAction($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure whereDataId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure whereDataType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure whereErrorMessage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure whereLastRetryAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure whereRetryCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ManticoreSyncFailure whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class ManticoreSyncFailure extends AbstractModel
 {

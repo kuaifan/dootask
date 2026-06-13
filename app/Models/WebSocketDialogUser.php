@@ -43,6 +43,8 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereTopAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereUserid($value)
+ * @property int $role 0=普通成员 1=群主 2=群管理员
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebSocketDialogUser whereRole($value)
  * @mixin \Eloquent
  */
 class WebSocketDialogUser extends AbstractModel

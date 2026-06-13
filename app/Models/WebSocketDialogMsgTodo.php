@@ -27,6 +27,10 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgTodo whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgTodo whereMsgId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgTodo whereUserid($value)
+ * @property \Illuminate\Support\Carbon|null $remind_at 提醒时间
+ * @property \Illuminate\Support\Carbon|null $reminded_at 已提醒时间
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebSocketDialogMsgTodo whereRemindAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|WebSocketDialogMsgTodo whereRemindedAt($value)
  * @mixin \Eloquent
  */
 class WebSocketDialogMsgTodo extends AbstractModel

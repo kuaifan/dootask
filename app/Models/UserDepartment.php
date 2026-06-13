@@ -33,6 +33,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|UserDepartment whereOwnerUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserDepartment whereParentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserDepartment whereUpdatedAt($value)
+ * @property-read array $deputy_userids
  * @mixin \Eloquent
  */
 class UserDepartment extends AbstractModel

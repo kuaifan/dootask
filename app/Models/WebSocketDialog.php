@@ -56,6 +56,7 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog withoutTrashed()
+ * @property-read array $deputy_ids
  * @mixin \Eloquent
  */
 class WebSocketDialog extends AbstractModel
