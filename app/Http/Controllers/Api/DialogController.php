@@ -2125,6 +2125,9 @@ class DialogController extends AbstractController
         $msg_id = intval(Request::input("msg_id"));
         $force = intval(Request::input("force"));
         $language = Base::inputOrHeader('language');
+        if (empty($language)) {
+            return Base::retError("参数错误");
+        }
         $targetLanguage = Doo::getLanguages($language);
         //
         if (empty($targetLanguage)) {

@@ -851,7 +851,7 @@ class Base
         // 优先用当前请求的协议+主机：getScheme() 会经 TrustProxies 采信 X-Forwarded-Proto，
         // 从而正确识别 https；host 取自 Host 头（不信 X-Forwarded-Host，避免 Host 注入）
         $request = request();
-        if ($request && $request->getHttpHost()) {
+        if ($request instanceof \Illuminate\Http\Request && $request->getHttpHost()) {
             return $request->getSchemeAndHttpHost();
         }
         // 非请求上下文（Task/命令行等）的兜底

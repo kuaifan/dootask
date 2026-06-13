@@ -987,7 +987,7 @@ class ApproveController extends AbstractController
         return Base::retSuccess('success');
     }
 
-    function getStateDescription($state)
+    protected function getStateDescription($state)
     {
         $state_map = array(
             0 => '全部',
@@ -1021,7 +1021,7 @@ class ApproveController extends AbstractController
     }
 
     // 处理参与人返回数据
-    public function handleParticipant($process, $participant)
+    protected function handleParticipant($process, $participant)
     {
         // 如果空
         if (empty($participant)) {
@@ -1059,7 +1059,7 @@ class ApproveController extends AbstractController
     }
 
     // 审批机器人消息
-    public function approveMsg($type, $dialog, $botUser, $toUser, $process, $action = null)
+    protected function approveMsg($type, $dialog, $botUser, $toUser, $process, $action = null)
     {
         $data = [
             'id' => $process['id'],
@@ -1139,7 +1139,7 @@ class ApproveController extends AbstractController
     }
 
     // 根据ID获取流程
-    public function getProcessById($id)
+    protected function getProcessById($id)
     {
         $data['id'] = intval($id);
         $ret = Ihttp::ihttp_get($this->flow_url . "/api/v1/workflow/process/findById?" . http_build_query($data));
@@ -1191,7 +1191,7 @@ class ApproveController extends AbstractController
     }
 
     // 处理流程节点返回是否有抄送人
-    public function handleProcessNode($process)
+    protected function handleProcessNode($process)
     {
         // 获取流程节点
         $process_node = $process['node_infos'];
@@ -1209,7 +1209,7 @@ class ApproveController extends AbstractController
     }
 
     // 根据ID查询流程实例的参与者（所有）
-    public function getUserProcessParticipantById($id)
+    protected function getUserProcessParticipantById($id)
     {
         $data['procInstId'] = intval($id);
         $ret = Ihttp::ihttp_get($this->flow_url . "/api/v1/workflow/identitylink/findParticipantAll?" . http_build_query($data));

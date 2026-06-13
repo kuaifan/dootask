@@ -24,8 +24,8 @@ class InvokeController extends BaseController
         if ($action) {
             $app .= "__" . $action;
         }
-        // 接口不存在
-        if (!method_exists($this, $app)) {
+        // 接口不存在（仅 public 方法可作为端点，protected/private 为内部方法，不暴露为路由）
+        if (!method_exists($this, $app) || !(new \ReflectionMethod($this, $app))->isPublic()) {
             $msg = "404 not found (" . str_replace("__", "/", $app) . ").";
             return Base::ajaxError($msg);
         }
