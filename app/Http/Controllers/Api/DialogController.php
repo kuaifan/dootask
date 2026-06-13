@@ -3042,7 +3042,7 @@ class DialogController extends AbstractController
      */
     public function group__transfer()
     {
-        if (!Base::is_internal_ip(Base::getIp()) || Request::input("key") !== env('APP_KEY')) {
+        if (!Base::is_internal_ip(Base::getIp()) || Request::input("key") !== config('app.key')) {
             $user = User::auth();
         }
         //
@@ -3352,7 +3352,7 @@ class DialogController extends AbstractController
      */
     public function okr__push()
     {
-        if (!Base::is_internal_ip(Base::getIp()) || Request::input("key") !== env('APP_KEY')) {
+        if (!Base::is_internal_ip(Base::getIp()) || Request::input("key") !== config('app.key')) {
             User::auth();
         }
         $text = trim(Request::input('text'));

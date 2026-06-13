@@ -301,7 +301,7 @@ class IndexController extends InvokeController
         if (preg_match("/^\d+\.\d+\.\d+$/", $publishVersion)) {
             // 判断密钥
             $publishKey = Request::header('publish-key');
-            if ($publishKey !== env('APP_KEY')) {
+            if ($publishKey !== config('app.key')) {
                 return Base::retError("key error");
             }
             // 判断版本

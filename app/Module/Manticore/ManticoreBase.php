@@ -29,8 +29,8 @@ class ManticoreBase
      */
     public function __construct()
     {
-        $this->host = env('SEARCH_HOST', 'search');
-        $this->port = (int) env('SEARCH_PORT', 9306);
+        $this->host = config('dootask.search_host');
+        $this->port = (int) config('dootask.search_port');
     }
 
     /**

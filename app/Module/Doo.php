@@ -53,7 +53,7 @@ class Doo
      */
     public static function licenseContent(): string
     {
-        if (env("SYSTEM_LICENSE") == 'hidden') {
+        if (config('dootask.system_license') == 'hidden') {
             return '';
         }
         $paths = [

@@ -51,7 +51,7 @@ class Setting extends AbstractModel
         switch ($this->name) {
             // 系统设置
             case 'system':
-                $value['system_alias'] = ($value['system_alias'] ?? null) ?: env('APP_NAME');
+                $value['system_alias'] = ($value['system_alias'] ?? null) ?: config('app.name');
                 $value['image_compress'] = ($value['image_compress'] ?? null) ?: 'open';
                 $value['image_quality'] = min(100, max(0, intval($value['image_quality'] ?? 0) ?: 90));
                 $value['image_save_local'] = ($value['image_save_local'] ?? null) ?: 'open';

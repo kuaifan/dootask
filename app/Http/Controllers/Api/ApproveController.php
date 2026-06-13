@@ -36,7 +36,7 @@ class ApproveController extends AbstractController
     public function __construct()
     {
         Apps::isInstalledThrow('approve');
-        $this->flow_url = env('FLOW_URL') ?: 'http://approve';
+        $this->flow_url = config('dootask.flow_url') ?: 'http://approve';
     }
 
     /**

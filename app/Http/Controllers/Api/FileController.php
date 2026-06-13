@@ -737,7 +737,7 @@ class FileController extends AbstractController
         File::isNeedInstallApp('office');
         //
         $config = Request::input('config');
-        $token = \Firebase\JWT\JWT::encode($config, env('APP_KEY') ,'HS256');
+        $token = \Firebase\JWT\JWT::encode($config, config('app.key') ,'HS256');
         return Base::retSuccess('成功', [
             'token' => $token
         ]);

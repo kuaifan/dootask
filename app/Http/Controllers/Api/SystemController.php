@@ -53,7 +53,7 @@ class SystemController extends AbstractController
     {
         $type = trim(Request::input('type'));
         if ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
+            if (config('dootask.system_setting') == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             Base::checkClientVersion('0.41.11');
@@ -109,7 +109,7 @@ class SystemController extends AbstractController
                     return Base::retError('自动归档时间不可大于100天！');
                 }
             }
-            if ($all['system_alias'] == env('APP_NAME')) {
+            if ($all['system_alias'] == config('app.name')) {
                 $all['system_alias'] = '';
             }
             if ($all['system_welcome'] == '欢迎您，{username}') {
@@ -183,7 +183,7 @@ class SystemController extends AbstractController
         //
         $type = trim(Request::input('type'));
         if ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
+            if (config('dootask.system_setting') == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             $user->identity('admin');
@@ -253,7 +253,7 @@ class SystemController extends AbstractController
         //
         $type = trim(Request::input('type'));
         if ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
+            if (config('dootask.system_setting') == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             $all = Request::input();
@@ -277,7 +277,7 @@ class SystemController extends AbstractController
         }
         //
         $setting['open'] = $setting['open'] ?: 'close';
-        if (env("SYSTEM_SETTING") == 'disabled') {
+        if (config('dootask.system_setting') == 'disabled') {
             $setting['appid'] = substr($setting['appid'], 0, 4) . str_repeat('*', strlen($setting['appid']) - 8) . substr($setting['appid'], -4);
             $setting['app_certificate'] = substr($setting['app_certificate'], 0, 4) . str_repeat('*', strlen($setting['app_certificate']) - 8) . substr($setting['app_certificate'], -4);
             $setting['api_key'] = substr($setting['api_key'], 0, 4) . str_repeat('*', strlen($setting['api_key']) - 8) . substr($setting['api_key'], -4);
@@ -323,7 +323,7 @@ class SystemController extends AbstractController
         $filter = trim(Request::input('filter'));
         $setting = Base::setting('aibotSetting');
         if ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
+            if (config('dootask.system_setting') == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             Base::checkClientVersion('0.41.11');
@@ -341,7 +341,7 @@ class SystemController extends AbstractController
             }, ARRAY_FILTER_USE_BOTH);
         }
         //
-        if (env("SYSTEM_SETTING") == 'disabled') {
+        if (config('dootask.system_setting') == 'disabled') {
             foreach ($setting as $key => $item) {
                 if (empty($item)) {
                     continue;
@@ -395,7 +395,7 @@ class SystemController extends AbstractController
         //
         $type = trim(Request::input('type'));
         if ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
+            if (config('dootask.system_setting') == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             $all = Request::input();
@@ -544,7 +544,7 @@ class SystemController extends AbstractController
         //
         $type = trim(Request::input('type'));
         if ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
+            if (config('dootask.system_setting') == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             $all = Request::input();
@@ -609,7 +609,7 @@ class SystemController extends AbstractController
                 return Base::retError($e->getMessage() ?: "验证失败：未知错误", config("ldap.connections.default"));
             }
         } elseif ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
+            if (config('dootask.system_setting') == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             $all = Base::newTrim(Request::input());
@@ -661,7 +661,7 @@ class SystemController extends AbstractController
         //
         $type = trim(Request::input('type'));
         if ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
+            if (config('dootask.system_setting') == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             $all = Base::newTrim(Request::input());
@@ -694,8 +694,8 @@ class SystemController extends AbstractController
      */
     public function demo()
     {
-        $demo_account = env('DEMO_ACCOUNT');
-        $demo_password = env('DEMO_PASSWORD');
+        $demo_account = config('dootask.demo_account');
+        $demo_password = config('dootask.demo_password');
         if (empty($demo_account) || empty($demo_password)) {
             return Base::retError('No demo account');
         }
@@ -916,7 +916,7 @@ class SystemController extends AbstractController
      */
     public function get__info()
     {
-        if (Request::input("key") !== env('APP_KEY')) {
+        if (Request::input("key") !== config('app.key')) {
             return [];
         }
         return Base::retSuccess('success', [

@@ -72,7 +72,7 @@ class Apps
      */
     public static function dispatchUserHook(User $user, string $action, string $eventType = '', array $changedFields = []): void
     {
-        $appKey = env('APP_KEY', '');
+        $appKey = config('app.key') ?: '';
         if (empty($appKey)) {
             info('[appstore_hook] APP_KEY is empty, skip dispatchUserHook');
             return;

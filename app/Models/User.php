@@ -305,12 +305,12 @@ class User extends AbstractModel
         if ($onlyUserid && $onlyUserid != $this->userid) {
             return;
         }
-        if (env("PASSWORD_ADMIN") == 'disabled') {
+        if (config('dootask.password_admin') == 'disabled') {
             if ($this->userid == 1) {
                 throw new ApiException('当前环境禁止此操作');
             }
         }
-        if (env("PASSWORD_OWNER") == 'disabled') {
+        if (config('dootask.password_owner') == 'disabled') {
             throw new ApiException('当前环境禁止此操作');
         }
     }

@@ -65,7 +65,7 @@ class DeleteTmpTask extends AbstractTask
                 break;
 
             case 'file':
-                $day = intval(env("AUTO_EMPTY_FILE_RECYCLE", 365));
+                $day = intval(config('dootask.auto_empty_file_recycle'));
                 if ($day <= 0) {
                     return;
                 }
@@ -81,7 +81,7 @@ class DeleteTmpTask extends AbstractTask
                 break;
 
             case 'tmp_file':
-                $day = intval(env("AUTO_EMPTY_TEMP_FILE", 30));
+                $day = intval(config('dootask.auto_empty_temp_file'));
                 if ($day <= 0) {
                     return;
                 }
