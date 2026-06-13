@@ -39,7 +39,8 @@
         "phpoffice/phpword": "^1.4",
         "predis/predis": "^2.3",
         "smalot/pdfparser": "^2.11",
-        "symfony/console": "^7.4"
+        "symfony/console": "^7.4",
+        "symfony/yaml": "^7.4"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.7",
