@@ -268,7 +268,7 @@
                             ref="addColumnName"
                             v-model="addColumnName"
                             @on-blur="addColumnBlur"
-                            @on-enter="addColumnSubmit"
+                            @on-keydown="onAddColumnKeydown"
                             @on-clear="addColumnShow=false"
                             :placeholder="$L('列表名称，回车创建')"
                             clearable/>
@@ -1370,6 +1370,12 @@ export default {
         addColumnBlur() {
             if (this.addColumnName === '') {
                 this.addColumnShow = false
+            }
+        },
+
+        onAddColumnKeydown(e) {
+            if (e.keyCode === 13) {
+                this.addColumnSubmit();
             }
         },
 

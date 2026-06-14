@@ -25,7 +25,9 @@
                     </div>
                 </transition>
                 <transition name="login-mode">
-                    <div v-if="loginMode=='access'" class="login-access">
+                    <div
+                        v-if="loginMode=='access'"
+                        class="login-access">
                         <Input
                             v-if="$isSoftware && cacheServerUrl"
                             :value="$A.getDomain(cacheServerUrl)"
@@ -42,7 +44,7 @@
                             :placeholder="$L('输入您的电子邮件')"
                             type="email"
                             size="large"
-                            @on-enter="onLogin"
+                            @on-keydown="onLoginKeydown"
                             @on-blur="onBlur"
                             clearable/>
 
@@ -53,7 +55,7 @@
                             :placeholder="$L('输入您的密码')"
                             type="password"
                             size="large"
-                            @on-enter="onLogin"
+                            @on-keydown="onLoginKeydown"
                             clearable/>
 
                         <Input
@@ -64,7 +66,7 @@
                             :placeholder="$L('输入确认密码')"
                             type="password"
                             size="large"
-                            @on-enter="onLogin"
+                            @on-keydown="onLoginKeydown"
                             clearable/>
                         <Input
                             v-if="loginType=='reg' && needInvite"
@@ -74,7 +76,7 @@
                             :placeholder="$L('请输入注册邀请码')"
                             type="text"
                             size="large"
-                            @on-enter="onLogin"
+                            @on-keydown="onLoginKeydown"
                             clearable><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
 
                         <Input
@@ -85,7 +87,7 @@
                             :placeholder="$L('输入图形验证码')"
                             type="text"
                             size="large"
-                            @on-enter="onLogin"
+                            @on-keydown="onLoginKeydown"
                             clearable>
                             <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
                             <div slot="append" class="login-code-end" @click="refreshCode">
@@ -496,6 +498,12 @@ export default {
                 $A.IDBSet("cachePrivacyShow", "no")
             } else {
                 $A.eeuiAppGoDesktop()
+            }
+        },
+
+        onLoginKeydown(e) {
+            if (e.keyCode === 13) {
+                this.onLogin();
             }
         },
 

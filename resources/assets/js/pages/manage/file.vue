@@ -185,7 +185,7 @@
                                             :disabled="!!item._load"
                                             :parser="onParser"
                                             @on-blur="onBlur(item)"
-                                            @on-keyup="onKeyup($event, item)"/>
+                                            @on-keydown="onKeydown($event, item)"/>
                                         <div v-if="item._load" class="file-load"><Loading/></div>
                                     </div>
                                     <div v-else class="file-name" :title="item.name">{{$A.getFileName(item)}}</div>
@@ -1989,7 +1989,7 @@ export default {
             this.onEnter(item);
         },
 
-        onKeyup(e, item) {
+        onKeydown(e, item) {
             if (e.keyCode === 13) {
                 this.onEnter(item);
             } else if (e.keyCode === 27) {

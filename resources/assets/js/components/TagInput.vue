@@ -18,7 +18,7 @@
             :placeholder="tis || placeholderText"
             :enterkeyhint="enterkeyhint"
             @keydown.enter="downEnter($event)"
-            @keydown.delete="delTag(false)"
+            @keydown.delete="onBackspace($event)"
             @keyup="onKeyup"
             @focus="onFocus"
             @blur="onBlur"
@@ -195,7 +195,20 @@
                 this.addTag(false, content)
             },
             downEnter(e) {
+                if (e.isComposing || e.key === 'Process' || e.keyCode === 229) {
+                    return;
+                }
                 e.preventDefault();
+                this.addTag(e, this.content);
+                this.$nextTick(() => {
+                    this.$emit("on-enter", e)
+                })
+            },
+            onBackspace(e) {
+                if (e.isComposing || e.key === 'Process' || e.keyCode === 229) {
+                    return;
+                }
+                this.delTag(false);
             },
             onFocus(e) {
                 this.isFocus = true;
@@ -207,14 +220,7 @@
                 this.$emit("on-blur", e)
             },
             onKeyup(e) {
-                this.addTag(e, this.content);
-                //
                 this.$emit("on-keyup", e)
-                if (e.keyCode === 13) {
-                    this.$nextTick(() => {
-                        this.$emit("on-enter", e)
-                    })
-                }
             },
             addTag(e, content) {
                 if (e === false || e.keyCode === 13) {

@@ -14,7 +14,7 @@
                     :maxlength="20"
                     :disabled="pending.add"
                     :placeholder="$L('请输入个性标签')"
-                    @on-enter="handleAdd">
+                    @on-keydown="onAddKeydown">
                     <Button
                         slot="append"
                         type="primary"
@@ -47,7 +47,7 @@
                                     v-model="editName"
                                     :maxlength="20"
                                     :disabled="isPending(tag.id, 'edit')"
-                                    @on-enter="confirmEdit(tag)"/>
+                                    @on-keydown="onEditKeydown($event, tag)"/>
                             </div>
                             <div class="tag-actions">
                                 <Button
@@ -222,6 +222,16 @@ export default {
                         : (Array.isArray(payload?.top) ? payload.top.length : 0)
                 }
             });
+        },
+        onAddKeydown(e) {
+            if (e.keyCode === 13) {
+                this.handleAdd();
+            }
+        },
+        onEditKeydown(e, tag) {
+            if (e.keyCode === 13) {
+                this.confirmEdit(tag);
+            }
         },
         handleAdd() {
             const name = this.newTagName.trim();

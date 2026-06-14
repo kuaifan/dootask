@@ -173,7 +173,7 @@
                     type="text"
                     v-model="subName"
                     :class="['enter-input', subName == '' ? 'empty' : '']"
-                    @on-enter="addSubTask"
+                    @on-keydown="onSubNameKeydown"
                     :placeholder="$L('+ 输入子任务，回车添加子任务')"/>
             </div>
         </Form>
@@ -466,6 +466,12 @@ export default {
                 }
                 e.preventDefault();
                 this.onAdd();
+            }
+        },
+
+        onSubNameKeydown(e) {
+            if (e.keyCode === 13) {
+                this.addSubTask();
             }
         },
 
