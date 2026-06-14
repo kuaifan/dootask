@@ -801,7 +801,8 @@ export default {
                     ? type.mobile
                     : (typeof type.app === 'string' ? type.app : defaultType)
                 const desktopType = typeof type.desktop === 'string' ? type.desktop : defaultType
-                return $A.platformType() === 'desktop' ? desktopType : mobileType
+                const isDesktop = ['web', 'mac', 'win'].includes($A.Platform)
+                return isDesktop ? desktopType : mobileType
             }
             return 'inline'
         }
