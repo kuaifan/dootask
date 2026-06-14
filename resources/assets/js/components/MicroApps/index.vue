@@ -161,9 +161,17 @@ export default {
             this.unmountAllMicroApp()
         },
         assistShow(show) {
-            if (!show && $A.isSubElectron && !this.isRestarting) {
-                // 如果是子 Electron 窗口，关闭窗口助理时销毁窗口（但是重启过程中不销毁）
+            if (show || this.isRestarting) {
+                // 仍有应用打开，或正在重启过程中，都不销毁窗口
+                return
+            }
+            if ($A.isSubElectron) {
+                // 如果是子 Electron 窗口，关闭窗口助理时销毁窗口
                 $A.Electron.sendMessage('windowDestroy');
+            } else if (this.windowType === 'popout') {
+                // 浏览器独立窗口（window-type="popout"，由 window.open 打开）：关闭浏览器窗口
+                // 注意：仅 popout 生效，主程序内嵌的 embed 窗口（默认值）不会进入此分支
+                window.close();
             }
         },
         microApps: {
