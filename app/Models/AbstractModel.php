@@ -217,6 +217,12 @@ class AbstractModel extends Model
      */
     protected function performInsertOrIgnore(Builder $query, array|string|null $uniqueBy)
     {
+        // MySQL INSERT IGNORE 无法按指定列限制冲突范围，所有 unique 冲突一并吞掉。
+        // 若调用方传了 $uniqueBy 期望精确 scope，这里直接抛错，避免与框架语义偷偷不一致。
+        if ($uniqueBy !== null) {
+            throw new \InvalidArgumentException('saveOrIgnore $uniqueBy is not supported on MySQL driver; pass null.');
+        }
+
         if ($this->usesUniqueIds()) {
             $this->setUniqueIds();
         }
@@ -240,10 +246,12 @@ class AbstractModel extends Model
         }
 
         if ($this->getIncrementing()) {
-            $this->setAttribute(
-                $this->getKeyName(),
-                $query->getConnection()->getPdo()->lastInsertId()
-            );
+            $lastId = $query->getConnection()->getPdo()->lastInsertId();
+            // 无 auto_increment 列的表上 INSERT IGNORE 即使插入成功 lastInsertId 也返回 "0"，
+            // 别用它去覆盖业务设置的主键。
+            if ($lastId > 0) {
+                $this->setAttribute($this->getKeyName(), $lastId);
+            }
         }
 
         $this->exists = true;

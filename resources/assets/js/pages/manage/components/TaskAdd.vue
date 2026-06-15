@@ -470,6 +470,7 @@ export default {
         },
 
         onSubNameKeydown(e) {
+            if (e.isComposing || e.key === 'Process' || e.keyCode === 229) return;
             if (e.keyCode === 13) {
                 this.addSubTask();
             }

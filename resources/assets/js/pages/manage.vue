@@ -323,7 +323,7 @@
                     </div>
                 </FormItem>
                 <FormItem v-if="addData.columns" :label="$L('任务列表')">
-                    <TagInput v-model="addData.columns"/>
+                    <TagInput v-model="addData.columns" :cut="[',', '，', ' ']"/>
                 </FormItem>
                 <FormItem v-else :label="$L('项目模板')">
                     <Select :value="0" @on-change="selectChange" :placeholder="$L('请选择模板')">

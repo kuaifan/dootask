@@ -1991,7 +1991,7 @@ export default {
 
         onKeydown(e, item) {
             if (e.keyCode === 13) {
-                this.onEnter(item);
+                this.$nextTick(() => this.onEnter(item));
             } else if (e.keyCode === 27) {
                 const isCreate = !/^\d+$/.test(item.id);
                 if (isCreate) {

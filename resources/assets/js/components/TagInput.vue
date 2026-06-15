@@ -6,7 +6,7 @@
             tag="ul"
             draggable=".column-item"
         >
-            <div class="tags-item column-item"  v-for="(text, index) in disSource">
+            <div class="tags-item column-item" v-for="(text, index) in disSource" :key="text">
                 <span class="tags-content" @click.stop="edit(disSource,index)">{{text}}</span><span class="tags-del" @click.stop="delTag(index)">&times;</span>
             </div>
         </Draggable>
@@ -60,14 +60,6 @@
             },
         },
         data() {
-            const disSource = [];
-            if( this.value ){
-                this.value?.split(",").forEach(item => {
-                    if (item) {
-                        disSource.push(item)
-                    }
-                });
-            }
             return {
                 minWidth: 80,
 
@@ -78,7 +70,7 @@
 
                 content: '',
 
-                disSource,
+                disSource: this.parseValue(this.value),
 
                 isFocus: false,
 
@@ -103,25 +95,10 @@
                 this.wayMinWidth();
             },
             value(val) {
-                if( val && typeof val == 'string' ){
-                    let disSource = [];
-                    val?.split(",").forEach(item => {
-                        if (item) {
-                            disSource.push(item)
-                        }
-                    });
-                    this.disSource = disSource;
-                }
+                this.disSource = this.parseValue(val);
             },
             disSource(val) {
-                let temp = '';
-                val.forEach(item => {
-                    if (temp != '') {
-                        temp += this.cut;
-                    }
-                    temp += item;
-                });
-                this.$emit('input', temp);
+                this.$emit('input', val.join(this.joinChar()));
                 this.$emit('on-change');
             }
         },
@@ -134,6 +111,43 @@
             }
         },
         methods: {
+            normalizedCuts() {
+                const raw = Array.isArray(this.cut) ? this.cut : [this.cut];
+                return raw.filter(c => typeof c === 'string' && c.length > 0);
+            },
+            cutPattern() {
+                const cuts = this.normalizedCuts();
+                if (cuts.length === 0) {
+                    return null;
+                }
+                const escaped = cuts.map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                return new RegExp(escaped.join('|'), 'g');
+            },
+            joinChar() {
+                return this.normalizedCuts()[0] || ',';
+            },
+            parseValue(val) {
+                const list = [];
+                if (typeof val !== 'string' || val === '') {
+                    return list;
+                }
+                val.split(this.joinChar()).forEach(item => {
+                    const value = item.trim();
+                    if (value && list.indexOf(value) === -1) {
+                        list.push(value);
+                    }
+                });
+                return list;
+            },
+            splitByCuts(str) {
+                const pattern = this.cutPattern();
+                return pattern ? str.split(pattern) : [str];
+            },
+            showTis(msg) {
+                this.tis = msg;
+                clearTimeout(this.tisTimeout);
+                this.tisTimeout = setTimeout(() => { this.tis = ''; }, 2000);
+            },
             edit(disSource,index){
                 this.editData.disSource = disSource
                 this.editData.index = index
@@ -144,12 +158,17 @@
                     okText: "确定",
                     value: disSource[index] + '',
                     onOk: (desc) => {
-                        if (!desc) {
+                        const trimmed = (desc || '').trim()
+                        if (!trimmed) {
                             return `请输入名称`
                         }
-                        this.editData.name = desc
-                        this.editData.disSource[this.editData.index] = desc
-                        this.$set(this.disSource,this.editData.index,desc)
+                        const exists = this.disSource.indexOf(trimmed)
+                        if (exists !== -1 && exists !== this.editData.index) {
+                            return `该标签已存在`
+                        }
+                        this.editData.name = trimmed
+                        this.editData.disSource[this.editData.index] = trimmed
+                        this.$set(this.disSource, this.editData.index, trimmed)
                         return false
                     },
                 });
@@ -192,7 +211,14 @@
             pasteText(e) {
                 e.preventDefault();
                 let content = (e.clipboardData || window.clipboardData).getData('text');
-                this.addTag(false, content)
+                if (!content) {
+                    return;
+                }
+                for (const item of this.splitByCuts(content)) {
+                    const value = item.trim();
+                    if (!value) continue;
+                    if (this.addTag(false, value) === false) break;
+                }
             },
             downEnter(e) {
                 if (e.isComposing || e.key === 'Process' || e.keyCode === 229) {
@@ -220,32 +246,45 @@
                 this.$emit("on-blur", e)
             },
             onKeyup(e) {
+                if (e.keyCode !== 13) {
+                    this.addTag(e, this.content);
+                }
                 this.$emit("on-keyup", e)
             },
             addTag(e, content) {
-                if (e === false || e.keyCode === 13) {
-                    if (content.trim() != '' && this.disSource.indexOf(content.trim()) === -1) {
-                        this.disSource.push(content.trim());
+                const isForce = e === false || e.keyCode === 13;
+                let value;
+                if (isForce) {
+                    value = content.trim();
+                } else {
+                    if (content === '') return true;
+                    let matchedCut = null;
+                    for (const c of this.normalizedCuts()) {
+                        if (c.length <= content.length && content.substring(content.length - c.length) === c) {
+                            matchedCut = c;
+                            break;
+                        }
                     }
+                    if (matchedCut === null) return true;
+                    value = content.substring(0, content.length - matchedCut.length).trim();
+                }
+                if (value === '') {
                     this.content = '';
-                    return;
+                    return true;
                 }
                 if (this.max > 0 && this.disSource.length >= this.max) {
                     this.content = '';
-                    this.tis = '最多只能添加' + this.max + '个';
-                    clearTimeout(this.tisTimeout);
-                    this.tisTimeout = setTimeout(() => { this.tis = ''; }, 2000);
-                    return;
+                    this.showTis(this.$L('最多只能添加(*)个', this.max));
+                    return false;
                 }
-                let temp = content.trim();
-                let cutPos = temp.length - this.cut.length;
-                if (temp != '' && temp.substring(cutPos) === this.cut) {
-                    temp = temp.substring(0, cutPos);
-                    if (temp.trim() != '' && this.disSource.indexOf(temp.trim()) === -1) {
-                        this.disSource.push(temp.trim());
-                    }
+                if (this.disSource.indexOf(value) !== -1) {
                     this.content = '';
+                    this.showTis(this.$L('该标签已存在'));
+                    return true;
                 }
+                this.disSource.push(value);
+                this.content = '';
+                return true;
             },
             delTag(index) {
                 if (index === false) {
