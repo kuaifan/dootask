@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：325
+接口总数：319
 
 ## 路由规则
 
@@ -349,13 +349,7 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/approve/identitylinkHistory/findParticipant | identitylinkHistory__findParticipant() | get | 查询流程实例的参与者（已结束） |
 | api/approve/process/detail | process__detail() | get | 根据流程ID查询流程详情 |
 | api/approve/export | export() | post | 导出数据 |
-| api/approve/getStateDescription | getStateDescription() | any |  |
 | api/approve/down | down() | get | 下载导出的审批数据 |
-| api/approve/handleParticipant | handleParticipant() | any |  |
-| api/approve/approveMsg | approveMsg() | any |  |
-| api/approve/getProcessById | getProcessById() | any |  |
-| api/approve/handleProcessNode | handleProcessNode() | any |  |
-| api/approve/getUserProcessParticipantById | getUserProcessParticipantById() | any |  |
 | api/approve/user/status | user__status() | get | 获取用户审批状态 |
 | api/approve/process/doto | process__doto() | get | 查询需要我审批的流程数量 |
 
