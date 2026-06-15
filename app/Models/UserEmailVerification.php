@@ -7,8 +7,9 @@ use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Timer;
 use Carbon\Carbon;
-use Guanguans\Notify\Factory;
-use Guanguans\Notify\Messages\EmailMessage;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mime\Email;
 
 /**
  * App\Models\UserEmailVerification
@@ -97,16 +98,14 @@ class UserEmailVerification extends AbstractModel
                     );
                     break;
             }
-            Factory::mailer()
-                ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
-                ->setMessage(EmailMessage::create()
-                    ->from($alias . " <{$setting['account']}>")
-                    ->to($email)
-                    ->subject($subject)
-                    ->html($content))
-                ->send();
+            $mailer = new Mailer(Transport::fromDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0"));
+            $mailer->send((new Email())
+                ->from($alias . " <{$setting['account']}>")
+                ->to($email)
+                ->subject($subject)
+                ->html($content));
         } catch (\Throwable $e) {
-            if (str_contains($e->getMessage(), "Timed Out")) {
+            if (stripos($e->getMessage(), "timed out") !== false) {
                 throw new ApiException("邮件发送超时，请检查邮箱配置是否正确");
             } elseif ($e->getCode() === 550) {
                 throw new ApiException('邮件内容被拒绝，请检查邮箱是否开启接收功能');

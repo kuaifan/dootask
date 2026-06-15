@@ -5,8 +5,6 @@ namespace App\Models;
 use App\Exceptions\ApiException;
 use App\Module\Base;
 use Carbon\Carbon;
-use Guanguans\Notify\Factory;
-use Guanguans\Notify\Messages\EmailMessage;
 
 /**
  * App\Models\UserTransfer

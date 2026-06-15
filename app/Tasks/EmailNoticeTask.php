@@ -9,8 +9,9 @@ use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Timer;
 use Carbon\Carbon;
-use Guanguans\Notify\Factory;
-use Guanguans\Notify\Messages\EmailMessage;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mime\Email;
 
 /**
  * 未读消息邮件通知任务
@@ -258,20 +259,18 @@ class EmailNoticeTask extends AbstractTask
     private function sendEmail($user, $emailData): void
     {
         Setting::validateAddr($user->email, function($to) use ($emailData) {
-            Factory::mailer()
-                ->setDsn(sprintf(
-                    'smtp://%s:%s@%s:%s?verify_peer=0',
-                    $this->emailSetting['account'],
-                    $this->emailSetting['password'],
-                    $this->emailSetting['smtp_server'],
-                    $this->emailSetting['port']
-                ))
-                ->setMessage(EmailMessage::create()
-                    ->from(sprintf('%s <%s>', Base::settingFind('system', 'system_alias', 'Task'), $this->emailSetting['account']))
-                    ->to($to)
-                    ->subject($emailData['subject'])
-                    ->html($emailData['content']))
-                ->send();
+            $mailer = new Mailer(Transport::fromDsn(sprintf(
+                'smtp://%s:%s@%s:%s?verify_peer=0',
+                $this->emailSetting['account'],
+                $this->emailSetting['password'],
+                $this->emailSetting['smtp_server'],
+                $this->emailSetting['port']
+            )));
+            $mailer->send((new Email())
+                ->from(sprintf('%s <%s>', Base::settingFind('system', 'system_alias', 'Task'), $this->emailSetting['account']))
+                ->to($to)
+                ->subject($emailData['subject'])
+                ->html($emailData['content']));
         });
     }
 

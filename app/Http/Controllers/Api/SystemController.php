@@ -17,12 +17,13 @@ use App\Module\Timer;
 use App\Models\Setting;
 use LdapRecord\Container;
 use App\Module\BillExport;
-use Guanguans\Notify\Factory;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mime\Email;
 use App\Models\UserCheckinRecord;
 use App\Module\Apps;
 use App\Module\BillMultipleExport;
 use LdapRecord\LdapRecordException;
-use Guanguans\Notify\Messages\EmailMessage;
 use Swoole\Coroutine;
 
 /**
@@ -1232,21 +1233,19 @@ class SystemController extends AbstractController
         }
         try {
             Setting::validateAddr($all['to'], function($to) use ($all) {
-                Factory::mailer()
-                    ->setDsn("smtp://{$all['account']}:{$all['password']}@{$all['smtp_server']}:{$all['port']}?verify_peer=0")
-                    ->setMessage(EmailMessage::create()
-                        ->from(Base::settingFind('system', 'system_alias', 'Task') . " <{$all['account']}>")
-                        ->to($to)
-                        ->subject('Mail sending test')
-                        ->html('<p>' . Doo::translate('收到此电子邮件意味着您的邮箱配置正确。') . '</p>'))
-                    ->send();
+                $mailer = new Mailer(Transport::fromDsn("smtp://{$all['account']}:{$all['password']}@{$all['smtp_server']}:{$all['port']}?verify_peer=0"));
+                $mailer->send((new Email())
+                    ->from(Base::settingFind('system', 'system_alias', 'Task') . " <{$all['account']}>")
+                    ->to($to)
+                    ->subject('Mail sending test')
+                    ->html('<p>' . Doo::translate('收到此电子邮件意味着您的邮箱配置正确。') . '</p>'));
             }, function () {
                 throw new \Exception("收件人地址错误或已被忽略");
             });
             return Base::retSuccess('成功发送');
         } catch (\Throwable $e) {
             // 一般是请求超时
-            if (str_contains($e->getMessage(), "Timed Out")) {
+            if (stripos($e->getMessage(), "timed out") !== false) {
                 return Base::retError("邮件发送超时，请检查邮箱配置是否正确");
             } elseif ($e->getCode() === 550) {
                 return Base::retError('邮件内容被拒绝，请检查邮箱是否开启接收功能');
