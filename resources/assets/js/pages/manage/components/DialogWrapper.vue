@@ -44,7 +44,6 @@
                                 <h2 class="user-select-auto" @click="onViewDetail" v-html="transformEmojiToHtml(dialogData.name)"></h2>
                                 <em v-if="peopleNum > 0" @click="onDialogMenu('groupInfo')">({{peopleNum}})</em>
                                 <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
-                                <Tag v-if="dialogData.type === 'user' && approvaUserStatus" class="after" color="red" :fade="false">{{$L(approvaUserStatus)}}</Tag>
                                 <Tag v-if="dialogData.group_type=='all'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('全员')}}</Tag>
                                 <Tag v-else-if="dialogData.group_type=='department'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('部门')}}</Tag>
                                 <div v-if="msgLoadIng > 0 && allMsgs.length > 0" class="load"><Loading/></div>
@@ -915,8 +914,6 @@ export default {
             scrollIng: 0,
             scrollGroup: null,
 
-            approvaUserStatus: '',
-
             observers: [],
             msgChangeCache: {},
 
@@ -1664,8 +1661,6 @@ export default {
             if (this.autoFocus) {
                 this.inputFocus()
             }
-            //
-            this.getUserApproveStatus()
         },
 
         /**
@@ -3822,10 +3817,6 @@ export default {
                     this.handleOpenMicroApp(clickElement);
                     return;
                 }
-                if (clickElement.classList.contains('open-approve-details')) {
-                    emitter.emit('approveDetails', clickElement.getAttribute("data-id"));
-                    return;
-                }
                 clickElement = clickElement.parentElement;
             }
 
@@ -4562,27 +4553,6 @@ export default {
                 okText: '确定',
                 loading: true,
                 onOk: () => this.onTopSubmit(info)
-            });
-        },
-
-        async getUserApproveStatus() {
-            this.approvaUserStatus = ''
-            if (this.dialogData.type !== 'user' || this.dialogData.bot) {
-                return
-            }
-            const isInstalled = await  this.$store.dispatch("isMicroAppInstalled", 'approve');
-            if (!isInstalled) {
-                return
-            }
-            this.$store.dispatch("call", {
-                url: 'approve/user/status',
-                data: {
-                    userid: this.dialogData.dialog_user.userid,
-                }
-            }).then(({data}) => {
-                this.approvaUserStatus = data;
-            }).catch(({msg}) => {
-                $A.messageError(msg);
             });
         },
 

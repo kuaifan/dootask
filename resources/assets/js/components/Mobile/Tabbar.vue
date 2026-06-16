@@ -18,7 +18,7 @@
                     <Badge class="tabbar-badge" :overflow-count="999" :text="msgUnreadMention"/>
                 </template>
                 <template v-else-if="item.name === 'application'">
-                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
+                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
                 </template>
             </li>
         </ul>
@@ -54,7 +54,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'reportUnreadNumber', 'approveUnreadNumber']),
+        ...mapState(['cacheDialogs', 'reportUnreadNumber']),
         ...mapGetters(['dashboardTask']),
 
         /**
@@ -138,7 +138,7 @@ export default {
         },
 
         activeName() {
-            if (['manage-calendar', 'manage-file', 'manage-setting', 'manage-application', 'manage-approve'].includes(this.routeName)) {
+            if (['manage-calendar', 'manage-file', 'manage-setting', 'manage-application'].includes(this.routeName)) {
                 return 'application';
             }
 

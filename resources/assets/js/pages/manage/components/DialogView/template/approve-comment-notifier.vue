@@ -7,9 +7,6 @@
             <p>{{ msg.data.comment_content }}</p>
             <p v-if="msg.data.thumb" v-html="imageHtml(msg.data.thumb)"></p>
         </div>
-        <div class="btn-raw no-dark-content">
-            <button class="ivu-btn ivu-btn-grey">{{$L('查看详情')}}</button>
-        </div>
     </div>
 </template>
 

@@ -648,7 +648,6 @@ export default {
         dispatch("getDialogTodo", 0).catch(() => {});
         dispatch("getTaskPriority", 1000);
         dispatch("getReportUnread", 1000);
-        dispatch("getApproveUnread", 1000);
         dispatch("getProjectsForDepartmentOwnerView").catch(() => {});
         dispatch("getTaskForDashboard");
         dispatch("dialogMsgRead");
@@ -675,34 +674,6 @@ export default {
                 }).then(({data}) => {
                     state.reportUnreadNumber = data.total || 0;
                 }).catch(_ => {});
-            }
-        }, typeof timeout === "number" ? timeout : 1000)
-    },
-
-     /**
-     * 获取审批待办未读数量
-     * @param state
-     * @param dispatch
-     * @param timeout
-     */
-     getApproveUnread({state, dispatch}, timeout) {
-        window.__getApproveUnread && clearTimeout(window.__getApproveUnread)
-        window.__getApproveUnread = setTimeout(() => {
-            if (state.userId === 0) {
-                state.approveUnreadNumber = 0;
-            } else {
-                dispatch("call", {
-                    url: 'approve/process/doto'
-                }).then(({data}) => {
-                    state.approveUnreadNumber = data.total || 0;
-                }).catch(({msg}) => {
-                    if( msg.indexOf("404 not found") !== -1){
-                        $A.modalInfo({
-                            title: '版本过低',
-                            content: '服务器版本过低，请升级服务器。',
-                        })
-                    }
-                });
             }
         }, typeof timeout === "number" ? timeout : 1000)
     },
@@ -5023,17 +4994,6 @@ export default {
                             (function ({action}) {
                                 if (action == 'unreadUpdate') {
                                     dispatch("getReportUnread", 1000)
-                                }
-                            })(msgDetail);
-                            break;
-
-                        /**
-                         * 流程审批
-                         */
-                        case "approve":
-                            (function ({action}) {
-                                if (action == 'unread') {
-                                    dispatch("getApproveUnread", 1000)
                                 }
                             })(msgDetail);
                             break;

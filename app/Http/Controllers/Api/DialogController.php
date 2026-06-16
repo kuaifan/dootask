@@ -1258,6 +1258,51 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {post} api/dialog/msg/sendapprove 发送审批通知卡片
+     *
+     * @apiDescription 需要token身份。以「审批助手」机器人身份向指定用户发送审批模板卡片
+     * （由 approve 插件调用，卡片仅展示、不与旧审批系统有数据关联）。
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendapprove
+     *
+     * @apiParam {Number} to_userid     接收用户ID
+     * @apiParam {String} type          卡片类型：approve_reviewer / approve_notifier / approve_submitter / approve_comment_notifier
+     * @apiParam {String} [action]      动作：start / pass / refuse / withdraw（按类型取用）
+     * @apiParam {Number} [is_finished] 是否已结束（0/1）
+     * @apiParam {Object} data          卡片数据
+     * @apiParam {String} [title]       消息标题（会话列表预览用）
+     */
+    public function msg__sendapprove()
+    {
+        $user = User::auth();
+        $toUserid = intval(Request::input('to_userid'));
+        $type = trim(Request::input('type'));
+        $action = trim(Request::input('action'));
+        $isFinished = intval(Request::input('is_finished'));
+        $data = Base::json2array(Request::input('data'));
+        $title = trim(Request::input('title'));
+        //
+        $allow = ['approve_reviewer', 'approve_notifier', 'approve_submitter', 'approve_comment_notifier'];
+        if ($toUserid <= 0 || !in_array($type, $allow)) {
+            return Base::retError('参数错误');
+        }
+        $botUser = User::botGetOrCreate('approval-alert');
+        $dialog = WebSocketDialog::checkUserDialog($botUser, $toUserid);
+        if (empty($dialog)) {
+            return Base::retError('无法创建对话');
+        }
+        $msgData = [
+            'type' => $type,
+            'action' => $action ?: null,
+            'is_finished' => $isFinished,
+            'data' => $data,
+            'title' => $title,
+        ];
+        return WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $msgData, $botUser->userid, false, false, true);
+    }
+
+    /**
      * @api {post} api/dialog/msg/sendrecord 发送语音
      *
      * @apiDescription 需要token身份

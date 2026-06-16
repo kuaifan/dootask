@@ -447,7 +447,6 @@ export default {
                         '/api/dialog/msg/download',                  // 会话文件
                         '/api/project/task/filedown',                // 任务文件
                         '/api/file/download/pack',                   // 文件打包下载
-                        '/api/approve/down',                         // 审批导出下载
                         '/api/project/task/down',                    // 任务导出下载
                         '/api/system/checkin/down'                   // 签到导出下载
                     ];

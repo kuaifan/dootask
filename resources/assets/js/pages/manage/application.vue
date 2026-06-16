@@ -97,7 +97,6 @@
                                                     v-if="!sortingMode"
                                                     @click.stop="handleCardClick(card, 'badge')"
                                                     class="apply-box-top-report">
-                                                    <Badge v-if="showBadge(card.system,'approve')" :overflow-count="999" :count="approveUnreadNumber"/>
                                                     <Badge v-if="showBadge(card.system,'report')" :overflow-count="999" :count="reportUnreadNumber"/>
                                                 </div>
                                             </div>
@@ -528,7 +527,6 @@ export default {
             'userInfo',
             'userIsAdmin',
             'reportUnreadNumber',
-            'approveUnreadNumber',
             'cacheDialogs',
             'windowOrientation',
             'windowPortrait',
@@ -543,7 +541,6 @@ export default {
         applyList() {
             const list = [
                 // 常用应用
-                {value: "approve", label: "审批中心", sort: 30, show: this.microAppsIds.includes('approve')},
                 {value: "favorite", label: "我的收藏", sort: 45},
                 {value: "recent", label: "最近打开", sort: 47},
                 {value: "report", label: "工作报告", sort: 50},
@@ -985,7 +982,6 @@ export default {
             const list = [
                 {label: this.$L('导出任务统计'), value: 'task'},
                 {label: this.$L('导出超期任务'), value: 'overdue'},
-                {label: this.$L('导出审批数据'), value: 'approve'},
                 {label: this.$L('导出签到数据'), value: 'checkin'},
             ];
             this.$store.commit('menu/operation', {
@@ -1037,9 +1033,6 @@ export default {
         showBadge(item, type) {
             let num = 0;
             switch (type) {
-                case 'approve':
-                    num = this.approveUnreadNumber;
-                    break;
                 case 'report':
                     num = this.reportUnreadNumber;
                     break;

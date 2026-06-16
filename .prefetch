@@ -158,11 +158,6 @@ drawio/webapp/js/app.min.js
 drawio/webapp/js/extensions.min.js
 drawio/webapp/js/shapes-14-6-5.min.js
 drawio/webapp/js/stencils.min.js
-drawio/webapp/math/es5/core.js
-drawio/webapp/math/es5/input/asciimath.js
-drawio/webapp/math/es5/input/tex.js
-drawio/webapp/math/es5/output/svg.js
-drawio/webapp/math/es5/output/svg/fonts/tex.js
 drawio/webapp/styles/grapheditor.css
 
 minder/css/chunk-vendors.fe9c56c6.css

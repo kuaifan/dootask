@@ -272,9 +272,6 @@ export default {
     // 系统设置
     systemConfig: {},
 
-    // 审批待办未读数量
-    approveUnreadNumber: 0,
-
     // 会议
     meetingWindow: {
         show: false,

@@ -82,7 +82,6 @@
                                 <DropdownItem name="allUser">{{$L('团队管理')}}</DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                                 <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
-                                <DropdownItem name="exportApprove">{{$L('导出审批数据')}}</DropdownItem>
                                 <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
@@ -126,10 +125,6 @@
                                         v-else-if="item.path === 'workReport' && reportUnreadNumber > 0"
                                         class="manage-menu-report-badge"
                                         :count="reportUnreadNumber"/>
-                                    <Badge
-                                        v-else-if="item.path === 'approve' && approveUnreadNumber > 0"
-                                        class="manage-menu-report-badge"
-                                        :count="approveUnreadNumber"/>
                                 </div>
                             </DropdownItem>
                         </template>
@@ -162,7 +157,7 @@
                         <li @click="toggleRoute('application')" :class="classNameRoute('application')">
                             <i class="taskfont">&#xe60c;</i>
                             <div class="menu-title">{{$L('应用')}}</div>
-                            <Badge class="menu-badge" :overflow-count="999" :text="String((reportUnreadNumber + approveUnreadNumber) || '')"/>
+                            <Badge class="menu-badge" :overflow-count="999" :text="String(reportUnreadNumber || '')"/>
                         </li>
                         <li v-for="(item, key) in filterMicroAppsMenusMain" :key="key" @click="onTabbarClick('microApp', item)">
                             <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${item.icon})`}"></div>
@@ -389,9 +384,6 @@
         <!--导出签到数据-->
         <CheckinExport v-model="exportCheckinShow"/>
 
-        <!--导出审批数据-->
-        <ApproveExport v-model="exportApproveShow"/>
-
         <!--任务详情-->
         <TaskModal ref="taskModal"/>
 
@@ -457,16 +449,6 @@
             <ProjectArchived v-if="archivedProjectShow"/>
         </DrawerOverlay>
 
-        <!--审批中心-->
-        <DrawerOverlay v-model="approveShow" placement="right" :size="1380" class-name="approve-drawer">
-            <Approve v-if="approveShow"/>
-        </DrawerOverlay>
-
-        <!--审批详情-->
-        <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
-            <ApproveDetails v-if="approveDetailsShow" :data="approveDetails"/>
-        </DrawerOverlay>
-
         <!--移动端选项卡-->
         <transition name="mobile-slide">
             <MobileTabbar v-if="mobileTabbar" @on-click="onTabbarClick"/>
@@ -495,14 +477,11 @@ import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
 import CheckinExport from "./manage/components/CheckinExport";
 import TaskExport from "./manage/components/TaskExport";
-import ApproveExport from "./manage/components/ApproveExport";
 import ComplaintManagement from "./manage/components/ComplaintManagement";
 import MicroApps from "../components/MicroApps";
 import ResizeLine from "../components/ResizeLine.vue";
 import UserSelect from "../components/UserSelect.vue";
 import ImgUpload from "../components/ImgUpload.vue";
-import Approve from "./manage/approve/index.vue";
-import ApproveDetails from "./manage/approve/details.vue";
 import notificationKoro from "notification-koro1";
 import emitter from "../store/events";
 import SearchBox from "../components/SearchBox.vue";
@@ -514,14 +493,11 @@ import DepartmentOwnerView from "./manage/components/DepartmentOwnerView.vue";
 
 export default {
     components: {
-        Approve,
         SearchBox,
-        ApproveDetails,
         ImgUpload,
         UserSelect,
         TaskExport,
         CheckinExport,
-        ApproveExport,
         TaskModal,
         DialogModal,
         MobileTabbar,
@@ -568,7 +544,6 @@ export default {
 
             exportTaskShow: false,
             exportCheckinShow: false,
-            exportApproveShow: false,
 
             projectKeyValue: '',
             projectKeyLoading: 0,
@@ -600,10 +575,6 @@ export default {
 
             complaintShow: false,
 
-            approveShow: false,
-            approveDetails: {id: 0},
-            approveDetailsShow: false,
-
             taskBrowseLoading: false,
             taskBrowseHistory: [],
 
@@ -621,7 +592,6 @@ export default {
         emitter.on('addTask', this.onAddTask);
         emitter.on('createGroup', this.onCreateGroup);
         emitter.on('dialogMsgPush', this.addDialogMsg);
-        emitter.on('approveDetails', this.openApproveDetails);
         emitter.on('openReport', this.openReport);
         emitter.on('openFavorite', this.openFavorite);
         emitter.on('openRecent', this.openRecent);
@@ -634,14 +604,12 @@ export default {
         this.$store.dispatch("getUserInfo").catch(_ => {})
         this.$store.dispatch("getTaskPriority", 1000)
         this.$store.dispatch("getReportUnread", 1000)
-        this.$store.dispatch("getApproveUnread", 1000)
     },
 
     beforeDestroy() {
         emitter.off('addTask', this.onAddTask);
         emitter.off('createGroup', this.onCreateGroup);
         emitter.off('dialogMsgPush', this.addDialogMsg);
-        emitter.off('approveDetails', this.openApproveDetails);
         emitter.off('openReport', this.openReport);
         emitter.off('openFavorite', this.openFavorite);
         emitter.off('openRecent', this.openRecent);
@@ -671,7 +639,6 @@ export default {
             'clientDownloadUrl',
 
             'reportUnreadNumber',
-            'approveUnreadNumber',
 
             'dialogIns',
             'formOptions',
@@ -1112,9 +1079,6 @@ export default {
                 case 'exportCheckin':
                     this.exportCheckinShow = true;
                     return;
-                case 'exportApprove':
-                    this.exportApproveShow = true;
-                    return;
                 case 'workReport':
                     this.openReport(this.reportUnreadNumber > 0 ? 'receive' : 'my');
                     return;
@@ -1131,11 +1095,6 @@ export default {
                     $A.IDBSet("clearCache", "handle").then(_ => {
                         $A.reloadUrl()
                     });
-                    return;
-                case 'approve':
-                    if (this.menu.findIndex((m) => m.path == path) > -1) {
-                        this.goForward({name: 'manage-approve'});
-                    }
                     return;
                 case 'complaint':
                     this.complaintShow = true;
@@ -1201,10 +1160,7 @@ export default {
         },
 
         classNameRoute(path) {
-            let name = this.routeName
-            if (name == 'manage-approve') {
-                name = `manage-application`
-            }
+            const name = this.routeName
             return {
                 "active": name === `manage-${path}`,
             };
@@ -1678,13 +1634,6 @@ export default {
             }
         },
 
-        openApproveDetails(id) {
-            this.approveDetailsShow = true;
-            this.$nextTick(() => {
-                this.approveDetails = {id};
-            })
-        },
-
         openReport(tab) {
             this.workReportTab = tab;
             this.workReportShow = true;
@@ -1705,9 +1654,6 @@ export default {
                     break;
                 case 'overdue':
                     this.exportOverdueTask();
-                    break;
-                case 'approve':
-                    this.exportApproveShow = true;
                     break;
                 case 'checkin':
                     this.exportCheckinShow = true;
@@ -1776,9 +1722,6 @@ export default {
 
         onTabbarClick(act, params = '') {
             switch (act) {
-                case 'approve':
-                    this.approveShow = true
-                    break;
                 case 'createGroup':
                     this.onAddMenu('group')
                     break;

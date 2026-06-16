@@ -20,9 +20,6 @@ return [
     // 创始人密码修改开关：设为 'disabled' 时禁止修改创始人密码（User 模型）
     'password_owner' => env('PASSWORD_OWNER'),
 
-    // 审批流服务地址：审批微服务的内部访问 URL（ApproveController）
-    'flow_url' => env('FLOW_URL'),
-
     // Manticore 全文搜索服务主机（ManticoreBase）
     'search_host' => env('SEARCH_HOST', 'search'),
 
