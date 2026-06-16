@@ -18,7 +18,8 @@
                     trigger="click"
                     placement="bottom-end"
                     :transfer="true"
-                    :z-index="topZIndex + 1">
+                    :z-index="topZIndex + 1"
+                    @on-visible-change="onHistoryVisibleChange">
                     <div class="ai-assistant-header-btn" :title="$L('历史会话')">
                         <i class="taskfont">&#xe6e8;</i>
                     </div>
@@ -28,10 +29,21 @@
                             :key="session.id"
                             :class="{'active': session.id === currentSessionId}"
                             @click.native="loadSession(session.id)">
-                            <div class="history-item">
+                            <div class="history-item" @mouseleave="resetDeleteConfirm">
                                 <div class="history-item-content">
                                     <div class="history-item-title">{{ session.title }}</div>
-                                    <div class="history-item-delete" @click.stop="deleteSession(session.id)">
+                                    <div
+                                        v-if="confirmingDeleteId === session.id"
+                                        class="history-item-delete history-item-delete-confirm"
+                                        :title="$L('确认删除')"
+                                        @click.stop="deleteSession(session.id)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                    </div>
+                                    <div
+                                        v-else
+                                        class="history-item-delete"
+                                        :title="$L('删除')"
+                                        @click.stop="askDeleteSession(session.id)">
                                         <i class="taskfont">&#xe6e5;</i>
                                     </div>
                                 </div>
@@ -143,17 +155,24 @@
                         v-if="response.rawOutput && response.status === 'completed'"
                         class="ai-assistant-output-feedback">
                         <span
+                            class="ai-assistant-feedback-btn"
+                            :title="$L('复制')"
+                            @click="copyResponse(response)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.0"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        </span>
+                        <span
                             :class="['ai-assistant-feedback-btn', {active: response.feedback === 'like'}]"
                             :title="$L('有帮助')"
                             @click="submitFeedback(response, 'like')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V3a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m1.729-7.5a8.97 8.97 0 0 0-.621 4.72c.063.504.123 1.012.182 1.52.04.35.05.703.05 1.06v.27c0 .415-.336.75-.75.75h-2.25a.75.75 0 0 1-.75-.75v-7.5a.75.75 0 0 1 .75-.75h2.25c.414 0 .75.335.75.75v.198Z"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.0"><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/><path d="M7 10v12"/></svg>
                         </span>
                         <span
                             :class="['ai-assistant-feedback-btn ai-assistant-feedback-btn-down', {active: response.feedback === 'dislike'}]"
                             :title="$L('没帮助')"
                             @click="submitFeedback(response, 'dislike')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V3a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m1.729-7.5a8.97 8.97 0 0 0-.621 4.72c.063.504.123 1.012.182 1.52.04.35.05.703.05 1.06v.27c0 .415-.336.75-.75.75h-2.25a.75.75 0 0 1-.75-.75v-7.5a.75.75 0 0 1 .75-.75h2.25c.414 0 .75.335.75.75v.198Z"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.0"><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/><path d="M17 14V2"/></svg>
                         </span>
+                        <span v-if="response.createdAt" class="ai-assistant-output-time" :title="$A.dayjs(response.createdAt).format('YYYY-MM-DD HH:mm:ss')">{{ formatResponseTime(response.createdAt) }}</span>
                     </div>
                 </div>
             </div>
@@ -273,6 +292,8 @@ export default {
             loadIng: 0,
             pendingAutoSubmit: false,
             autoSubmitTimer: null,
+            confirmingDeleteId: null,
+            confirmingDeleteTimer: null,
             modalTitle: null,
             applyButtonText: null,
             submitButtonText: null,
@@ -368,6 +389,7 @@ export default {
         emitter.off('openAIAssistant', this.onOpenAIAssistant);
         this.clearActiveSSEClients();
         this.clearAutoSubmitTimer();
+        this.resetDeleteConfirm();
         this.unmountFloatButton();
         this.refreshWelcomePromptsDebounced?.cancel();
         this.stopZIndexTimer();
@@ -1105,6 +1127,8 @@ export default {
         handleStreamDone(owner, sse, event) {
             const donePayload = this.parseStreamPayload(event);
             const target = this.locateStreamTarget(owner);
+            // 完成前先判断是否仍贴底（此时反馈行尚未渲染）
+            const stickToBottom = target.isCurrent && this.shouldStickToBottom();
             if (target.entry) {
                 if (donePayload && donePayload.error) {
                     this.markResponseError(target.entry, donePayload.error);
@@ -1114,6 +1138,10 @@ export default {
             }
             this.releaseSSEClient(sse);
             this.persistStreamTarget(target);
+            // 完成后反馈/时间等按钮新增了高度，贴底用户需要再滚到底部
+            if (stickToBottom) {
+                this.scrollResponsesToBottom();
+            }
         },
 
         /**
@@ -1325,6 +1353,7 @@ export default {
                 error: '',
                 applyLoading: false,
                 feedback: '',
+                createdAt: Date.now(),
             };
             this.responses.push(entry);
             if (this.responses.length > this.maxResponses) {
@@ -1427,14 +1456,27 @@ export default {
         },
 
         /**
-         * 提交 👍/👎 反馈（可改票：点另一个值覆盖更新）
+         * 复制回复内容（去除推理段落）
          */
-        async submitFeedback(response, value) {
-            if (!response || response.feedbackLoading || response.feedback === value) {
+        copyResponse(response) {
+            const text = this.removeReasoningSections(response?.displayOutput || response?.rawOutput) || '';
+            if (!text) {
                 return;
             }
+            this.copyText(text);
+        },
+
+        /**
+         * 提交 👍/👎 反馈（可改票：点另一个值覆盖更新；再点当前已选项则取消）
+         */
+        async submitFeedback(response, value) {
+            if (!response || response.feedbackLoading) {
+                return;
+            }
+            // 点击当前已选中的反馈表示取消
+            const next = response.feedback === value ? '' : value;
             const prev = response.feedback;
-            this.$set(response, 'feedback', value);
+            this.$set(response, 'feedback', next);
             this.$set(response, 'feedbackLoading', true);
             try {
                 await this.$store.dispatch("call", {
@@ -1444,19 +1486,20 @@ export default {
                         session_key: this.currentSessionKey,
                         session_id: this.currentSessionId || '',
                         local_id: response.localId,
-                        feedback: value,
+                        feedback: next,
                         prompt: this.parsePromptContent(response.prompt).text.substring(0, 1000),
                         answer: (this.removeReasoningSections(response.rawOutput) || '').substring(0, 2000),
                         source_ids: this.extractSourceIds(response.rawOutput),
                         model: response.model,
                     },
                 });
+                // 先复位 loading 再保存，避免把 feedbackLoading=true 持久化导致重载后无法再点
+                this.$set(response, 'feedbackLoading', false);
                 this.saveCurrentSession();
             } catch (e) {
                 this.$set(response, 'feedback', prev);
-                $A.messageError(e?.msg || '反馈失败，请重试');
-            } finally {
                 this.$set(response, 'feedbackLoading', false);
+                $A.messageError(e?.msg || '反馈失败，请重试');
             }
         },
 
@@ -1554,6 +1597,8 @@ export default {
                                     r.status = 'error';
                                     r.error = r.error || this.$L('会话中断');
                                 }
+                                // feedbackLoading 为瞬时态，恢复时强制复位，避免历史脏数据卡死反馈按钮
+                                r.feedbackLoading = false;
                             });
                         }
                         // 缓存服务端返回的图片URL映射
@@ -1577,10 +1622,12 @@ export default {
          */
         sanitizeResponsesForPersist(responses) {
             return (responses || []).map(r => {
-                if (r.status === 'streaming' || r.status === 'waiting') {
-                    return {...r, status: 'error', error: r.error || this.$L('会话中断')};
+                // feedbackLoading 为瞬时 UI 态，不持久化，避免重载后卡死反馈按钮
+                const {feedbackLoading, ...rest} = r;
+                if (rest.status === 'streaming' || rest.status === 'waiting') {
+                    return {...rest, status: 'error', error: rest.error || this.$L('会话中断')};
                 }
-                return r;
+                return rest;
             });
         },
 
@@ -1803,7 +1850,35 @@ export default {
         /**
          * 删除指定会话
          */
+        /**
+         * 第一次点击删除：进入「确认删除」态（不立即删除），3 秒后自动复位
+         */
+        askDeleteSession(sessionId) {
+            this.confirmingDeleteId = sessionId;
+            clearTimeout(this.confirmingDeleteTimer);
+            this.confirmingDeleteTimer = setTimeout(() => {
+                this.resetDeleteConfirm();
+            }, 3000);
+        },
+
+        /**
+         * 复位「确认删除」态
+         */
+        resetDeleteConfirm() {
+            this.confirmingDeleteId = null;
+            clearTimeout(this.confirmingDeleteTimer);
+            this.confirmingDeleteTimer = null;
+        },
+
+        /**
+         * 历史下拉显隐变化时复位「确认删除」态
+         */
+        onHistoryVisibleChange() {
+            this.resetDeleteConfirm();
+        },
+
         deleteSession(sessionId) {
+            this.resetDeleteConfirm();
             const index = this.sessionStore.findIndex(s => s.id === sessionId);
             if (index > -1) {
                 const session = this.sessionStore[index];
@@ -1850,6 +1925,40 @@ export default {
         /**
          * 格式化会话时间显示
          */
+        /**
+         * 格式化单条回复时间（规则参考 happy-next formatMessageTime）
+         * - 今天：HH:mm
+         * - 本周内（周一为起点）：周几 HH:mm
+         * - 今年内：MM-DD HH:mm
+         * - 更早：YYYY-MM-DD
+         */
+        formatResponseTime(timestamp) {
+            if (!timestamp) {
+                return '';
+            }
+            const now = $A.daytz();
+            const time = $A.dayjs(timestamp);
+            const hm = time.format('HH:mm');
+            // 今天
+            if (now.format('YYYY-MM-DD') === time.format('YYYY-MM-DD')) {
+                return hm;
+            }
+            // 本周内（周一 00:00 起点，且不晚于当前）
+            const weekStart = now.subtract((now.day() + 6) % 7, 'day').startOf('day');
+            if (time.valueOf() >= weekStart.valueOf() && time.valueOf() <= now.valueOf()) {
+                const map = {zh: 'zh-CN', 'zh-CHT': 'zh-TW'};
+                const lang = getLanguage();
+                const locale = map[lang] || lang || 'en';
+                const weekday = new Intl.DateTimeFormat(locale, {weekday: 'short'}).format(time.toDate());
+                return `${weekday} ${hm}`;
+            }
+            // 今年内
+            if (now.year() === time.year()) {
+                return time.format('MM-DD HH:mm');
+            }
+            return time.format('YYYY-MM-DD');
+        },
+
         formatSessionTime(timestamp) {
             const now = $A.daytz();
             const time = $A.dayjs(timestamp);
@@ -2698,19 +2807,21 @@ export default {
     }
 
     .ai-assistant-output-placeholder {
+        height: 34px;
+        line-height: 34px;
         margin-top: 12px;
         font-size: 13px;
         color: #999;
-        padding: 8px;
+        padding: 0 10px;
         border-radius: 6px;
         background: rgba(0, 0, 0, 0.02);
     }
 
     .ai-assistant-output-feedback {
-        margin-top: 6px;
+        margin-top: 8px;
         display: flex;
         justify-content: flex-end;
-        gap: 4px;
+        gap: 3px;
 
         .ai-assistant-feedback-btn {
             display: inline-flex;
@@ -2724,8 +2835,8 @@ export default {
             transition: all 0.2s;
 
             svg {
-                width: 15px;
-                height: 15px;
+                width: 14px;
+                height: 14px;
             }
 
             &:hover {
@@ -2734,26 +2845,32 @@ export default {
             }
 
             &.active {
-                color: var(--primary-color, #1677ff);
-                background: rgba(22, 119, 255, 0.08);
+                color: var(--primary-color, #8bcf70);
+                background: rgba(139, 207, 112, 0.08);
             }
 
             &.ai-assistant-feedback-btn-down {
-                svg {
-                    transform: rotate(180deg);
-                }
-
                 &.active {
                     color: #f56c6c;
                     background: rgba(245, 108, 108, 0.08);
                 }
             }
         }
+
+        .ai-assistant-output-time {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 4px;
+            font-size: 12px;
+            color: #bbb;
+            white-space: nowrap;
+        }
     }
 
     .ai-assistant-output-markdown {
         margin-top: 12px;
         font-size: 13px;
+        min-height: 34px;
 
         .apply-reasoning {
             margin: 0 0 12px 0;
@@ -2966,6 +3083,22 @@ export default {
                     font-size: 12px;
                     color: #909399;
                 }
+
+                &.history-item-delete-confirm {
+                    display: flex;
+                    color: #fff;
+                    background-color: #f56c6c;
+                    opacity: 1;
+
+                    &:hover {
+                        background-color: #e15a5a;
+                    }
+
+                    > svg {
+                        width: 13px;
+                        height: 13px;
+                    }
+                }
             }
         }
 
@@ -2978,6 +3111,16 @@ export default {
             .history-item-content {
                 .history-item-delete {
                     display: flex;
+                }
+            }
+        }
+
+        // 触摸设备无 hover，删除按钮常显
+        @media (pointer: coarse) {
+            .history-item-content {
+                .history-item-delete {
+                    display: flex;
+                    opacity: 0.6;
                 }
             }
         }
@@ -3313,6 +3456,21 @@ export default {
         }
         .ai-assistant-input {
             padding-bottom: calc(12px + var(--navigation-bar-height, 0px));
+        }
+    }
+}
+
+body.window-portrait {
+    .ai-assistant-content {
+        .ai-assistant-output-feedback {
+            gap: 6px;
+
+            .ai-assistant-feedback-btn {
+                svg {
+                    width: 15px;
+                    height: 15px;
+                }
+            }
         }
     }
 }

@@ -244,7 +244,7 @@ class AssistantController extends AbstractController
     /**
      * @api {post} api/assistant/feedback/save 保存回复反馈
      *
-     * @apiDescription 需要token身份。保存用户对一条 AI 回复的 👍/👎 反馈，同一条回复可改票（覆盖更新）
+     * @apiDescription 需要token身份。保存用户对一条 AI 回复的 👍/👎 反馈，同一条回复可改票（覆盖更新）；传空 feedback 表示取消反馈（删除记录）
      * @apiVersion 1.0.0
      * @apiGroup assistant
      * @apiName feedback__save
@@ -252,7 +252,7 @@ class AssistantController extends AbstractController
      * @apiParam {String} session_key   场景分类key
      * @apiParam {String} session_id    前端会话ID
      * @apiParam {Number} local_id      回复条目localId
-     * @apiParam {String} feedback      like|dislike
+     * @apiParam {String} feedback      like|dislike，空字符串表示取消反馈
      * @apiParam {String} [prompt]      用户问题
      * @apiParam {String} [answer]      回复摘录
      * @apiParam {Array}  [source_ids]  回复引用的kb source id列表
@@ -279,7 +279,7 @@ class AssistantController extends AbstractController
         if (empty($sessionId) || $localId <= 0) {
             return Base::retError('参数错误');
         }
-        if (!in_array($feedback, ['like', 'dislike'])) {
+        if (!in_array($feedback, ['', 'like', 'dislike'])) {
             return Base::retError('反馈类型错误');
         }
         if (!is_array($sourceIds)) {
@@ -291,6 +291,14 @@ class AssistantController extends AbstractController
             ->where('session_id', $sessionId)
             ->where('local_id', $localId)
             ->first();
+
+        // 空反馈表示取消：删除已有记录
+        if ($feedback === '') {
+            $exist?->delete();
+            return Base::retSuccess('success', [
+                'feedback' => '',
+            ]);
+        }
 
         $row = AiAssistantFeedback::createInstance([
             'userid' => $user->userid,
