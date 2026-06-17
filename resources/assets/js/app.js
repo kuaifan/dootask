@@ -1,6 +1,7 @@
 const isElectron = !!(window && window.process && window.process.type && window.electron);
-const isEEUIApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
-const isSoftware = isElectron || isEEUIApp;
+// 新移动端在 UA 追加 DooTaskApp/<codeVersion>（resources/mobile/src/webview/WebViewShell.tsx）
+const isMobileApp = window && window.navigator && /DooTaskApp/i.test(window.navigator.userAgent);
+const isSoftware = isElectron || isMobileApp;
 
 document.getElementById("app")?.setAttribute("data-preload", "false");
 
@@ -8,7 +9,7 @@ import {languageName, switchLanguage as $L} from "./language";
 import {isLocalHost} from "./components/Replace/utils";
 
 import './functions/common'
-import './functions/eeui'
+import './functions/native-app'
 import './functions/web'
 
 import Vue from 'vue'
@@ -188,8 +189,8 @@ Vue.prototype.copyText = function (obj) {
             error: "复制失败"
         }
     }
-    if ($A.isEEUIApp) {
-        $A.eeuiAppCopyText(obj.text)
+    if ($A.isMobileApp) {
+        $A.nativeAppCopyText(obj.text)
         obj.success && $A.messageSuccess(obj.success)
         return
     }
@@ -207,7 +208,7 @@ $A.Electron = null;
 $A.Platform = "web";
 $A.isMainElectron = false;
 $A.isSubElectron = false;
-$A.isEEUIApp = isEEUIApp;
+$A.isMobileApp = isMobileApp;
 $A.isElectron = isElectron;
 $A.isSoftware = isSoftware;
 $A.openLog = false;
@@ -216,7 +217,7 @@ if (isElectron) {
     $A.Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
     $A.isMainElectron = /\s+MainTaskWindow\//.test(window.navigator.userAgent);
     $A.isSubElectron = /\s+SubTaskWindow\//.test(window.navigator.userAgent);
-} else if (isEEUIApp) {
+} else if (isMobileApp) {
     $A.Platform = /(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent) ? "ios" : "android";
 }
 
@@ -287,7 +288,7 @@ Vue.prototype.$Electron = $A.Electron;
 Vue.prototype.$Platform = $A.Platform;
 Vue.prototype.$isMainElectron = $A.isMainElectron;
 Vue.prototype.$isSubElectron = $A.isSubElectron;
-Vue.prototype.$isEEUIApp = $A.isEEUIApp;
+Vue.prototype.$isMobileApp = $A.isMobileApp;
 Vue.prototype.$isSoftware = $A.isSoftware;
 
 Vue.config.productionTip = false;
@@ -324,15 +325,16 @@ const $init = async () => {
 const $preload = async () => {
     document.getElementById("app")?.setAttribute("data-preload", "true")
 
-    if ($A.isEEUIApp) {
+    if ($A.isMobileApp) {
+        // 等待新 RN 桥接传输层（window.__nativeBridge）就绪，注入时机为 webview 加载内容前
         const requireTime = new Date().getTime();
-        while (typeof requireModuleJs !== "function") {
+        while (!window.__nativeBridge) {
             await new Promise(resolve => setTimeout(resolve, 200));
             if (new Date().getTime() - requireTime > 15 * 1000) {
                 break
             }
         }
-        if (typeof requireModuleJs !== "function") {
+        if (!window.__nativeBridge) {
             const errorTip = $A.L("加载失败，请重启软件")
             const errorView = document.querySelector(".app-view-loading")
             if (errorView) {
@@ -342,8 +344,8 @@ const $preload = async () => {
             }
             return
         }
-        const pageInfo = $A.eeuiAppGetPageInfo() || {};
-        store.state.isFirstPage = pageInfo.pageName === 'firstPage'
+        // 新移动端单 WebView 套壳，永远是首屏；isFirstPage 恒 true（旧 EEUI 是多 page 容器才需要判定）
+        store.state.isFirstPage = true
         await store.dispatch("safeAreaInsets")
     }
 

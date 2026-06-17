@@ -3,7 +3,7 @@
         <div :id="id" class="player">
             <div class="player-bg" :style="playerStyle"></div>
         </div>
-        <ETooltip :disabled="$isEEUIApp || windowTouch || !username">
+        <ETooltip :disabled="$isMobileApp || windowTouch || !username">
             <div slot="content">
                 {{username}}
             </div>

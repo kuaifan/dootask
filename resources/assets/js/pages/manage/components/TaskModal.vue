@@ -41,7 +41,7 @@ export default {
 
     watch: {
         show(v) {
-            $A.eeuiAppSetScrollDisabled(v && this.windowPortrait)
+            $A.nativeAppSetScrollDisabled(v && this.windowPortrait)
         }
     },
 

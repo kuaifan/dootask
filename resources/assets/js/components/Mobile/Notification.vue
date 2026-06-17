@@ -69,7 +69,7 @@ export default {
             if (this.duration > 0) {
                 this.timer = setTimeout(this.close, this.duration)
             }
-            $A.eeuiAppSendMessage({
+            $A.nativeAppSendMessage({
                 action: 'setVibrate',
             });
         },

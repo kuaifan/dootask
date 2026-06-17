@@ -180,7 +180,7 @@
                     <Draggable
                         :list="projectDraggableList"
                         :animation="150"
-                        :disabled="$isEEUIApp || windowTouch || !!projectKeyValue || ownerProjectTabsVisible"
+                        :disabled="$isMobileApp || windowTouch || !!projectKeyValue || ownerProjectTabsVisible"
                         tag="ul"
                         item-key="id"
                         draggable="li:not(.pinned)"
@@ -258,7 +258,7 @@
                     <Loading v-if="projectKeyLoading > 0"/>
                     <Icon v-else type="ios-search" />
                 </div>
-                <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
+                <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.nativeAppKeyboardHide">
                     <Input type="search" v-model="projectKeyValue" :placeholder="$L(`共${projectTotal || cacheProjects.length}个项目，搜索...`)" clearable/>
                 </Form>
             </div>
@@ -769,7 +769,7 @@ export default {
          * @returns {boolean}
          */
         showDownloadClient() {
-            return !this.$Electron && !this.$isEEUIApp && !!this.clientDownloadUrl
+            return !this.$Electron && !this.$isMobileApp && !!this.clientDownloadUrl
         },
 
         /**
@@ -1562,7 +1562,7 @@ export default {
             if (silence) {
                 return; // 静默消息不通知
             }
-            if (!this.natificationReady && !this.$isEEUIApp) {
+            if (!this.natificationReady && !this.$isMobileApp) {
                 return; // 通知未准备好不通知
             }
             if (this.windowActive && data.dialog_id === $A.last(this.dialogIns)?.dialog_id) {
@@ -1593,7 +1593,7 @@ export default {
             const notificationFuncB = (title, body, userimg) => {
                 if (this.__notificationId === id) {
                     this.__notificationId = null
-                    if (this.$isEEUIApp) {
+                    if (this.$isMobileApp) {
                         emitter.emit('openMobileNotification', {
                             userid: userid,
                             title,

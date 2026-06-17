@@ -175,7 +175,7 @@ export default {
                             title: title,
                             titleFixed: true,
                         });
-                    } else if (this.$isEEUIApp) {
+                    } else if (this.$isMobileApp) {
                         this.$store.dispatch('openAppChildPage', {
                             pageType: 'app',
                             pageTitle: title,

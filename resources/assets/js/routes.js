@@ -15,6 +15,11 @@ export default [
         component: () => import('./pages/meeting.vue'),
     },
     {
+        name: 'share',
+        path: '/share',
+        component: () => import('./pages/share.vue'),
+    },
+    {
         name: 'manage',
         path: '/manage',
         component: () => import('./pages/manage.vue'),

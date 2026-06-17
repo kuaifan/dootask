@@ -9,7 +9,7 @@
                             <Loading v-if="searchLoading"/>
                             <Icon v-else type="ios-search" />
                         </div>
-                        <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
+                        <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.nativeAppKeyboardHide">
                             <Input
                                 v-if="tabActive==='dialog'"
                                 type="search"
@@ -60,7 +60,7 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="$isEEUIApp && !appNotificationPermission" class="messenger-notify-permission" @click="onOpenAppSetting">
+                <div v-if="$isMobileApp && !appNotificationPermission" class="messenger-notify-permission" @click="onOpenAppSetting">
                     {{$L('未开启通知权限')}}<i class="taskfont">&#xe733;</i>
                 </div>
                 <Scrollbar
@@ -356,8 +356,8 @@ export default {
         //
         this.$nextTick(_ => this.activeNum++)
         //
-        if ($A.isEEUIApp) {
-            $A.eeuiAppSendMessage({action: 'getNotificationPermission'});
+        if ($A.isMobileApp) {
+            $A.nativeAppSendMessage({action: 'getNotificationPermission'});
         }
     },
 
@@ -1243,7 +1243,7 @@ export default {
         },
 
         onOpenAppSetting() {
-            $A.eeuiAppSendMessage({
+            $A.nativeAppSendMessage({
                 action: 'gotoSetting',
             });
         },

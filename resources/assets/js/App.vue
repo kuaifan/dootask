@@ -217,11 +217,11 @@ export default {
             handler() {
                 this.$store.dispatch("websocketConnection");
                 //
-                if (this.$isEEUIApp) {
+                if (this.$isMobileApp) {
                     this.umengAliasTimer && clearTimeout(this.umengAliasTimer)
                     if (this.userId > 0) {
                         // 给 APP 发送初始化消息
-                        $A.eeuiAppSendMessage({
+                        $A.nativeAppSendMessage({
                             action: 'initApp',
                             apiUrl: $A.apiUrl(''),
                             userid: this.userId,
@@ -231,7 +231,7 @@ export default {
                         });
 
                         // 更新设备信息
-                        $A.eeuiAppGetDeviceInfo().then(async info => {
+                        $A.nativeAppGetDeviceInfo().then(async info => {
                             let deviceName = info.deviceName || info.modelName
                             if (info.systemName === 'Android') {
                                 if ($A.strExists(info.modelName, info.brand)) {
@@ -254,14 +254,14 @@ export default {
                         // 设置友盟别名
                         this.umengAliasTimer = setTimeout(_ => {
                             this.umengAliasTimer = null;
-                            $A.eeuiAppSendMessage({
+                            $A.nativeAppSendMessage({
                                 action: 'setUmengAlias',
                                 url: $A.apiUrl('users/umeng/alias')
                             });
                         }, 6000)
                     } else {
                         // 删除友盟别名
-                        $A.eeuiAppSendMessage({
+                        $A.nativeAppSendMessage({
                             action: 'delUmengAlias',
                             url: $A.apiUrl('users/umeng/alias')
                         });
@@ -385,7 +385,7 @@ export default {
         },
 
         onRouterViewMounted() {
-            document.documentElement.setAttribute("data-platform", $A.isElectron ? "desktop" : $A.isEEUIApp ? "app" : "web")
+            document.documentElement.setAttribute("data-platform", $A.isElectron ? "desktop" : $A.isMobileApp ? "app" : "web")
         },
 
         /**
@@ -649,12 +649,12 @@ export default {
         },
 
         eeuiEvents() {
-            if (!this.$isEEUIApp) {
+            if (!this.$isMobileApp) {
                 return;
             }
             // 隐藏快照
             setTimeout(() => {
-                this.appActivated && $A.eeuiAppHideWebviewSnapshot()
+                this.appActivated && $A.nativeAppHideWebviewSnapshot()
             }, 500)
             // APP进入前台
             window.__onAppActive = async () => {
@@ -667,12 +667,12 @@ export default {
 
                 this.autoTheme()
                 $A.updateTimezone()
-                $A.eeuiAppHideWebviewSnapshot()
+                $A.nativeAppHideWebviewSnapshot()
                 this.$store.dispatch("safeAreaInsets")
                 const nowYmd = $A.daytz().format('YYYY-MM-DD')
                 if (this.lastCheckUpgradeYmd != nowYmd) {
                     this.lastCheckUpgradeYmd = nowYmd
-                    $A.eeuiAppCheckUpdate();
+                    $A.nativeAppCheckUpdate();
                 }
             }
             // APP进入后台
@@ -683,12 +683,12 @@ export default {
                         // 如果APP处于激活状态，则不显示快照
                         return;
                     }
-                    $A.eeuiAppGetWebviewSnapshot(ok => {
+                    $A.nativeAppGetWebviewSnapshot(ok => {
                         if (!ok || this.appActivated) {
                             // 如果获取快照失败，或者APP处于激活状态，则不显示快照
                             return;
                         }
-                        $A.eeuiAppShowWebviewSnapshot()
+                        $A.nativeAppShowWebviewSnapshot()
                     });
                 }, 500);
             }
@@ -714,7 +714,7 @@ export default {
                     return;
                 } else if (urlType === 1) {
                     // 使用默认浏览器打开
-                    $A.eeuiAppOpenWeb(url);
+                    $A.nativeAppOpenWeb(url);
                     return;
                 }
                 // App 内置浏览器打开
@@ -741,7 +741,7 @@ export default {
                                 tourist_id: event.uuid,
                             }
                         }).then(({data}) => {
-                            $A.eeuiAppSendMessage({
+                            $A.nativeAppSendMessage({
                                 action: 'updateMeetingInfo',
                                 infos: {
                                     uuid: event.uuid,
@@ -790,7 +790,7 @@ export default {
                 }
                 this.$store.state.keyboardShow = event.keyboardType === 'show';
                 this.$store.state.keyboardHeight = event.keyboardHeight;
-                $A.eeuiAppShakeToEditEnabled(this.$store.state.keyboardShow)
+                $A.nativeAppShakeToEditEnabled(this.$store.state.keyboardShow)
             }
             // 通知权限
             window.__onNotificationPermissionStatus = (ret) => {
@@ -801,22 +801,22 @@ export default {
                 this.goForward({ path: (path || '').indexOf('/') !==0 ? "/" + path : path });
             }
             // 发送网页尺寸
-            $A.eeuiAppSendMessage({
+            $A.nativeAppSendMessage({
                 action: 'windowSize',
                 width: this.windowWidth,
                 height: this.windowHeight,
             });
             // 取消长按振动
-            $A.eeuiAppSetHapticBackEnabled(false)
+            $A.nativeAppSetHapticBackEnabled(false)
             // 设置语言
-            $A.eeuiAppSetCachesString("languageWebBack", this.$L("后退"))
-            $A.eeuiAppSetCachesString("languageWebForward", this.$L("前进"))
-            $A.eeuiAppSetCachesString("languageWebBrowser", this.$L("浏览器打开"))
-            $A.eeuiAppSetCachesString("languageWebRefresh", this.$L("刷新"))
-            $A.eeuiAppSetCachesString("updateDefaultTitle", this.$L("发现新版本"))
-            $A.eeuiAppSetCachesString("updateDefaultContent", this.$L("暂无更新介绍！"))
-            $A.eeuiAppSetCachesString("updateDefaultCancelText", this.$L("以后再说"))
-            $A.eeuiAppSetCachesString("updateDefaultUpdateText", this.$L("立即更新"))
+            $A.nativeAppSetCachesString("languageWebBack", this.$L("后退"))
+            $A.nativeAppSetCachesString("languageWebForward", this.$L("前进"))
+            $A.nativeAppSetCachesString("languageWebBrowser", this.$L("浏览器打开"))
+            $A.nativeAppSetCachesString("languageWebRefresh", this.$L("刷新"))
+            $A.nativeAppSetCachesString("updateDefaultTitle", this.$L("发现新版本"))
+            $A.nativeAppSetCachesString("updateDefaultContent", this.$L("暂无更新介绍！"))
+            $A.nativeAppSetCachesString("updateDefaultCancelText", this.$L("以后再说"))
+            $A.nativeAppSetCachesString("updateDefaultUpdateText", this.$L("立即更新"))
         },
 
         otherEvents() {

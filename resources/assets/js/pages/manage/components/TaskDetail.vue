@@ -95,7 +95,7 @@
                     <p v-if="taskDetail.id"><span>{{taskDetail.id}}</span></p>
                 </div>
                 <div class="function">
-                    <ETooltip v-if="$Electron" :disabled="$isEEUIApp || windowTouch" :content="$L('独立窗口显示')">
+                    <ETooltip v-if="$Electron" :disabled="$isMobileApp || windowTouch" :content="$L('独立窗口显示')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
                     <div v-if="!isDepartmentReadonly" class="menu">
@@ -289,7 +289,7 @@
                         </div>
                         <ul class="item-content loop">
                             <li>
-                                <ETooltip :disabled="$isEEUIApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
+                                <ETooltip :disabled="$isMobileApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
                                     <span ref="loopText" @click="!isDepartmentReadonly && onLoop($event)">{{$L(loopLabel(taskDetail.loop))}}</span>
                                 </ETooltip>
                             </li>
@@ -1046,7 +1046,7 @@ export default {
                     this.ready = true;
                     this.loadRelatedTasks();
                 } else {
-                    $A.eeuiAppKeyboardHide()
+                    $A.nativeAppKeyboardHide()
                     this.timeOpen = false;
                     this.timeForce = false;
                     this.loopForce = false;
@@ -1926,7 +1926,7 @@ export default {
                 this.$store.dispatch('openDialog', dialogId).catch(({msg}) => {
                     $A.modalError(msg);
                 })
-                $A.eeuiAppKeyboardHide();
+                $A.nativeAppKeyboardHide();
             }
         },
 
@@ -2085,7 +2085,7 @@ export default {
                     title: `${file.name} (${$A.bytesToSize(file.size)})`,
                     titleFixed: true,
                 });
-            } else if (this.$isEEUIApp) {
+            } else if (this.$isMobileApp) {
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: `${file.name} (${$A.bytesToSize(file.size)})`,
@@ -2361,7 +2361,7 @@ export default {
         },
 
         autoScrollInto() {
-            return this.$isEEUIApp
+            return this.$isMobileApp
                 && this.windowPortrait
                 && this.$refs.chatInput?.isFocus
         },

@@ -1010,7 +1010,7 @@ export default {
         fileShow(val) {
             if (!val) {
                 this.browseFile(0)
-                $A.eeuiAppKeyboardHide()
+                $A.nativeAppKeyboardHide()
             }
         },
 
@@ -1508,7 +1508,7 @@ export default {
                 return;
             }
             // 客户端打开独立窗口
-            if (this.$Electron || this.$isEEUIApp) {
+            if (this.$Electron || this.$isMobileApp) {
                 this.openFileSingle(item);
                 return;
             }
@@ -1526,7 +1526,7 @@ export default {
                     title: $A.getFileName(item),
                     titleFixed: true,
                 });
-            } else if (this.$isEEUIApp) {
+            } else if (this.$isMobileApp) {
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: $A.getFileName(item),

@@ -154,7 +154,7 @@ interface DooTaskGlobal {
     /** 是否 Electron 子窗口 */
     isSubElectron: boolean;
     /** 是否 EEUI App 环境 */
-    isEEUIApp: boolean;
+    isMobileApp: boolean;
     /** 是否 Electron 环境 */
     isElectron: boolean;
     /** 是否客户端软件环境（Electron 或 EEUI） */
@@ -574,81 +574,81 @@ interface DooTaskGlobal {
     /** 获取eeui模块（Promise） */
     eeuiModulePromise(name?: string): Promise<any>;
     /** 获取eeui版本号 */
-    eeuiAppVersion(): string | undefined;
+    nativeAppVersion(): string | undefined;
     /** 获取本地软件版本号 */
-    eeuiAppLocalVersion(): string | undefined;
+    nativeAppLocalVersion(): string | undefined;
     /** Alert 弹窗 */
-    eeuiAppAlert(object: any, callback?: (result: any) => void): void;
+    nativeAppAlert(object: any, callback?: (result: any) => void): void;
     /** Toast 提示 */
-    eeuiAppToast(object: any): void;
+    nativeAppToast(object: any): void;
     /** 相对地址基于当前地址补全 */
-    eeuiAppRewriteUrl(val: string): string | undefined;
+    nativeAppRewriteUrl(val: string): string | undefined;
     /** 获取页面信息 */
-    eeuiAppGetPageInfo(pageName?: string): any;
+    nativeAppGetPageInfo(pageName?: string): any;
     /** 打开app新页面 */
-    eeuiAppOpenPage(object: Record<string, any>, callback?: (result: any) => void): void;
+    nativeAppOpenPage(object: Record<string, any>, callback?: (result: any) => void): void;
     /** 使用系统浏览器打开网页 */
-    eeuiAppOpenWeb(url: string): void;
+    nativeAppOpenWeb(url: string): void;
     /** 拦截返回按键事件（仅支持android、iOS无效） */
-    eeuiAppSetPageBackPressed(object: any, callback?: (result: any) => void): void;
+    nativeAppSetPageBackPressed(object: any, callback?: (result: any) => void): void;
     /** 返回手机桌面 */
-    eeuiAppGoDesktop(): void;
+    nativeAppGoDesktop(): void;
     /** 打开屏幕常亮 */
-    eeuiAppKeepScreenOn(): void;
+    nativeAppKeepScreenOn(): void;
     /** 关闭屏幕常亮 */
-    eeuiAppKeepScreenOff(): void;
+    nativeAppKeepScreenOff(): void;
     /** 隐藏软键盘 */
-    eeuiAppKeyboardHide(): void;
+    nativeAppKeyboardHide(): void;
     /** 给app发送消息 */
-    eeuiAppSendMessage(object: any): void;
+    nativeAppSendMessage(object: any): void;
     /** 设置浏览器地址 */
-    eeuiAppSetUrl(url: string): void;
+    nativeAppSetUrl(url: string): void;
     /** 生成webview快照 */
-    eeuiAppGetWebviewSnapshot(callback: (result: any) => void): void;
+    nativeAppGetWebviewSnapshot(callback: (result: any) => void): void;
     /** 显示webview快照 */
-    eeuiAppShowWebviewSnapshot(): void;
+    nativeAppShowWebviewSnapshot(): void;
     /** 隐藏webview快照 */
-    eeuiAppHideWebviewSnapshot(): void;
+    nativeAppHideWebviewSnapshot(): void;
     /** 扫码（成功时回调扫码文本） */
-    eeuiAppScan(callback: (text: string) => void): void;
+    nativeAppScan(callback: (text: string) => void): void;
     /** 检查更新 */
-    eeuiAppCheckUpdate(): void;
+    nativeAppCheckUpdate(): void;
     /** 获取主题名称 light|dark */
-    eeuiAppGetThemeName(): string | undefined;
+    nativeAppGetThemeName(): string | undefined;
     /** 判断软键盘是否可见 */
-    eeuiAppKeyboardStatus(): boolean | undefined;
+    nativeAppKeyboardStatus(): boolean | undefined;
     /** 设置全局变量 */
-    eeuiAppSetVariate(key: string, value: any): void;
+    nativeAppSetVariate(key: string, value: any): void;
     /** 获取全局变量 */
-    eeuiAppGetVariate(key: string, defaultVal?: any): any;
+    nativeAppGetVariate(key: string, defaultVal?: any): any;
     /** 设置缓存数据 */
-    eeuiAppSetCachesString(key: string, value: string, expired?: number): void;
+    nativeAppSetCachesString(key: string, value: string, expired?: number): void;
     /** 获取缓存数据 */
-    eeuiAppGetCachesString(key: string, defaultVal?: string): string | undefined;
+    nativeAppGetCachesString(key: string, defaultVal?: string): string | undefined;
     /** 是否长按内容震动（仅支持android、iOS无效） */
-    eeuiAppSetHapticBackEnabled(val: boolean): void;
+    nativeAppSetHapticBackEnabled(val: boolean): void;
     /** 禁止长按选择（仅支持android、iOS无效；传毫秒数则临时禁止） */
-    eeuiAppSetDisabledUserLongClickSelect(val: boolean | number | string): void;
+    nativeAppSetDisabledUserLongClickSelect(val: boolean | number | string): void;
     /** 复制文本 */
-    eeuiAppCopyText(text: string): void;
+    nativeAppCopyText(text: string): void;
     /** 设置是否禁止滚动 */
-    eeuiAppSetScrollDisabled(disabled: boolean): void;
+    nativeAppSetScrollDisabled(disabled: boolean): void;
     /** 设置应用程序级别的摇动撤销（仅支持iOS、android无效） */
-    eeuiAppShakeToEditEnabled(enabled: boolean): void;
+    nativeAppShakeToEditEnabled(enabled: boolean): void;
     /** 获取最新一张照片 */
-    eeuiAppGetLatestPhoto(expiration?: number, timeout?: number): Promise<any>;
+    nativeAppGetLatestPhoto(expiration?: number, timeout?: number): Promise<any>;
     /** 上传照片（params 参数：{url,data,headers,path,fieldName,onReady?}） */
-    eeuiAppUploadPhoto(params: Record<string, any>, timeout?: number): Promise<any>;
+    nativeAppUploadPhoto(params: Record<string, any>, timeout?: number): Promise<any>;
     /** 取消上传照片 */
-    eeuiAppCancelUploadPhoto(id: any): Promise<any>;
+    nativeAppCancelUploadPhoto(id: any): Promise<any>;
     /** 获取导航栏和状态栏高度 */
-    eeuiAppGetSafeAreaInsets(): Promise<any>;
+    nativeAppGetSafeAreaInsets(): Promise<any>;
     /** 获取当前语言（zh -> zh-Hans 等映射） */
-    eeuiAppConvertLanguage(): string;
+    nativeAppConvertLanguage(): string;
     /** 获取设备信息 */
-    eeuiAppGetDeviceInfo(): Promise<any>;
+    nativeAppGetDeviceInfo(): Promise<any>;
     /** 判断是否窗口化 */
-    eeuiAppIsWindowed(): Promise<boolean>;
+    nativeAppIsWindowed(): Promise<boolean>;
 }
 
 /** DooTask 全局工具对象（jQuery 实例 + $.extend 扩展方法） */

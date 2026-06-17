@@ -198,7 +198,7 @@ export default {
             if (this.windowActive) {
                 return
             }
-            $A.eeuiAppSendMessage({
+            $A.nativeAppSendMessage({
                 action: 'setBdageNotify',
                 bdage: this.unreadAndOverdue,
             });

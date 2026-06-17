@@ -782,7 +782,7 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {string}
          */
         reloadUrl() {
-            if ($A.isEEUIApp && $A.isAndroid()) {
+            if ($A.isMobileApp && $A.isAndroid()) {
                 let url = window.location.href;
                 let key = '_='
                 let reg = new RegExp(key + '\\d+');
@@ -805,7 +805,7 @@ const timezone = require("dayjs/plugin/timezone");
                         }
                     }
                 }
-                $A.eeuiAppSetUrl(url);
+                $A.nativeAppSetUrl(url);
             } else {
                 window.location.reload();
             }

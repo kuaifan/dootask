@@ -451,8 +451,8 @@ export default {
             $A.modalConfirm({
                 content: `是否拨打电话给 ${this.userData.nickname}？`,
                 onOk: () => {
-                    if ($A.isEEUIApp()) {
-                        $A.eeuiAppSendMessage({
+                    if ($A.isMobileApp()) {
+                        $A.nativeAppSendMessage({
                             action: 'callTel',
                             tel: this.userData.tel
                         });

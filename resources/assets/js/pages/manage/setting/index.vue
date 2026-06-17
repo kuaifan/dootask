@@ -32,7 +32,7 @@
                     </li>
                 </ul>
             </div>
-            <transition :name="$isEEUIApp ? 'mobile-dialog' : 'none'">
+            <transition :name="$isMobileApp ? 'mobile-dialog' : 'none'">
                 <div v-if="showContent" class="setting-content">
                     <MobileNavTitle :title="settingTitleName"/>
                     <div class="setting-content-title">{{titleNameRoute}}</div>
@@ -62,8 +62,8 @@ export default {
     },
 
     mounted() {
-        if (this.$isEEUIApp) {
-            this.clientVersion = `${window.systemInfo.version} (${$A.eeuiAppLocalVersion()})`
+        if (this.$isMobileApp) {
+            this.clientVersion = `${window.systemInfo.version} (${$A.nativeAppLocalVersion()})`
         }
     },
 
@@ -87,11 +87,11 @@ export default {
                 {path: 'theme', name: '主题设置'},
             ]
 
-            if (this.$Electron || this.$isEEUIApp) {
+            if (this.$Electron || this.$isMobileApp) {
                 menu.push({path: 'keyboard', name: '键盘设置'})
             }
 
-            if ($A.isDooServer() && this.$isEEUIApp) {
+            if ($A.isDooServer() && this.$isMobileApp) {
                 menu.push(...[
                     {path: 'privacy', name: '隐私政策', divided: true},
                     {path: 'delete', name: '删除帐号'},
@@ -198,7 +198,7 @@ export default {
 
         openPrivacy() {
             const url = $A.apiUrl('privacy')
-            if (this.$isEEUIApp) {
+            if (this.$isMobileApp) {
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: ' ',

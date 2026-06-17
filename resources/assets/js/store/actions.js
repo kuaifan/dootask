@@ -35,7 +35,7 @@ export default {
                 labelWidth: windowWidth > 576 ? 'auto' : '',
             }
 
-            $A.eeuiAppSendMessage({
+            $A.nativeAppSendMessage({
                 action: 'windowSize',
                 width: windowWidth,
                 height: windowHeight,
@@ -48,10 +48,11 @@ export default {
 
         window.addEventListener('message', ({data}) => {
             data = $A.jsonParse(data);
-            if (data.action === 'eeuiAppSendMessage') {
+            // 兼容：前端内部 iframe/postMessage 转 nativeAppSendMessage 的中转桥
+            if (data.action === 'nativeAppSendMessage' || data.action === 'eeuiAppSendMessage') {
                 const items = $A.isArray(data.data) ? data.data : [data.data];
                 items.forEach(item => {
-                    $A.eeuiAppSendMessage(item);
+                    $A.nativeAppSendMessage(item);
                 })
             }
         })
@@ -177,7 +178,7 @@ export default {
             if (!state.isFirstPage) {
                 return resolve(null)
             }
-            $A.eeuiAppGetSafeAreaInsets().then(async data => {
+            $A.nativeAppGetSafeAreaInsets().then(async data => {
                 data.top = data.top || state.safeAreaSize?.data?.top || 0
                 data.bottom = data.bottom || state.safeAreaSize?.data?.bottom || 0
                 const proportion = data.height / window.outerHeight
@@ -483,8 +484,8 @@ export default {
                 action: 'createDownload',
                 url
             });
-        } else if ($A.isEEUIApp) {
-            $A.eeuiAppOpenWeb(url);
+        } else if ($A.isMobileApp) {
+            $A.nativeAppOpenWeb(url);
         } else {
             window.open(url)
         }
@@ -557,7 +558,7 @@ export default {
                 return;
             }
             if (!$A.dark.utils.supportMode()) {
-                if ($A.isEEUIApp) {
+                if ($A.isMobileApp) {
                     $A.modalWarning("仅Android设置支持主题功能");
                 } else {
                     $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
@@ -600,8 +601,8 @@ export default {
         state.themeName = $A.dark.isDarkEnabled() ? 'dark' : 'light'
         window.localStorage.setItem("__system:themeConf__", state.themeConf)
         //
-        if ($A.isEEUIApp) {
-            $A.eeuiAppSendMessage({
+        if ($A.isMobileApp) {
+            $A.nativeAppSendMessage({
                 action: 'updateTheme',
                 themeName: state.themeName,
                 themeDefault: {
@@ -771,23 +772,14 @@ export default {
             state.userId = userInfo.userid;
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
-            if ($A.isSubElectron || ($A.isEEUIApp && !state.isFirstPage)) {
+            if ($A.isSubElectron || ($A.isMobileApp && !state.isFirstPage)) {
                 // 子窗口（Electron）、不是第一个页面（App） 不保存
             } else {
                 await $A.IDBSet("userInfo", state.userInfo);
             }
-            //
-            $A.eeuiAppSendMessage({
-                action: 'userChatList',
-                language: $A.eeuiAppConvertLanguage(),
-                url: $A.mainUrl('api/users/share/list') + `?token=${state.userToken}`
-            });
-            $A.eeuiAppSendMessage({
-                action:"userUploadUrl",
-                dirUrl: $A.mainUrl('api/file/content/upload') + `?token=${state.userToken}`,
-                chatUrl: $A.mainUrl('api/dialog/msg/sendfiles') + `?token=${state.userToken}`,
-            });
-            //
+            // 旧 EEUI 用 userChatList/userUploadUrl 把 share/list 和 sendfiles 接口
+            // 通过 App Group 同步给 iOS Share Extension 内嵌 UI；新移动端 /share 路由
+            // 由 WebView 内主前端直接调用接口，无需提前同步。
             resolve()
         })
     },
@@ -1322,7 +1314,7 @@ export default {
                 selectclose: "true",
                 channel,
             }
-            $A.eeuiAppSetVariate(`location::${channel}`, "");
+            $A.nativeAppSetVariate(`location::${channel}`, "");
             const url = $A.urlAddParams(window.location.origin + '/tools/map/index.html', Object.assign(params, objects || {}))
             dispatch('openAppChildPage', {
                 pageType: 'app',
@@ -1335,9 +1327,9 @@ export default {
                 },
                 callback: ({status}) => {
                     if (status === 'pause') {
-                        const data = $A.jsonParse($A.eeuiAppGetVariate(`location::${channel}`));
+                        const data = $A.jsonParse($A.nativeAppGetVariate(`location::${channel}`));
                         if (data.point) {
-                            $A.eeuiAppSetVariate(`location::${channel}`, "");
+                            $A.nativeAppSetVariate(`location::${channel}`, "");
                             if (data.distance > objects.radius) {
                                 $A.modalError(`你选择的位置「${data.title}」不在签到范围内`)
                                 return
@@ -1367,7 +1359,7 @@ export default {
             objects.params.showProgress = !isLocalHost(objects.params.url)
         }
 
-        $A.eeuiAppOpenPage(objects)
+        $A.nativeAppOpenPage(objects)
     },
 
     /**

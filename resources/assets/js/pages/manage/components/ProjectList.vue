@@ -7,7 +7,7 @@
                     <Loading v-if="loadProjects > 0"/>
                     <Icon v-else type="ios-search" />
                 </div>
-                <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
+                <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.nativeAppKeyboardHide">
                     <Input type="search" v-model="projectKeyValue" :placeholder="$L(loadProjects > 0 ? '更新中...' : '搜索')" clearable/>
                 </Form>
             </div>

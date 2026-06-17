@@ -257,7 +257,7 @@ export default {
                     systemInfo: window.systemInfo,
                     windowType: this.windowType,
 
-                    isEEUIApp: $A.isEEUIApp,
+                    isMobileApp: $A.isMobileApp,
                     isElectron: $A.isElectron,
                     isMainElectron: $A.isMainElectron,
                     isSubElectron: $A.isSubElectron,
@@ -515,7 +515,7 @@ export default {
                     width: mergedConfig.width,
                     height: mergedConfig.height,
                 });
-            } else if (this.$isEEUIApp) {
+            } else if (this.$isMobileApp) {
                 await this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: ' ',
@@ -541,7 +541,7 @@ export default {
                     path: config.url,
                     title: config.title || ' ',
                 });
-            } else if (this.$isEEUIApp) {
+            } else if (this.$isMobileApp) {
                 await this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: ' ',

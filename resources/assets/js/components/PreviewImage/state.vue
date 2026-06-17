@@ -32,7 +32,7 @@ export default {
         },
         previewImageList(l) {
             if (l.length > 0) {
-                if ($A.isEEUIApp || $A.isElectron) {
+                if ($A.isMobileApp || $A.isElectron) {
                     let position = Math.min(Math.max(this.$store.state.previewImageIndex, 0), this.$store.state.previewImageList.length - 1)
                     let paths = l.map(item => {
                         if ($A.isJson(item)) {
@@ -74,9 +74,9 @@ export default {
     },
     methods: {
         videoPreview(path) {
-            if ($A.isEEUIApp) {
-                $A.eeuiAppSendMessage({
-                    language: $A.eeuiAppConvertLanguage(),
+            if ($A.isMobileApp) {
+                $A.nativeAppSendMessage({
+                    language: $A.nativeAppConvertLanguage(),
                     action: 'videoPreview',
                     path
                 });
@@ -89,9 +89,9 @@ export default {
             }
         },
         imagePreview(index, paths) {
-            if ($A.isEEUIApp) {
-                $A.eeuiAppSendMessage({
-                    language: $A.eeuiAppConvertLanguage(),
+            if ($A.isMobileApp) {
+                $A.nativeAppSendMessage({
+                    language: $A.nativeAppConvertLanguage(),
                     action: 'picturePreview',
                     position: index,
                     paths

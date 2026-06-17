@@ -14,7 +14,7 @@
                     <Loading v-if="loadIng > 0"/>
                     <Icon v-else type="ios-search" />
                 </div>
-                <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
+                <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.nativeAppKeyboardHide">
                     <Input type="search" ref="searchKey" v-model="searchKey" :placeholder="$L('请输入关键字')"/>
                 </Form>
                 <div v-if="aiSearchAvailable" class="search-ai" @click="toggleAiSearch">
@@ -142,7 +142,7 @@ export default {
         },
 
         showModal(v) {
-            $A.eeuiAppSetScrollDisabled(v)
+            $A.nativeAppSetScrollDisabled(v)
         }
     },
 
@@ -262,7 +262,7 @@ export default {
         },
 
         onTouchstart() {
-            $A.eeuiAppKeyboardHide();
+            $A.nativeAppKeyboardHide();
         },
 
         onTag(type, e) {

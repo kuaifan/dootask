@@ -224,7 +224,7 @@ export default {
                                             path: path,
                                             title: this.$L(title),
                                         });
-                                    } else if (this.$isEEUIApp) {
+                                    } else if (this.$isMobileApp) {
                                         e.preventDefault()
                                         this.$store.dispatch('openAppChildPage', {
                                             pageType: 'app',

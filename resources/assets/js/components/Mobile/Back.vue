@@ -175,14 +175,14 @@ export default {
         },
 
         appAndroidEvents() {
-            if (this.$isEEUIApp && $A.isAndroid()) {
-                $A.eeuiAppSetPageBackPressed({
+            if (this.$isMobileApp && $A.isAndroid()) {
+                $A.nativeAppSetPageBackPressed({
                     pageName: 'firstPage',
                 }, _ => {
                     if (this.canBack()) {
                         this.onBack();
                     } else {
-                        $A.eeuiAppGoDesktop()
+                        $A.nativeAppGoDesktop()
                     }
                 });
             }

@@ -12,7 +12,7 @@
                 v-if="item.hidden !== true"
                 placement="top"
                 :key="key"
-                :disabled="$isEEUIApp || windowTouch || !item.title"
+                :disabled="$isMobileApp || windowTouch || !item.title"
                 :content="item.title"
                 :enterable="false"
                 :open-delay="600">

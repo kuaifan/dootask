@@ -94,14 +94,14 @@ export default {
         },
 
         showDown() {
-            if (this.$Electron || this.$isEEUIApp || this.windowTouch) {
+            if (this.$Electron || this.$isMobileApp || this.windowTouch) {
                 return false
             }
             return this.routeName === 'login'
         },
 
         showPrivacy() {
-            return $A.isDooServer() && this.$isEEUIApp && ['login'].includes(this.routeName)
+            return $A.isDooServer() && this.$isMobileApp && ['login'].includes(this.routeName)
         }
     },
 

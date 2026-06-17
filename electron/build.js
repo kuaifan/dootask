@@ -401,48 +401,15 @@ async function startBuild(data) {
     fs.writeFileSync(indexFile, indexString, 'utf8');
     //
     if (data.id === 'app') {
-        const eeuiDir = path.resolve(__dirname, "../resources/mobile");
-        const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
-        const containerName = `dootask-eeui-${Date.now()}-${process.pid}`;
-        fse.removeSync(publicDir)
-        fse.copySync(electronDir, publicDir)
-        if (argv[3] === "publish") {
-            // Android config
-            const gradleFile = path.resolve(eeuiDir, "platforms/android/eeuiApp/local.properties")
-            let gradleResult = fs.existsSync(gradleFile) ? fs.readFileSync(gradleFile, 'utf8') : "";
-            gradleResult = gradleResult.replace(/(versionCode|versionName)\s*=\s*(.+?)(\n|$)/g, '')
-            gradleResult += `versionCode = ${config.codeVerson}\nversionName = ${config.version}\n`
-            fs.writeFileSync(gradleFile, gradleResult, 'utf8')
-            // iOS config
-            const xcconfigFile = path.resolve(eeuiDir, "platforms/ios/eeuiApp/Config/Version.xcconfig")
-            let xcconfigResult = fs.existsSync(xcconfigFile) ? fs.readFileSync(xcconfigFile, 'utf8') : "";
-            xcconfigResult = xcconfigResult.replace(/(VERSION_CODE|VERSION_NAME)\s*=\s*(.+?)(\n|$)/g, '')
-            xcconfigResult += `VERSION_CODE = ${config.codeVerson}\nVERSION_NAME = ${config.version}\n`
-            fs.writeFileSync(xcconfigFile, xcconfigResult, 'utf8')
-        }
-        if (['build', 'publish'].includes(argv[3])) {
-            child_process.execSync(
-                `docker run -d --name ${containerName} -v ${shellQuote(eeuiDir)}:/work -w /work kuaifan/eeui-cli:0.0.1 sleep infinity`,
-                {stdio: "ignore", cwd: "resources/mobile"}
-            );
-            try {
-                if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
-                    child_process.execSync(`docker exec ${containerName} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
-                }
-                child_process.execSync(`docker exec ${containerName} node /work/scripts/patch-eeui-build.js`, {stdio: "inherit", cwd: "resources/mobile"});
-                child_process.execSync(`docker exec ${containerName} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
-            } finally {
-                child_process.execSync(`docker rm -f ${containerName}`, {stdio: "ignore", cwd: "resources/mobile"});
-            }
-        } else {
-            [
-                path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),
-                path.resolve(publicDir, "../../platforms/android/eeuiApp/app/src/main/assets/eeui/public"),
-            ].some(dir => {
-                fse.removeSync(dir)
-                fse.copySync(electronDir, dir)
-            })
-        }
+        // 新 Expo 移动端：将前端构建产物作为离线包同步到 resources/mobile/assets/web，
+        // 由 config plugin(withWebAssets) 在 prebuild 时注入原生 bundle，运行时本地静态服务 serve。
+        const mobileDir = path.resolve(__dirname, "../resources/mobile");
+        const webDir = path.resolve(mobileDir, "assets/web");
+        fse.removeSync(webDir)
+        fse.copySync(electronDir, webDir)
+        console.log(`移动端离线包已同步: ${webDir}`);
+        // 版本号由 resources/mobile/app.config.ts 从根 package.json 动态读取，无需改原生工程；
+        // App 原生打包在 resources/mobile 下执行 expo prebuild + eas build（见 WS7）。
         return;
     }
     const output = `dist/${data.id.replace(/\./g, '-')}/${platform}`
@@ -560,7 +527,9 @@ if (["dev"].includes(argv[2])) {
             process.exit(1)
         }
         const client = r2.createR2Client()
-        const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
+        // 新 Expo 移动端：apk 由 EAS Build 输出（或本地 expo prebuild + gradle assembleRelease）。
+        // EAS 流水线产物路径示例：android/app/build/outputs/apk/release 或 EAS 远端构建直接上传。
+        const releaseDir = path.resolve(__dirname, "../resources/mobile/android/app/build/outputs/apk/release");
         if (!fs.existsSync(releaseDir)) {
             console.error("发布文件未找到")
             process.exit(1)

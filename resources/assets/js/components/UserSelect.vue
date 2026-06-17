@@ -63,7 +63,7 @@
                         <Loading v-if="loadIng > 0"/>
                         <Icon v-else type="ios-search"/>
                     </div>
-                    <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
+                    <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.nativeAppKeyboardHide">
                         <Input
                             type="search"
                             v-model="searchKey"
@@ -377,7 +377,7 @@ export default {
             }
             this.$emit("on-show-change", v)
             //
-            $A.eeuiAppSetScrollDisabled(v && this.windowPortrait)
+            $A.nativeAppSetScrollDisabled(v && this.windowPortrait)
         },
 
         searchKey() {

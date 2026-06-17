@@ -552,7 +552,7 @@ export default {
                 {value: "vote", label: "群投票", sort: 100},
                 {value: "addProject", label: "创建项目", sort: 110},
                 {value: "addTask", label: "添加任务", sort: 120},
-                {value: "scan", label: "扫一扫", sort: 130, show: $A.isEEUIApp},
+                {value: "scan", label: "扫一扫", sort: 130, show: $A.isMobileApp},
 
                 // 管理员应用
                 {type: 'admin', value: "ldap", label: "LDAP", sort: 160, show: this.userIsAdmin},
@@ -1085,7 +1085,7 @@ export default {
                     this.appPushShow = true;
                     break;
                 case 'scan':
-                    $A.eeuiAppScan(this.scanResult);
+                    $A.nativeAppScan(this.scanResult);
                     break;
                 case 'word-chain':
                 case 'vote':

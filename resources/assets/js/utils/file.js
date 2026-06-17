@@ -75,7 +75,7 @@ export function openFileInClient(vm, item, options = {}) {
         return;
     }
 
-    if (vm.$isEEUIApp) {
+    if (vm.$isMobileApp) {
         vm.$store.dispatch('openAppChildPage', {
             pageType: 'app',
             pageTitle: finalTitle,

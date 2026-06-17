@@ -142,7 +142,7 @@
                                 <Loading v-if="searchLoad > 0"/>
                                 <Icon v-else type="ios-search" />
                             </div>
-                            <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
+                            <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.nativeAppKeyboardHide">
                                 <Input type="search" ref="searchInput" v-model="searchKey" :placeholder="$L('搜索消息')" @on-keyup="onSearchKeyup" clearable/>
                                 <div v-if="searchLoad === 0 && searchResult.length > 0" class="search-total">{{searchLocation}}/{{searchResult.length}}</div>
                             </Form>
@@ -1892,7 +1892,7 @@ export default {
             }
             this.tempMsgs.push(tempMsg)
             //
-            $A.eeuiAppUploadPhoto({
+            $A.nativeAppUploadPhoto({
                 url: $A.apiUrl('dialog/msg/sendfile'),
                 data: {
                     dialog_id: tempMsg.dialog_id,
@@ -2432,7 +2432,7 @@ export default {
         onTouchStart() {
             // Android 阻止长按反馈导致失去焦点页面抖动
             if (this.keyboardShow) {
-                $A.eeuiAppSetDisabledUserLongClickSelect(500);
+                $A.nativeAppSetDisabledUserLongClickSelect(500);
             }
         },
 
@@ -2600,7 +2600,7 @@ export default {
                         spinner: 600,
                     }).then(({data}) => {
                         if (data.tel) {
-                            $A.eeuiAppSendMessage({
+                            $A.nativeAppSendMessage({
                                 action: 'callTel',
                                 tel: data.tel
                             });
@@ -3547,7 +3547,7 @@ export default {
                             const {file_uid, file_method} = this.operateItem
                             if (file_method === "photo") {
                                 try {
-                                    await $A.eeuiAppCancelUploadPhoto(file_uid)
+                                    await $A.nativeAppCancelUploadPhoto(file_uid)
                                 } catch (e) {
                                     // 取消失败
                                 }
@@ -3932,7 +3932,7 @@ export default {
                     title,
                     titleFixed: true,
                 });
-            } else if (this.$isEEUIApp) {
+            } else if (this.$isMobileApp) {
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: title,
@@ -4567,7 +4567,7 @@ export default {
 
         autoScrollInto() {
             return this.location === "modal"
-                && this.$isEEUIApp
+                && this.$isMobileApp
                 && this.windowPortrait
                 && this.$refs.input?.isFocus
         },

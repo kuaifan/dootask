@@ -881,7 +881,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     config.onCancel();
                 }
             };
-            $A.eeuiAppKeyboardHide()
+            $A.nativeAppKeyboardHide()
             $A.Modal.confirm({
                 render: (h) => {
                     return h('div', [
@@ -958,7 +958,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     })
                 }
             }
-            $A.eeuiAppKeyboardHide()
+            $A.nativeAppKeyboardHide()
             $A.Modal.confirm($A.modalConfig(config));
         },
 
@@ -970,7 +970,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 setTimeout(() => { $A.modalSuccess(config) }, millisecond);
                 return;
             }
-            $A.eeuiAppKeyboardHide()
+            $A.nativeAppKeyboardHide()
             $A.Modal.success($A.modalConfig(config));
         },
 
@@ -982,7 +982,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 setTimeout(() => { $A.modalInfo(config) }, millisecond);
                 return;
             }
-            $A.eeuiAppKeyboardHide()
+            $A.nativeAppKeyboardHide()
             $A.Modal.info($A.modalConfig(config));
         },
 
@@ -997,7 +997,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 setTimeout(() => { $A.modalWarning(config) }, millisecond);
                 return;
             }
-            $A.eeuiAppKeyboardHide()
+            $A.nativeAppKeyboardHide()
             $A.Modal.warning($A.modalConfig(config));
         },
 
@@ -1012,7 +1012,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 setTimeout(() => { $A.modalError(config) }, millisecond);
                 return;
             }
-            $A.eeuiAppKeyboardHide()
+            $A.nativeAppKeyboardHide()
             $A.Modal.error($A.modalConfig(config));
         },
 
@@ -1020,7 +1020,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
             if (msg === false) {
                 return;
             }
-            $A.eeuiAppKeyboardHide()
+            $A.nativeAppKeyboardHide()
             alert($A.L(msg));
         },
 
@@ -1273,8 +1273,8 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
 
             autoDarkMode() {
                 let darkScheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-                if ($A.isEEUIApp) {
-                    darkScheme = $A.eeuiAppGetThemeName() === "dark"
+                if ($A.isMobileApp) {
+                    darkScheme = $A.nativeAppGetThemeName() === "dark"
                 }
                 if (darkScheme) {
                     this.enableDarkMode()
