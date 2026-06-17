@@ -156,6 +156,15 @@ function getAvailableActions(routeName, store) {
         },
     ];
 
+    // 关闭当前应用 - 仅在有微应用打开时可用（外壳层，不受 iframe 作用域限制）
+    const appWindowActions = [];
+    if ((store?.state?.microApps || []).some(a => a && a.isOpen)) {
+        appWindowActions.push({
+            name: 'close_app',
+            description: '关闭当前打开的应用窗口',
+        });
+    }
+
     // 根据页面类型添加特定操作
     const pageSpecificActions = [];
 
@@ -231,7 +240,7 @@ function getAvailableActions(routeName, store) {
             );
     }
 
-    return [...pageSpecificActions, ...commonActions];
+    return [...appWindowActions, ...pageSpecificActions, ...commonActions];
 }
 
 /**

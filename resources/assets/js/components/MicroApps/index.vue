@@ -142,11 +142,13 @@ export default {
 
     mounted() {
         emitter.on('observeMicroApp:open', this.onOpen);
+        emitter.on('observeMicroApp:close', this.onAssistClose);
         emitter.on('observeMicroApp:updatedOrUninstalled', this.onUpdatedOrUninstalled);
     },
 
     beforeDestroy() {
         emitter.off('observeMicroApp:open', this.onOpen);
+        emitter.off('observeMicroApp:close', this.onAssistClose);
         emitter.off('observeMicroApp:updatedOrUninstalled', this.onUpdatedOrUninstalled);
     },
 
@@ -664,7 +666,8 @@ export default {
         },
 
         /**
-         * 关闭之前判断（助理）
+         * 关闭之前判断（助理）；同时作为 observeMicroApp:close 事件处理器，
+         * 供 AI 助手等调用方触发关闭最前打开的应用
          * @returns {Promise<unknown>}
          */
         onAssistClose() {

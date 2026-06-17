@@ -11,6 +11,7 @@
 
 import { resolveActiveContext } from './active-context';
 import { selectBackend } from './input-backends';
+import emitter from '../../store/events';
 
 /**
  * 创建操作执行器
@@ -43,6 +44,9 @@ class ActionExecutor {
             navigate_to_messenger: this.navigateToMessenger.bind(this),
             navigate_to_calendar: this.navigateToCalendar.bind(this),
             navigate_to_files: this.navigateToFiles.bind(this),
+
+            // 关闭当前应用窗口（外壳层，不受 iframe 作用域限制）
+            close_app: this.closeApp.bind(this),
 
             // 别名支持
             goto_task: this.openTask.bind(this),
@@ -212,6 +216,23 @@ class ActionExecutor {
     async navigateToFiles() {
         window.$A.goForward({ name: 'manage-file' });
         return { navigated: true, page: 'files' };
+    }
+
+    // ========== 应用窗口 ==========
+
+    /**
+     * 关闭当前打开的应用窗口（最前那个）
+     *
+     * 关闭属于外壳层动作，不受 iframe 作用域限制：投递事件给 MicroApps 组件，
+     * 复用其现成的关闭逻辑。先用 store 状态判断有无打开应用，避免无应用时假报成功。
+     */
+    async closeApp() {
+        const hasOpen = (this.store?.state?.microApps || []).some(a => a && a.isOpen);
+        if (!hasOpen) {
+            throw new Error('当前没有打开的应用');
+        }
+        emitter.emit('observeMicroApp:close');
+        return { closed: true };
     }
 
     // ========== 元素级操作 ==========

@@ -22,7 +22,7 @@ negative:
   - 一次只能操作当前会话所在的页面，不能开新标签页
   - 关闭浏览器或切到别的标签页时，页面操作会断连失败
   - 跨源（外部站点）微应用 iframe 的内部不可操作，仅同源微应用插件可
-last_verified: v1.7.90
+last_verified: v1.7.91
 ---
 
 # AI 操作页面的机制
@@ -37,6 +37,7 @@ AI 助手通过高层导航和低层元素操作两类能力操作用户当前�
 ## 受支持的高层动作
 - `open_task`、`open_dialog`、`open_project`、`open_file`、`open_folder`
 - `navigate_to_dashboard / messenger / calendar / files`
+- `close_app`：关闭当前打开的应用窗口（仅在有微应用打开时出现）。属外壳层动作，哪怕 AI 正停在该应用内部、甚至应用跨源读不到内部，也能直接关闭
 
 ## 受支持的低层元素动作
 - `click`、`type`、`select`、`focus`、`scroll`、`hover`
