@@ -43,6 +43,7 @@ const { startMCPServer, stopMCPServer } = require("./lib/mcp");
 const {onRenderer, renderer} = require("./lib/renderer");
 const {onExport} = require("./lib/pdf-export");
 const {allowedCalls, isWin} = require("./lib/other");
+const {registerPageInput} = require("./lib/page-input");
 const webTabManager = require("./lib/web-tab-manager");
 const faviconCache = require("./lib/favicon-cache");
 
@@ -623,6 +624,9 @@ app.on('before-quit', () => {
 app.on("will-quit", () => {
     globalShortcut.unregisterAll();
 })
+
+// AI 助手页面操作 · CDP 可信输入（渲染端经 sendAsync('pageInput', ...) 调用）
+registerPageInput();
 
 /**
  * 设置菜单语言包

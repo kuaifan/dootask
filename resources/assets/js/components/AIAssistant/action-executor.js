@@ -9,8 +9,8 @@
  * 本模块只负责前端导航和 UI 操作。
  */
 
-import { findElementByRef } from './page-context-collector';
 import { resolveActiveContext } from './active-context';
+import { selectBackend } from './input-backends';
 
 /**
  * 创建操作执行器
@@ -219,8 +219,9 @@ class ActionExecutor {
     /**
      * 设置当前的 refMap 与活动上下文（由 operation-module 在获取上下文后调用）
      */
-    setRefMap(refMap, context = null) {
-        this.currentRefMap = refMap;
+    setRefMap(refElements, context = null) {
+        // refElements: Map<ref, Element>（描述层产出，直接持有元素）；容错旧的 plain object
+        this.currentRefElements = refElements instanceof Map ? refElements : null;
         this.currentContext = context;
     }
 
@@ -254,65 +255,17 @@ class ActionExecutor {
         const doc = this.resolveContextDoc();
         const element = this.findElement(elementUid, doc);
         if (!element) {
-            throw new Error(`找不到元素: ${elementUid}`);
+            throw new Error(`element_not_found: 找不到元素 ${elementUid}（可能页面已变更，请重新获取页面上下文）`);
         }
 
-        // 元素所在 window（主文档或微应用 iframe），事件需用它的构造器才被框架信任
+        // 元素所在 window（主文档或微应用 iframe），合成事件需用它的构造器才被框架信任
         const win = element.ownerDocument.defaultView || window;
 
-        switch (action) {
-            case 'click':
-                element.click();
-                return { success: true, action: 'click', element: elementUid };
+        // 选择输入后端：Electron CDP 可信输入优先，否则页面内合成事件（地板）
+        if (!this.backend) this.backend = selectBackend();
 
-            case 'type':
-                if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || element.contentEditable === 'true') {
-                    element.focus();
-                    if (element.contentEditable === 'true') {
-                        element.textContent = value || '';
-                    } else {
-                        element.value = value || '';
-                    }
-                    element.dispatchEvent(new win.Event('input', { bubbles: true }));
-                    element.dispatchEvent(new win.Event('change', { bubbles: true }));
-                    return { success: true, action: 'type', value, element: elementUid };
-                }
-                throw new Error('元素不支持输入操作');
-
-            case 'select':
-                if (element.tagName === 'SELECT') {
-                    element.value = value;
-                    element.dispatchEvent(new win.Event('change', { bubbles: true }));
-                    return { success: true, action: 'select', value, element: elementUid };
-                }
-                // iView Select 组件 - 先点击打开下拉
-                element.click();
-                await this.delay(200);
-                const options = element.ownerDocument.querySelectorAll('.ivu-select-dropdown-list .ivu-select-item');
-                for (const option of options) {
-                    if (option.textContent.trim().includes(value)) {
-                        option.click();
-                        return { success: true, action: 'select', value, element: elementUid };
-                    }
-                }
-                throw new Error(`找不到选项: ${value}`);
-
-            case 'focus':
-                element.focus();
-                return { success: true, action: 'focus', element: elementUid };
-
-            case 'scroll':
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return { success: true, action: 'scroll', element: elementUid };
-
-            case 'hover':
-                element.dispatchEvent(new win.MouseEvent('mouseenter', { bubbles: true }));
-                element.dispatchEvent(new win.MouseEvent('mouseover', { bubbles: true }));
-                return { success: true, action: 'hover', element: elementUid };
-
-            default:
-                throw new Error(`不支持的元素操作: ${action}`);
-        }
+        const result = await this.backend.perform(element, action, value, { doc, win, elementUid });
+        return Object.assign({ element: elementUid }, result);
     }
 
     /**
@@ -329,13 +282,14 @@ class ActionExecutor {
             ref = identifier;
         }
 
-        // 如果是 ref 格式，使用 refMap 查找
-        if (ref && this.currentRefMap) {
-            const element = findElementByRef(ref, this.currentRefMap, doc);
-            if (element) return element;
+        // ref 格式：从描述层产出的 ref→Element 实时 Map 直接取（最准）
+        if (ref && this.currentRefElements) {
+            const element = this.currentRefElements.get(ref);
+            if (element && element.isConnected) return element;
+            if (element && !element.isConnected) return null; // 失联（DOM 已变更）
         }
 
-        // 尝试作为 CSS 选择器
+        // 尝试作为 CSS 选择器（兜底）
         try {
             const element = doc.querySelector(identifier);
             if (element) return element;

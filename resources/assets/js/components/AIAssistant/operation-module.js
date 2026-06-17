@@ -97,7 +97,7 @@ class OperationModule {
                 reason: active.reason,
             };
             base.hint = `${reasonText}。可改用主界面（scope=main）操作，或改用数据命令完成。`;
-            this.executor.setRefMap({}, null);
+            this.executor.setRefMap(new Map(), null);
             return base;
         }
 
@@ -132,15 +132,11 @@ class OperationModule {
                     context.total_count = vectorMatches.length;
                     context.has_more = false;
                     context.vector_matched = true;
+                    context.refElements = allContext.refElements; // 全量 Map 覆盖向量命中的 ref
                     context.ref_map = {};
                     for (const el of vectorMatches) {
                         if (el.ref) {
-                            context.ref_map[el.ref] = {
-                                role: el.role,
-                                name: el.name,
-                                selector: el.selector,
-                                nth: el.nth,
-                            };
+                            context.ref_map[el.ref] = { role: el.role, name: el.name };
                         }
                     }
                 }
@@ -154,10 +150,11 @@ class OperationModule {
             operable: true,
         };
 
-        // 将 refMap 与活动上下文一并存入 executor，供后续元素操作使用（含失效守卫）
-        if (context.ref_map && this.executor) {
-            this.executor.setRefMap(context.ref_map, active);
+        // 将 ref→Element 实时 Map 与活动上下文存入 executor，供后续元素操作解析（含失效守卫）
+        if (context.refElements && this.executor) {
+            this.executor.setRefMap(context.refElements, active);
         }
+        delete context.refElements; // Map 不参与序列化回包
 
         return context;
     }

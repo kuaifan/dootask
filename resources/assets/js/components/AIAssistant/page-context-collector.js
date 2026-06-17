@@ -3,7 +3,13 @@
  *
  * 借鉴 agent-browser 项目的设计思想，基于 ARIA 角色收集页面元素。
  * 提供结构化的页面快照，包括可交互元素和内容元素。
+ *
+ * 描述层（元素发现 + 可访问名/角色 + ariaSnapshot 文本 + ref）复用 Playwright
+ * 注入脚本的 ariaSnapshot 子集（见 ./aria/aria-bundle.js）；本文件负责分页、
+ * 关键词/向量过滤、available_actions 等业务包装，并持有 ref→Element 实时 Map。
  */
+
+import { buildSnapshot } from './aria/aria-bundle';
 
 // ========== ARIA 角色分类 ==========
 
@@ -111,6 +117,8 @@ export function collectPageContext(store, options = {}) {
         context.total_count = result.totalCount;
         context.has_more = result.hasMore;
         context.ref_map = result.refMap;
+        context.snapshot = result.snapshot;        // ariaSnapshot YAML（模型主消费）
+        context.refElements = result.refElements;  // Map<ref,Element>（实时，供执行器；序列化前删除）
         // 标记是否经过关键词过滤
         if (query) {
             context.query = query;
@@ -227,225 +235,81 @@ function getAvailableActions(routeName, store) {
 }
 
 /**
- * 收集页面元素
+ * 收集页面元素（基于 Playwright ariaSnapshot 子集发现可交互元素）
+ *
+ * 元素发现 / 可访问名·角色 / ref 分配全部来自 buildSnapshot；本函数只做关键词
+ * 过滤、分页与结构化包装，并返回全量 ref→Element 实时 Map 供执行器解析。
  * @param {Object} options
- * @param {boolean} options.interactiveOnly - 仅返回可交互元素
  * @param {number} options.maxElements - 每页最大元素数量
  * @param {number} options.offset - 跳过前 N 个元素
  * @param {string} options.container - 容器选择器
  * @param {string} options.query - 搜索关键词
- * @returns {Object} { elements, refMap, totalCount, hasMore, keywordMatched }
+ * @returns {Object} { elements, refMap, refElements, snapshot, totalCount, hasMore, keywordMatched }
  */
 export function collectElements(options = {}) {
     const {
         doc = document,
-        interactiveOnly = false,
         maxElements = 50,
         offset = 0,
         container = null,
         query = '',
     } = options;
 
-    // 确定查询的根元素
-    let rootElement = doc;
+    const empty = { elements: [], refMap: {}, refElements: new Map(), snapshot: '', totalCount: 0, hasMore: false, keywordMatched: false };
+
+    // 确定快照根元素
+    let rootElement = doc.body || doc.documentElement || doc;
     if (container) {
         rootElement = doc.querySelector(container);
-        if (!rootElement) {
-            return { elements: [], refMap: {}, totalCount: 0, hasMore: false };
-        }
+        if (!rootElement) return empty;
     }
 
-    // 角色+名称计数器，用于处理重复元素
-    const roleNameCounter = new Map();
-
-    // 获取所有可能的交互元素选择器
-    const selectors = [
-        // 按钮类
-        'button',
-        '[role="button"]',
-        'input[type="submit"]',
-        'input[type="button"]',
-        'input[type="reset"]',
-        '.ivu-btn',
-        // 链接
-        'a[href]',
-        '[role="link"]',
-        // 输入框
-        'input:not([type="hidden"])',
-        'textarea',
-        '[role="textbox"]',
-        '[contenteditable="true"]',
-        // 选择器
-        'select',
-        '[role="combobox"]',
-        '[role="listbox"]',
-        '.ivu-select',
-        // 复选框和单选框
-        'input[type="checkbox"]',
-        'input[type="radio"]',
-        '[role="checkbox"]',
-        '[role="radio"]',
-        '.ivu-checkbox',
-        '.ivu-radio',
-        // 菜单项
-        '[role="menuitem"]',
-        '[role="tab"]',
-        '.ivu-menu-item',
-        '.ivu-tabs-tab',
-        // 可点击的图标和操作按钮
-        '[class*="click"]',
-        '[class*="btn"]',
-        '[class*="action"]',
-        '.taskfont[title]',
-        // 表格单元格（可能可点击）
-        'td[onclick]',
-        'tr[onclick]',
-    ];
-
-    // 基于 INTERACTIVE_ROLES 补全所有 ARIA 可交互角色（与上面重复的选择器会被 querySelectorAll 按元素自动去重）
-    for (const role of INTERACTIVE_ROLES) {
-        selectors.push(`[role="${role}"]`);
+    // 描述层：Playwright ariaSnapshot 子集 → YAML 文本 + 全量 ref→Element Map（仅可交互元素分配 ref）
+    let snap;
+    try {
+        snap = buildSnapshot(rootElement, { mode: 'ai' });
+    } catch (e) {
+        return empty;
     }
-    // 可聚焦 / 自定义可交互元素（显式 tabindex 且非 -1）
-    selectors.push('[tabindex]:not([tabindex="-1"])');
+    const refElements = snap.elements || new Map(); // Map<ref, Element>，覆盖全部可交互元素
 
-    // 如果不仅限交互元素，添加内容元素选择器
-    if (!interactiveOnly) {
-        selectors.push(
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-            '[role="heading"]',
-            'img[alt]',
-            'nav',
-            'main',
-        );
+    // 基于 ref→Element 构建结构化列表（顺序即 DOM 顺序，ref 与 YAML 一致）
+    const all = [];
+    for (const [ref, el] of refElements.entries()) {
+        if (!el || !el.isConnected) continue;
+        const info = extractElementInfo(el);
+        if (!info) continue;
+        info.ref = ref;
+        all.push(info);
     }
 
-    // 第一阶段：收集所有有效元素（不限数量）
-    const allValidElements = [];
-    const processedElements = new Set();
-
-    // 查询所有匹配的元素
-    const candidateElements = rootElement.querySelectorAll(selectors.join(', '));
-
-    for (const el of candidateElements) {
-        processedElements.add(el);
-
-        // 跳过不可见元素
-        if (!isElementVisible(el)) continue;
-
-        // 跳过禁用元素
-        if (isElementDisabled(el)) continue;
-
-        allValidElements.push({ el, fromPointerScan: false });
-    }
-
-    // 第二遍扫描：查找具有 cursor: pointer 但未被选择器匹配的元素
-    const clickableSelectors = 'div, span, li, td, tr, section, article, aside, header, footer, label, i, svg';
-    const potentialClickables = rootElement.querySelectorAll(clickableSelectors);
-
-    for (const el of potentialClickables) {
-        if (processedElements.has(el)) continue;
-
-        // label[for] 或包裹表单控件的 label：点击等价于其控件（已单独采集），跳过避免重复
-        if (el.tagName === 'LABEL' && (el.htmlFor || el.querySelector('input, textarea, select'))) continue;
-
-        // 检查是否有 cursor: pointer 样式
-        const computedStyle = (el.ownerDocument.defaultView || window).getComputedStyle(el);
-        if (computedStyle.cursor !== 'pointer') continue;
-
-        // 跳过不可见或禁用元素
-        if (!isElementVisible(el)) continue;
-        if (isElementDisabled(el)) continue;
-
-        processedElements.add(el);
-        allValidElements.push({ el, fromPointerScan: true });
-    }
-
-    // 第二阶段：应用关键词过滤（如果有 query）
-    let filteredElements = allValidElements;
+    // 关键词过滤（无匹配则回退到全部）
+    let filtered = all;
     let keywordMatched = false;
-
     if (query) {
-        const lowerQuery = query.toLowerCase();
-        filteredElements = allValidElements.filter(({ el }) => {
-            const name = getElementName(el).toLowerCase();
-            const ariaLabel = (el.getAttribute('aria-label') || '').toLowerCase();
-            const placeholder = (el.placeholder || '').toLowerCase();
-            const title = (el.title || '').toLowerCase();
-
-            return name.includes(lowerQuery)
-                || ariaLabel.includes(lowerQuery)
-                || placeholder.includes(lowerQuery)
-                || title.includes(lowerQuery);
-        });
-        keywordMatched = filteredElements.length > 0;
-
-        // 如果关键词匹配不到任何元素，回退到全部元素
-        if (filteredElements.length === 0) {
-            filteredElements = allValidElements;
-        }
+        const q = query.toLowerCase();
+        filtered = all.filter((info) => (info.name || '').toLowerCase().includes(q)
+            || (info.placeholder || '').toLowerCase().includes(q)
+            || (info.aria_label || '').toLowerCase().includes(q)
+            || (info.title || '').toLowerCase().includes(q));
+        keywordMatched = filtered.length > 0;
+        if (filtered.length === 0) filtered = all;
     }
 
-    // 第三阶段：应用分页，生成最终结果
-    const totalCount = filteredElements.length;
-    const startIndex = offset;
+    // 分页（结构化列表分页；refElements 始终为全量，执行器可解析任意 ref）
+    const totalCount = filtered.length;
     const endIndex = Math.min(offset + maxElements, totalCount);
     const hasMore = endIndex < totalCount;
 
     const elements = [];
     const refMap = {};
-    let refCounter = offset + 1; // ref 从 offset+1 开始，保持全局唯一
-
-    for (let i = startIndex; i < endIndex; i++) {
-        const { el, fromPointerScan } = filteredElements[i];
-
-        // 获取元素信息
-        const elementInfo = extractElementInfo(el, refCounter);
-        if (!elementInfo) continue;
-
-        // 如果是从 pointer 扫描来的，强制设为 button 角色
-        if (fromPointerScan && elementInfo.role === 'generic') {
-            elementInfo.role = 'button';
-        }
-
-        // 处理重复的角色+名称组合
-        const key = `${elementInfo.role}:${elementInfo.name || ''}`;
-        const count = roleNameCounter.get(key) || 0;
-        roleNameCounter.set(key, count + 1);
-
-        if (count > 0) {
-            elementInfo.nth = count;
-        }
-
-        // 生成 ref
-        const ref = `e${refCounter++}`;
-        elementInfo.ref = ref;
-
-        // 存储到 refMap
-        refMap[ref] = {
-            role: elementInfo.role,
-            name: elementInfo.name,
-            selector: elementInfo.selector,
-            nth: elementInfo.nth,
-        };
-
-        elements.push(elementInfo);
+    for (let i = offset; i < endIndex; i++) {
+        const info = filtered[i];
+        elements.push(info);
+        refMap[info.ref] = { role: info.role, name: info.name };
     }
 
-    // 为重复元素添加 nth 标记
-    for (const element of elements) {
-        const key = `${element.role}:${element.name || ''}`;
-        const roleCount = roleNameCounter.get(key);
-        // 只有真正重复的才保留 nth
-        if (roleCount <= 1) {
-            delete element.nth;
-            if (refMap[element.ref]) {
-                delete refMap[element.ref].nth;
-            }
-        }
-    }
-
-    return { elements, refMap, totalCount, hasMore, keywordMatched };
+    return { elements, refMap, refElements, snapshot: snap.text, totalCount, hasMore, keywordMatched };
 }
 
 /**

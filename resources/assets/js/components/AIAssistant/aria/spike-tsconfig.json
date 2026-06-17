@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@injected/*": ["./packages/injected/src/*"],
+      "@isomorphic/*": ["./packages/isomorphic/*"]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+aria-bundle.js is a vendored, esbuild-bundled subset of Playwright's injected
+ariaSnapshot code.
+
+  Playwright
+  Copyright (c) Microsoft Corporation
+  Licensed under the Apache License, Version 2.0
+  https://github.com/microsoft/playwright/blob/main/LICENSE
+
+Included source (from packages/injected/src and packages/isomorphic):
+  ariaSnapshot.ts, roleUtils.ts, domUtils.ts, and @isomorphic helpers
+  (stringUtils, yaml, cssTokenizer, ariaSnapshot).
+
+Regenerate:
+  1. git clone github.com/microsoft/playwright (pin the commit in aria-bundle.js banner)
+  2. esbuild esm-entry.ts --bundle --format=esm --platform=browser \
+       --tsconfig=spike-tsconfig.json --outfile=aria-bundle.js
+  esm-entry.ts and spike-tsconfig.json in this folder are the build inputs.
+
+This file is provided to comply with the Apache-2.0 NOTICE/attribution requirement.
