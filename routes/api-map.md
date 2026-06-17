@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：319
+接口总数：300
 
 ## 路由规则
 
@@ -224,6 +224,7 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/dialog/msg/sendtext | msg__sendtext() | post | 发送消息 |
 | api/dialog/msg/sendnotice | msg__sendnotice() | post | 发送通知 |
 | api/dialog/msg/sendtemplate | msg__sendtemplate() | post | 发送模板消息 |
+| api/dialog/msg/sendapprove | msg__sendapprove() | post | 发送审批通知卡片 |
 | api/dialog/msg/sendrecord | msg__sendrecord() | post | 发送语音 |
 | api/dialog/msg/convertrecord | msg__convertrecord() | post | 录音转文字 |
 | api/dialog/msg/sendfile | msg__sendfile() | post | 文件上传 |
@@ -326,33 +327,6 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/public/checkin/install | checkin__install() | any |  |
 | api/public/checkin/report | checkin__report() | any |  |
 
-## approve（ApproveController）
-
-| URL | 方法名 | HTTP | 说明 |
-| --- | --- | --- | --- |
-| api/approve/verifyToken | verifyToken() | get | 验证APi登录 |
-| api/approve/procdef/all | procdef__all() | post | 查询流程定义 |
-| api/approve/procdef/del | procdef__del() | get | 删除流程定义 |
-| api/approve/process/start | process__start() | post | 启动流程（审批中） |
-| api/approve/process/addGlobalComment | process__addGlobalComment() | post | 添加全局评论 |
-| api/approve/task/complete | task__complete() | post | 审批 |
-| api/approve/task/withdraw | task__withdraw() | post | 撤回 |
-| api/approve/process/delById | process__delById() | post | 删除审批（流程实例） |
-| api/approve/process/findTask | process__findTask() | post | 查询需要我审批的流程（审批中） |
-| api/approve/process/startByMyselfAll | process__startByMyselfAll() | post | 查询我启动的流程（全部） |
-| api/approve/process/startByMyself | process__startByMyself() | post | 查询我启动的流程（审批中） |
-| api/approve/process/findProcNotify | process__findProcNotify() | post | 查询抄送我的流程（审批中） |
-| api/approve/identitylink/findParticipant | identitylink__findParticipant() | get | 查询流程实例的参与者（审批中） |
-| api/approve/procHistory/findTask | procHistory__findTask() | post | 查询需要我审批的流程（已结束） |
-| api/approve/procHistory/startByMyself | procHistory__startByMyself() | post | 查询我启动的流程（已结束） |
-| api/approve/procHistory/findProcNotify | procHistory__findProcNotify() | post | 查询抄送我的流程（已结束） |
-| api/approve/identitylinkHistory/findParticipant | identitylinkHistory__findParticipant() | get | 查询流程实例的参与者（已结束） |
-| api/approve/process/detail | process__detail() | get | 根据流程ID查询流程详情 |
-| api/approve/export | export() | post | 导出数据 |
-| api/approve/down | down() | get | 下载导出的审批数据 |
-| api/approve/user/status | user__status() | get | 获取用户审批状态 |
-| api/approve/process/doto | process__doto() | get | 查询需要我审批的流程数量 |
-
 ## assistant（AssistantController）
 
 | URL | 方法名 | HTTP | 说明 |
@@ -390,3 +364,10 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 
 | URL | 方法名 | HTTP | 说明 |
 | --- | --- | --- | --- |
+
+## push（PushController）
+
+| URL | 方法名 | HTTP | 说明 |
+| --- | --- | --- | --- |
+| api/push/register/index | register__index() | any |  |
+| api/push/unregister/index | unregister__index() | any |  |

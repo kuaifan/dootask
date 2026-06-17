@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Module\Base;
+use App\Module\Push\PushService;
+use App\Services\DooPushClient;
 use Carbon\Carbon;
 use Hedeqiang\UMeng\Android;
 use Hedeqiang\UMeng\IOS;
@@ -253,6 +255,11 @@ class UmengAlias extends AbstractModel
      */
     public static function pushMsgToUserid($userid, $array)
     {
+        // DooPush 启用时走新通道（按 userid 标签 OR 并集定向）；否则保留旧 Umeng 链路。
+        if (DooPushClient::enabled()) {
+            PushService::pushToUsers($userid, $array);
+            return;
+        }
         $builder = self::select(['id', 'platform', 'alias', 'userid'])->where('updated_at', '>', Carbon::now()->subMonth());
         if (is_array($userid)) {
             $builder->whereIn('userid', $userid);

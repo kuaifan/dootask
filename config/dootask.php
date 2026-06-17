@@ -32,4 +32,13 @@ return [
     // 临时文件自动清理天数（DeleteTmpTask）
     'auto_empty_temp_file' => env('AUTO_EMPTY_TEMP_FILE', 30),
 
+    // DooPush 推送服务配置（替代旧友盟 umeng；空值表示未启用，会回退到旧 umeng 链路）
+    'doopush' => [
+        'enabled'  => env('DOOPUSH_ENABLED') === 'yes',
+        'app_id'   => env('DOOPUSH_APP_ID'),
+        'api_key'  => env('DOOPUSH_API_KEY'),
+        'base_url' => env('DOOPUSH_BASE_URL', 'https://doopush.com/api/v1'),
+        'tag_name' => env('DOOPUSH_USER_TAG', 'userid'),
+    ],
+
 ];
