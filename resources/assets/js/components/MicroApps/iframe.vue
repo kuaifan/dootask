@@ -14,8 +14,20 @@
 <style lang="scss" scoped>
 .micro-app-iframe {
     position: relative;
+    isolation: isolate;
     width: 100%;
     height: 100%;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--micro-body-background-color, transparent);
+        z-index: -1;
+    }
 
     .micro-app-iframe-container {
         border: none;
@@ -27,6 +39,14 @@
         &.iframe-immersive {
             padding-top: 0;
             padding-bottom: 0;
+        }
+    }
+}
+body.dark-mode-reverse {
+    .micro-app-iframe {
+        &::before {
+            -webkit-filter: invert(100%) hue-rotate(180deg) contrast(100%) !important;
+            filter: invert(100%) hue-rotate(180deg) contrast(100%) !important;
         }
     }
 }

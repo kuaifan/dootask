@@ -50,7 +50,6 @@
 import { mapState } from 'vuex';
 import TransferDom from "../../directives/transfer-dom";
 import ResizeLine from "../ResizeLine.vue";
-import { colorReverse } from "../../utils/color";
 
 export default {
     name: 'MicroModal',
@@ -107,10 +106,12 @@ export default {
             return ['micro-modal-fade', 'micro-modal-slide']
         },
         bodyStyle() {
-            const styleObject = {}
+            const styleObject = {
+                '--micro-body-background-color': 'transparent'
+            }
             if (this.options.background) {
                 const colors = `${this.options.background}|`.split('|');
-                styleObject.background = (this.themeName === 'dark' ? colorReverse(colors[1]) : null) || colors[0];
+                styleObject['--micro-body-background-color'] = (this.themeName === 'dark' ? colors[1] : null) || colors[0];
             }
             return styleObject;
         },
