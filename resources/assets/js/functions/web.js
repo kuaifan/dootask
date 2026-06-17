@@ -1121,14 +1121,6 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     return '-webkit-filter: none !important; filter: none !important;';
                 },
 
-                addExtraStyle() {
-                    try {
-                        return '';
-                    } catch (e) {
-                        return '';
-                    }
-                },
-
                 addStyle(id, tag, css) {
                     tag = tag || 'style';
                     let doc = document, styleDom = doc.getElementById(id);
@@ -1242,7 +1234,6 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     .page-login {
                         background-color: #f8f8f8;
                     }
-                    ${this.utils.addExtraStyle()}
                 }
 
                 @media print {
