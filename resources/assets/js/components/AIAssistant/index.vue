@@ -703,10 +703,6 @@ export default {
                     this.onSubmit();
                     return;
                 }
-                if (e.key === 'Escape' && this.displayMode === 'chat') {
-                    this.showModal = false;
-                    return;
-                }
             }
             // 上下键切换历史输入
             if (e.key === 'ArrowUp') {
@@ -3414,6 +3410,15 @@ export default {
             padding-bottom: calc(12px + var(--navigation-bar-height, 0px));
         }
     }
+}
+
+.ai-assistant-assist {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    display: none;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .ai-assistant-modal {

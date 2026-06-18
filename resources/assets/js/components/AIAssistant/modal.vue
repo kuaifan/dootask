@@ -44,6 +44,15 @@
                 </template>
             </div>
         </transition>
+        <!--窗口助理：空 Modal 进入全局模态栈，由 removeLast()（ESC/滑动返回/返回键/Electron 关窗）统一管理；mask=false 不阻挡背后操作-->
+        <Modal
+            v-model="visible"
+            :mask="false"
+            :mask-closable="false"
+            :footer-hide="true"
+            :transition-names="['', '']"
+            :beforeClose="onAssistClose"
+            class-name="ai-assistant-assist"/>
     </div>
     <Modal
         v-else
@@ -220,9 +229,11 @@ export default {
 
     mounted() {
         this.loadSizeAndPosition();
+        document.addEventListener('keydown', this.onGlobalEscFullscreen, true);
     },
 
     beforeDestroy() {
+        document.removeEventListener('keydown', this.onGlobalEscFullscreen, true);
         document.removeEventListener('mousemove', this.onDragMouseMove);
         document.removeEventListener('mouseup', this.onDragMouseUp);
         document.removeEventListener('mousemove', this.onResizeMouseMove);
@@ -539,9 +550,38 @@ export default {
             }
         },
 
+        /**
+         * 全局 ESC 捕获：仅在 chat 浮窗处于全屏时介入。
+         * AI 浮窗 z-index 恒为最高，但其助理 Modal 未必是模态栈顶（modalIndex 最大），
+         * 故不能依赖 ViewUI 冒泡 ESC。这里在捕获阶段抢先拦截并退出全屏。
+         */
+        onGlobalEscFullscreen(e) {
+            if (e.key !== 'Escape' && e.keyCode !== 27) {
+                return;
+            }
+            if (this.displayMode === 'chat' && this.visible && this.isFullscreen) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                this.isFullscreen = false;
+            }
+        },
+
+        /**
+         * 窗口助理被全局返回机制（removeLast）弹出时触发：转而关闭 chat 浮窗。
+         * 返回一个不 resolve 的 Promise，关闭由 visible 变为 false 后自动驱动（与微应用助理一致）。
+         */
+        onAssistClose() {
+            return new Promise(() => {
+                this.onClose()
+            });
+        },
+
+        /**
+         * 关闭：直接关闭浮窗（不区分显示模式），由外部控制 visible 变为 false
+         */
         onClose() {
             this.$emit('input', false);
-        }
+        },
     }
 };
 </script>
