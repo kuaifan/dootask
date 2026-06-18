@@ -1,5 +1,6 @@
 <template>
     <AssistantModal
+        ref="assistantModal"
         v-model="showModal"
         :displayMode="displayMode"
         :shouldCreateNewSession="shouldCreateNewSession"
@@ -147,7 +148,7 @@
                         v-if="response.rawOutput"
                         class="ai-assistant-output-markdown no-dark-content"
                         :text="response.displayOutput || response.rawOutput"
-                        :before-navigate="() => { showModal = false }"/>
+                        :before-navigate="onMarkdownNavigate"/>
                     <div v-else class="ai-assistant-output-placeholder">
                         {{ response.status === 'error' ? (response.error || $L('发送失败')) : $L('等待 AI 回复...') }}
                     </div>
@@ -686,6 +687,18 @@ export default {
                 this.inputModel = firstGroup.options[0].id;
             } else {
                 this.inputModel = '';
+            }
+        },
+
+        /**
+         * 点击 AI 回复内链接导航前的处理，策略委托给 AssistantModal.prepareForNavigate
+         */
+        onMarkdownNavigate() {
+            const modal = this.$refs.assistantModal;
+            if (modal && typeof modal.prepareForNavigate === 'function') {
+                modal.prepareForNavigate();
+            } else {
+                this.showModal = false;
             }
         },
 

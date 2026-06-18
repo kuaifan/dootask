@@ -577,6 +577,25 @@ export default {
         },
 
         /**
+         * 点击 AI 回复内链接导航前的处理（统一策略）：
+         * - modal 模式：一律关闭（居中弹窗会挡住目标）
+         * - chat 模式 + 移动端：关闭（全屏会挡住目标）
+         * - chat 模式 + 桌面端全屏：退出全屏，保留浮窗以便继续对话
+         * - chat 模式 + 桌面端非全屏：保持打开
+         */
+        prepareForNavigate() {
+            if (this.displayMode !== 'chat') {
+                this.$emit('input', false);
+                return;
+            }
+            if (this.isMobile) {
+                this.$emit('input', false);
+            } else if (this.isFullscreen) {
+                this.isFullscreen = false;
+            }
+        },
+
+        /**
          * 关闭：直接关闭浮窗（不区分显示模式），由外部控制 visible 变为 false
          */
         onClose() {
