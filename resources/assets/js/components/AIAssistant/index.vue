@@ -136,7 +136,10 @@
                                 </div>
                                 <!-- 文字区域 -->
                                 <div class="ai-assistant-output-question-content">
-                                    <span class="ai-assistant-output-question-text">{{ parsed.text }}</span>
+                                    <span
+                                        class="ai-assistant-output-question-text"
+                                        :class="{ 'is-expanded': expandedQuestionIds.includes(response.localId) }"
+                                        @click="toggleQuestionExpand(response.localId)">{{ parsed.text }}</span>
                                     <span class="ai-assistant-output-question-edit" :title="$L('编辑问题')" @click="startEditQuestion(responses.indexOf(response))">
                                         <svg viewBox="0 0 20 20" fill="currentColor"><path d="M11.331 3.568a3.61 3.61 0 0 1 4.973.128l.128.135a3.61 3.61 0 0 1 0 4.838l-.128.135-6.292 6.29c-.324.324-.558.561-.79.752l-.235.177q-.309.21-.65.36l-.23.093c-.181.066-.369.114-.585.159l-.765.135-2.394.399c-.142.024-.294.05-.422.06-.1.007-.233.01-.378-.026l-.149-.049a1.1 1.1 0 0 1-.522-.474l-.046-.094a1.1 1.1 0 0 1-.074-.526c.01-.129.035-.28.06-.423l.398-2.394.134-.764a4 4 0 0 1 .16-.586l.093-.23q.15-.342.36-.65l.176-.235c.19-.232.429-.466.752-.79l6.291-6.292zm-5.485 7.36c-.35.35-.533.535-.66.688l-.11.147a2.7 2.7 0 0 0-.24.433l-.062.155c-.04.11-.072.225-.106.394l-.127.717-.398 2.393-.001.002h.003l2.393-.399.717-.126c.169-.034.284-.065.395-.105l.153-.062q.228-.1.433-.241l.148-.11c.153-.126.338-.31.687-.66l4.988-4.988-3.226-3.226zm9.517-6.291a2.28 2.28 0 0 0-3.053-.157l-.173.157-.364.363L15 8.226l.363-.363.157-.174a2.28 2.28 0 0 0 0-2.878z"/></svg>
                                     </span>
@@ -349,6 +352,7 @@ export default {
             // 编辑历史问题
             editingIndex: -1,        // 正在编辑的响应索引，-1 表示不在编辑模式
             editingValue: '',        // 编辑中的文本内容
+            expandedQuestionIds: [], // 已展开（显示全部内容）的用户消息 localId 列表
 
             // 输入历史（上下键切换）
             inputHistoryList: [],    // 历史输入列表
@@ -2114,6 +2118,21 @@ export default {
         /**
          * 开始编辑历史问题
          */
+        /**
+         * 切换用户消息的展开状态：默认最多两行，点击后显示全部，再次点击收起
+         */
+        toggleQuestionExpand(localId) {
+            if (localId === undefined || localId === null) {
+                return;
+            }
+            const idx = this.expandedQuestionIds.indexOf(localId);
+            if (idx === -1) {
+                this.expandedQuestionIds.push(localId);
+            } else {
+                this.expandedQuestionIds.splice(idx, 1);
+            }
+        },
+
         startEditQuestion(index) {
             if (index < 0 || index >= this.responses.length) {
                 return;
@@ -2741,6 +2760,12 @@ export default {
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            cursor: pointer;
+
+            &.is-expanded {
+                -webkit-line-clamp: unset;
+                overflow: visible;
+            }
         }
 
         .ai-assistant-output-question-edit {
