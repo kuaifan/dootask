@@ -37,6 +37,5 @@ last_verified: v1.7.90
 - 单个会话由当前账号私有，不会跨账号
 
 ## 相关
-- 浮动入口与场景模式：[[ai-assistant.entry.howto]]
-- 快速开始：[[ai-assistant.entry.howto]]
+- 浮动入口、场景模式与快速开始等详细说明，随 AI 助手（ai）插件一并提供，安装后即可在 AI 助手中检索
 - 模型与默认值由管理员配：[[system-setting.ai-model.howto]]

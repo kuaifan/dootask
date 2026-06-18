@@ -31,7 +31,7 @@ last_verified: v1.7.90
 AI 助手的工具调用本质是后端 API 调用，**全部以你的身份发起**。所以：
 
 - 你本人没权限做的事，AI 也做不了
-- AI 调 `create_task` 时实际就是用你的会话去走 [[ai-assistant.create-task.howto]] 的 API；你不在项目里就会被拒绝
+- AI 调 `create_task` 时实际就是用你的会话去调对应 API；你不在项目里就会被拒绝
 - `update_task` 改任务必须满足任务负责人 / 项目负责人 / 系统管理员条件之一
 - 「加成员」必须你本身能加（项目负责人 / 系统管理员）
 
@@ -48,4 +48,4 @@ AI 助手的工具调用本质是后端 API 调用，**全部以你的身份发�
 - AI 不读不到的会话不会偷偷读取（隐私边界 = 用户的可见范围）
 - AI 工具失败不会自动二次重试，需要用户重新发问
 
-[[ai-assistant.tool-call.concept]] 解释了工具调用的事件结构；[[role-permission.permission-denied.faq]] 解释通用权限规则。
+工具调用的事件结构说明随 ai 插件知识库提供；[[role-permission.permission-denied.faq]] 解释通用权限规则。

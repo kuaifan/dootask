@@ -42,5 +42,5 @@ last_verified: v1.7.90
 ## 相关
 - 应用排序：[[menu-navigation.apps-sort.menu-map]]
 - 微应用入口：[[micro-app.entry.menu-map]]
-- 审批中心：[[approve.entry.menu-map]]
+- 审批中心：随审批（approve）插件提供，安装后可在 AI 助手中检索
 - 在线会议：[[meeting.entry.menu-map]]

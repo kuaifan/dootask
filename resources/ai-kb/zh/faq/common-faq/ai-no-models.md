@@ -48,4 +48,4 @@ DooTask 的 AI 能力由独立的 **ai 插件**（`dootask-ai`）提供。下面
 - 主程序不能跳过 ai 插件直连模型
 - 一次只能选一个默认模型作为系统主模型
 
-更多 AI 助手能力见 [[ai-assistant.entry.howto]] / [[ai-assistant.tools-list.concept]]
+更多 AI 助手能力说明随 ai 插件知识库提供。

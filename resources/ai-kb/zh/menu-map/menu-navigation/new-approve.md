@@ -36,6 +36,4 @@ last_verified: v1.7.90
 - 要看到具体模板，须管理员先在「流程设置」配置
 
 ## 相关
-- 审批中心总览：[[approve.entry.menu-map]]
-- 发起步骤：[[approve.start.howto]]
-- 概念：[[approve.concept]]
+- 审批的中心总览、发起步骤与概念等详细说明，随审批（approve）插件一并提供，安装后即可在 AI 助手中检索

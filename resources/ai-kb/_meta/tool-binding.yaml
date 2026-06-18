@@ -25,7 +25,7 @@ tools:
 
   search_users:
     description: 按关键词搜索用户，支持按项目/对话范围筛选
-    related_features: [user-account, search]
+    related_features: [user-account]
     typical_chunk_types: [howto]
 
   # ===== 任务 =====
@@ -93,7 +93,7 @@ tools:
   # ===== 消息 / 对话 =====
   search_dialogs:
     description: 搜索群聊或个人对话
-    related_features: [messenger, search]
+    related_features: [messenger]
     typical_chunk_types: [howto]
 
   send_message:
@@ -103,7 +103,7 @@ tools:
 
   send_task_ai_message:
     description: 作为 AI 助手向任务对话发送消息
-    related_features: [messenger, task, ai-assistant]
+    related_features: [messenger, task]
     typical_chunk_types: [howto]
 
   get_message_list:
@@ -119,7 +119,7 @@ tools:
 
   search_files:
     description: 搜索文件
-    related_features: [file, search]
+    related_features: [file]
     typical_chunk_types: [howto]
 
   get_file_detail:
@@ -145,7 +145,7 @@ tools:
 
   generate_report_template:
     description: 基于任务完成情况自动生成报告模板
-    related_features: [report, ai-assistant]
+    related_features: [report]
     typical_chunk_types: [howto]
 
   create_report:
@@ -166,7 +166,7 @@ tools:
   # ===== 搜索 =====
   intelligent_search:
     description: 统一搜索（任务/项目/文件/联系人/消息），支持语义搜索
-    related_features: [search]
+    related_features: []
     typical_chunk_types: [howto, concept]
 
   # 注：图片文字提取（OCR / 原 extract_image_text）已下线，改由多模态模型直接理解图片，
@@ -182,10 +182,10 @@ tools:
   # ===== 内置工具（AI 插件 helper/tools.py）=====
   get_session_image:
     description: 获取用户上传的会话图片（多模态用）
-    related_features: [ai-assistant, file]
+    related_features: [file]
     typical_chunk_types: [howto]
 
   search_help_docs:
     description: 本知识库自身的检索工具；当用户询问 DooTask 功能用法/概念/操作步骤时调用
-    related_features: [ai-assistant]
+    related_features: []
     typical_chunk_types: [howto]

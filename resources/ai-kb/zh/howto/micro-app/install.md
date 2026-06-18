@@ -45,7 +45,7 @@ last_verified: v1.7.90
 ## 失败排查
 - 镜像源不通：检查服务器到镜像源网络
 - 端口冲突：检查 `docker/appstore/apps/<id>/docker-compose.yml`
-- 详细排查模板见 [[okr.cannot-install.faq]]
+- 个别插件（如 OKR）有专属的安装失败排查说明，随对应插件知识库提供
 
 ## 不支持
 - 普通成员不能安装微应用，「应用商店」对其隐藏

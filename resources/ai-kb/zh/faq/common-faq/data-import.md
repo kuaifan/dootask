@@ -55,7 +55,7 @@ last_verified: v1.7.90
 
 **附件**：批量上传到文件目录（[[file.upload.howto]]）。
 
-**文档**：复制文本到 office（[[office.create.howto]]）或 memos（[[memos.create.howto]]）。
+**文档**：复制文本到 office 或 memos 等文档类应用（具体新建方式见对应应用知识库）。
 
 ## 不支持
 - 不支持保留源任务 ID / URL 映射

@@ -50,4 +50,4 @@ AI 回复时延受多重因素影响：
 - 无内置「响应慢自动降级」机制
 - 中断回复只能整体停止本轮，不能保留已生成的文本继续
 
-[[ai-assistant.entry.howto]] / [[ai-assistant.tool-call.concept]]
+更多 AI 助手说明随 ai 插件知识库提供。
