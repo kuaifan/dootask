@@ -21,7 +21,8 @@ class AI
         'ollama',
         'zhipu',
         'qianwen',
-        'wenxin'
+        'wenxin',
+        'dootask'
     ];
     protected const OPENAI_DEFAULT_MODEL = 'gpt-5.1-mini';
 
