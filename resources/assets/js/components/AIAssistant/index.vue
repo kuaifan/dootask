@@ -2841,12 +2841,11 @@ export default {
     }
 
     .ai-assistant-output-placeholder {
-        height: 34px;
-        line-height: 34px;
+        line-height: 22px;
         margin-top: 12px;
         font-size: 13px;
         color: #999;
-        padding: 0 10px;
+        padding: 6px 10px;
         border-radius: 6px;
         background: rgba(0, 0, 0, 0.02);
     }
