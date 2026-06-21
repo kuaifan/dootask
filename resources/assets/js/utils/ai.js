@@ -13,7 +13,7 @@ const AIBotMap = {
     zhipu: "智谱清言",
     qianwen: "通义千问",
     wenxin: "文心一言",
-    dootask: "DooTask",
+    dooai: "Doo AI",
 }
 
 /**

@@ -164,7 +164,7 @@ class UserBot extends AbstractModel
             'ai-zhipu' => '智谱清言',
             'ai-qianwen' => '通义千问',
             'ai-wenxin' => '文心一言',
-            'ai-dootask' => 'DooTask',
+            'ai-dooai' => 'Doo AI',
             'bot-manager' => '机器人管理',
             'meeting-alert' => '会议通知',
             'okr-alert' => 'OKR提醒',

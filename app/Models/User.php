@@ -961,6 +961,8 @@ class User extends AbstractModel
                 return url("images/avatar/default_ollama.png");
             case 'ai-zhipu@bot.system':
                 return url("images/avatar/default_zhipu.png");
+            case 'ai-dooai@bot.system':
+                return url("images/avatar/default_dooai.png");
             case 'bot-manager@bot.system':
                 return url("images/avatar/default_bot.png");
             case 'meeting-alert@bot.system':

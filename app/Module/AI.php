@@ -22,7 +22,7 @@ class AI
         'zhipu',
         'qianwen',
         'wenxin',
-        'dootask'
+        'dooai'
     ];
     protected const OPENAI_DEFAULT_MODEL = 'gpt-5.1-mini';
 
