@@ -248,6 +248,21 @@ export default {
         offlineBound() {
             return !this.onlineActive && !!String(this.formData.license || '').trim();
         },
+
+        // 绑定在线前是否需要二次确认替换离线授权：
+        // 仅当当前离线 license 是「真实有效且绑定本机的付费授权」时才提示。
+        // 默认/试用 3 人版（people 1~3）或 sn/mac 不匹配 → 该授权在本机本就无意义，替换无需提示。
+        offlineReplaceNeedConfirm() {
+            if (!this.offlineBound) {
+                return false;
+            }
+            const info = this.formData.info || {};
+            const people = parseInt(info.people) || 0;
+            const isTrialThree = people >= 1 && people <= 3;
+            const snOk = this.existIntersection(this.formData.doo_sn, info.sn);
+            const macOk = this.existIntersection(this.formData.macs, info.mac);
+            return !isTrialThree && snOk && macOk;
+        },
     },
     methods: {
         submitForm() {
@@ -390,9 +405,9 @@ export default {
             });
         },
 
-        // 已绑定离线时，绑定在线前二次确认
+        // 已绑定离线时，绑定在线前二次确认（仅当离线授权为真实有效绑定本机的付费授权）
         confirmReplaceOffline(onOk) {
-            if (this.offlineBound) {
+            if (this.offlineReplaceNeedConfirm) {
                 $A.modalConfirm({
                     title: '绑定在线授权',
                     content: '当前已绑定离线授权，绑定在线后将替换当前授权，是否继续？',

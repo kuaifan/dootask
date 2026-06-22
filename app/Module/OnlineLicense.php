@@ -3,6 +3,7 @@
 namespace App\Module;
 
 use App\Exceptions\ApiException;
+use App\Services\RequestContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
 
@@ -83,8 +84,10 @@ class OnlineLicense
         return [
             'sn' => Doo::dooSN(),
             'macs' => implode(',', Doo::macs()),
-            'url' => (string)config('app.url'),
-            'version' => Doo::dooVersion(),
+            // 优先真实外网地址：config('app.url') 若为 localhost 由 replaceBaseUrl 替换为缓存的访问地址
+            'url' => RequestContext::replaceBaseUrl((string)config('app.url')),
+            // DooTask 应用版本（非 doo.so 库版本）
+            'version' => Base::getVersion(),
         ];
     }
 
@@ -171,7 +174,8 @@ class OnlineLicense
      */
     public static function trialSend(string $account, string $password): string
     {
-        $r = self::call('trial/send', ['account' => $account, 'password' => $password]);
+        // 带上实例指纹（sn/macs），让 appstore 在发送验证码前即可做试用资格校验
+        $r = self::call('trial/send', array_merge(['account' => $account, 'password' => $password], self::fingerprint()));
         if (!$r['ok']) {
             throw new ApiException($r['message']);
         }
