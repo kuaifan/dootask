@@ -11,6 +11,7 @@ services:
       - shared_data:/usr/share/dootask
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
       - ./docker/php/php.conf:/etc/supervisor/conf.d/php.conf
+      - ./docker/php/license.conf:/etc/supervisor/conf.d/license.conf
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
       - ./docker/logs/supervisor:/var/log/supervisor
       - ./:/var/www

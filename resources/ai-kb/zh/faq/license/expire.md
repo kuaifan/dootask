@@ -22,7 +22,8 @@ negative:
   - License 失效不会立即锁死系统，但会持续在管理端报错
   - 修改 License 接口（save）仅超级管理员能调用，普通管理员只能看
   - 不支持自行重置 SN（重新部署会生成新 SN，需要重新签发 License）
-last_verified: v1.7.90
+  - 若用的是在线授权，error 数组还可能出现「在线授权即将到期/已过期/已失效」等提醒，处理见 [[license.online.howto]]
+last_verified: v1.7.91
 ---
 
 # License 过期或失效怎么办

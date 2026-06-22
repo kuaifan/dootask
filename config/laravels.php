@@ -198,6 +198,9 @@ return [
         'jobs'            => [
             // Enable LaravelScheduleJob to run `php artisan schedule:run` every 1 minute, replace Linux Crontab
             // Hhxsv5\LaravelS\Illuminate\LaravelScheduleJob::class,
+
+            // 在线授权续期改由容器内独立进程跑（supervisor [program:license] + artisan online-license:renew），
+            // 不再依赖 LARAVELS_TIMER；见 docker/php/license.conf
         ],
 
         // Max waiting time of reloading

@@ -581,13 +581,14 @@ features:
     scope: super-admin
     batch: B4
     priority: P1
-    chunk_count_est: 3
+    chunk_count_est: 4
     owner: ~
     status: drafted
     chunks:
       - license.concept
       - license.expire.faq
       - license.howto
+      - license.online.howto
 
   - id: ldap
     name: LDAP 集成

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\DialogController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SystemController;
+use App\Http\Controllers\Api\LicenseController;
 use App\Http\Controllers\Api\AssistantController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ComplaintController;
@@ -39,6 +40,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 系统
     Route::any('system/{method}',                   SystemController::class);
     Route::any('system/{method}/{action}',          SystemController::class);
+    // 在线授权
+    Route::any('license/{method}',                  LicenseController::class);
+    Route::any('license/{method}/{action}',         LicenseController::class);
     // 对话
     Route::any('dialog/{method}',                   DialogController::class);
     Route::any('dialog/{method}/{action}',          DialogController::class);

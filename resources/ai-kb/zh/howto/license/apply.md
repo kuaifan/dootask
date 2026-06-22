@@ -23,13 +23,16 @@ negative:
   - 不能在终端外部直接编辑 License 文件，必须走管理端 API
   - 一份 License 仅对当前终端的 SN + MAC 有效，换机或换网卡需重新申请
   - 不支持把 License 拆给多个独立部署共享
-last_verified: v1.7.90
+last_verified: v1.7.91
 ---
 
 # 申请与录入 License
 
+> 本文介绍**离线授权**（手动粘贴 License 原文）。License 页现有「离线授权 / 在线授权」两个 Tab，
+> 用 App Store 账号登录自助签发并自动续期的方式见 [[license.online.howto]]。
+
 ## 入口
-桌面端：左上角头像 →「系统设置」→「License」（仅管理员可见）。
+桌面端：左上角头像 →「系统设置」→「License」→「离线授权」Tab（仅管理员可见）。
 对应后端：`POST api/system/license`，`type=save` 写入。
 
 ## 操作步骤

@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use App\Module\Doo;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\OnlineLicense;
 use App\Module\Timer;
 use App\Models\Setting;
 use LdapRecord\Container;
@@ -857,6 +858,8 @@ class SystemController extends AbstractController
         if ($type == 'save') {
             $license = Request::input('license');
             Doo::licenseSave($license);
+            // 离线/在线互斥：保存离线 license 即退出在线模式（尽力释放座位+清在线标志，不删除刚写入的文件）
+            OnlineLicense::switchToOffline();
         }
         //
         $data = [
@@ -892,6 +895,11 @@ class SystemController extends AbstractController
         if ($data['info']['expired_at'] && strtotime($data['info']['expired_at']) <= Timer::time()) {
             $data['error'][] = '终端License已过期';
         }
+        // 在线授权：把状态机提醒并入 error[]（dashboard 警告条与本页错误展示自动复用），并附在线状态
+        foreach (OnlineLicense::stageMessages() as $msg) {
+            $data['error'][] = $msg;
+        }
+        $data['online'] = OnlineLicense::status();
         //
         if ($type === 'error') {
             $data = [

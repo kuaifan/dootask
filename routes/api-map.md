@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：298
+接口总数：304
 
 ## 路由规则
 
@@ -195,6 +195,17 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/system/checkin/down | checkin__down() | get | 下载导出的签到数据 |
 | api/system/version | version() | get | 获取版本号 |
 | api/system/prefetch | prefetch() | get | 预加载的资源 |
+
+## license（LicenseController）
+
+| URL | 方法名 | HTTP | 说明 |
+| --- | --- | --- | --- |
+| api/license/login | login() | any |  |
+| api/license/trial/send | trial__send() | any |  |
+| api/license/trial | trial() | any |  |
+| api/license/status | status() | any |  |
+| api/license/refresh | refresh() | any |  |
+| api/license/logout | logout() | any |  |
 
 ## dialog（DialogController）
 
