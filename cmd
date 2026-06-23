@@ -256,9 +256,9 @@ container_run() {
     shift 1
     local cmd=$@
     if [ -t 0 ] && [ -t 1 ]; then
-        $COMPOSE run --rm "$container" /bin/sh -c "$cmd"
+        $COMPOSE run --rm --entrypoint /bin/sh "$container" -c "$cmd"
     else
-        $COMPOSE run --rm -T "$container" /bin/sh -c "$cmd"
+        $COMPOSE run --rm -T --entrypoint /bin/sh "$container" -c "$cmd"
     fi
 }
 
