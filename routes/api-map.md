@@ -200,8 +200,8 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 
 | URL | 方法名 | HTTP | 说明 |
 | --- | --- | --- | --- |
+| api/license/email/send | email__send() | any |  |
 | api/license/login | login() | any |  |
-| api/license/trial/send | trial__send() | any |  |
 | api/license/trial | trial() | any |  |
 | api/license/status | status() | any |  |
 | api/license/refresh | refresh() | any |  |

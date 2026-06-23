@@ -154,28 +154,11 @@ class OnlineLicense
     // ---- 对外动作 ----
 
     /**
-     * 账号登录并签发。失败抛 ApiException。
+     * 发送邮箱验证码（登录与试用共用），返回脱敏邮箱。
      */
-    public static function login(string $account, string $password): array
+    public static function emailSend(string $email): string
     {
-        $r = self::call('login', array_merge(['account' => $account, 'password' => $password], self::fingerprint()));
-        if (!$r['ok']) {
-            throw new ApiException($r['message']);
-        }
-        $status = self::applyIssue($account, $r['data']);
-        if (!in_array($status, ['issued', 'renewed'], true)) {
-            throw new ApiException(self::statusHint($status));
-        }
-        return self::status();
-    }
-
-    /**
-     * 发送试用验证码，返回脱敏邮箱。
-     */
-    public static function trialSend(string $account, string $password): string
-    {
-        // 带上实例指纹（sn/macs），让 appstore 在发送验证码前即可做试用资格校验
-        $r = self::call('trial/send', array_merge(['account' => $account, 'password' => $password], self::fingerprint()));
+        $r = self::call('email/send', ['email' => $email]);
         if (!$r['ok']) {
             throw new ApiException($r['message']);
         }
@@ -183,16 +166,32 @@ class OnlineLicense
     }
 
     /**
-     * 申请试用并签发。
+     * 邮箱 + 验证码登录并签发。失败抛 ApiException。
      */
-    public static function trial(string $account, string $password, string $code): array
+    public static function login(string $email, string $code): array
     {
-        $payload = array_merge(['account' => $account, 'password' => $password, 'code' => $code], self::fingerprint());
+        $r = self::call('login', array_merge(['email' => $email, 'code' => $code], self::fingerprint()));
+        if (!$r['ok']) {
+            throw new ApiException($r['message']);
+        }
+        $status = self::applyIssue($email, $r['data']);
+        if (!in_array($status, ['issued', 'renewed'], true)) {
+            throw new ApiException(self::statusHint($status));
+        }
+        return self::status();
+    }
+
+    /**
+     * 邮箱 + 验证码申请试用并签发。
+     */
+    public static function trial(string $email, string $code): array
+    {
+        $payload = array_merge(['email' => $email, 'code' => $code], self::fingerprint());
         $r = self::call('trial', $payload);
         if (!$r['ok']) {
             throw new ApiException($r['message']);
         }
-        $status = self::applyIssue($account, $r['data']);
+        $status = self::applyIssue($email, $r['data']);
         if (!in_array($status, ['issued', 'renewed'], true)) {
             throw new ApiException(self::statusHint($status));
         }

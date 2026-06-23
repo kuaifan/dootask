@@ -21,7 +21,7 @@
                 </Form>
                 <div class="setting-footer">
                     <Button :loading="loadIng > 0" type="primary" @click="offlineRebindSubmit">{{$L('提交')}}</Button>
-                    <Button :loading="loadIng > 0" @click="offlineRebindCancel" style="margin-left: 8px">{{$L('取消')}}</Button>
+                    <Button :loading="loadIng > 0" @click="offlineRebindCancel">{{$L('取消')}}</Button>
                 </div>
             </template>
         </template>
@@ -103,7 +103,7 @@
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
-            <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{$L('重置')}}</Button>
+            <Button :loading="loadIng > 0" @click="resetForm">{{$L('重置')}}</Button>
         </div>
         </template>
         </TabPane>
@@ -125,21 +125,21 @@
             </div>
             <template v-else>
                 <Form :model="onlineForm" v-bind="formOptions" @submit.native.prevent>
-                    <FormItem :label="$L('App Store账号')">
-                        <Input v-model="onlineForm.account" :placeholder="$L('请输入App Store账号')" />
+                    <FormItem :label="$L('邮箱')">
+                        <Input v-model="onlineForm.email"
+                               :class="codeCountdown > 0 ? 'setting-send-input' : 'setting-input'"
+                               search @on-search="emailSend"
+                               :enter-button="codeCountdown > 0 ? $L('(*)秒后重发', codeCountdown) : $L('发送验证码')"
+                               :placeholder="$L('请输入邮箱')"/>
                     </FormItem>
-                    <FormItem :label="$L('密码')">
-                        <Input v-model="onlineForm.password" type="password" :placeholder="$L('请输入密码')" />
-                    </FormItem>
-                    <FormItem v-if="trialStep === 1" :label="$L('邮箱验证码')">
-                        <Input v-model="onlineForm.code" :placeholder="$L('请输入验证码')" />
-                        <div class="online-tip">{{$L('验证码已发送至')}} {{trialEmail}}</div>
+                    <FormItem v-if="codeSent" :label="$L('邮箱验证码')">
+                        <Input v-model="onlineForm.code" class="setting-input" :placeholder="$L('请输入验证码')"/>
+                        <div class="online-tip">{{$L('验证码已发送至(*)', maskedEmail)}}</div>
                     </FormItem>
                 </Form>
                 <div class="setting-footer">
                     <Button :loading="onlineIng > 0" type="primary" @click="onlineLogin">{{$L('登录授权')}}</Button>
-                    <Button v-if="trialStep === 0" :loading="onlineIng > 0" @click="trialSend" style="margin-left: 8px">{{$L('申请试用')}}</Button>
-                    <Button v-else :loading="onlineIng > 0" type="success" @click="trialSubmit" style="margin-left: 8px">{{$L('确定试用')}}</Button>
+                    <Button :loading="onlineIng > 0" type="success" @click="trialSubmit">{{$L('申请试用')}}</Button>
                 </div>
             </template>
         </TabPane>
@@ -222,16 +222,20 @@ export default {
             offlineRebindLicense: '',
             onlineIng: 0,
             onlineForm: {
-                account: '',
-                password: '',
+                email: '',
                 code: '',
             },
-            trialStep: 0,
-            trialEmail: '',
+            codeSent: false,        // 是否已发码（登录与试用共用同一套邮箱+验证码）
+            maskedEmail: '',        // 发码成功后服务端返回的脱敏邮箱
+            codeCountdown: 0,       // 重发倒计时（秒）
+            codeTimer: null,
         }
     },
     mounted() {
         this.onlineRefresh();
+    },
+    beforeDestroy() {
+        this.clearCodeTimer();
     },
     computed: {
         ...mapState(['userInfo', 'formOptions']),
@@ -418,15 +422,33 @@ export default {
             }
         },
 
+        // 发送邮箱验证码（登录与试用共用），成功后开启 60s 倒计时并展示脱敏邮箱
+        emailSend() {
+            if (this.codeCountdown > 0) {
+                return;
+            }
+            if (!this.onlineForm.email) {
+                $A.messageError('请输入邮箱');
+                return;
+            }
+            this.onlineCall('license/email/send', {
+                email: this.onlineForm.email,
+            }).then(({data}) => {
+                this.codeSent = true;
+                this.maskedEmail = data?.email || '';
+                this.startCodeCountdown();
+            });
+        },
+
         onlineLogin() {
-            if (!this.onlineForm.account || !this.onlineForm.password) {
-                $A.messageError('请输入账号和密码');
+            if (!this.onlineForm.email || !this.onlineForm.code) {
+                $A.messageError('请输入邮箱和验证码');
                 return;
             }
             this.confirmReplaceOffline(() => {
                 this.onlineCall('license/login', {
-                    account: this.onlineForm.account,
-                    password: this.onlineForm.password,
+                    email: this.onlineForm.email,
+                    code: this.onlineForm.code,
                 }, '授权成功').then(_ => {
                     this.resetOnlineForm();
                     this.systemSetting();
@@ -434,29 +456,14 @@ export default {
             });
         },
 
-        trialSend() {
-            if (!this.onlineForm.account || !this.onlineForm.password) {
-                $A.messageError('请输入账号和密码');
-                return;
-            }
-            this.onlineCall('license/trial/send', {
-                account: this.onlineForm.account,
-                password: this.onlineForm.password,
-            }).then(({data}) => {
-                this.trialStep = 1;
-                this.trialEmail = data?.email || '';
-            });
-        },
-
         trialSubmit() {
-            if (!this.onlineForm.code) {
-                $A.messageError('请输入验证码');
+            if (!this.onlineForm.email || !this.onlineForm.code) {
+                $A.messageError('请输入邮箱和验证码');
                 return;
             }
             this.confirmReplaceOffline(() => {
                 this.onlineCall('license/trial', {
-                    account: this.onlineForm.account,
-                    password: this.onlineForm.password,
+                    email: this.onlineForm.email,
                     code: this.onlineForm.code,
                 }, '试用已开通').then(_ => {
                     this.resetOnlineForm();
@@ -476,10 +483,30 @@ export default {
             });
         },
 
+        startCodeCountdown() {
+            this.clearCodeTimer();
+            this.codeCountdown = 60;
+            this.codeTimer = setInterval(() => {
+                this.codeCountdown--;
+                if (this.codeCountdown <= 0) {
+                    this.clearCodeTimer();
+                }
+            }, 1000);
+        },
+
+        clearCodeTimer() {
+            if (this.codeTimer) {
+                clearInterval(this.codeTimer);
+                this.codeTimer = null;
+            }
+            this.codeCountdown = 0;
+        },
+
         resetOnlineForm() {
-            this.onlineForm = {account: '', password: '', code: ''};
-            this.trialStep = 0;
-            this.trialEmail = '';
+            this.onlineForm = {email: '', code: ''};
+            this.codeSent = false;
+            this.maskedEmail = '';
+            this.clearCodeTimer();
         },
     }
 }
