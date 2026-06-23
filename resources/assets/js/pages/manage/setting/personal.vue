@@ -68,7 +68,7 @@
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
-            <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{$L('重置')}}</Button>
+            <Button :loading="loadIng > 0" @click="resetForm">{{$L('重置')}}</Button>
         </div>
         <UserTagsModal
             v-if="userInfo.userid"

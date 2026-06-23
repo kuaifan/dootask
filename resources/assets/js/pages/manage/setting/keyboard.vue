@@ -56,7 +56,7 @@
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('保存')}}</Button>
-            <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{$L('重置')}}</Button>
+            <Button :loading="loadIng > 0" @click="resetForm">{{$L('重置')}}</Button>
         </div>
     </div>
 </template>
