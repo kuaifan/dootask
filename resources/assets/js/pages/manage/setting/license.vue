@@ -2,45 +2,65 @@
     <div class="setting-item submit license-setting">
         <Tabs v-model="mode">
         <TabPane :label="$L('在线授权')" name="online">
-            <div v-if="onlineActive" class="license-box">
-                <ul class="online-info">
-                    <li><em>{{$L('账号')}}:</em><span>{{online.account}}</span></li>
-                    <li><em>{{$L('套餐')}}:</em><span>{{online.plan || '-'}}</span></li>
-                    <li><em>{{$L('使用人数')}}:</em><span>{{online.people || $L('无限制')}}</span></li>
-                    <li><em>{{$L('授权有效期')}}:</em><span>{{online.valid_until ? fmt(online.valid_until) : $L('永久')}}</span></li>
-                    <li>
-                        <em>{{$L('当前状态')}}:</em>
-                        <span :class="{warning: online.status !== 'active'}">{{stageText(online.status)}}</span>
-                    </li>
-                </ul>
-                <div class="setting-footer">
-                    <Button :loading="onlineAction === 'logout'" :disabled="onlineBusy && onlineAction !== 'logout'" @click="onlineLogout">{{$L('退出在线授权')}}</Button>
+        <div class="setting-component-item">
+            <div class="setting-scroll">
+                <!-- 首次进入且无缓存：骨架占位 + 加载中（有缓存则直接渲染下方真实数据） -->
+                <div v-if="firstLoading" class="license-box">
+                    <div class="online-refreshing"><i class="online-spin"></i>{{$L('加载中...')}}</div>
+                    <ul class="online-info">
+                        <li><em>{{$L('账号')}}:</em><span class="online-skeleton"></span></li>
+                        <li><em>{{$L('套餐')}}:</em><span class="online-skeleton sk-sm"></span></li>
+                        <li><em>{{$L('使用人数')}}:</em><span class="online-skeleton sk-xs"></span></li>
+                        <li><em>{{$L('授权有效期')}}:</em><span class="online-skeleton"></span></li>
+                        <li><em>{{$L('当前状态')}}:</em><span class="online-skeleton sk-sm"></span></li>
+                    </ul>
                 </div>
+                <template v-else>
+                    <div v-if="onlineActive" class="license-box">
+                        <!-- 后台刷新中指示（缓存秒开后仍刷新最新数据） -->
+                        <div v-if="onlineRefreshing" class="online-refreshing"><i class="online-spin"></i>{{$L('刷新中')}}</div>
+                        <ul class="online-info">
+                            <li><em>{{$L('账号')}}:</em><span>{{online.account}}</span></li>
+                            <li><em>{{$L('套餐')}}:</em><span>{{online.plan || '-'}}</span></li>
+                            <li><em>{{$L('使用人数')}}:</em><span>{{online.people || $L('无限制')}}</span></li>
+                            <li><em>{{$L('授权有效期')}}:</em><span>{{online.valid_until ? fmt(online.valid_until) : $L('永久')}}</span></li>
+                            <li>
+                                <em>{{$L('当前状态')}}:</em>
+                                <span :class="{warning: online.status !== 'active'}">{{stageText(online.status)}}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <Form v-else :model="onlineForm" v-bind="formOptions" @submit.native.prevent>
+                        <FormItem :label="$L('邮箱')">
+                            <Input
+                                v-model="onlineForm.email"
+                                :class="codeCountdown > 0 ? 'setting-send-input' : 'setting-input'"
+                                search @on-search="emailSend"
+                                :enter-button="sendBtnText"
+                                :disabled="onlineBusy"
+                                :placeholder="$L('请输入邮箱')"/>
+                        </FormItem>
+                        <FormItem v-if="codeSent" :label="$L('邮箱验证码')">
+                            <Input v-model="onlineForm.code" class="setting-input" :placeholder="$L('请输入验证码')"/>
+                            <div class="online-tip">{{$L('验证码已发送至(*)', maskedEmail)}}</div>
+                        </FormItem>
+                    </Form>
+                </template>
             </div>
-            <template v-else>
-                <Form :model="onlineForm" v-bind="formOptions" @submit.native.prevent>
-                    <FormItem :label="$L('邮箱')">
-                        <div class="online-email-row">
-                            <Input v-model="onlineForm.email" class="online-email-input" :placeholder="$L('请输入邮箱')" @on-enter="emailSend"/>
-                            <Button :loading="onlineAction === 'send'"
-                                    :disabled="codeCountdown > 0 || (onlineBusy && onlineAction !== 'send')"
-                                    @click="emailSend">
-                                {{codeCountdown > 0 ? $L('(*)秒后重发', codeCountdown) : $L('发送验证码')}}
-                            </Button>
-                        </div>
-                    </FormItem>
-                    <FormItem v-if="codeSent" :label="$L('邮箱验证码')">
-                        <Input v-model="onlineForm.code" class="setting-input" :placeholder="$L('请输入验证码')"/>
-                        <div class="online-tip">{{$L('验证码已发送至(*)', maskedEmail)}}</div>
-                    </FormItem>
-                </Form>
-                <div class="setting-footer">
+            <div v-if="!firstLoading" class="setting-footer">
+                <template v-if="onlineActive">
+                    <Button :loading="onlineAction === 'logout'" :disabled="onlineBusy && onlineAction !== 'logout'" type="primary" @click="onlineLogout">{{$L('退出在线授权')}}</Button>
+                </template>
+                <template v-else>
                     <Button :loading="onlineAction === 'login'" :disabled="onlineBusy && onlineAction !== 'login'" type="primary" @click="onlineLogin">{{$L('登录授权')}}</Button>
-                    <Button :loading="onlineAction === 'trial'" :disabled="onlineBusy && onlineAction !== 'trial'" type="success" @click="trialSubmit">{{$L('申请试用')}}</Button>
-                </div>
-            </template>
+                    <Button :loading="onlineAction === 'trial'" :disabled="onlineBusy && onlineAction !== 'trial'" @click="trialSubmit">{{$L('申请试用')}}</Button>
+                </template>
+            </div>
+        </div>
         </TabPane>
         <TabPane :label="$L('离线授权')" name="offline">
+        <div class="setting-component-item">
+        <div class="setting-scroll">
         <template v-if="onlineActive">
             <div class="license-box">
                 <ul class="online-info">
@@ -49,20 +69,11 @@
                     <li><em>MAC:</em><span>{{infoJoin(formData.macs)}}</span></li>
                 </ul>
             </div>
-            <div v-if="!offlineRebindShow" class="setting-footer">
-                <Button type="primary" @click="offlineRebindShow = true">{{$L('绑定离线 License')}}</Button>
-            </div>
-            <template v-else>
-                <Form :model="formData" v-bind="formOptions" @submit.native.prevent>
-                    <FormItem label="License">
-                        <Input v-model="offlineRebindLicense" type="textarea" :autosize="{minRows: 2,maxRows: 5}" :placeholder="$L('请输入License...')" />
-                    </FormItem>
-                </Form>
-                <div class="setting-footer">
-                    <Button :loading="loadIng > 0" type="primary" @click="offlineRebindSubmit">{{$L('提交')}}</Button>
-                    <Button :loading="loadIng > 0" @click="offlineRebindCancel">{{$L('取消')}}</Button>
-                </div>
-            </template>
+            <Form v-if="offlineRebindShow" :model="formData" v-bind="formOptions" @submit.native.prevent>
+                <FormItem label="License">
+                    <Input v-model="offlineRebindLicense" type="textarea" :autosize="{minRows: 2,maxRows: 5}" :placeholder="$L('请输入License...')" />
+                </FormItem>
+            </Form>
         </template>
         <template v-else>
         <Form ref="formData" :model="formData" v-bind="formOptions" @submit.native.prevent>
@@ -140,18 +151,34 @@
                 </div>
             </FormItem>
         </Form>
-        <div class="setting-footer">
-            <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
-            <Button :loading="loadIng > 0" @click="resetForm">{{$L('重置')}}</Button>
-        </div>
         </template>
+        </div>
+        <div class="setting-footer">
+            <template v-if="onlineActive">
+                <Button v-if="!offlineRebindShow" type="primary" @click="offlineRebindShow = true">{{$L('绑定离线 License')}}</Button>
+                <template v-else>
+                    <Button :loading="loadIng > 0" type="primary" @click="offlineRebindSubmit">{{$L('提交')}}</Button>
+                    <Button :loading="loadIng > 0" @click="offlineRebindCancel">{{$L('取消')}}</Button>
+                </template>
+            </template>
+            <template v-else>
+                <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
+                <Button :loading="loadIng > 0" @click="resetForm">{{$L('重置')}}</Button>
+            </template>
+        </div>
+        </div>
         </TabPane>
         </Tabs>
     </div>
 </template>
 
 <style lang="scss" scoped>
+.setting-scroll {
+    flex: 1;
+    overflow-y: auto;
+}
 .license-box {
+    position: relative;
     padding-top: 6px;
     > ul {
         &.online-info {
@@ -170,6 +197,8 @@
             line-height: 22px;
             padding-bottom: 6px;
             display: flex;
+            align-items: center;
+            gap: 6px;
             &.warning {
                 font-weight: 500;
                 color: #ed4014;
@@ -178,9 +207,6 @@
                 flex-shrink: 0;
                 font-style: normal;
                 opacity: 0.8;
-            }
-            > span {
-                padding-left: 6px;
             }
             .information {
                 display: flex;
@@ -194,17 +220,43 @@
         }
     }
 }
-.online-email-row {
+.online-refreshing {
+    position: absolute;
+    top: 6px;
+    right: 0;
     display: flex;
     align-items: center;
-    max-width: 460px;
-    .online-email-input {
-        flex: 1;
-        margin-right: 8px;
+    font-size: 12px;
+    line-height: 18px;
+    color: #808695;
+    .online-spin {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-right: 5px;
+        border: 2px solid #d9e3ef;
+        border-top-color: #2d8cf0;
+        border-radius: 50%;
+        animation: license-spin 0.7s linear infinite;
     }
-    .ivu-btn {
-        flex-shrink: 0;
-    }
+}
+@keyframes license-spin {
+    to { transform: rotate(360deg); }
+}
+.online-skeleton {
+    display: inline-block;
+    width: 150px;
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #eef0f3 25%, #e2e6ea 37%, #eef0f3 63%);
+    background-size: 400% 100%;
+    animation: license-skeleton 1.3s ease infinite;
+    &.sk-sm { width: 90px; }
+    &.sk-xs { width: 60px; }
+}
+@keyframes license-skeleton {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
 }
 .online-tip {
     font-size: 12px;
@@ -236,7 +288,7 @@ export default {
             offlineRebindShow: false,
             offlineRebindLicense: '',
             onlineIng: 0,
-            onlineAction: '',       // 当前进行中的在线操作：'' | 'send' | 'login' | 'trial' | 'logout'，用于按钮级 loading/禁用互斥
+            onlineAction: '',       // 当前进行中的在线操作：'' | 'login' | 'trial' | 'logout'，用于按钮级 loading/禁用互斥
             onlineForm: {
                 email: '',
                 code: '',
@@ -245,10 +297,13 @@ export default {
             maskedEmail: '',        // 发码成功后服务端返回的脱敏邮箱
             codeCountdown: 0,       // 重发倒计时（秒）
             codeTimer: null,
+            firstLoading: true,     // 首次加载且无缓存：显示骨架占位
+            onlineRefreshing: false,// 后台刷新在线授权数据中：显示「刷新中」指示
         }
     },
     mounted() {
-        this.onlineRefresh();
+        this.loadOnlineCache();     // 有缓存先秒开渲染
+        this.onlineRefresh();       // 再后台刷新最新数据
     },
     beforeDestroy() {
         this.clearCodeTimer();
@@ -264,9 +319,19 @@ export default {
             return this.online.mode === 'online';
         },
 
-        // 是否有在线操作进行中（任一发码/登录/试用/退出），用于按钮互斥禁用
+        // 是否有在线操作进行中（登录/试用/退出），用于按钮互斥禁用
         onlineBusy() {
             return this.onlineAction !== '';
+        },
+
+        // 发送验证码按钮文案（仿 setting/email：倒计时内显示重发秒数）
+        sendBtnText() {
+            return this.codeCountdown > 0 ? this.$L('(*)秒后重发', this.codeCountdown) : this.$L('发送验证码');
+        },
+
+        // 在线授权数据缓存 key（按站点 host 区分，避免同浏览器多部署串台）
+        onlineCacheKey() {
+            return 'license-online-cache::' + (typeof window !== 'undefined' ? window.location.host : '');
         },
 
         // 已绑定离线授权 = 存在已保存的 license 且当前非在线托管
@@ -338,7 +403,7 @@ export default {
 
         systemSetting(save) {
             this.loadIng++;
-            this.$store.dispatch("call", {
+            return this.$store.dispatch("call", {
                 url: 'system/license',
                 data: Object.assign(this.formData, {
                     type: save ? 'save' : 'get'
@@ -350,6 +415,7 @@ export default {
                 }
                 this.formData = data;
                 this.formData_bak = $A.cloneJSON(this.formData);
+                this.writeOnlineCache(data.online);     // 同步在线授权数据缓存
                 // 首次加载决定默认 Tab：已绑在线 → 在线；未绑在线但已设离线授权 → 离线；其余 → 在线（在线优先）
                 if (!this.tabInited) {
                     this.tabInited = true;
@@ -365,19 +431,57 @@ export default {
                 }
             }).finally(_ => {
                 this.loadIng--;
+                this.firstLoading = false;              // 首屏数据已到（成功或失败），撤下骨架
             });
         },
 
         onlineRefresh() {
             // 进入授权页静默刷新在线授权：成功后端会更新数据，失败不提示；无论结果都拉取最新展示
+            this.onlineRefreshing = true;
             this.$store.dispatch("call", {
                 url: 'license/refresh',
                 method: 'post',
             }).catch(() => {
                 // 刷新失败：静默
             }).finally(() => {
-                this.systemSetting();
+                this.systemSetting().finally(() => {
+                    this.onlineRefreshing = false;
+                });
             });
+        },
+
+        // 读取在线授权数据缓存：命中则立即渲染（秒开），并默认切到在线 Tab
+        loadOnlineCache() {
+            try {
+                const raw = window.localStorage.getItem(this.onlineCacheKey);
+                if (!raw) {
+                    return;
+                }
+                const cached = JSON.parse(raw);
+                if (cached && cached.mode === 'online') {
+                    this.$set(this.formData, 'online', cached);
+                    this.firstLoading = false;
+                    if (!this.tabInited) {
+                        this.tabInited = true;
+                        this.mode = 'online';
+                    }
+                }
+            } catch (e) {
+                // 忽略缓存读取异常
+            }
+        },
+
+        // 写入/清除在线授权数据缓存：在线则缓存 online 对象，非在线则清除
+        writeOnlineCache(online) {
+            try {
+                if (online && online.mode === 'online') {
+                    window.localStorage.setItem(this.onlineCacheKey, JSON.stringify(online));
+                } else {
+                    window.localStorage.removeItem(this.onlineCacheKey);
+                }
+            } catch (e) {
+                // 忽略缓存写入异常
+            }
         },
 
         infoJoin(val, def = null) {
@@ -454,17 +558,18 @@ export default {
                 $A.messageError('请输入邮箱');
                 return;
             }
-            this.onlineAction = 'send';
-            this.onlineCall('license/email/send', {
-                email: this.onlineForm.email,
+            // 仿 setting/email：search 内联按钮 + spinner 全局 loading
+            this.$store.dispatch("call", {
+                url: 'license/email/send',
+                data: {email: this.onlineForm.email},
+                method: 'post',
+                spinner: true,
             }).then(({data}) => {
                 this.codeSent = true;
                 this.maskedEmail = data?.email || '';
                 this.startCodeCountdown();
-            }).catch(() => {
-                // 失败提示已由 onlineCall 弹出，这里不额外处理
-            }).finally(() => {
-                this.onlineAction = '';
+            }).catch(({msg}) => {
+                $A.messageError(msg);
             });
         },
 
