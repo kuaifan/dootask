@@ -250,6 +250,18 @@ container_exec() {
     docker exec $TTY_FLAG "$name" /bin/sh -c "$cmd"
 }
 
+# 使用当前 docker-compose.yml 定义的服务镜像执行一次性容器命令
+container_run() {
+    local container=$1
+    shift 1
+    local cmd=$@
+    if [ -t 0 ] && [ -t 1 ]; then
+        $COMPOSE run --rm "$container" /bin/sh -c "$cmd"
+    else
+        $COMPOSE run --rm -T "$container" /bin/sh -c "$cmd"
+    fi
+}
+
 # 备份数据库、还原数据库
 mysql_snapshot() {
     if [ "$1" = "backup" ]; then
@@ -706,7 +718,7 @@ handle_update() {
         fi
 
         # 更新依赖
-        exec_judge "container_exec php 'composer install --optimize-autoloader'" "更新PHP依赖失败"
+        exec_judge "container_run php 'composer install --optimize-autoloader'" "更新PHP依赖失败"
     else
         # 本地更新模式
         echo "执行数据库备份..."
@@ -714,7 +726,7 @@ handle_update() {
     fi
 
     # 数据库迁移
-    exec_judge "container_exec php 'php artisan migrate'" "数据库迁移失败"
+    exec_judge "container_run php 'php artisan migrate'" "数据库迁移失败"
 
     # 停止服务
     $COMPOSE stop php nginx &> /dev/null
