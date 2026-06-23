@@ -79,6 +79,15 @@ class OnlineLicense
         }
     }
 
+    /**
+     * 当前请求语言，透传给 appstore 用于邮件按语言渲染（中文/繁体→中文，其余→英文）。
+     * 非请求上下文（如定时续期）返回空串，由 appstore 回落默认语言。
+     */
+    protected static function lang(): string
+    {
+        return (string)Base::headerOrInput('language');
+    }
+
     protected static function fingerprint(): array
     {
         return [
@@ -158,7 +167,7 @@ class OnlineLicense
      */
     public static function emailSend(string $email): string
     {
-        $r = self::call('email/send', ['email' => $email]);
+        $r = self::call('email/send', ['email' => $email, 'lang' => self::lang()]);
         if (!$r['ok']) {
             throw new ApiException($r['message']);
         }
@@ -170,7 +179,7 @@ class OnlineLicense
      */
     public static function login(string $email, string $code): array
     {
-        $r = self::call('login', array_merge(['email' => $email, 'code' => $code], self::fingerprint()));
+        $r = self::call('login', array_merge(['email' => $email, 'code' => $code, 'lang' => self::lang()], self::fingerprint()));
         if (!$r['ok']) {
             throw new ApiException($r['message']);
         }
@@ -186,7 +195,7 @@ class OnlineLicense
      */
     public static function trial(string $email, string $code): array
     {
-        $payload = array_merge(['email' => $email, 'code' => $code], self::fingerprint());
+        $payload = array_merge(['email' => $email, 'code' => $code, 'lang' => self::lang()], self::fingerprint());
         $r = self::call('trial', $payload);
         if (!$r['ok']) {
             throw new ApiException($r['message']);

@@ -1,6 +1,45 @@
 <template>
     <div class="setting-item submit license-setting">
         <Tabs v-model="mode">
+        <TabPane :label="$L('在线授权')" name="online">
+            <div v-if="onlineActive" class="license-box">
+                <ul class="online-info">
+                    <li><em>{{$L('账号')}}:</em><span>{{online.account}}</span></li>
+                    <li><em>{{$L('套餐')}}:</em><span>{{online.plan || '-'}}</span></li>
+                    <li><em>{{$L('使用人数')}}:</em><span>{{online.people || $L('无限制')}}</span></li>
+                    <li><em>{{$L('授权有效期')}}:</em><span>{{online.valid_until ? fmt(online.valid_until) : $L('永久')}}</span></li>
+                    <li>
+                        <em>{{$L('当前状态')}}:</em>
+                        <span :class="{warning: online.status !== 'active'}">{{stageText(online.status)}}</span>
+                    </li>
+                </ul>
+                <div class="setting-footer">
+                    <Button :loading="onlineAction === 'logout'" :disabled="onlineBusy && onlineAction !== 'logout'" @click="onlineLogout">{{$L('退出在线授权')}}</Button>
+                </div>
+            </div>
+            <template v-else>
+                <Form :model="onlineForm" v-bind="formOptions" @submit.native.prevent>
+                    <FormItem :label="$L('邮箱')">
+                        <div class="online-email-row">
+                            <Input v-model="onlineForm.email" class="online-email-input" :placeholder="$L('请输入邮箱')" @on-enter="emailSend"/>
+                            <Button :loading="onlineAction === 'send'"
+                                    :disabled="codeCountdown > 0 || (onlineBusy && onlineAction !== 'send')"
+                                    @click="emailSend">
+                                {{codeCountdown > 0 ? $L('(*)秒后重发', codeCountdown) : $L('发送验证码')}}
+                            </Button>
+                        </div>
+                    </FormItem>
+                    <FormItem v-if="codeSent" :label="$L('邮箱验证码')">
+                        <Input v-model="onlineForm.code" class="setting-input" :placeholder="$L('请输入验证码')"/>
+                        <div class="online-tip">{{$L('验证码已发送至(*)', maskedEmail)}}</div>
+                    </FormItem>
+                </Form>
+                <div class="setting-footer">
+                    <Button :loading="onlineAction === 'login'" :disabled="onlineBusy && onlineAction !== 'login'" type="primary" @click="onlineLogin">{{$L('登录授权')}}</Button>
+                    <Button :loading="onlineAction === 'trial'" :disabled="onlineBusy && onlineAction !== 'trial'" type="success" @click="trialSubmit">{{$L('申请试用')}}</Button>
+                </div>
+            </template>
+        </TabPane>
         <TabPane :label="$L('离线授权')" name="offline">
         <template v-if="onlineActive">
             <div class="license-box">
@@ -107,42 +146,6 @@
         </div>
         </template>
         </TabPane>
-        <TabPane :label="$L('在线授权')" name="online">
-            <div v-if="onlineActive" class="license-box">
-                <ul class="online-info">
-                    <li><em>{{$L('账号')}}:</em><span>{{online.account}}</span></li>
-                    <li><em>{{$L('套餐')}}:</em><span>{{online.plan || '-'}}</span></li>
-                    <li><em>{{$L('使用人数')}}:</em><span>{{online.people || $L('无限制')}}</span></li>
-                    <li><em>{{$L('授权有效期')}}:</em><span>{{online.valid_until ? fmt(online.valid_until) : $L('永久')}}</span></li>
-                    <li>
-                        <em>{{$L('当前状态')}}:</em>
-                        <span :class="{warning: online.status !== 'active'}">{{stageText(online.status)}}</span>
-                    </li>
-                </ul>
-                <div class="setting-footer">
-                    <Button :loading="onlineIng > 0" @click="onlineLogout">{{$L('退出在线授权')}}</Button>
-                </div>
-            </div>
-            <template v-else>
-                <Form :model="onlineForm" v-bind="formOptions" @submit.native.prevent>
-                    <FormItem :label="$L('邮箱')">
-                        <Input v-model="onlineForm.email"
-                               :class="codeCountdown > 0 ? 'setting-send-input' : 'setting-input'"
-                               search @on-search="emailSend"
-                               :enter-button="codeCountdown > 0 ? $L('(*)秒后重发', codeCountdown) : $L('发送验证码')"
-                               :placeholder="$L('请输入邮箱')"/>
-                    </FormItem>
-                    <FormItem v-if="codeSent" :label="$L('邮箱验证码')">
-                        <Input v-model="onlineForm.code" class="setting-input" :placeholder="$L('请输入验证码')"/>
-                        <div class="online-tip">{{$L('验证码已发送至(*)', maskedEmail)}}</div>
-                    </FormItem>
-                </Form>
-                <div class="setting-footer">
-                    <Button :loading="onlineIng > 0" type="primary" @click="onlineLogin">{{$L('登录授权')}}</Button>
-                    <Button :loading="onlineIng > 0" type="success" @click="trialSubmit">{{$L('申请试用')}}</Button>
-                </div>
-            </template>
-        </TabPane>
         </Tabs>
     </div>
 </template>
@@ -191,6 +194,18 @@
         }
     }
 }
+.online-email-row {
+    display: flex;
+    align-items: center;
+    max-width: 460px;
+    .online-email-input {
+        flex: 1;
+        margin-right: 8px;
+    }
+    .ivu-btn {
+        flex-shrink: 0;
+    }
+}
 .online-tip {
     font-size: 12px;
     line-height: 20px;
@@ -216,11 +231,12 @@ export default {
                 online: {},
             },
 
-            mode: 'offline',
+            mode: 'online',
             tabInited: false,
             offlineRebindShow: false,
             offlineRebindLicense: '',
             onlineIng: 0,
+            onlineAction: '',       // 当前进行中的在线操作：'' | 'send' | 'login' | 'trial' | 'logout'，用于按钮级 loading/禁用互斥
             onlineForm: {
                 email: '',
                 code: '',
@@ -246,6 +262,11 @@ export default {
 
         onlineActive() {
             return this.online.mode === 'online';
+        },
+
+        // 是否有在线操作进行中（任一发码/登录/试用/退出），用于按钮互斥禁用
+        onlineBusy() {
+            return this.onlineAction !== '';
         },
 
         // 已绑定离线授权 = 存在已保存的 license 且当前非在线托管
@@ -329,11 +350,13 @@ export default {
                 }
                 this.formData = data;
                 this.formData_bak = $A.cloneJSON(this.formData);
-                // 首次加载：若已是在线授权则默认切到在线 Tab
+                // 首次加载决定默认 Tab：已绑在线 → 在线；未绑在线但已设离线授权 → 离线；其余 → 在线（在线优先）
                 if (!this.tabInited) {
                     this.tabInited = true;
                     if (data.online && data.online.mode === 'online') {
                         this.mode = 'online';
+                    } else if (String(data.license || '').trim()) {
+                        this.mode = 'offline';
                     }
                 }
             }).catch(({msg}) => {
@@ -431,12 +454,17 @@ export default {
                 $A.messageError('请输入邮箱');
                 return;
             }
+            this.onlineAction = 'send';
             this.onlineCall('license/email/send', {
                 email: this.onlineForm.email,
             }).then(({data}) => {
                 this.codeSent = true;
                 this.maskedEmail = data?.email || '';
                 this.startCodeCountdown();
+            }).catch(() => {
+                // 失败提示已由 onlineCall 弹出，这里不额外处理
+            }).finally(() => {
+                this.onlineAction = '';
             });
         },
 
@@ -446,12 +474,20 @@ export default {
                 return;
             }
             this.confirmReplaceOffline(() => {
+                this.onlineAction = 'login';
                 this.onlineCall('license/login', {
                     email: this.onlineForm.email,
                     code: this.onlineForm.code,
                 }, '授权成功').then(_ => {
                     this.resetOnlineForm();
                     this.systemSetting();
+                }).catch(() => {
+                    // 登录失败（如「该账号已申请过试用」「验证码无效」等，验证码多已被消费）：
+                    // 清空验证码并解除重发倒计时，引导用户重新发码后再试
+                    this.onlineForm.code = '';
+                    this.clearCodeTimer();
+                }).finally(() => {
+                    this.onlineAction = '';
                 });
             });
         },
@@ -462,12 +498,20 @@ export default {
                 return;
             }
             this.confirmReplaceOffline(() => {
+                this.onlineAction = 'trial';
                 this.onlineCall('license/trial', {
                     email: this.onlineForm.email,
                     code: this.onlineForm.code,
                 }, '试用已开通').then(_ => {
                     this.resetOnlineForm();
                     this.systemSetting();
+                }).catch(() => {
+                    // 试用失败（如「该账号已申请过试用」，验证码多已被消费）：
+                    // 清空验证码并解除重发倒计时，引导用户重新发码后再试
+                    this.onlineForm.code = '';
+                    this.clearCodeTimer();
+                }).finally(() => {
+                    this.onlineAction = '';
                 });
             });
         },
@@ -476,8 +520,13 @@ export default {
             $A.modalConfirm({
                 content: '确定退出在线授权？',
                 onOk: () => {
+                    this.onlineAction = 'logout';
                     this.onlineCall('license/logout', {}, '已退出在线授权').then(_ => {
                         this.systemSetting();
+                    }).catch(() => {
+                        // 失败提示已由 onlineCall 弹出
+                    }).finally(() => {
+                        this.onlineAction = '';
                     });
                 }
             });
