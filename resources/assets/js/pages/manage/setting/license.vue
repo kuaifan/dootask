@@ -334,16 +334,14 @@ export default {
             return 'license-online-cache::' + (typeof window !== 'undefined' ? window.location.host : '');
         },
 
-        // 已绑定离线授权 = 存在已保存的 license 且当前非在线托管
-        offlineBound() {
-            return !this.onlineActive && !!String(this.formData.license || '').trim();
-        },
-
-        // 绑定在线前是否需要二次确认替换离线授权：
-        // 仅当当前离线 license 是「真实有效且绑定本机的付费授权」时才提示。
-        // 默认/试用 3 人版（people 1~3）或 sn/mac 不匹配 → 该授权在本机本就无意义，替换无需提示。
-        offlineReplaceNeedConfirm() {
-            if (!this.offlineBound) {
+        // 有效离线授权：当前非在线托管，且已设 license 为「真实有效、绑定本机的付费授权」。
+        // 默认/试用 3 人版（people 1~3）或 sn/mac 与本机不匹配 → 该授权在本机本就无意义，视为无效。
+        // 统一口径：既用于「进入页面是否默认切到离线 Tab」，也用于「绑定在线前是否需二次确认替换离线授权」。
+        offlineValid() {
+            if (this.onlineActive) {
+                return false;
+            }
+            if (!String(this.formData.license || '').trim()) {
                 return false;
             }
             const info = this.formData.info || {};
@@ -416,12 +414,12 @@ export default {
                 this.formData = data;
                 this.formData_bak = $A.cloneJSON(this.formData);
                 this.writeOnlineCache(data.online);     // 同步在线授权数据缓存
-                // 首次加载决定默认 Tab：已绑在线 → 在线；未绑在线但已设离线授权 → 离线；其余 → 在线（在线优先）
+                // 首次加载决定默认 Tab：已绑在线 → 在线；未绑在线但存在有效离线授权 → 离线；其余 → 在线（在线优先）
                 if (!this.tabInited) {
                     this.tabInited = true;
                     if (data.online && data.online.mode === 'online') {
                         this.mode = 'online';
-                    } else if (String(data.license || '').trim()) {
+                    } else if (this.offlineValid) {
                         this.mode = 'offline';
                     }
                 }
@@ -538,7 +536,7 @@ export default {
 
         // 已绑定离线时，绑定在线前二次确认（仅当离线授权为真实有效绑定本机的付费授权）
         confirmReplaceOffline(onOk) {
-            if (this.offlineReplaceNeedConfirm) {
+            if (this.offlineValid) {
                 $A.modalConfirm({
                     title: '绑定在线授权',
                     content: '当前已绑定离线授权，绑定在线后将替换当前授权，是否继续？',
@@ -549,7 +547,8 @@ export default {
             }
         },
 
-        // 发送邮箱验证码（登录与试用共用），成功后开启 60s 倒计时并展示脱敏邮箱
+        // 发送邮箱验证码（登录与试用共用），成功后开启 60s 倒计时并展示脱敏邮箱。
+        // 替换有效离线授权的二次确认前置到此处（在线绑定流程的起点），确认后才真正发码。
         emailSend() {
             if (this.codeCountdown > 0) {
                 return;
@@ -558,66 +557,66 @@ export default {
                 $A.messageError('请输入邮箱');
                 return;
             }
-            // 仿 setting/email：search 内联按钮 + spinner 全局 loading
-            this.$store.dispatch("call", {
-                url: 'license/email/send',
-                data: {email: this.onlineForm.email},
-                method: 'post',
-                spinner: true,
-            }).then(({data}) => {
-                this.codeSent = true;
-                this.maskedEmail = data?.email || '';
-                this.startCodeCountdown();
-            }).catch(({msg}) => {
-                $A.messageError(msg);
+            this.confirmReplaceOffline(() => {
+                // 仿 setting/email：search 内联按钮 + spinner 全局 loading
+                this.$store.dispatch("call", {
+                    url: 'license/email/send',
+                    data: {email: this.onlineForm.email},
+                    method: 'post',
+                    spinner: true,
+                }).then(({data}) => {
+                    this.codeSent = true;
+                    this.maskedEmail = data?.email || '';
+                    this.startCodeCountdown();
+                }).catch(({msg}) => {
+                    $A.messageError(msg);
+                });
             });
         },
 
+        // 替换离线授权的二次确认已前置到发码（emailSend），此处不再重复确认
         onlineLogin() {
             if (!this.onlineForm.email || !this.onlineForm.code) {
                 $A.messageError('请输入邮箱和验证码');
                 return;
             }
-            this.confirmReplaceOffline(() => {
-                this.onlineAction = 'login';
-                this.onlineCall('license/login', {
-                    email: this.onlineForm.email,
-                    code: this.onlineForm.code,
-                }, '授权成功').then(_ => {
-                    this.resetOnlineForm();
-                    this.systemSetting();
-                }).catch(() => {
-                    // 登录失败（如「该账号已申请过试用」「验证码无效」等，验证码多已被消费）：
-                    // 清空验证码并解除重发倒计时，引导用户重新发码后再试
-                    this.onlineForm.code = '';
-                    this.clearCodeTimer();
-                }).finally(() => {
-                    this.onlineAction = '';
-                });
+            this.onlineAction = 'login';
+            this.onlineCall('license/login', {
+                email: this.onlineForm.email,
+                code: this.onlineForm.code,
+            }, '授权成功').then(_ => {
+                this.resetOnlineForm();
+                this.systemSetting();
+            }).catch(() => {
+                // 登录失败（如「该账号已申请过试用」「验证码无效」等，验证码多已被消费）：
+                // 清空验证码并解除重发倒计时，引导用户重新发码后再试
+                this.onlineForm.code = '';
+                this.clearCodeTimer();
+            }).finally(() => {
+                this.onlineAction = '';
             });
         },
 
+        // 替换离线授权的二次确认已前置到发码（emailSend），此处不再重复确认
         trialSubmit() {
             if (!this.onlineForm.email || !this.onlineForm.code) {
                 $A.messageError('请输入邮箱和验证码');
                 return;
             }
-            this.confirmReplaceOffline(() => {
-                this.onlineAction = 'trial';
-                this.onlineCall('license/trial', {
-                    email: this.onlineForm.email,
-                    code: this.onlineForm.code,
-                }, '试用已开通').then(_ => {
-                    this.resetOnlineForm();
-                    this.systemSetting();
-                }).catch(() => {
-                    // 试用失败（如「该账号已申请过试用」，验证码多已被消费）：
-                    // 清空验证码并解除重发倒计时，引导用户重新发码后再试
-                    this.onlineForm.code = '';
-                    this.clearCodeTimer();
-                }).finally(() => {
-                    this.onlineAction = '';
-                });
+            this.onlineAction = 'trial';
+            this.onlineCall('license/trial', {
+                email: this.onlineForm.email,
+                code: this.onlineForm.code,
+            }, '试用已开通').then(_ => {
+                this.resetOnlineForm();
+                this.systemSetting();
+            }).catch(() => {
+                // 试用失败（如「该账号已申请过试用」，验证码多已被消费）：
+                // 清空验证码并解除重发倒计时，引导用户重新发码后再试
+                this.onlineForm.code = '';
+                this.clearCodeTimer();
+            }).finally(() => {
+                this.onlineAction = '';
             });
         },
 
