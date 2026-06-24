@@ -1,0 +1,296 @@
+#!/bin/bash
+#
+# DooTask 一键安装 / 升级脚本
+#
+# 用法（在目标目录执行）：
+#   curl -fsSL https://raw.githubusercontent.com/kuaifan/dootask/pro/bin/install | bash
+#
+# 脚本会根据「当前目录」自动判断该做什么，无需额外参数：
+#   - 空目录                : 全新安装（克隆代码到当前目录 + ./cmd install）
+#   - 已克隆但未安装        : 继续安装（./cmd install）
+#   - 已安装                : 检查更新，确认后用「线上最新 cmd」执行升级
+#   - 非空且不是 DooTask    : 拒绝操作并提示（绝不在此克隆或重置）
+#
+# 升级一次到位的关键：升级时从「线上 raw」取最新 cmd 到临时文件执行，
+# 既不依赖用户机器上那份可能过时的 cmd，也不写本地 .git（规避属主/权限问题），
+# 真正的 git pull / 依赖 / 迁移 / 重启全部交给这份最新 cmd，避免「升两次」。
+#
+# 输出语言：仅当 locale 明确是中文 UTF-8 时显示中文，否则一律英文。
+#
+
+set -u
+
+# ---------- 配置 ----------
+BRANCH="pro"                                              # 全新安装默认分支（升级时跟随当前分支）
+REPO_GITHUB="https://github.com/kuaifan/dootask.git"
+REPO_GITEE="https://gitee.com/aipaw/dootask.git"
+# raw 基址：升级时取版本号与最新 cmd 用。后期可把 RAW_PRIMARY 换成官网映射的域名。
+RAW_PRIMARY="https://raw.githubusercontent.com/kuaifan/dootask"   # https://<base>/<branch>/<path>
+RAW_FALLBACK="https://cdn.jsdelivr.net/gh/kuaifan/dootask"        # https://<base>@<branch>/<path>
+
+# ---------- 语言判定 ----------
+# 默认英文；仅当 locale 明确是「中文 UTF-8」时才用中文（中文非 UTF-8 如 GBK 也用英文以免乱码）。
+DT_LANG="en"
+__loc="${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}"
+case "$__loc" in
+    zh_*|zh-*|zh)
+        case "$__loc" in
+            *[Uu][Tt][Ff]*) DT_LANG="zh" ;;   # 明确 UTF-8 → 中文
+            *.*)            DT_LANG="en" ;;   # 其他编码（如 .GBK）→ 英文，避免乱码
+            *)              DT_LANG="zh" ;;   # 无编码后缀（裸 zh_CN）→ 现代默认 UTF-8
+        esac
+        ;;
+esac
+unset __loc
+
+# ---------- 文案 ----------
+# 调用处只写中文（动态值用 (*) 占位，顺序对应后续参数，与前端 $L 风格一致）。
+# 中文环境直接用原文；英文环境在此集中查表翻译，未登记的中文原样返回。
+msg() {
+    local tpl="$1"; shift
+    local out="$tpl"
+    if [ "$DT_LANG" != "zh" ]; then
+        case "$tpl" in
+            "成功")   out="OK" ;;
+            "警告")   out="WARN" ;;
+            "错误")   out="ERROR" ;;
+            "未知")   out="unknown" ;;
+            "git 未安装，请先安装后重试")
+                out="git is not installed. Please install it and retry." ;;
+            "curl 未安装，请先安装后重试")
+                out="curl is not installed. Please install it and retry." ;;
+            "Docker 未安装，请先安装后重试")
+                out="Docker is not installed. Please install it and retry." ;;
+            "docker-compose（或 docker compose 插件）未安装，请先安装后重试")
+                out="docker-compose (or the docker compose plugin) is not installed. Please install it and retry." ;;
+            "当前目录为空，开始全新安装 DooTask ...")
+                out="Current directory is empty. Starting a fresh DooTask installation..." ;;
+            "克隆代码（GitHub）...")
+                out="Cloning source (GitHub)..." ;;
+            "GitHub 克隆失败，尝试 Gitee 镜像 ...")
+                out="GitHub clone failed, trying the Gitee mirror..." ;;
+            "代码克隆失败，请检查网络后重试")
+                out="Failed to clone the source. Please check your network and retry." ;;
+            "代码克隆完成")
+                out="Source cloned." ;;
+            "执行安装 ...")
+                out="Running installation..." ;;
+            "DooTask 安装完成")
+                out="DooTask installation complete." ;;
+            "检测到已克隆但尚未安装，执行安装 ...")
+                out="Repository found but not yet installed. Running installation..." ;;
+            "检测到已安装的 DooTask，正在检查更新 ...")
+                out="Existing DooTask installation detected. Checking for updates..." ;;
+            "无法获取远程版本信息（分支 (*)），请检查网络后重试")
+                out="Unable to fetch remote version info (branch (*)). Please check your network and retry." ;;
+            "当前已是最新版本（v(*)）")
+                out="Already up to date (v(*))." ;;
+            "发现新版本：当前 v(*)  →  最新 v(*)（分支 (*)）")
+                out="New version available: current v(*)  ->  latest v(*) (branch (*))." ;;
+            "是否立即升级？")
+                out="Upgrade now?" ;;
+            "已取消升级")
+                out="Upgrade cancelled." ;;
+            "获取最新 cmd 失败，请检查网络后重试")
+                out="Failed to fetch the latest cmd. Please check your network and retry." ;;
+            "开始升级 ...")
+                out="Starting upgrade..." ;;
+            "DooTask 升级完成")
+                out="DooTask upgrade complete." ;;
+            "当前目录非空，且不是 DooTask 项目目录。")
+                out="Current directory is not empty and is not a DooTask project." ;;
+            "请在「空目录」中执行全新安装，或进入「已安装的 DooTask 目录」执行升级。")
+                out="Run this in an empty directory for a fresh install, or inside an existing DooTask directory to upgrade." ;;
+        esac
+    fi
+    # 动态值：依次把 (*) 替换为参数
+    local a
+    for a in "$@"; do
+        out="${out/(\*)/$a}"
+    done
+    printf '%s' "$out"
+}
+
+# ---------- 输出 ----------
+if [ -t 1 ]; then
+    Red="\033[31m"; Green="\033[32m"; Yellow="\033[33m"; Blue="\033[36m"; Font="\033[0m"
+else
+    Red=""; Green=""; Yellow=""; Blue=""; Font=""
+fi
+info()    { echo -e "${Blue}==>${Font} $1"; }
+success() { echo -e "${Green}[$(msg 成功)]${Font} $1"; }
+warning() { echo -e "${Yellow}[$(msg 警告)]${Font} $1"; }
+error()   { echo -e "${Red}[$(msg 错误)]${Font} $1" >&2; }
+die()     { error "$1"; exit 1; }
+
+# ---------- 交互输入 ----------
+# curl | bash 时 stdin 被管道占用，交互一律从 /dev/tty 读，否则 read 会读到 EOF
+has_tty() { [ -e /dev/tty ]; }
+
+confirm() {
+    # $1=提示语，默认 Y；无终端时返回失败（不擅自执行需确认的操作）
+    local prompt="$1" ans
+    has_tty || return 1
+    read -r -p "$prompt [Y/n] " ans < /dev/tty
+    [[ -z "$ans" || "$ans" =~ ^[Yy]([Ee][Ss])?$ ]]
+}
+
+# ---------- 提权执行 ----------
+# install / update 需要 root；统一用 bash 执行脚本（规避 /tmp noexec），
+# 交互（含 cmd 内部的 read 与 sudo 密码）接到 /dev/tty。
+# git clone 不走这里，用当前用户执行，避免代码属主变成 root。
+run_cmd() {
+    local script="$1"; shift
+    local stdin_src="/dev/stdin"
+    has_tty && stdin_src="/dev/tty"
+    if [ "$(id -u)" -eq 0 ]; then
+        bash "$script" "$@" < "$stdin_src"
+    else
+        sudo bash "$script" "$@" < "$stdin_src"
+    fi
+}
+
+# ---------- 前置检查 ----------
+precheck() {
+    command -v git    >/dev/null 2>&1 || die "$(msg 'git 未安装，请先安装后重试')"
+    command -v curl   >/dev/null 2>&1 || die "$(msg 'curl 未安装，请先安装后重试')"
+    command -v docker >/dev/null 2>&1 || die "$(msg 'Docker 未安装，请先安装后重试')"
+    if ! docker compose version >/dev/null 2>&1 && ! docker-compose version >/dev/null 2>&1; then
+        die "$(msg 'docker-compose（或 docker compose 插件）未安装，请先安装后重试')"
+    fi
+}
+
+# ---------- 工具 ----------
+# 从 raw 取「指定分支的文件」到 stdout：主源失败时回退 jsdelivr 镜像
+fetch_raw() {
+    # $1=branch, $2=path
+    curl -fsSL "${RAW_PRIMARY}/$1/$2" 2>/dev/null \
+        || curl -fsSL "${RAW_FALLBACK}@$1/$2" 2>/dev/null
+}
+
+# 从 stdin 读取 package.json 内容并提取版本号
+read_pkg_version() {
+    grep -m1 '"version"' | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/'
+}
+
+is_dootask_project() {
+    # 只读 .git，不写；当前用户读取一般文件不受属主影响
+    if [ -d .git ] && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        local url; url="$(git config --get remote.origin.url 2>/dev/null || true)"
+        [[ "$url" == *dootask* ]] && return 0
+    fi
+    [ -f cmd ] && [ -f docker-compose.yml ] && return 0
+    return 1
+}
+
+is_installed() { [ -f vendor/autoload.php ]; }
+
+# 可忽略的系统垃圾文件（判断空目录时忽略；全新安装前会清除以便 git clone .）
+_IGNORABLE=".DS_Store .localized .Spotlight-V100 .fseventsd .TemporaryItems .Trashes .DocumentRevisions-V100 .VolumeIcon.icns .AppleDouble .AppleDB .AppleDesktop Thumbs.db ehthumbs.db desktop.ini .directory"
+
+# 是否「可忽略的系统文件」（含 macOS AppleDouble 的 ._xxx）
+_is_ignorable() {
+    case " $_IGNORABLE " in *" $1 "*) return 0 ;; esac
+    case "$1" in ._*) return 0 ;; esac
+    return 1
+}
+
+# 当前目录是否「实质为空」：只剩可忽略的系统垃圾文件也算空
+dir_empty() {
+    local f
+    while IFS= read -r f; do
+        _is_ignorable "${f##*/}" || return 1
+    done < <(find . -maxdepth 1 -mindepth 1 2>/dev/null)
+    return 0
+}
+
+# 清除可忽略的系统垃圾文件（仅白名单），确保 git clone . 不被这些文件挡住
+clean_ignorable() {
+    local f
+    while IFS= read -r f; do
+        _is_ignorable "${f##*/}" && rm -rf "$f"
+    done < <(find . -maxdepth 1 -mindepth 1 2>/dev/null)
+}
+
+current_branch() { git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "$BRANCH"; }
+
+# ---------- 动作：全新安装 ----------
+do_fresh_install() {
+    info "$(msg '当前目录为空，开始全新安装 DooTask ...')"
+    clean_ignorable    # 清掉 .DS_Store 等系统垃圾，确保 git clone . 不被挡住
+    info "$(msg '克隆代码（GitHub）...')"
+    if ! git clone --depth=1 --branch "$BRANCH" "$REPO_GITHUB" . 2>/dev/null; then
+        warning "$(msg 'GitHub 克隆失败，尝试 Gitee 镜像 ...')"
+        rm -rf .git    # 仅清理 clone 残留；若工作树仍有残留，下一步 clone 会报错而非误删
+        git clone --depth=1 --branch "$BRANCH" "$REPO_GITEE" . \
+            || die "$(msg '代码克隆失败，请检查网络后重试')"
+    fi
+    success "$(msg '代码克隆完成')"
+    info "$(msg '执行安装 ...')"
+    run_cmd ./cmd install
+    success "$(msg 'DooTask 安装完成')"
+}
+
+# ---------- 动作：续装 ----------
+do_install() {
+    info "$(msg '检测到已克隆但尚未安装，执行安装 ...')"
+    run_cmd ./cmd install
+    success "$(msg 'DooTask 安装完成')"
+}
+
+# ---------- 动作：升级 ----------
+do_upgrade() {
+    info "$(msg '检测到已安装的 DooTask，正在检查更新 ...')"
+    local branch; branch="$(current_branch)"
+
+    local local_ver remote_ver
+    local_ver="$( [ -f package.json ] && read_pkg_version < package.json )"
+    remote_ver="$(fetch_raw "$branch" package.json | read_pkg_version)"
+    [ -z "$local_ver" ] && local_ver="$(msg 未知)"
+
+    # 取不到远程版本（网络/分支异常）→ 报错，避免误判
+    [ -z "$remote_ver" ] && die "$(msg '无法获取远程版本信息（分支 (*)），请检查网络后重试' "$branch")"
+
+    if [ "$local_ver" = "$remote_ver" ]; then
+        success "$(msg '当前已是最新版本（v(*)）' "$local_ver")"
+        exit 0
+    fi
+
+    echo
+    info "$(msg '发现新版本：当前 v(*)  →  最新 v(*)（分支 (*)）' "$local_ver" "$remote_ver" "$branch")"
+    if ! confirm "$(msg '是否立即升级？')"; then
+        warning "$(msg '已取消升级')"
+        exit 0
+    fi
+
+    # 从 raw 取「线上最新 cmd」到临时文件执行：不碰本地 .git、不依赖磁盘旧 cmd，
+    # 真正的 git pull / 装依赖 / 迁移 / 重启由这份最新 cmd 完成，一次到位。
+    local tmp; tmp="$(mktemp)"
+    if ! fetch_raw "$branch" cmd > "$tmp" || [ ! -s "$tmp" ]; then
+        rm -f "$tmp"; die "$(msg '获取最新 cmd 失败，请检查网络后重试')"
+    fi
+    info "$(msg '开始升级 ...')"
+    run_cmd "$tmp" update
+    rm -f "$tmp"
+    success "$(msg 'DooTask 升级完成')"
+}
+
+# ---------- 主流程 ----------
+main() {
+    precheck
+    if is_dootask_project; then
+        if is_installed; then
+            do_upgrade
+        else
+            do_install
+        fi
+    elif dir_empty; then
+        do_fresh_install
+    else
+        error "$(msg '当前目录非空，且不是 DooTask 项目目录。')"
+        error "$(msg '请在「空目录」中执行全新安装，或进入「已安装的 DooTask 目录」执行升级。')"
+        exit 1
+    fi
+}
+
+main "$@"

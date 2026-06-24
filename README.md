@@ -9,14 +9,6 @@ English | **[中文文档](./README_CN.md)**
 
 - Group Number: `546574618`
 
-## 📍 Migration from 0.x to 1.x
-
-- Please ensure to back up your data before upgrading!
-- If the upgrade fails, try running `./cmd update` multiple times.
-- If you encounter "Container xxx not found" during upgrade, run `./cmd reup` and then execute `./cmd update`.
-- If you see a 502 error after upgrading, run `./cmd reup` to restart the services.
-- If you encounter "Application 'xxx' not installed" after upgrading, log in with the admin account and install the relevant applications from the App Store.
-
 ## Installation Requirements
 
 - Required: `Docker v20.10+` and `Docker Compose v2.0+`
@@ -26,6 +18,16 @@ English | **[中文文档](./README_CN.md)**
 - Special Note: Windows users can install Linux environment using WSL2 before installing DooTask.
 
 ### Deploy Project
+
+**Option 1: One-line script (recommended)**
+
+Run it in an empty directory to clone and install automatically; run it inside an existing installation to check and upgrade:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kuaifan/dootask/pro/bin/install | bash
+```
+
+**Option 2: Manual deployment**
 
 ```bash
 # 1、Clone the project to your local machine or server
@@ -105,11 +107,18 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
 **Note: Please backup your data before upgrading!**
 
+Recommended: use the one-line script (run it inside an existing installation; it pulls the latest code and finishes the upgrade in a single run):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kuaifan/dootask/pro/bin/install | bash
+```
+
+Or use the local command:
+
 ```bash
 ./cmd update
 ```
 
-* Please retry if upgrade fails across major versions.
 * If you encounter 502 errors after upgrade, run `./cmd reup` to restart services.
 
 ## Project Migration

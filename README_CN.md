@@ -9,14 +9,6 @@
 
 - QQ群号: `546574618`
 
-## 📍 0.x 迁移到 1.x
-
-- 升级时请务必备份好数据！
-- 如果升级失败请尝试执行 `./cmd update` 重试几次。
-- 如果升级中出现 `没有找到 xxx 容器` 的提示，请运行 `./cmd reup` 后再执行 `./cmd update`。
-- 如果升级后出现502错误请运行 `./cmd reup` 重启服务即可。
-- 如果升级后出现 `应用「xxx」未安装` 的提示，请使用管理员账号进入应用商店安装相关应用。
-
 ## 安装程序
 
 - 必须安装：`Docker v20.10+` 和 `Docker Compose v2.0+`
@@ -26,6 +18,16 @@
 - 特别说明：Windows 可以使用 WSL2 安装 Linux 环境后再安装 DooTask。
 
 ### 部署项目
+
+**方式一：一键脚本（推荐）**
+
+在空目录中执行即自动克隆并安装；在已安装目录中执行则自动检查并升级：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kuaifan/dootask/pro/bin/install | bash
+```
+
+**方式二：手动部署**
 
 ```bash
 # 1、克隆项目到您的本地或服务器
@@ -105,11 +107,18 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
 **注意：在升级之前请备份好你的数据！**
 
+推荐使用一键脚本升级（在已安装目录中执行，自动拉取最新代码并完成升级，无需重复执行）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kuaifan/dootask/pro/bin/install | bash
+```
+
+或使用本地命令：
+
 ```bash
 ./cmd update
 ```
 
-* 跨越大版本升级失败时请重试执行一次。
 * 如果升级后出现502请运行 `./cmd reup` 重启服务即可。
 
 ## 迁移项目

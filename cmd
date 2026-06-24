@@ -9,10 +9,104 @@ YellowBG="\033[43;37m"
 RedBG="\033[41;37m"
 Font="\033[0m"
 
+# 语言判定：默认英文；仅当 locale 明确是「中文 UTF-8」时才用中文（中文非 UTF-8 如 GBK 也用英文以免乱码）。
+DT_LANG="en"
+__loc="${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}"
+case "$__loc" in
+    zh_*|zh-*|zh)
+        case "$__loc" in
+            *[Uu][Tt][Ff]*) DT_LANG="zh" ;;
+            *.*)            DT_LANG="en" ;;
+            *)              DT_LANG="zh" ;;
+        esac
+        ;;
+esac
+unset __loc
+
+# 文案：调用处只写中文（动态值用 (*) 占位，顺序对应后续参数）。
+# 中文环境直接用原文；英文环境在此集中查表翻译，未登记的中文原样返回。
+msg() {
+    local tpl="$1"; shift
+    local out="$tpl"
+    if [ "$DT_LANG" != "zh" ]; then
+        case "$tpl" in
+            "警告") out="WARN" ;;
+            "错误") out="ERROR" ;;
+            "地址") out="URL" ;;
+            "(*) 完成") out="(*) done" ;;
+            "(*) 失败") out="(*) failed" ;;
+            "备份数据库") out="Backing up database" ;;
+            "还原数据库") out="Restoring database" ;;
+            "无法创建脚本副本") out="Failed to create script copy" ;;
+            "没有找到 (*) 容器!") out="Container (*) not found!" ;;
+            "请使用 sudo 运行此脚本") out="Please run this script with sudo" ;;
+            "未安装 Docker！") out="Docker is not installed!" ;;
+            "未安装 Docker-compose！") out="Docker-compose is not installed!" ;;
+            "Docker-compose 版本过低，请升级至v2+！") out="Docker-compose is too old. Please upgrade to v2+!" ;;
+            "未安装 npm！") out="npm is not installed!" ;;
+            "未安装 Node.js！") out="Node.js is not installed!" ;;
+            "Node.js 版本过低，请升级至v20+！") out="Node.js is too old. Please upgrade to v20+!" ;;
+            "备份文件：(*)") out="Backup file: (*)" ;;
+            "没有备份文件！") out="No backup files found!" ;;
+            "可用备份列表：") out="Available backups:" ;;
+            "请输入备份文件编号还原：") out="Enter the backup number to restore: " ;;
+            "编号无效，请重新输入。") out="Invalid number, please try again." ;;
+            "HTTP服务端口不是80，是否修改并继续操作？ [Y/n]") out="HTTP port is not 80. Change it and continue? [Y/n]" ;;
+            "HTTPS服务端口不是443，是否修改并继续操作？ [Y/n]") out="HTTPS port is not 443. Change it and continue? [Y/n]" ;;
+            "继续操作") out="Continuing" ;;
+            "操作终止") out="Operation aborted" ;;
+            "任务已存在，无需添加。") out="Cron job already exists, skipped." ;;
+            "任务已添加。") out="Cron job added." ;;
+            "设置env参数失败！") out="Failed to set env variable!" ;;
+            "APP_ID（(*)）已被其他实例使用：(*)") out="APP_ID ((*)) is already used by another instance: (*)" ;;
+            "请先清空 .env 中的 APP_ID 和 APP_IPPR 再重新安装") out="Please clear APP_ID and APP_IPPR in .env, then reinstall" ;;
+            "端口 (*) 已被占用，请指定其他端口") out="Port (*) is already in use, please specify another port" ;;
+            "目录权限检测失败！请检查目录权限设置") out="Directory permission check failed! Please check directory permissions" ;;
+            "目录【(*)】权限不足！") out="Directory [(*)] is not writable!" ;;
+            "安装依赖失败") out="Failed to install dependencies" ;;
+            "安装依赖失败，请重试！") out="Failed to install dependencies, please retry!" ;;
+            "生成密钥失败") out="Failed to generate app key" ;;
+            "数据库迁移失败") out="Database migration failed" ;;
+            "安装完成") out="Installation complete" ;;
+            "请先执行安装命令") out="Please run the install command first" ;;
+            "检测到本地修改，是否强制更新？[Y/n]") out="Local changes detected. Force update? [Y/n]" ;;
+            "取消更新，请先处理本地修改") out="Update cancelled, please handle local changes first" ;;
+            "获取远程更新失败") out="Failed to fetch remote updates" ;;
+            "设置远程Fetch配置失败") out="Failed to set remote fetch config" ;;
+            "获取远程分支 (*) 失败") out="Failed to fetch remote branch (*)" ;;
+            "切换分支到 (*) 失败") out="Failed to switch to branch (*)" ;;
+            "数据库有迁移变动，执行数据库备份...") out="Database migrations changed, backing up database..." ;;
+            "数据库备份失败") out="Database backup failed" ;;
+            "数据库备份完成") out="Database backup complete" ;;
+            "强制更新代码失败") out="Failed to force-update code" ;;
+            "代码拉取失败，可能存在冲突，请使用 --force 参数") out="Failed to pull code (possible conflict), please use --force" ;;
+            "更新PHP依赖失败") out="Failed to update PHP dependencies" ;;
+            "执行数据库备份...") out="Backing up database..." ;;
+            "重启服务失败") out="Failed to restart services" ;;
+            "更新完成") out="Update complete" ;;
+            "警告：此操作将永久删除以下内容：") out="WARNING: This will permanently delete:" ;;
+            "- 数据库") out="- Database" ;;
+            "- 应用程序") out="- Application" ;;
+            "- 日志文件") out="- Log files" ;;
+            "确认要继续卸载吗？(y/N): ") out="Confirm uninstall? (y/N): " ;;
+            "开始卸载...") out="Uninstalling..." ;;
+            "终止卸载。") out="Uninstall aborted." ;;
+            "卸载完成") out="Uninstall complete" ;;
+            "修改成功") out="Changed successfully" ;;
+        esac
+    fi
+    # 动态值：依次把 (*) 替换为参数
+    local a
+    for a in "$@"; do
+        out="${out/(\*)/$a}"
+    done
+    printf '%s' "$out"
+}
+
 # 通知信息
 OK="${Green}[OK]${Font}"
-Warn="${Yellow}[警告]${Font}"
-Error="${Red}[错误]${Font}"
+Warn="${Yellow}[$(msg 警告)]${Font}"
+Error="${Red}[$(msg 错误)]${Font}"
 
 # 基本参数
 WORK_DIR="$(pwd)"
@@ -28,7 +122,7 @@ fi
 # 缓存执行
 if [ -z "$CACHED_EXECUTION" ] && [ "$1" == "update" ]; then
     if ! cat "$0" > ._cmd 2>/dev/null; then
-        error "无法创建脚本副本"
+        error "$(msg '无法创建脚本副本')"
         exit 1
     fi
     chmod +x ._cmd
@@ -42,10 +136,10 @@ fi
 # 判断是否成功
 judge() {
     if [[ 0 -eq $? ]]; then
-        success "$1 完成"
+        success "$(msg '(*) 完成' "$1")"
         sleep 1
     else
-        error "$1 失败"
+        error "$(msg '(*) 失败' "$1")"
         exit 1
     fi
 }
@@ -128,7 +222,7 @@ switch_debug() {
 # 检查是否有sudo
 check_sudo() {
     if [ "$EUID" -ne 0 ]; then
-        error "请使用 sudo 运行此脚本"
+        error "$(msg '请使用 sudo 运行此脚本')"
         exit 1
     fi
 }
@@ -137,21 +231,21 @@ check_sudo() {
 check_docker() {
     docker --version &> /dev/null
     if [ $? -ne  0 ]; then
-        error "未安装 Docker！"
+        error "$(msg '未安装 Docker！')"
         exit 1
     fi
     docker-compose version &> /dev/null
     if [ $? -ne  0 ]; then
         docker compose version &> /dev/null
         if [ $? -ne  0 ]; then
-            error "未安装 Docker-compose！"
+            error "$(msg '未安装 Docker-compose！')"
             exit 1
         fi
         COMPOSE="docker compose"
     fi
     if [[ -n `$COMPOSE version | grep -E "\s+v1\."` ]]; then
         $COMPOSE version
-        error "Docker-compose 版本过低，请升级至v2+！"
+        error "$(msg 'Docker-compose 版本过低，请升级至v2+！')"
         exit 1
     fi
 }
@@ -160,17 +254,17 @@ check_docker() {
 check_node() {
     npm --version &> /dev/null
     if [ $? -ne  0 ]; then
-        error "未安装 npm！"
+        error "$(msg '未安装 npm！')"
         exit 1
     fi
     node --version &> /dev/null
     if [ $? -ne  0 ]; then
-        error "未安装 Node.js！"
+        error "$(msg '未安装 Node.js！')"
         exit 1
     fi
     if [[ -n `node --version | grep -E "v1"` ]]; then
         node --version
-        error "Node.js 版本过低，请升级至v20+！"
+        error "$(msg 'Node.js 版本过低，请升级至v20+！')"
         exit 1
     fi
 }
@@ -244,7 +338,7 @@ container_exec() {
     local cmd=$@
     local name=$(docker_name "$container")
     if [ -z "$name" ]; then
-        error "没有找到 ${container} 容器!"
+        error "$(msg '没有找到 (*) 容器!' "$container")"
         exit 1
     fi
     docker exec $TTY_FLAG "$name" /bin/sh -c "$cmd"
@@ -272,8 +366,8 @@ mysql_snapshot() {
         mkdir -p ${WORK_DIR}/docker/mysql/backup
         filename="${WORK_DIR}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
         container_exec mariadb "exec mysqldump --databases $database -u${username} -p${password}" | gzip > $filename
-        judge "备份数据库"
-        [ -f "$filename" ] && echo "备份文件：${filename}"
+        judge "$(msg '备份数据库')"
+        [ -f "$filename" ] && echo "$(msg '备份文件：(*)' "$filename")"
     elif [ "$1" = "recovery" ]; then
         database=$(env_get DB_DATABASE)
         username=$(env_get DB_USERNAME)
@@ -284,31 +378,31 @@ mysql_snapshot() {
         backup_files=("${WORK_DIR}/docker/mysql/backup/"*.sql.gz)
         shopt -u nullglob
         if [ ${#backup_files[@]} -eq 0 ]; then
-            error "没有备份文件！"
+            error "$(msg '没有备份文件！')"
             exit 1
         fi
-        echo "可用备份列表："
+        echo "$(msg '可用备份列表：')"
         for idx in "${!backup_files[@]}"; do
             printf "%2d) %s\n" "$((idx + 1))" "$(basename "${backup_files[$idx]}")"
         done
         while true; do
-            read -rp "请输入备份文件编号还原：" selection
+            read -rp "$(msg '请输入备份文件编号还原：')" selection
             if [[ "$selection" =~ ^[0-9]+$ ]] && [ "$selection" -ge 1 ] && [ "$selection" -le ${#backup_files[@]} ]; then
                 break
             fi
-            warning "编号无效，请重新输入。"
+            warning "$(msg '编号无效，请重新输入。')"
         done
         filename="${backup_files[$((selection - 1))]}"
         inputname="$(basename "$filename")"
         container_name=`docker_name mariadb`
         if [ -z "$container_name" ]; then
-            error "没有找到 mariadb 容器!"
+            error "$(msg '没有找到 (*) 容器!' mariadb)"
             exit 1
         fi
         docker cp "$filename" "${container_name}:/"
         container_exec mariadb "gunzip < '/${inputname}' | mysql -u${username} -p${password} $database"
         container_exec php "php artisan migrate"
-        judge "还原数据库"
+        judge "$(msg '还原数据库')"
     fi
 }
 
@@ -339,33 +433,33 @@ remove_by_network() {
 https_auto() {
     restart_nginx="n"
     if [[ "$(env_get APP_PORT)" != "80" ]]; then
-        warning "HTTP服务端口不是80，是否修改并继续操作？ [Y/n]"
+        warning "$(msg 'HTTP服务端口不是80，是否修改并继续操作？ [Y/n]')"
         read -r continue_http
         [[ -z ${continue_http} ]] && continue_http="Y"
         case $continue_http in
         [yY][eE][sS] | [yY])
-            success "继续操作"
+            success "$(msg '继续操作')"
             env_set "APP_PORT" "80"
             restart_nginx="y"
             ;;
         *)
-            error "操作终止"
+            error "$(msg '操作终止')"
             exit 1
             ;;
         esac
     fi
     if [[ "$(env_get APP_SSL_PORT)" != "443" ]]; then
-        warning "HTTPS服务端口不是443，是否修改并继续操作？ [Y/n]"
+        warning "$(msg 'HTTPS服务端口不是443，是否修改并继续操作？ [Y/n]')"
         read -r continue_https
         [[ -z ${continue_https} ]] && continue_https="Y"
         case $continue_https in
         [yY][eE][sS] | [yY])
-            success "继续操作"
+            success "$(msg '继续操作')"
             env_set "APP_SSL_PORT" "443"
             restart_nginx="y"
             ;;
         *)
-            error "操作终止"
+            error "$(msg '操作终止')"
             exit 1
             ;;
         esac
@@ -380,13 +474,13 @@ https_auto() {
     new_job="* 6 * * * docker run --rm -v $(pwd):/work nginx:alpine sh /work/bin/https renew"
     current_crontab=$(crontab -l 2>/dev/null)
     if ! echo "$current_crontab" | grep -v "https renew"; then
-        echo "任务已存在，无需添加。"
+        echo "$(msg '任务已存在，无需添加。')"
     else
         crontab -l |{
             cat
             echo "$new_job"
         } | crontab -
-        echo "任务已添加。"
+        echo "$(msg '任务已添加。')"
     fi
 }
 
@@ -416,7 +510,7 @@ env_set() {
             docker run $TTY_FLAG --rm -v ${WORK_DIR}:/www nginx:alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
         fi
         if [ $? -ne  0 ]; then
-            error "设置env参数失败！"
+            error "$(msg '设置env参数失败！')"
             exit 1
         fi
     fi
@@ -468,7 +562,8 @@ arg_get() {
 
 # 显示帮助信息
 show_help() {
-    cat << 'EOF'
+    if [ "$DT_LANG" = "zh" ]; then
+        cat << 'EOF'
 DooTask 管理脚本
 
 用法: ./cmd <命令> [参数]
@@ -516,6 +611,56 @@ DooTask 管理脚本
   ./cmd mysql backup          备份数据库
   ./cmd artisan migrate       执行数据库迁移
 EOF
+    else
+        cat << 'EOF'
+DooTask Management Script
+
+Usage: ./cmd <command> [options]
+
+📦 Core:
+  install                     Install DooTask (supports --port <port> --relock)
+  update                      Update DooTask (supports --branch <branch> --force --local)
+  uninstall                   Uninstall DooTask
+
+⚙️  Configuration:
+  port <port>                 Change service port
+  url <address>               Change access URL
+  env <key> <value>           Set environment variable
+  debug [true|false]          Toggle debug mode
+  repassword [username]       Reset database password
+
+🚀 Build:
+  serve, dev                  Start dev mode
+  build, prod                 Production build
+  electron                    Build desktop app
+
+🔧 Services:
+  up [service]                Start containers
+  down [service]              Stop containers
+  restart [service]           Restart containers
+  reup                        Rebuild and start
+
+💾 Database:
+  mysql backup                Back up database
+  mysql recovery              Restore database
+
+🛠️  Dev tools:
+  artisan <command>           Run Laravel Artisan command
+  composer <command>          Run Composer command
+  php <command>               Run PHP command
+
+📚 Others:
+  doc                         Generate API docs
+  https                       Configure HTTPS
+  --help, -h                  Show this help
+
+Examples:
+  ./cmd install --port 8080   Install on port 8080
+  ./cmd update --branch dev   Switch to dev branch and update
+  ./cmd mysql backup          Back up database
+  ./cmd artisan migrate       Run database migration
+EOF
+    fi
 }
 
 # 检测APP_ID是否与其他实例冲突
@@ -524,8 +669,8 @@ check_instance() {
     local container_name="dootask-php-${app_id}"
     local mount_path=$(docker inspect "$container_name" --format '{{range .Mounts}}{{if eq .Destination "/var/www"}}{{.Source}}{{end}}{{end}}' 2>/dev/null)
     if [[ -n "$mount_path" ]] && [[ "$mount_path" != "$WORK_DIR" ]]; then
-        error "APP_ID（${app_id}）已被其他实例使用：${mount_path}"
-        error "请先清空 .env 中的 APP_ID 和 APP_IPPR 再重新安装"
+        error "$(msg 'APP_ID（(*)）已被其他实例使用：(*)' "$app_id" "$mount_path")"
+        error "$(msg '请先清空 .env 中的 APP_ID 和 APP_IPPR 再重新安装')"
         exit 1
     fi
 }
@@ -537,7 +682,7 @@ check_port() {
     local current_port=$2
     if [[ "$port" -gt 0 ]] && [[ "$port" != "$current_port" ]]; then
         if ! docker run --rm -p "${port}:80" --entrypoint true nginx:alpine 2>/dev/null; then
-            error "端口 ${port} 已被占用，请指定其他端口"
+            error "$(msg '端口 (*) 已被占用，请指定其他端口' "$port")"
             exit 1
         fi
     fi
@@ -582,13 +727,13 @@ handle_install() {
         writable="yes"
         docker run --rm ${cmda} nginx:alpine sh -c "${cmdb} touch /usr/share/docker/dootask.lock" &> /dev/null
         if [ $? -ne 0 ]; then
-            error "目录权限检测失败！请检查目录权限设置"
+            error "$(msg '目录权限检测失败！请检查目录权限设置')"
             exit 1
         fi
         for vol in "${volumes[@]}"; do
             if [ ! -f "${vol}/dootask.lock" ]; then
                 if [ $remaining -lt 0 ]; then
-                    error "目录【${vol}】权限不足！"
+                    error "$(msg '目录【(*)】权限不足！' "$vol")"
                     exit 1
                 else
                     writable="no"
@@ -619,28 +764,28 @@ handle_install() {
     $COMPOSE up php -d
 
     # 安装PHP依赖
-    exec_judge "container_exec php 'composer install --optimize-autoloader'" "安装依赖失败"
+    exec_judge "container_exec php 'composer install --optimize-autoloader'" "$(msg '安装依赖失败')"
 
     # 最终检查
     if [ ! -f "${WORK_DIR}/vendor/autoload.php" ]; then
-        error "安装依赖失败，请重试！"
+        error "$(msg '安装依赖失败，请重试！')"
         exit 1
     fi
 
     # 生成应用密钥
-    [[ -z "$(env_get APP_KEY)" ]] && exec_judge "container_exec php 'php artisan key:generate'" "生成密钥失败"
+    [[ -z "$(env_get APP_KEY)" ]] && exec_judge "container_exec php 'php artisan key:generate'" "$(msg '生成密钥失败')"
 
     # 设置生产模式
     switch_debug "false"
 
     # 数据库迁移
-    exec_judge "container_exec php 'php artisan migrate --seed'" "数据库迁移失败"
+    exec_judge "container_exec php 'php artisan migrate --seed'" "$(msg '数据库迁移失败')"
 
     # 启动所有容器
     $COMPOSE up -d --remove-orphans
 
-    success "安装完成"
-    echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+    success "$(msg '安装完成')"
+    echo -e "$(msg '地址'): http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
     container_exec mariadb "sh /etc/mysql/repassword.sh"
 }
 
@@ -654,7 +799,7 @@ handle_update() {
 
     # 检查是否已经安装
     if [ ! -f "${WORK_DIR}/vendor/autoload.php" ]; then
-        error "请先执行安装命令"
+        error "$(msg '请先执行安装命令')"
         exit 1
     fi
 
@@ -667,7 +812,7 @@ handle_update() {
         # 检查本地修改
         if ! git diff --quiet || ! git diff --cached --quiet; then
             if [[ "$force_update" != "yes" ]]; then
-                warning "检测到本地修改，是否强制更新？[Y/n]"
+                warning "$(msg '检测到本地修改，是否强制更新？[Y/n]')"
                 read -r confirm_force
                 [[ -z ${confirm_force} ]] && confirm_force="Y"
                 case $confirm_force in
@@ -675,7 +820,7 @@ handle_update() {
                     force_update="yes"
                     ;;
                 *)
-                    error "取消更新，请先处理本地修改"
+                    error "$(msg '取消更新，请先处理本地修改')"
                     exit 1
                     ;;
                 esac
@@ -683,21 +828,21 @@ handle_update() {
         fi
 
         # 远程更新模式
-        exec_judge "git fetch --all" "获取远程更新失败"
+        exec_judge "git fetch --all" "$(msg '获取远程更新失败')"
 
         # 确定目标分支
         if [[ -n "$target_branch" ]]; then
             current_branch="$target_branch"
             if ! git config --get "branch.${current_branch}.remote" | grep -q "origin"; then
-                exec_judge "git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'" "设置远程Fetch配置失败"
+                exec_judge "git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'" "$(msg '设置远程Fetch配置失败')"
             fi
             if ! git show-ref --verify --quiet refs/heads/${current_branch}; then
-                exec_judge "git fetch origin ${current_branch}:${current_branch}" "获取远程分支 ${current_branch} 失败"
+                exec_judge "git fetch origin ${current_branch}:${current_branch}" "$(msg '获取远程分支 (*) 失败' "$current_branch")"
             fi
             if [[ "$force_update" == "yes" ]]; then
-                exec_judge "git checkout -f ${current_branch}" "切换分支到 ${current_branch} 失败"
+                exec_judge "git checkout -f ${current_branch}" "$(msg '切换分支到 (*) 失败' "$current_branch")"
             else
-                exec_judge "git checkout ${current_branch}" "切换分支到 ${current_branch} 失败"
+                exec_judge "git checkout ${current_branch}" "$(msg '切换分支到 (*) 失败' "$current_branch")"
             fi
         else
             current_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
@@ -706,27 +851,27 @@ handle_update() {
         # 检查数据库迁移变动
         db_changes=$(git diff --name-only HEAD..origin/${current_branch} 2>/dev/null | grep -E "^database/" || true)
         if [[ -n "$db_changes" ]]; then
-            echo "数据库有迁移变动，执行数据库备份..."
-            exec_judge "mysql_snapshot backup" "数据库备份失败" "数据库备份完成"
+            echo "$(msg '数据库有迁移变动，执行数据库备份...')"
+            exec_judge "mysql_snapshot backup" "$(msg '数据库备份失败')" "$(msg '数据库备份完成')"
         fi
 
         # 更新代码
         if [[ "$force_update" == "yes" ]]; then
-            exec_judge "git reset --hard origin/${current_branch}" "强制更新代码失败"
+            exec_judge "git reset --hard origin/${current_branch}" "$(msg '强制更新代码失败')"
         else
-            exec_judge "git pull --ff-only origin ${current_branch}" "代码拉取失败，可能存在冲突，请使用 --force 参数"
+            exec_judge "git pull --ff-only origin ${current_branch}" "$(msg '代码拉取失败，可能存在冲突，请使用 --force 参数')"
         fi
 
         # 更新依赖
-        exec_judge "container_run php 'composer install --optimize-autoloader'" "更新PHP依赖失败"
+        exec_judge "container_run php 'composer install --optimize-autoloader'" "$(msg '更新PHP依赖失败')"
     else
         # 本地更新模式
-        echo "执行数据库备份..."
-        exec_judge "mysql_snapshot backup" "数据库备份失败" "数据库备份完成"
+        echo "$(msg '执行数据库备份...')"
+        exec_judge "mysql_snapshot backup" "$(msg '数据库备份失败')" "$(msg '数据库备份完成')"
     fi
 
     # 数据库迁移
-    exec_judge "container_run php 'php artisan migrate'" "数据库迁移失败"
+    exec_judge "container_run php 'php artisan migrate'" "$(msg '数据库迁移失败')"
 
     # 停止服务
     $COMPOSE stop php nginx &> /dev/null
@@ -736,30 +881,30 @@ handle_update() {
     $COMPOSE up -d --remove-orphans
     if [[ 0 -ne $? ]]; then
         $COMPOSE down --remove-orphans
-        exec_judge "$COMPOSE up -d" "重启服务失败"
+        exec_judge "$COMPOSE up -d" "$(msg '重启服务失败')"
     fi
 
     env_set UPDATE_TIME "$(date +%s)"
-    success "更新完成"
+    success "$(msg '更新完成')"
 }
 
 # 卸载函数
 handle_uninstall() {
     check_sudo
     # 确认卸载
-    echo -e "${RedBG}警告：此操作将永久删除以下内容：${Font}"
-    echo "- 数据库"
-    echo "- 应用程序"
-    echo "- 日志文件"
+    echo -e "${RedBG}$(msg '警告：此操作将永久删除以下内容：')${Font}"
+    echo "$(msg '- 数据库')"
+    echo "$(msg '- 应用程序')"
+    echo "$(msg '- 日志文件')"
     echo ""
-    read -rp "确认要继续卸载吗？(y/N): " confirm_uninstall
+    read -rp "$(msg '确认要继续卸载吗？(y/N): ')" confirm_uninstall
     [[ -z ${confirm_uninstall} ]] && confirm_uninstall="N"
     case $confirm_uninstall in
     [yY][eE][sS] | [yY])
-        echo -e "${RedBG}开始卸载...${Font}"
+        echo -e "${RedBG}$(msg '开始卸载...')${Font}"
         ;;
     *)
-        echo -e "${GreenBG}终止卸载。${Font}"
+        echo -e "${GreenBG}$(msg '终止卸载。')${Font}"
         exit 1
         ;;
     esac
@@ -780,7 +925,7 @@ handle_uninstall() {
     find "./docker/appstore/log" -name "*.log" -delete 2>/dev/null
     find "./storage/logs" -name "*.log" -delete 2>/dev/null
 
-    success "卸载完成"
+    success "$(msg '卸载完成')"
 }
 
 ####################################################################################
@@ -818,14 +963,14 @@ case "$1" in
         check_port "$1" "$(env_get APP_PORT)"
         env_set APP_PORT "$1"
         $COMPOSE up -d
-        success "修改成功"
-        echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+        success "$(msg '修改成功')"
+        echo -e "$(msg '地址'): http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
         ;;
     "url")
         shift 1
         env_set APP_URL "$1"
         restart_php
-        success "修改成功"
+        success "$(msg '修改成功')"
         ;;
     "env")
         shift 1
@@ -833,7 +978,7 @@ case "$1" in
             env_set $1 "$2"
         fi
         restart_php
-        success "修改成功"
+        success "$(msg '修改成功')"
         ;;
     "repassword")
         shift 1
