@@ -274,6 +274,19 @@ docker_name() {
     echo `$COMPOSE ps | awk '{print $1}' | grep "\-$1\-"`
 }
 
+# 等待 php 容器健康（最多约 90s）
+wait_php_healthy() {
+    local name st wait=0
+    name="$(docker_name php)"
+    [ -z "$name" ] && return 0
+    while [ $wait -lt 90 ]; do
+        st="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$name" 2>/dev/null)"
+        { [ "$st" = "healthy" ] || [ "$st" = "running" ]; } && break
+        sleep 3
+        wait=$((wait + 3))
+    done
+}
+
 # 编译前端
 web_build() {
     local type=$1
@@ -784,6 +797,10 @@ handle_install() {
     # 启动所有容器
     $COMPOSE up -d --remove-orphans
 
+    # 兜底拉起 nginx（避免首启时序竞态）
+    wait_php_healthy
+    [ -z "$(docker_name nginx)" ] && $COMPOSE up -d --remove-orphans
+
     success "$(msg '安装完成')"
     echo -e "$(msg '地址'): http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
     container_exec mariadb "sh /etc/mysql/repassword.sh"
@@ -809,6 +826,9 @@ handle_update() {
     fi
 
     if [[ -z "$is_local" ]]; then
+        # 信任项目目录，避免 git 归属检查拦截
+        git config --global --get-all safe.directory 2>/dev/null | grep -qxF "${WORK_DIR}" \
+            || git config --global --add safe.directory "${WORK_DIR}" 2>/dev/null
         # 检查本地修改
         if ! git diff --quiet || ! git diff --cached --quiet; then
             if [[ "$force_update" != "yes" ]]; then
@@ -883,6 +903,10 @@ handle_update() {
         $COMPOSE down --remove-orphans
         exec_judge "$COMPOSE up -d" "$(msg '重启服务失败')"
     fi
+    
+    # 兜底拉起 nginx（避免首启时序竞态）
+    wait_php_healthy
+    [ -z "$(docker_name nginx)" ] && $COMPOSE up -d --remove-orphans
 
     env_set UPDATE_TIME "$(date +%s)"
     success "$(msg '更新完成')"
@@ -912,8 +936,8 @@ handle_uninstall() {
     # 清理网络相关容器
     remove_by_network
 
-    # 停止并删除容器
-    $COMPOSE down --remove-orphans
+    # 停止并删除容器（含命名卷）
+    $COMPOSE down --remove-orphans --volumes
 
     # 重置调试模式
     env_set APP_DEBUG "false"
