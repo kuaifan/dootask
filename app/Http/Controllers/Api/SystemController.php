@@ -348,6 +348,10 @@ class SystemController extends AbstractController
                 if (empty($item)) {
                     continue;
                 }
+                // dooai_key 是官方网关 token，需原样返回供鉴权
+                if ($key === 'dooai_key') {
+                    continue;
+                }
                 if (str_ends_with($key, '_key') || str_ends_with($key, '_secret')) {
                     $setting[$key] = substr($item, 0, 4) . str_repeat('*', strlen($item) - 8) . substr($item, -4);
                 }
