@@ -4,6 +4,7 @@ import {languageList, languageName} from "../language";
  * AI 服务商标识与显示名映射
  */
 const AIBotMap = {
+    dooai: "Doo AI",
     openai: "ChatGPT",
     claude: "Claude",
     deepseek: "DeepSeek",
@@ -13,7 +14,6 @@ const AIBotMap = {
     zhipu: "智谱清言",
     qianwen: "通义千问",
     wenxin: "文心一言",
-    dooai: "Doo AI",
 }
 
 /**
