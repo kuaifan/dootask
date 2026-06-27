@@ -15,13 +15,14 @@ aliases:
 related_tools: [list_files]
 related_pages: [file]
 prerequisites:
-  - 对要删除的文件有所有权或写权限
+  - 必须是该文件的所有者或创建者（仅这两类人可删除）
 negative:
+  - 只读或仅可读写（非创建者）的共享成员无删除权限：删除入口在界面被禁用，后端 file/remove 也会拒绝并返回「仅限所有者或创建者操作」
   - 文件删除采用软删除（数据库 soft delete），但前端无回收站 UI，普通用户无法自助恢复
   - 一次最多删除 100 个文件 / 文件夹
   - 删文件夹会级联删除其内所有文件与子文件夹
   - 删除会同时清理共享配置（FileUser）和分享链接（FileLink）
-last_verified: v1.7.90
+last_verified: v1.8.45
 ---
 
 # 删除文件或恢复文件

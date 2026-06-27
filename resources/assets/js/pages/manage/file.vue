@@ -73,7 +73,7 @@
                             <span v-show="showBtnText">{{$L('打包下载')}}</span>
                         </div>
                     </Button>
-                    <Button size="small" type="error" @click="deleteFile(selectedItems.map(({id}) => id))">
+                    <Button size="small" type="error" :disabled="batchDeleteDisabled" @click="deleteFile(selectedItems.map(({id}) => id))">
                         <div class="tool-box">
                             <Icon type="ios-trash" />
                             <span v-show="showBtnText">{{$L('删除')}}</span>
@@ -252,7 +252,7 @@
                             <DropdownItem name="download" :disabled="contextMenuItem.ext == '' || (contextMenuItem.userid != userId && contextMenuItem.permission == 0)">{{$L('下载')}}</DropdownItem>
                             <DropdownItem v-if="selectedItems.length > 1" name="downloadzip" :disabled="contextMenuItem.userid != userId && contextMenuItem.permission == 0">{{$L('打包下载')}}</DropdownItem>
 
-                            <DropdownItem name="delete" divided style="color:red">{{$L('删除')}}</DropdownItem>
+                            <DropdownItem name="delete" divided style="color:red" :disabled="contextMenuItem.userid != userId && contextMenuItem.created_id != userId">{{$L('删除')}}</DropdownItem>
                         </template>
                         <template v-else>
                             <DropdownItem
@@ -971,6 +971,11 @@ export default {
 
         compressedSownloadDisabled() {
             return !!this.fileList?.find((res) => res._checked && res.permission < 1)
+        },
+
+        batchDeleteDisabled() {
+            // 与后端 file/remove 一致：仅所有者或创建者可删除（getPermission 返回 1000）
+            return !!this.fileList?.find((res) => res._checked && res.userid != this.userId && res.created_id != this.userId)
         },
 
         maxSize() {
