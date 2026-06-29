@@ -274,33 +274,6 @@ class Badge
     }
 
     /**
-     * 为微应用菜单列表附带当前用户的角标 {count,dot}，作为前端初始同步来源（零额外请求）。
-     *
-     * @param array $apps 微应用列表（每项含 id 与 menu_items）
-     * @param int $userid
-     * @return array
-     */
-    public static function attachMenuBadges(array $apps, int $userid): array
-    {
-        $map = self::userBadges($userid);
-        foreach ($apps as &$app) {
-            $appId = (string)($app['id'] ?? '');
-            if (empty($app['menu_items']) || !is_array($app['menu_items'])) {
-                continue;
-            }
-            foreach ($app['menu_items'] as &$menu) {
-                $menuKey = (string)($menu['key'] ?? '');
-                $badge = $map[$appId][$menuKey] ?? ['count' => 0, 'dot' => false];
-                $menu['count'] = (int)$badge['count'];
-                $menu['dot'] = (bool)$badge['dot'];
-            }
-            unset($menu);
-        }
-        unset($app);
-        return $apps;
-    }
-
-    /**
      * 向在线用户实时推送角标变更（仅投递，不补发离线）。
      *
      * @param string $appId

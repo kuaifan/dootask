@@ -13,6 +13,7 @@ use Request;
  * 动态路由（routes/web.php）：
  *   api/apps/badge/set     -> badge__set()    应用密钥鉴权，绝对设置/清除角标
  *   api/apps/badge/clear   -> badge__clear()  当前用户 token 鉴权，清除自己的角标
+ *   api/apps/badge/list    -> badge__list()   当前用户 token 鉴权，拉取自己全部角标（初始同步）
  */
 class AppsController extends AbstractController
 {
@@ -70,5 +71,24 @@ class AppsController extends AbstractController
             trim(Request::input('appid', '')),
             trim(Request::input('menu_key', ''))
         ));
+    }
+
+    /**
+     * @api {get} api/apps/badge/list 拉取自己全部角标
+     *
+     * @apiDescription 供前端初始同步：返回当前用户全部应用（插件 + 自定义微应用）的角标快照。
+     *  数据结构 app_id => menu_key => {count, dot}，与前端 store 的 map 结构一致。
+     * @apiVersion 1.0.0
+     * @apiGroup apps
+     * @apiName badge__list
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function badge__list()
+    {
+        $user = User::auth();
+        return Base::retSuccess('success', Badge::userBadges((int)$user->userid));
     }
 }

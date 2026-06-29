@@ -5376,8 +5376,13 @@ export default {
                 // 忽略自定义菜单加载失败
             }
             commit("microApps/data", apps || [])
-            // 用应用菜单返回的角标初始化（自定义应用由 microapp_menu 提供，插件应用由 appstore installed 提供）
-            commit("appBadges/hydrate", apps || [])
+            // 角标初始同步：一次拉取当前用户全部应用（插件 + 自定义微应用）的角标快照
+            try {
+                const {data: badgeMap} = await dispatch('call', {url: 'apps/badge/list'});
+                commit("appBadges/hydrateMap", badgeMap || {})
+            } catch (e) {
+                // 忽略角标初始同步失败
+            }
         }
     },
 

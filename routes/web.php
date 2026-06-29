@@ -33,44 +33,44 @@ use App\Http\Controllers\Api\AppsController;
  */
 Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 会员
-    Route::any('users/{method}',                    UsersController::class);
-    Route::any('users/{method}/{action}',           UsersController::class);
+    Route::any('users/{method}',                        UsersController::class);
+    Route::any('users/{method}/{action}',               UsersController::class);
     // 项目
-    Route::any('project/{method}',                  ProjectController::class);
-    Route::any('project/{method}/{action}',         ProjectController::class);
+    Route::any('project/{method}',                      ProjectController::class);
+    Route::any('project/{method}/{action}',             ProjectController::class);
     // 系统
-    Route::any('system/{method}',                   SystemController::class);
-    Route::any('system/{method}/{action}',          SystemController::class);
+    Route::any('system/{method}',                       SystemController::class);
+    Route::any('system/{method}/{action}',              SystemController::class);
     // 在线授权
-    Route::any('license/{method}',                  LicenseController::class);
-    Route::any('license/{method}/{action}',         LicenseController::class);
+    Route::any('license/{method}',                      LicenseController::class);
+    Route::any('license/{method}/{action}',             LicenseController::class);
     // 对话
-    Route::any('dialog/{method}',                   DialogController::class);
-    Route::any('dialog/{method}/{action}',          DialogController::class);
+    Route::any('dialog/{method}',                       DialogController::class);
+    Route::any('dialog/{method}/{action}',              DialogController::class);
     // 文件
-    Route::any('file/{method}',                     FileController::class);
-    Route::any('file/{method}/{action}',            FileController::class);
+    Route::any('file/{method}',                         FileController::class);
+    Route::any('file/{method}/{action}',                FileController::class);
     // 报告
-    Route::any('report/{method}',                   ReportController::class);
-    Route::any('report/{method}/{action}',          ReportController::class);
+    Route::any('report/{method}',                       ReportController::class);
+    Route::any('report/{method}/{action}',              ReportController::class);
     // 公开接口
-    Route::any('public/{method}',                   PublicController::class);
-    Route::any('public/{method}/{action}',          PublicController::class);
+    Route::any('public/{method}',                       PublicController::class);
+    Route::any('public/{method}/{action}',              PublicController::class);
     // 助手
-    Route::any('assistant/{method}',                AssistantController::class);
-    Route::any('assistant/{method}/{action}',       AssistantController::class);
+    Route::any('assistant/{method}',                    AssistantController::class);
+    Route::any('assistant/{method}/{action}',           AssistantController::class);
     // 投诉
-    Route::any('complaint/{method}',                ComplaintController::class);
-    Route::any('complaint/{method}/{action}',       ComplaintController::class);
+    Route::any('complaint/{method}',                    ComplaintController::class);
+    Route::any('complaint/{method}/{action}',           ComplaintController::class);
     // 智能搜索
-    Route::any('search/{method}',                   SearchController::class);
-    Route::any('search/{method}/{action}',          SearchController::class);
+    Route::any('search/{method}',                       SearchController::class);
+    Route::any('search/{method}/{action}',              SearchController::class);
     // 应用相关
-    Route::any('apps/{method}',                      AppsController::class);
-    Route::any('apps/{method}/{action}',            AppsController::class);
+    Route::any('apps/{method}',                         AppsController::class);
+    Route::any('apps/{method}/{action}',                AppsController::class);
     // 测试
-    Route::any('test/{method}',                     TestController::class);
-    Route::any('test/{method}/{action}',            TestController::class);
+    Route::any('test/{method}',                         TestController::class);
+    Route::any('test/{method}/{action}',                TestController::class);
 });
 
 /**

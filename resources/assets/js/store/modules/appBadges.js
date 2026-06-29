@@ -8,7 +8,7 @@ const EMPTY_BADGE = Object.freeze({count: 0, dot: false})
  *
  * 结构：map[app_id][menu_key] = { count, dot }
  * - menu_key 为空串表示该应用的第一个菜单
- * - 初始值由 updateMicroAppsStatus 通过 hydrate 填充（microapp_menu / appstore installed）
+ * - 初始值由 updateMicroAppsStatus 通过 hydrateMap 填充（apps/badge/list 一次返回插件 + 自定义全部角标）
  * - 运行时由 websocket 消息 appBadge 经 set 增量更新
  */
 export default {
@@ -42,29 +42,32 @@ export default {
         },
 
         /**
-         * 由应用菜单列表整体初始化角标
+         * 由后端角标快照整体初始化（apps/badge/list 返回，含插件 + 自定义微应用）
          * @param state
-         * @param apps 形如 [{id, menu_items:[{key,count,dot}]}]
+         * @param map 形如 { app_id: { menu_key: {count, dot} } }
          */
-        hydrate(state, apps) {
-            const map = {}
-            ;(Array.isArray(apps) ? apps : []).forEach(app => {
-                const appid = app && app.id
-                if (!appid || !Array.isArray(app.menu_items)) {
-                    return
-                }
-                app.menu_items.forEach(menu => {
-                    const count = Number(menu && menu.count) || 0
-                    const dot = !!(menu && menu.dot)
-                    if (count > 0 || dot) {
-                        if (!map[appid]) {
-                            map[appid] = {}
-                        }
-                        map[appid][(menu && menu.key) || ''] = {count, dot}
+        hydrateMap(state, map) {
+            const next = {}
+            if (map && typeof map === 'object') {
+                Object.keys(map).forEach(appid => {
+                    const menus = map[appid]
+                    if (!appid || !menus || typeof menus !== 'object') {
+                        return
                     }
+                    Object.keys(menus).forEach(key => {
+                        const item = menus[key] || {}
+                        const count = Number(item.count) || 0
+                        const dot = !!item.dot
+                        if (count > 0 || dot) {
+                            if (!next[appid]) {
+                                next[appid] = {}
+                            }
+                            next[appid][key || ''] = {count, dot}
+                        }
+                    })
                 })
-            })
-            state.map = map
+            }
+            state.map = next
         },
 
         /**
