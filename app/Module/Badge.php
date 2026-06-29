@@ -265,11 +265,26 @@ class Badge
             return $map;
         }
         $rows = AppBadge::whereUserid($userid)->get(['app_id', 'menu_key', 'count', 'dot']);
+        if ($rows->isEmpty()) {
+            return $map;
+        }
+        // 自定义微应用 id 集合一次性收，避免每行重复 foreach
+        $customIds = [];
+        $customApps = Base::setting('microapp_menu');
+        if (is_array($customApps)) {
+            foreach ($customApps as $app) {
+                if (is_array($app) && !empty($app['id'])) {
+                    $customIds[(string)$app['id']] = true;
+                }
+            }
+        }
+        // 按 app_id 缓存判定结果：插件应用走 Apps::isInstalled（单 yaml + 请求级缓存），
+        // 自定义微应用查 set，避免每行都读 yaml / 遍历 setting。
         $exists = [];
         foreach ($rows as $row) {
             $appId = (string)$row->app_id;
             if (!isset($exists[$appId])) {
-                $exists[$appId] = Apps::appMenuConfig($appId) !== null;
+                $exists[$appId] = isset($customIds[$appId]) || Apps::isInstalled($appId);
             }
             if (!$exists[$appId]) {
                 continue;
