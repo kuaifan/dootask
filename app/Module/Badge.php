@@ -253,6 +253,7 @@ class Badge
 
     /**
      * 获取用户当前全部角标快照，用于前端初始同步。
+     * 过滤掉应用已不存在（卸载 / 自定义微应用被删除）的行，避免父级聚合统计残留数据。
      *
      * @param int $userid
      * @return array app_id => menu_key => ['count'=>int,'dot'=>bool]
@@ -264,8 +265,16 @@ class Badge
             return $map;
         }
         $rows = AppBadge::whereUserid($userid)->get(['app_id', 'menu_key', 'count', 'dot']);
+        $exists = [];
         foreach ($rows as $row) {
-            $map[$row->app_id][$row->menu_key] = [
+            $appId = (string)$row->app_id;
+            if (!isset($exists[$appId])) {
+                $exists[$appId] = Apps::appMenuConfig($appId) !== null;
+            }
+            if (!$exists[$appId]) {
+                continue;
+            }
+            $map[$appId][$row->menu_key] = [
                 'count' => (int)$row->count,
                 'dot' => (bool)$row->dot,
             ];
