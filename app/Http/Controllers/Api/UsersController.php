@@ -276,6 +276,7 @@ class UsersController extends AbstractController
     public function login__codejson()
     {
         $captcha = Captcha::create('default', true);
+        $captcha['img'] = (string)$captcha['img'];
         return Base::retSuccess('请求成功', $captcha);
     }
 
