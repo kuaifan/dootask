@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：304
+接口总数：306
 
 ## 路由规则
 
@@ -370,6 +370,13 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/search/task | task() | get | 搜索任务 |
 | api/search/file | file() | get | 搜索文件 |
 | api/search/message | message() | get | 搜索消息 |
+
+## apps（AppsController）
+
+| URL | 方法名 | HTTP | 说明 |
+| --- | --- | --- | --- |
+| api/apps/badge/set | badge__set() | post | 设置角标（应用密钥鉴权） |
+| api/apps/badge/clear | badge__clear() | post | 清除角标（当前用户 token 鉴权） |
 
 ## test（TestController）
 

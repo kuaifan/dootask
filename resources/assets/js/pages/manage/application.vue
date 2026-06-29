@@ -70,6 +70,10 @@
                                         <div class="apply-item" :class="{'is-sorting': sortingMode}" @click="handleCardClick(card)">
                                             <div class="logo">
                                                 <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${card.micro.icon})`}"></div>
+                                                <div v-if="!sortingMode" class="apply-box-top-report">
+                                                    <Badge v-if="microBadge(card.micro).count > 0" :overflow-count="999" :count="microBadge(card.micro).count"/>
+                                                    <Badge v-else-if="microBadge(card.micro).dot" dot/>
+                                                </div>
                                             </div>
                                             <p>{{ card.micro.label }}</p>
                                         </div>
@@ -1038,6 +1042,10 @@ export default {
                     break;
             }
             return item.value == type && num > 0
+        },
+        // 插件/微应用菜单角标 {count, dot}
+        microBadge(menu) {
+            return this.$store.getters['appBadges/badge'](menu && menu.id, menu && menu.key)
         },
         // 点击应用
         applyClick(item, params = '') {

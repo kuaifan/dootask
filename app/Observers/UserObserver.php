@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\User;
 use App\Module\Apps;
+use App\Module\Badge;
 use App\Tasks\ManticoreSyncTask;
 
 class UserObserver extends AbstractObserver
@@ -80,6 +81,8 @@ class UserObserver extends AbstractObserver
             } elseif (!$originalDisableAt && $currentDisableAt) {
                 // disable_at 从 null 变为有值 → 离职 (offboarded)
                 Apps::dispatchUserHook($user, 'user_offboard', 'offboarded');
+                // 离职清除该用户全部应用角标
+                Badge::clearByUser((int)$user->userid);
             }
             return;
         }
@@ -122,6 +125,9 @@ class UserObserver extends AbstractObserver
         if (!$user->bot) {
             Apps::dispatchUserHook($user, 'user_offboard', 'delete');
         }
+
+        // 清除该用户全部应用角标
+        Badge::clearByUser((int)$user->userid);
     }
 }
 

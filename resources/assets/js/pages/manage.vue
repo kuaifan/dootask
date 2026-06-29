@@ -157,11 +157,14 @@
                         <li @click="toggleRoute('application')" :class="classNameRoute('application')">
                             <i class="taskfont">&#xe60c;</i>
                             <div class="menu-title">{{$L('应用')}}</div>
-                            <Badge class="menu-badge" :overflow-count="999" :text="String(reportUnreadNumber || '')"/>
+                            <Badge v-if="applicationBadgeCount > 0" class="menu-badge" :overflow-count="999" :count="applicationBadgeCount"/>
+                            <Badge v-else-if="applicationBadgeDot" class="menu-badge" dot/>
                         </li>
                         <li v-for="(item, key) in filterMicroAppsMenusMain" :key="key" @click="onTabbarClick('microApp', item)">
                             <div class="apply-icon no-dark-content" :style="{backgroundImage: `url(${item.icon})`}"></div>
                             <div class="menu-title">{{item.label}}</div>
+                            <Badge v-if="microBadge(item).count > 0" class="menu-badge" :overflow-count="999" :count="microBadge(item).count"/>
+                            <Badge v-else-if="microBadge(item).dot" class="menu-badge" dot/>
                         </li>
                     </ul>
                     <div v-if="ownerProjectTabsVisible" class="owner-project-tabs">
@@ -653,6 +656,12 @@ export default {
 
         ...mapGetters(['dashboardTask', "filterMicroAppsMenusMain"]),
 
+        // 父『应用』入口聚合角标（规则收敛在 appBadges 模块 getter）
+        ...mapGetters('appBadges', {
+            applicationBadgeCount: 'applicationCount',
+            applicationBadgeDot: 'applicationDot',
+        }),
+
         aiInstalled() {
             return this.microAppsIds?.includes('ai');
         },
@@ -1025,6 +1034,10 @@ export default {
 
     methods: {
         transformEmojiToHtml,
+        // 插件/微应用菜单角标 {count, dot}
+        microBadge(menu) {
+            return this.$store.getters['appBadges/badge'](menu && menu.id, menu && menu.key);
+        },
         onMenuResizeChange({event}) {
             this.menuResizing = event !== 'up';
             if (event === 'up') {

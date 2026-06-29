@@ -343,11 +343,11 @@ features:
       - app-admin.entry.menu-map
 
   - id: micro-app
-    name: 微应用通用概念（安装/卸载/排序/自定义菜单）
+    name: 微应用通用概念（安装/卸载/排序/自定义菜单/菜单角标）
     scope: end-user
     batch: B3
     priority: P0
-    chunk_count_est: 8
+    chunk_count_est: 9
     owner: ~
     status: drafted
     chunks:
@@ -355,6 +355,7 @@ features:
       - micro-app.menu.concept
       - micro-app.concept
       - micro-app.permission.concept
+      - micro-app.badge.concept
       - micro-app.install.howto
       - micro-app.sort.howto
       - micro-app.uninstall.howto

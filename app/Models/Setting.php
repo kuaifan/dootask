@@ -365,6 +365,8 @@ class Setting extends AbstractModel
                     $menu['disable_scope_css'] = (bool)($menu['disable_scope_css'] ?? false);
                     $menu['auto_dark_theme'] = isset($menu['auto_dark_theme']) ? (bool)$menu['auto_dark_theme'] : true;
                     $menu['transparent'] = (bool)($menu['transparent'] ?? false);
+                    $menu['key'] = isset($menu['key']) ? (string)$menu['key'] : '';
+                    $menu['badge_clear_on_open'] = (bool)($menu['badge_clear_on_open'] ?? false);
                     if (isset($menu['visible_to'])) {
                         unset($menu['visible_to']);
                     }
@@ -454,6 +456,9 @@ class Setting extends AbstractModel
         if (!empty($menu['capsule']) && is_array($menu['capsule'])) {
             $payload['capsule'] = Base::newTrim($menu['capsule']);
         }
+        // 角标：菜单稳定标识 与 打开时是否自动清零
+        $payload['key'] = Base::newTrim($menu['key'] ?? '');
+        $payload['badge_clear_on_open'] = (bool)($menu['badge_clear_on_open'] ?? false);
         return $payload;
     }
 
@@ -462,7 +467,7 @@ class Setting extends AbstractModel
      * @param mixed $value
      * @return array
      */
-    protected static function normalizeCustomMicroVisible($value)
+    public static function normalizeCustomMicroVisible($value)
     {
         if (is_array($value)) {
             $list = array_filter(array_map('trim', $value));
@@ -485,7 +490,7 @@ class Setting extends AbstractModel
      * @param int $userId
      * @return bool
      */
-    protected static function isCustomMicroVisibleTo(array $visible, bool $isAdmin, int $userId)
+    public static function isCustomMicroVisibleTo(array $visible, bool $isAdmin, int $userId)
     {
         if (in_array('all', $visible)) {
             return true;

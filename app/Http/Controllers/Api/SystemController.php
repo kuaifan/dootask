@@ -23,6 +23,7 @@ use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
 use App\Models\UserCheckinRecord;
 use App\Module\Apps;
+use App\Module\Badge;
 use App\Module\BillMultipleExport;
 use LdapRecord\LdapRecordException;
 use Swoole\Coroutine;
@@ -786,6 +787,7 @@ class SystemController extends AbstractController
             }
             $setting = Setting::filterCustomMicroAppsForUser($setting, $user);
             $setting = Setting::formatCustomMicroAppsForResponse($setting);
+            $setting = Badge::attachMenuBadges($setting, $user ? (int)$user->userid : 0);
         }
         return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting);
     }

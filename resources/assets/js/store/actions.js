@@ -4642,7 +4642,7 @@ export default {
      * @param state
      * @param dispatch
      */
-    websocketConnection({state, dispatch}) {
+    websocketConnection({state, dispatch, commit}) {
         clearTimeout(state.wsTimeout);
         if (state.ws) {
             state.ws.close();
@@ -4997,6 +4997,13 @@ export default {
                                 }
                             })(msgDetail);
                             break;
+
+                        /**
+                         * 应用菜单角标
+                         */
+                        case "appBadge":
+                            commit("appBadges/set", msgDetail.data || {});
+                            break;
                     }
                     break
             }
@@ -5293,6 +5300,7 @@ export default {
         // 组装打开微应用所需的最终 config（用于 MicroApps 组件渲染/启动）
         const config = {
             id: microAppId,
+            key: typeof data.key == 'string' ? data.key : '',
             name: data.name,
             title: data.label || data.title || data.name,
             url: $A.mainUrl(url),
@@ -5304,6 +5312,7 @@ export default {
             auto_dark_theme: typeof data.auto_dark_theme == 'boolean' ? data.auto_dark_theme : true,
             keep_alive: typeof data.keep_alive == 'boolean' ? data.keep_alive : true,
             immersive: typeof data.immersive == 'boolean' ? data.immersive : false,
+            badge_clear_on_open: typeof data.badge_clear_on_open == 'boolean' ? data.badge_clear_on_open : false,
             props: $A.isJson(data.props) ? data.props : {},
         }
 
@@ -5367,6 +5376,8 @@ export default {
                 // 忽略自定义菜单加载失败
             }
             commit("microApps/data", apps || [])
+            // 用应用菜单返回的角标初始化（自定义应用由 microapp_menu 提供，插件应用由 appstore installed 提供）
+            commit("appBadges/hydrate", apps || [])
         }
     },
 

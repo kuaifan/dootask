@@ -18,7 +18,8 @@
                     <Badge class="tabbar-badge" :overflow-count="999" :text="msgUnreadMention"/>
                 </template>
                 <template v-else-if="item.name === 'application'">
-                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
+                    <Badge v-if="applicationBadgeCount > 0" class="tabbar-badge" :overflow-count="999" :count="applicationBadgeCount"/>
+                    <Badge v-else-if="applicationBadgeDot" class="tabbar-badge" dot/>
                 </template>
             </li>
         </ul>
@@ -54,8 +55,14 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'reportUnreadNumber']),
+        ...mapState(['cacheDialogs']),
         ...mapGetters(['dashboardTask']),
+
+        // 父『应用』入口聚合角标（规则收敛在 appBadges 模块 getter）
+        ...mapGetters('appBadges', {
+            applicationBadgeCount: 'applicationCount',
+            applicationBadgeDot: 'applicationDot',
+        }),
 
         /**
          * 综合数（未读、提及、待办）

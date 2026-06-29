@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\AssistantController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\AppsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +65,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 智能搜索
     Route::any('search/{method}',                   SearchController::class);
     Route::any('search/{method}/{action}',          SearchController::class);
+    // 应用相关
+    Route::any('apps/{method}',                      AppsController::class);
+    Route::any('apps/{method}/{action}',            AppsController::class);
     // 测试
     Route::any('test/{method}',                     TestController::class);
     Route::any('test/{method}/{action}',            TestController::class);

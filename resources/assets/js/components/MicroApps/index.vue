@@ -419,6 +419,17 @@ export default {
             // 备份配置
             this.backupConfigs[config.name] = $A.cloneJSON(config);
 
+            // 角标：打开 badge_clear_on_open=true 的菜单时自动清零（本地 + 服务端持久化）
+            if (config.badge_clear_on_open === true && config.id) {
+                const menuKey = typeof config.key === 'string' ? config.key : '';
+                this.$store.commit('appBadges/clearMenu', {appid: config.id, menu_key: menuKey});
+                this.$store.dispatch('call', {
+                    url: 'apps/badge/clear',
+                    method: 'post',
+                    data: {appid: config.id, menu_key: menuKey},
+                }).catch(() => {});
+            }
+
             // 从缓存读取胶囊配置
             const capsuleCache = await $A.IDBJson("microAppsCapsuleCache");
             if ($A.isJson(capsuleCache[config.name])) {
@@ -791,6 +802,12 @@ export default {
             if (ids.length === 0) {
                 return
             }
+            // 卸载的应用本地清除其角标
+            apps.forEach(item => {
+                if (item.type === 'uninstall') {
+                    this.$store.commit('appBadges/clearApp', item.id)
+                }
+            })
             this.microApps.forEach(app => {
                 if (ids.includes(app.id)) {
                     this.closeMicroApp(app.name, true)
