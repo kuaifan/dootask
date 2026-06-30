@@ -268,19 +268,73 @@ class File extends AbstractModel
      */
     public function contentUpload($user, int $pid, $webkitRelativePath, $overwrite = false)
     {
+        [$pid, $userid, $addItem] = $this->contentUploadPrep($user, $pid, $webkitRelativePath);
+        $data = Base::upload([
+            "file" => Request::file('files'),
+            "type" => 'more',
+            "autoThumb" => false,
+            "path" => 'uploads/tmp/file/' . date("Ym") . '/',
+            "quality" => true,
+        ]);
+        if (Base::isError($data)) {
+            throw new ApiException($data['msg']);
+        }
+        return $this->contentUploadCommit($user, $userid, $pid, $data['data'], $addItem, $webkitRelativePath, null, $overwrite);
+    }
+
+    /**
+     * 与 contentUpload 同一入库链路，但接收已落盘的本地文件而非 Request 上传文件。
+     * 供分片上传 merge 阶段调用。
+     *
+     * @param user $user
+     * @param int $pid
+     * @param string $localPath 合并后的完整文件绝对路径
+     * @param string $originalName 原始文件名（含扩展名）
+     * @param string $webkitRelativePath
+     * @param string|null $hash 文件 md5，用于秒传索引
+     * @param bool $overwrite
+     * @return array
+     */
+    public function contentUploadFromPath($user, int $pid, string $localPath, string $originalName, $webkitRelativePath, $hash = null, $overwrite = false)
+    {
+        [$pid, $userid, $addItem] = $this->contentUploadPrep($user, $pid, $webkitRelativePath);
+        $data = Base::uploadFromPath([
+            "path_local" => $localPath,
+            "name" => $originalName,
+            "type" => 'more',
+            "autoThumb" => false,
+            "path" => 'uploads/tmp/file/' . date("Ym") . '/',
+            "quality" => true,
+        ]);
+        if (Base::isError($data)) {
+            throw new ApiException($data['msg']);
+        }
+        return $this->contentUploadCommit($user, $userid, $pid, $data['data'], $addItem, $webkitRelativePath, $hash, $overwrite);
+    }
+
+    /**
+     * 上传前置：权限/计数校验 + webkitRelativePath 拆出来的中间文件夹创建。
+     * 失败抛 ApiException；成功返回 [最终 pid, 拥有者 userid, 已创建的中间文件夹列表]。
+     *
+     * @param user   $user
+     * @param int    $pid
+     * @param string $webkitRelativePath
+     * @return array{0:int, 1:int, 2:array}
+     */
+    public function contentUploadPrep($user, int $pid, $webkitRelativePath): array
+    {
         $userid = $user->userid;
         if ($pid > 0) {
             if (File::wherePid($pid)->count() >= 300) {
-                return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
+                throw new ApiException('每个文件夹里最多只能创建300个文件或文件夹');
             }
             $row = File::permissionFind($pid, $user, 1);
             $userid = $row->userid;
         } else {
             if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
-                return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
+                throw new ApiException('每个文件夹里最多只能创建300个文件或文件夹');
             }
         }
-        //
         $dirs = explode("/", $webkitRelativePath);
         $addItem = [];
         while (count($dirs) > 1) {
@@ -297,12 +351,10 @@ class File extends AbstractModel
                             'created_id' => $user->userid,
                         ]);
                         $dirRow->handleDuplicateName();
-                        if ($dirRow->saveBeforePP()) {
-                            $addItem[] = File::find($dirRow->id);
+                        if (!$dirRow->saveBeforePP()) {
+                            throw new ApiException('创建文件夹失败');
                         }
-                    }
-                    if (empty($dirRow)) {
-                        throw new ApiException('创建文件夹失败');
+                        $addItem[] = File::find($dirRow->id);
                     }
                     $pid = $dirRow->id;
                 });
@@ -311,20 +363,24 @@ class File extends AbstractModel
                 }
             }
         }
-        //
-        $path = 'uploads/tmp/file/' . date("Ym") . '/';
-        $data = Base::upload([
-            "file" => Request::file('files'),
-            "type" => 'more',
-            "autoThumb" => false,
-            "path" => $path,
-            "quality" => true
-        ]);
-        if (Base::isError($data)) {
-            throw new ApiException($data['msg']);
-        }
-        $data = $data['data'];
-        //
+        return [$pid, $userid, $addItem];
+    }
+
+    /**
+     * 上传后置：ext → type 映射 + File 记录创建 + uploadMove + FileContent 入库。
+     *
+     * @param user   $user
+     * @param int    $userid             目标文件拥有者
+     * @param int    $pid
+     * @param array  $data               Base::upload/uploadFromPath 返回的 data 部分
+     * @param array  $addItem            prep 阶段累积的中间文件夹
+     * @param string $webkitRelativePath
+     * @param string|null $hash          可选，写入 files.hash（秒传索引）
+     * @param bool   $overwrite
+     * @return array{data: array, addItem: array}
+     */
+    private function contentUploadCommit($user, int $userid, int $pid, array $data, array $addItem, $webkitRelativePath, $hash, bool $overwrite): array
+    {
         $type = match ($data['ext']) {
             'text', 'md', 'markdown' => 'document',
             'drawio' => 'drawio',
@@ -356,7 +412,6 @@ class File extends AbstractModel
         if ($data['ext'] == 'markdown') {
             $data['ext'] = 'md';
         }
-        $file = null;
         $params = [
             'pid' => $pid,
             'name' => Base::rightDelete($data['name'], '.' . $data['ext']),
@@ -365,6 +420,7 @@ class File extends AbstractModel
             'userid' => $userid,
             'created_id' => $user->userid,
         ];
+        $file = null;
         if ($overwrite) {
             $file = self::wherePid($params['pid'])->whereExt($params['ext'])->whereName($params['name'])->first();
         }
@@ -373,11 +429,12 @@ class File extends AbstractModel
             $file = File::createInstance($params);
             $file->handleDuplicateName();
         }
-        // 开始创建
-        return AbstractModel::transaction(function () use ($overwrite, $addItem, $webkitRelativePath, $type, $user, $data, $file) {
+        return AbstractModel::transaction(function () use ($overwrite, $addItem, $webkitRelativePath, $type, $user, $data, $file, $hash) {
             $file->size = $data['size'] * 1024;
+            if ($hash) {
+                $file->hash = $hash;
+            }
             $file->saveBeforePP();
-            //
             $data = Base::uploadMove($data, "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $file->id . "/");
             $content = [
                 'from' => '',
@@ -389,25 +446,20 @@ class File extends AbstractModel
                 $content['width'] = $data['width'];
                 $content['height'] = $data['height'];
             }
-            $content = FileContent::createInstance([
+            FileContent::createInstance([
                 'fid' => $file->id,
                 'content' => $content,
                 'text' => '',
                 'size' => $file->size,
                 'userid' => $user->userid,
-            ]);
-            $content->save();
-            //
+            ])->save();
             $tmpRow = File::find($file->id);
             $tmpRow->pushMsg('add', $tmpRow);
-            //
-            $data = File::handleImageUrl($tmpRow->toArray());
-            $data['full_name'] = $webkitRelativePath ?: ($data['name'] . '.' . $data['ext']);
-            $data['overwrite'] = $overwrite ? 1 : 0;
-            //
-            $addItem[] = $data;
-
-            return ['data' => $data, 'addItem' => $addItem];
+            $row = File::handleImageUrl($tmpRow->toArray());
+            $row['full_name'] = $webkitRelativePath ?: ($row['name'] . '.' . $row['ext']);
+            $row['overwrite'] = $overwrite ? 1 : 0;
+            $addItem[] = $row;
+            return ['data' => $row, 'addItem' => $addItem];
         });
     }
 

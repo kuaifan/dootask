@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：307
+接口总数：311
 
 ## 路由规则
 
@@ -314,6 +314,15 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/file/share/out | share__out() | get | 退出共享 |
 | api/file/link | link() | get | 获取链接 |
 | api/file/download/pack | download__pack() | get | 打包文件 |
+
+## upload（UploadController）
+
+| URL | 方法名 | HTTP | 说明 |
+| --- | --- | --- | --- |
+| api/upload/init | init() | post | 启动上传会话 |
+| api/upload/chunk | chunk() | post | 上传一个分片 |
+| api/upload/merge | merge() | post | 合并分片并入库 |
+| api/upload/cancel | cancel() | post | 取消上传会话 |
 
 ## report（ReportController）
 

@@ -1101,6 +1101,46 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 与 sendMsgFiles 同链路，但接收已落盘的本地文件（分片合并产物），跳过 Base::upload。
+     *
+     * @param User       $user
+     * @param int[]      $dialogIds
+     * @param string     $localPath     已落盘绝对路径
+     * @param string     $originalName  原始文件名
+     * @param int        $replyId
+     * @param bool       $imageAttachment 任务群组中图片是否也作为附件保存
+     * @return array
+     */
+    public static function sendMsgFilesFromPath($user, $dialogIds, string $localPath, string $originalName, int $replyId = 0, bool $imageAttachment = false)
+    {
+        $first = null;
+        $fileName = $originalName;
+        $resolve = function ($path) use (&$first, &$fileName, $localPath, $originalName) {
+            if ($first !== null) {
+                return self::copyFileDataTo($first, $path);
+            }
+            $setting = Base::setting("system");
+            $data = Base::uploadFromPath([
+                "path_local" => $localPath,
+                "name" => $originalName,
+                "type" => 'more',
+                "path" => $path,
+                "fileName" => $fileName,
+                "quality" => true,
+                "convertVideo" => $setting['convert_video'] === 'open',
+                "compressVideo" => $setting['compress_video'] === 'open',
+            ]);
+            if (Base::isError($data)) {
+                throw new ApiException($data['msg']);
+            }
+            $first = $data['data'];
+            $fileName = $first['name'];
+            return $first;
+        };
+        return self::dispatchFileMessages($user, $dialogIds, $replyId, $imageAttachment, $resolve);
+    }
+
+    /**
      * 发送消息文件
      *
      * @param User $user 发起会话的会员
@@ -1114,24 +1154,18 @@ class WebSocketDialog extends AbstractModel
      */
     public static function sendMsgFiles($user, $dialogIds, $files, $image64, $fileName, $replyId, $imageAttachment)
     {
-        $filePath = '';
-        $result = [];
-        $data = [];
-        foreach ($dialogIds as $dialog_id) {
-            $dialog = WebSocketDialog::checkDialog($dialog_id);
-
-            $action = $replyId > 0 ? "reply-$replyId" : "";
-            $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+        $first = null;
+        $resolve = function ($path) use (&$first, &$fileName, $files, $image64) {
+            if ($first !== null) {
+                return self::copyFileDataTo($first, $path);
+            }
             if ($image64) {
                 $data = Base::image64save([
                     "image64" => $image64,
                     "path" => $path,
                     "fileName" => $fileName,
-                    "quality" => true
+                    "quality" => true,
                 ]);
-            } else if ($filePath) {
-                Base::makeDir(public_path($path));
-                copy($filePath, public_path($path) . basename($filePath));
             } else {
                 $setting = Base::setting("system");
                 $data = Base::upload([
@@ -1147,19 +1181,41 @@ class WebSocketDialog extends AbstractModel
             if (Base::isError($data)) {
                 throw new ApiException($data['msg']);
             }
-            $fileData = $data['data'];
-            $filePath = $fileData['file'];
-            $fileName = $fileData['name'];
-            $fileData['thumb'] = Base::unFillUrl($fileData['thumb']);
-            $fileData['size'] *= 1024;
+            $first = $data['data'];
+            $fileName = $first['name'];
+            return $first;
+        };
+        return self::dispatchFileMessages($user, $dialogIds, $replyId, $imageAttachment, $resolve);
+    }
 
-            // 任务群组保存文件
+    /**
+     * 遍历多个 dialog 发送文件消息：每个 dialog 取一份 fileData → 任务群组建附件 → sendMsg。
+     * 取 fileData 的策略由 $resolve(path) 决定（首次 upload，后续 copy）。
+     *
+     * @param User     $user
+     * @param int[]    $dialogIds
+     * @param int      $replyId
+     * @param bool     $imageAttachment
+     * @param callable $resolve fn(string $path): array  返回该 dialog 的 fileData
+     * @return array sendMsg 的最终返回（最后一个 dialog 的结果）
+     */
+    private static function dispatchFileMessages($user, array $dialogIds, int $replyId, bool $imageAttachment, callable $resolve): array
+    {
+        $result = [];
+        foreach ($dialogIds as $dialog_id) {
+            $dialog = WebSocketDialog::checkDialog($dialog_id);
+            $action = $replyId > 0 ? "reply-$replyId" : "";
+            $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+            $fileData = $resolve($path);
+            $fileData['thumb'] = Base::unFillUrl($fileData['thumb'] ?? '');
+            $fileData['size'] *= 1024;
+            $task = null;
             if ($dialog->group_type === 'task') {
-                // 如果是图片不保存
+                // 图片消息默认不作为任务附件存档，除非显式 $imageAttachment
                 if ($imageAttachment || !in_array($fileData['ext'], File::imageExt)) {
                     $task = ProjectTask::whereDialogId($dialog->id)->first();
                     if ($task) {
-                        $file = ProjectTaskFile::createInstance([
+                        ProjectTaskFile::createInstance([
                             'project_id' => $task->project_id,
                             'task_id' => $task->id,
                             'name' => $fileData['name'],
@@ -1168,20 +1224,30 @@ class WebSocketDialog extends AbstractModel
                             'path' => $fileData['path'],
                             'thumb' => $fileData['thumb'],
                             'userid' => $user->userid,
-                        ]);
-                        $file->save();
+                        ])->save();
                     }
                 }
             }
-
-            // 发送消息
             $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid);
-            if (Base::isSuccess($result)) {
-                if (isset($task)) {
-                    $result['data']['task_id'] = $task->id;
-                }
+            if (Base::isSuccess($result) && $task) {
+                $result['data']['task_id'] = $task->id;
             }
         }
         return $result;
+    }
+
+    /**
+     * 把首个 dialog 上传得到的物理文件 copy 到后续 dialog 的目录，返回更新后的 fileData。
+     */
+    private static function copyFileDataTo(array $first, string $path): array
+    {
+        Base::makeDir(public_path($path));
+        $target = public_path($path) . basename($first['file']);
+        copy($first['file'], $target);
+        $copy = $first;
+        $copy['file'] = $target;
+        $copy['path'] = $path . basename($first['file']);
+        $copy['url'] = Base::fillUrl($copy['path']);
+        return $copy;
     }
 }

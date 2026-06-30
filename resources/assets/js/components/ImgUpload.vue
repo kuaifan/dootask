@@ -77,6 +77,8 @@
 </template>
 
 <script>
+import {chunkedUpload, CHUNK_THRESHOLD} from "../store/chunkedUpload";
+
 export default {
     name: 'ImgUpload',
     props: {
@@ -315,7 +317,7 @@ export default {
                 desc: this.$L('文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxImageSize * 1024))
             });
         },
-        handleBeforeUpload() {
+        handleBeforeUpload(file) {
             //上传前判断
             let check = this.uploadList.length < this.maxNum;
             if (!check && this.uploadList.length == 1) {
@@ -324,8 +326,58 @@ export default {
             }
             if (!check) {
                 $A.noticeWarning(this.$L('最多只能上传 ' + this.maxNum + ' 张图片。'));
+                return false;
+            }
+            // ≥ 10MB 走分片（iview max-size 拦在前，需调用方放大 maxSize 才能进到这里）
+            if (file && file.size >= CHUNK_THRESHOLD) {
+                this.handleChunkedUpload(file);
+                return false;
             }
             return check;
+        },
+
+        async handleChunkedUpload(rawFile) {
+            // 与原 iview 路径同效果：成功后构造 fileList item 触发 handleCallback
+            this.$emit('update:uploadIng', this.uploadIng + 1);
+            const item = {
+                uid: 'chunked-' + Date.now() + '-' + Math.random().toString(36).slice(2),
+                name: rawFile.name,
+                size: rawFile.size,
+                status: 'uploading',
+                showProgress: true,
+                percentage: 0,
+            };
+            this.$refs.upload.fileList.push(item);
+            this.uploadList = this.$refs.upload.fileList;
+            try {
+                const data = await chunkedUpload({
+                    file: rawFile,
+                    scene: 'image',
+                    sceneParams: {
+                        width: this.width,
+                        height: this.height,
+                        whcut: this.whcut,
+                    },
+                    onProgress: percent => { item.percentage = percent; },
+                });
+                item.status = 'finished';
+                item.percentage = 100;
+                item.url = data.url;
+                item.path = data.path;
+                item.thumb = data.thumb;
+                this.handleCallback(item);
+                this.$emit('input', this.$refs.upload.fileList);
+            } catch (err) {
+                $A.noticeWarning({
+                    title: this.$L('上传失败'),
+                    desc: this.$L('文件 ' + rawFile.name + ' 上传失败 ' + ((err && err.message) || '')),
+                });
+                const idx = this.$refs.upload.fileList.indexOf(item);
+                if (idx > -1) this.$refs.upload.fileList.splice(idx, 1);
+                this.$emit('input', this.$refs.upload.fileList);
+            } finally {
+                this.$emit('update:uploadIng', this.uploadIng - 1);
+            }
         },
         handleClick() {
             //手动上传

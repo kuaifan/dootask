@@ -62,6 +62,7 @@
         "resolve-url-loader": "^4.0.0",
         "sass": "1.77.4",
         "sass-loader": "14.2.1",
+        "spark-md5": "^3.0.2",
         "stylus": "^0.59.0",
         "stylus-loader": "^7.1.0",
         "tinymce": "^5.10.3",

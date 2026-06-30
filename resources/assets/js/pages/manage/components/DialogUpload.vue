@@ -19,6 +19,7 @@
 
 <script>
 import {mapGetters} from "vuex";
+import {chunkedUpload, CHUNK_THRESHOLD} from "../../../store/chunkedUpload";
 
 export default {
     name: 'DialogUpload',
@@ -38,6 +39,7 @@ export default {
             fileMsgCaches: {},  // 文件信息缓存
             uploadFormat: [],   // 不限制上传文件类型
             actionUrl: $A.apiUrl('dialog/msg/sendfile'),
+            chunkedTasks: {},   // uid -> {controller, uploadId} 仅分片路径在跑的任务，供 cancel() 命中
         }
     },
 
@@ -101,6 +103,11 @@ export default {
 
         handleBeforeUpload(file) {
             //上传前
+            // ≥ 10MB 走分片上传（拦截 iview 原生 action POST）
+            if (file.size >= CHUNK_THRESHOLD) {
+                this.handleChunkedUpload(file);
+                return false;
+            }
             return new Promise((resolve) => {
                 this.fileMsgData(file)
                 if (/\.(jpe?g|webp|png|gif)$/i.test(file.name)) {
@@ -114,6 +121,78 @@ export default {
                     return
                 }
                 resolve();
+            });
+        },
+
+        async handleChunkedUpload(rawFile) {
+            // 大文件分片上传：构造与 iview file 同 shape 的伪 file 对象，
+            // 沿用原 on-progress/on-success/on-error 协议给父级 DialogWrapper
+            this.fileMsgData(rawFile);
+            if (/\.(jpe?g|webp|png|gif)$/i.test(rawFile.name)) {
+                try {
+                    const imgData = await this.imageFileToObject(rawFile);
+                    this.fileMsgData(rawFile, imgData);
+                } catch (_e) { /* 图片预处理失败不阻断上传 */ }
+            }
+            const pseudo = {
+                uid: 'chunked-' + Date.now() + '-' + Math.random().toString(36).slice(2),
+                name: rawFile.name,
+                size: rawFile.size,
+                status: 'uploading',
+                percentage: 0,
+                showProgress: true, // DialogWrapper.chatFile 根据此字段决定是否渲染进度
+            };
+            if (this.$parent.$options.name === 'DialogWrapper') {
+                pseudo.tempId = this.$parent.getTempId();
+            } else {
+                pseudo.tempId = $A.randNum(1000000000, 9999999999);
+            }
+            pseudo.msg = {};
+            const msgName = this.fileMsgName(rawFile);
+            if (this.fileMsgCaches[msgName]) {
+                pseudo.msg = this.fileMsgCaches[msgName];
+                delete this.fileMsgCaches[msgName];
+            }
+            this.$emit('on-progress', pseudo);
+
+            const controller = new AbortController();
+            const task = {controller, uploadId: ''};
+            this.chunkedTasks[pseudo.uid] = task;
+
+            chunkedUpload({
+                file: rawFile,
+                scene: 'dialog_file',
+                sceneParams: {
+                    dialog_ids: [this.dialogId],
+                    reply_id: this.quoteData?.id || 0,
+                },
+                onProgress: percent => {
+                    pseudo.percentage = percent;
+                    this.$emit('on-progress', pseudo);
+                },
+                onStart: uploadId => { task.uploadId = uploadId; },
+                signal: controller.signal,
+            }).then(data => {
+                pseudo.status = 'finished';
+                pseudo.percentage = 100;
+                pseudo.data = data;
+                this.$emit('on-success', pseudo);
+                if (data && data.task_id) {
+                    this.$store.dispatch("getTaskFiles", data.task_id);
+                }
+            }).catch(err => {
+                // 用户主动取消：abort 在 axios 抛 CanceledError(message='canceled')，calcMd5 抛 Error('aborted')；signal.aborted 兜底
+                if (controller.signal.aborted) {
+                    return;
+                }
+                const msg = (err && err.message) || $L('发送失败');
+                $A.modalWarning({
+                    title: '发送失败',
+                    content: '文件 ' + rawFile.name + ' 发送失败，' + msg,
+                });
+                this.$emit('on-error', pseudo);
+            }).finally(() => {
+                delete this.chunkedTasks[pseudo.uid];
             });
         },
 
@@ -182,6 +261,21 @@ export default {
 
         cancel(uid) {
             //取消上传
+            const task = this.chunkedTasks[uid];
+            if (task) {
+                // 分片路径：abort 在飞请求 + 通知后端清掉 Redis/分片目录。
+                // 返回 true 后由 DialogWrapper.onCancelSend 调 forgetTempMsg 移除临时气泡。
+                task.controller.abort();
+                if (task.uploadId) {
+                    this.$store.dispatch('call', {
+                        url: 'upload/cancel',
+                        data: {upload_id: task.uploadId},
+                        method: 'post',
+                    }).catch(() => { /* 后端有 24h TTL 兜底，失败可忽略 */ });
+                }
+                delete this.chunkedTasks[uid];
+                return true;
+            }
             return this.$refs.upload.cancel(uid);
         },
 

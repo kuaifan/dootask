@@ -282,7 +282,7 @@
                         </AutoTip>
                         <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !== 1" class="file-error">{{item.response.msg}}</AutoTip>
                         <Progress v-else :percent="uploadPercentageParse(item.percentage)" :stroke-width="5" />
-                        <Icon class="file-close" type="ios-close-circle-outline" @click.stop="uploadList.splice(index, 1)"/>
+                        <Icon class="file-close" type="ios-close-circle-outline" @click.stop="uploadAbort(item, index)"/>
                     </li>
                 </ul>
                 <Icon class="close" type="md-close" @click="uploadShow=false"/>
@@ -492,6 +492,7 @@ import longpress from "../../directives/longpress";
 import UserSelect from "../../components/UserSelect.vue";
 import UserAvatarTip from "../../components/UserAvatar/tip.vue";
 import Forwarder from "./components/Forwarder/index.vue";
+import {chunkedUpload, CHUNK_THRESHOLD} from "../../store/chunkedUpload";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
@@ -2374,6 +2375,21 @@ export default {
             this.$refs.dirUpload.clearFiles();
         },
 
+        uploadAbort(item, index) {
+            // 进行中的分片任务：abort 在飞请求 + 通知后端清理；非分片(老接口/已完成)直接从列表移除
+            if (item && item.status === 'uploading' && item._chunkCtrl) {
+                item._chunkCtrl.abort();
+                if (item._chunkUploadId) {
+                    this.$store.dispatch('call', {
+                        url: 'upload/cancel',
+                        data: {upload_id: item._chunkUploadId},
+                        method: 'post',
+                    }).catch(() => { /* 后端 24h TTL 兜底 */ });
+                }
+            }
+            this.uploadList.splice(index, 1);
+        },
+
         uploadPercentageParse(val) {
             return parseInt(val, 10);
         },
@@ -2429,6 +2445,11 @@ export default {
         handleBeforeUpload(file) {
             //上传前判断
             this.uploadCover = false
+            // ≥ 10MB 自动走分片上传（拦截 iview 原生 action POST）
+            if (file.size >= CHUNK_THRESHOLD) {
+                this.handleChunkedUpload(file);
+                return false;
+            }
             if (this.uploadDir) {
                 this.handleUploadNext();
                 return true;
@@ -2459,6 +2480,77 @@ export default {
                     resolve();
                 }
             })
+        },
+
+        handleChunkedUpload(file) {
+            // 文件柜大文件分片上传：保留与小文件路径一致的"覆盖确认"语义，
+            // 进度/失败 UI 复用现有 uploadList + Progress 数据流。
+            const hasSame = !this.uploadDir
+                && this.fileList.findIndex(item => $A.getFileName(item) === file.name) > -1;
+            const launch = (overwrite) => {
+                this.handleUploadNext();
+                const controller = new AbortController();
+                const pseudo = {
+                    uid: 'chunked-' + Date.now() + '-' + Math.random().toString(36).slice(2),
+                    name: file.name,
+                    size: file.size,
+                    status: 'uploading',
+                    percentage: 0,
+                    response: null,
+                    _chunkCtrl: controller,
+                    _chunkUploadId: '',
+                };
+                this.uploadList.unshift(pseudo);
+                this.uploadIng++;
+                const sceneParams = {
+                    pid: this.pid,
+                    webkit_relative_path: file.webkitRelativePath || file.name,
+                    overwrite: !!overwrite,
+                };
+                chunkedUpload({
+                    file,
+                    scene: 'file_cabinet',
+                    sceneParams,
+                    onProgress: percent => { pseudo.percentage = percent; },
+                    onStart: uploadId => { pseudo._chunkUploadId = uploadId; },
+                    signal: controller.signal,
+                }).then(data => {
+                    pseudo.status = 'finished';
+                    pseudo.percentage = 100;
+                    pseudo.response = {ret: 1, data, msg: data && data.msg || 'success'};
+                    this.uploadIng--;
+                    // merge 返回 addItem 数组；秒传返回 {done, instant, addItem}
+                    const addItem = (data && data.addItem) ? data.addItem : data;
+                    this.$store.dispatch("saveFile", addItem);
+                }).catch(err => {
+                    this.uploadIng--;
+                    if (controller.signal.aborted) {
+                        // 用户点 close 取消：uploadAbort 已把条目从 uploadList 摘除，这里只静默退出
+                        return;
+                    }
+                    pseudo.status = 'finished';
+                    const msg = (err && err.message) || $L('上传失败');
+                    pseudo.response = {ret: 0, msg};
+                    $A.modalWarning({
+                        title: '上传失败',
+                        content: '文件 ' + file.name + ' 上传失败，' + msg,
+                    });
+                });
+            };
+            if (hasSame) {
+                $A.modalConfirm({
+                    wait: true,
+                    title: '文件已存在',
+                    content: '文件 ' + file.name + ' 已存在，是否替换？',
+                    cancelText: '保留两者',
+                    okText: '替换',
+                    closable: true,
+                    onOk: () => launch(true),
+                    onCancel: (isButton) => { if (isButton) launch(false); },
+                });
+            } else {
+                launch(false);
+            }
         },
 
         handleUploadNext() {

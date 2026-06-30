@@ -2074,8 +2074,20 @@ class Base
      */
     public static function upload($param)
     {
+        // 可选 key 默认值，下游直接访问不会 undefined index
+        $param += [
+            'chmod' => 0644,
+            'saveName' => null,
+            'scale' => null,
+            'size' => 0,
+            'fileName' => null,
+            'quality' => null,
+            'autoThumb' => null,
+            'convertVideo' => null,
+            'compressVideo' => null,
+        ];
         $file = $param['file'];
-        $chmod = $param['chmod'] ?: 0644;
+        $chmod = $param['chmod'];
         if (empty($file)) {
             return Base::retError("您没有选择要上传的文件");
         }
@@ -2130,6 +2142,9 @@ class Base
             $limitSize = intval($param['size']);
             if ($limitSize <= 0) {
                 $fileUploadLimit = intval(Base::settingFind('system', 'file_upload_limit', 0));
+                if ($fileUploadLimit <= 0) {
+                    $fileUploadLimit = 1024;
+                }
                 $limitSize = $fileUploadLimit * 1024;
             }
             try {
@@ -2315,6 +2330,27 @@ class Base
         } else {
             return Base::retError($file->getErrorMessage());
         }
+    }
+
+    /**
+     * 把本地文件包装成 UploadedFile(test=true) 转给 Base::upload，复用全套上传逻辑。
+     * @param array $param path_local + name 为本方法特有，其余与 Base::upload 一致
+     */
+    public static function uploadFromPath(array $param)
+    {
+        $localPath = $param['path_local'] ?? '';
+        $name = $param['name'] ?? '';
+        if (!$localPath || !is_file($localPath)) {
+            return Base::retError('源文件不存在');
+        }
+        if (!$name) {
+            $name = basename($localPath);
+        }
+        unset($param['path_local'], $param['name']);
+        // test=true → UploadedFile::move 走 rename()，绕开 move_uploaded_file 的 is_uploaded_file 校验
+        $param['file'] = new \Illuminate\Http\UploadedFile($localPath, $name, null, null, true);
+        $param['fileName'] = $param['fileName'] ?? $name;
+        return self::upload($param);
     }
 
     /**

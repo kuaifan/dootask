@@ -69,6 +69,7 @@ import tinymce from 'tinymce/tinymce';
 import ImgUpload from "./ImgUpload";
 import {mapState} from "vuex";
 import {languageName} from "../language";
+import {chunkedUpload, CHUNK_THRESHOLD} from "../store/chunkedUpload";
 
 const windowTouch = "ontouchend" in document
 
@@ -686,9 +687,32 @@ export default {
             });
         },
 
-        handleBeforeUpload() {
+        handleBeforeUpload(file) {
             //上传前判断
+            if (file && file.size >= CHUNK_THRESHOLD) {
+                this.handleChunkedUpload(file);
+                return false;
+            }
             return true;
+        },
+
+        async handleChunkedUpload(rawFile) {
+            this.uploadIng++;
+            try {
+                const data = await chunkedUpload({
+                    file: rawFile,
+                    scene: 'generic_file',
+                    sceneParams: {},
+                });
+                this.insertContent(`<a href="${data.url}" target="_blank">${data.name} (${$A.bytesToSize(data.size * 1024)})</a>`);
+            } catch (err) {
+                $A.noticeWarning({
+                    title: this.$L('上传失败'),
+                    desc: this.$L('文件 ' + rawFile.name + ' 上传失败，' + ((err && err.message) || '')),
+                });
+            } finally {
+                this.uploadIng--;
+            }
         },
     }
 }

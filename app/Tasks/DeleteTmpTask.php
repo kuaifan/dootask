@@ -94,6 +94,27 @@ class DeleteTmpTask extends AbstractTask
                 }
                 break;
 
+            case 'tmp_chunks':
+                // 分片上传残留：upload_id 目录超过 hours 小时未合并则整目录清掉
+                $chunksRoot = public_path('uploads/tmp/chunks');
+                if (!is_dir($chunksRoot)) {
+                    break;
+                }
+                $cutoff = time() - 3600 * $this->hours;
+                foreach (glob($chunksRoot . '/*', GLOB_ONLYDIR) ?: [] as $userDir) {
+                    foreach (glob($userDir . '/*', GLOB_ONLYDIR) ?: [] as $uploadDir) {
+                        $mtime = @filemtime($uploadDir);
+                        if ($mtime && $mtime < $cutoff) {
+                            Base::deleteDirAndFile($uploadDir);
+                        }
+                    }
+                    // 顺手清理空 user 目录
+                    if (count(scandir($userDir) ?: []) <= 2) {
+                        @rmdir($userDir);
+                    }
+                }
+                break;
+
             case 'user_device':
                 UserDevice::where('expired_at', '<', Carbon::now()->subHours($this->hours))
                     ->orderBy('id')

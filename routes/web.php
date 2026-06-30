@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\AppsController;
+use App\Http\Controllers\Api\UploadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +51,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 文件
     Route::any('file/{method}',                         FileController::class);
     Route::any('file/{method}/{action}',                FileController::class);
+    // 分片上传
+    Route::any('upload/{method}',                       UploadController::class);
+    Route::any('upload/{method}/{action}',              UploadController::class);
     // 报告
     Route::any('report/{method}',                       ReportController::class);
     Route::any('report/{method}/{action}',              ReportController::class);

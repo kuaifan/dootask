@@ -316,7 +316,7 @@
                     </FormItem>
                     <FormItem :label="$L('文件上传限制')" prop="fileUploadLimit">
                         <div style="width: 220px;">
-                            <Input type="number" number v-model="formDatum.file_upload_limit" :placeholder="$L('默认不限制')">
+                            <Input type="number" number v-model="formDatum.file_upload_limit" :placeholder="$L('默认 1G')">
                                 <template #append>
                                 <span>MB</span>
                                 </template>
