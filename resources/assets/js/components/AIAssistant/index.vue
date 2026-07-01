@@ -3475,31 +3475,6 @@ export default {
             max-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 136px);
         }
     }
-
-    // 移动端 fullscreen Modal:参考全局搜索,顶部留 status-bar + 46px,顶部圆角
-    &.is-mobile-fullscreen {
-        .ivu-modal-content {
-            margin-top: calc(var(--status-bar-height, 0px) + 46px);
-            margin-bottom: 0;
-            border-top-left-radius: 18px !important;
-            border-top-right-radius: 18px !important;
-        }
-        .ivu-modal-body {
-            display: flex;
-            flex-direction: column;
-        }
-        .ai-assistant-header {
-            margin-right: 24px;
-        }
-        .ai-assistant-content {
-            flex: 1;
-            min-height: 0;
-            max-height: none;
-        }
-        .ai-assistant-input {
-            padding-bottom: calc(12px + var(--navigation-bar-height, 0px));
-        }
-    }
 }
 
 body.window-portrait {

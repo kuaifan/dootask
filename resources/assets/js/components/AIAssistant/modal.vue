@@ -58,10 +58,9 @@
         v-else
         v-model="visible"
         :width="shouldCreateNewSession ? '440px' : '600px'"
-        :fullscreen="isMobile"
         :mask-closable="false"
         :footer-hide="true"
-        :class-name="isMobile ? 'ai-assistant-modal is-mobile-fullscreen' : 'ai-assistant-modal'">
+        class-name="ai-assistant-modal">
         <template #header>
             <slot name="header"></slot>
         </template>
