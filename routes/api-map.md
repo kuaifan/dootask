@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：311
+接口总数：312
 
 ## 路由规则
 
@@ -202,6 +202,7 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | --- | --- | --- | --- |
 | api/license/email/send | email__send() | any |  |
 | api/license/login | login() | any |  |
+| api/license/login/confirm | login__confirm() | any |  |
 | api/license/trial | trial() | any |  |
 | api/license/status | status() | any |  |
 | api/license/refresh | refresh() | any |  |

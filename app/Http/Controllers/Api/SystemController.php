@@ -861,6 +861,14 @@ class SystemController extends AbstractController
         $type = trim(Request::input('type'));
         if ($type == 'save') {
             $license = Request::input('license');
+            // 解密失败（sn 为空）视为无效 license
+            $decoded = Doo::licenseDecode($license);
+            if ((string)($decoded['sn'] ?? '') === '') {
+                return Base::retError('LICENSE 格式错误');
+            }
+            if ($err = Doo::licenseBindingError($decoded)) {
+                return Base::retError($err);
+            }
             Doo::licenseSave($license);
             // 离线/在线互斥：保存离线 license 即退出在线模式（尽力释放座位+清在线标志，不删除刚写入的文件）
             OnlineLicense::switchToOffline();
@@ -875,8 +883,8 @@ class SystemController extends AbstractController
             'user_count' => User::whereBot(0)->whereNull('disable_at')->count(),
             'error' => []
         ];
-        if ($data['info']['people'] > 3) {
-            // 小于3人的License不检查
+        if ($data['info']['people'] == 0 || $data['info']['people'] > 3) {
+            // 付费档才检查 SN/MAC
             if ($data['info']['sn'] != $data['doo_sn']) {
                 $data['error'][] = '终端SN与License不匹配';
             }

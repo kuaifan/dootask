@@ -13,6 +13,7 @@ use Request;
  * 动态路由（routes/web.php）：
  *   api/license/email/send   -> email__send()
  *   api/license/login        -> login()
+ *   api/license/login/confirm -> login__confirm()
  *   api/license/trial        -> trial()
  *   api/license/status       -> status()
  *   api/license/refresh      -> refresh()
@@ -46,6 +47,25 @@ class LicenseController extends AbstractController
             return Base::retError('请输入邮箱和验证码');
         }
         $data = OnlineLicense::login($email, $code);
+        return Base::retSuccess('授权成功', $data);
+    }
+
+    /**
+     * 多条可用授权时，用户选定后确认签发（复用验证码）
+     */
+    public function login__confirm()
+    {
+        User::auth('admin');
+        $email = trim(Request::input('email'));
+        $code = trim(Request::input('code'));
+        $entitlementId = (int)Request::input('entitlement_id');
+        if ($email === '' || $code === '') {
+            return Base::retError('请输入邮箱和验证码');
+        }
+        if ($entitlementId <= 0) {
+            return Base::retError('请选择要使用的授权');
+        }
+        $data = OnlineLicense::loginConfirm($email, $code, $entitlementId);
         return Base::retSuccess('授权成功', $data);
     }
 

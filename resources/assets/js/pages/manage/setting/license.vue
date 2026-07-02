@@ -5,7 +5,7 @@
                 <div class="setting-component-item">
                     <div class="setting-scroll">
                         <!-- 首次进入且无缓存：骨架占位 + 加载中（有缓存则直接渲染下方真实数据） -->
-                        <div v-if="firstLoading" class="license-box">
+                        <div v-if="firstLoading" class="license-box license-wrap">
                             <div class="online-refreshing"><i class="online-spin"></i>{{$L('加载中...')}}</div>
                             <ul class="online-info">
                                 <li><em>{{$L('账号')}}:</em><span class="online-skeleton"></span></li>
@@ -16,7 +16,7 @@
                             </ul>
                         </div>
                         <template v-else>
-                            <div v-if="onlineActive" class="license-box">
+                            <div v-if="onlineActive" class="license-box license-wrap">
                                 <!-- 后台刷新中指示（缓存秒开后仍刷新最新数据） -->
                                 <div v-if="onlineRefreshing" class="online-refreshing"><i class="online-spin"></i>{{$L('刷新中')}}</div>
                                 <!-- 异常告警卡：仅提醒/冻结/设备不匹配时浮现，正常态不显示，避免噪音 -->
@@ -80,7 +80,7 @@
                 <div class="setting-component-item">
                     <div class="setting-scroll">
                         <template v-if="onlineActive">
-                            <div class="license-box">
+                            <div class="license-box license-wrap">
                                 <ul class="online-info">
                                     <li><em>{{$L('当前状态')}}:</em><span class="online-link" @click="mode = 'online'">{{$L('已绑定在线授权')}}</span></li>
                                     <li><em>SN:</em><span>{{formData.doo_sn}}</span></li>
@@ -105,12 +105,12 @@
                                             <li class="offline-row" :class="{bad: !snMatch}">
                                                 <em>SN:</em>
                                                 <span class="v">{{formData.info.sn}}</span>
-                                                <span class="offline-flag">{{snMatch ? $L('匹配') : $L('与本机不一致')}}</span>
+                                                <span class="offline-flag">{{snMatch ? $L('匹配') : $L('不匹配')}}</span>
                                             </li>
                                             <li class="offline-row" :class="{bad: !macMatch}">
                                                 <em>MAC:</em>
                                                 <span class="v">{{infoJoin(formData.info.mac)}}</span>
-                                                <span class="offline-flag">{{macMatch ? $L('匹配') : $L('与本机不一致')}}</span>
+                                                <span class="offline-flag">{{macMatch ? $L('匹配') : $L('不匹配')}}</span>
                                             </li>
                                             <li class="offline-row">
                                                 <em>{{$L('使用人数')}}:</em>
@@ -162,6 +162,28 @@
                 </div>
             </TabPane>
         </Tabs>
+        <!-- 本机有多条可用授权时，选择要使用哪一条 -->
+        <Modal v-model="candidateShow" :title="$L('选择要使用的授权')" :mask-closable="false">
+            <div class="online-candidates">
+                <RadioGroup v-model="candidateChoice" vertical>
+                    <Radio v-for="c in candidateList" :key="c.entitlement_id" :label="c.entitlement_id" class="online-candidate">
+                        <div class="online-candidate-main">
+                            <span class="online-candidate-plan">{{c.plan || $L('授权')}}</span>
+                            <span v-if="c.occupied_by_self" class="online-candidate-self">{{$L('当前设备使用中')}}</span>
+                        </div>
+                        <div class="online-candidate-sub">
+                            <span>{{$L('使用人数')}}: {{c.people ? c.people : $L('无限制')}}</span>
+                            <span>{{$L('授权有效期')}}: {{candidateDuration(c)}}</span>
+                        </div>
+                    </Radio>
+                </RadioGroup>
+            </div>
+
+            <div slot="footer" class="adaption">
+                <Button @click="candidateShow = false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="candidateSubmitting" @click="onlineLoginConfirm">{{$L('确定授权')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -192,8 +214,8 @@
         > li {
             list-style: none;
             font-size: 14px;
-            line-height: 24px;
-            padding-bottom: 4px;
+            line-height: 22px;
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -211,8 +233,8 @@
 }
 .online-refreshing {
     position: absolute;
-    top: 6px;
-    right: 0;
+    top: 16px;
+    right: 16px;
     display: flex;
     align-items: center;
     font-size: 12px;
@@ -321,8 +343,6 @@
 .offline-detail {
     .offline-row {
         /* 文字排版（字号/行高/label/gap）沿用默认信息行，只保留标红块所需的内边距与圆角 */
-        padding: 2px 0;
-        border-radius: 5px;
         > .v { flex: 1; word-break: break-all; }
         .offline-flag {
             flex-shrink: 0;
@@ -348,8 +368,52 @@
     }
 }
 body.window-portrait {
-    .license-box {
+    .license-wrap {
         padding-top: 16px;
+    }
+}
+/* 在线授权：多授权选择弹窗 */
+.online-candidates {
+    .ivu-radio-group {
+        width: 100%;
+    }
+    .online-candidate {
+        display: flex;
+        width: 100%;
+        margin: 0 0 8px;
+        padding: 10px 12px;
+        border: 1px solid #dcdee2;
+        border-radius: 6px;
+        white-space: normal;
+        height: auto;
+        line-height: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+        &.ivu-radio-wrapper-checked {
+            border-color: #84C56A;
+            background: #f2fff0;
+        }
+        .online-candidate-main {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .online-candidate-plan {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .online-candidate-self {
+            font-size: 12px;
+            color: #2d8cf0;
+        }
+        .online-candidate-sub {
+            font-size: 12px;
+            color: #808695;
+            span + span {
+                margin-left: 8px;
+            }
+        }
     }
 }
 </style>
@@ -387,6 +451,10 @@ export default {
             codeTimer: null,
             firstLoading: true,     // 首次加载且无缓存：显示骨架占位
             onlineRefreshing: false,// 后台刷新在线授权数据中：显示「刷新中」指示
+            candidateShow: false,       // 多授权选择弹窗
+            candidateList: [],          // 候选授权列表
+            candidateChoice: 0,         // 选中的 entitlement_id
+            candidateSubmitting: false, // 确认签发中
         }
     },
     mounted() {
@@ -449,7 +517,7 @@ export default {
             const info = this.formData.info || {};
             return !info.mac || this.existIntersection(this.formData.macs, info.mac);
         },
-        // 在线授权：license 已加载且 SN 或 MAC 与本机不一致（换机 / 网卡变化）
+        // 在线授权：license 已加载且 SN 或 MAC 与本机不匹配（换机 / 网卡变化）
         onlineMismatch() {
             const info = this.formData.info || {};
             return !!info.sn && (!this.snMatch || !this.macMatch);
@@ -742,20 +810,73 @@ export default {
                 return;
             }
             this.onlineAction = 'login';
-            this.onlineCall('license/login', {
-                email: this.onlineForm.email,
-                code: this.onlineForm.code,
-            }, '授权成功').then(_ => {
+            this.$store.dispatch("call", {
+                url: 'license/login',
+                data: {
+                    email: this.onlineForm.email,
+                    code: this.onlineForm.code,
+                },
+                method: 'post',
+            }).then(({data}) => {
+                // 本机有多条可用授权：弹出选择框，验证码保留（confirm 复用同一验证码）
+                if (data && data.select_required) {
+                    this.showCandidateSelect(data.candidates || []);
+                    return;
+                }
+                $A.messageSuccess(this.$L('授权成功'));
                 this.resetOnlineForm();
                 this.systemSetting();
-            }).catch(() => {
+            }).catch(({msg}) => {
                 // 登录失败（如「该账号已申请过试用」「验证码无效」等，验证码多已被消费）：
                 // 清空验证码并解除重发倒计时，引导用户重新发码后再试
+                $A.modalError(msg);
                 this.onlineForm.code = '';
                 this.clearCodeTimer();
             }).finally(() => {
                 this.onlineAction = '';
             });
+        },
+
+        // 本机有多条可用授权时，展示候选供用户选择（默认选中第一条 = 最新）
+        showCandidateSelect(list) {
+            this.candidateList = list;
+            this.candidateChoice = list.length ? list[0].entitlement_id : 0;
+            this.candidateShow = true;
+        },
+
+        // 用户选定授权后确认签发（复用登录时的邮箱 + 验证码）
+        onlineLoginConfirm() {
+            if (!this.candidateChoice) {
+                $A.messageError('请选择要使用的授权');
+                return;
+            }
+            this.candidateSubmitting = true;
+            this.$store.dispatch("call", {
+                url: 'license/login/confirm',
+                data: {
+                    email: this.onlineForm.email,
+                    code: this.onlineForm.code,
+                    entitlement_id: this.candidateChoice,
+                },
+                method: 'post',
+            }).then(_ => {
+                $A.messageSuccess(this.$L('授权成功'));
+                this.candidateShow = false;
+                this.resetOnlineForm();
+                this.systemSetting();
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(() => {
+                this.candidateSubmitting = false;
+            });
+        },
+
+        // 候选授权的时长/人数展示
+        candidateDuration(c) {
+            if (c.duration_type === 'fixed') {
+                return c.valid_until ? this.fmt(c.valid_until) : '-';
+            }
+            return this.$L('永久');
         },
 
         // 替换离线授权的二次确认已前置到发码（emailSend），此处不再重复确认

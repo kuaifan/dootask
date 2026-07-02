@@ -394,6 +394,10 @@ class User extends AbstractModel
         }
         // 密码
         self::passwordPolicy($password);
+        // license
+        if ($err = Doo::licenseBindingError(Doo::license())) {
+            throw new ApiException($err);
+        }
         // 开始注册
         $user = Doo::userCreate($email, $password);
         if ($other) {

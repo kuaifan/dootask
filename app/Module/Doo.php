@@ -82,6 +82,39 @@ class Doo
     }
 
     /**
+     * 解析License取字段
+     * @param $license
+     * @return array
+     */
+    public static function licenseDecode($license): array
+    {
+        return self::load()->licenseDecode($license);
+    }
+
+    /**
+     * 校验 license 的 SN/MAC 是否与本机匹配。通过返回 null，否则返回错误文案。
+     * @param array $info license 信息，含 people/sn/mac（mac 兼容数组或逗号串）
+     * @return string|null
+     */
+    public static function licenseBindingError(array $info): ?string
+    {
+        $people = (int)($info['people'] ?? 0);
+        if (!($people === 0 || $people > 3)) {
+            return null;
+        }
+        if ((string)($info['sn'] ?? '') !== self::dooSN()) {
+            return '终端SN与License不匹配';
+        }
+        $mac = $info['mac'] ?? [];
+        $licenseMacs = array_filter(array_map('trim', is_array($mac) ? $mac : explode(',', (string)$mac)));
+        $curMacs = self::macs();
+        if ($licenseMacs && $curMacs && !array_intersect($licenseMacs, $curMacs)) {
+            return '终端MAC与License不匹配';
+        }
+        return null;
+    }
+
+    /**
      * 当前会员ID（来自请求的token）
      * @return int
      */

@@ -176,10 +176,41 @@ class OnlineLicense
 
     /**
      * 邮箱 + 验证码登录并签发。失败抛 ApiException。
+     * 本机有多条可用授权时，appstore 返回 select_required + candidates，
+     * 此处不签发、原样返回候选，由前端选定后走 loginConfirm()。
      */
     public static function login(string $email, string $code): array
     {
         $r = self::call('login', array_merge(['email' => $email, 'code' => $code, 'lang' => self::lang()], self::fingerprint()));
+        if (!$r['ok']) {
+            throw new ApiException($r['message']);
+        }
+        $d = $r['data'];
+        if (($d['status'] ?? '') === 'select_required') {
+            return [
+                'select_required' => true,
+                'candidates' => $d['candidates'] ?? [],
+            ];
+        }
+        $status = self::applyIssue($email, $d);
+        if (!in_array($status, ['issued', 'renewed'], true)) {
+            throw new ApiException(self::statusHint($status));
+        }
+        return self::status();
+    }
+
+    /**
+     * 多条可用授权时，用户选定 $entitlementId 后确认签发（复用同一验证码）。失败抛 ApiException。
+     */
+    public static function loginConfirm(string $email, string $code, int $entitlementId): array
+    {
+        $payload = array_merge([
+            'email' => $email,
+            'code' => $code,
+            'entitlement_id' => $entitlementId,
+            'lang' => self::lang(),
+        ], self::fingerprint());
+        $r = self::call('login/confirm', $payload);
         if (!$r['ok']) {
             throw new ApiException($r['message']);
         }
