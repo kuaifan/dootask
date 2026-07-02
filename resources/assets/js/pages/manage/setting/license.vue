@@ -1,173 +1,166 @@
 <template>
     <div class="setting-item submit license-setting">
         <Tabs v-model="mode">
-        <TabPane :label="$L('在线授权')" name="online">
-        <div class="setting-component-item">
-            <div class="setting-scroll">
-                <!-- 首次进入且无缓存：骨架占位 + 加载中（有缓存则直接渲染下方真实数据） -->
-                <div v-if="firstLoading" class="license-box">
-                    <div class="online-refreshing"><i class="online-spin"></i>{{$L('加载中...')}}</div>
-                    <ul class="online-info">
-                        <li><em>{{$L('账号')}}:</em><span class="online-skeleton"></span></li>
-                        <li><em>{{$L('套餐')}}:</em><span class="online-skeleton sk-sm"></span></li>
-                        <li><em>{{$L('使用人数')}}:</em><span class="online-skeleton sk-xs"></span></li>
-                        <li><em>{{$L('授权有效期')}}:</em><span class="online-skeleton"></span></li>
-                        <li><em>{{$L('当前状态')}}:</em><span class="online-skeleton sk-sm"></span></li>
-                    </ul>
-                </div>
-                <template v-else>
-                    <div v-if="onlineActive" class="license-box">
-                        <!-- 后台刷新中指示（缓存秒开后仍刷新最新数据） -->
-                        <div v-if="onlineRefreshing" class="online-refreshing"><i class="online-spin"></i>{{$L('刷新中')}}</div>
-                        <ul class="online-info">
-                            <li><em>{{$L('账号')}}:</em><span>{{online.account}}</span></li>
-                            <li><em>{{$L('套餐')}}:</em><span>{{online.plan || '-'}}</span></li>
-                            <li><em>{{$L('使用人数')}}:</em><span>{{online.people || $L('无限制')}}</span></li>
-                            <li><em>{{$L('授权有效期')}}:</em><span>{{online.valid_until ? fmt(online.valid_until) : $L('永久')}}</span></li>
-                            <li>
-                                <em>{{$L('当前状态')}}:</em>
-                                <span :class="{warning: online.status !== 'active'}">{{stageText(online.status)}}</span>
-                            </li>
-                        </ul>
+            <TabPane :label="$L('在线授权')" name="online">
+                <div class="setting-component-item">
+                    <div class="setting-scroll">
+                        <!-- 首次进入且无缓存：骨架占位 + 加载中（有缓存则直接渲染下方真实数据） -->
+                        <div v-if="firstLoading" class="license-box">
+                            <div class="online-refreshing"><i class="online-spin"></i>{{$L('加载中...')}}</div>
+                            <ul class="online-info">
+                                <li><em>{{$L('账号')}}:</em><span class="online-skeleton"></span></li>
+                                <li><em>{{$L('套餐')}}:</em><span class="online-skeleton sk-sm"></span></li>
+                                <li><em>{{$L('使用人数')}}:</em><span class="online-skeleton sk-xs"></span></li>
+                                <li><em>{{$L('授权有效期')}}:</em><span class="online-skeleton"></span></li>
+                                <li><em>{{$L('当前状态')}}:</em><span class="online-skeleton sk-sm"></span></li>
+                            </ul>
+                        </div>
+                        <template v-else>
+                            <div v-if="onlineActive" class="license-box">
+                                <!-- 后台刷新中指示（缓存秒开后仍刷新最新数据） -->
+                                <div v-if="onlineRefreshing" class="online-refreshing"><i class="online-spin"></i>{{$L('刷新中')}}</div>
+                                <!-- 异常告警卡：仅提醒/冻结/设备不匹配时浮现，正常态不显示，避免噪音 -->
+                                <div v-if="onlineAlert" class="online-alert" :class="onlineAlert.type">
+                                    <i class="online-alert-ico">{{onlineAlert.type === 'error' ? '✕' : '!'}}</i>
+                                    <div class="online-alert-main">
+                                        <div class="online-alert-title">{{onlineAlert.title}}</div>
+                                        <div class="online-alert-desc">{{onlineAlert.desc}}</div>
+                                    </div>
+                                </div>
+                                <!-- 核心信息：正常态只看结果，不常驻 SN/MAC -->
+                                <ul class="online-info">
+                                    <li><em>{{$L('账号')}}:</em><span>{{online.account}}</span></li>
+                                    <li><em>{{$L('套餐')}}:</em><span>{{online.plan || '-'}}</span></li>
+                                    <li><em>{{$L('使用人数')}}:</em><span>{{online.people || $L('无限制')}}</span></li>
+                                    <li><em>{{$L('授权有效期')}}:</em><span>{{online.valid_until ? fmt(online.valid_until) : $L('永久')}}</span></li>
+                                    <li>
+                                        <em>{{$L('当前状态')}}:</em>
+                                        <span class="online-status" :class="'is-' + onlineHealth"><i class="online-status-dot"></i>{{stageText(online.status)}}</span>
+                                    </li>
+                                </ul>
+                                <!-- 诊断详情：仅设备（SN/MAC）不匹配时展开，普通用户不受打扰 -->
+                                <div v-if="onlineMismatch" class="online-diag">
+                                    <div class="online-diag-title">{{$L('诊断详情')}}</div>
+                                    <div class="online-diag-row" :class="{bad: !snMatch}"><em>{{$L('授权 SN')}}:</em><span>{{formData.info.sn}}</span></div>
+                                    <div class="online-diag-row" :class="{bad: !snMatch}"><em>{{$L('当前 SN')}}:</em><span>{{formData.doo_sn}}<b>{{snMatch ? ' ✓' : ' ✕'}}</b></span></div>
+                                    <div class="online-diag-row" :class="{bad: !macMatch}"><em>{{$L('授权 MAC')}}:</em><span>{{infoJoin(formData.info.mac)}}</span></div>
+                                    <div class="online-diag-row" :class="{bad: !macMatch}"><em>{{$L('当前 MAC')}}:</em><span>{{infoJoin(formData.macs)}}<b>{{macMatch ? ' ✓' : ' ✕'}}</b></span></div>
+                                </div>
+                            </div>
+                            <Form v-else :model="onlineForm" v-bind="formOptions" @submit.native.prevent>
+                                <FormItem :label="$L('邮箱')">
+                                    <Input
+                                        v-model="onlineForm.email"
+                                        :class="codeCountdown > 0 ? 'setting-send-input' : 'setting-input'"
+                                        search @on-search="emailSend"
+                                        :enter-button="sendBtnText"
+                                        :disabled="onlineBusy"
+                                        :placeholder="$L('请输入邮箱')"/>
+                                </FormItem>
+                                <FormItem v-if="codeSent" :label="$L('邮箱验证码')">
+                                    <Input v-model="onlineForm.code" class="setting-input" :placeholder="$L('请输入验证码')"/>
+                                    <div class="online-tip">{{$L('验证码已发送至(*)', maskedEmail)}}</div>
+                                </FormItem>
+                            </Form>
+                        </template>
                     </div>
-                    <Form v-else :model="onlineForm" v-bind="formOptions" @submit.native.prevent>
-                        <FormItem :label="$L('邮箱')">
-                            <Input
-                                v-model="onlineForm.email"
-                                :class="codeCountdown > 0 ? 'setting-send-input' : 'setting-input'"
-                                search @on-search="emailSend"
-                                :enter-button="sendBtnText"
-                                :disabled="onlineBusy"
-                                :placeholder="$L('请输入邮箱')"/>
-                        </FormItem>
-                        <FormItem v-if="codeSent" :label="$L('邮箱验证码')">
-                            <Input v-model="onlineForm.code" class="setting-input" :placeholder="$L('请输入验证码')"/>
-                            <div class="online-tip">{{$L('验证码已发送至(*)', maskedEmail)}}</div>
-                        </FormItem>
-                    </Form>
-                </template>
-            </div>
-            <div v-if="!firstLoading" class="setting-footer">
-                <template v-if="onlineActive">
-                    <Button :loading="onlineAction === 'logout'" :disabled="onlineBusy && onlineAction !== 'logout'" type="primary" @click="onlineLogout">{{$L('退出在线授权')}}</Button>
-                </template>
-                <template v-else>
-                    <Button :loading="onlineAction === 'login'" :disabled="onlineBusy && onlineAction !== 'login'" type="primary" @click="onlineLogin">{{$L('登录授权')}}</Button>
-                    <Button :loading="onlineAction === 'trial'" :disabled="onlineBusy && onlineAction !== 'trial'" @click="trialSubmit">{{$L('申请试用')}}</Button>
-                </template>
-            </div>
-        </div>
-        </TabPane>
-        <TabPane :label="$L('离线授权')" name="offline">
-        <div class="setting-component-item">
-        <div class="setting-scroll">
-        <template v-if="onlineActive">
-            <div class="license-box">
-                <ul class="online-info">
-                    <li><em>{{$L('当前状态')}}:</em><span class="online-link" @click="mode = 'online'">{{$L('已绑定在线授权')}}</span></li>
-                    <li><em>SN:</em><span>{{formData.doo_sn}}</span></li>
-                    <li><em>MAC:</em><span>{{infoJoin(formData.macs)}}</span></li>
-                </ul>
-            </div>
-            <Form v-if="offlineRebindShow" :model="formData" v-bind="formOptions" @submit.native.prevent>
-                <FormItem label="License">
-                    <Input v-model="offlineRebindLicense" type="textarea" :autosize="{minRows: 2,maxRows: 5}" :placeholder="$L('请输入License...')" />
-                </FormItem>
-            </Form>
-        </template>
-        <template v-else>
-        <Form ref="formData" :model="formData" v-bind="formOptions" @submit.native.prevent>
-            <FormItem label="License" prop="license">
-                <Input v-model="formData.license" type="textarea" :autosize="{minRows: 2,maxRows: 5}" :placeholder="$L('请输入License...')" />
-            </FormItem>
-            <FormItem>
-                <div class="license-box">
-                    <ul v-if="formData.info.sn">
-                        <li>
-                            <em>SN:</em>
-                            <span>{{formData.info.sn}}</span>
-                            <ETooltip max-width="auto" placement="right">
-                                <div slot="content">{{$L('当前环境')}}: {{formData.doo_sn}}</div>
-                                <Icon class="information" :class="{error: !existIntersection(formData.doo_sn, formData.info.sn)}" type="ios-information-circle-outline" />
-                            </ETooltip>
-                        </li>
-                        <li>
-                            <em>IP:</em>
-                            <span>{{infoJoin(formData.info.ip)}}</span>
-                        </li>
-                        <li>
-                            <em>{{$L('域名')}}:</em>
-                            <span>{{infoJoin(formData.info.domain)}}</span>
-                        </li>
-                        <li>
-                            <em>MAC:</em>
-                            <span>{{infoJoin(formData.info.mac)}}</span>
-                            <ETooltip max-width="auto" placement="right">
-                                <div slot="content">{{$L('当前环境')}}: {{infoJoin(formData.macs, '-')}}</div>
-                                <Icon class="information" :class="{error: !existIntersection(formData.macs, formData.info.mac)}" type="ios-information-circle-outline" />
-                            </ETooltip>
-                        </li>
-                        <li>
-                            <em>{{$L('使用人数')}}:</em>
-                            <span>{{formData.info.people || $L('无限制')}} ({{$L('已使用')}}: {{formData.user_count}})</span>
-                            <ETooltip max-width="auto" placement="right">
-                                <div slot="content">{{$L('限制注册人数')}}</div>
-                                <Icon class="information" type="ios-information-circle-outline" />
-                            </ETooltip>
-                        </li>
-                        <li>
-                            <em>{{$L('创建时间')}}:</em>
-                            <span>{{formData.info.created_at}}</span>
-                        </li>
-                        <li>
-                            <em>{{$L('到期时间')}}:</em>
-                            <span>{{formData.info.expired_at || $L('永久')}}</span>
-                            <ETooltip v-if="formData.info.expired_at" max-width="auto" placement="right">
-                                <div slot="content">{{$L('到期后限制注册帐号')}}</div>
-                                <Icon class="information" type="ios-information-circle-outline" />
-                            </ETooltip>
-                        </li>
-                    </ul>
-                    <ul v-else>
-                        <li>
-                            {{$L('加载中...')}}
-                        </li>
-                    </ul>
+                    <div v-if="!firstLoading" class="setting-footer">
+                        <template v-if="onlineActive">
+                            <Button v-if="onlineAlert && onlineAlert.relogin" :loading="onlineAction === 'relogin'" :disabled="onlineBusy && onlineAction !== 'relogin'" type="primary" @click="onlineRelogin">{{$L('重新登录授权')}}</Button>
+                            <Button :loading="onlineAction === 'logout'" :disabled="onlineBusy && onlineAction !== 'logout'" :type="onlineAlert && onlineAlert.relogin ? 'default' : 'primary'" @click="onlineLogout">{{$L('退出在线授权')}}</Button>
+                        </template>
+                        <template v-else>
+                            <Button :loading="onlineAction === 'login'" :disabled="onlineBusy && onlineAction !== 'login'" type="primary" @click="onlineLogin">{{$L('登录授权')}}</Button>
+                            <Button :loading="onlineAction === 'trial'" :disabled="onlineBusy && onlineAction !== 'trial'" @click="trialSubmit">{{$L('申请试用')}}</Button>
+                        </template>
+                    </div>
                 </div>
-            </FormItem>
-            <FormItem :label="$L('当前环境')" v-if="formData.error?.length > 0">
-                <div class="license-box">
-                    <ul>
-                        <li>
-                            <em>SN:</em>
-                            <span>{{formData.doo_sn}}</span>
-                        </li>
-                        <li>
-                            <em>MAC:</em>
-                            <span>{{infoJoin(formData.macs)}}</span>
-                        </li>
-                        <li v-for="(tip, ti) in formData.error" :key="ti" class="warning">{{tip}}</li>
-                    </ul>
+            </TabPane>
+            <TabPane :label="$L('离线授权')" name="offline">
+                <div class="setting-component-item">
+                    <div class="setting-scroll">
+                        <template v-if="onlineActive">
+                            <div class="license-box">
+                                <ul class="online-info">
+                                    <li><em>{{$L('当前状态')}}:</em><span class="online-link" @click="mode = 'online'">{{$L('已绑定在线授权')}}</span></li>
+                                    <li><em>SN:</em><span>{{formData.doo_sn}}</span></li>
+                                    <li><em>MAC:</em><span>{{infoJoin(formData.macs)}}</span></li>
+                                </ul>
+                            </div>
+                            <Form v-if="offlineRebindShow" :model="formData" v-bind="formOptions" @submit.native.prevent>
+                                <FormItem label="License">
+                                    <Input v-model="offlineRebindLicense" type="textarea" :autosize="{minRows: 2,maxRows: 5}" :placeholder="$L('请输入License...')" />
+                                </FormItem>
+                            </Form>
+                        </template>
+                        <template v-else>
+                            <Form ref="formData" :model="formData" v-bind="formOptions" @submit.native.prevent class="license-form">
+                                <FormItem label="License" prop="license">
+                                    <Input v-model="formData.license" type="textarea" :autosize="{minRows: 2,maxRows: 5}" :placeholder="$L('请输入License...')" />
+                                </FormItem>
+                                <FormItem>
+                                    <div class="license-box">
+                                        <ul v-if="formData.info.sn" class="offline-detail">
+                                            <!-- SN/MAC：行尾标签直陈匹配与否，失配整行标红，无需悬停 -->
+                                            <li class="offline-row" :class="{bad: !snMatch}">
+                                                <em>SN:</em>
+                                                <span class="v">{{formData.info.sn}}</span>
+                                                <span class="offline-flag">{{snMatch ? $L('匹配') : $L('与本机不一致')}}</span>
+                                            </li>
+                                            <li class="offline-row" :class="{bad: !macMatch}">
+                                                <em>MAC:</em>
+                                                <span class="v">{{infoJoin(formData.info.mac)}}</span>
+                                                <span class="offline-flag">{{macMatch ? $L('匹配') : $L('与本机不一致')}}</span>
+                                            </li>
+                                            <li class="offline-row">
+                                                <em>{{$L('使用人数')}}:</em>
+                                                <span class="v">{{formData.info.people || $L('无限制')}}（{{$L('已使用')}} {{formData.user_count}}）</span>
+                                            </li>
+                                            <li class="offline-row">
+                                                <em>{{$L('到期时间')}}:</em>
+                                                <span class="v">{{formData.info.expired_at || $L('永久')}}</span>
+                                            </li>
+                                            <!-- 低频字段折叠，默认更干净 -->
+                                            <template v-if="offlineMore">
+                                                <li class="offline-row"><em>IP:</em><span class="v">{{infoJoin(formData.info.ip)}}</span></li>
+                                                <li class="offline-row"><em>{{$L('域名')}}:</em><span class="v">{{infoJoin(formData.info.domain)}}</span></li>
+                                                <li class="offline-row"><em>{{$L('创建时间')}}:</em><span class="v">{{formData.info.created_at}}</span></li>
+                                                <li class="offline-row"><em>{{$L('当前环境')}}:</em><span class="v">SN: {{formData.doo_sn}}, MAC: {{infoJoin(formData.macs)}}</span></li>
+                                            </template>
+                                            <li class="offline-more"><a @click="offlineMore = !offlineMore">{{offlineMore ? $L('收起') : $L('更多信息')}}</a></li>
+                                        </ul>
+                                        <ul v-else>
+                                            <li>
+                                                {{$L('加载中...')}}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </FormItem>
+                                <FormItem :label="$L('提示')" v-if="formData.error?.length > 0">
+                                    <div class="license-box">
+                                        <ul>
+                                            <li v-for="(tip, ti) in formData.error" :key="ti" class="warning">{{tip}}</li>
+                                        </ul>
+                                    </div>
+                                </FormItem>
+                            </Form>
+                        </template>
+                    </div>
+                    <div class="setting-footer">
+                        <template v-if="onlineActive">
+                            <Button v-if="!offlineRebindShow" type="primary" @click="offlineRebindShow = true">{{$L('绑定离线 License')}}</Button>
+                            <template v-else>
+                                <Button :loading="loadIng > 0" type="primary" @click="offlineRebindSubmit">{{$L('提交')}}</Button>
+                                <Button :loading="loadIng > 0" @click="offlineRebindCancel">{{$L('取消')}}</Button>
+                            </template>
+                        </template>
+                        <template v-else>
+                            <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
+                            <Button :loading="loadIng > 0" @click="resetForm">{{$L('重置')}}</Button>
+                        </template>
+                    </div>
                 </div>
-            </FormItem>
-        </Form>
-        </template>
-        </div>
-        <div class="setting-footer">
-            <template v-if="onlineActive">
-                <Button v-if="!offlineRebindShow" type="primary" @click="offlineRebindShow = true">{{$L('绑定离线 License')}}</Button>
-                <template v-else>
-                    <Button :loading="loadIng > 0" type="primary" @click="offlineRebindSubmit">{{$L('提交')}}</Button>
-                    <Button :loading="loadIng > 0" @click="offlineRebindCancel">{{$L('取消')}}</Button>
-                </template>
-            </template>
-            <template v-else>
-                <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
-                <Button :loading="loadIng > 0" @click="resetForm">{{$L('重置')}}</Button>
-            </template>
-        </div>
-        </div>
-        </TabPane>
+            </TabPane>
         </Tabs>
     </div>
 </template>
@@ -176,6 +169,11 @@
 .setting-scroll {
     flex: 1;
     overflow-y: auto;
+}
+.license-form {
+    .ivu-form-item {
+        margin-bottom: 12px;
+    }
 }
 .license-box {
     position: relative;
@@ -194,8 +192,8 @@
         > li {
             list-style: none;
             font-size: 14px;
-            line-height: 22px;
-            padding-bottom: 6px;
+            line-height: 24px;
+            padding-bottom: 4px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -207,15 +205,6 @@
                 flex-shrink: 0;
                 font-style: normal;
                 opacity: 0.8;
-            }
-            .information {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin-left: 6px;
-                &.error {
-                    color: #ed4014;
-                }
             }
         }
     }
@@ -264,6 +253,105 @@
     margin-top: 4px;
     opacity: 0.6;
 }
+/* 在线授权：异常告警卡（正常态不渲染） */
+.online-alert {
+    display: flex;
+    gap: 10px;
+    max-width: calc(100vw - 20px);
+    margin: 0 auto 14px;
+    padding: 11px 13px;
+    border-radius: 6px;
+    &.warning { background: #fdf6ec; border: 1px solid #faecd8; }
+    &.error   { background: #fef0ef; border: 1px solid #fcd7d3; }
+    .online-alert-ico {
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        color: #fff;
+        font-size: 12px;
+        font-style: normal;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    &.warning .online-alert-ico { background: #ff9900; }
+    &.error   .online-alert-ico { background: #ed4014; }
+    .online-alert-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    &.warning .online-alert-title { color: #b8791b; }
+    &.error   .online-alert-title { color: #c0341a; }
+    .online-alert-desc { font-size: 12px; line-height: 18px; }
+    &.warning .online-alert-desc { color: #8a7455; }
+    &.error   .online-alert-desc { color: #97544a; }
+}
+/* 在线授权：状态圆点 */
+.online-status {
+    display: inline-flex;
+    align-items: center;
+    .online-status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        margin-right: 6px;
+        background: #c5c8ce;
+    }
+    &.is-ok { color: #19be6b; .online-status-dot { background: #19be6b; } }
+    &.is-warning { color: #ff9900; .online-status-dot { background: #ff9900; } }
+    &.is-error { color: #ed4014; font-weight: 500; .online-status-dot { background: #ed4014; } }
+}
+/* 在线授权：诊断详情（仅 SN/MAC 不匹配时出现） */
+.online-diag {
+    max-width: calc(100vw - 20px);
+    margin: 10px auto 0;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #f8f9fb;
+    border-radius: 6px;
+    .online-diag-title { font-size: 12px; color: #808695; margin-bottom: 6px; }
+    .online-diag-row {
+        font-size: 12.5px;
+        line-height: 20px;
+        display: flex;
+        > em { font-style: normal; opacity: 0.55; width: 72px; flex-shrink: 0; }
+        b { font-weight: 500; }
+        &.bad { color: #ed4014; > em { opacity: 0.7; } }
+    }
+}
+/* 离线授权：详情行 + 匹配标签 */
+.offline-detail {
+    .offline-row {
+        /* 文字排版（字号/行高/label/gap）沿用默认信息行，只保留标红块所需的内边距与圆角 */
+        padding: 2px 0;
+        border-radius: 5px;
+        > .v { flex: 1; word-break: break-all; }
+        .offline-flag {
+            flex-shrink: 0;
+            font-size: 12px;
+            padding: 1px 8px;
+            border-radius: 9px;
+            background: #e8f7f0;
+            color: #19be6b;
+        }
+        &.bad {
+            color: #ed4014;
+            .offline-flag { background: #fdecea; color: #ed4014; }
+        }
+    }
+    .offline-more {
+        padding: 4px 0;
+        a {
+            font-size: 13px;
+            color: #2d8cf0;
+            cursor: pointer;
+            &:hover { text-decoration: underline; }
+        }
+    }
+}
+body.window-portrait {
+    .license-box {
+        padding-top: 16px;
+    }
+}
 </style>
 <script>
 import {mapState} from "vuex";
@@ -287,7 +375,7 @@ export default {
             tabInited: false,
             offlineRebindShow: false,
             offlineRebindLicense: '',
-            onlineIng: 0,
+            offlineMore: false,     // 离线详情：是否展开 IP/域名/创建时间/当前环境等低频字段
             onlineAction: '',       // 当前进行中的在线操作：'' | 'login' | 'trial' | 'logout'，用于按钮级 loading/禁用互斥
             onlineForm: {
                 email: '',
@@ -350,6 +438,82 @@ export default {
             const snOk = this.existIntersection(this.formData.doo_sn, info.sn);
             const macOk = this.existIntersection(this.formData.macs, info.mac);
             return !isTrialThree && snOk && macOk;
+        },
+
+        // license 内嵌 SN/MAC 与本机是否匹配（在线/离线同源判断）；info 未加载时视为匹配，避免误报
+        snMatch() {
+            const info = this.formData.info || {};
+            return !info.sn || this.existIntersection(this.formData.doo_sn, info.sn);
+        },
+        macMatch() {
+            const info = this.formData.info || {};
+            return !info.mac || this.existIntersection(this.formData.macs, info.mac);
+        },
+        // 在线授权：license 已加载且 SN 或 MAC 与本机不一致（换机 / 网卡变化）
+        onlineMismatch() {
+            const info = this.formData.info || {};
+            return !!info.sn && (!this.snMatch || !this.macMatch);
+        },
+        // 在线授权健康度：ok（绿）/ warning（黄）/ error（红），驱动状态点与告警卡配色
+        onlineHealth() {
+            const s = this.online.status;
+            if (s === 'revoked' || s === 'frozen' || !this.snMatch) {
+                return 'error';
+            }
+            if (s === 'reminder' || !this.macMatch) {
+                return 'warning';
+            }
+            return 'ok';
+        },
+        // 在线授权异常告警卡内容：正常态返回 null（不显示）
+        onlineAlert() {
+            if (!this.onlineActive) {
+                return null;
+            }
+            const s = this.online.status;
+            // 设备标识（SN）变更：换机，必须重新登录
+            if (this.onlineMismatch && !this.snMatch) {
+                return {
+                    type: 'error',
+                    title: this.$L('授权与当前设备不匹配'),
+                    desc: this.$L('检测到设备标识（SN）已变更，在线授权可能已失效。请重新登录授权，或先在原设备退出以释放座位。'),
+                    relogin: true,
+                };
+            }
+            if (s === 'frozen') {
+                return {
+                    type: 'error',
+                    title: this.$L('在线授权已过期'),
+                    desc: this.$L('新增用户已受限，请尽快联网以自动续期恢复。'),
+                    relogin: false,
+                };
+            }
+            // 仅网卡（MAC）变化：会随下次续期自动恢复
+            if (this.onlineMismatch && !this.macMatch) {
+                return {
+                    type: 'warning',
+                    title: this.$L('检测到网卡（MAC）变化'),
+                    desc: this.$L('系统会在下次续期时自动恢复授权，通常无需处理。'),
+                    relogin: false,
+                };
+            }
+            if (s === 'reminder') {
+                if (this.online.error_count > 0) {
+                    return {
+                        type: 'warning',
+                        title: this.$L('续期失败，请检查网络'),
+                        desc: this.$L('授权仍然有效，联网后会自动续期恢复。'),
+                        relogin: false,
+                    };
+                }
+                return {
+                    type: 'warning',
+                    title: this.$L('授权即将到期'),
+                    desc: this.$L('请保持联网，系统会自动为你续期。'),
+                    relogin: false,
+                };
+            }
+            return null;
         },
     },
     methods: {
@@ -510,13 +674,12 @@ export default {
             return {
                 active: this.$L('生效中'),
                 reminder: this.$L('即将到期'),
-                frozen: this.$L('已冻结'),
+                frozen: this.$L('已过期'),
                 revoked: this.$L('已吊销'),
             }[status] || status || '-';
         },
 
         onlineCall(url, data, successMsg) {
-            this.onlineIng++;
             return this.$store.dispatch("call", {
                 url,
                 data,
@@ -529,8 +692,6 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 return Promise.reject(msg);
-            }).finally(_ => {
-                this.onlineIng--;
             });
         },
 
@@ -626,6 +787,24 @@ export default {
                 onOk: () => {
                     this.onlineAction = 'logout';
                     this.onlineCall('license/logout', {}, '已退出在线授权').then(_ => {
+                        this.systemSetting();
+                    }).catch(() => {
+                        // 失败提示已由 onlineCall 弹出
+                    }).finally(() => {
+                        this.onlineAction = '';
+                    });
+                }
+            });
+        },
+
+        // 重新登录授权（换机 / 设备变更后）：释放当前座位并回到登录表单
+        onlineRelogin() {
+            $A.modalConfirm({
+                title: '重新登录授权',
+                content: '将释放当前设备占用的授权座位并回到登录，确定继续？',
+                onOk: () => {
+                    this.onlineAction = 'relogin';
+                    this.onlineCall('license/logout', {}, '').then(_ => {
                         this.systemSetting();
                     }).catch(() => {
                         // 失败提示已由 onlineCall 弹出
