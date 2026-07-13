@@ -482,7 +482,7 @@ class ProjectTask extends AbstractModel
         if ($parent_id == 0) {
             $priorityList = Setting::normalizeTaskPriorityList(Base::setting('priority'));
             if ($p_level > 0) {
-                $matched = reset(array_filter($priorityList, fn($item) => intval($item['priority']) === $p_level)) ?: null;
+                $matched = collect($priorityList)->first(fn($item) => intval($item['priority']) === $p_level);
             } else {
                 $matched = Setting::getDefaultTaskPriorityItem($priorityList);
             }
@@ -2246,7 +2246,7 @@ class ProjectTask extends AbstractModel
             $project = Project::userProject($task->project_id);
         } catch (\Throwable $e) {
             if ($task->owner !== null || $task->permission(4)) {
-                $project = Project::find($task->project_id);
+                $project = Project::withTrashed()->find($task->project_id);
                 if (empty($project)) {
                     throw new ApiException('项目不存在或已被删除', [ 'task_id' => $task_id ], -4002);
                 }

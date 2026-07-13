@@ -23,7 +23,10 @@ class LoopTask extends AbstractTask
         ProjectTask::whereBetween('loop_at', [
             Carbon::now()->subMinutes(10),
             Carbon::now()
-        ])->chunkById(100, function ($list) {
+        ])->whereHas('project', function ($query) {
+            // 仅处理未删除、未归档项目的任务（Project 软删除由全局作用域排除）
+            $query->whereNull('archived_at');
+        })->chunkById(100, function ($list) {
             /** @var ProjectTask $item */
             foreach ($list as $item) {
                 if ($item->parent_id > 0) {

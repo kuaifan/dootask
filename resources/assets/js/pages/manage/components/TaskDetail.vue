@@ -115,7 +115,11 @@
                 <Alert v-if="taskDetail.department_readonly" class="task-readonly-alert" type="info" show-icon>
                     {{$L('当前为负责人视角，并参与讨论，但不能编辑任务。')}}
                 </Alert>
-                <Alert v-if="!isDepartmentReadonly && taskDetail.task_user !== undefined && getOwner.length === 0" class="receive-box" type="warning">
+                <Alert v-if="projectInvalid" class="receive-box" type="error">
+                    <span class="receive-text">{{taskDetail.project_deleted ? $L('当前任务所属项目已被删除') : $L('当前任务所属项目已归档')}}</span>
+                    <Button v-if="!isDepartmentReadonly" class="receive-button" :loading="removeLoad > 0" size="small" type="error" @click="deleteInvalidTask">{{$L('删除任务')}}</Button>
+                </Alert>
+                <Alert v-if="!projectInvalid && !isDepartmentReadonly && taskDetail.task_user !== undefined && getOwner.length === 0" class="receive-box" type="warning">
                     <span class="receive-text">{{$L('该任务尚未被领取，点击这里')}}</span>
                     <EPopover
                         v-model="receiveShow"
@@ -635,6 +639,8 @@ export default {
             ownerData: {},
             ownerLoad: 0,
 
+            removeLoad: 0,
+
             receiveShow: false,
 
             tagForce: false,
@@ -989,6 +995,10 @@ export default {
             return !!this.taskDetail?.department_readonly;
         },
 
+        projectInvalid() {
+            return this.taskDetail.project_deleted == 1 || this.taskDetail.project_archived == 1;
+        },
+
         isSubTask({taskDetail}) {
             return taskDetail.parent_id > 0
         },
@@ -1134,6 +1144,30 @@ export default {
     methods: {
         onReceiveShow() {
             this.receiveShow = true;
+        },
+
+        deleteInvalidTask() {
+            const typeTask = this.taskDetail.parent_id > 0 ? '子任务' : '任务';
+            $A.modalConfirm({
+                title: '删除' + typeTask,
+                content: '你确定要删除' + typeTask + '【' + this.taskDetail.name + '】吗？',
+                loading: true,
+                onOk: () => {
+                    if (this.removeLoad > 0) {
+                        return;
+                    }
+                    this.removeLoad++;
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("removeTask", {task_id: this.taskDetail.id}).then(({msg}) => {
+                            resolve(msg);
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        }).finally(() => {
+                            this.removeLoad--;
+                        });
+                    })
+                }
+            });
         },
 
         within24Hours(date) {

@@ -2271,9 +2271,12 @@ class ProjectController extends AbstractController
         }
         //
         $data = $task->toArray();
-        $data['department_readonly'] = UserDepartment::isDepartmentReadonlyProject($departmentView, intval($task->project_id));
-        $data['project_name'] = $task->project?->name;
+        $taskProject = Project::withTrashed()->find($task->project_id);
+        $data['project_name'] = $taskProject?->name;
+        $data['project_deleted'] = (!$taskProject || $taskProject->trashed()) ? 1 : 0;
+        $data['project_archived'] = $taskProject?->archived_at ? 1 : 0;
         $data['column_name'] = $task->projectColumn?->name;
+        $data['department_readonly'] = UserDepartment::isDepartmentReadonlyProject($departmentView, intval($task->project_id));
         $data['visibility_appointor'] = $task->visibility == 1 ? [0] : ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid');
         return Base::retSuccess('success', $data);
     }
@@ -3205,8 +3208,27 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id, null, $type !== 'recovery');
         //
-        $project = Project::userProject($task->project_id);
-        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_REMOVE, $task);
+        try {
+            $project = Project::userProject($task->project_id);
+            ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_REMOVE, $task);
+        } catch (\Throwable $e) {
+            if ($type == 'recovery') {
+                throw $e;
+            }
+            // 项目已删除/已归档时放行删除操作（限：管理员、原项目负责人、任务负责人/协助人/创建人）
+            $project = Project::withTrashed()->find($task->project_id);
+            $projectInvalid = !$project || $project->trashed() || $project->archived_at;
+            if (!$projectInvalid) {
+                throw $e;
+            }
+            $isProjectOwner = ProjectUser::whereProjectId($task->project_id)
+                ->whereUserid(Doo::userId())
+                ->whereIn('owner', [ProjectUser::OWNER_PRIMARY, ProjectUser::OWNER_DEPUTY])
+                ->exists();
+            if (!$isProjectOwner && !$task->permission(3)) {
+                throw new ApiException('仅项目负责人或任务相关成员删除');
+            }
+        }
         //
         if ($type == 'recovery') {
             $task->restoreTask();
