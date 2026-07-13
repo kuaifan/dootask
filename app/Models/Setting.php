@@ -216,10 +216,11 @@ class Setting extends AbstractModel
     /**
      * AI 机器人模型转数组
      * @param $models
-     * @param bool $retValue
+     * @param bool $retValue 仅返回模型 value 列表
+     * @param bool $visibleOnly 仅返回可见模型（跳过标记 hidden 的项，供展示给终端用户的场景）
      * @return array
      */
-    public static function AIBotModels2Array($models, $retValue = false)
+    public static function AIBotModels2Array($models, $retValue = false, $visibleOnly = false)
     {
         $list = null;
         if (is_array($models)) {
@@ -242,6 +243,10 @@ class Setting extends AbstractModel
                 // 新 JSON 记录格式：{id,name,thinking}（兼容 {value,label}）
                 $value = trim((string)($item['id'] ?? $item['value'] ?? ''));
                 if ($value === '') {
+                    continue;
+                }
+                // 隐藏模型：仍保存在设置中，但展示给终端用户时跳过（$visibleOnly）
+                if ($visibleOnly && !empty($item['hidden'])) {
                     continue;
                 }
                 $label = trim((string)($item['name'] ?? $item['label'] ?? ''));
