@@ -778,14 +778,14 @@ class SystemController extends AbstractController
             }
             $apps = Setting::normalizeCustomMicroApps($list);
             $setting = Base::setting('microapp_menu', $apps);
-            $setting = Setting::formatCustomMicroAppsForResponse($setting);
+            $setting = Setting::formatCustomMicroAppsForResponse($setting, true);
         } else {
             $setting = Base::setting('microapp_menu');
             if (!is_array($setting)) {
                 $setting = [];
             }
             $setting = Setting::filterCustomMicroAppsForUser($setting, $user);
-            $setting = Setting::formatCustomMicroAppsForResponse($setting);
+            $setting = Setting::formatCustomMicroAppsForResponse($setting, $user && $user->isAdmin());
         }
         return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting);
     }

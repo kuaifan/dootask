@@ -358,12 +358,17 @@ class Setting extends AbstractModel
     /**
      * 将存储结构转换成 appstore 接口同款格式
      * @param array $apps
+     * @param bool $keepVisible 是否保留可见范围（仅管理员编辑场景需要，用于回填）
      * @return array
      */
-    public static function formatCustomMicroAppsForResponse(array $apps)
+    public static function formatCustomMicroAppsForResponse(array $apps, bool $keepVisible = false)
     {
-        return array_values(array_map(function ($app) {
-            unset($app['visible_to']);
+        return array_values(array_map(function ($app) use ($keepVisible) {
+            if ($keepVisible) {
+                $app['visible_to'] = self::normalizeCustomMicroVisible($app['visible_to'] ?? ['admin']);
+            } else {
+                unset($app['visible_to']);
+            }
             if (!empty($app['menu_items']) && is_array($app['menu_items'])) {
                 $app['menu_items'] = array_values(array_map(function ($menu) {
                     $menu['keep_alive'] = isset($menu['keep_alive']) ? (bool)$menu['keep_alive'] : true;

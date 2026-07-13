@@ -659,9 +659,14 @@ export default {
             }
             return list.map(app => {
                 const draft = createCustomMicroMenu();
-                return Object.assign({}, draft, app, {
+                const merged = Object.assign({}, draft, app, {
                     menu: Object.assign({}, draft.menu, $A.isArray(app.menu_items) && app.menu_items.length > 0 ? app.menu_items[0] : {}),
                 });
+                // 可见范围以 app 顶层为准，后端存数组，下拉框用字符串（当前仅 admin/all 两选项）
+                merged.menu.visible_to = $A.isArray(app.visible_to)
+                    ? (app.visible_to.includes('all') ? 'all' : 'admin')
+                    : (app.visible_to || 'admin');
+                return merged;
             });
         },
         pickCustomMenuLabel(label, fallback = '') {
@@ -739,6 +744,7 @@ export default {
                 id,
                 name: (item.name || '').trim(),
                 version: item.version || 'custom',
+                visible_to: item.menu.visible_to || 'admin',
                 menu_items: [Object.assign({}, item.menu, { url, label })],
             };
         },
