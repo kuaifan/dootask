@@ -36754,5 +36754,89 @@
         "fr": "La fusion est occupée, veuillez réessayer plus tard",
         "id": "Penggabungan sedang sibuk, coba lagi nanti",
         "ru": "Объединение занято, повторите попытку позже"
+    },
+    {
+        "key": "当前任务所属项目已被删除",
+        "zh": "",
+        "zh-CHT": "當前任務所屬項目已被刪除",
+        "en": "The project this task belongs to has been deleted",
+        "ko": "현재 작업이 속한 프로젝트가 삭제되었습니다",
+        "ja": "現在のタスクが属するプロジェクトは削除されました",
+        "de": "Das Projekt, zu dem diese Aufgabe gehört, wurde gelöscht",
+        "fr": "Le projet auquel cette tâche appartient a été supprimé",
+        "id": "Proyek tempat tugas ini berada telah dihapus",
+        "ru": "Проект, которому принадлежит эта задача, был удалён"
+    },
+    {
+        "key": "当前任务所属项目已归档",
+        "zh": "",
+        "zh-CHT": "當前任務所屬項目已歸檔",
+        "en": "The project this task belongs to has been archived",
+        "ko": "현재 작업이 속한 프로젝트가 보관되었습니다",
+        "ja": "現在のタスクが属するプロジェクトはアーカイブされました",
+        "de": "Das Projekt, zu dem diese Aufgabe gehört, wurde archiviert",
+        "fr": "Le projet auquel cette tâche appartient a été archivé",
+        "id": "Proyek tempat tugas ini berada telah diarsipkan",
+        "ru": "Проект, которому принадлежит эта задача, был архивирован"
+    },
+    {
+        "key": "我的文件",
+        "zh": "",
+        "zh-CHT": "我的檔案",
+        "en": "My Files",
+        "ko": "내 파일",
+        "ja": "マイファイル",
+        "de": "Meine Dateien",
+        "fr": "Mes fichiers",
+        "id": "File Saya",
+        "ru": "Мои файлы"
+    },
+    {
+        "key": "共享文件",
+        "zh": "",
+        "zh-CHT": "共享檔案",
+        "en": "Shared Files",
+        "ko": "공유 파일",
+        "ja": "共有ファイル",
+        "de": "Geteilte Dateien",
+        "fr": "Fichiers partagés",
+        "id": "File Bersama",
+        "ru": "Общие файлы"
+    },
+    {
+        "key": "我共享的",
+        "zh": "",
+        "zh-CHT": "我共享的",
+        "en": "Shared by Me",
+        "ko": "내가 공유한",
+        "ja": "自分が共有した",
+        "de": "Von mir geteilt",
+        "fr": "Partagés par moi",
+        "id": "Dibagikan oleh Saya",
+        "ru": "Мои общие"
+    },
+    {
+        "key": "共享给我的",
+        "zh": "",
+        "zh-CHT": "共享給我的",
+        "en": "Shared with Me",
+        "ko": "나와 공유됨",
+        "ja": "自分に共有された",
+        "de": "Mit mir geteilt",
+        "fr": "Partagés avec moi",
+        "id": "Dibagikan dengan Saya",
+        "ru": "Доступные мне"
+    },
+    {
+        "key": "仅项目负责人或任务相关成员删除",
+        "zh": "",
+        "zh-CHT": "僅項目負責人或任務相關成員刪除",
+        "en": "Only the project owner or task-related members can delete",
+        "ko": "프로젝트 책임자 또는 작업 관련 구성원만 삭제할 수 있습니다",
+        "ja": "プロジェクト責任者またはタスク関連メンバーのみ削除できます",
+        "de": "Nur der Projektverantwortliche oder aufgabenbezogene Mitglieder können löschen",
+        "fr": "Seul le responsable du projet ou les membres liés à la tâche peuvent supprimer",
+        "id": "Hanya penanggung jawab proyek atau anggota terkait tugas yang dapat menghapus",
+        "ru": "Удалить может только руководитель проекта или связанные с задачей участники"
     }
 ]
