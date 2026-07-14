@@ -1500,7 +1500,28 @@ export default {
                 data: scope ? {pid, scope} : {pid},
             }).then((result) => {
                 const ids = result.data.map(({id}) => id)
-                commit("file/save", state.fileLists.filter((item) => item.pid != pid || ids.includes(item.id)));
+                const myId = state.userId
+                // 静态刷新：仅清理"本次拉取该管、但结果里已没有"的过期行，按 scope 限定清理范围，
+                // 避免刷新一个板块把另一个板块（同为 pid=0 根目录）的缓存误删
+                commit("file/save", state.fileLists.filter((item) => {
+                    if (item.pid != pid) {
+                        return true    // 其他目录：保留缓存
+                    }
+                    if (ids.includes(item.id)) {
+                        return true    // 本次结果内：保留（随后 saveFile 覆盖更新）
+                    }
+                    if (pid > 0) {
+                        return false   // 子目录内容归本次拉取管：清理过期
+                    }
+                    // 根目录：仅清理本板块 scope 归属的过期行
+                    if (scope === 'mine') {
+                        return item.userid != myId                       // 保留"别人共享给我的"
+                    }
+                    if (scope === 'shared') {
+                        return !(item.userid != myId || item.share)      // 保留"我的私有"
+                    }
+                    return false       // scope=all 或未指定：清理全部过期（原行为）
+                }));
                 //
                 dispatch("saveFile", result.data);
                 resolve(result)

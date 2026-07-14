@@ -123,7 +123,7 @@
                 align-items: center;
                 gap: 8px;
                 > span {
-                    font-size: 12.5px;
+                    font-size: 12px;
                     color: $primary-text-color;
                     padding: 3px 12px;
                     border-radius: 14px;
@@ -202,7 +202,7 @@
             align-items: center;
             height: 24px;
             line-height: 24px;
-            margin: 0 32px 0;
+            margin: 8px 32px 0;
             > ul {
                 display: flex;
                 align-items: center;
@@ -811,7 +811,7 @@ body.window-portrait {
                 }
             }
             .file-navigator {
-                margin: 0 16px 0;
+                margin: 4px 16px 0;
                 .flex-full {
                     margin-right: 10px;
                 }

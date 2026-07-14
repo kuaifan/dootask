@@ -230,13 +230,10 @@ class File extends AbstractModel
         } else {
             // 根目录：按板块拆分
             $array = [];
-            // 我的文件（mine 仅私有 share=0；all 含全部我的）
+            // 我的文件：我拥有的全部（含已共享出去的），mine 与 all 一致
             if ($scope === 'mine' || $scope === 'all') {
                 $mine = File::wherePid(0)
                     ->whereUserid($user->userid)
-                    ->when($scope === 'mine', function ($q) {
-                        $q->where('share', 0);
-                    })
                     ->when($type == 'dir', function ($q) {
                         $q->whereType('folder');
                     })

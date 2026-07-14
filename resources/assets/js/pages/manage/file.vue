@@ -41,12 +41,12 @@
                     <div :class="['file-tab', {active: board === 'mine'}]" @click="switchBoard('mine')">{{$L('我的文件')}}</div>
                     <div :class="['file-tab', {active: board === 'shared'}]" @click="switchBoard('shared')">{{$L('共享文件')}}</div>
                 </div>
+                <div class="file-tabs-full"></div>
                 <div v-if="board === 'shared' && pid == 0 && !searchKey" class="file-shared-src">
                     <span :class="{on: sharedSrc === 'all'}" @click="sharedSrc = 'all'">{{$L('全部')}}</span>
                     <span :class="{on: sharedSrc === 'byme'}" @click="sharedSrc = 'byme'">{{$L('我共享的')}}</span>
                     <span :class="{on: sharedSrc === 'tome'}" @click="sharedSrc = 'tome'">{{$L('共享给我的')}}</span>
                 </div>
-                <div class="file-tabs-full"></div>
                 <div :class="['switch-button', tableMode]">
                     <div @click="tableMode='block'"><i class="taskfont">&#xe60c;</i></div>
                     <div @click="tableMode='table'"><i class="taskfont">&#xe66a;</i></div>
@@ -896,13 +896,13 @@ export default {
                 if (file.pid != pid) {
                     return false;
                 }
-                // 根目录按板块区分：我的=我的私有文件(share=0)，共享=其余(双向共享)
+                // 根目录按板块区分：我的=我拥有的全部(含已共享)，共享=其余(双向共享)
                 if (pid == 0) {
-                    const isMinePrivate = file.userid == userId && !file.share;
                     if (board === 'mine') {
-                        return isMinePrivate;
+                        return file.userid == userId;
                     }
-                    if (isMinePrivate) {
+                    // 共享板块：排除“我的私有”，即他人共享给我的 + 我共享出去的
+                    if (file.userid == userId && !file.share) {
                         return false;
                     }
                     // 共享板块二次筛选：我共享的(我拥有) / 共享给我的(他人拥有)
@@ -1173,6 +1173,7 @@ export default {
                 return;
             }
             this.loadIng++;
+            // 按当前板块拉取（拉多少缓存多少）；已有缓存时 fileList 会先渲染缓存，接口回来再静态刷新
             this.$store.dispatch("getFiles", {pid: this.pid, scope: this.board}).then(async () => {
                 this.loadIng--;
                 this.openFileJudge()
@@ -1513,9 +1514,10 @@ export default {
             this.selectedItems = [];
             this.clearShear();
             if (this.pid > 0) {
-                // 退回板块根目录，由 pid 变化触发重载
+                // 从子目录切板块时退回根目录（pid 变化触发加载）
                 this.browseFolder(0);
             } else {
+                // 已在根目录：先由 fileList 渲染本板块缓存，再拉接口静态刷新
                 this.getFileList();
             }
         },
