@@ -178,28 +178,26 @@ class File extends AbstractModel
      * @param int $pid
      * @param string $type
      * @param bool $isGetparent
+     * @param string $scope 板块范围（根目录生效）：mine=仅我的私有文件；shared=共享文件（别人共享给我的+我共享出去的）；all=全部（默认，兼容旧调用）
      * @return array
      */
-    public function getFileList($user, int $pid, $type = "all", $isGetparent = true)
+    public function getFileList($user, int $pid, $type = "all", $isGetparent = true, $scope = "all")
     {
         $permission = 1000;
         $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
-        $builder = File::wherePid($pid)
-            ->when($type == 'dir', function ($q) {
-                $q->whereType('folder');
-            });
+        //
         if ($pid > 0) {
+            // 目录内：按权限返回子级（不区分板块）
             File::permissionFind($pid, $userids, 0, $permission);
-        } else {
-            $builder->whereUserid($user->userid);
-        }
-        //
-        $array = $builder->take(500)->get()->toArray();
-        foreach ($array as &$item) {
-            $item['permission'] = $permission;
-        }
-        //
-        if ($pid > 0) {
+            $array = File::wherePid($pid)
+                ->when($type == 'dir', function ($q) {
+                    $q->whereType('folder');
+                })
+                ->take(500)->get()->toArray();
+            foreach ($array as &$item) {
+                $item['permission'] = $permission;
+            }
+            unset($item);
             // 遍历获取父级
             if ($isGetparent) {
                 while ($pid > 0) {
@@ -230,24 +228,61 @@ class File extends AbstractModel
                 $array = array_values($array);
             }
         } else {
-            // 获取共享相关
-            DB::statement("SET SQL_MODE=''");
-            $pre = DB::connection()->getTablePrefix();
-            $list = File::select(["files.*", DB::raw("MAX({$pre}file_users.permission) as permission")])
-                ->join('file_users', 'files.id', '=', 'file_users.file_id')
-                ->where('files.userid', '!=', $user->userid)
-                ->whereIn('file_users.userid', $userids)
-                ->groupBy('files.id')
-                ->take(100)
-                ->when($type == 'dir', function ($q) {
-                    $q->where('files.type', 'folder');
-                })
-                ->get();
-            if ($list->isNotEmpty()) {
-                foreach ($list as $file) {
-                    $temp = $file->toArray();
-                    $temp['pid'] = 0;
-                    $array[] = $temp;
+            // 根目录：按板块拆分
+            $array = [];
+            // 我的文件（mine 仅私有 share=0；all 含全部我的）
+            if ($scope === 'mine' || $scope === 'all') {
+                $mine = File::wherePid(0)
+                    ->whereUserid($user->userid)
+                    ->when($scope === 'mine', function ($q) {
+                        $q->where('share', 0);
+                    })
+                    ->when($type == 'dir', function ($q) {
+                        $q->whereType('folder');
+                    })
+                    ->take(500)->get()->toArray();
+                foreach ($mine as &$item) {
+                    $item['permission'] = $permission;
+                }
+                unset($item);
+                $array = array_merge($array, $mine);
+            }
+            // 共享文件
+            if ($scope === 'shared' || $scope === 'all') {
+                // 别人共享给我的
+                DB::statement("SET SQL_MODE=''");
+                $pre = DB::connection()->getTablePrefix();
+                $list = File::select(["files.*", DB::raw("MAX({$pre}file_users.permission) as permission")])
+                    ->join('file_users', 'files.id', '=', 'file_users.file_id')
+                    ->where('files.userid', '!=', $user->userid)
+                    ->whereIn('file_users.userid', $userids)
+                    ->groupBy('files.id')
+                    ->take(100)
+                    ->when($type == 'dir', function ($q) {
+                        $q->where('files.type', 'folder');
+                    })
+                    ->get();
+                if ($list->isNotEmpty()) {
+                    foreach ($list as $file) {
+                        $temp = $file->toArray();
+                        $temp['pid'] = 0;
+                        $array[] = $temp;
+                    }
+                }
+                // 我共享出去的（仅 shared 板块补充；all 板块已包含在“我的文件”里）
+                if ($scope === 'shared') {
+                    $mineShared = File::wherePid(0)
+                        ->whereUserid($user->userid)
+                        ->where('share', 1)
+                        ->when($type == 'dir', function ($q) {
+                            $q->whereType('folder');
+                        })
+                        ->take(500)->get()->toArray();
+                    foreach ($mineShared as &$item) {
+                        $item['permission'] = $permission;
+                    }
+                    unset($item);
+                    $array = array_merge($array, $mineShared);
                 }
             }
         }

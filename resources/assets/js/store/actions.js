@@ -1491,13 +1491,13 @@ export default {
      * @param pid
      * @returns {Promise<unknown>}
      */
-    getFiles({commit, state, dispatch}, pid) {
+    getFiles({commit, state, dispatch}, payload) {
+        const pid = typeof payload === 'object' && payload !== null ? payload.pid : payload;
+        const scope = typeof payload === 'object' && payload !== null ? payload.scope : undefined;
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'file/lists',
-                data: {
-                    pid
-                },
+                data: scope ? {pid, scope} : {pid},
             }).then((result) => {
                 const ids = result.data.map(({id}) => id)
                 commit("file/save", state.fileLists.filter((item) => item.pid != pid || ids.includes(item.id)));

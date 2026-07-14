@@ -36,10 +36,27 @@
                 </div>
             </div>
 
-            <div class="file-navigator">
+            <div class="file-tabs">
+                <div class="file-tabs-nav">
+                    <div :class="['file-tab', {active: board === 'mine'}]" @click="switchBoard('mine')">{{$L('我的文件')}}</div>
+                    <div :class="['file-tab', {active: board === 'shared'}]" @click="switchBoard('shared')">{{$L('共享文件')}}</div>
+                </div>
+                <div v-if="board === 'shared' && pid == 0 && !searchKey" class="file-shared-src">
+                    <span :class="{on: sharedSrc === 'all'}" @click="sharedSrc = 'all'">{{$L('全部')}}</span>
+                    <span :class="{on: sharedSrc === 'byme'}" @click="sharedSrc = 'byme'">{{$L('我共享的')}}</span>
+                    <span :class="{on: sharedSrc === 'tome'}" @click="sharedSrc = 'tome'">{{$L('共享给我的')}}</span>
+                </div>
+                <div class="file-tabs-full"></div>
+                <div :class="['switch-button', tableMode]">
+                    <div @click="tableMode='block'"><i class="taskfont">&#xe60c;</i></div>
+                    <div @click="tableMode='table'"><i class="taskfont">&#xe66a;</i></div>
+                </div>
+            </div>
+
+            <div v-show="showNavigator" class="file-navigator">
                 <ul class="scrollbar-hidden" v-show="showBtnText || (!selectedItems.length && !shearFirst)">
-                    <li @click="browseFolder(0)">
-                        <span>{{$L('全部文件')}}</span>
+                    <li v-if="pid > 0 || searchKey" @click="browseFolder(0)">
+                        <span>{{board === 'shared' ? $L('共享文件') : $L('我的文件')}}</span>
                     </li>
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
                     <template v-else>
@@ -85,15 +102,6 @@
                 </template>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
-                <div v-if="hasShareFile" class="only-checkbox">
-                    <Checkbox v-model="hideShared">
-                        {{showBtnText ? $L('仅显示我的') : $L('仅我的')}}
-                    </Checkbox>
-                </div>
-                <div :class="['switch-button', tableMode]">
-                    <div @click="tableMode='block'"><i class="taskfont">&#xe60c;</i></div>
-                    <div @click="tableMode='table'"><i class="taskfont">&#xe66a;</i></div>
-                </div>
             </div>
 
             <div
@@ -496,7 +504,7 @@ import {chunkedUpload, CHUNK_THRESHOLD} from "../../store/chunkedUpload";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
-const FileObject = {sort: null, mode: null, shared: null};
+const FileObject = {sort: null, mode: null, board: null};
 
 export default {
     components: {Forwarder, UserAvatarTip, UserSelect, FilePreview, DrawerOverlay, FileContent},
@@ -563,7 +571,8 @@ export default {
             ],
 
             tableMode: "",
-            hideShared: false,
+            board: "mine",         // 当前板块：mine=我的文件、shared=共享文件
+            sharedSrc: "all",      // 共享板块二次筛选：all=全部、byme=我共享的、tome=共享给我的
             columns: [],
 
             shareShow: false,
@@ -623,14 +632,14 @@ export default {
     async beforeRouteEnter(to, from, next) {
         FileObject.sort = await $A.IDBJson("cacheFileSort")
         FileObject.mode = await $A.IDBString("fileTableMode")
-        FileObject.shared = await $A.IDBBoolean("fileHideShared")
+        FileObject.board = await $A.IDBString("fileBoard")
         next()
     },
 
 
     created() {
         this.tableMode = FileObject.mode
-        this.hideShared = FileObject.shared
+        this.board = FileObject.board === 'shared' ? 'shared' : 'mine'
         this.columns = [
             {
                 type: 'selection',
@@ -879,15 +888,32 @@ export default {
         },
 
         fileList() {
-            const {fileLists, searchKey, hideShared, pid, selectedItems, userId} = this;
+            const {fileLists, searchKey, board, sharedSrc, pid, selectedItems, userId} = this;
             const list = $A.cloneJSON(sortBy(fileLists.filter(file => {
-                if (hideShared && file.userid != userId && file.created_id != userId) {
-                    return false
-                }
                 if (searchKey) {
                     return file.name.indexOf(searchKey) !== -1;
                 }
-                return file.pid == pid;
+                if (file.pid != pid) {
+                    return false;
+                }
+                // 根目录按板块区分：我的=我的私有文件(share=0)，共享=其余(双向共享)
+                if (pid == 0) {
+                    const isMinePrivate = file.userid == userId && !file.share;
+                    if (board === 'mine') {
+                        return isMinePrivate;
+                    }
+                    if (isMinePrivate) {
+                        return false;
+                    }
+                    // 共享板块二次筛选：我共享的(我拥有) / 共享给我的(他人拥有)
+                    if (sharedSrc === 'byme') {
+                        return file.userid == userId;
+                    }
+                    if (sharedSrc === 'tome') {
+                        return file.userid != userId;
+                    }
+                }
+                return true;
             }), file => {
                 return (file.type == 'folder' ? 'a' : 'b') + file.name;
             }));
@@ -906,17 +932,17 @@ export default {
             })
         },
 
-        hasShareFile() {
-            const {fileLists, userId} = this;
-            return fileLists.findIndex(file => file.share && file.userid != userId) !== -1
-        },
-
         shearFirst() {
             const {fileLists, shearIds} = this;
             if (shearIds.length === 0) {
                 return null;
             }
             return fileLists.find(item => item.id == shearIds[0])
+        },
+
+        showNavigator() {
+            // 仅在进入子目录、搜索、选中或剪切时显示导航行；根目录空闲时隐藏（板块名已由 Tab 标示）
+            return this.pid > 0 || !!this.searchKey || this.selectedItems.length > 0 || !!this.shearFirst;
         },
 
         navigator() {
@@ -1009,8 +1035,8 @@ export default {
             }
         },
 
-        hideShared(val) {
-            $A.IDBSave("fileHideShared", val)
+        board(val) {
+            $A.IDBSave("fileBoard", val)
         },
 
         fileShow(val) {
@@ -1147,7 +1173,7 @@ export default {
                 return;
             }
             this.loadIng++;
-            this.$store.dispatch("getFiles", this.pid).then(async () => {
+            this.$store.dispatch("getFiles", {pid: this.pid, scope: this.board}).then(async () => {
                 this.loadIng--;
                 this.openFileJudge()
                 this.shakeFile(this.$route.params.shakeId);
@@ -1476,6 +1502,22 @@ export default {
                 }
                 this.contextMenuVisible = true;
             })
+        },
+
+        switchBoard(board) {
+            if (this.board === board) {
+                return;
+            }
+            this.board = board;
+            this.sharedSrc = 'all';
+            this.selectedItems = [];
+            this.clearShear();
+            if (this.pid > 0) {
+                // 退回板块根目录，由 pid 变化触发重载
+                this.browseFolder(0);
+            } else {
+                this.getFileList();
+            }
         },
 
         browseFolder(id, shakeId = null) {

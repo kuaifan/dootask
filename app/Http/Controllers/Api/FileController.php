@@ -41,6 +41,7 @@ class FileController extends AbstractController
      * @apiName lists
      *
      * @apiParam {Number} [pid]         父级ID
+     * @apiParam {String} [scope]       板块范围（根目录生效）：mine=我的文件、shared=共享文件、all=全部（默认）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -51,8 +52,12 @@ class FileController extends AbstractController
         $user = User::auth();
         //
         $pid = intval(Request::input('pid'));
+        $scope = Request::input('scope', 'all');
+        if (!in_array($scope, ['mine', 'shared', 'all'])) {
+            $scope = 'all';
+        }
         //
-        return Base::retSuccess('success', (new File)->getFileList($user, $pid));
+        return Base::retSuccess('success', (new File)->getFileList($user, $pid, 'all', true, $scope));
     }
 
     /**
