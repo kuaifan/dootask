@@ -37,7 +37,9 @@ class ManticoreFile
     public const SEARCHABLE_TYPES = ['document', 'word', 'excel', 'ppt', 'txt', 'md', 'text', 'code'];
 
     /**
-     * 最大内容长度（字符）- 提取后的文本内容限制
+     * 最大内容长度（字符）- 提取后的文本内容限制（服务全文检索范围）。
+     * 注意：向量化输入在 ai 插件侧另有 30000 字符上限（main.py _EMBEDDING_INPUT_MAX_CHARS），
+     * 超出部分只参与全文检索、不参与语义向量。
      */
     public const MAX_CONTENT_LENGTH = 100000; // 100K 字符
 

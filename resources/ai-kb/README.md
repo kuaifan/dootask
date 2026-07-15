@@ -67,9 +67,11 @@ volumes:
 内容同步机制：容器每次启动按文件 hash 对账（reconcile），自动增量收敛新增/变更/删除的 markdown——客户实例更新 DooTask 后重启插件容器即生效。需要免重启即时生效时手动触发：
 ```bash
 curl -X POST 'http://ai-service/kb/reindex' \
-  -H "X-Ingest-Token: $KB_INGEST_TOKEN" \
+  -H "Authorization: Bearer $APP_KEY" \
   -d '{"mode":"reconcile"}'
 ```
+
+（`$APP_KEY` 为主程序全局密钥；ai 插件 0.5.8 起以它取代旧的 `KB_INGEST_TOKEN` 鉴权。）
 
 ## 用检索打点与用户反馈数据迭代内容
 

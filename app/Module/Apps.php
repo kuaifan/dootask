@@ -110,7 +110,7 @@ class Apps
      * 获取（必要时生成并持久化）应用的独立密钥 APP_SECRET。
      *
      * 与全局 APP_KEY 不同，APP_SECRET 每个已安装应用独立、唯一，持久化在应用自身的
-     * docker/appstore/config/{appid}/config.yml（与 KB_INGEST_TOKEN 等每应用参数同源），
+     * docker/appstore/config/{appid}/config.yml（与其它每应用安装参数同源），
      * 由 appstore 安装链路按内置 compose 变量 APP_SECRET 注入插件容器。
      * 此处主程序侧负责生成/持久化与校验；首次需要时若不存在则惰性生成，保证主程序可独立验证。
      *

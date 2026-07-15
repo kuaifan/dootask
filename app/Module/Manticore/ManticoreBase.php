@@ -114,7 +114,9 @@ class ManticoreBase
             ");
 
             $expected = self::schemaMarker();
-            if (self::kvGetPdo($pdo, 'vector:schema') === $expected && self::allVectorTablesExist($pdo)) {
+            if (self::kvGetPdo($pdo, 'vector:schema') === $expected
+                && self::allVectorTablesExist($pdo)
+                && !self::embeddingModelChanged($pdo)) {
                 return;
             }
 
@@ -124,41 +126,52 @@ class ManticoreBase
                 return;
             }
             try {
+                // 拿到锁时可能另一进程刚完成重建（marker 写入在锁内），先复检避免重复重建
+                if (self::kvGetPdo($pdo, 'vector:schema') === $expected
+                    && self::allVectorTablesExist($pdo)
+                    && !self::embeddingModelChanged($pdo)) {
+                    return;
+                }
+
+                // 先用一次性探针表验证 ai 端点可用（CREATE 会向端点探测维度、未就绪则抛错），
+                // 通过后才 DROP 现有表——避免 ai 未就绪时销毁旧索引后建不回来
+                $pdo->exec("DROP TABLE IF EXISTS _schema_probe");
+                $pdo->exec("CREATE TABLE _schema_probe (t TEXT, " . self::vectorColumnDDL('t') . ")");
+                $pdo->exec("DROP TABLE IF EXISTS _schema_probe");
+
                 foreach (self::vectorTableDDLs() as $table => $ddl) {
                     $pdo->exec("DROP TABLE IF EXISTS {$table}");
-                    // CREATE 时引擎会调用 ai 端点探测向量维度，ai 未就绪则抛错
                     $pdo->exec($ddl);
                 }
+
+                self::resetSyncPointersPdo($pdo);
+                // 清理旧向量管道遗留键（vector:dim 与 vector:*LastId 指针）
+                $legacy = ["'vector:dim'"];
+                foreach (self::VECTOR_TABLES as $t) {
+                    $legacy[] = "'vector:manticore" . ucfirst($t) . "LastId'";
+                }
+                $pdo->exec("DELETE FROM key_values WHERE k IN (" . implode(',', $legacy) . ")");
+                self::rememberEmbeddingModel($pdo);
+                // marker 最后写入且在锁内：写入即代表重建完整成功
+                self::kvSetPdo($pdo, 'vector:schema', $expected);
+                Log::info("Manticore vector tables rebuilt for auto-embeddings schema {$expected}");
             } catch (\Throwable $e) {
-                // 建表失败（如 ai 插件未就绪/未升级）：不写 marker，下个进程重试，可自愈
+                // 重建失败（如 ai 插件未就绪/未升级）：不写 marker，下个进程重试，可自愈
                 Log::error('Manticore schema rebuild failed: ' . $e->getMessage());
-                return;
             } finally {
                 $lock->release();
             }
-
-            self::resetSyncPointersPdo($pdo);
-            // 清理旧向量管道遗留键（vector:dim 与 vector:*LastId 指针）
-            $legacy = ["'vector:dim'"];
-            foreach (self::VECTOR_TABLES as $t) {
-                $legacy[] = "'vector:manticore" . ucfirst($t) . "LastId'";
-            }
-            $pdo->exec("DELETE FROM key_values WHERE k IN (" . implode(',', $legacy) . ")");
-            self::kvSetPdo($pdo, 'vector:schema', $expected);
-            Log::info("Manticore vector tables rebuilt for auto-embeddings schema {$expected}");
         } catch (\Throwable $e) {
             Log::error('Manticore initializeTables failed: ' . $e->getMessage());
         }
     }
 
     /**
-     * ai 插件向量化端点地址（引擎 Auto Embeddings 与主程序查询侧共用）
+     * ai 插件向量化端点地址（唯一来源在 AI::embeddingsUrl，查询侧与表定义共用）
      */
     private static function embeddingsApiUrl(): string
     {
-        $host = config('dootask.ai_host', 'ai');
-        $port = (int) config('dootask.ai_port', 5001);
-        return "http://{$host}:{$port}/embeddings";
+        return AI::embeddingsUrl();
     }
 
     /**
@@ -178,6 +191,42 @@ class ManticoreBase
     {
         return md5(self::SCHEMA_VERSION . '|' . self::EMBEDDING_MODEL_NAME . '|'
             . self::embeddingsApiUrl() . '|' . hash('sha256', (string) config('app.key')));
+    }
+
+    /**
+     * 检测 ai 插件实际生效的向量模型是否与建表时不一致（不一致需重建，否则维度可能不匹配）。
+     *
+     * 实际模型（EMBEDDING_MODEL env）对主程序不可见，由查询侧在成功请求后
+     * 写入缓存 ai:embedding_model；建表时的模型记录在 key_values 的 vector:model。
+     * 任一侧未知时不触发（返回 false），已知且存量缺失时顺手补记。
+     */
+    private static function embeddingModelChanged(PDO $pdo): bool
+    {
+        $live = (string) Cache::get('ai:embedding_model', '');
+        if ($live === '') {
+            return false;
+        }
+        $stored = self::kvGetPdo($pdo, 'vector:model');
+        if ($stored === null || $stored === '') {
+            // 旧部署/首次：补记当前模型，不触发重建
+            self::kvSetPdo($pdo, 'vector:model', $live);
+            return false;
+        }
+        return $stored !== $live;
+    }
+
+    /**
+     * 重建成功后记录当前生效的向量模型（优先取查询侧维护的缓存值）
+     */
+    private static function rememberEmbeddingModel(PDO $pdo): void
+    {
+        $live = (string) Cache::get('ai:embedding_model', '');
+        if ($live !== '') {
+            self::kvSetPdo($pdo, 'vector:model', $live);
+        } else {
+            // 未知则清掉存量，待查询侧探得后由 embeddingModelChanged 补记
+            $pdo->exec("DELETE FROM key_values WHERE k = 'vector:model'");
+        }
     }
 
     /**
@@ -419,13 +468,17 @@ class ManticoreBase
      */
     public function executeRaw(string $sql): bool
     {
+        // 日志上下文只保留 SQL 前 2KB：多行批量语句可达数 MB，完整写入会淹没日志
+        $sqlPreview = strlen($sql) > 2048
+            ? substr($sql, 0, 2048) . ' ...[+' . (strlen($sql) - 2048) . ' bytes]'
+            : $sql;
         return $this->runWithRetry(
             function (PDO $pdo) use ($sql) {
                 $pdo->exec($sql);
                 return true;
             },
             false,
-            ['sql' => $sql]
+            ['sql' => $sqlPreview]
         );
     }
 
@@ -2107,17 +2160,19 @@ class ManticoreBase
         $pk = $config['pk'];
         $instance = new self();
 
-        // 预构建每行的内联值，剔除无主键行
+        // 剔除无主键行；按内容长度估算分块（不在此渲染 SQL，块内惰性渲染以压低内存峰值）
         $pending = [];
-        $fieldListRef = null;
         foreach ($rows as $row) {
             if (($row[$pk] ?? 0) <= 0) {
                 continue;
             }
-            [$fieldList, $valueList] = $instance->buildRowValues($config, $row);
-            $fieldListRef = $fieldList;
-            $valuesSql = '(' . implode(', ', $valueList) . ')';
-            $pending[] = ['pk' => $row[$pk], 'sql' => $valuesSql, 'bytes' => strlen($valuesSql), 'row' => $row];
+            $bytes = 64;
+            foreach ($row as $value) {
+                if (is_string($value)) {
+                    $bytes += strlen($value);
+                }
+            }
+            $pending[] = ['pk' => $row[$pk], 'bytes' => $bytes, 'row' => $row];
         }
         if (empty($pending)) {
             return 0;
@@ -2143,9 +2198,20 @@ class ManticoreBase
 
         $successCount = 0;
         foreach ($chunks as $chunk) {
+            // 块内渲染，执行后即释放，内存峰值 = 原始行 + 单块 SQL
+            $fieldListRef = null;
+            $valuesSql = [];
+            foreach ($chunk as $item) {
+                [$fieldList, $valueList] = $instance->buildRowValues($config, $item['row']);
+                $fieldListRef = $fieldList;
+                $valuesSql[] = '(' . implode(', ', $valueList) . ')';
+            }
             $sql = "REPLACE INTO {$table} (" . implode(', ', $fieldListRef) . ") VALUES "
-                . implode(', ', array_column($chunk, 'sql'));
-            if ($instance->executeRaw($sql)) {
+                . implode(', ', $valuesSql);
+            unset($valuesSql);
+            $ok = $instance->executeRaw($sql);
+            unset($sql);
+            if ($ok) {
                 $successCount += count($chunk);
                 ManticoreSyncFailure::removeSuccessBatch($type, array_column($chunk, 'pk'), 'sync');
             } else {

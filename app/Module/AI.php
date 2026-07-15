@@ -916,10 +916,6 @@ class AI
             return Base::retSuccess("success", []);
         }
 
-        $host = config('dootask.ai_host', 'ai');
-        $port = (int) config('dootask.ai_port', 5001);
-        $url = "http://{$host}:{$port}/embeddings";
-
         $post = json_encode(["input" => $texts]);
         $headers = [
             'Content-Type' => 'application/json',
@@ -927,14 +923,28 @@ class AI
         ];
         $timeout = $count > 1 ? 120 : 30;
 
-        $res = Ihttp::ihttp_request($url, $post, $headers, $timeout);
+        $res = Ihttp::ihttp_request(self::embeddingsUrl(), $post, $headers, $timeout);
         if (Base::isError($res)) {
             return Base::retError("Embedding 接口请求失败", $res);
         }
 
         $resData = Base::json2array($res['data']);
+
+        // 先识别端点的业务错误：Ihttp 对 401/500 等带响应体的状态同样返回成功标志，
+        // 必须按响应里的 code 字段判错，否则鉴权错配等故障只会报"格式错误"难以定位
+        $resCode = intval($resData['code'] ?? 0);
+        if ($resCode !== 0 && $resCode !== 200) {
+            return Base::retError("Embedding 接口错误 [{$resCode}]: " . ($resData['error'] ?? 'unknown'), $resData);
+        }
+
         if (empty($resData['data']) || !is_array($resData['data'])) {
             return Base::retError("Embedding 接口返回数据格式错误", $resData);
+        }
+
+        // 记录当前实际生效的向量模型（查询缓存键与模型变化检测依赖它）
+        $model = (string) ($resData['model'] ?? '');
+        if ($model !== '' && Cache::get('ai:embedding_model') !== $model) {
+            Cache::forever('ai:embedding_model', $model);
         }
 
         // 按 index 回填，保证与输入顺序对齐，缺失位置留 []
@@ -951,6 +961,19 @@ class AI
         }
 
         return Base::retSuccess("success", $vectors);
+    }
+
+    /**
+     * ai 插件 /embeddings 端点地址
+     *
+     * 查询侧（本类）与 Manticore 表定义（ManticoreBase::vectorColumnDDL）共用的唯一来源，
+     * 两侧必须指向同一端点，否则查询向量与存量向量来自不同模型导致语义搜索错乱。
+     */
+    public static function embeddingsUrl(): string
+    {
+        $host = config('dootask.ai_host', 'ai');
+        $port = (int) config('dootask.ai_port', 5001);
+        return "http://{$host}:{$port}/embeddings";
     }
 
     /**
@@ -973,8 +996,10 @@ class AI
         // 截断过长的文本（约 32K 字符）
         $text = mb_substr($text, 0, 30000);
 
-        // 缓存键换命名空间（embeddingV2）：避免历史 1536 维缓存污染新的向量维度
-        $cacheKey = "embeddingV2::" . md5($text);
+        // 缓存键带上当前生效的模型标识：切换向量模型后旧查询缓存自动失效，
+        // 避免最长 7 天内用旧模型向量去搜新模型索引（模型未知时为空串）
+        $model = (string) Cache::get('ai:embedding_model', '');
+        $cacheKey = "embeddingV2::" . md5($model . '|' . $text);
         if ($noCache) {
             Cache::forget($cacheKey);
         }

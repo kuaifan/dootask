@@ -37,7 +37,8 @@ class ManticoreMsg
     public const INDEXABLE_TYPES = ['text', 'file', 'record', 'meeting', 'vote'];
 
     /**
-     * 最大内容长度（字符）
+     * 最大内容长度（字符）。向量化输入在 ai 插件侧另有 30000 字符上限
+     * （main.py _EMBEDDING_INPUT_MAX_CHARS），超出部分只参与全文检索
      */
     public const MAX_CONTENT_LENGTH = 50000; // 50K 字符
 

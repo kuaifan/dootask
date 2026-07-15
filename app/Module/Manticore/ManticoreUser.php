@@ -143,7 +143,13 @@ class ManticoreUser
         }
 
         try {
-            return ManticoreBase::upsertUserVector(self::buildRow($user));
+            $row = self::buildRow($user);
+            // 脏检查：与已索引行完全一致则跳过。标签点赞/识别等高频事件经常不改变
+            // Top-10 标签文本，跳过可省一次真实的向量化调用与整行重写
+            if (self::rowUnchanged($row)) {
+                return true;
+            }
+            return ManticoreBase::upsertUserVector($row);
         } catch (\Exception $e) {
             Log::error('Manticore user sync error: ' . $e->getMessage(), [
                 'userid' => $user->userid,
@@ -151,6 +157,26 @@ class ManticoreUser
             ]);
             return false;
         }
+    }
+
+    /**
+     * 判断待写入行与当前已索引行是否完全一致（文本字段逐一比较）
+     */
+    private static function rowUnchanged(array $row): bool
+    {
+        $existing = (new ManticoreBase())->queryOne(
+            "SELECT nickname, email, profession, tags, introduction FROM user_vectors WHERE userid = ?",
+            [$row['userid']]
+        );
+        if (!$existing) {
+            return false;
+        }
+        foreach (['nickname', 'email', 'profession', 'tags', 'introduction'] as $field) {
+            if ((string) ($existing[$field] ?? '') !== (string) $row[$field]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
