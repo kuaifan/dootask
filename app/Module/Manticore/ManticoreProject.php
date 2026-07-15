@@ -5,8 +5,6 @@ namespace App\Module\Manticore;
 use App\Models\Project;
 use App\Models\ProjectUser;
 use App\Module\Apps;
-use App\Module\Base;
-use App\Module\AI;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -122,13 +120,12 @@ class ManticoreProject
     }
 
     /**
-     * 同步单个项目到 Manticore（含 allowed_users）
+     * 同步单个项目到 Manticore（含 allowed_users，向量由引擎 Auto Embeddings 自动生成）
      *
      * @param Project $project 项目模型
-     * @param bool $withVector 是否同时生成向量（默认 false，向量由后台任务生成）
      * @return bool 是否成功
      */
-    public static function sync(Project $project, bool $withVector = false): bool
+    public static function sync(Project $project): bool
     {
         if (!Apps::isInstalled("search")) {
             return false;
@@ -140,33 +137,7 @@ class ManticoreProject
         }
 
         try {
-            // 构建用于搜索的文本内容
-            $searchableContent = self::buildSearchableContent($project);
-
-            // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
-            $embedding = null;
-            if ($withVector && !empty($searchableContent) && Apps::isInstalled('ai')) {
-                $embeddingResult = ManticoreBase::getEmbedding($searchableContent);
-                if (!empty($embeddingResult)) {
-                    $embedding = '[' . implode(',', $embeddingResult) . ']';
-                }
-            }
-
-            // 获取项目成员列表（作为 allowed_users）
-            $allowedUsers = self::getAllowedUsers($project->id);
-
-            // 写入 Manticore（含 allowed_users）
-            $result = ManticoreBase::upsertProjectVector([
-                'project_id' => $project->id,
-                'userid' => $project->userid ?? 0,
-                'personal' => $project->personal ?? 0,
-                'project_name' => $project->name ?? '',
-                'project_desc' => $project->desc ?? '',
-                'content_vector' => $embedding,
-                'allowed_users' => $allowedUsers,
-            ]);
-
-            return $result;
+            return ManticoreBase::upsertProjectVector(self::buildRow($project));
         } catch (\Exception $e) {
             Log::error('Manticore project sync error: ' . $e->getMessage(), [
                 'project_id' => $project->id,
@@ -177,45 +148,55 @@ class ManticoreProject
     }
 
     /**
-     * 构建可搜索的文本内容
+     * 构建项目索引行数据（含 allowed_users）
      *
      * @param Project $project 项目模型
-     * @return string 可搜索的文本
+     * @return array 行数据
      */
-    private static function buildSearchableContent(Project $project): string
+    private static function buildRow(Project $project): array
     {
-        $parts = [];
-
-        if (!empty($project->name)) {
-            $parts[] = $project->name;
-        }
-        if (!empty($project->desc)) {
-            $parts[] = $project->desc;
-        }
-
-        return implode(' ', $parts);
+        return [
+            'id' => $project->id,
+            'project_id' => $project->id,
+            'userid' => $project->userid ?? 0,
+            'personal' => $project->personal ?? 0,
+            'project_name' => $project->name ?? '',
+            'project_desc' => $project->desc ?? '',
+            'allowed_users' => self::getAllowedUsers($project->id),
+        ];
     }
 
     /**
-     * 批量同步项目
+     * 批量同步项目（每块一条多行 REPLACE，向量由引擎自动生成）
      *
      * @param iterable $projects 项目列表
-     * @param bool $withVector 是否同时生成向量
      * @return int 成功同步的数量
      */
-    public static function batchSync(iterable $projects, bool $withVector = false): int
+    public static function batchSync(iterable $projects): int
     {
         if (!Apps::isInstalled("search")) {
             return 0;
         }
 
         $count = 0;
+        $rows = [];
         foreach ($projects as $project) {
-            if (self::sync($project, $withVector)) {
-                $count++;
+            if ($project->archived_at) {
+                if (self::delete($project->id)) {
+                    $count++;
+                }
+                continue;
+            }
+            try {
+                $rows[] = self::buildRow($project);
+            } catch (\Exception $e) {
+                Log::error('Manticore project batchSync build error: ' . $e->getMessage(), [
+                    'project_id' => $project->id,
+                ]);
             }
         }
-        return $count;
+
+        return $count + ManticoreBase::batchUpsertVectors('project', $rows);
     }
 
     /**
@@ -284,86 +265,6 @@ class ManticoreProject
         } catch (\Exception $e) {
             Log::error('Manticore updateAllowedUsers error: ' . $e->getMessage(), ['project_id' => $projectId]);
             return false;
-        }
-    }
-
-    // ==============================
-    // 批量向量生成方法
-    // ==============================
-
-    /**
-     * 批量生成项目向量
-     * 用于后台异步处理，将已索引项目的向量批量生成
-     *
-     * @param array $projectIds 项目ID数组
-     * @param int $batchSize 每批 embedding 数量（默认20）
-     * @return int 成功处理的数量
-     */
-    public static function generateVectorsBatch(array $projectIds, int $batchSize = 20): int
-    {
-        if (!Apps::isInstalled("search") || !Apps::isInstalled("ai") || empty($projectIds)) {
-            return 0;
-        }
-
-        try {
-            // 1. 查询项目信息
-            $projects = Project::whereIn('id', $projectIds)
-                ->whereNull('archived_at')
-                ->get();
-
-            if ($projects->isEmpty()) {
-                return 0;
-            }
-
-            // 2. 提取每个项目的内容
-            $projectContents = [];
-            foreach ($projects as $project) {
-                $searchableContent = self::buildSearchableContent($project);
-                if (!empty($searchableContent)) {
-                    $projectContents[$project->id] = $searchableContent;
-                }
-            }
-
-            if (empty($projectContents)) {
-                return 0;
-            }
-
-            // 3. 分批处理
-            $successCount = 0;
-            $chunks = array_chunk($projectContents, $batchSize, true);
-
-            foreach ($chunks as $chunk) {
-                $texts = array_values($chunk);
-                $ids = array_keys($chunk);
-
-                // 4. 批量获取 embedding
-                $result = AI::getBatchEmbeddings($texts);
-                if (!Base::isSuccess($result) || empty($result['data'])) {
-                    continue;
-                }
-
-                $embeddings = $result['data'];
-
-                // 5. 构建批量更新数据
-                $vectorData = [];
-                foreach ($ids as $index => $projectId) {
-                    if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
-                        continue;
-                    }
-                    $vectorData[$projectId] = '[' . implode(',', $embeddings[$index]) . ']';
-                }
-
-                // 6. 批量更新向量
-                if (!empty($vectorData)) {
-                    $batchCount = ManticoreBase::batchUpdateProjectVectors($vectorData);
-                    $successCount += $batchCount;
-                }
-            }
-
-            return $successCount;
-        } catch (\Exception $e) {
-            Log::error('ManticoreProject generateVectorsBatch error: ' . $e->getMessage());
-            return 0;
         }
     }
 }

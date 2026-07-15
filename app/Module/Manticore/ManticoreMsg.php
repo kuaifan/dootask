@@ -5,8 +5,6 @@ namespace App\Module\Manticore;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogUser;
 use App\Module\Apps;
-use App\Module\Base;
-use App\Module\AI;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Support\Facades\Log;
@@ -328,13 +326,12 @@ class ManticoreMsg
     // ==============================
 
     /**
-     * 同步单个消息到 Manticore（含 allowed_users）
+     * 同步单个消息到 Manticore（含 allowed_users，向量由引擎 Auto Embeddings 自动生成）
      *
      * @param WebSocketDialogMsg $msg 消息模型
-     * @param bool $withVector 是否同时生成向量（默认 false，向量由后台任务生成）
      * @return bool 是否成功
      */
-    public static function sync(WebSocketDialogMsg $msg, bool $withVector = false): bool
+    public static function sync(WebSocketDialogMsg $msg): bool
     {
         if (!Apps::isInstalled("search")) {
             return false;
@@ -347,37 +344,7 @@ class ManticoreMsg
         }
 
         try {
-            // 提取消息内容（使用 key 字段）
-            $content = $msg->key ?? '';
-
-            // 限制内容长度
-            $content = mb_substr($content, 0, self::MAX_CONTENT_LENGTH);
-
-            // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
-            $embedding = null;
-            if ($withVector && !empty($content) && Apps::isInstalled('ai')) {
-                $embeddingResult = ManticoreBase::getEmbedding($content);
-                if (!empty($embeddingResult)) {
-                    $embedding = '[' . implode(',', $embeddingResult) . ']';
-                }
-            }
-
-            // 获取消息的 allowed_users
-            $allowedUsers = self::getAllowedUsers($msg);
-
-            // 写入 Manticore（含 allowed_users）
-            $result = ManticoreBase::upsertMsgVector([
-                'msg_id' => $msg->id,
-                'dialog_id' => $msg->dialog_id,
-                'userid' => $msg->userid,
-                'msg_type' => $msg->type,
-                'content' => $content,
-                'content_vector' => $embedding,
-                'allowed_users' => $allowedUsers,
-                'created_at' => $msg->created_at ? $msg->created_at->timestamp : time(),
-            ]);
-
-            return $result;
+            return ManticoreBase::upsertMsgVector(self::buildRow($msg));
         } catch (\Exception $e) {
             Log::error('Manticore msg sync error: ' . $e->getMessage(), [
                 'msg_id' => $msg->id,
@@ -388,106 +355,59 @@ class ManticoreMsg
     }
 
     /**
-     * 批量同步消息
+     * 构建消息索引行数据（含 allowed_users）
+     *
+     * @param WebSocketDialogMsg $msg 消息模型
+     * @return array 行数据
+     */
+    private static function buildRow(WebSocketDialogMsg $msg): array
+    {
+        // 提取消息内容（使用 key 字段）并限制长度
+        $content = mb_substr($msg->key ?? '', 0, self::MAX_CONTENT_LENGTH);
+
+        return [
+            'id' => $msg->id,
+            'msg_id' => $msg->id,
+            'dialog_id' => $msg->dialog_id,
+            'userid' => $msg->userid,
+            'msg_type' => $msg->type,
+            'content' => $content,
+            'allowed_users' => self::getAllowedUsers($msg),
+            'created_at' => $msg->created_at ? $msg->created_at->timestamp : time(),
+        ];
+    }
+
+    /**
+     * 批量同步消息（每块一条多行 REPLACE，向量由引擎自动生成）
      *
      * @param iterable $msgs 消息列表
-     * @param bool $withVector 是否同时生成向量
      * @return int 成功同步的数量
      */
-    public static function batchSync(iterable $msgs, bool $withVector = false): int
+    public static function batchSync(iterable $msgs): int
     {
         if (!Apps::isInstalled("search")) {
             return 0;
         }
 
         $count = 0;
+        $rows = [];
         foreach ($msgs as $msg) {
-            if (self::sync($msg, $withVector)) {
-                $count++;
-            }
-        }
-        return $count;
-    }
-
-    /**
-     * 批量生成向量（供后台任务调用）
-     *
-     * @param array $msgIds 消息ID数组
-     * @param int $batchSize 每批 embedding 数量
-     * @return int 成功生成向量的数量
-     */
-    public static function generateVectorsBatch(array $msgIds, int $batchSize = 20): int
-    {
-        if (!Apps::isInstalled("search") || !Apps::isInstalled('ai') || empty($msgIds)) {
-            return 0;
-        }
-
-        $count = 0;
-
-        // 分批处理
-        foreach (array_chunk($msgIds, $batchSize) as $batchIds) {
-            // 获取消息
-            $msgs = WebSocketDialogMsg::whereIn('id', $batchIds)
-                ->whereIn('type', self::INDEXABLE_TYPES)
-                ->where('bot', '!=', 1)
-                ->whereNotNull('key')
-                ->where('key', '!=', '')
-                ->get()
-                ->keyBy('id');
-
-            if ($msgs->isEmpty()) {
+            if (!self::shouldIndex($msg)) {
+                if (ManticoreBase::deleteMsgVector($msg->id)) {
+                    $count++;
+                }
                 continue;
             }
-
-            // 准备文本
-            $texts = [];
-            $idsArray = [];
-            foreach ($batchIds as $id) {
-                if (isset($msgs[$id])) {
-                    $content = mb_substr($msgs[$id]->key ?? '', 0, self::MAX_CONTENT_LENGTH);
-                    if (!empty($content)) {
-                        $texts[] = $content;
-                        $idsArray[] = $id;
-                    }
-                }
-            }
-
-            if (empty($texts)) {
-                continue;
-            }
-
-            // 批量获取 embeddings
-            $result = AI::getBatchEmbeddings($texts);
-
-            if (Base::isError($result)) {
-                continue;
-            }
-
-            $embeddings = $result['data'] ?? [];
-
-            // 构建批量更新数据 [msg_id => vectorStr]
-            $vectorData = [];
-            foreach ($embeddings as $index => $embedding) {
-                if (empty($embedding) || !is_array($embedding)) {
-                    continue;
-                }
-
-                $msgId = $idsArray[$index] ?? null;
-                if (!$msgId) {
-                    continue;
-                }
-
-                $vectorData[$msgId] = '[' . implode(',', $embedding) . ']';
-            }
-
-            // 批量更新向量（优化：减少数据库操作次数）
-            if (!empty($vectorData)) {
-                $batchCount = ManticoreBase::batchUpdateMsgVectors($vectorData);
-                $count += $batchCount;
+            try {
+                $rows[] = self::buildRow($msg);
+            } catch (\Exception $e) {
+                Log::error('Manticore msg batchSync build error: ' . $e->getMessage(), [
+                    'msg_id' => $msg->id,
+                ]);
             }
         }
 
-        return $count;
+        return $count + ManticoreBase::batchUpsertVectors('msg', $rows);
     }
 
     /**

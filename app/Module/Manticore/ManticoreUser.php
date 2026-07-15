@@ -5,8 +5,6 @@ namespace App\Module\Manticore;
 use App\Models\User;
 use App\Models\UserTag;
 use App\Module\Apps;
-use App\Module\Base;
-use App\Module\AI;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -123,13 +121,12 @@ class ManticoreUser
     }
 
     /**
-     * 同步单个用户到 Manticore
+     * 同步单个用户到 Manticore（向量由引擎 Auto Embeddings 按行内文本自动生成）
      *
      * @param User $user 用户模型
-     * @param bool $withVector 是否同时生成向量（默认 false，向量由后台任务生成）
      * @return bool 是否成功
      */
-    public static function sync(User $user, bool $withVector = false): bool
+    public static function sync(User $user): bool
     {
         if (!Apps::isInstalled("search")) {
             return false;
@@ -146,33 +143,7 @@ class ManticoreUser
         }
 
         try {
-            // 获取用户标签（Top 10）
-            $tags = self::getUserTags($user->userid);
-
-            // 构建用于搜索的文本内容
-            $searchableContent = self::buildSearchableContent($user, $tags);
-
-            // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
-            $embedding = null;
-            if ($withVector && !empty($searchableContent) && Apps::isInstalled('ai')) {
-                $embeddingResult = ManticoreBase::getEmbedding($searchableContent);
-                if (!empty($embeddingResult)) {
-                    $embedding = '[' . implode(',', $embeddingResult) . ']';
-                }
-            }
-
-            // 写入 Manticore
-            $result = ManticoreBase::upsertUserVector([
-                'userid' => $user->userid,
-                'nickname' => $user->nickname ?? '',
-                'email' => $user->email ?? '',
-                'profession' => $user->profession ?? '',
-                'tags' => $tags,
-                'introduction' => $user->introduction ?? '',
-                'content_vector' => $embedding,
-            ]);
-
-            return $result;
+            return ManticoreBase::upsertUserVector(self::buildRow($user));
         } catch (\Exception $e) {
             Log::error('Manticore user sync error: ' . $e->getMessage(), [
                 'userid' => $user->userid,
@@ -183,55 +154,61 @@ class ManticoreUser
     }
 
     /**
-     * 构建可搜索的文本内容
+     * 构建用户索引行数据（含标签 Top 10）
      *
      * @param User $user 用户模型
-     * @param string $tags 用户标签（空格分隔）
-     * @return string 可搜索的文本
+     * @return array 行数据
      */
-    private static function buildSearchableContent(User $user, string $tags = ''): string
+    private static function buildRow(User $user): array
     {
-        $parts = [];
+        $tags = self::getUserTags($user->userid);
 
-        if (!empty($user->nickname)) {
-            $parts[] = $user->nickname;
-        }
-        if (!empty($user->email)) {
-            $parts[] = $user->email;
-        }
-        if (!empty($user->profession)) {
-            $parts[] = $user->profession;
-        }
-        if (!empty($tags)) {
-            $parts[] = $tags;
-        }
-        if (!empty($user->introduction)) {
-            $parts[] = $user->introduction;
-        }
-
-        return implode(' ', $parts);
+        return [
+            'id' => $user->userid,
+            'userid' => $user->userid,
+            'nickname' => $user->nickname ?? '',
+            'email' => $user->email ?? '',
+            'profession' => $user->profession ?? '',
+            'tags' => $tags,
+            'introduction' => $user->introduction ?? '',
+        ];
     }
 
     /**
-     * 批量同步用户
+     * 批量同步用户（每块一条多行 REPLACE，向量由引擎自动生成）
      *
      * @param iterable $users 用户列表
-     * @param bool $withVector 是否同时生成向量
      * @return int 成功同步的数量
      */
-    public static function batchSync(iterable $users, bool $withVector = false): int
+    public static function batchSync(iterable $users): int
     {
         if (!Apps::isInstalled("search")) {
             return 0;
         }
 
         $count = 0;
+        $rows = [];
         foreach ($users as $user) {
-            if (self::sync($user, $withVector)) {
+            if ($user->bot) {
                 $count++;
+                continue;
+            }
+            if ($user->disable_at) {
+                if (self::delete($user->userid)) {
+                    $count++;
+                }
+                continue;
+            }
+            try {
+                $rows[] = self::buildRow($user);
+            } catch (\Exception $e) {
+                Log::error('Manticore user batchSync build error: ' . $e->getMessage(), [
+                    'userid' => $user->userid,
+                ]);
             }
         }
-        return $count;
+
+        return $count + ManticoreBase::batchUpsertVectors('user', $rows);
     }
 
     /**
@@ -276,87 +253,4 @@ class ManticoreUser
 
         return ManticoreBase::getIndexedUserCount();
     }
-
-    // ==============================
-    // 批量向量生成方法
-    // ==============================
-
-    /**
-     * 批量生成用户向量
-     * 用于后台异步处理，将已索引用户的向量批量生成
-     *
-     * @param array $userIds 用户ID数组
-     * @param int $batchSize 每批 embedding 数量（默认20）
-     * @return int 成功处理的数量
-     */
-    public static function generateVectorsBatch(array $userIds, int $batchSize = 20): int
-    {
-        if (!Apps::isInstalled("search") || !Apps::isInstalled("ai") || empty($userIds)) {
-            return 0;
-        }
-
-        try {
-            // 1. 查询用户信息
-            $users = User::whereIn('userid', $userIds)
-                ->where('bot', 0)
-                ->whereNull('disable_at')
-                ->get();
-
-            if ($users->isEmpty()) {
-                return 0;
-            }
-
-            // 2. 提取每个用户的内容（包含标签）
-            $userContents = [];
-            foreach ($users as $user) {
-                $tags = self::getUserTags($user->userid);
-                $searchableContent = self::buildSearchableContent($user, $tags);
-                if (!empty($searchableContent)) {
-                    $userContents[$user->userid] = $searchableContent;
-                }
-            }
-
-            if (empty($userContents)) {
-                return 0;
-            }
-
-            // 3. 分批处理
-            $successCount = 0;
-            $chunks = array_chunk($userContents, $batchSize, true);
-
-            foreach ($chunks as $chunk) {
-                $texts = array_values($chunk);
-                $ids = array_keys($chunk);
-
-                // 4. 批量获取 embedding
-                $result = AI::getBatchEmbeddings($texts);
-                if (!Base::isSuccess($result) || empty($result['data'])) {
-                    continue;
-                }
-
-                $embeddings = $result['data'];
-
-                // 5. 构建批量更新数据
-                $vectorData = [];
-                foreach ($ids as $index => $userid) {
-                    if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
-                        continue;
-                    }
-                    $vectorData[$userid] = '[' . implode(',', $embeddings[$index]) . ']';
-                }
-
-                // 6. 批量更新向量
-                if (!empty($vectorData)) {
-                    $batchCount = ManticoreBase::batchUpdateUserVectors($vectorData);
-                    $successCount += $batchCount;
-                }
-            }
-
-            return $successCount;
-        } catch (\Exception $e) {
-            Log::error('ManticoreUser generateVectorsBatch error: ' . $e->getMessage());
-            return 0;
-        }
-    }
 }
-

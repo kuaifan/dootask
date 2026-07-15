@@ -9,7 +9,6 @@ use App\Models\ProjectTaskVisibilityUser;
 use App\Models\ProjectUser;
 use App\Module\Apps;
 use App\Module\Base;
-use App\Module\AI;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -189,13 +188,12 @@ class ManticoreTask
     // ==============================
 
     /**
-     * 同步单个任务到 Manticore（含 allowed_users）
+     * 同步单个任务到 Manticore（含 allowed_users，向量由引擎 Auto Embeddings 自动生成）
      *
      * @param ProjectTask $task 任务模型
-     * @param bool $withVector 是否同时生成向量（默认 false，向量由后台任务生成）
      * @return bool 是否成功
      */
-    public static function sync(ProjectTask $task, bool $withVector = false): bool
+    public static function sync(ProjectTask $task): bool
     {
         if (!Apps::isInstalled("search")) {
             return false;
@@ -207,38 +205,7 @@ class ManticoreTask
         }
 
         try {
-            // 获取任务详细内容
-            $taskContent = self::getTaskContent($task);
-
-            // 构建用于搜索的文本内容
-            $searchableContent = self::buildSearchableContent($task, $taskContent);
-
-            // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
-            $embedding = null;
-            if ($withVector && !empty($searchableContent) && Apps::isInstalled('ai')) {
-                $embeddingResult = ManticoreBase::getEmbedding($searchableContent);
-                if (!empty($embeddingResult)) {
-                    $embedding = '[' . implode(',', $embeddingResult) . ']';
-                }
-            }
-
-            // 获取任务的 allowed_users
-            $allowedUsers = self::getAllowedUsers($task);
-
-            // 写入 Manticore（含 allowed_users）
-            $result = ManticoreBase::upsertTaskVector([
-                'task_id' => $task->id,
-                'project_id' => $task->project_id ?? 0,
-                'userid' => $task->userid ?? 0,
-                'visibility' => $task->visibility ?? 1,
-                'task_name' => $task->name ?? '',
-                'task_desc' => $task->desc ?? '',
-                'task_content' => $taskContent,
-                'content_vector' => $embedding,
-                'allowed_users' => $allowedUsers,
-            ]);
-
-            return $result;
+            return ManticoreBase::upsertTaskVector(self::buildRow($task));
         } catch (\Exception $e) {
             Log::error('Manticore task sync error: ' . $e->getMessage(), [
                 'task_id' => $task->id,
@@ -246,6 +213,27 @@ class ManticoreTask
             ]);
             return false;
         }
+    }
+
+    /**
+     * 构建任务索引行数据（含详细内容与 allowed_users）
+     *
+     * @param ProjectTask $task 任务模型
+     * @return array 行数据
+     */
+    private static function buildRow(ProjectTask $task): array
+    {
+        return [
+            'id' => $task->id,
+            'task_id' => $task->id,
+            'project_id' => $task->project_id ?? 0,
+            'userid' => $task->userid ?? 0,
+            'visibility' => $task->visibility ?? 1,
+            'task_name' => $task->name ?? '',
+            'task_desc' => $task->desc ?? '',
+            'task_content' => self::getTaskContent($task),
+            'allowed_users' => self::getAllowedUsers($task),
+        ];
     }
 
     /**
@@ -311,49 +299,36 @@ class ManticoreTask
     }
 
     /**
-     * 构建可搜索的文本内容
-     *
-     * @param ProjectTask $task 任务模型
-     * @param string $taskContent 任务详细内容
-     * @return string 可搜索的文本
-     */
-    private static function buildSearchableContent(ProjectTask $task, string $taskContent): string
-    {
-        $parts = [];
-
-        if (!empty($task->name)) {
-            $parts[] = $task->name;
-        }
-        if (!empty($task->desc)) {
-            $parts[] = $task->desc;
-        }
-        if (!empty($taskContent)) {
-            $parts[] = $taskContent;
-        }
-
-        return implode(' ', $parts);
-    }
-
-    /**
-     * 批量同步任务
+     * 批量同步任务（每块一条多行 REPLACE，向量由引擎自动生成）
      *
      * @param iterable $tasks 任务列表
-     * @param bool $withVector 是否同时生成向量
      * @return int 成功同步的数量
      */
-    public static function batchSync(iterable $tasks, bool $withVector = false): int
+    public static function batchSync(iterable $tasks): int
     {
         if (!Apps::isInstalled("search")) {
             return 0;
         }
 
         $count = 0;
+        $rows = [];
         foreach ($tasks as $task) {
-            if (self::sync($task, $withVector)) {
-                $count++;
+            if ($task->archived_at || $task->deleted_at) {
+                if (self::delete($task->id)) {
+                    $count++;
+                }
+                continue;
+            }
+            try {
+                $rows[] = self::buildRow($task);
+            } catch (\Exception $e) {
+                Log::error('Manticore task batchSync build error: ' . $e->getMessage(), [
+                    'task_id' => $task->id,
+                ]);
             }
         }
-        return $count;
+
+        return $count + ManticoreBase::batchUpsertVectors('task', $rows);
     }
 
     /**
@@ -504,90 +479,6 @@ class ManticoreTask
                 });
         } catch (\Exception $e) {
             Log::error('Manticore cascadeToChildren error: ' . $e->getMessage(), ['task_id' => $taskId]);
-        }
-    }
-
-    // ==============================
-    // 批量向量生成方法
-    // ==============================
-
-    /**
-     * 批量生成任务向量
-     * 用于后台异步处理，将已索引任务的向量批量生成
-     *
-     * @param array $taskIds 任务ID数组
-     * @param int $batchSize 每批 embedding 数量（默认20）
-     * @return int 成功处理的数量
-     */
-    public static function generateVectorsBatch(array $taskIds, int $batchSize = 20): int
-    {
-        if (!Apps::isInstalled("search") || !Apps::isInstalled("ai") || empty($taskIds)) {
-            return 0;
-        }
-
-        try {
-            // 1. 查询任务信息
-            $tasks = ProjectTask::whereIn('id', $taskIds)
-                ->whereNull('deleted_at')
-                ->whereNull('archived_at')
-                ->get();
-
-            if ($tasks->isEmpty()) {
-                return 0;
-            }
-
-            // 2. 提取每个任务的内容
-            $taskContents = [];
-            foreach ($tasks as $task) {
-                $taskContent = self::getTaskContent($task);
-                $searchableContent = self::buildSearchableContent($task, $taskContent);
-                if (!empty($searchableContent)) {
-                    // 限制内容长度
-                    $searchableContent = mb_substr($searchableContent, 0, self::MAX_CONTENT_LENGTH);
-                    $taskContents[$task->id] = $searchableContent;
-                }
-            }
-
-            if (empty($taskContents)) {
-                return 0;
-            }
-
-            // 3. 分批处理
-            $successCount = 0;
-            $chunks = array_chunk($taskContents, $batchSize, true);
-
-            foreach ($chunks as $chunk) {
-                $texts = array_values($chunk);
-                $ids = array_keys($chunk);
-
-                // 4. 批量获取 embedding
-                $result = AI::getBatchEmbeddings($texts);
-                if (!Base::isSuccess($result) || empty($result['data'])) {
-                    continue;
-                }
-
-                $embeddings = $result['data'];
-
-                // 5. 构建批量更新数据
-                $vectorData = [];
-                foreach ($ids as $index => $taskId) {
-                    if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
-                        continue;
-                    }
-                    $vectorData[$taskId] = '[' . implode(',', $embeddings[$index]) . ']';
-                }
-
-                // 6. 批量更新向量
-                if (!empty($vectorData)) {
-                    $batchCount = ManticoreBase::batchUpdateTaskVectors($vectorData);
-                    $successCount += $batchCount;
-                }
-            }
-
-            return $successCount;
-        } catch (\Exception $e) {
-            Log::error('ManticoreTask generateVectorsBatch error: ' . $e->getMessage());
-            return 0;
         }
     }
 }

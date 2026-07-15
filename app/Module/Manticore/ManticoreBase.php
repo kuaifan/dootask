@@ -8,6 +8,7 @@ use App\Module\Base;
 use App\Module\AI;
 use PDO;
 use PDOException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -20,6 +21,30 @@ class ManticoreBase
 {
     private static ?PDO $pdo = null;
     private static bool $initialized = false;
+
+    /**
+     * 向量表结构版本；修改表结构/向量列参数时递增，触发已部署实例自动重建
+     */
+    private const SCHEMA_VERSION = 1;
+
+    /**
+     * Auto Embeddings 的 MODEL_NAME。必须用 Manticore 不认识的名字：
+     * 已知名字（如 text-embedding-ada-002）会按引擎硬编码维度校验，
+     * 未知名字才会在建表时向 API_URL 探测真实维度（免费模型为 1024）。
+     * 实际模型由 ai 插件的 EMBEDDING_MODEL 决定，此处仅为路由标签。
+     */
+    private const EMBEDDING_MODEL_NAME = 'openai/qwen3-embedding';
+
+    /**
+     * 批量写入分块上限：行数与字节预算（Manticore max_allowed_packet 默认 128MB，取保守值）
+     */
+    private const BATCH_CHUNK_ROWS = 30;
+    private const BATCH_CHUNK_BYTES = 8388608;
+
+    /**
+     * 5 张向量表名（键值即 VECTOR_TABLE_CONFIG 的 type）
+     */
+    private const VECTOR_TABLES = ['msg', 'file', 'task', 'project', 'user'];
 
     private string $host;
     private int $port;
@@ -70,13 +95,120 @@ class ManticoreBase
 
     /**
      * 初始化表结构
+     *
+     * 向量列使用 Manticore Auto Embeddings（MODEL_NAME/API_URL 指向 ai 插件 /embeddings），
+     * 引擎在写入/更新行时自动按 FROM 字段生成向量，无需 PHP 侧生成。
+     * key_values 中的 vector:schema 标记记录当前结构指纹（结构版本/模型/端点/APP_KEY 哈希），
+     * 不匹配（首次安装、老版本升级、APP_KEY 轮换）即整体重建并重置同步指针，触发全量重灌。
      */
     private function initializeTables(PDO $pdo): void
     {
         try {
-            // 创建文件向量表
-            // charset_table='non_cjk, cjk' 同时支持英文和中日韩文字
+            // 键值表必须最先建（用于读取/持久化结构标记与同步指针）
             $pdo->exec("
+                CREATE TABLE IF NOT EXISTS key_values (
+                    id BIGINT,
+                    k STRING,
+                    v TEXT
+                )
+            ");
+
+            $expected = self::schemaMarker();
+            if (self::kvGetPdo($pdo, 'vector:schema') === $expected && self::allVectorTablesExist($pdo)) {
+                return;
+            }
+
+            // 并发进程只允许一个执行重建；抢锁失败的进程本轮写入失败会进重试队列，无碍
+            $lock = Cache::lock('manticore:schema-rebuild', 300);
+            if (!$lock->get()) {
+                return;
+            }
+            try {
+                foreach (self::vectorTableDDLs() as $table => $ddl) {
+                    $pdo->exec("DROP TABLE IF EXISTS {$table}");
+                    // CREATE 时引擎会调用 ai 端点探测向量维度，ai 未就绪则抛错
+                    $pdo->exec($ddl);
+                }
+            } catch (\Throwable $e) {
+                // 建表失败（如 ai 插件未就绪/未升级）：不写 marker，下个进程重试，可自愈
+                Log::error('Manticore schema rebuild failed: ' . $e->getMessage());
+                return;
+            } finally {
+                $lock->release();
+            }
+
+            self::resetSyncPointersPdo($pdo);
+            // 清理旧向量管道遗留键（vector:dim 与 vector:*LastId 指针）
+            $legacy = ["'vector:dim'"];
+            foreach (self::VECTOR_TABLES as $t) {
+                $legacy[] = "'vector:manticore" . ucfirst($t) . "LastId'";
+            }
+            $pdo->exec("DELETE FROM key_values WHERE k IN (" . implode(',', $legacy) . ")");
+            self::kvSetPdo($pdo, 'vector:schema', $expected);
+            Log::info("Manticore vector tables rebuilt for auto-embeddings schema {$expected}");
+        } catch (\Throwable $e) {
+            Log::error('Manticore initializeTables failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ai 插件向量化端点地址（引擎 Auto Embeddings 与主程序查询侧共用）
+     */
+    private static function embeddingsApiUrl(): string
+    {
+        $host = config('dootask.ai_host', 'ai');
+        $port = (int) config('dootask.ai_port', 5001);
+        return "http://{$host}:{$port}/embeddings";
+    }
+
+    /**
+     * 写入表定义的派生密钥：sha256(APP_KEY:embeddings)，与 ai 插件约定一致。
+     * 不直接写 APP_KEY（Laravel 主密钥），避免其落入搜索引擎元数据/数据卷；
+     * 派生值不可反推，且仅授予 /embeddings 调用权限。
+     */
+    private static function embeddingsApiKey(): string
+    {
+        return hash('sha256', config('app.key') . ':embeddings');
+    }
+
+    /**
+     * 当前向量表结构指纹：结构版本/模型名/端点/APP_KEY 哈希任一变化都会触发整体重建
+     */
+    private static function schemaMarker(): string
+    {
+        return md5(self::SCHEMA_VERSION . '|' . self::EMBEDDING_MODEL_NAME . '|'
+            . self::embeddingsApiUrl() . '|' . hash('sha256', (string) config('app.key')));
+    }
+
+    /**
+     * 生成 Auto Embeddings 向量列定义（引擎按 FROM 字段自动生成/更新向量）
+     *
+     * 注意不写 KNN_DIMS（与 MODEL_NAME 互斥），维度由引擎建表时向端点探测。
+     *
+     * @param string $from 参与向量化的字段（镜像旧 PHP 管道的拼接字段，逗号分隔）
+     */
+    private static function vectorColumnDDL(string $from): string
+    {
+        return "content_vector float_vector knn_type='hnsw' hnsw_similarity='cosine'"
+            . " MODEL_NAME='" . self::EMBEDDING_MODEL_NAME . "'"
+            . " FROM='{$from}'"
+            . " API_KEY='" . self::embeddingsApiKey() . "'"
+            . " API_URL='" . self::embeddingsApiUrl() . "'"
+            . " API_TIMEOUT='60'";
+    }
+
+    /**
+     * 生成 5 张向量表的建表语句
+     *
+     * charset_table='non_cjk, cjk' 同时支持英文和中日韩文字
+     *
+     * @return array [table => DDL]
+     */
+    private static function vectorTableDDLs(): array
+    {
+        $tail = "\n                ) charset_table='non_cjk, cjk' morphology='icu_chinese'";
+        return [
+            'file_vectors' => "
                 CREATE TABLE IF NOT EXISTS file_vectors (
                     id BIGINT,
                     file_id BIGINT,
@@ -87,21 +219,8 @@ class ManticoreBase
                     file_ext STRING,
                     content TEXT,
                     allowed_users MULTI,
-                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
-            ");
-
-            // 创建键值存储表
-            $pdo->exec("
-                CREATE TABLE IF NOT EXISTS key_values (
-                    id BIGINT,
-                    k STRING,
-                    v TEXT
-                )
-            ");
-
-            // 创建用户向量表
-            $pdo->exec("
+                    " . self::vectorColumnDDL('file_name,content') . $tail,
+            'user_vectors' => "
                 CREATE TABLE IF NOT EXISTS user_vectors (
                     id BIGINT,
                     userid BIGINT,
@@ -110,12 +229,8 @@ class ManticoreBase
                     profession TEXT,
                     tags TEXT,
                     introduction TEXT,
-                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
-            ");
-
-            // 创建项目向量表
-            $pdo->exec("
+                    " . self::vectorColumnDDL('nickname,email,profession,tags,introduction') . $tail,
+            'project_vectors' => "
                 CREATE TABLE IF NOT EXISTS project_vectors (
                     id BIGINT,
                     project_id BIGINT,
@@ -124,12 +239,8 @@ class ManticoreBase
                     project_name TEXT,
                     project_desc TEXT,
                     allowed_users MULTI,
-                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
-            ");
-
-            // 创建任务向量表
-            $pdo->exec("
+                    " . self::vectorColumnDDL('project_name,project_desc') . $tail,
+            'task_vectors' => "
                 CREATE TABLE IF NOT EXISTS task_vectors (
                     id BIGINT,
                     task_id BIGINT,
@@ -140,12 +251,8 @@ class ManticoreBase
                     task_desc TEXT,
                     task_content TEXT,
                     allowed_users MULTI,
-                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
-            ");
-
-            // 创建消息向量表
-            $pdo->exec("
+                    " . self::vectorColumnDDL('task_name,task_desc,task_content') . $tail,
+            'msg_vectors' => "
                 CREATE TABLE IF NOT EXISTS msg_vectors (
                     id BIGINT,
                     msg_id BIGINT,
@@ -155,13 +262,69 @@ class ManticoreBase
                     content TEXT,
                     allowed_users MULTI,
                     created_at BIGINT,
-                    content_vector float_vector knn_type='hnsw' knn_dims='1536' hnsw_similarity='cosine'
-                ) charset_table='non_cjk, cjk' morphology='icu_chinese'
-            ");
+                    " . self::vectorColumnDDL('content') . $tail,
+        ];
+    }
 
-            // Tables initialized successfully
-        } catch (PDOException $e) {
-            // 表可能已存在，忽略初始化错误
+    /**
+     * 检查 5 张向量表是否都已存在
+     */
+    private static function allVectorTablesExist(PDO $pdo): bool
+    {
+        try {
+            $stmt = $pdo->query("SHOW TABLES");
+            $existing = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_NUM) as $row) {
+                $existing[$row[0]] = true;
+            }
+            foreach (array_keys(self::vectorTableDDLs()) as $table) {
+                if (!isset($existing[$table])) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * 直接用 PDO 读取 key_values（避免初始化期通过 ManticoreKeyValue 造成递归）
+     */
+    private static function kvGetPdo(PDO $pdo, string $key): ?string
+    {
+        try {
+            $stmt = $pdo->prepare("SELECT v FROM key_values WHERE k = ?");
+            $stmt->execute([$key]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return ($row && isset($row['v'])) ? (string)$row['v'] : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
+     * 直接用 PDO 写入 key_values（同 ManticoreKeyValue::set 的 id 规则）
+     */
+    private static function kvSetPdo(PDO $pdo, string $key, string $value): void
+    {
+        try {
+            $del = $pdo->prepare("DELETE FROM key_values WHERE k = ?");
+            $del->execute([$key]);
+            $ins = $pdo->prepare("INSERT INTO key_values (id, k, v) VALUES (?, ?, ?)");
+            $ins->execute([abs(crc32($key)), $key, $value]);
+        } catch (\Throwable $e) {
+            // 忽略
+        }
+    }
+
+    /**
+     * 重置全文同步进度指针（sync:*），触发全量重灌（向量由引擎随行自动生成）
+     */
+    private static function resetSyncPointersPdo(PDO $pdo): void
+    {
+        foreach (self::VECTOR_TABLES as $t) {
+            self::kvSetPdo($pdo, "sync:manticore" . ucfirst($t) . "LastId", '0');
         }
     }
 
@@ -1810,10 +1973,10 @@ class ManticoreBase
     ];
 
     /**
-     * 通用向量插入方法
+     * 通用单行写入方法（REPLACE，向量由引擎 Auto Embeddings 自动生成）
      *
      * 使用 executeRaw 直接执行 SQL，避免 Manticore prepared statement
-     * 无法解析 MVA 和向量字段括号语法的问题。
+     * 无法解析 MVA 字段括号语法的问题。
      *
      * @param string $type 类型: msg/file/task/project/user
      * @param array $data 数据，键名对应字段名
@@ -1828,8 +1991,6 @@ class ManticoreBase
         $config = self::VECTOR_TABLE_CONFIG[$type];
         $table = $config['table'];
         $pk = $config['pk'];
-        $fields = $config['fields'];
-        $mvaFields = $config['mva_fields'];
 
         // 检查主键
         $pkValue = $data[$pk] ?? 0;
@@ -1838,44 +1999,11 @@ class ManticoreBase
         }
 
         $instance = new self();
+        [$fieldList, $valueList] = $instance->buildRowValues($config, $data);
 
-        // 先删除已存在的记录
-        $instance->execute("DELETE FROM {$table} WHERE {$pk} = ?", [$pkValue]);
-
-        // 构建字段列表和值
-        $fieldList = [];
-        $valueList = [];
-
-        // 处理普通字段
-        foreach ($fields as $field) {
-            $fieldList[] = $field;
-            $value = $data[$field] ?? ($field === 'created_at' ? time() : (in_array($field, self::NUMERIC_FIELDS) ? 0 : ''));
-
-            if (in_array($field, self::NUMERIC_FIELDS)) {
-                $valueList[] = (int)$value;
-            } else {
-                $valueList[] = $instance->quoteValue((string)$value);
-            }
-        }
-
-        // 处理 MVA 字段
-        foreach ($mvaFields as $mvaField) {
-            $fieldList[] = $mvaField;
-            $mvaData = $data[$mvaField] ?? [];
-            $valueList[] = !empty($mvaData)
-                ? '(' . implode(',', array_map('intval', $mvaData)) . ')'
-                : '()';
-        }
-
-        // 处理向量字段
-        $vectorValue = $data['content_vector'] ?? null;
-        if ($vectorValue) {
-            $fieldList[] = 'content_vector';
-            $valueList[] = str_replace(['[', ']'], ['(', ')'], $vectorValue);
-        }
-
-        // 构建并执行 SQL
-        $sql = "INSERT INTO {$table} (" . implode(', ', $fieldList) . ") VALUES (" . implode(', ', $valueList) . ")";
+        // REPLACE 按 id 原子替换整行，向量列由引擎按 FROM 字段自动重新生成。
+        // 前提：所有 upsertXxxVector 均强制 id = 主键值，故 REPLACE(按 id) 与按主键去重等价
+        $sql = "REPLACE INTO {$table} (" . implode(', ', $fieldList) . ") VALUES (" . implode(', ', $valueList) . ")";
 
         $result = $instance->executeRaw($sql);
 
@@ -1885,10 +2013,44 @@ class ManticoreBase
             ManticoreSyncFailure::removeSuccess($type, $pkValue, 'sync');
         } else {
             // 失败则记录
-            ManticoreSyncFailure::recordFailure($type, $pkValue, 'sync', "INSERT failed for {$table}");
+            ManticoreSyncFailure::recordFailure($type, $pkValue, 'sync', "REPLACE failed for {$table}");
         }
 
         return $result;
+    }
+
+    /**
+     * 构建一行数据的字段列表与内联值（普通字段 + MVA 字段，向量列由引擎自动生成，不在此列）
+     *
+     * @param array $config VECTOR_TABLE_CONFIG 中的类型配置
+     * @param array $data 行数据
+     * @return array [fieldList, valueList]
+     */
+    private function buildRowValues(array $config, array $data): array
+    {
+        $fieldList = [];
+        $valueList = [];
+
+        foreach ($config['fields'] as $field) {
+            $fieldList[] = $field;
+            $value = $data[$field] ?? ($field === 'created_at' ? time() : (in_array($field, self::NUMERIC_FIELDS) ? 0 : ''));
+
+            if (in_array($field, self::NUMERIC_FIELDS)) {
+                $valueList[] = (int)$value;
+            } else {
+                $valueList[] = $this->quoteValue((string)$value);
+            }
+        }
+
+        foreach ($config['mva_fields'] as $mvaField) {
+            $fieldList[] = $mvaField;
+            $mvaData = $data[$mvaField] ?? [];
+            $valueList[] = !empty($mvaData)
+                ? '(' . implode(',', array_map('intval', $mvaData)) . ')'
+                : '()';
+        }
+
+        return [$fieldList, $valueList];
     }
 
     /**
@@ -1924,177 +2086,79 @@ class ManticoreBase
     }
 
     /**
-     * 通用批量更新向量方法（高性能版本）
+     * 通用批量写入方法：每块一条多行 REPLACE，向量由引擎 Auto Embeddings 自动生成
      *
-     * 优化：将 N 条记录的 3N 次操作减少为 N+2 次操作
-     * 1. 批量 SELECT 获取现有记录 (1次)
-     * 2. 预构建所有 INSERT SQL（验证数据完整性）
-     * 3. 批量 DELETE 删除旧记录 (1次)
-     * 4. 逐条 INSERT 新记录带向量 (N次，因向量字段无法批量绑定)
+     * 引擎对一条多行语句只调用一次向量化接口（实测 30 行 ≈ 0.9s），
+     * 多行语句失败是原子的；整块失败时回退逐行 upsertVector，
+     * 使单条坏行不毒化整批、且失败按真实主键记入重试表。
      *
      * @param string $type 类型: msg/file/task/project/user
-     * @param array $vectorData 向量数据 [pk_value => vectorStr, ...]
-     * @return int 成功更新的数量
+     * @param array $rows 行数据数组（与 upsertVector 的 $data 同构，需含 id 与主键）
+     * @return int 成功写入的数量
      */
-    public static function batchUpdateVectors(string $type, array $vectorData): int
+    public static function batchUpsertVectors(string $type, array $rows): int
     {
-        if (empty($vectorData) || !isset(self::VECTOR_TABLE_CONFIG[$type])) {
+        if (empty($rows) || !isset(self::VECTOR_TABLE_CONFIG[$type])) {
             return 0;
         }
 
         $config = self::VECTOR_TABLE_CONFIG[$type];
         $table = $config['table'];
         $pk = $config['pk'];
-        $fields = $config['fields'];
-        $mvaFields = $config['mva_fields'];
-
         $instance = new self();
-        $ids = array_keys($vectorData);
 
-        // 1. 批量查询现有记录
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $existingRows = $instance->query(
-            "SELECT * FROM {$table} WHERE {$pk} IN ({$placeholders})",
-            $ids
-        );
-
-        if (empty($existingRows)) {
-            return 0;
-        }
-
-        // 建立 pk => row 的映射
-        $existingMap = [];
-        foreach ($existingRows as $row) {
-            $existingMap[$row[$pk]] = $row;
-        }
-
-        $idsToUpdate = array_keys($existingMap);
-        if (empty($idsToUpdate)) {
-            return 0;
-        }
-
-        // 2. 预构建所有 INSERT 语句（在删除前验证数据完整性）
-        $insertStatements = [];
-        foreach ($idsToUpdate as $pkValue) {
-            $existing = $existingMap[$pkValue];
-            $vectorStr = $vectorData[$pkValue] ?? null;
-
-            if (empty($vectorStr)) {
+        // 预构建每行的内联值，剔除无主键行
+        $pending = [];
+        $fieldListRef = null;
+        foreach ($rows as $row) {
+            if (($row[$pk] ?? 0) <= 0) {
                 continue;
             }
-
-            // Manticore 向量使用 () 格式
-            $vectorStr = str_replace(['[', ']'], ['(', ')'], $vectorStr);
-
-            // 构建字段列表和值（直接内联值，不使用参数绑定）
-            $fieldList = $fields;
-            $quotedValues = [];
-            foreach ($fields as $field) {
-                $value = $existing[$field] ?? null;
-                // 处理默认值：数值字段用 0，时间戳字段用当前时间，其他用空字符串
-                if ($value === null) {
-                    if ($field === 'created_at') {
-                        $value = time();
-                    } elseif (in_array($field, self::NUMERIC_FIELDS)) {
-                        $value = 0;
-                    } else {
-                        $value = '';
-                    }
-                }
-                // 根据字段类型处理值
-                if (in_array($field, self::NUMERIC_FIELDS)) {
-                    $quotedValues[] = (int)$value;
-                } else {
-                    $quotedValues[] = $instance->quoteValue((string)$value);
-                }
-            }
-
-            // 构建 MVA 字段
-            $mvaValuesStr = [];
-            foreach ($mvaFields as $mvaField) {
-                $fieldList[] = $mvaField;
-                $mvaValuesStr[] = !empty($existing[$mvaField])
-                    ? '(' . $existing[$mvaField] . ')'
-                    : '()';
-            }
-
-            // 添加向量字段
-            $fieldList[] = 'content_vector';
-
-            // 构建 SQL（所有值直接内联，使用 executeRaw 避免 prepared statement 解析问题）
-            $allValues = implode(', ', array_merge($quotedValues, $mvaValuesStr, [$vectorStr]));
-            $sql = "INSERT INTO {$table} (" . implode(', ', $fieldList) . ") VALUES ({$allValues})";
-
-            $insertStatements[] = ['sql' => $sql, 'pk' => $pkValue];
+            [$fieldList, $valueList] = $instance->buildRowValues($config, $row);
+            $fieldListRef = $fieldList;
+            $valuesSql = '(' . implode(', ', $valueList) . ')';
+            $pending[] = ['pk' => $row[$pk], 'sql' => $valuesSql, 'bytes' => strlen($valuesSql), 'row' => $row];
         }
-
-        // 如果没有有效的插入语句，直接返回
-        if (empty($insertStatements)) {
+        if (empty($pending)) {
             return 0;
         }
 
-        // 3. 批量删除旧记录（只删除有有效向量的记录）
-        $validPks = array_column($insertStatements, 'pk');
-        $deletePlaceholders = implode(',', array_fill(0, count($validPks), '?'));
-        $instance->execute(
-            "DELETE FROM {$table} WHERE {$pk} IN ({$deletePlaceholders})",
-            $validPks
-        );
+        // 分块：行数上限 + 字节预算（文件内容可达 10 万字符/行）
+        $chunks = [];
+        $current = [];
+        $currentBytes = 0;
+        foreach ($pending as $item) {
+            if (!empty($current)
+                && (count($current) >= self::BATCH_CHUNK_ROWS || $currentBytes + $item['bytes'] > self::BATCH_CHUNK_BYTES)) {
+                $chunks[] = $current;
+                $current = [];
+                $currentBytes = 0;
+            }
+            $current[] = $item;
+            $currentBytes += $item['bytes'];
+        }
+        if (!empty($current)) {
+            $chunks[] = $current;
+        }
 
-        // 4. 逐条插入新记录（使用 executeRaw 避免 prepared statement 解析问题）
         $successCount = 0;
-        foreach ($insertStatements as $stmt) {
-            if ($instance->executeRaw($stmt['sql'])) {
-                $successCount++;
-                // 成功则删除失败记录（如果有）
-                ManticoreSyncFailure::removeSuccess($type, $stmt['pk'], 'sync');
+        foreach ($chunks as $chunk) {
+            $sql = "REPLACE INTO {$table} (" . implode(', ', $fieldListRef) . ") VALUES "
+                . implode(', ', array_column($chunk, 'sql'));
+            if ($instance->executeRaw($sql)) {
+                $successCount += count($chunk);
+                ManticoreSyncFailure::removeSuccessBatch($type, array_column($chunk, 'pk'), 'sync');
             } else {
-                // 失败则记录
-                ManticoreSyncFailure::recordFailure($type, $stmt['pk'], 'sync', "Batch INSERT failed for {$table}");
+                // 整块失败：回退逐行（REPLACE 幂等，重复写已生效行无害）
+                foreach ($chunk as $item) {
+                    if (self::upsertVector($type, $item['row'])) {
+                        $successCount++;
+                    }
+                }
             }
         }
 
         return $successCount;
-    }
-
-    /**
-     * 批量更新消息向量（兼容方法）
-     */
-    public static function batchUpdateMsgVectors(array $vectorData): int
-    {
-        return self::batchUpdateVectors('msg', $vectorData);
-    }
-
-    /**
-     * 批量更新文件向量
-     */
-    public static function batchUpdateFileVectors(array $vectorData): int
-    {
-        return self::batchUpdateVectors('file', $vectorData);
-    }
-
-    /**
-     * 批量更新任务向量
-     */
-    public static function batchUpdateTaskVectors(array $vectorData): int
-    {
-        return self::batchUpdateVectors('task', $vectorData);
-    }
-
-    /**
-     * 批量更新项目向量
-     */
-    public static function batchUpdateProjectVectors(array $vectorData): int
-    {
-        return self::batchUpdateVectors('project', $vectorData);
-    }
-
-    /**
-     * 批量更新用户向量
-     */
-    public static function batchUpdateUserVectors(array $vectorData): int
-    {
-        return self::batchUpdateVectors('user', $vectorData);
     }
 
     // ==============================

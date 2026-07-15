@@ -26,6 +26,12 @@ return [
     // Manticore 全文搜索服务端口（ManticoreBase）
     'search_port' => env('SEARCH_PORT', 9306),
 
+    // AI 插件服务主机（AI::getEmbedding 走 ai 插件 /embeddings 免费向量模型）
+    'ai_host' => env('AI_HOST', 'ai'),
+
+    // AI 插件服务端口（AI::getEmbedding）
+    'ai_port' => env('AI_PORT', 5001),
+
     // 文件回收站自动清空天数（DeleteTmpTask）
     'auto_empty_file_recycle' => env('AUTO_EMPTY_FILE_RECYCLE', 365),
 

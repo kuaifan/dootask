@@ -91,6 +91,24 @@ class ManticoreSyncFailure extends AbstractModel
     }
 
     /**
+     * 批量清除同步成功记录（供批量写入路径使用，避免逐条删除）
+     *
+     * @param string $dataType 数据类型
+     * @param array $dataIds 数据ID列表
+     * @param string $action 操作类型
+     */
+    public static function removeSuccessBatch(string $dataType, array $dataIds, string $action): void
+    {
+        if (empty($dataIds)) {
+            return;
+        }
+        self::where('data_type', $dataType)
+            ->whereIn('data_id', $dataIds)
+            ->where('action', $action)
+            ->delete();
+    }
+
+    /**
      * 获取待重试的记录
      * 根据重试次数决定间隔：1次=1分钟，2次=5分钟，3次=15分钟，4次+=30分钟
      *

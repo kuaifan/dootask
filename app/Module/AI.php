@@ -900,7 +900,61 @@ class AI
     }
 
     /**
-     * 通过 OpenAI 兼容接口获取文本的 Embedding 向量
+     * 调用 ai 插件的 /embeddings 端点批量向量化（免费向量模型，零配置）。
+     *
+     * 走主程序 ↔ ai 插件的内网调用，共享主程序 APP_KEY 鉴权；
+     * 向量维度由 ai 插件的模型决定，主程序不再传 dimensions。
+     *
+     * @param array $texts 文本数组
+     * @return array retSuccess(data=向量数组的数组，与输入同序，缺失位置为 []) / retError
+     */
+    protected static function requestPluginEmbeddings(array $texts)
+    {
+        $texts = array_values($texts);
+        $count = count($texts);
+        if ($count === 0) {
+            return Base::retSuccess("success", []);
+        }
+
+        $host = config('dootask.ai_host', 'ai');
+        $port = (int) config('dootask.ai_port', 5001);
+        $url = "http://{$host}:{$port}/embeddings";
+
+        $post = json_encode(["input" => $texts]);
+        $headers = [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . (string) config('app.key'),
+        ];
+        $timeout = $count > 1 ? 120 : 30;
+
+        $res = Ihttp::ihttp_request($url, $post, $headers, $timeout);
+        if (Base::isError($res)) {
+            return Base::retError("Embedding 接口请求失败", $res);
+        }
+
+        $resData = Base::json2array($res['data']);
+        if (empty($resData['data']) || !is_array($resData['data'])) {
+            return Base::retError("Embedding 接口返回数据格式错误", $resData);
+        }
+
+        // 按 index 回填，保证与输入顺序对齐，缺失位置留 []
+        $vectors = array_fill(0, $count, []);
+        foreach ($resData['data'] as $item) {
+            $idx = $item['index'] ?? null;
+            if ($idx === null || !isset($vectors[$idx])) {
+                continue;
+            }
+            $embedding = $item['embedding'] ?? [];
+            if (is_array($embedding) && !empty($embedding)) {
+                $vectors[$idx] = $embedding;
+            }
+        }
+
+        return Base::retSuccess("success", $vectors);
+    }
+
+    /**
+     * 通过 ai 插件的免费向量模型获取文本的 Embedding 向量
      *
      * @param string $text 需要转换的文本
      * @param bool $noCache 是否禁用缓存
@@ -916,50 +970,22 @@ class AI
             return Base::retError('文本内容不能为空');
         }
 
-        // 截断过长的文本（OpenAI 限制 8191 tokens，约 32K 字符）
+        // 截断过长的文本（约 32K 字符）
         $text = mb_substr($text, 0, 30000);
 
-        $cacheKey = "openAIEmbedding::" . md5($text);
+        // 缓存键换命名空间（embeddingV2）：避免历史 1536 维缓存污染新的向量维度
+        $cacheKey = "embeddingV2::" . md5($text);
         if ($noCache) {
             Cache::forget($cacheKey);
         }
 
-        $provider = self::resolveEmbeddingProvider();
-        if (!$provider) {
-            return Base::retError("请先在「AI 助手」设置中配置支持 Embedding 的 AI 服务");
-        }
-
-        $result = Cache::remember($cacheKey, Carbon::now()->addDays(7), function () use ($text, $provider) {
-            $payload = [
-                "model" => $provider['model'],
-                "input" => $text,
-            ];
-
-            // 统一向量维度为 1536（与 Manticore 配置一致）
-            // OpenAI、智谱等支持 dimensions 参数的厂商需要显式指定
-            $supportsDimensions = in_array($provider['vendor'], ['openai', 'zhipu']);
-            if ($supportsDimensions) {
-                $payload['dimensions'] = 1536;
-            }
-
-            $post = json_encode($payload);
-
-            $ai = new self($post);
-            $ai->setProvider($provider);
-            $ai->setUrlPath('/embeddings');
-            $ai->setTimeout(30);
-
-            $res = $ai->request(true);
+        $result = Cache::remember($cacheKey, Carbon::now()->addDays(7), function () use ($text) {
+            $res = self::requestPluginEmbeddings([$text]);
             if (Base::isError($res)) {
-                return Base::retError("Embedding 请求失败", $res);
+                return $res;
             }
 
-            $resData = Base::json2array($res['data']);
-            if (empty($resData['data'][0]['embedding'])) {
-                return Base::retError("Embedding 接口返回数据格式错误", $resData);
-            }
-
-            $embedding = $resData['data'][0]['embedding'];
+            $embedding = $res['data'][0] ?? [];
             if (!is_array($embedding) || empty($embedding)) {
                 return Base::retError("Embedding 向量为空");
             }
@@ -972,194 +998,5 @@ class AI
         }
 
         return $result;
-    }
-
-    /**
-     * 批量获取文本的 Embedding 向量
-     * OpenAI API 原生支持批量输入，一次请求处理多个文本
-     *
-     * @param array $texts 文本数组（最多 100 条）
-     * @param bool $noCache 是否禁用缓存
-     * @return array 返回结果，成功时 data 为向量数组的数组（与输入顺序对应）
-     */
-    public static function getBatchEmbeddings(array $texts, $noCache = false)
-    {
-        if (!Apps::isInstalled('ai')) {
-            return Base::retError('应用「AI Assistant」未安装');
-        }
-
-        if (empty($texts)) {
-            return Base::retSuccess("success", []);
-        }
-
-        // 限制批量大小
-        // OpenAI 限制：最多 2048 条，单次请求合计最多 300,000 tokens
-        // 这里限制 500 条，假设平均每条 500 tokens，合计 250,000 tokens
-        $texts = array_slice($texts, 0, 500);
-
-        // 准备结果数组，并检查缓存
-        $results = [];
-        $uncachedTexts = [];
-        $uncachedIndices = [];
-
-        foreach ($texts as $index => $text) {
-            if (empty($text)) {
-                $results[$index] = [];
-                continue;
-            }
-
-            // 截断过长的文本
-            $text = mb_substr($text, 0, 30000);
-            $texts[$index] = $text; // 更新截断后的文本
-
-            $cacheKey = "openAIEmbedding::" . md5($text);
-
-            if ($noCache) {
-                Cache::forget($cacheKey);
-            }
-
-            // 检查缓存
-            if (!$noCache && Cache::has($cacheKey)) {
-                $cached = Cache::get($cacheKey);
-                if (Base::isSuccess($cached)) {
-                    $results[$index] = $cached['data'];
-                    continue;
-                }
-            }
-
-            // 未命中缓存，加入待请求列表
-            $uncachedTexts[] = $text;
-            $uncachedIndices[] = $index;
-        }
-
-        // 如果所有文本都在缓存中
-        if (empty($uncachedTexts)) {
-            // 按原始顺序返回
-            ksort($results);
-            return Base::retSuccess("success", array_values($results));
-        }
-
-        // 获取 provider
-        $provider = self::resolveEmbeddingProvider();
-        if (!$provider) {
-            return Base::retError("请先在「AI 助手」设置中配置支持 Embedding 的 AI 服务");
-        }
-
-        // 构建批量请求
-        $payload = [
-            "model" => $provider['model'],
-            "input" => $uncachedTexts,
-        ];
-
-        $supportsDimensions = in_array($provider['vendor'], ['openai', 'zhipu']);
-        if ($supportsDimensions) {
-            $payload['dimensions'] = 1536;
-        }
-
-        $post = json_encode($payload);
-
-        $ai = new self($post);
-        $ai->setProvider($provider);
-        $ai->setUrlPath('/embeddings');
-        $ai->setTimeout(120); // 批量请求需要更长超时
-
-        $res = $ai->request(true);
-        if (Base::isError($res)) {
-            return Base::retError("批量 Embedding 请求失败", $res);
-        }
-
-        $resData = Base::json2array($res['data']);
-        if (empty($resData['data'])) {
-            return Base::retError("Embedding 接口返回数据格式错误", $resData);
-        }
-
-        // 处理返回的向量并写入缓存
-        foreach ($resData['data'] as $item) {
-            $itemIndex = $item['index'] ?? null;
-            if ($itemIndex === null || !isset($uncachedIndices[$itemIndex])) {
-                continue;
-            }
-
-            $originalIndex = $uncachedIndices[$itemIndex];
-            $embedding = $item['embedding'] ?? [];
-
-            if (!empty($embedding) && is_array($embedding)) {
-                $results[$originalIndex] = $embedding;
-            } else {
-                $results[$originalIndex] = [];
-            }
-        }
-
-        // 填充未获取到向量的位置
-        foreach ($uncachedIndices as $originalIndex) {
-            if (!isset($results[$originalIndex])) {
-                $results[$originalIndex] = [];
-            }
-        }
-
-        // 按原始顺序返回
-        ksort($results);
-        return Base::retSuccess("success", array_values($results));
-    }
-
-    /**
-     * 获取 Embedding 模型配置
-     *
-     * @return array|null
-     */
-    protected static function resolveEmbeddingProvider()
-    {
-        $setting = Base::setting('aibotSetting');
-        if (!is_array($setting)) {
-            $setting = [];
-        }
-
-        // 优先使用 OpenAI（支持 embedding 接口）
-        $key = trim((string)($setting['openai_key'] ?? ''));
-        if ($key !== '') {
-            $baseUrl = trim((string)($setting['openai_base_url'] ?? ''));
-            $baseUrl = $baseUrl ?: 'https://api.openai.com/v1';
-            $agency = trim((string)($setting['openai_agency'] ?? ''));
-
-            return [
-                'vendor' => 'openai',
-                'model' => 'text-embedding-3-small',
-                'api_key' => $key,
-                'base_url' => rtrim($baseUrl, '/'),
-                'agency' => $agency,
-            ];
-        }
-
-        $vendorDefaults = [
-            'deepseek' => [
-                'base_url' => 'https://api.deepseek.com',
-                'model' => 'deepseek-embedding',
-            ],
-            'zhipu' => [
-                'base_url' => 'https://open.bigmodel.cn/api/paas/v4',
-                'model' => 'embedding-3',
-            ],
-        ];
-
-        // 尝试其他支持 embedding 的服务（如 deepseek、zhipu、qianwen 等）
-        foreach ($vendorDefaults as $vendor => $defaults) {
-            $key = trim((string)($setting[$vendor . '_key'] ?? ''));
-
-            if ($key !== '') {
-                $baseUrl = trim((string)($setting[$vendor . '_base_url'] ?? ''));
-                $baseUrl = $baseUrl ?: $defaults['base_url'];  // 使用配置或默认值
-                $agency = trim((string)($setting[$vendor . '_agency'] ?? ''));
-
-                return [
-                    'vendor' => $vendor,
-                    'model' => $defaults['model'],
-                    'api_key' => $key,
-                    'base_url' => rtrim($baseUrl, '/'),
-                    'agency' => $agency,
-                ];
-            }
-        }
-
-        return null;
     }
 }

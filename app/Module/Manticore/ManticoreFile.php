@@ -8,7 +8,6 @@ use App\Models\FileUser;
 use App\Module\Apps;
 use App\Module\Base;
 use App\Module\TextExtractor;
-use App\Module\AI;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -214,13 +213,12 @@ class ManticoreFile
     // ==============================
 
     /**
-     * 同步单个文件到 Manticore（含 allowed_users）
+     * 同步单个文件到 Manticore（含 allowed_users，向量由引擎 Auto Embeddings 自动生成）
      *
      * @param File $file 文件模型
-     * @param bool $withVector 是否同时生成向量（默认 false，向量由后台任务生成）
      * @return bool 是否成功
      */
-    public static function sync(File $file, bool $withVector = false): bool
+    public static function sync(File $file): bool
     {
         if (!Apps::isInstalled("search")) {
             return false;
@@ -240,42 +238,7 @@ class ManticoreFile
         }
 
         try {
-            // 提取文件内容
-            $content = self::extractFileContent($file);
-
-            // 限制提取后的内容长度
-            $content = mb_substr($content, 0, self::MAX_CONTENT_LENGTH);
-
-            // 只有明确要求时才生成向量（默认不生成，由后台任务处理）
-            $embedding = null;
-            if ($withVector && Apps::isInstalled('ai')) {
-                // 向量内容包含文件名和文件内容
-                $vectorContent = self::buildVectorContent($file->name, $content);
-                if (!empty($vectorContent)) {
-                    $embeddingResult = ManticoreBase::getEmbedding($vectorContent);
-                    if (!empty($embeddingResult)) {
-                        $embedding = '[' . implode(',', $embeddingResult) . ']';
-                    }
-                }
-            }
-
-            // 获取文件的 allowed_users
-            $allowedUsers = self::getAllowedUsers($file);
-
-            // 写入 Manticore（含 allowed_users）
-            $result = ManticoreBase::upsertFileVector([
-                'file_id' => $file->id,
-                'userid' => $file->userid,
-                'pshare' => $file->pshare ?? 0,
-                'file_name' => $file->name,
-                'file_type' => $file->type,
-                'file_ext' => $file->ext,
-                'content' => $content,
-                'content_vector' => $embedding,
-                'allowed_users' => $allowedUsers,
-            ]);
-
-            return $result;
+            return ManticoreBase::upsertFileVector(self::buildRow($file));
         } catch (\Exception $e) {
             Log::error('Manticore sync error: ' . $e->getMessage(), [
                 'file_id' => $file->id,
@@ -283,6 +246,30 @@ class ManticoreFile
             ]);
             return false;
         }
+    }
+
+    /**
+     * 构建文件索引行数据（含提取的文件内容与 allowed_users）
+     *
+     * @param File $file 文件模型
+     * @return array 行数据
+     */
+    private static function buildRow(File $file): array
+    {
+        // 提取文件内容并限制长度
+        $content = mb_substr(self::extractFileContent($file), 0, self::MAX_CONTENT_LENGTH);
+
+        return [
+            'id' => $file->id,
+            'file_id' => $file->id,
+            'userid' => $file->userid,
+            'pshare' => $file->pshare ?? 0,
+            'file_name' => $file->name,
+            'file_type' => $file->type,
+            'file_ext' => $file->ext,
+            'content' => $content,
+            'allowed_users' => self::getAllowedUsers($file),
+        ];
     }
 
     /**
@@ -317,25 +304,41 @@ class ManticoreFile
     }
 
     /**
-     * 批量同步文件
+     * 批量同步文件（每块一条多行 REPLACE，向量由引擎自动生成）
      *
      * @param iterable $files 文件列表
-     * @param bool $withVector 是否同时生成向量
      * @return int 成功同步的数量
      */
-    public static function batchSync(iterable $files, bool $withVector = false): int
+    public static function batchSync(iterable $files): int
     {
         if (!Apps::isInstalled("search")) {
             return 0;
         }
 
         $count = 0;
+        $rows = [];
         foreach ($files as $file) {
-            if (self::sync($file, $withVector)) {
+            // 文件夹不索引
+            if ($file->type === 'folder') {
                 $count++;
+                continue;
+            }
+            // 超限文件删除旧索引
+            if ($file->size > self::getMaxFileSizeByExt($file->ext)) {
+                self::delete($file->id);
+                $count++;
+                continue;
+            }
+            try {
+                $rows[] = self::buildRow($file);
+            } catch (\Exception $e) {
+                Log::error('Manticore file batchSync build error: ' . $e->getMessage(), [
+                    'file_id' => $file->id,
+                ]);
             }
         }
-        return $count;
+
+        return $count + ManticoreBase::batchUpsertVectors('file', $rows);
     }
 
     /**
@@ -497,27 +500,6 @@ class ManticoreFile
         return $result['data'] ?? '';
     }
 
-    /**
-     * 构建用于生成向量的内容
-     * 包含文件名和文件内容，确保语义搜索能匹配文件名
-     *
-     * @param string $fileName 文件名
-     * @param string $content 文件内容
-     * @return string 用于生成向量的文本
-     */
-    private static function buildVectorContent(string $fileName, string $content): string
-    {
-        $parts = [];
-
-        if (!empty($fileName)) {
-            $parts[] = $fileName;
-        }
-        if (!empty($content)) {
-            $parts[] = $content;
-        }
-
-        return implode(' ', $parts);
-    }
 
     /**
      * 清空所有索引
@@ -575,96 +557,6 @@ class ManticoreFile
         } catch (\Exception $e) {
             Log::error('Manticore updateAllowedUsers error: ' . $e->getMessage(), ['file_id' => $fileId]);
             return false;
-        }
-    }
-
-    // ==============================
-    // 批量向量生成方法
-    // ==============================
-
-    /**
-     * 批量生成文件向量
-     * 用于后台异步处理，将已索引文件的向量批量生成
-     *
-     * @param array $fileIds 文件ID数组
-     * @param int $batchSize 每批 embedding 数量（默认20）
-     * @return int 成功处理的数量
-     */
-    public static function generateVectorsBatch(array $fileIds, int $batchSize = 20): int
-    {
-        if (!Apps::isInstalled("search") || !Apps::isInstalled("ai") || empty($fileIds)) {
-            return 0;
-        }
-
-        try {
-            // 1. 查询文件信息
-            $files = File::whereIn('id', $fileIds)
-                ->where('type', '!=', 'folder')
-                ->get();
-
-            if ($files->isEmpty()) {
-                return 0;
-            }
-
-            // 2. 提取每个文件的内容（包含文件名）
-            $fileContents = [];
-            foreach ($files as $file) {
-                // 检查文件大小限制
-                $maxSize = self::getMaxFileSizeByExt($file->ext);
-                if ($file->size > $maxSize) {
-                    continue;
-                }
-
-                $content = self::extractFileContent($file);
-                // 向量内容包含文件名和文件内容
-                $vectorContent = self::buildVectorContent($file->name, $content);
-                if (!empty($vectorContent)) {
-                    // 限制内容长度
-                    $vectorContent = mb_substr($vectorContent, 0, self::MAX_CONTENT_LENGTH);
-                    $fileContents[$file->id] = $vectorContent;
-                }
-            }
-
-            if (empty($fileContents)) {
-                return 0;
-            }
-
-            // 3. 分批处理
-            $successCount = 0;
-            $chunks = array_chunk($fileContents, $batchSize, true);
-
-            foreach ($chunks as $chunk) {
-                $texts = array_values($chunk);
-                $ids = array_keys($chunk);
-
-                // 4. 批量获取 embedding
-                $result = AI::getBatchEmbeddings($texts);
-                if (!Base::isSuccess($result) || empty($result['data'])) {
-                    continue;
-                }
-
-                $embeddings = $result['data'];
-
-                // 5. 构建批量更新数据
-                $vectorData = [];
-                foreach ($ids as $index => $fileId) {
-                    if (!isset($embeddings[$index]) || empty($embeddings[$index])) {
-                        continue;
-                    }
-                    $vectorData[$fileId] = '[' . implode(',', $embeddings[$index]) . ']';
-                }
-
-                // 6. 批量更新向量
-                if (!empty($vectorData)) {
-                    $batchCount = ManticoreBase::batchUpdateFileVectors($vectorData);
-                    $successCount += $batchCount;
-                }
-            }
-
-            return $successCount;
-        } catch (\Exception $e) {
-            Log::error('ManticoreFile generateVectorsBatch error: ' . $e->getMessage());
-            return 0;
         }
     }
 }

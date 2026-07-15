@@ -90,14 +90,15 @@
                             display: flex;
                             align-items: center;
                             gap: 6px;
-                            padding: 5px 14px;
+                            padding: 4px 14px;
+                            line-height: 24px;
                             border-radius: 16px;
-                            cursor: pointer;
                             font-size: 13px;
                             font-weight: 500;
                             color: #666;
                             background-color: #f0f0f0;
                             transition: all 0.2s ease;
+                            cursor: pointer;
 
                             > i {
                                 font-size: 14px;

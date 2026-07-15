@@ -235,11 +235,8 @@ class ManticoreSyncTask extends AbstractTask
         }
         Cache::put("ManticoreSyncTask:CheckTime", time(), Carbon::now()->addMinutes(5));
 
-        // 执行增量全文索引同步
+        // 执行增量全文索引同步（向量由 Manticore Auto Embeddings 随行自动生成）
         $this->runIncrementalSync();
-
-        // 执行向量生成
-        $this->runVectorGeneration();
     }
 
     /**
@@ -259,22 +256,6 @@ class ManticoreSyncTask extends AbstractTask
 
         // 启动失败重试命令
         @shell_exec("php /var/www/artisan manticore:retry-failures 2>&1 &");
-    }
-
-    /**
-     * 执行向量生成（兜底触发）
-     *
-     * 命令内部有锁机制，如果已在运行会自动跳过
-     * 命令会持续处理直到无待处理数据，然后自动退出
-     */
-    private function runVectorGeneration(): void
-    {
-        if (!Apps::isInstalled("ai")) {
-            return;
-        }
-
-        // 启动向量生成命令
-        @shell_exec("php /var/www/artisan manticore:generate-vectors --type=all --batch=50 2>&1 &");
     }
 
     public function end()
