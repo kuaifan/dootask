@@ -196,13 +196,14 @@ class Ihttp
         $rlt['status'] = $matches[3];
         $rlt['responseline'] = $split2[0];
         $header = explode("\r\n", $split2[1]);
+        $rlt['headers'] = [];
         $isgzip = false;
         $ischunk = false;
         foreach ($header as $v) {
             $row = explode(':', $v);
             $key = trim($row[0]);
             $value = trim(substr($v, strlen($row[0]) + 1));
-            if (is_array($rlt['headers'][$key])) {
+            if (isset($rlt['headers'][$key]) && is_array($rlt['headers'][$key])) {
                 $rlt['headers'][$key][] = $value;
             } elseif (!empty($rlt['headers'][$key])) {
                 $temp = $rlt['headers'][$key];
