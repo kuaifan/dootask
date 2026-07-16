@@ -76,6 +76,11 @@ export default {
             type: String,
             default: 'embed',
         },
+        // 强制显示胶囊（错误态等），覆盖 capsule.visible 的隐藏配置
+        forceCapsuleVisible: {
+            type: Boolean,
+            default: false
+        },
         beforeClose: Function
     },
     data() {
@@ -131,7 +136,7 @@ export default {
             }
             const {capsule} = this.options
             if ($A.isJson(capsule)) {
-                if (!this.getCapsuleVisible(capsule.visible)) {
+                if (!this.forceCapsuleVisible && !this.getCapsuleVisible(capsule.visible)) {
                     styleObject.display = 'none';
                 }
                 if (typeof capsule.top === 'number') {

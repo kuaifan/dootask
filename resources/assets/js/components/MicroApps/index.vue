@@ -8,18 +8,20 @@
             :size="1200"
             :options="app"
             :windowType="windowType"
+            :forceCapsuleVisible="loadErrors[app.name] != null"
             :beforeClose="onBeforeClose"
             @on-capsule-more="onCapsuleMore"
             @on-popout-window="onPopoutWindow"
             @on-confirm-close="closeMicroApp">
             <MicroIFrame
                 v-if="shouldRenderIFrame(app)"
+                :key="microFrameKey(app.name)"
                 :name="app.name"
                 :url="app.url"
                 :data="appData(app.name)"
                 :immersive="app.immersive"
                 @mounted="mounted"
-                @error="error"/>
+                @load-error="onLoadError"/>
             <micro-app
                 v-else-if="shouldRenderMicro(app)"
                 :name="app.name"
@@ -34,6 +36,20 @@
             <transition name="fade">
                 <div v-if="loadings.includes(app.name)" class="micro-app-loader">
                     <Loading/>
+                </div>
+            </transition>
+
+            <!--加载错误层（同源 5xx 或原生加载错误时展示）-->
+            <transition name="fade">
+                <div v-if="loadErrors[app.name] != null" class="micro-app-error">
+                    <div class="micro-app-error-box">
+                        <div class="micro-app-error-title">{{ $L('应用加载失败') }}</div>
+                        <div v-if="loadErrors[app.name] > 0" class="micro-app-error-desc">{{ $L('服务器返回错误（HTTP (*)）', loadErrors[app.name]) }}</div>
+                        <div class="micro-app-error-actions">
+                            <Button type="primary" @click="retryMicroApp(app.name)">{{ $L('重试') }}</Button>
+                            <Button @click="closeMicroApp(app.name, true)">{{ $L('关闭') }}</Button>
+                        </div>
+                    </div>
                 </div>
             </transition>
         </MicroModal>
@@ -77,6 +93,46 @@
         .micro-app-loader {
             background-color: rgba(255, 255, 255, 0.6);
         }
+    }
+}
+
+// 错误层：浅色卡片，深色模式由全局反色引擎自动转深
+.micro-app-error {
+    position: absolute;
+    // z-index 0：靠 DOM 顺序盖住 iframe，低层级让胶囊/cmask 自然在其之上
+    z-index: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-color: #ffffff;
+
+    .micro-app-error-box {
+        max-width: 360px;
+        text-align: center;
+    }
+
+    .micro-app-error-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #17233d;
+    }
+
+    .micro-app-error-desc {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #808695;
+    }
+
+    .micro-app-error-actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
     }
 }
 
@@ -125,6 +181,8 @@ export default {
             backupConfigs: {},
             loadings: [],
             closings: [],
+            loadErrors: {},   // name -> status（5xx 状态码，或原生加载错误记 0）
+            reloadNonce: {},  // name -> 重试计数，用于强制重挂 iframe
         }
     },
 
@@ -215,6 +273,21 @@ export default {
         // 加载结束
         finish(name) {
             this.loadings = this.loadings.filter(item => item !== name);
+        },
+
+        onLoadError(e) {
+            this.$set(this.loadErrors, e.detail.name, e.detail.status);
+        },
+
+        // 重试：清错误态、重新加载（递增 nonce 触发 iframe 重挂）
+        retryMicroApp(name) {
+            this.$delete(this.loadErrors, name);
+            this.loadings.push(name);
+            this.$set(this.reloadNonce, name, (this.reloadNonce[name] || 0) + 1);
+        },
+
+        microFrameKey(name) {
+            return `iframe-${name}-${this.reloadNonce[name] || 0}`;
         },
 
         /**
@@ -466,6 +539,7 @@ export default {
                 // 更新微应用
                 if (app.url != config.url || !app.keep_alive) {
                     this.unmountMicroApp(app)
+                    this.$delete(this.loadErrors, app.name)
                     this.loadings.push(app.name)
                 }
                 Object.assign(app, config)
@@ -480,6 +554,7 @@ export default {
                 config.postMessage = () => {}
                 config.onBeforeClose = () => true
                 this.$store.commit('microApps/push', config)
+                this.$delete(this.loadErrors, config.name)
                 this.loadings.push(config.name)
                 requestAnimationFrame(_ => {
                     config.isOpen = true
@@ -604,6 +679,7 @@ export default {
             }
 
             this.closeAppState(app)
+            this.$delete(this.loadErrors, name)
             if (destroy === true) {
                 this.unmountMicroApp(app)
             }

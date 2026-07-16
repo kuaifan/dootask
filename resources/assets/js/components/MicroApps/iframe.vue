@@ -142,14 +142,36 @@ export default {
                     }
                 })
             }
+
+            // HTTP 5xx 错误页浏览器视为加载成功、不触发原生 error，load 后主动检测
+            this.detectHttpError()
         },
 
-        // 处理 iframe 加载错误
-        handleError(e) {
-            this.$emit('error', {
+        // 读同源导航状态码判断加载失败。只认 5xx（服务端/网关故障，必是错误页，不误判）；
+        // 排除 4xx（soft-404、登录页等状态码错但页面可用）；跨域读不到则放弃。
+        detectHttpError() {
+            let nav
+            try {
+                nav = this.$refs.iframe.contentWindow.performance.getEntriesByType('navigation')[0]
+            } catch (e) {
+                return // 跨域，无法检测
+            }
+            if (nav && nav.responseStatus >= 500) {
+                this.$emit('load-error', {
+                    detail: {
+                        name: this.name,
+                        status: nav.responseStatus,
+                    }
+                })
+            }
+        },
+
+        // 处理 iframe 原生加载错误（无 HTTP 状态码，status 记 0），与 5xx 统一走 load-error
+        handleError() {
+            this.$emit('load-error', {
                 detail: {
                     name: this.name,
-                    error: e,
+                    status: 0,
                 }
             })
         },
