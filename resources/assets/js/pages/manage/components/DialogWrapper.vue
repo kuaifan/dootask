@@ -3786,6 +3786,20 @@ export default {
                 loading: true,
                 onOk: () => {
                     return new Promise((resolve, reject) => {
+                        // 请求前预存撤回记录：原消息还在列表时占位被去重压制不显示，
+                        // 无论 WS 推送还是接口响应先移除消息，占位都在同一次列表重算中原地顶上，避免先删后加的闪动
+                        const preSaved = operateItem.type === 'text' && !!$A.getObject(operateItem.msg, 'text');
+                        if (preSaved) {
+                            this.$store.dispatch("saveDialogWithdraw", {
+                                id: operateItem.id,
+                                dialog_id: operateItem.dialog_id,
+                                prev_id: operateItem.prev_id,
+                                msg: {
+                                    type: $A.getObject(operateItem.msg, 'type'),
+                                    text: $A.getObject(operateItem.msg, 'text'),
+                                },
+                            });
+                        }
                         this.$store.dispatch("call", {
                             url: 'dialog/msg/withdraw',
                             data: {
@@ -3793,20 +3807,13 @@ export default {
                             },
                         }).then(() => {
                             resolve("消息已撤回");
-                            if (operateItem.type === 'text' && $A.getObject(operateItem.msg, 'text')) {
-                                this.$store.dispatch("saveDialogWithdraw", {
-                                    id: operateItem.id,
-                                    dialog_id: operateItem.dialog_id,
-                                    prev_id: operateItem.prev_id,
-                                    msg: {
-                                        type: $A.getObject(operateItem.msg, 'type'),
-                                        text: $A.getObject(operateItem.msg, 'text'),
-                                    },
-                                });
-                            }
                             this.$store.dispatch("forgetDialogMsg", operateItem);
                         }).catch(({msg}) => {
                             reject(msg);
+                            // 撤回失败且消息未被删除（排除"接口报错但服务端实际已撤回"）才清除预存记录
+                            if (preSaved && this.dialogMsgs.some(item => item.id == operateItem.id)) {
+                                this.$store.dispatch("forgetDialogWithdraw", {id: operateItem.id});
+                            }
                         });
                     })
                 }
@@ -3825,7 +3832,6 @@ export default {
                 this.$refs.input.setContent(text.replace(/\{\{RemoteURL\}\}/g, $A.mainUrl()))
             }
             !this.windowTouch && this.inputFocus()
-            this.$store.dispatch("forgetDialogWithdraw", {id: source.id})
         },
 
         onViewReply(data) {
