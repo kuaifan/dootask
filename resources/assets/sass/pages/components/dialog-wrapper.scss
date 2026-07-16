@@ -603,7 +603,8 @@
             .dialog-tag,
             .dialog-todo,
             .dialog-top,
-            .dialog-notice {
+            .dialog-notice,
+            .dialog-withdraw {
                 font-size: 12px;
                 max-width: 80%;
                 margin: 0 auto;
@@ -612,6 +613,15 @@
                 color: $primary-desc-color;
                 background-color: #efefef;
                 word-wrap: break-word;
+            }
+
+            .dialog-withdraw {
+                .withdraw-re-edit {
+                    margin-left: 4px;
+                    font-style: normal;
+                    color: $primary-color;
+                    cursor: pointer;
+                }
             }
 
             .dialog-top,

@@ -162,6 +162,7 @@ export default {
     dialogHistory: [],
     dialogDrafts: [],
     dialogQuotes: [],
+    dialogWithdraws: [],
     dialogMsgTransfer: {time: 0},
     dialogSseList: [],
     dialogDroupWordChain: {},

@@ -342,6 +342,25 @@ export default {
         }
     },
 
+    // 撤回消息管理（仅本地，用于撤回后重新编辑）
+    'withdraw/set': function(state, data) {
+        const index = state.dialogWithdraws.findIndex(item => item.id === data.id)
+        if (index !== -1) {
+            state.dialogWithdraws.splice(index, 1, data)
+        } else {
+            state.dialogWithdraws.push(data)
+        }
+        $A.IDBSave("dialogWithdraws", state.dialogWithdraws)
+    },
+
+    'withdraw/remove': function(state, id) {
+        const index = state.dialogWithdraws.findIndex(item => item.id === id)
+        if (index !== -1) {
+            state.dialogWithdraws.splice(index, 1)
+            $A.IDBSave("dialogWithdraws", state.dialogWithdraws)
+        }
+    },
+
     // 长按事件
     'longpress/set': function(state, {type, data, element}) {
         state.longpressData = {type, data, element}

@@ -7,6 +7,21 @@ import axios from "axios";
 
 const dialogDraftState = { timer: {}, subTemp: null }
 
+// 撤回消息本地保留（重新编辑用），过期自动清除
+const dialogWithdrawState = {
+    timer: {},
+    expire: 5 * 60 * 1000,
+    schedule(commit, item) {
+        if (this.timer[item.id]) {
+            clearTimeout(this.timer[item.id])
+        }
+        this.timer[item.id] = setTimeout(() => {
+            delete this.timer[item.id]
+            commit('withdraw/remove', item.id)
+        }, Math.max(0, item.time + this.expire - new Date().getTime()))
+    }
+}
+
 export default {
     /**
      * 预加载
@@ -1169,6 +1184,7 @@ export default {
                     'dialogMsgs',
                     'dialogDrafts',
                     'dialogQuotes',
+                    'dialogWithdraws',
                     'fileLists',
                     'callAt',
                     'cacheEmojis',
@@ -1211,6 +1227,15 @@ export default {
                 ...item,
                 tag: !!item.content,
             }));
+
+            // 特殊处理 dialogWithdraws（清除过期项，未过期的重新安排过期清除）
+            const withdrawNow = new Date().getTime()
+            const withdrawLength = state.dialogWithdraws.length
+            state.dialogWithdraws = state.dialogWithdraws.filter(item => item.time && withdrawNow - item.time < dialogWithdrawState.expire);
+            state.dialogWithdraws.forEach(item => dialogWithdrawState.schedule(commit, item));
+            if (state.dialogWithdraws.length !== withdrawLength) {
+                $A.IDBSave("dialogWithdraws", state.dialogWithdraws)
+            }
 
             // TranslationLanguage 检查
             if (typeof languageList[state.cacheTranslationLanguage] === "undefined") {
@@ -4050,6 +4075,32 @@ export default {
      */
     removeDialogQuote({commit}, id) {
         commit('quote/remove', id)
+    },
+
+    /**
+     * 保存撤回消息（仅本地，撤回后显示"重新编辑"入口）
+     * @param commit
+     * @param data {id, dialog_id, prev_id, msg: {type, text}, ?time}
+     */
+    saveDialogWithdraw({commit}, data) {
+        data = Object.assign({time: new Date().getTime()}, data)
+        $A.syncDispatch("saveDialogWithdraw", data)
+        commit('withdraw/set', data)
+        dialogWithdrawState.schedule(commit, data)
+    },
+
+    /**
+     * 移除撤回消息
+     * @param commit
+     * @param data {id}
+     */
+    forgetDialogWithdraw({commit}, data) {
+        $A.syncDispatch("forgetDialogWithdraw", data)
+        if (dialogWithdrawState.timer[data.id]) {
+            clearTimeout(dialogWithdrawState.timer[data.id])
+            delete dialogWithdrawState.timer[data.id]
+        }
+        commit('withdraw/remove', data.id)
     },
 
     /** *****************************************************************************************/

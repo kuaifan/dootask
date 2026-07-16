@@ -220,7 +220,8 @@
                 @on-other="onOther"
                 @on-show-emoji-user="onShowEmojiUser"
                 @on-merge-forward-detail="onMergeForwardDetail"
-                @on-multi-select-toggle="onMultiSelectToggle">
+                @on-multi-select-toggle="onMultiSelectToggle"
+                @on-withdraw-re-edit="onWithdrawReEdit">
                 <template #header v-if="!isChildComponent">
                     <div class="dialog-item head-box">
                         <div v-if="loadIng > 0 || prevId > 0" class="loading" :class="{filled: allMsgs.length === 0}">
@@ -978,6 +979,7 @@ export default {
             'dialogMsgs',
             'dialogTodos',
             'dialogMsgTops',
+            'dialogWithdraws',
             'dialogMsgTransfer',
             'dialogMsgKeep',
             'dialogIns',
@@ -1069,6 +1071,13 @@ export default {
             return this.tempMsgs.filter(item => item.dialog_id == this.dialogId);
         },
 
+        withdrawMsgList() {
+            if (!this.isReady) {
+                return [];
+            }
+            return this.dialogWithdraws.filter(item => item.dialog_id == this.dialogId);
+        },
+
         allMsgList() {
             if (this.isStaticMode) {
                 return this.staticMsgs || []
@@ -1086,6 +1095,25 @@ export default {
                 const tempMsgList = this.tempMsgList.filter(item => !ids.includes(item.id) && this.msgFilter(item))
                 if (tempMsgList.length > 0) {
                     array.push(...tempMsgList)
+                }
+            }
+            if (this.withdrawMsgList.length > 0 && !this.msgType && !this.msgId) {
+                const ids = array.map(({id}) => id)
+                const minId = ids.length > 0 ? Math.min(...ids) : 0
+                // 撤回占位仅在已加载消息范围内显示，避免干扰向上翻页的 prev_id 判断
+                const withdrawMsgList = this.withdrawMsgList
+                    .filter(item => !ids.includes(item.id) && (ids.length === 0 || item.id > minId))
+                    .map(item => ({
+                        id: item.id,
+                        dialog_id: item.dialog_id,
+                        prev_id: item.prev_id,
+                        type: 'withdraw',
+                        userid: this.userId,
+                        msg: item.msg,
+                        estimateSize: 42,
+                    }))
+                if (withdrawMsgList.length > 0) {
+                    array.push(...withdrawMsgList)
                 }
             }
             return array.sort((a, b) => {
@@ -3751,6 +3779,7 @@ export default {
         },
 
         onWithdraw() {
+            const operateItem = this.operateItem;
             $A.modalConfirm({
                 content: `确定撤回此信息吗？`,
                 okText: '撤回',
@@ -3760,17 +3789,43 @@ export default {
                         this.$store.dispatch("call", {
                             url: 'dialog/msg/withdraw',
                             data: {
-                                msg_id: this.operateItem.id
+                                msg_id: operateItem.id
                             },
                         }).then(() => {
                             resolve("消息已撤回");
-                            this.$store.dispatch("forgetDialogMsg", this.operateItem);
+                            if (operateItem.type === 'text' && $A.getObject(operateItem.msg, 'text')) {
+                                this.$store.dispatch("saveDialogWithdraw", {
+                                    id: operateItem.id,
+                                    dialog_id: operateItem.dialog_id,
+                                    prev_id: operateItem.prev_id,
+                                    msg: {
+                                        type: $A.getObject(operateItem.msg, 'type'),
+                                        text: $A.getObject(operateItem.msg, 'text'),
+                                    },
+                                });
+                            }
+                            this.$store.dispatch("forgetDialogMsg", operateItem);
                         }).catch(({msg}) => {
                             reject(msg);
                         });
                     })
                 }
             });
+        },
+
+        onWithdrawReEdit(source) {
+            if (this.operateVisible) {
+                return
+            }
+            this.cancelQuote()
+            const {type, text} = source.msg
+            if (type === 'md') {
+                this.$refs.input.setText(text)
+            } else {
+                this.$refs.input.setContent(text.replace(/\{\{RemoteURL\}\}/g, $A.mainUrl()))
+            }
+            !this.windowTouch && this.inputFocus()
+            this.$store.dispatch("forgetDialogWithdraw", {id: source.id})
         },
 
         onViewReply(data) {
