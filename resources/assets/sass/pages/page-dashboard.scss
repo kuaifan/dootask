@@ -62,6 +62,19 @@
                 font-size: 13px;
                 color: #7a8078;
 
+                .team-cache-help {
+                    display: inline-flex;
+                    padding-left: 6px;
+                    color: #a2a89f;
+                    font-size: 15px;
+                    cursor: pointer;
+                    transition: color 0.2s;
+
+                    &:hover {
+                        color: #1e9e55;
+                    }
+                }
+
                 .dashboard-load {
                     display: flex;
                     align-items: center;
@@ -417,6 +430,9 @@
 
     // ==================== 个人视角：列表 ====================
     .my-table {
+        .table-body {
+            margin: 4px 0;
+        }
         .table-row {
             display: grid;
             grid-template-columns: 28px minmax(0, 1fr) 140px 90px 90px 76px 96px;
@@ -1014,7 +1030,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 20px;
+                padding: 36px 20px 44px;
                 color: #a2a89f;
                 font-size: 12.5px;
             }
@@ -1030,6 +1046,10 @@
         display: flex;
         flex-direction: column;
         gap: 20px;
+
+        .team-avatar {
+            flex-shrink: 0;
+        }
 
         .card-head {
             display: flex;
@@ -1090,18 +1110,31 @@
             }
         }
 
+        .team-stats-loading {
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .member-list {
-            padding: 2px 0 6px;
+            --member-grid-columns: 26px 60px minmax(80px, 1fr) fit-content(220px);
+            display: grid;
+            grid-template-columns: var(--member-grid-columns);
+            column-gap: 12px;
+            padding: 2px 20px 6px;
 
             > li {
                 list-style: none;
             }
 
             .member-row {
-                display: flex;
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: subgrid;
                 align-items: center;
-                gap: 12px;
-                padding: 9px 20px;
+                column-gap: 12px;
+                padding: 9px 0;
                 cursor: pointer;
 
                 &:hover {
@@ -1109,8 +1142,7 @@
                 }
 
                 .member-name {
-                    width: 60px;
-                    flex-shrink: 0;
+                    min-width: 0;
                     font-size: 13px;
                     color: #22261f;
                     overflow: hidden;
@@ -1119,7 +1151,7 @@
                 }
 
                 .member-track {
-                    flex: 1;
+                    min-width: 0;
                     height: 10px;
                     border-radius: 5px;
                     background: #f0efea;
@@ -1141,13 +1173,15 @@
                 }
 
                 .member-num {
-                    width: 110px;
-                    flex-shrink: 0;
+                    min-width: 0;
+                    max-width: 220px;
                     text-align: right;
                     font-size: 12px;
                     color: #7a8078;
                     font-variant-numeric: tabular-nums;
                     white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
 
                     > em {
                         font-style: normal;
@@ -1223,6 +1257,23 @@
                 margin-top: 6px;
                 font-size: 11.5px;
                 color: #a2a89f;
+
+                &.priority-more {
+                    color: #7a8078;
+                    cursor: pointer;
+                    transition: color 0.2s;
+
+                    &:hover {
+                        color: #177f44;
+                    }
+                }
+            }
+        }
+
+        .team-focus-section {
+            &.focus-scroll-reserve {
+                // 点击下钻后预留一个可视区高度，离开负责人视角时恢复正常布局
+                min-height: calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 52px);
             }
         }
 
@@ -1335,6 +1386,13 @@
                         overflow: hidden;
                         text-overflow: ellipsis;
                     }
+
+                    .owner-more {
+                        flex-shrink: 0;
+                        color: #a2a89f;
+                        font-size: 11px;
+                        font-style: normal;
+                    }
                 }
 
                 .f-priority {
@@ -1389,14 +1447,139 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 24px;
+                min-height: 150px;
             }
 
             .focus-empty {
-                padding: 30px 20px;
-                text-align: center;
+                min-height: 150px;
+                padding: 24px 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
                 color: #a2a89f;
-                font-size: 13px;
+                font-size: 12.5px;
+
+                .focus-empty-icon {
+                    width: 34px;
+                    height: 34px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 3px;
+                    border-radius: 50%;
+                    background: #e7f5ec;
+                    color: #1e9e55;
+                    font-size: 19px;
+                }
+
+                > strong {
+                    color: #555c53;
+                    font-size: 13.5px;
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+}
+
+.dashboard-cache-popper {
+    .dashboard-cache-popover {
+        width: 260px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+
+        > strong {
+            color: #22261f;
+            font-size: 13.5px;
+        }
+
+        > p {
+            color: #7a8078;
+            font-size: 12.5px;
+            line-height: 1.65;
+        }
+
+        > span {
+            color: #a2a89f;
+            font-size: 12px;
+        }
+
+        > button {
+            align-self: flex-end;
+            margin-top: 2px;
+            height: 28px;
+            padding: 0 8px;
+            font-size: 13px;
+        }
+    }
+}
+
+@supports not (grid-template-columns: subgrid) {
+    .page-dashboard {
+        .dashboard-team {
+            .member-list {
+                display: block;
+
+                .member-row {
+                    grid-template-columns: var(--member-grid-columns);
+                }
+            }
+        }
+    }
+}
+
+.dashboard-member-progress-popper {
+    .member-progress-tooltip {
+        min-width: 180px;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+
+        .progress-tooltip-title {
+            color: #a2a89f;
+            font-size: 11px;
+
+            &.title-stage {
+                margin-top: 2px;
+                padding-top: 7px;
+                border-top: 1px solid rgba(128, 128, 128, 0.18);
+            }
+        }
+
+        .progress-tooltip-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            font-size: 12px;
+
+            .progress-tooltip-label {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+
+                > i {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 2px;
+                }
+            }
+
+            > strong {
+                font-weight: 500;
+                font-variant-numeric: tabular-nums;
+                white-space: nowrap;
+            }
+
+            &.row-overdue {
+                .progress-tooltip-label,
+                > strong {
+                    color: #d94f46;
+                }
             }
         }
     }
@@ -1620,16 +1803,18 @@ body.window-portrait {
             gap: 14px;
 
             .member-list {
+                --member-grid-columns: 26px 48px minmax(48px, 1fr) fit-content(180px);
+                padding: 2px 14px 6px;
+
                 .member-row {
-                    padding: 9px 14px;
+                    padding: 9px 0;
 
                     .member-name {
-                        width: 48px;
+                        min-width: 0;
                     }
 
                     .member-num {
-                        width: auto;
-                        min-width: 64px;
+                        max-width: 180px;
                     }
                 }
             }

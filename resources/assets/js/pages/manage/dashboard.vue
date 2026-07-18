@@ -21,7 +21,26 @@
                         <template v-else>
                             <h2 class="header-hello">{{$L('部门任务总览')}}</h2>
                             <div class="header-sub">
-                                <span>{{todayText}}<template v-if="teamSummary"> · {{teamSummary}}</template></span>
+                                <span>
+                                    {{todayText}}<template v-if="teamSummary"> · {{teamSummary}}</template>
+                                <EPopover
+                                    v-model="teamCachePopoverShow"
+                                    placement="bottom-start"
+                                        popper-class="dashboard-cache-popper"
+                                        trigger="click">
+                                        <div class="dashboard-cache-popover">
+                                            <strong>{{$L('数据更新说明')}}</strong>
+                                            <p>{{$L('页面统计数据在 60 秒内复用，重点关注任务列表除外。')}}</p>
+                                            <span>{{$L('上次更新：(*)', teamStatsUpdatedTime)}}</span>
+                                            <Button
+                                                type="primary"
+                                                size="small"
+                                                :loading="teamStatsLoading"
+                                                @click="refreshTeamDashboard">{{$L('立即刷新')}}</Button>
+                                        </div>
+                                        <Icon slot="reference" class="team-cache-help" type="ios-information-circle-outline"/>
+                                    </EPopover>
+                                </span>
                             </div>
                         </template>
                         <div v-if="systemConfig.timezoneDifference" class="header-servertime">
@@ -146,56 +165,59 @@
                                         <span class="empty-icon"><Icon type="md-checkmark"/></span>
                                         <span>{{listEmptyText(group.type)}}</span>
                                     </div>
-                                    <div
-                                        v-for="item in groupList(group, listLimit(group))"
-                                        :key="`${group.type}-${item.id}`"
-                                        class="table-row"
-                                        :class="{complete: item.complete_at}"
-                                        :style="$A.generateColorVarStyle(item.flow_item_color, [10], 'flow-item-custom-color', item.color ? {backgroundColor: item.color} : {})"
-                                        @click="openTask(item)">
-                                        <span class="cell-check" @click.stop>
-                                            <UserAvatar v-if="group.type === 'assist' && ownerUserid(item)" :userid="ownerUserid(item)" :size="22"/>
-                                            <TaskMenu v-else :task="item"/>
-                                        </span>
-                                        <span class="cell-name">
-                                            <em
-                                                class="status-pill name-status"
-                                                :class="item.flow_item_name ? item.flow_item_status : {end: !!item.complete_at}"
-                                                @click.stop="openMenu($event, item)">{{item.flow_item_name || (item.complete_at ? $L('已完成') : $L('未完成'))}}</em>
-                                            <em v-if="item.sub_top === true" class="name-tag">{{$L('子任务')}}</em>
-                                            <em v-if="item.sub_my && item.sub_my.length > 0" class="name-tag">+{{item.sub_my.length}}</em>
-                                            {{item.name}}
-                                        </span>
-                                        <span class="t-project">{{projectName(item)}}</span>
-                                        <span class="t-status">
-                                            <em
-                                                class="status-pill"
-                                                :class="item.flow_item_name ? item.flow_item_status : {end: !!item.complete_at}"
-                                                @click.stop="openMenu($event, item)">{{item.flow_item_name || (item.complete_at ? $L('已完成') : $L('未完成'))}}</em>
-                                        </span>
-                                        <span class="t-priority">
-                                            <template v-if="item.p_name">
-                                                <i class="priority-dot" :style="{backgroundColor: item.p_color}"></i>
-                                                <span>{{item.p_name}}</span>
-                                            </template>
-                                            <template v-else>—</template>
-                                        </span>
-                                        <span class="t-sub">
-                                            <template v-if="item.sub_num > 0">
-                                                <i class="sub-bar"><b :style="{width: `${Math.min(item.sub_complete / item.sub_num * 100, 100)}%`}"></b></i>
-                                                <em>{{item.sub_complete}}/{{item.sub_num}}</em>
-                                            </template>
-                                            <template v-else>—</template>
-                                        </span>
-                                        <ETooltip :disabled="$isEEUIApp || windowTouch || !item.end_at" :content="item.end_at" placement="right">
-                                            <span class="t-end" :class="deadlineClass(item.end_at)">{{deadlineText(item.end_at) || '—'}}</span>
-                                        </ETooltip>
+                                    <div class="table-body" :key="`list-${group.type}`">
+                                        <div
+                                            v-for="item in groupList(group, listLimit(group))"
+                                            :key="`${group.type}-${item.id}`"
+                                            class="table-row"
+                                            :class="{complete: item.complete_at}"
+                                            :style="$A.generateColorVarStyle(item.flow_item_color, [10], 'flow-item-custom-color', item.color ? {backgroundColor: item.color} : {})"
+                                            @click="openTask(item)">
+                                            <span class="cell-check" @click.stop>
+                                                <UserAvatar v-if="group.type === 'assist' && ownerUserid(item)" :userid="ownerUserid(item)" :size="22"/>
+                                                <TaskMenu v-else :task="item"/>
+                                            </span>
+                                            <span class="cell-name">
+                                                <em
+                                                    class="status-pill name-status"
+                                                    :class="item.flow_item_name ? item.flow_item_status : {end: !!item.complete_at}"
+                                                    @click.stop="openMenu($event, item)">{{item.flow_item_name || (item.complete_at ? $L('已完成') : $L('未完成'))}}</em>
+                                                <em v-if="item.sub_top === true" class="name-tag">{{$L('子任务')}}</em>
+                                                <em v-if="item.sub_my && item.sub_my.length > 0" class="name-tag">+{{item.sub_my.length}}</em>
+                                                {{item.name}}
+                                            </span>
+                                            <span class="t-project">{{projectName(item)}}</span>
+                                            <span class="t-status">
+                                                <em
+                                                    class="status-pill"
+                                                    :class="item.flow_item_name ? item.flow_item_status : {end: !!item.complete_at}"
+                                                    @click.stop="openMenu($event, item)">{{item.flow_item_name || (item.complete_at ? $L('已完成') : $L('未完成'))}}</em>
+                                            </span>
+                                            <span class="t-priority">
+                                                <template v-if="item.p_name">
+                                                    <i class="priority-dot" :style="{backgroundColor: item.p_color}"></i>
+                                                    <span>{{item.p_name}}</span>
+                                                </template>
+                                                <template v-else>—</template>
+                                            </span>
+                                            <span class="t-sub">
+                                                <template v-if="item.sub_num > 0">
+                                                    <i class="sub-bar"><b :style="{width: `${Math.min(item.sub_complete / item.sub_num * 100, 100)}%`}"></b></i>
+                                                    <em>{{item.sub_complete}}/{{item.sub_num}}</em>
+                                                </template>
+                                                <template v-else>—</template>
+                                            </span>
+                                            <span
+                                                class="t-end"
+                                                :class="deadlineClass(item.end_at)"
+                                                :title="item.end_at">{{deadlineText(item.end_at) || '—'}}</span>
+                                        </div>
+                                        <div
+                                            v-if="group.list.length > listLimit(group) && !expandedGroups.includes(group.type)"
+                                            :key="`more-${group.type}`"
+                                            class="card-more"
+                                            @click="expandedGroups.push(group.type)">{{$L('还有 (*) 项', group.list.length - listLimit(group))}} →</div>
                                     </div>
-                                    <div
-                                        v-if="group.list.length > listLimit(group) && !expandedGroups.includes(group.type)"
-                                        :key="`more-${group.type}`"
-                                        class="card-more"
-                                        @click="expandedGroups.push(group.type)">{{$L('还有 (*) 项', group.list.length - listLimit(group))}} →</div>
                                 </template>
                             </template>
                         </div>
@@ -252,12 +274,14 @@
                 <keep-alive>
                     <DashboardTeam
                         v-if="currentView === 'team'"
+                        ref="dashboardTeam"
                         :initial-focus="teamFocusPref"
-                        @stats="teamStats = $event"/>
+                        @stats="teamStats = $event"
+                        @stats-loading="teamStatsLoading = $event"/>
                 </keep-alive>
             </div>
         </Scrollbar>
-        <DepartmentOwnerView v-model="deptViewShow"/>
+        <DepartmentOwnerView v-model="deptViewShow" scope-only/>
     </div>
 </template>
 
@@ -299,6 +323,8 @@ export default {
 
             deptViewShow: false,
             teamStats: {member_count: 0, blocks: {}},
+            teamStatsLoading: false,
+            teamCachePopoverShow: false,
 
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
@@ -541,6 +567,10 @@ export default {
             return '';
         },
 
+        teamStatsUpdatedTime({teamStats}) {
+            return teamStats.generated_at ? $A.dayjs(teamStats.generated_at).format('HH:mm:ss') : '--'
+        },
+
         deptLabel({userInfo, cacheDepartmentOwnerIds}) {
             const managed = (userInfo.managed_departments || []).map(item => ({...item, id: parseInt(item.id)}));
             const ids = (cacheDepartmentOwnerIds || []).map(id => parseInt(id));
@@ -608,6 +638,9 @@ export default {
 
         setView(view) {
             this.view = view;
+            if (view !== 'team') {
+                this.teamCachePopoverShow = false;
+            }
             prefsCache.view = view;
             $A.IDBSave("dashboardView", view);
         },
@@ -729,6 +762,15 @@ export default {
                     this.flashType = type;
                     this.flashTimer && clearTimeout(this.flashTimer);
                     this.flashTimer = setTimeout(_ => this.flashType = '', 1600);
+                }
+            })
+        },
+
+        refreshTeamDashboard() {
+            this.$refs.dashboardTeam?.refreshAll().then(success => {
+                if (success) {
+                    this.teamCachePopoverShow = false
+                    $A.messageSuccess("刷新成功")
                 }
             })
         },

@@ -44,7 +44,10 @@ export default {
 
     methods: {
         getProjectData() {
-            if (this.projectId <= 0) return;
+            if (this.projectId <= 0) {
+                this.$store.state.projectId = 0;
+                return;
+            }
             const projectId = this.projectId;
             this.$nextTick(() => {
                 this.$store.state.projectId = projectId;

@@ -2141,7 +2141,9 @@ export default {
                 okText: this.$L('立即下载'),
                 content: `${file.name} (${$A.bytesToSize(file.size)})`,
                 onOk: () => {
-                    const departmentOwnerIds = (this.$store.state.cacheDepartmentOwnerIds || []).join(',')
+                    const departmentOwnerIds = this.$store.state.departmentOwnerProjectViewEnabled
+                        ? (this.$store.state.cacheDepartmentOwnerIds || []).join(',')
+                        : ''
                     const url = $A.urlAddParams(`project/task/filedown?file_id=${file.id}`, departmentOwnerIds ? {department_owner_ids: departmentOwnerIds} : {})
                     this.$store.dispatch('downUrl', $A.apiUrl(url))
                 }

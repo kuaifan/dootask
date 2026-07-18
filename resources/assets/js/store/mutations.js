@@ -253,6 +253,10 @@ export default {
         state.cacheDepartmentOwnerIds = $A.normalizeIntArray(data)
         $A.IDBSet("cacheDepartmentOwnerIds", state.cacheDepartmentOwnerIds).catch(() => {});
     },
+    'department/owner/enabled/save': function(state, enabled) {
+        state.departmentOwnerProjectViewEnabled = enabled === true
+        $A.IDBSet("departmentOwnerProjectViewEnabled", state.departmentOwnerProjectViewEnabled).catch(() => {});
+    },
 
     // 文件管理
     'file/push': function(state, data) {

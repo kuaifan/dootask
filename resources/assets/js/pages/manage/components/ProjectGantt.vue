@@ -8,7 +8,7 @@
             @on-click="onClick"
             :readonly="readonly">
             <template #titleTool>
-                <Dropdown class="project-gstc-dropdown-filtr" trigger="click" @on-click="onSwitchColumn">
+                <Dropdown class="project-gstc-dropdown-filtr" trigger="click" @on-click="onSwitchColumn" transfer>
                     <Icon class="project-gstc-dropdown-icon" :class="{filtr:filtrProjectId > 0}" type="md-funnel" />
                     <DropdownMenu slot="list">
                         <DropdownItem :name="0" :class="{'dropdown-active':filtrProjectId == 0}">{{ $L('全部') }}</DropdownItem>

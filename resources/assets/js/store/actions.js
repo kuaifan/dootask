@@ -249,6 +249,7 @@ export default {
         }
         if (params.departmentOwner !== false
             && state.systemConfig.department_owner_project_view === 'open'
+            && state.departmentOwnerProjectViewEnabled
             && state.departmentOwnerReadonlyUrls.includes(params.url)
             && (state.cacheDepartmentOwnerIds || []).length > 0) {
             if (!$A.isJson(params.data)) params.data = {}
@@ -1203,11 +1204,13 @@ export default {
             };
 
             // 批量获取数据
+            const departmentOwnerProjectViewEnabledPromise = $A.IDBValue('departmentOwnerProjectViewEnabled');
             const data = await Promise.all([
                 ...dataMap.string.map(key => $A.IDBString(key)),
                 ...dataMap.array.map(key => $A.IDBArray(key)),
                 ...dataMap.json.map(key => $A.IDBJson(key))
             ]);
+            const cachedDepartmentOwnerProjectViewEnabled = await departmentOwnerProjectViewEnabledPromise;
 
             // 更新 state
             [...dataMap.string, ...dataMap.array, ...dataMap.json].forEach((key, index) => {
@@ -1217,6 +1220,10 @@ export default {
                     state[key] = data[index];
                 }
             });
+            const departmentOwnerProjectViewEnabled = typeof cachedDepartmentOwnerProjectViewEnabled === 'boolean'
+                ? cachedDepartmentOwnerProjectViewEnabled
+                : (state.cacheDepartmentOwnerIds || []).length > 0;
+            commit('department/owner/enabled/save', departmentOwnerProjectViewEnabled);
 
             // 特殊处理 cacheDialogs
             state.cacheDialogs = state.cacheDialogs.map(item => ({
@@ -1249,6 +1256,21 @@ export default {
                 state.userId = state.userInfo.userid = $A.runNum(state.userInfo.userid);
                 state.userToken = state.userInfo.token;
                 state.userIsAdmin = $A.inArray("admin", state.userInfo.identity);
+            }
+
+            // 负责人部门范围始终保留明确选择；旧缓存为空时默认使用全部可管理部门。
+            const managedDepartmentIds = (state.userInfo.managed_departments || [])
+                .map(item => parseInt(item.id))
+                .filter(id => id > 0);
+            let departmentOwnerIds = (state.cacheDepartmentOwnerIds || [])
+                .map(id => parseInt(id))
+                .filter(id => managedDepartmentIds.includes(id));
+            if (departmentOwnerIds.length === 0) {
+                departmentOwnerIds = managedDepartmentIds;
+            }
+            commit('department/owner/ids/save', [...new Set(departmentOwnerIds)]);
+            if (departmentOwnerIds.length === 0) {
+                commit('department/owner/enabled/save', false);
             }
 
             // 处理 ServerUrl
@@ -1593,9 +1615,9 @@ export default {
     normalizeDepartmentOwnerIds({state}, ids) {
         const validIds = (state.userInfo.managed_departments || []).map(item => parseInt(item.id));
         if (!$A.isArray(ids)) ids = [];
-        return ids
+        return [...new Set(ids
             .map(id => parseInt(id))
-            .filter(id => id > 0 && (validIds.length === 0 || validIds.includes(id)));
+            .filter(id => id > 0 && validIds.includes(id)))];
     },
 
     /**
@@ -1608,16 +1630,16 @@ export default {
         await dispatch("systemSetting").catch(() => {});
         if (state.systemConfig.department_owner_project_view !== 'open') {
             commit('department/owner/ids/save', []);
+            commit('department/owner/enabled/save', false);
             dispatch("getProjectByQueue");
             return;
         }
-        const restoredDepartmentOwnerIds = await dispatch("restoreDepartmentOwnerView");
-        if ((restoredDepartmentOwnerIds || []).length > 0) {
+        const restored = await dispatch("restoreDepartmentOwnerView");
+        if (restored.enabled && restored.ids.length > 0) {
             await dispatch("getProjects", {
                 __replace: true,
-                department_owner_ids: restoredDepartmentOwnerIds.join(',')
+                department_owner_ids: restored.ids.join(',')
             });
-            commit('department/owner/ids/save', restoredDepartmentOwnerIds);
             return;
         }
         dispatch("getProjectByQueue");
@@ -1631,45 +1653,78 @@ export default {
      */
     async restoreDepartmentOwnerView({state, dispatch, commit}) {
         if (state.departmentOwnerViewRestored) {
-            return [];
+            return {
+                enabled: state.departmentOwnerProjectViewEnabled,
+                ids: state.cacheDepartmentOwnerIds || [],
+            };
         }
         if (state.systemConfig.department_owner_project_view !== 'open') {
             commit('department/owner/ids/save', []);
-            return [];
+            commit('department/owner/enabled/save', false);
+            return {enabled: false, ids: []};
         }
         state.departmentOwnerViewRestored = true;
-        const ids = await $A.IDBArray("cacheDepartmentOwnerIds", []);
-        if (!ids.length) {
-            return [];
+        const managedIds = (state.userInfo.managed_departments || [])
+            .map(item => parseInt(item.id))
+            .filter(id => id > 0);
+        let restored = await dispatch("normalizeDepartmentOwnerIds", state.cacheDepartmentOwnerIds);
+        if (restored.length === 0) {
+            restored = [...new Set(managedIds)];
         }
-        const restored = await dispatch("normalizeDepartmentOwnerIds", ids);
-        if (restored.length > 0) {
+        const enabled = state.departmentOwnerProjectViewEnabled && restored.length > 0;
+        commit('department/owner/ids/save', restored);
+        commit('department/owner/enabled/save', enabled);
+        if (enabled) {
             state.departmentOwnerProjectsRefreshing = true;
         }
-        commit('department/owner/ids/save', restored);
-        return restored;
+        return {enabled, ids: restored};
     },
 
     /**
      * 设置部门负责人视角
      * @param state
      * @param dispatch
-     * @param ids
+     * @param payload
      * @returns {Promise<void>}
      */
-    async setDepartmentOwnerIds({state, dispatch, commit}, ids) {
+    async setDepartmentOwnerIds({state, dispatch, commit}, payload) {
+        const hasOptions = $A.isJson(payload);
+        let ids = hasOptions ? payload.ids : payload;
+        let enabled = hasOptions && typeof payload.projectViewEnabled === 'boolean'
+            ? payload.projectViewEnabled
+            : state.departmentOwnerProjectViewEnabled;
         if (state.systemConfig.department_owner_project_view !== 'open') {
             ids = [];
+            enabled = false;
         }
-        const normalized = await dispatch("normalizeDepartmentOwnerIds", ids);
+        let normalized = await dispatch("normalizeDepartmentOwnerIds", ids);
+        if (state.systemConfig.department_owner_project_view === 'open' && normalized.length === 0) {
+            normalized = (state.userInfo.managed_departments || [])
+                .map(item => parseInt(item.id))
+                .filter(id => id > 0);
+        }
+        normalized = [...new Set(normalized)];
+        enabled = enabled && normalized.length > 0;
         const oldValue = (state.cacheDepartmentOwnerIds || []).slice().sort().join(',');
         const newValue = normalized.slice().sort().join(',');
-        if (oldValue === newValue) {
+        const scopeChanged = oldValue !== newValue;
+        const enabledChanged = state.departmentOwnerProjectViewEnabled !== enabled;
+        if (!scopeChanged && !enabledChanged) {
             return;
         }
-        state.departmentOwnerProjectsRefreshing = true;
-        await dispatch("refreshDepartmentOwnerProjects", normalized);
+        let refreshResult = null;
+        if (enabledChanged || (enabled && scopeChanged)) {
+            state.departmentOwnerProjectsRefreshing = true;
+            refreshResult = await dispatch("refreshDepartmentOwnerProjects", {
+                ownerIds: normalized,
+                enabled,
+            });
+        }
         commit('department/owner/ids/save', normalized);
+        commit('department/owner/enabled/save', enabled);
+        if (refreshResult?.route) {
+            $A.goForward(refreshResult.route);
+        }
     },
 
     /**
@@ -1678,9 +1733,14 @@ export default {
      * @param dispatch
      * @returns {Promise<void>}
      */
-    async refreshDepartmentOwnerProjects({state, dispatch}, ownerIds = state.cacheDepartmentOwnerIds) {
-        const currentProjectId = state.projectId;
+    async refreshDepartmentOwnerProjects({state, dispatch}, options = {}) {
+        const currentProjectId = state.routeName === 'manage-project' ? state.projectId : 0;
+        const enabled = typeof options.enabled === 'boolean'
+            ? options.enabled
+            : state.departmentOwnerProjectViewEnabled;
+        let ownerIds = options.ownerIds || state.cacheDepartmentOwnerIds;
         ownerIds = (ownerIds || []).map(id => parseInt(id)).filter(id => id > 0);
+        const departmentOwnerIds = enabled ? ownerIds.join(',') : '';
         state.departmentOwnerProjectsRefreshing = true;
         state.callAt = state.callAt.filter(item => {
             const key = String(item.key);
@@ -1689,7 +1749,7 @@ export default {
         try {
             await dispatch("getProjects", {
                 __replace: true,
-                department_owner_ids: ownerIds.join(',')
+                department_owner_ids: departmentOwnerIds
             });
             if (currentProjectId > 0) {
                 const exists = state.cacheProjects.find(({id}) => id == currentProjectId);
@@ -1700,19 +1760,20 @@ export default {
                         }
                         return b.id - a.id;
                     }).find(({id}) => id);
-                    if (project) {
-                        $A.goForward({name: 'manage-project', params: {projectId: project.id}});
-                    } else {
-                        $A.goForward({name: 'manage-dashboard'});
-                    }
-                    return;
+                    return {
+                        route: project
+                            ? {name: 'manage-project', params: {projectId: project.id}}
+                            : {name: 'manage-dashboard'},
+                    };
                 }
-                await dispatch("getProjectOne", currentProjectId).catch(() => {});
-                await dispatch("getTaskForProject", currentProjectId).catch(() => {});
-            }
-        } catch (e) {
-            if ((state.cacheDepartmentOwnerIds || []).length === 0 && currentProjectId > 0) {
-                $A.goForward({name: 'manage-dashboard'});
+                await dispatch("getProjectOne", {
+                    project_id: currentProjectId,
+                    department_owner_ids: departmentOwnerIds,
+                }).catch(() => {});
+                await dispatch("getTaskForProject", {
+                    project_id: currentProjectId,
+                    department_owner_ids: departmentOwnerIds,
+                }).catch(() => {});
             }
         } finally {
             state.departmentOwnerProjectsRefreshing = false;
@@ -1818,7 +1879,7 @@ export default {
         if (state.systemConfig.department_owner_project_view !== 'open') {
             delete requestData.department_owner_ids
         } else if (requestData.department_owner_ids === undefined) {
-            if ((state.cacheDepartmentOwnerIds || []).length > 0) {
+            if (state.departmentOwnerProjectViewEnabled && (state.cacheDepartmentOwnerIds || []).length > 0) {
                 requestData.department_owner_ids = state.cacheDepartmentOwnerIds.join(',')
             } else {
                 delete requestData.department_owner_ids
@@ -1881,11 +1942,13 @@ export default {
      * 获取单个项目
      * @param state
      * @param dispatch
-     * @param project_id
+     * @param project
      * @returns {Promise<unknown>}
      */
-    getProjectOne({state, dispatch}, project_id) {
+    getProjectOne({state, dispatch}, project) {
         return new Promise(function (resolve, reject) {
+            const requestData = $A.isJson(project) ? {...project} : {project_id: project};
+            const project_id = requestData.project_id;
             if ($A.runNum(project_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
@@ -1893,9 +1956,7 @@ export default {
             state.projectLoad++;
             dispatch("call", {
                 url: 'project/one',
-                data: {
-                    project_id
-                },
+                data: requestData,
             }).then(result => {
                 setTimeout(() => {
                     state.projectLoad--;
@@ -2328,10 +2389,12 @@ export default {
         if (!$A.isJson(requestData)) {
             requestData = {}
         }
-        if ((state.cacheDepartmentOwnerIds || []).length > 0) {
-            requestData.department_owner_ids = state.cacheDepartmentOwnerIds.join(',')
-        } else {
-            delete requestData.department_owner_ids
+        if (requestData.department_owner_ids === undefined) {
+            if (state.departmentOwnerProjectViewEnabled && (state.cacheDepartmentOwnerIds || []).length > 0) {
+                requestData.department_owner_ids = state.cacheDepartmentOwnerIds.join(',')
+            } else {
+                delete requestData.department_owner_ids
+            }
         }
         const callData = $callData('tasks', requestData, state)
         //
@@ -2482,12 +2545,13 @@ export default {
      * 获取项目任务
      * @param state
      * @param dispatch
-     * @param project_id
+     * @param project
      * @returns {Promise<unknown>}
      */
-    getTaskForProject({state, dispatch}, project_id) {
+    getTaskForProject({state, dispatch}, project) {
         return new Promise(function (resolve, reject) {
-            dispatch("getTasks", {project_id}).then(resolve).catch(reject)
+            const requestData = $A.isJson(project) ? {...project} : {project_id: project};
+            dispatch("getTasks", requestData).then(resolve).catch(reject)
         })
     },
 

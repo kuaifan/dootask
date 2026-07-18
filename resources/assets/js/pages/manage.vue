@@ -649,6 +649,7 @@ export default {
             'mobileTabbar',
             'longpressData',
             'departmentOwnerProjectsRefreshing',
+            'departmentOwnerProjectViewEnabled',
 
             'mcpServerStatus',
             'microAppsIds'
@@ -823,8 +824,8 @@ export default {
                     name: '负责人视角',
                     divided: !userIsAdmin,
                     visible: true,
-                    selected: this.cacheDepartmentOwnerIds.length > 0,
-                    selectedCount: this.cacheDepartmentOwnerIds.length,
+                    selected: this.departmentOwnerProjectViewEnabled,
+                    selectedCount: this.departmentOwnerProjectViewEnabled ? this.cacheDepartmentOwnerIds.length : 0,
                 });
             }
             array.push(...[
@@ -872,7 +873,7 @@ export default {
         },
 
         ownerProjectTabsVisible() {
-            return this.departmentOwnerViewAvailable && this.cacheDepartmentOwnerIds.length > 0;
+            return this.departmentOwnerViewAvailable && this.departmentOwnerProjectViewEnabled;
         },
 
         ownerProjectTabs() {

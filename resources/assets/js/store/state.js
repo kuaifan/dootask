@@ -105,6 +105,7 @@ export default {
     cacheTasks: [],
     cacheProjectParameter: [],
     cacheDepartmentOwnerIds: [],
+    departmentOwnerProjectViewEnabled: false,
     departmentOwnerViewRestored: false,
     departmentOwnerProjectsRefreshing: false,
     departmentOwnerReadonlyUrls: [

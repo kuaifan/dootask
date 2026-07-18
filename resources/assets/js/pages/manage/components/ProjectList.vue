@@ -16,7 +16,7 @@
                 class="owner-view-button"
                 @click="departmentOwnerViewShow=true">
                 <i class="taskfont">&#xe75c;</i>
-                <em v-if="ownerDepartmentIds.length > 0">{{ownerDepartmentIds.length}}</em>
+                <em v-if="departmentOwnerProjectViewEnabled">{{ownerDepartmentIds.length}}</em>
             </div>
         </div>
         <div class="owner-project-wrapper">
@@ -155,7 +155,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheProjects', 'loadProjects', 'longpressData', 'userInfo', 'systemConfig', 'cacheDepartmentOwnerIds', 'departmentOwnerProjectsRefreshing']),
+        ...mapState(['cacheProjects', 'loadProjects', 'longpressData', 'userInfo', 'systemConfig', 'cacheDepartmentOwnerIds', 'departmentOwnerProjectsRefreshing', 'departmentOwnerProjectViewEnabled']),
 
         managedDepartments() {
             return (this.userInfo.managed_departments || []).map(item => ({
@@ -193,7 +193,7 @@ export default {
         },
 
         ownerProjectTabsVisible() {
-            return this.ownerViewAvailable && this.ownerDepartmentIds.length > 0;
+            return this.ownerViewAvailable && this.departmentOwnerProjectViewEnabled;
         },
 
         ownerProjectTabs() {
