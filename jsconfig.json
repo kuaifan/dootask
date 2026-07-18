@@ -12,6 +12,7 @@
     "allowJs": true,
     "checkJs": false,
     "jsx": "preserve",
+    "ignoreDeprecations": "6.0",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
