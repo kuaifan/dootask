@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\AppsController;
 use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 项目
     Route::any('project/{method}',                      ProjectController::class);
     Route::any('project/{method}/{action}',             ProjectController::class);
+    // 仪表盘
+    Route::any('dashboard/{method}',                    DashboardController::class);
+    Route::any('dashboard/{method}/{action}',           DashboardController::class);
     // 系统
     Route::any('system/{method}',                       SystemController::class);
     Route::any('system/{method}/{action}',              SystemController::class);

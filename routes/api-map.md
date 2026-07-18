@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：312
+接口总数：314
 
 ## 路由规则
 
@@ -162,6 +162,13 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/project/tag/list | tag__list() | get | 标签列表 |
 | api/project/task/ai_apply | task__ai_apply() | post | 采纳AI建议 |
 | api/project/task/ai_dismiss | task__ai_dismiss() | post | 忽略AI建议 |
+
+## dashboard（DashboardController）
+
+| URL | 方法名 | HTTP | 说明 |
+| --- | --- | --- | --- |
+| api/dashboard/team/stats | team__stats() | get | 负责人视角统计 |
+| api/dashboard/team/tasks | team__tasks() | get | 负责人视角任务列表 |
 
 ## system（SystemController）
 
