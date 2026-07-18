@@ -89,8 +89,37 @@
                         </ul>
                         <div class="dashboard-card my-table">
                             <div v-if="listColumns.length === 0" class="table-all-empty">
-                                <span class="empty-icon"><Icon type="md-checkmark"/></span>
-                                <span>{{$L('太棒了，当前没有需要处理的任务')}}</span>
+                                <div v-if="loadDashboardTasks !== false && cacheTasks.length === 0" class="empty-state-loading"><Loading/></div>
+                                <div v-else class="empty-state-content">
+                                    <span class="empty-icon" :class="`empty-icon-${emptyState}`">
+                                        <Icon :type="emptyState === 'new' ? 'md-hand' : 'md-checkmark'"/>
+                                    </span>
+                                    <strong class="empty-state-title">{{emptyStateTitle}}</strong>
+                                    <span class="empty-state-summary">{{emptyStateSummary}}</span>
+                                    <div v-if="emptyState === 'new'" class="empty-state-actions">
+                                        <Button type="primary" icon="md-add" @click="createProject">{{$L('创建第一个项目')}}</Button>
+                                    </div>
+                                    <div v-else-if="emptyState === 'idle'" class="empty-state-actions">
+                                        <Button icon="md-add" @click="createTask">{{$L('新建任务')}}</Button>
+                                    </div>
+                                    <span v-if="emptyState === 'new'" class="empty-state-hint">{{$L('已有团队？请同事把你加入项目即可')}}</span>
+                                    <div v-if="emptyState === 'completed'" class="recent-completed-list">
+                                        <div class="recent-completed-head">
+                                            <span>{{$L('近期完成')}}</span>
+                                            <em>{{$L('本周 (*) 项', weeklyCompletedCount)}}</em>
+                                        </div>
+                                        <div
+                                            v-for="task in recentCompleted"
+                                            :key="`recent-${task.id}`"
+                                            class="recent-completed-row"
+                                            @click="openTask(task)">
+                                            <Icon class="recent-completed-check" type="md-checkmark-circle"/>
+                                            <span class="recent-completed-name">{{task.name}}</span>
+                                            <span class="recent-completed-project">{{projectName(task)}}</span>
+                                            <span class="recent-completed-time">{{completedText(task.complete_at)}}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div v-else class="table-row table-thead">
                                 <span></span>
@@ -118,7 +147,7 @@
                                         <span>{{listEmptyText(group.type)}}</span>
                                     </div>
                                     <div
-                                        v-for="item in groupList(group, groupLimit)"
+                                        v-for="item in groupList(group, listLimit(group))"
                                         :key="`${group.type}-${item.id}`"
                                         class="table-row"
                                         :class="{complete: item.complete_at}"
@@ -163,10 +192,10 @@
                                         </ETooltip>
                                     </div>
                                     <div
-                                        v-if="group.list.length > groupLimit && !expandedGroups.includes(group.type)"
+                                        v-if="group.list.length > listLimit(group) && !expandedGroups.includes(group.type)"
                                         :key="`more-${group.type}`"
                                         class="card-more"
-                                        @click="expandedGroups.push(group.type)">{{$L('还有 (*) 项', group.list.length - groupLimit)}} →</div>
+                                        @click="expandedGroups.push(group.type)">{{$L('还有 (*) 项', group.list.length - listLimit(group))}} →</div>
                                 </template>
                             </template>
                         </div>
@@ -259,13 +288,11 @@ export default {
             // 手动展开/收起的当天记忆：{type: 'open'|'close'}，未记录的组走策略快照
             collapsedOverrides: prefsCache.overrides,
             strategySnapshot: null,
-            // 列表布局显示哪些分组的快照（空组隐藏），进入时定格，停留期间不闪变
-            visibleSnapshot: null,
-            snapshotPending: false,
             teamFocusPref: prefsCache.focus,
 
             expandedGroups: [],
             groupLimit: 10,
+            completedLimit: 5,
             quadLimit: 5,
             flashType: '',
             flashTimer: null,
@@ -297,12 +324,9 @@ export default {
     },
 
     activated() {
-        this.$store.dispatch("getTaskForDashboard", 600);
         this.loadInterval(true);
         this.loadLicense(true);
-        // 进入时按当前数据定策略快照，数据拉取完成后再校准一次；停留期间不随数据变化自动开合
         this.takeSnapshot();
-        this.snapshotPending = true;
     },
 
     deactivated() {
@@ -390,12 +414,77 @@ export default {
             return list;
         },
 
-        // 列表布局显示的分组（空组隐藏，按快照定格）
-        listColumns({listAllColumns, visibleSnapshot}) {
-            if (visibleSnapshot === null) {
-                return listAllColumns.filter(group => group.count > 0);
+        // 当前任务分组按实际列表内容显示；临时完成的划线任务仍留在原分组中
+        currentListColumns({listAllColumns}) {
+            return listAllColumns.filter(group => group.list.length > 0);
+        },
+
+        // 本周已完成任务：本周一至下周一，排除仍显示在原分组中的临时完成任务
+        weeklyCompleted({cacheTasks, taskCompleteTemps, nowTime}) {
+            const current = $A.daytz(nowTime);
+            const start = current.clone().startOf('day').subtract((current.day() + 6) % 7, 'day');
+            const next = start.clone().add(7, 'day');
+            return cacheTasks.filter(task => {
+                if (task.archived_at || !task.complete_at || task.owner != 1 || taskCompleteTemps.includes(task.id)) {
+                    return false;
+                }
+                const complete = $A.dayjs(task.complete_at);
+                return complete.valueOf() >= start.valueOf() && complete.valueOf() < next.valueOf();
+            }).sort((a, b) => $A.sortDay(b.complete_at, a.complete_at));
+        },
+
+        weeklyCompletedCount({weeklyCompleted}) {
+            return weeklyCompleted.length;
+        },
+
+        recentCompleted({weeklyCompleted, completedLimit}) {
+            return weeklyCompleted.slice(0, completedLimit);
+        },
+
+        completedColumn({weeklyCompleted, weeklyCompletedCount}) {
+            return {
+                type: 'completed',
+                title: this.getTitle('completed'),
+                hidden: this.isCollapsed('completed'),
+                count: weeklyCompletedCount,
+                list: weeklyCompleted,
+            };
+        },
+
+        // 只要还有当前任务分组，本周完成就作为同款任务分组附加在末尾
+        listColumns({currentListColumns, completedColumn}) {
+            if (currentListColumns.length === 0) {
+                return [];
             }
-            return listAllColumns.filter(group => visibleSnapshot.includes(group.type));
+            return completedColumn.count > 0 ? [...currentListColumns, completedColumn] : currentListColumns;
+        },
+
+        emptyState({weeklyCompletedCount, cacheProjects, cacheTasks}) {
+            if (weeklyCompletedCount > 0) {
+                return 'completed';
+            }
+            const hasVisibleTask = cacheTasks.some(task => !task.archived_at);
+            return cacheProjects.length === 0 && !hasVisibleTask ? 'new' : 'idle';
+        },
+
+        emptyStateTitle({emptyState}) {
+            if (emptyState === 'completed') {
+                return this.$L('太棒了，任务全部清空');
+            }
+            if (emptyState === 'new') {
+                return this.$L('欢迎使用 DooTask');
+            }
+            return this.$L('当前没有待处理任务');
+        },
+
+        emptyStateSummary({emptyState, weeklyCompletedCount}) {
+            if (emptyState === 'completed') {
+                return this.$L('本周完成了 (*) 项任务', weeklyCompletedCount);
+            }
+            if (emptyState === 'new') {
+                return this.$L('项目是任务与协作的起点，创建一个开始');
+            }
+            return this.$L('可以新建一项任务，或等待新的工作安排');
         },
 
         overdueMaxDays({dashboardTask, nowTime}) {
@@ -494,16 +583,6 @@ export default {
             }
             this.loadInterval(active)
             this.loadLicense(active)
-            if (active) {
-                this.$store.dispatch("getTaskForDashboard", 600)
-            }
-        },
-
-        loadDashboardTasks(loading) {
-            if (!loading && this.snapshotPending) {
-                this.snapshotPending = false
-                this.takeSnapshot()
-            }
         }
     },
 
@@ -520,6 +599,8 @@ export default {
                     return this.$L('待开始');
                 case 'assist':
                     return this.$L('我协助的');
+                case 'completed':
+                    return this.$L('本周完成');
                 default:
                     return '';
             }
@@ -550,7 +631,6 @@ export default {
 
         /**
          * 策略快照（行动优先）：
-         * - 空组不显示，全部为空时列表整卡显示缺省态
          * - 显示的组默认展开；「待完成」量大且行动优先级低，超期或今日到期有数据时默认收起
          */
         takeSnapshot() {
@@ -561,7 +641,6 @@ export default {
                 upcoming: this.upcomingTask.count,
                 assist: this.assistTask.length,
             };
-            this.visibleSnapshot = ['overdue', 'today', 'todo', 'upcoming', 'assist'].filter(type => counts[type] > 0);
             const collapsed = [];
             if (counts.todo > 0 && (counts.overdue > 0 || counts.today > 0)) {
                 collapsed.push('todo');
@@ -594,6 +673,10 @@ export default {
                 return group.list;
             }
             return group.list.slice(0, limit);
+        },
+
+        listLimit(group) {
+            return group.type === 'completed' ? this.completedLimit : this.groupLimit;
         },
 
         listEmptyText(type) {
@@ -633,10 +716,6 @@ export default {
             if (!column || column.count === 0) {
                 return;
             }
-            // 快照后新出现数据的隐藏组，用户主动点击时补入显示
-            if (this.visibleSnapshot !== null && !this.visibleSnapshot.includes(type)) {
-                this.visibleSnapshot = [...this.visibleSnapshot, type];
-            }
             if (this.isCollapsed(type)) {
                 this.toggleGroup(type);
             }
@@ -670,6 +749,29 @@ export default {
 
         openTask(task) {
             this.$store.dispatch("openTask", task)
+        },
+
+        createTask() {
+            this.$emit('on-click', 'addTask');
+        },
+
+        createProject() {
+            this.$emit('on-click', 'addProject');
+        },
+
+        completedText(completeAt) {
+            if (!completeAt) {
+                return '';
+            }
+            const date = $A.dayjs(completeAt);
+            const now = $A.daytz(this.nowTime);
+            if (date.format('YYYY-MM-DD') === now.format('YYYY-MM-DD')) {
+                return `${this.$L('今天')} ${date.format('HH:mm')}`;
+            }
+            if (date.format('YYYY-MM-DD') === now.clone().subtract(1, 'day').format('YYYY-MM-DD')) {
+                return `${this.$L('昨天')} ${date.format('HH:mm')}`;
+            }
+            return `${this.$L('(*)月(*)日', date.month() + 1, date.date())} ${date.format('HH:mm')}`;
         },
 
         openMenu(event, task) {

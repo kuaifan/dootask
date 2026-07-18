@@ -1113,6 +1113,8 @@ export default {
      */
     handleClearCache({state, dispatch}, userData) {
         return new Promise(async resolve => {
+            state.loadDashboardTasks = null;
+
             // localStorage
             const keys = ['themeConf', 'languageName', 'keyboardConf'];
             const savedData = keys.reduce((acc, key) => ({

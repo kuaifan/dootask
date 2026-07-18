@@ -656,6 +656,18 @@
                     color: #8ba3c9;
                 }
             }
+            &.group-completed {
+                background: rgba(231, 245, 236, 0.72);
+                .group-dot {
+                    background: #1e9e55;
+                }
+                .group-title {
+                    color: #287a4b;
+                }
+                .group-chevron {
+                    color: #8db89c;
+                }
+            }
 
             &.group-flash {
                 box-shadow: inset 0 0 0 2px #1e9e55;
@@ -668,21 +680,134 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 60px 20px;
+            padding: 48px 30px 42px;
             color: #a2a89f;
             font-size: 13px;
+
+            .empty-state-loading {
+                min-height: 260px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .empty-state-content {
+                width: min(100%, 720px);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
 
             .empty-icon {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                width: 40px;
-                height: 40px;
+                width: 48px;
+                height: 48px;
                 border-radius: 50%;
                 background: #e7f5ec;
                 color: #1e9e55;
-                font-size: 20px;
+                font-size: 23px;
+
+                &.empty-icon-new {
+                    background: #fff4e5;
+                    color: #c47316;
+                }
+            }
+
+            .empty-state-title {
+                margin-top: 16px;
+                color: #22261f;
+                font-size: 18px;
+                font-weight: 600;
+                line-height: 1.4;
+            }
+
+            .empty-state-summary {
+                margin-top: 8px;
+                color: #7a8078;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .empty-state-actions {
+                margin-top: 19px;
+
+                .ivu-btn {
+                    min-width: 112px;
+                }
+            }
+
+            .empty-state-hint {
+                margin-top: 14px;
+                color: #a2a89f;
+                font-size: 12px;
+            }
+
+            .recent-completed-list {
+                width: min(100%, 680px);
+                margin-top: 30px;
+                border-top: 1px solid #ecefe9;
+                text-align: left;
+            }
+
+            .recent-completed-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 14px 0 8px;
+                color: #6f776e;
+                font-size: 12px;
+
+                > em {
+                    color: #a2a89f;
+                    font-size: 11px;
+                    font-style: normal;
+                }
+            }
+
+            .recent-completed-row {
+                display: grid;
+                grid-template-columns: 22px minmax(0, 1fr) 130px 82px;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 0;
+                border-top: 1px solid #f0f2ee;
+                color: #4f584f;
+                cursor: pointer;
+                text-align: left;
+
+                &:hover {
+                    color: #22261f;
+                }
+            }
+
+            .recent-completed-check {
+                color: $primary-color;
+                font-size: 18px;
+            }
+
+            .recent-completed-name,
+            .recent-completed-project,
+            .recent-completed-time {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .recent-completed-name {
+                font-size: 13px;
+            }
+
+            .recent-completed-project,
+            .recent-completed-time {
+                color: #a2a89f;
+                font-size: 11.5px;
+            }
+
+            .recent-completed-time {
+                text-align: right;
             }
         }
 
@@ -1213,12 +1338,21 @@
                 }
 
                 .f-priority {
-                    display: block;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
                     color: #7a8078;
                     font-size: 12px;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
+
+                    > i {
+                        flex-shrink: 0;
+                    }
+
+                    > span {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
                 }
 
                 .f-status {
@@ -1280,6 +1414,10 @@
                     display: none;
                 }
             }
+
+            .recent-completed-list .recent-completed-row {
+                grid-template-columns: 22px minmax(0, 1fr) 100px 78px;
+            }
         }
 
         .dashboard-team {
@@ -1310,6 +1448,14 @@
 
                 .cell-name .name-status {
                     display: inline-block;
+                }
+            }
+
+            .recent-completed-list .recent-completed-row {
+                grid-template-columns: 22px minmax(0, 1fr) 78px;
+
+                .recent-completed-project {
+                    display: none;
                 }
             }
         }
@@ -1435,6 +1581,18 @@ body.window-portrait {
 
                 .cell-name .name-status {
                     display: inline-block;
+                }
+            }
+
+            .table-all-empty {
+                padding: 38px 14px 30px;
+
+                .empty-state-title {
+                    font-size: 16px;
+                }
+
+                .recent-completed-list {
+                    margin-top: 24px;
                 }
             }
 
