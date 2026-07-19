@@ -11,15 +11,15 @@
 #   - 项目内弹窗类（project_settings/member/flow 等需组件接线）二期再加
 
 version: 1
-last_updated: 2026-06-10
+last_updated: 2026-07-19
 
 links:
 
   # ===== 顶层功能页 =====
   dashboard:
     title: 仪表盘
-    aliases: [仪表盘, 工作台, 首页]
-    description: 个人工作台首页（待办、项目概览）
+    aliases: [仪表盘, 工作台, 首页, 部门任务总览, 团队仪表盘]
+    description: 个人任务工作台；部门负责人还可切换查看团队任务总览
 
   messenger:
     title: 消息

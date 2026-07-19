@@ -13,7 +13,7 @@
 # （OCR）已下线，改由多模态模型直接理解图片。
 
 version: 1
-last_updated: 2026-06-12
+last_updated: 2026-07-19
 
 tools:
 
@@ -31,7 +31,7 @@ tools:
   # ===== 任务 =====
   list_tasks:
     description: 列表获取用户相关任务，支持状态/项目/时间范围筛选
-    related_features: [task]
+    related_features: [task, dashboard]
     typical_chunk_types: [howto]
 
   get_task:
@@ -46,12 +46,12 @@ tools:
 
   update_task:
     description: 更新任务属性
-    related_features: [task]
+    related_features: [task, dashboard]
     typical_chunk_types: [howto]
 
   complete_task:
     description: 标记任务完成
-    related_features: [task]
+    related_features: [task, dashboard]
     typical_chunk_types: [howto]
 
   delete_task:

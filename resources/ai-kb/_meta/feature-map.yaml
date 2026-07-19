@@ -12,7 +12,7 @@
 #   chunks         实际起草后填入的 chunk id 清单（增量）
 
 version: 1
-last_updated: 2026-06-09
+last_updated: 2026-07-19
 
 features:
 
@@ -22,7 +22,7 @@ features:
     scope: end-user
     batch: B1
     priority: P0
-    chunk_count_est: 8
+    chunk_count_est: 16
     owner: ~
     status: drafted
     chunks:
@@ -34,6 +34,14 @@ features:
       - dashboard.assist.howto
       - dashboard.collapse.howto
       - dashboard.refresh.faq
+      - dashboard.layout.howto
+      - dashboard.upcoming.howto
+      - dashboard.completed.howto
+      - dashboard.empty-state.faq
+      - dashboard.team.concept
+      - dashboard.team-scope.howto
+      - dashboard.team-focus.howto
+      - dashboard.team-refresh.faq
 
   - id: calendar
     name: 日历
@@ -846,8 +854,8 @@ features:
 # ----------------------------------------------------------------
 # 总览（P0 估算; 实际起草时按需调整）
 #
-#   B1: dashboard(8) + calendar(12) + messenger(40) + file(25)
-#       + project(30) + task(40) = 155
+#   B1: dashboard(16) + calendar(12) + messenger(40) + file(25)
+#       + project(30) + task(40) = 163
 #   B2: view(12) + meeting(12) + report(15) + approve(20)
 #       + checkin(15) + okr(12) = 86
 #   B3: application(5) + app-system(15) + app-admin(10) + micro-app(8)

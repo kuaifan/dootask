@@ -64,8 +64,8 @@ tests:
     q: "仪表盘上有哪些卡片？"
     locale: zh
     expected_chunk_ids: [dashboard.concept]
-    expected_answer: "仪表盘顶部有「今日到期 / 超期任务 / 待完成任务」3 个统计卡片，下方按今日到期、超期、待完成、协助的任务分组列出任务，是个人工作台。"
-    must_say: [仪表盘, 卡片]
+    expected_answer: "个人视角顶部有「已超期 / 今日到期 / 待完成 / 我协助的」4 张摘要卡，待完成卡还会提示待开始数量；列表布局另有待开始和本周完成分组。符合条件的部门负责人还能切换团队视角，查看未完成、已超期、3 天内到期、本周完成等团队指标。"
+    must_say: [已超期, 今日到期, 待完成, 我协助的]
     must_not_say: []
     bucket: easy
     feature: dashboard

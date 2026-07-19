@@ -18,7 +18,7 @@ negative:
   - 日历**没有独立的事件表**，全部从 ProjectTask 派生
   - 不显示会议（Meeting）、签到、报告，仅显示任务
   - 仅显示当前用户作为负责人（owner=1）的任务，不显示协作任务
-last_verified: v1.7.90
+last_verified: v1.8.69
 ---
 
 # 日历是什么 / 数据源
@@ -42,7 +42,7 @@ DooTask 日历是把 [[task.field.deadline.concept]] 有 end_at 的任务按时�
 详见 [[calendar.allday.concept]]。
 
 ## 与其他模块的关系
-- **仪表盘**（[[dashboard.concept]]）：列表形式，按今日 / 超期 / 待完成分类，不显示位置
+- **仪表盘**（[[dashboard.concept]]）：个人视角按已超期 / 今日到期 / 待完成 / 待开始 / 协助 / 本周完成分类，不显示日历位置
 - **任务列表**：按列表展示，可看已完成 / 已归档
 - **日历**：按时间格展示，仅未归档 + 有 end_at + 我是负责人
 
