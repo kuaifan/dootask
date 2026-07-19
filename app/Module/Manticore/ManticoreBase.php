@@ -2192,9 +2192,7 @@ class ManticoreBase
             $current[] = $item;
             $currentBytes += $item['bytes'];
         }
-        if (!empty($current)) {
-            $chunks[] = $current;
-        }
+        $chunks[] = $current;
 
         $successCount = 0;
         foreach ($chunks as $chunk) {
