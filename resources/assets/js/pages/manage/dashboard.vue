@@ -660,20 +660,16 @@ export default {
 
         /**
          * 策略快照（行动优先）：
-         * - 显示的组默认展开；「待完成」量大且行动优先级低，超期或今日到期有数据时默认收起
+         * - 显示的组默认展开；超期或今日到期有数据时，「待开始」默认收起
          */
         takeSnapshot() {
             const counts = {
                 overdue: this.dashboardTask.overdue_count,
                 today: this.dashboardTask.today_count,
-                todo: this.dashboardTask.todo_count,
                 upcoming: this.upcomingTask.count,
                 assist: this.assistTask.length,
             };
             const collapsed = [];
-            if (counts.todo > 0 && (counts.overdue > 0 || counts.today > 0)) {
-                collapsed.push('todo');
-            }
             if (counts.upcoming > 0 && (counts.overdue > 0 || counts.today > 0)) {
                 collapsed.push('upcoming');
             }
