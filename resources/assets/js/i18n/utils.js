@@ -1,4 +1,6 @@
 export default {
+    contextKeyPattern: /^\[([a-z][a-z0-9_]*)]\.([\s\S]+)$/,
+
     /**
      * 语言类型
      */
@@ -44,6 +46,16 @@ export default {
      */
     normalizeArgumentsLanguage(text) {
         return text.replace(/\(%[TM]\d+\)/g, "(*)");
+    },
+
+    /**
+     * 移除翻译上下文前缀，例如 [weekday].一 -> 一
+     */
+    stripContextLanguageKey(text) {
+        if (typeof text !== "string") {
+            return text;
+        }
+        return text.match(this.contextKeyPattern)?.[2] || text;
     },
 
     /**

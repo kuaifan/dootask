@@ -21,9 +21,9 @@
                     </ButtonGroup>
                 </div>
                 <ButtonGroup class="calendar-view">
-                    <Button @click="setView('day')" :type="options.view == 'day' ? 'primary' : 'default'">{{ $L('日') }}</Button>
-                    <Button @click="setView('week')" :type="options.view == 'week' ? 'primary' : 'default'">{{ $L('周') }}</Button>
-                    <Button @click="setView('month')" :type="options.view == 'month' ? 'primary' : 'default'">{{ $L('月') }}</Button>
+                    <Button @click="setView('day')" :type="options.view == 'day' ? 'primary' : 'default'">{{ $L('[calendar_view].日') }}</Button>
+                    <Button @click="setView('week')" :type="options.view == 'week' ? 'primary' : 'default'">{{ $L('[calendar_view].周') }}</Button>
+                    <Button @click="setView('month')" :type="options.view == 'month' ? 'primary' : 'default'">{{ $L('[calendar_view].月') }}</Button>
                 </ButtonGroup>
             </div>
         </div>

@@ -44,6 +44,8 @@ description: 从 `pro` 分支发布 DooTask 前端新版本：翻译 → 版本�
 
 多语言数据流：`language/original-{web,api}.txt`（原文/简体中文）→ 经翻译写入 `language/translate.json`（含 9 种语言）→ 生成 `public/language/{web,api}/*`。
 
+上下文翻译键用于保持短文案的界面宽度，同时区分不同语义，格式固定为 `[lower_snake_case].原文`，例如 `[weekday].一`、`[task_unit].个`。上下文前缀只参与翻译查找，不参与显示；运行时完整键缺失时会回退普通原文键。普通 key 的 `zh` 留空，上下文 key 的 `zh` 必须填写去掉前缀后的原文。
+
 **1.1 检测差异**
 
 ```shell
@@ -55,11 +57,11 @@ php .claude/skills/dootask-release/scripts/language.php diff
 - `regexErrorCount > 0`：translate.json **已有条目**的占位符与某语言值不一致 → **停止**，报告 `regexErrors`，交用户修复（这是历史数据问题，不要自行猜测修改）
 - `redundantCount > 0`：translate.json 里有、但原文已删除的条目 → 仅作提示（apply 时会自动剔除，不致命）
 - `needsCount == 0`：无新文案 → **跳到 1.4 直接生成**
-- `needsCount > 0`：`needs` 数组即待翻译清单，每项 `key` 已转成占位符形式（如 `(%T1)`）→ 进入 1.2
+- `needsCount > 0`：`needs` 数组即待翻译清单，每项 `key` 已转成占位符形式（如 `(%T1)`）；上下文 key 还会带自动填充的 `zh` → 进入 1.2
 
 **1.2 翻译**
 
-对 `needs` 里的每个 `key`，翻成 8 种语言（`zh` 留空、`key` 原样保留）：`zh-CHT` `en` `ko` `ja` `de` `fr` `id` `ru`。
+对 `needs` 里的每个 `key`，翻成 8 种语言（`key` 原样保留）：`zh-CHT` `en` `ko` `ja` `de` `fr` `id` `ru`。普通 key 的 `zh` 留空；上下文 key 的 `zh` 使用 `needs` 已给出的原文，不得留空或改写。
 
 要求：贴合「项目任务管理系统」语境；占位符 `(%T1)`/`(%M1)` 等原样保留、不可增删改，位置可随目标语言语序调整：
 
@@ -69,11 +71,19 @@ php .claude/skills/dootask-release/scripts/language.php diff
 | (%T1)提交的「(%M2)」待你审批 | '(%M2)' submitted by (%T1) is waiting for your approval |
 
 把结果写成一个 JSON 数组文件（建议放 `/tmp/dootask-release-translated.json`，避免污染工作区），每个元素含全部 10 个字段，顺序为：
-`key, zh, zh-CHT, en, ko, ja, de, fr, id, ru`（`zh` 写 `""`）。
+`key, zh, zh-CHT, en, ko, ja, de, fr, id, ru`。
 
 ```json
 [
   {"key":"...(%T1)...","zh":"","zh-CHT":"...","en":"...","ko":"...","ja":"...","de":"...","fr":"...","id":"...","ru":"..."}
+]
+```
+
+上下文短词示例：
+
+```json
+[
+  {"key":"[task_unit].个","zh":"个","zh-CHT":"個","en":"tasks","ko":"개 작업","ja":"タスク","de":"Aufgaben","fr":"tâches","id":"tugas","ru":"задач"}
 ]
 ```
 
@@ -83,7 +93,7 @@ php .claude/skills/dootask-release/scripts/language.php diff
 php .claude/skills/dootask-release/scripts/language.php apply /tmp/dootask-release-translated.json
 ```
 
-脚本会校验字段完整性与占位符完整性、追加新条目、剔除冗余项，并按项目原生格式写回 `translate.json`。参数化 key 必须使用 `(%T1)`/`(%M1)` 形式，禁止输入 raw `(*)`/`(**)`；编号须按出现顺序从 1 连续递增，各语言值可调整占位符顺序，但占位符的类型、编号和数量必须与 key 完全一致。输入 JSON 内相同或规范化后相同的 key 会被拒绝；已存在于 `translate.json` 的非待补项也会被拒绝，避免覆盖歧义。任一条不合格会明确报错并停止，按提示修正翻译后重试。
+脚本会校验字段完整性、占位符完整性与上下文键格式，追加新条目、剔除冗余项，并按项目原生格式写回 `translate.json`。参数化 key 必须使用 `(%T1)`/`(%M1)` 形式，禁止输入 raw `(*)`/`(**)`；编号须按出现顺序从 1 连续递增，各语言值可调整占位符顺序，但占位符的类型、编号和数量必须与 key 完全一致。上下文 key 必须使用 `[lower_snake_case].原文`，且 `zh` 必须与原文部分完全一致。输入 JSON 内相同或规范化后相同的 key 会被拒绝；已存在于 `translate.json` 的非待补项也会被拒绝，避免覆盖歧义。任一条不合格会明确报错并停止，按提示修正翻译后重试。
 
 **1.4 生成前端/后端语言文件**
 

@@ -42,8 +42,10 @@ function initLanguage() {
                 if (typeof languageList[language] === "undefined") {
                     continue
                 }
-                const result = window.LANGUAGE_DATA[language][index] || key
-                languageCache.set(`${key}-${language}`, result);
+                const result = window.LANGUAGE_DATA[language][index]
+                if (result || utils.stripContextLanguageKey(key) === key) {
+                    languageCache.set(`${key}-${language}`, result || key);
+                }
             }
         }
     })
@@ -122,19 +124,30 @@ function switchLanguage(inputString) {
         return inputString
     }
 
+    const fallbackString = utils.stripContextLanguageKey(inputString);
+    const lookupStrings = fallbackString === inputString ? [inputString] : [inputString, fallbackString];
+
     if (arguments.length > 1) {
-        const templateKey = `${inputString}-${languageName}`;
-        if (languageTemplateCache.has(templateKey)) {
-            const {text, translateArguments} = languageTemplateCache.get(templateKey);
-            if (!text) {
-                return utils.replaceArgumentsLanguage(inputString, arguments);
+        for (const lookupString of lookupStrings) {
+            const templateKey = `${lookupString}-${languageName}`;
+            const template = languageTemplateCache.get(templateKey);
+            if (!template?.text) {
+                continue;
             }
-            return text.replace(/\(%[TM](\d+)\)/g, (_, index) => {
+            return template.text.replace(/\(%[TM](\d+)\)/g, (_, index) => {
                 const value = utils.getArgumentLanguage(arguments[index]);
-                return translateArguments.has(index) ? switchLanguage(String(value)) : value;
+                return template.translateArguments.has(index) ? switchLanguage(String(value)) : value;
             });
         }
-        inputString = utils.replaceArgumentsLanguage(inputString, arguments)
+        inputString = utils.replaceArgumentsLanguage(fallbackString, arguments)
+    } else {
+        for (const lookupString of lookupStrings) {
+            const result = languageCache.get(`${lookupString}-${languageName}`);
+            if (result) {
+                return result;
+            }
+        }
+        inputString = fallbackString;
     }
 
     // 读取缓存

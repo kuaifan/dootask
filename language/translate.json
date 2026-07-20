@@ -10848,162 +10848,6 @@
         "ru": "По умолчанию"
     },
     {
-        "key": "一",
-        "zh": "",
-        "zh-CHT": "一",
-        "en": "One",
-        "ko": "하나",
-        "ja": "一",
-        "de": "Eins",
-        "fr": "Un",
-        "id": "Satu",
-        "ru": "Один"
-    },
-    {
-        "key": "三",
-        "zh": "",
-        "zh-CHT": "三",
-        "en": "Three",
-        "ko": "셋",
-        "ja": "三",
-        "de": "Drei",
-        "fr": "Trois",
-        "id": "Tiga",
-        "ru": "Три"
-    },
-    {
-        "key": "二",
-        "zh": "",
-        "zh-CHT": "二",
-        "en": "Two",
-        "ko": "둘",
-        "ja": "二",
-        "de": "Zwei",
-        "fr": "Deux",
-        "id": "Dua",
-        "ru": "Два"
-    },
-    {
-        "key": "五",
-        "zh": "",
-        "zh-CHT": "五",
-        "en": "Five",
-        "ko": "다섯",
-        "ja": "五",
-        "de": "Fünf",
-        "fr": "Cinq",
-        "id": "Lima",
-        "ru": "Пять"
-    },
-    {
-        "key": "你",
-        "zh": "",
-        "zh-CHT": "你",
-        "en": "You",
-        "ko": "당신",
-        "ja": "あなた",
-        "de": "Du",
-        "fr": "Vous",
-        "id": "Anda",
-        "ru": "Вы"
-    },
-    {
-        "key": "六",
-        "zh": "",
-        "zh-CHT": "六",
-        "en": "Six",
-        "ko": "여섯",
-        "ja": "六",
-        "de": "Sechs",
-        "fr": "Six",
-        "id": "Enam",
-        "ru": "Шесть"
-    },
-    {
-        "key": "周",
-        "zh": "",
-        "zh-CHT": "周",
-        "en": "Week",
-        "ko": "주",
-        "ja": "週",
-        "de": "Woche",
-        "fr": "Semaine",
-        "id": "Minggu",
-        "ru": "Неделя"
-    },
-    {
-        "key": "四",
-        "zh": "",
-        "zh-CHT": "四",
-        "en": "Four",
-        "ko": "넷",
-        "ja": "四",
-        "de": "Vier",
-        "fr": "Quatre",
-        "id": "Empat",
-        "ru": "Четыре"
-    },
-    {
-        "key": "天",
-        "zh": "",
-        "zh-CHT": "天",
-        "en": "Day",
-        "ko": "일",
-        "ja": "日",
-        "de": "Tag",
-        "fr": "Jour",
-        "id": "Hari",
-        "ru": "День"
-    },
-    {
-        "key": "或",
-        "zh": "",
-        "zh-CHT": "或",
-        "en": "Or",
-        "ko": "또는",
-        "ja": "または",
-        "de": "Oder",
-        "fr": "Ou",
-        "id": "Atau",
-        "ru": "Или"
-    },
-    {
-        "key": "日",
-        "zh": "",
-        "zh-CHT": "日",
-        "en": "Day",
-        "ko": "일",
-        "ja": "日",
-        "de": "Tag",
-        "fr": "Jour",
-        "id": "Hari",
-        "ru": "День"
-    },
-    {
-        "key": "月",
-        "zh": "",
-        "zh-CHT": "月",
-        "en": "Month",
-        "ko": "월",
-        "ja": "月",
-        "de": "Monat",
-        "fr": "Mois",
-        "id": "Bulan",
-        "ru": "Месяц"
-    },
-    {
-        "key": "秒",
-        "zh": "",
-        "zh-CHT": "秒",
-        "en": "Second",
-        "ko": "초",
-        "ja": "秒",
-        "de": "Sekunde",
-        "fr": "Seconde",
-        "id": "Detik",
-        "ru": "Секунда"
-    },
-    {
         "key": "(%T1)秒",
         "zh": "",
         "zh-CHT": "(%T1)秒",
@@ -11014,18 +10858,6 @@
         "fr": "(%T1) secondes",
         "id": "(%T1) detik",
         "ru": "(%T1) секунд"
-    },
-    {
-        "key": "给",
-        "zh": "",
-        "zh-CHT": "給",
-        "en": "Give",
-        "ko": "주다",
-        "ja": "与える",
-        "de": "Geben",
-        "fr": "Donner",
-        "id": "Beri",
-        "ru": "Дать"
     },
     {
         "key": "不在有效时间内，有效时间为：(%T1)",
@@ -15648,18 +15480,6 @@
         "ru": "Инициировать цепочку ответов"
     },
     {
-        "key": "由",
-        "zh": "",
-        "zh-CHT": "由",
-        "en": "By",
-        "ko": "작성자",
-        "ja": "作成者",
-        "de": "Von",
-        "fr": "Par",
-        "id": "Oleh",
-        "ru": "От"
-    },
-    {
         "key": "发起接龙，参与接龙目前共(%T1)人",
         "zh": "",
         "zh-CHT": "發起接龍，參與接龍目前共(%T1)人",
@@ -15742,18 +15562,6 @@
         "fr": "Continuer l'envoi",
         "id": "Lanjutkan Pengiriman",
         "ru": "Продолжить отправку"
-    },
-    {
-        "key": "例",
-        "zh": "",
-        "zh-CHT": "例",
-        "en": "Example",
-        "ko": "예시",
-        "ja": "例",
-        "de": "Beispiel",
-        "fr": "Exemple",
-        "id": "Contoh",
-        "ru": "Пример"
     },
     {
         "key": "接龙结果",
@@ -15946,18 +15754,6 @@
         "fr": "Voter maintenant",
         "id": "Voting Sekarang",
         "ru": "Голосовать сейчас"
-    },
-    {
-        "key": "票",
-        "zh": "",
-        "zh-CHT": "票",
-        "en": "Votes",
-        "ko": "표",
-        "ja": "票",
-        "de": "Stimmen",
-        "fr": "Votes",
-        "id": "Suara",
-        "ru": "Голоса"
     },
     {
         "key": "再次发送",
@@ -29328,18 +29124,6 @@
         "ru": "Название сессии"
     },
     {
-        "key": "值",
-        "zh": "",
-        "zh-CHT": "值",
-        "en": "Value",
-        "ko": "값",
-        "ja": "値",
-        "de": "Wert",
-        "fr": "Valeur",
-        "id": "Nilai",
-        "ru": "Значение"
-    },
-    {
         "key": "结果",
         "zh": "",
         "zh-CHT": "結果",
@@ -29698,18 +29482,6 @@
         "fr": "Rayon",
         "id": "Radius",
         "ru": "Радиус"
-    },
-    {
-        "key": "米",
-        "zh": "",
-        "zh-CHT": "米",
-        "en": "meters",
-        "ko": "미터",
-        "ja": "メートル",
-        "de": "Meter",
-        "fr": "mètres",
-        "id": "meter",
-        "ru": "метры"
     },
     {
         "key": "经度",
@@ -36864,18 +36636,6 @@
         "ru": "Следующий цикл"
     },
     {
-        "key": "每",
-        "zh": "",
-        "zh-CHT": "每",
-        "en": "Every",
-        "ko": "매",
-        "ja": "毎",
-        "de": "Alle",
-        "fr": "Tous les",
-        "id": "Setiap",
-        "ru": "Каждые"
-    },
-    {
         "key": "共(%T1)个",
         "zh": "",
         "zh-CHT": "共(%T1)個",
@@ -36898,18 +36658,6 @@
         "fr": "L’autorisation des notifications n’est pas activée",
         "id": "Izin notifikasi belum diaktifkan",
         "ru": "Разрешение на уведомления не включено"
-    },
-    {
-        "key": "个",
-        "zh": "",
-        "zh-CHT": "個",
-        "en": "items",
-        "ko": "개",
-        "ja": "個",
-        "de": "Elemente",
-        "fr": "éléments",
-        "id": "item",
-        "ru": "шт."
     },
     {
         "key": "使用端到端加密传输数据。",
@@ -37282,18 +37030,6 @@
         "fr": "(%T1) personnes",
         "id": "(%T1) orang",
         "ru": "(%T1) чел."
-    },
-    {
-        "key": "项",
-        "zh": "",
-        "zh-CHT": "項",
-        "en": "items",
-        "ko": "항목",
-        "ja": "項目",
-        "de": "Elemente",
-        "fr": "éléments",
-        "id": "item",
-        "ru": "элементов"
     },
     {
         "key": "最久 (%T1) 天",
@@ -38326,5 +38062,245 @@
         "fr": "Télécharger (%T1) en paquet",
         "id": "Unduh paket (%T1)",
         "ru": "Скачать пакет (%T1)"
+    },
+    {
+        "key": "[calendar_view].日",
+        "zh": "日",
+        "zh-CHT": "日",
+        "en": "Day",
+        "ko": "일",
+        "ja": "日",
+        "de": "Tag",
+        "fr": "Jour",
+        "id": "Hari",
+        "ru": "День"
+    },
+    {
+        "key": "[calendar_view].周",
+        "zh": "周",
+        "zh-CHT": "週",
+        "en": "Week",
+        "ko": "주",
+        "ja": "週",
+        "de": "Woche",
+        "fr": "Semaine",
+        "id": "Minggu",
+        "ru": "Неделя"
+    },
+    {
+        "key": "[calendar_view].月",
+        "zh": "月",
+        "zh-CHT": "月",
+        "en": "Month",
+        "ko": "월",
+        "ja": "月",
+        "de": "Monat",
+        "fr": "Mois",
+        "id": "Bulan",
+        "ru": "Месяц"
+    },
+    {
+        "key": "[day_unit].天",
+        "zh": "天",
+        "zh-CHT": "天",
+        "en": "days",
+        "ko": "일",
+        "ja": "日",
+        "de": "Tage",
+        "fr": "jours",
+        "id": "hari",
+        "ru": "дн."
+    },
+    {
+        "key": "[distance_unit].米",
+        "zh": "米",
+        "zh-CHT": "米",
+        "en": "meters",
+        "ko": "미터",
+        "ja": "メートル",
+        "de": "Meter",
+        "fr": "mètres",
+        "id": "meter",
+        "ru": "метры"
+    },
+    {
+        "key": "[example_label].例",
+        "zh": "例",
+        "zh-CHT": "例",
+        "en": "Example",
+        "ko": "예시",
+        "ja": "例",
+        "de": "Beispiel",
+        "fr": "Exemple",
+        "id": "Contoh",
+        "ru": "Пример"
+    },
+    {
+        "key": "[initiator_label].由",
+        "zh": "由",
+        "zh-CHT": "由",
+        "en": "By",
+        "ko": "작성자",
+        "ja": "作成者",
+        "de": "Von",
+        "fr": "Par",
+        "id": "Oleh",
+        "ru": "От"
+    },
+    {
+        "key": "[recurrence_prefix].每",
+        "zh": "每",
+        "zh-CHT": "每",
+        "en": "Every",
+        "ko": "매",
+        "ja": "毎",
+        "de": "Alle",
+        "fr": "Tous les",
+        "id": "Setiap",
+        "ru": "Каждые"
+    },
+    {
+        "key": "[self_sender].你",
+        "zh": "你",
+        "zh-CHT": "你",
+        "en": "You",
+        "ko": "나",
+        "ja": "あなた",
+        "de": "Du",
+        "fr": "Vous",
+        "id": "Anda",
+        "ru": "Вы"
+    },
+    {
+        "key": "[task_unit].个",
+        "zh": "个",
+        "zh-CHT": "個",
+        "en": "tasks",
+        "ko": "개",
+        "ja": "件",
+        "de": "Aufgaben",
+        "fr": "tâches",
+        "id": "tugas",
+        "ru": "задач"
+    },
+    {
+        "key": "[task_unit].项",
+        "zh": "项",
+        "zh-CHT": "項",
+        "en": "tasks",
+        "ko": "개",
+        "ja": "件",
+        "de": "Aufgaben",
+        "fr": "tâches",
+        "id": "tugas",
+        "ru": "задач"
+    },
+    {
+        "key": "[todo_target].给",
+        "zh": "给",
+        "zh-CHT": "給",
+        "en": "For",
+        "ko": "대상",
+        "ja": "対象",
+        "de": "Für",
+        "fr": "Pour",
+        "id": "Untuk",
+        "ru": "Для"
+    },
+    {
+        "key": "[vote_unit].票",
+        "zh": "票",
+        "zh-CHT": "票",
+        "en": "votes",
+        "ko": "표",
+        "ja": "票",
+        "de": "Stimmen",
+        "fr": "votes",
+        "id": "suara",
+        "ru": "голосов"
+    },
+    {
+        "key": "[weekday].日",
+        "zh": "日",
+        "zh-CHT": "日",
+        "en": "Sun",
+        "ko": "일",
+        "ja": "日",
+        "de": "So",
+        "fr": "Dim",
+        "id": "Min",
+        "ru": "Вс"
+    },
+    {
+        "key": "[weekday].一",
+        "zh": "一",
+        "zh-CHT": "一",
+        "en": "Mon",
+        "ko": "월",
+        "ja": "月",
+        "de": "Mo",
+        "fr": "Lun",
+        "id": "Sen",
+        "ru": "Пн"
+    },
+    {
+        "key": "[weekday].二",
+        "zh": "二",
+        "zh-CHT": "二",
+        "en": "Tue",
+        "ko": "화",
+        "ja": "火",
+        "de": "Di",
+        "fr": "Mar",
+        "id": "Sel",
+        "ru": "Вт"
+    },
+    {
+        "key": "[weekday].三",
+        "zh": "三",
+        "zh-CHT": "三",
+        "en": "Wed",
+        "ko": "수",
+        "ja": "水",
+        "de": "Mi",
+        "fr": "Mer",
+        "id": "Rab",
+        "ru": "Ср"
+    },
+    {
+        "key": "[weekday].四",
+        "zh": "四",
+        "zh-CHT": "四",
+        "en": "Thu",
+        "ko": "목",
+        "ja": "木",
+        "de": "Do",
+        "fr": "Jeu",
+        "id": "Kam",
+        "ru": "Чт"
+    },
+    {
+        "key": "[weekday].五",
+        "zh": "五",
+        "zh-CHT": "五",
+        "en": "Fri",
+        "ko": "금",
+        "ja": "金",
+        "de": "Fr",
+        "fr": "Ven",
+        "id": "Jum",
+        "ru": "Пт"
+    },
+    {
+        "key": "[weekday].六",
+        "zh": "六",
+        "zh-CHT": "六",
+        "en": "Sat",
+        "ko": "토",
+        "ja": "土",
+        "de": "Sa",
+        "fr": "Sam",
+        "id": "Sab",
+        "ru": "Сб"
     }
 ]

@@ -116,7 +116,7 @@
                         <ETooltip v-if="formDatum.auto_archived=='open'" placement="right" :disabled="$isEEUIApp || windowTouch">
                             <div class="setting-auto-day">
                                 <Input v-model="formDatum.archived_day" type="number">
-                                    <span slot="append">{{$L('天')}}</span>
+                                    <span slot="append">{{$L('[day_unit].天')}}</span>
                                 </Input>
                             </div>
                             <div slot="content">{{$L('任务完成(*)天后自动归档。', formDatum.archived_day || 'n')}}</div>
@@ -163,7 +163,7 @@
                         <div style="width: 110px;">
                             <Input type="number" number v-model="formDatum.task_user_limit" @on-keyup="$A.inputNumberLimit($event, 1, 2000)">
                                 <template #append>
-                                    <span>{{$L('个')}}</span>
+                                    <span>{{$L('[task_unit].个')}}</span>
                                 </template>
                             </Input>
                         </div>

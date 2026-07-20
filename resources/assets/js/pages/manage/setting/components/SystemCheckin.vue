@@ -245,7 +245,7 @@
                         <div class="radius-control-body">
                             <Input :value="mapSelectPoint.radius" @on-change="onRadiusChange" @on-blur="onRadiusBlur">
                                 <span slot="prepend">{{ $L('半径') }}</span>
-                                <span slot="append">{{ $L('米') }}</span>
+                                <span slot="append">{{ $L('[distance_unit].米') }}</span>
                             </Input>
                             <div class="location-info">
                                 <div class="info-item">
@@ -258,7 +258,7 @@
                                 </div>
                                 <div class="info-item">
                                     <span class="info-label">{{ $L('半径') }}：</span>
-                                    <span class="info-value">{{ mapSelectPoint.radius || '-' }} {{ $L('米') }}</span>
+                                    <span class="info-value">{{ mapSelectPoint.radius || '-' }} {{ $L('[distance_unit].米') }}</span>
                                 </div>
                             </div>
                             <div class="radius-control-tip">

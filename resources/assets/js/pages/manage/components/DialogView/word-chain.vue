@@ -3,7 +3,7 @@
         <pre v-html="$A.formatTextMsg(msg.text, userId)"></pre>
         <ul :class="{'expand': unfoldWordChainData.indexOf(msgId) !== -1 }">
             <li v-for="(item) in (msg.list || []).filter(h=>h.type == 'case')">
-                {{ $L('例') }} {{ item.text }}
+                {{ $L('[example_label].例') }} {{ item.text }}
             </li>
             <li v-for="(item, index) in (msg.list || []).filter(h=>h.type != 'case' && h.text)">
                 <span class="expand" v-if="index == 2 && msg.list.length > 4" @click="unfoldWordChain">

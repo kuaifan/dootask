@@ -31,7 +31,7 @@
                 <span>{{ dialog.name }}</span>
             </div>
             <div class="initiate">
-                <span>{{ $L('由') }}</span>
+                <span>{{ $L('[initiator_label].由') }}</span>
                 <UserAvatar :userid="createId" :size="22" :showName="true" tooltipDisabled/>
                 <span> {{ $L('发起') }}</span>
             </div>

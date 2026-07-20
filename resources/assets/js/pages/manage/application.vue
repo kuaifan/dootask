@@ -280,7 +280,7 @@
                 </FormItem>
                 <FormItem prop="clear_day" :label="$L('消息保留')">
                     <Input v-model="mybotModifyData.clear_day" :maxlength="3" type="number" :placeholder="$L('默认：90天')">
-                        <div slot="append">{{ $L('天') }}</div>
+                        <div slot="append">{{ $L('[day_unit].天') }}</div>
                     </Input>
                 </FormItem>
                 <FormItem prop="webhook_url" label="Webhook">

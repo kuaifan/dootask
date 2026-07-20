@@ -77,21 +77,21 @@
                                 <div class="card-label">{{getTitle('overdue')}}</div>
                                 <div class="card-data">
                                     <span class="card-num num-red">{{dashboardTask.overdue_count}}</span>
-                                    <span class="card-sub">{{$L('项')}}<template v-if="overdueMaxDays > 0"> · {{$L('最久 (*) 天', overdueMaxDays)}}</template></span>
+                                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="overdueMaxDays > 0"> · {{$L('最久 (*) 天', overdueMaxDays)}}</template></span>
                                 </div>
                             </li>
                             <li :class="{'card-off': dashboardTask.today_count === 0}" @click="scrollTo('today')">
                                 <div class="card-label">{{getTitle('today')}}</div>
                                 <div class="card-data">
                                     <span class="card-num num-orange">{{dashboardTask.today_count}}</span>
-                                    <span class="card-sub">{{$L('项')}}<template v-if="todayNearest"> · {{$L('最近')}} {{todayNearest}}</template></span>
+                                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="todayNearest"> · {{$L('最近')}} {{todayNearest}}</template></span>
                                 </div>
                             </li>
                             <li :class="{'card-off': dashboardTask.todo_count === 0}" @click="scrollTo('todo')">
                                 <div class="card-label">{{getTitle('todo')}}</div>
                                 <div class="card-data">
                                     <span class="card-num">{{dashboardTask.todo_count}}</span>
-                                    <span class="card-sub">{{$L('项')}}</span>
+                                    <span class="card-sub">{{$L('[task_unit].项')}}</span>
                                 </div>
                                 <div v-if="upcomingTask.count > 0" class="duo-upcoming" @click.stop="scrollTo('upcoming')">
                                     <div class="side-num">{{upcomingTask.count}}</div>
@@ -102,7 +102,7 @@
                                 <div class="card-label">{{getTitle('assist')}}</div>
                                 <div class="card-data">
                                     <span class="card-num">{{assistTask.length}}</span>
-                                    <span class="card-sub">{{$L('项')}}<template v-if="assistTodayCount > 0"> · {{$L('今天 (*) 项到期', assistTodayCount)}}</template></span>
+                                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="assistTodayCount > 0"> · {{$L('今天 (*) 项到期', assistTodayCount)}}</template></span>
                                 </div>
                             </li>
                         </ul>

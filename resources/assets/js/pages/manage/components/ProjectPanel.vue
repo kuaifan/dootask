@@ -429,7 +429,7 @@
                         <div class="form-tip">{{$L('任务完成(*)天后自动归档。', settingData.archive_days || 'n')}}</div>
                         <div class="setting-auto-day">
                             <Input v-model="settingData.archive_days" type="number">
-                                <span slot="append">{{$L('天')}}</span>
+                                <span slot="append">{{$L('[day_unit].天')}}</span>
                             </Input>
                         </div>
                     </template>

@@ -65,6 +65,8 @@ const PARAMETER_TEST_RE = /\(%[TM]\d+\)/;
 const RAW_PARAMETER_TEST_RE = /\(\*{1,2}\)/;
 const NAMED_PARAMETER_RE = /\{[A-Za-z_][A-Za-z0-9_.-]*\}/g;
 const CHINESE_RE = /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/;
+const CONTEXT_KEY_RE = /^\[([a-z][a-z0-9_]*)]\.([\s\S]+)$/;
+const CONTEXT_KEY_PREFIX_RE = /^\[[^\]]+]\./;
 
 function normalizePath(file) {
     return file.split(sep).join("/");
@@ -107,6 +109,10 @@ function readOriginalLines(file) {
 
 function normalizeParameterKey(key) {
     return key.replace(/\(%T\d+\)/g, "(*)").replace(/\(%M\d+\)/g, "(**)");
+}
+
+function contextSourceKey(key) {
+    return key.match(CONTEXT_KEY_RE)?.[2] || null;
 }
 
 function placeholders(value) {
@@ -1016,6 +1022,12 @@ const originalDuplicates = [...originalLocations]
     .filter(([, lines]) => lines.length > 1)
     .map(([key, lines]) => ({ key, lines }));
 const originalKeySet = new Set(originalKeys);
+const originalContextErrors = originalLineItems.flatMap(item => {
+    if (!CONTEXT_KEY_PREFIX_RE.test(item.text)) return [];
+    const source = contextSourceKey(item.text);
+    if (!source) return [`language/original-web.txt:${item.line}：上下文翻译键格式错误「${item.text}」`];
+    return source.trim() === "" ? [`language/original-web.txt:${item.line}：上下文翻译键原文不能为空`] : [];
+});
 
 let translationRows = [];
 const translationFormatErrors = [];
@@ -1043,6 +1055,14 @@ for (const [index, row] of translationRows.entries()) {
         if (typeof row[field] !== "string") translationFormatErrors.push(`${location}.${field}：必须是字符串`);
     }
     if (typeof row.key !== "string") continue;
+    if (CONTEXT_KEY_PREFIX_RE.test(row.key)) {
+        const source = contextSourceKey(row.key);
+        if (!source) {
+            translationFormatErrors.push(`${location}.key：上下文翻译键格式错误「${row.key}」`);
+        } else if (row.zh !== source) {
+            translationFormatErrors.push(`${location}.zh：上下文翻译键必须填写原文「${source}」`);
+        }
+    }
     if (RAW_PARAMETER_TEST_RE.test(row.key)) rawTranslateKeys.push({ key: row.key, location });
     const keyParameters = placeholders(row.key);
     if (row.key.replace(PARAMETER_RE, "").includes("(%")) {
@@ -1089,6 +1109,7 @@ const missingFrontendTranslations = originalKeys
     .filter(key => !translationsByNormalizedKey.has(key))
     .map(key => ({ key, line: originalLocations.get(key)[0] }));
 const skipGeneratedIndexComparison = originalDuplicates.length > 0
+    || originalContextErrors.length > 0
     || normalizedDuplicates.length > 0
     || missingFrontendTranslations.length > 0
     || translationFormatErrors.length > 0
@@ -1105,6 +1126,7 @@ const blockerCounts = {
     "Vue 模板中文硬编码": frontend.templateTexts.length,
     "命名变量占位符": namedParameters.length,
     "original-web.txt 重复键": originalDuplicates.length,
+    "上下文翻译键格式错误": originalContextErrors.length,
     "translate.json raw (*)/(**) key": rawTranslateKeys.length,
     "translate.json 结构错误": translationFormatErrors.length,
     "translate.json 参数错误": translationParameterErrors.length,
@@ -1135,6 +1157,10 @@ if (namedParameters.length) {
 if (originalDuplicates.length) {
     console.log("\n-- original-web.txt 重复键 --");
     for (const item of originalDuplicates) console.log(`  行 ${item.lines.join(", ")} 「${item.key}」`);
+}
+if (originalContextErrors.length) {
+    console.log("\n-- 上下文翻译键格式错误 --");
+    for (const error of originalContextErrors) console.log(`  ${error}`);
 }
 if (rawTranslateKeys.length) {
     console.log("\n-- translate.json raw key（请改用 (%Tn)/(%Mn)）--");

@@ -54,6 +54,28 @@ function normalize_key(string $key): string
     return preg_replace(["/\(%T\d+\)/", "/\(%M\d+\)/"], ["(*)", "(**)"], $key);
 }
 
+function context_source_key(string $key): ?string
+{
+    if (preg_match('/^\[([a-z][a-z0-9_]*)]\.([\s\S]+)$/', $key, $matches)) {
+        return $matches[2];
+    }
+    return null;
+}
+
+function validate_original_contexts(array $originals): array
+{
+    $errors = [];
+    foreach ($originals as $index => $key) {
+        if (preg_match('/^\[[^\]]+]\./', $key) && context_source_key($key) === null) {
+            $errors[] = [
+                'location' => "originals[index $index]",
+                'message' => "上下文翻译键格式错误：$key",
+            ];
+        }
+    }
+    return $errors;
+}
+
 function validate_entry(array $obj, string $location, bool $requireTranslations): array
 {
     $formatErrors = [];
@@ -72,6 +94,17 @@ function validate_entry(array $obj, string $location, bool $requireTranslations)
     }
 
     $key = $obj['key'];
+    if (preg_match('/^\[[^\]]+]\./', $key)) {
+        $sourceKey = context_source_key($key);
+        if ($sourceKey === null) {
+            $formatErrors[] = ['location' => "$location.key", 'message' => "上下文翻译键格式错误：$key"];
+        } elseif (($obj['zh'] ?? null) !== $sourceKey) {
+            $formatErrors[] = [
+                'location' => "$location.zh",
+                'message' => "上下文翻译键必须填写原文：$sourceKey",
+            ];
+        }
+    }
     if (preg_match('/\(\*{1,2}\)/', $key)) {
         $formatErrors[] = [
             'location' => "$location.key",
@@ -134,7 +167,7 @@ function build_translations(array $originals): array
     $translations = [];
     $redundants = [];
     $regexErrors = [];
-    $formatErrors = [];
+    $formatErrors = validate_original_contexts($originals);
     if (!file_exists("translate.json")) {
         fwrite(STDERR, "translate.json not exists\n");
         exit(1);
@@ -241,7 +274,12 @@ if ($cmd === 'diff') {
             $label = strlen($m[1]) > 1 ? "M" : "T";
             return "(%" . $label . $c++ . ")";
         }, $key);
-        $needsOut[] = ['key' => $converted];
+        $need = ['key' => $converted];
+        $contextSource = context_source_key($converted);
+        if ($contextSource !== null) {
+            $need['zh'] = $contextSource;
+        }
+        $needsOut[] = $need;
     }
 
     echo json_encode([
@@ -293,10 +331,10 @@ if ($cmd === 'apply') {
             print_validation_errors($incomingFormatErrors, $incomingRegexErrors);
             exit(1);
         }
-        // 规范化：固定字段顺序 + zh 置空
+        // 规范化：固定字段顺序；上下文翻译键保留 zh 作为实际显示原文
         $item = [];
         foreach ($GLOBALS['LANG_FIELDS'] as $f) {
-            $item[$f] = $f === 'zh' ? '' : $raw[$f];
+            $item[$f] = $f === 'zh' && context_source_key($raw['key']) === null ? '' : $raw[$f];
         }
         $originalKey = normalize_key($item['key']);
         if (!isset($originalSet[$originalKey])) {

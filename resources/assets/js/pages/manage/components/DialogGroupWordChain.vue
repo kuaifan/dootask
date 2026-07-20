@@ -31,7 +31,7 @@
                 <span>{{ dialog.name }}</span>
             </div>
             <div class="initiate">
-                <span>{{ $L('由') }}</span>
+                <span>{{ $L('[initiator_label].由') }}</span>
                 <UserAvatar :userid="createId" :size="22" :showName="true"/>
                 <span> {{ $L('发起，参与接龙目前共(*)人', num) }}</span>
             </div>
@@ -46,7 +46,7 @@
             </div>
             <ul ref="wordChainListRef">
                 <li v-for="(item) in list" v-if="item.type == 'case' && (dialogDroupWordChain.type == 'create' || item.text)">
-                    <span>{{ $L('例') }}</span>
+                    <span>{{ $L('[example_label].例') }}</span>
                     <Input v-model="item.text" :placeholder="$L('可填写接龙格式')" :disabled="dialogDroupWordChain.type != 'create'" />
                 </li>
                 <li v-for="(item,index) in list.filter(h=>h.type != 'case')">

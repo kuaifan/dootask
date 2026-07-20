@@ -6,7 +6,7 @@
                 <div class="card-label">{{$L('未完成')}}</div>
                 <div class="card-data">
                     <span class="card-num">{{blocks.uncompleted || 0}}</span>
-                    <span class="card-sub">{{$L('项')}}</span>
+                    <span class="card-sub">{{$L('[task_unit].项')}}</span>
                 </div>
                 <div class="card-link">{{$L('查看任务')}} →</div>
             </li>
@@ -14,7 +14,7 @@
                 <div class="card-label">{{$L('已超期')}}</div>
                 <div class="card-data">
                     <span class="card-num num-red">{{blocks.overdue || 0}}</span>
-                    <span class="card-sub">{{$L('项')}}<template v-if="blocks.overdue_owner_count"> · {{$L('涉及 (*) 人', blocks.overdue_owner_count)}}</template></span>
+                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="blocks.overdue_owner_count"> · {{$L('涉及 (*) 人', blocks.overdue_owner_count)}}</template></span>
                 </div>
                 <div class="card-link link-red">{{$L('查看任务')}} →</div>
             </li>
@@ -22,7 +22,7 @@
                 <div class="card-label">{{$L('(*) 天内到期', 3)}}</div>
                 <div class="card-data">
                     <span class="card-num num-orange">{{blocks.due_soon || 0}}</span>
-                    <span class="card-sub">{{$L('项')}}</span>
+                    <span class="card-sub">{{$L('[task_unit].项')}}</span>
                 </div>
                 <div class="card-link link-orange">{{$L('查看任务')}} →</div>
             </li>
@@ -30,7 +30,7 @@
                 <div class="card-label">{{$L('本周完成')}}</div>
                 <div class="card-data">
                     <span class="card-num num-green">{{blocks.week_completed || 0}}</span>
-                    <span class="card-sub">{{$L('项')}}<template v-if="weekDiffText"> · {{weekDiffText}}</template></span>
+                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="weekDiffText"> · {{weekDiffText}}</template></span>
                 </div>
             </li>
         </ul>

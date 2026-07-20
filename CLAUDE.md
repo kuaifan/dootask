@@ -68,6 +68,7 @@ Laravel 13 (LaravelS/Swoole, PHP 8.4) + Vue 2 (Vite) + Electron。开源任务/�
 
 - 新增用户可见文本须追加原文（简体中文）到：前端 `language/original-web.txt`，后端 `language/original-api.txt`（去重）
 - 前端翻译用 `$L("文本")`，动态值用 `(*)` 占位：`$L('共(*)条', n)`——禁止拼接翻译
+- 单字或短词因上下文不同可能产生歧义时，使用 `[lower_snake_case].原文` 上下文键，例如 `$L('[weekday].一')`、`$L('[task_unit].个')`；前缀只参与翻译查找，界面仍显示原文。此类键须完整登记到 `original-web.txt`，且 `translate.json` 的 `zh` 必须填写去除前缀后的原文；普通键的 `zh` 仍留空
 
 ## ai-kb 同步规则
 

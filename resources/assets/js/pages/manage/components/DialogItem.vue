@@ -28,7 +28,7 @@
                 {{$L(source.msg.action === 'remove' ? '取消待办' : (source.msg.action === 'done' ? '完成' : '设待办'))}}
                 "{{$A.getMsgSimpleDesc(source.msg.data)}}"
                 <div v-if="source.msg.action === 'add' && formatTodoUser(source.msg.data).length > 0" class="todo-users">
-                    <span>{{$L('给')}}</span>
+                    <span>{{$L('[todo_target].给')}}</span>
                     <template v-for="(item, index) in formatTodoUser(source.msg.data)">
                         <div v-if="index < 3" class="todo-user"><UserAvatar :userid="item" :show-name="true" :show-icon="false"/></div>
                         <div v-else-if="index == 3" class="todo-user">+{{formatTodoUser(source.msg.data).length - 3}}</div>

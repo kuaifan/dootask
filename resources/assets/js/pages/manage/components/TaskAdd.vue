@@ -492,7 +492,7 @@ export default {
             if (days <= 0) {
                 return item.name + ' (' + this.$L('无时间限制') + ')';
             }
-            return item.name + ' (' + days + this.$L('天') + ')';
+            return item.name + ' (' + days + this.$L('[day_unit].天') + ')';
         },
 
         async choosePriority(item) {

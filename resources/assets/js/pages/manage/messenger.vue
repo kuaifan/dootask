@@ -111,7 +111,7 @@
                                         </template>
                                         <template v-else>
                                             <template v-if="dialog.type=='group' && dialog.last_msg && getLastMsgSenderId(dialog.last_msg)">
-                                                <div v-if="getLastMsgSenderId(dialog.last_msg) == userId" class="last-self">{{$L('你')}}</div>
+                                                <div v-if="getLastMsgSenderId(dialog.last_msg) == userId" class="last-self">{{$L('[self_sender].你')}}</div>
                                                 <UserAvatar v-else :userid="getLastMsgSenderId(dialog.last_msg)" :show-name="true" :show-icon="false"/>
                                             </template>
                                             <div class="last-text">

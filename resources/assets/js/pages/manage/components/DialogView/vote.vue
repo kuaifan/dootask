@@ -29,7 +29,7 @@
                     <li v-for="item in (msg.list || [])">
                         <div class="vote-option-title">{{ item.text }}</div>
                         <div class="ticket-num">
-                            <span>{{ getVoteProgress(msg, item.id).num }}{{ $L('票') }}</span>
+                            <span>{{ getVoteProgress(msg, item.id).num }}{{ $L('[vote_unit].票') }}</span>
                             <span>{{ getVoteProgress(msg, item.id).progress + '%' }}</span>
                         </div>
                         <Progress :percent="Number(getVoteProgress(msg,item.id).progress)" :stroke-width="5" hide-info/>

@@ -11,13 +11,13 @@
         <table class="check-table">
             <thead>
             <tr>
-                <th>{{$L('日')}}</th>
-                <th>{{$L('一')}}</th>
-                <th>{{$L('二')}}</th>
-                <th>{{$L('三')}}</th>
-                <th>{{$L('四')}}</th>
-                <th>{{$L('五')}}</th>
-                <th>{{$L('六')}}</th>
+                <th>{{$L('[weekday].日')}}</th>
+                <th>{{$L('[weekday].一')}}</th>
+                <th>{{$L('[weekday].二')}}</th>
+                <th>{{$L('[weekday].三')}}</th>
+                <th>{{$L('[weekday].四')}}</th>
+                <th>{{$L('[weekday].五')}}</th>
+                <th>{{$L('[weekday].六')}}</th>
             </tr>
             </thead>
             <tbody>

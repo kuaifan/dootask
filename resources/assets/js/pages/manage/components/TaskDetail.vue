@@ -529,7 +529,7 @@
                         <template #append>
                             <Select v-model="delayTaskForm.type" style="width:auto">
                                 <Option value="hour">{{$L('小时')}}</Option>
-                                <Option value="day">{{$L('天')}}</Option>
+                                <Option value="day">{{$L('[day_unit].天')}}</Option>
                             </Select>
                         </template>
                     </Input>
@@ -1448,8 +1448,8 @@ export default {
                                 }
                             }
                         }, [
-                            h('span', {slot: 'prepend'}, this.$L('每')),
-                            h('span', {slot: 'append'}, this.$L('天'))
+                            h('span', {slot: 'prepend'}, this.$L('[recurrence_prefix].每')),
+                            h('span', {slot: 'append'}, this.$L('[day_unit].天'))
                         ])
                     ])
                 },

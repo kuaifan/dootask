@@ -472,7 +472,7 @@
                 <template v-if="dialogData.bot == userId">
                     <FormItem v-if="typeof modifyData.clear_day !== 'undefined'" prop="clear_day" :label="$L('消息保留')">
                         <Input v-model="modifyData.clear_day" :maxlength="3" type="number">
-                            <div slot="append">{{$L('天')}}</div>
+                            <div slot="append">{{$L('[day_unit].天')}}</div>
                         </Input>
                     </FormItem>
                     <FormItem v-if="typeof modifyData.webhook_url !== 'undefined'" prop="webhook_url" label="Webhook">
