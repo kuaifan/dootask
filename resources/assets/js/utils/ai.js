@@ -181,7 +181,7 @@ const withLanguagePreferencePrompt = (prompt) => {
 
 /**
  * 解析模型列表文本为选项数组
- * 新格式：JSON 数组 [{id,name,thinking}]；旧格式：每行 "id|name"
+ * 新格式：JSON 数组 [{id,name,thinking,hidden}]；旧格式：每行 "id|name"
  */
 const AIModelNames = (str) => {
     if (typeof str !== 'string') {
@@ -195,6 +195,7 @@ const AIModelNames = (str) => {
             const parsed = JSON.parse(trimmed);
             if (Array.isArray(parsed)) {
                 return parsed
+                    .filter(item => !item?.hidden)
                     .map(item => ({
                         value: String(item?.id ?? item?.value ?? '').trim(),
                         label: String(item?.name ?? item?.label ?? '').trim()

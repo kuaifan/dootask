@@ -24,7 +24,7 @@ negative:
   - 配置入口不在「系统设置」菜单，而在「AI 助手」应用内的设置面板（仅管理员可见）
   - v1.4.35 起旧接口 setting__ai 已废弃，AI 模型配置全部迁移到 AI 助手应用的设置面板
   - 不安装 ai 插件，「AI 助手」应用不出现
-last_verified: v1.7.90
+last_verified: v1.8.69
 ---
 
 # AI 模型配置
@@ -40,8 +40,10 @@ DooTask 的 AI 能力由独立的 **ai 插件**（`dootask-ai`）提供。系统
 ## 操作步骤
 1. 管理员在应用商店安装并启用 ai 插件（生成 `dootask-ai` 容器）
 2. 打开「AI 助手」应用，选择要配置的供应商（ChatGPT/OpenAI、Claude、DeepSeek、Gemini、Grok、Ollama、智谱、通义千问、文心一言等）
-3. 在设置面板填写：API Key、模型列表（一行一个模型名，可点「使用默认模型列表」一键填入）、默认模型、Base URL（可选）、代理（可选）、Temperature、默认提示词
+3. 在设置面板填写：API Key、模型列表、默认模型、Base URL（可选）、代理（可选）、Temperature、默认提示词；不希望普通用户选择的模型可设为隐藏
 4. 保存后该供应商的模型立即可在 AI 对话中选用，并可被 [[system-setting.ai-bot.howto]] 的「AI 机器人」使用
+
+AI 助手的模型下拉会按供应商展示全部可见模型，不限制每个供应商的模型数量。设为隐藏的模型不会出现在 AI 助手或 AI 机器人的模型选择列表；如果原默认模型或用户缓存的模型已隐藏，AI 助手会自动改选可见模型。
 
 ## 与其他模块的关系
 - 提供模型给 [[system-setting.ai-bot.howto]] 的默认模型选择

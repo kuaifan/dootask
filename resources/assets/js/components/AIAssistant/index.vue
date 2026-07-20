@@ -622,18 +622,11 @@ export default {
                     }
                     const defaultModel = data[`${type}_model`] || '';
                     const label = AIBotMap[type] || type;
-                    const options = list.slice(0, 5);
-                    if (defaultModel) {
-                        const defaultOption = list.find(option => option.value === defaultModel);
-                        if (defaultOption && !options.some(option => option.value === defaultOption.value)) {
-                            options.push(defaultOption);
-                        }
-                    }
                     const group = {
                         type,
                         label,
                         defaultModel,
-                        options: options.map(option => {
+                        options: list.map(option => {
                             const id = `${type}:${option.value}`;
                             const item = Object.assign({}, option, {
                                 id,
