@@ -72,7 +72,7 @@
                 <template v-if="currentView === 'my'">
                     <!--列表布局-->
                     <template v-if="layout === 'list'">
-                        <ul class="dashboard-cards">
+                        <ul class="dashboard-cards personal-panel">
                             <li :class="{'card-off': dashboardTask.overdue_count === 0}" @click="scrollTo('overdue')">
                                 <div class="card-label">{{getTitle('overdue')}}</div>
                                 <div class="card-data">

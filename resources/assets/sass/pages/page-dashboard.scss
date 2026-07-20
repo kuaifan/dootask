@@ -1682,7 +1682,7 @@ body.window-portrait {
     .page-dashboard {
         .dashboard-body {
             padding: 16px 12px 24px;
-            gap: 14px;
+            gap: 16px;
         }
 
         .dashboard-header {
@@ -1733,6 +1733,12 @@ body.window-portrait {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
 
+            &.personal-panel {
+                > li {
+                    gap: 8px;
+                }
+            }
+
             > li {
                 padding: 12px 14px;
 
@@ -1754,6 +1760,10 @@ body.window-portrait {
                 grid-template-columns: 28px minmax(0, 1fr) 86px;
                 gap: 8px;
                 padding: 11px 14px;
+
+                &.table-thead {
+                    display: none;
+                }
 
                 .t-project,
                 .t-status,
@@ -1780,7 +1790,27 @@ body.window-portrait {
             }
 
             .table-group {
-                padding: 10px 14px;
+                padding: 13px 20px;
+
+                .group-dot {
+                    width: 8px;
+                    height: 8px;
+                    margin-right: 2px;
+                }
+
+                .group-title {
+                    font-weight: 400;
+                }
+
+                &.group-overdue,
+                &.group-today,
+                &.group-todo,
+                &.group-upcoming,
+                &.group-assist,
+                &.group-completed {
+                    border-bottom: 1px solid #f4f4ef;
+                    background: transparent;
+                }
             }
         }
 
