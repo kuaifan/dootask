@@ -38302,5 +38302,29 @@
         "fr": "Sam",
         "id": "Sab",
         "ru": "Сб"
+    },
+    {
+        "key": "未开启部门负责人视角功能",
+        "zh": "",
+        "zh-CHT": "未開啟部門負責人視角功能",
+        "en": "The department manager view is not enabled",
+        "ko": "부서 책임자 보기 기능이 활성화되지 않았습니다",
+        "ja": "部門責任者ビュー機能が有効になっていません",
+        "de": "Die Ansicht für Abteilungsleiter ist nicht aktiviert",
+        "fr": "La vue du responsable de service n’est pas activée",
+        "id": "Fitur tampilan penanggung jawab departemen belum diaktifkan",
+        "ru": "Представление руководителя отдела не включено"
+    },
+    {
+        "key": "没有可查看的部门数据",
+        "zh": "",
+        "zh-CHT": "沒有可查看的部門資料",
+        "en": "No department data available to view",
+        "ko": "조회할 수 있는 부서 데이터가 없습니다",
+        "ja": "表示できる部門データがありません",
+        "de": "Keine Abteilungsdaten zum Anzeigen verfügbar",
+        "fr": "Aucune donnée de service à afficher",
+        "id": "Tidak ada data departemen yang dapat dilihat",
+        "ru": "Нет данных отдела для просмотра"
     }
 ]
