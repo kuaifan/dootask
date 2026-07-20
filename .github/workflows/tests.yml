@@ -36,10 +36,8 @@ jobs:
       - name: ESLint
         run: npm run lint
 
-      # 存量缺失文案 93 条(见 scripts/check-language.mjs 输出),清零后移除 continue-on-error 改为强制
       - name: Language Check
         run: npm run check:lang
-        continue-on-error: true
 
   phpunit:
     runs-on: ubuntu-latest

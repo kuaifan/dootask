@@ -262,7 +262,7 @@
                     <Icon v-else type="ios-search" />
                 </div>
                 <Form class="search-form" action="javascript:void(0)" @submit.native.prevent="$A.eeuiAppKeyboardHide">
-                    <Input type="search" v-model="projectKeyValue" :placeholder="$L(`共${projectTotal || cacheProjects.length}个项目，搜索...`)" clearable/>
+                    <Input type="search" v-model="projectKeyValue" :placeholder="$L('共(*)个项目，搜索...', projectTotal || cacheProjects.length)" clearable/>
                 </Form>
             </div>
             <ButtonGroup class="manage-box-new-group">
@@ -489,7 +489,7 @@ import notificationKoro from "notification-koro1";
 import emitter from "../store/events";
 import SearchBox from "../components/SearchBox.vue";
 import transformEmojiToHtml from "../utils/emoji";
-import {languageName} from "../language";
+import {languageName} from "../i18n";
 import {AINormalizeJsonContent, PROJECT_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../utils/ai";
 import Draggable from 'vuedraggable'
 import DepartmentOwnerView from "./manage/components/DepartmentOwnerView.vue";
@@ -535,7 +535,7 @@ export default {
             addRule: {
                 name: [
                     { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
-                    { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
+                    { type: 'string', min: 2, message: this.$L('项目名称至少(*)个字！', 2), trigger: 'change' }
                 ]
             },
 

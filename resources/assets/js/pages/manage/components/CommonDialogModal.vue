@@ -27,7 +27,7 @@
                     <div class="dialog-info">
                         <div class="dialog-name" v-html="transformEmojiToHtml(dialog.name)"></div>
                         <div class="dialog-meta">
-                            <span class="member-count">{{$L('(*)人', dialog.people || 0)}}</span>
+                            <span class="member-count">{{$L('(*) 人', dialog.people || 0)}}</span>
                             <span v-if="dialog.last_at" class="last-time">{{$A.timeFormat(dialog.last_at)}}</span>
                         </div>
                     </div>

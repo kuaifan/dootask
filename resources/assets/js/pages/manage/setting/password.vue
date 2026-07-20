@@ -36,7 +36,7 @@ export default {
             ruleDatum: {
                 oldpass: [
                     { required: true, message: this.$L('请输入旧密码！'), trigger: 'change' },
-                    { type: 'string', min: 6, message: this.$L('密码长度至少6位！'), trigger: 'change' }
+                    { type: 'string', min: 6, message: this.$L('密码长度至少(*)位！', 6), trigger: 'change' }
                 ],
                 newpass: [
                     {
@@ -53,7 +53,7 @@ export default {
                         required: true,
                         trigger: 'change'
                     },
-                    { type: 'string', min: 6, message: this.$L('密码长度至少6位！'), trigger: 'change' }
+                    { type: 'string', min: 6, message: this.$L('密码长度至少(*)位！', 6), trigger: 'change' }
                 ],
                 checkpass: [
                     {

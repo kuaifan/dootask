@@ -22,30 +22,28 @@ export default {
      */
     replaceArgumentsLanguage(text, objects) {
         let j = 1;
-        while (text.indexOf("(*)") !== -1) {
-            if (typeof objects[j] === "object") {
-                text = text.replace("(*)", "");
-            } else {
-                text = text.replace("(*)", objects[j]);
-            }
-            j++;
-        }
-        return text;
+        return text.replace(/\(\*\)/g, () => this.getArgumentLanguage(objects[j++]));
     },
 
     /**
-     * 译文转义
-     * @param val
+     * 获取语言参数
+     * @param value
      * @returns {string|*}
      */
-    replaceEscape(val) {
-        if (!val || val == '') {
+    getArgumentLanguage(value) {
+        if (value === null || typeof value === "undefined" || typeof value === "object") {
             return '';
         }
-        return val
-            .replace(/\(%[TM]\d+\)/g, "~:%%:~")
-            .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
-            .replace(/~:%%:~/g, '(.*?)');
+        return value;
+    },
+
+    /**
+     * 规范化参数化语言键
+     * @param text
+     * @returns {string}
+     */
+    normalizeArgumentsLanguage(text) {
+        return text.replace(/\(%[TM]\d+\)/g, "(*)");
     },
 
     /**

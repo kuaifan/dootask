@@ -5,7 +5,7 @@
 <script>
 import {mapState} from "vuex";
 import PreviewImage from "./index";
-import {languageName} from "../../language";
+import {languageName} from "../../i18n";
 
 export default {
     name: 'PreviewImageState',

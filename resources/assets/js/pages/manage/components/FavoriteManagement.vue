@@ -217,7 +217,7 @@ export default {
                         const vNode = [
                             h('Poptip', {
                                 props: {
-                                    title: this.$L(`确定要取消收藏"${params.row.name}"吗？`),
+                                    title: this.$L('确定要取消收藏"(*)"吗？', params.row.name),
                                     confirm: true,
                                     transfer: true,
                                     placement: 'left',

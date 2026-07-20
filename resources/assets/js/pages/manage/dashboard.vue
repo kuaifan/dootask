@@ -30,7 +30,7 @@
                                         trigger="click">
                                         <div class="dashboard-cache-popover">
                                             <strong>{{$L('数据更新说明')}}</strong>
-                                            <p>{{$L('页面统计数据在 60 秒内复用，重点关注任务列表除外。')}}</p>
+                                            <p>{{$L('页面统计数据在 (*) 秒内复用，重点关注任务列表除外。', 60)}}</p>
                                             <span>{{$L('上次更新：(*)', teamStatsUpdatedTime)}}</span>
                                             <Button
                                                 type="primary"
@@ -585,24 +585,20 @@ export default {
         },
 
         dashboardHello({systemConfig, userInfo, nowTime}) {
-            let hello;
             if (systemConfig.system_welcome) {
-                hello = systemConfig.system_welcome;
-            } else {
-                const hour = $A.daytz(nowTime).hour();
-                if (hour < 5) {
-                    hello = '夜深了，{username}';
-                } else if (hour < 11) {
-                    hello = '早上好，{username}';
-                } else if (hour < 14) {
-                    hello = '中午好，{username}';
-                } else if (hour < 18) {
-                    hello = '下午好，{username}';
-                } else {
-                    hello = '晚上好，{username}';
-                }
+                return this.$L(systemConfig.system_welcome).replace(/\{username}/g, userInfo.nickname);
             }
-            return this.$L(hello).replace(/\{username}/g, userInfo.nickname);
+            const hour = $A.daytz(nowTime).hour();
+            if (hour < 5) {
+                return this.$L('夜深了，(*)', userInfo.nickname);
+            } else if (hour < 11) {
+                return this.$L('早上好，(*)', userInfo.nickname);
+            } else if (hour < 14) {
+                return this.$L('中午好，(*)', userInfo.nickname);
+            } else if (hour < 18) {
+                return this.$L('下午好，(*)', userInfo.nickname);
+            }
+            return this.$L('晚上好，(*)', userInfo.nickname);
         }
     },
 

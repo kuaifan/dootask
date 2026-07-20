@@ -1,6 +1,6 @@
 <template>
     <div class="open-approve-details" :data-id="msg.data.id">
-        <b>{{ $L(`${msg.data.nickname} 提交的「${msg.data.proc_def_name}」待你审批`) }}</b>
+        <b>{{ $L('(*)提交的「(*)」待你审批', msg.data.nickname, $L(msg.data.proc_def_name)) }}</b>
         <div class="cause">
             <p>{{$L("状态")}}：<b>{{ $L(statusText) }}</b></p>
             <p>{{$L("申请人")}}：<span class="mark-color">@{{ msg.data.nickname }}</span> {{ msg.data.department }}</p>

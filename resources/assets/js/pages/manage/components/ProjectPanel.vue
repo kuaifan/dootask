@@ -20,7 +20,7 @@
                         </li>
                         <template v-if="!(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" v-for="item in projectUser">
                             <li v-if="item.userid === -1" class="more">
-                                <ETooltip :disabled="$isEEUIApp || windowTouch" :content="$L('共' + (projectData.project_user.length) + '个成员')">
+                                <ETooltip :disabled="$isEEUIApp || windowTouch" :content="$L('共(*)个成员', projectData.project_user.length)">
                                     <Icon type="ios-more"/>
                                 </ETooltip>
                             </li>
@@ -426,7 +426,7 @@
                     </RadioGroup>
                     <div v-if="settingData.archive_method==='system'" class="form-tip">{{$L('根据系统设置的自动归档规则执行')}}</div>
                     <template v-else-if="settingData.archive_method=='custom'">
-                        <div class="form-tip">{{$L('任务完成 (*) 天后自动归档。', settingData.archive_days || 'n')}}</div>
+                        <div class="form-tip">{{$L('任务完成(*)天后自动归档。', settingData.archive_days || 'n')}}</div>
                         <div class="setting-auto-day">
                             <Input v-model="settingData.archive_days" type="number">
                                 <span slot="append">{{$L('天')}}</span>

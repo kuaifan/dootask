@@ -146,7 +146,7 @@
                                     <template v-if="formData.locat_bd_lbs_point.lng">
                                         <div class="form-tip">
                                             <a href="javascript:void(0)" @click="openMapSelect">
-                                                {{ $L(`经度：${formData.locat_bd_lbs_point.lng}，纬度：${formData.locat_bd_lbs_point.lat}，半径：${formData.locat_bd_lbs_point.radius}米`) }}
+                                                {{ $L('经度：(*)，纬度：(*)，半径：(*)米', formData.locat_bd_lbs_point.lng, formData.locat_bd_lbs_point.lat, formData.locat_bd_lbs_point.radius) }}
                                             </a>
                                         </div>
                                         <div class="form-tip" @click="openMapSelect">{{$L('点击修改允许签到位置')}}</div>
@@ -165,7 +165,7 @@
                                     <template v-if="formData.locat_amap_point.lng">
                                         <div class="form-tip">
                                             <a href="javascript:void(0)" @click="openMapSelect">
-                                                {{ $L(`经度：${formData.locat_amap_point.lng}，纬度：${formData.locat_amap_point.lat}，半径：${formData.locat_amap_point.radius}米`) }}
+                                                {{ $L('经度：(*)，纬度：(*)，半径：(*)米', formData.locat_amap_point.lng, formData.locat_amap_point.lat, formData.locat_amap_point.radius) }}
                                             </a>
                                         </div>
                                         <div class="form-tip" @click="openMapSelect">{{$L('点击修改允许签到位置')}}</div>
@@ -184,7 +184,7 @@
                                     <template v-if="formData.locat_tencent_point.lng">
                                         <div class="form-tip">
                                             <a href="javascript:void(0)" @click="openMapSelect">
-                                                {{ $L(`经度：${formData.locat_tencent_point.lng}，纬度：${formData.locat_tencent_point.lat}，半径：${formData.locat_tencent_point.radius}米`) }}
+                                                {{ $L('经度：(*)，纬度：(*)，半径：(*)米', formData.locat_tencent_point.lng, formData.locat_tencent_point.lat, formData.locat_tencent_point.radius) }}
                                             </a>
                                         </div>
                                         <div class="form-tip" @click="openMapSelect">{{$L('点击修改允许签到位置')}}</div>

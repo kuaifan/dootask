@@ -4,7 +4,7 @@
 import axios from 'axios'
 import SparkMD5 from 'spark-md5'
 import store from './index'
-import { languageName } from '../language'
+import { languageName } from '../i18n'
 
 export const CHUNK_THRESHOLD = 10 * 1024 * 1024
 export const CHUNK_SIZE = 5 * 1024 * 1024 // 必须与后端 ChunkUpload::CHUNK_SIZE 一致

@@ -1,7 +1,7 @@
 /**
  * EEUI App 专用
  */
-import {languageName} from "../language";
+import {languageName} from "../i18n";
 
 (function (window) {
     const $ = window.$A;

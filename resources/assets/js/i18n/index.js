@@ -3,7 +3,7 @@ const utils = require('./utils')
 const languageList = utils.languageList
 const languageName = utils.getLanguage()
 const languageCache = new Map();
-const languageRegex = [];
+const languageTemplateCache = new Map();
 
 if (typeof window.LANGUAGE_DATA === "undefined") {
     window.LANGUAGE_DATA = {}
@@ -21,25 +21,21 @@ function initLanguage() {
     //
     keys.forEach((key, index) => {
         if (/\(%[TM]\d+\)/.test(key)) {
-            // 处理复杂的键值
-            const _m = {};
-            const translation = {
-                key: new RegExp("^" + utils.replaceEscape(key) + "$"),
-            }
+            // 缓存参数化键值
+            const template = utils.normalizeArgumentsLanguage(key)
+            const translateArguments = new Set();
+            key.replace(/\(%M(\d+)\)/g, (_, index) => {
+                translateArguments.add(index)
+            })
             for (let language in window.LANGUAGE_DATA) {
                 if (typeof languageList[language] === "undefined") {
                     continue
                 }
-                translation[language] = window.LANGUAGE_DATA[language][index]
-                    ?.replace(/\(%([TM])(\d+)\)/g, function (_, type, index) {
-                        if (type === 'M') {
-                            _m[index] = index;
-                        }
-                        return "$" + index;
-                    });
+                languageTemplateCache.set(`${template}-${language}`, {
+                    text: window.LANGUAGE_DATA[language][index],
+                    translateArguments,
+                });
             }
-            translation._m = Object.keys(_m);
-            languageRegex.push(translation)
         } else {
             // 缓存简单的键值
             for (let language in window.LANGUAGE_DATA) {
@@ -122,37 +118,29 @@ function getLanguage() {
  * @returns {string|*}
  */
 function switchLanguage(inputString) {
-    if (typeof arguments[1] !== "undefined") {
-        inputString = utils.replaceArgumentsLanguage(inputString, arguments)
-    }
     if (typeof inputString !== "string" || !inputString) {
         return inputString
+    }
+
+    if (arguments.length > 1) {
+        const templateKey = `${inputString}-${languageName}`;
+        if (languageTemplateCache.has(templateKey)) {
+            const {text, translateArguments} = languageTemplateCache.get(templateKey);
+            if (!text) {
+                return utils.replaceArgumentsLanguage(inputString, arguments);
+            }
+            return text.replace(/\(%[TM](\d+)\)/g, (_, index) => {
+                const value = utils.getArgumentLanguage(arguments[index]);
+                return translateArguments.has(index) ? switchLanguage(String(value)) : value;
+            });
+        }
+        inputString = utils.replaceArgumentsLanguage(inputString, arguments)
     }
 
     // 读取缓存
     const cacheKey = `${inputString}-${languageName}`;
     if (languageCache.has(cacheKey)) {
         return languageCache.get(cacheKey);
-    }
-
-    // 正则匹配
-    for (const translation of languageRegex) {
-        const { key, _m } = translation;
-        const match = key.exec(inputString);
-        if (match) {
-            if (translation[languageName]) {
-                const result = translation[languageName].replace(/\$(\d+)/g, (_, index) => {
-                    if (_m.includes(index)) {
-                        return switchLanguage(match[index]);
-                    }
-                    return match[index] || '';
-                });
-                languageCache.set(cacheKey, result);
-                return result;
-            }
-            languageCache.set(cacheKey, inputString);
-            return inputString;
-        }
     }
 
     // 开发模式下，未翻译的文本自动添加到语言文件

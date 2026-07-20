@@ -218,14 +218,14 @@
                                 <Radio label="replace">{{$L('流转模式')}}</Radio>
                                 <Radio label="merge">{{$L('剔除模式')}}</Radio>
                             </RadioGroup>
-                            <div v-if="settingData.usertype=='replace'" class="form-tip">{{$L(`流转到【${settingData.name}】时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。`)}}</div>
-                            <div v-else-if="settingData.usertype=='merge'" class="form-tip">{{$L(`流转到【${settingData.name}】时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。`)}}</div>
-                            <div v-else class="form-tip">{{$L(`流转到【${settingData.name}】时添加状态负责人至任务负责人。`)}}</div>
+                            <div v-if="settingData.usertype=='replace'" class="form-tip">{{$L('流转到【(*)】时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。', settingData.name)}}</div>
+                            <div v-else-if="settingData.usertype=='merge'" class="form-tip">{{$L('流转到【(*)】时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。', settingData.name)}}</div>
+                            <div v-else class="form-tip">{{$L('流转到【(*)】时添加状态负责人至任务负责人。', settingData.name)}}</div>
                         </FormItem>
                         <FormItem prop="userlimit" :label="$L('限制负责人')">
                             <iSwitch v-model="settingData.userlimit" :true-value="1" :false-value="0"/>
-                            <div v-if="settingData.userlimit===1" class="form-tip">{{$L(`流转到【${settingData.name}】时，[任务负责人] 和 [项目管理员] 可以修改状态。`)}}</div>
-                            <div v-else class="form-tip">{{$L(`流转到【${settingData.name}】时，[任务负责人] 和 [项目管理员] 可以修改状态。`)}}</div>
+                            <div v-if="settingData.userlimit===1" class="form-tip">{{$L('流转到【(*)】时，[任务负责人] 和 [项目管理员] 可以修改状态。', settingData.name)}}</div>
+                            <div v-else class="form-tip">{{$L('流转到【(*)】时，[任务负责人] 和 [项目管理员] 可以修改状态。', settingData.name)}}</div>
                         </FormItem>
                     </div>
                 </div>
@@ -237,7 +237,7 @@
                                 <Option v-for="(item, index) in columnList" :value="item.id" :key="index">{{ item.name }}</Option>
                             </Select>
                             <div class="form-tip">
-                                {{$L(`流转到【${settingData.name}】时自动将任务移动至关联列表。`)}}
+                                {{$L('流转到【(*)】时自动将任务移动至关联列表。', settingData.name)}}
                                 <a v-if="settingData.columnid" href="javascript:void(0)" @click="settingData.columnid=0">{{$L('取消关联')}}</a>
                             </div>
                         </FormItem>

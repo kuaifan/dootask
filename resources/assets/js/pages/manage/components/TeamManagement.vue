@@ -281,7 +281,7 @@
             v-model="disableShow"
             :title="$L('操作离职')">
             <Form :model="disableData" v-bind="formOptions" @submit.native.prevent>
-                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${disableData.userid}, ${disableData.nickname}】离职操作。`)}}</Alert>
+                <Alert type="error" style="margin-bottom:18px">{{$L('正在进行帐号【ID:(*), (*)】离职操作。', disableData.userid, disableData.nickname)}}</Alert>
                 <FormItem :label="$L('离职时间')">
                     <DatePicker
                         ref="disableTime"
@@ -296,7 +296,7 @@
                 <FormItem :label="$L('交接人')">
                     <UserSelect v-model="disableData.transfer_userid" :disabled-choice="[disableData.userid]" :multiple-max="1" :title="$L('选择交接人')"/>
                     <div class="form-tip">{{ $L('可选，留空则不执行迁移') }}</div>
-                    <div class="form-tip">{{ $L(`${disableData.nickname} 负责的部门、项目、任务和文件将移交给交接人；同时退出所有群（如果是群主则转让给交接人）`) }}</div>
+                    <div class="form-tip">{{ $L('(*) 负责的部门、项目、任务和文件将移交给交接人；同时退出所有群（如果是群主则转让给交接人）', disableData.nickname) }}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -1245,7 +1245,7 @@ export default {
                 
                 $A.modalConfirm({
                     title: this.$L('同步部门成员'),
-                    content: `<div>${this.$L(`你确定要同步部门成员吗？`)}</div><div style="color:#f00;font-weight:600">${this.$L(`注：此操作会同步子部门成员到当前部门`)}</div>`,
+                    content: `<div>${this.$L('你确定要同步部门成员吗？')}</div><div style="color:#f00;font-weight:600">${this.$L('注：此操作会同步子部门成员到当前部门')}</div>`,
                     language: false,
                     loading: true,
                     onOk: () => {
@@ -1272,7 +1272,7 @@ export default {
                 if (delItem) {
                     $A.modalConfirm({
                         title: this.$L('删除部门'),
-                        content: `<div>${this.$L(`你确定要删除【${delItem.name}】部门吗？`)}</div><div style="color:#f00;font-weight:600">${this.$L(`注意：此操作不可恢复，部门下的成员将移至默认部门。`)}</div>`,
+                        content: `<div>${this.$L('你确定要删除【(*)】部门吗？', delItem.name)}</div><div style="color:#f00;font-weight:600">${this.$L('注意：此操作不可恢复，部门下的成员将移至默认部门。')}</div>`,
                         language: false,
                         loading: true,
                         onOk: () => {

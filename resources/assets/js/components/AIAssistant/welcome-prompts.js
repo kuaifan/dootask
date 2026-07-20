@@ -5,7 +5,7 @@
  * 提示内容基于 DooTask MCP 工具的实际能力设计
  */
 
-import {languageName} from "../../language";
+import {languageName} from "../../i18n";
 
 // SVG 图标定义
 const SVG_ICONS = {

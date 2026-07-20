@@ -119,7 +119,7 @@
                                     <span slot="append">{{$L('天')}}</span>
                                 </Input>
                             </div>
-                            <div slot="content">{{$L('任务完成 (*) 天后自动归档。', formDatum.archived_day || 'n')}}</div>
+                            <div slot="content">{{$L('任务完成(*)天后自动归档。', formDatum.archived_day || 'n')}}</div>
                         </ETooltip>
                     </FormItem>
                     <FormItem :label="$L('可见性选项')" prop="taskVisible">
@@ -292,9 +292,9 @@
                     </FormItem>
                     <FormItem :label="$L('欢迎词')" prop="system_welcome">
                         <div style="width: 220px;">
-                            <Input v-model="formDatum.system_welcome" :placeholder="$L('欢迎您，{username}')"/>
+                            <Input v-model="formDatum.system_welcome" :placeholder="$L('欢迎您，(*)', '{username}')"/>
                         </div>
-                        <div class="form-tip">{{$L('仪表盘欢迎词，{username} 代表用户昵称')}}</div>
+                        <div class="form-tip">{{$L('仪表盘欢迎词，(*)代表用户昵称', '{username}')}}</div>
                     </FormItem>
                     <FormItem :label="$L('图片优化')" prop="image_compress">
                         <RadioGroup v-model="formDatum.image_compress">

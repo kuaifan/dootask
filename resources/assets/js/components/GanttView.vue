@@ -212,7 +212,7 @@ export default {
                 if (type == 'day') {
                     return date.date();
                 } else if (type == 'week') {
-                    return this.$L(`星期${'日一二三四五六'.charAt(date.day())}`);
+                    return this.$L(['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][date.day()]);
                 } else {
                     return date;
                 }

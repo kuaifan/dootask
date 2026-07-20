@@ -37,7 +37,7 @@
 <script>
 import {mapState} from "vuex";
 import IFrame from "../pages/manage/components/IFrame";
-import {languageName} from "../language";
+import {languageName} from "../i18n";
 
 export default {
     name: "Drawio",

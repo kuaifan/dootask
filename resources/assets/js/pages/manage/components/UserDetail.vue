@@ -90,7 +90,7 @@
                                 class="manage-tags-btn icon"
                                 @click="onOpenTagsModal"
                             >
-                                <Icon type="ios-settings-outline" /> 管理
+                                <Icon type="ios-settings-outline" /> {{$L('管理')}}
                             </Button>
                         </div>
                         <div v-else class="tags-empty">

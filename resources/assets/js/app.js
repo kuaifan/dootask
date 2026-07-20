@@ -4,7 +4,7 @@ const isSoftware = isElectron || isEEUIApp;
 
 document.getElementById("app")?.setAttribute("data-preload", "false");
 
-import {languageName, switchLanguage as $L} from "./language";
+import {languageName, switchLanguage as $L} from "./i18n";
 import {isLocalHost} from "./components/Replace/utils";
 
 import './functions/common'

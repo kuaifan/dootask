@@ -6,7 +6,7 @@
  *   - resources/assets/js/functions/common.js  （基础函数 / localForage / Storage / ihttp / ajaxc / time / sort）
  *   - resources/assets/js/functions/web.js     （页面专用 / iviewui 弹窗提示 / dark 暗黑模式）
  *   - resources/assets/js/functions/eeui.js    （EEUI App 专用）
- * $L 来源：resources/assets/js/language/index.js 的 switchLanguage，
+ * $L 来源：resources/assets/js/i18n/index.js 的 switchLanguage，
  * 挂载于 window.$L、Vue.prototype.$L 以及 $A.L（见 resources/assets/js/app.js）。
  *
  * 维护提示：在上述源文件中新增/修改 $.extend 挂载的 $A 方法时，须同步更新本声明文件。

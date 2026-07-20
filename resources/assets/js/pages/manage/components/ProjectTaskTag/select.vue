@@ -109,7 +109,7 @@ export default {
                 newValue = this.value.filter(item => item.name !== tag.name);
             } else {
                 if (this.max > 0 && this.value.length >= this.max) {
-                    $A.messageWarning(this.$L('最多只能选择 (*) 个标签', this.max));
+                    $A.messageWarning(this.$L('最多只能选择(*)个标签', this.max));
                     return;
                 }
                 newValue = [...this.value, { name: tag.name, color: tag.color }];

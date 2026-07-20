@@ -58,7 +58,7 @@
 </style>
 <script>
 import {mapState} from "vuex";
-import {languageName} from "../language";
+import {languageName} from "../i18n";
 
 export default {
     name: "OnlyOffice",

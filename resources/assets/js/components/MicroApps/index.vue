@@ -153,7 +153,7 @@ import {DatePicker} from 'view-design-hi';
 import microApp from '@micro-zoe/micro-app'
 import DialogWrapper from '../../pages/manage/components/DialogWrapper.vue'
 import UserSelect from "../UserSelect.vue";
-import {languageList, languageName} from "../../language";
+import {languageList, languageName} from "../../i18n";
 import emitter from "../../store/events";
 import TransferDom from "../../directives/transfer-dom";
 import store from "../../store";

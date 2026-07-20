@@ -166,7 +166,7 @@
 
 <script>
 import {mapState} from "vuex";
-import {languageList, languageName, setLanguage} from "../language";
+import {languageList, languageName, setLanguage} from "../i18n";
 import VueQrcode from "@chenfengyuan/vue-qrcode";
 import emitter from "../store/events";
 
@@ -261,12 +261,12 @@ export default {
         subTitle() {
             const title = window.systemInfo.title || "DooTask";
             if (this.loginMode == 'qrcode') {
-                return this.$L(`请使用${title}移动端扫描二维码。`)
+                return this.$L('请使用(*)移动端扫描二维码。', title)
             }
             if (this.loginType=='reg') {
-                return this.$L(`输入您的信息以创建帐户。`)
+                return this.$L('输入您的信息以创建帐户。')
             }
-            return this.$L(`输入您的凭证以访问您的帐户。`)
+            return this.$L('输入您的凭证以访问您的帐户。')
         },
 
         loginText() {

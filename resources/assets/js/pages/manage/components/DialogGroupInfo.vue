@@ -50,7 +50,7 @@
                         <div v-if="canKickMember(item)" class="user-exit" @click.stop="onExit(item)"><Icon type="md-exit"/></div>
                     </li>
                     <li class="label">
-                        <span>{{$L(`群成员 (${userList.length}人)`)}}</span>
+                        <span>{{$L('群成员 ((*)人)', userList.length)}}</span>
                     </li>
                 </template>
                 <li v-for="item in userList" @click="openUser(item.userid)">

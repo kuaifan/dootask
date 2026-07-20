@@ -72,7 +72,7 @@
                         <div class="file-shear">
                             <span>{{$L('粘贴')}}</span>
                             <template v-show="showBtnText">"<em>{{shearFirst.name}}</em>"</template>
-                            <span v-if="shearIds.length > 1">{{ $L(`等${shearIds.length}个文件`) }}</span>
+                            <span v-if="shearIds.length > 1">{{ $L('等(*)个文件', shearIds.length) }}</span>
                         </div>
                     </Button>
                     <Button type="primary" size="small" @click="clearShear">{{ $L('取消剪切') }}</Button>
@@ -2000,7 +2000,7 @@ export default {
                         $A.messageWarning("请等待打包完成");
                         return;
                     }
-                    const name = this.$L(`打包下载${fileName}`)
+                    const name = this.$L('打包下载(*)', fileName)
                     this.$store.dispatch("call", {
                         url: 'file/download/pack',
                         data: {ids, name},

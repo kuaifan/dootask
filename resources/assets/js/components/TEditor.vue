@@ -68,7 +68,7 @@
 import tinymce from 'tinymce/tinymce';
 import ImgUpload from "./ImgUpload";
 import {mapState} from "vuex";
-import {languageName} from "../language";
+import {languageName} from "../i18n";
 import {chunkedUpload, CHUNK_THRESHOLD} from "../store/chunkedUpload";
 
 const windowTouch = "ontouchend" in document
@@ -661,7 +661,7 @@ export default {
             } else {
                 $A.noticeWarning({
                     title: this.$L('上传失败'),
-                    desc: this.$L('文件 ' + file.name + ' 上传失败，' + res.msg)
+                    desc: this.$L('文件 (*) 上传失败，(*)', file.name, res.msg)
                 });
             }
         },
@@ -675,7 +675,7 @@ export default {
             //上传类型错误
             $A.noticeWarning({
                 title: this.$L('文件格式不正确'),
-                desc: this.$L('文件 ' + file.name + ' 格式不正确，仅支持上传：' + this.uploadFormat.join(','))
+                desc: this.$L('文件 (*) 格式不正确，仅支持上传：(*)', file.name, this.uploadFormat.join(','))
             });
         },
 
@@ -683,7 +683,7 @@ export default {
             //上传大小错误
             $A.noticeWarning({
                 title: this.$L('超出文件大小限制'),
-                desc: this.$L('文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxSize * 1024))
+                desc: this.$L('文件 (*) 太大，不能超过：(*)', file.name, $A.bytesToSize(this.maxSize * 1024))
             });
         },
 
@@ -708,7 +708,7 @@ export default {
             } catch (err) {
                 $A.noticeWarning({
                     title: this.$L('上传失败'),
-                    desc: this.$L('文件 ' + rawFile.name + ' 上传失败，' + ((err && err.message) || '')),
+                    desc: this.$L('文件 (*) 上传失败，(*)', rawFile.name, (err && err.message) || ''),
                 });
             } finally {
                 this.uploadIng--;

@@ -33,7 +33,7 @@
             <div class="initiate">
                 <span>{{ $L('由') }}</span>
                 <UserAvatar :userid="createId" :size="22" :showName="true"/>
-                <span> {{ $L('发起，参与接龙目前共'+num+'人') }}</span>
+                <span> {{ $L('发起，参与接龙目前共(*)人', num) }}</span>
             </div>
             <div class="textarea">
                 <Input ref="wordChainTextareaRef"

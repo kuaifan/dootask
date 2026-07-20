@@ -237,7 +237,7 @@
         <div v-if="!isStaticMode && multiSelectMode" class="dialog-multi-select-bar">
             <div class="multi-select-info">
                 <span>{{ $L('已选(*)条', selectedMsgIds.length) }}</span>
-                <span v-if="selectedMsgIds.length >= 100" class="multi-select-max">{{ $L('(最多100条)') }}</span>
+                <span v-if="selectedMsgIds.length >= 100" class="multi-select-max">{{ $L('(最多(*)条)', 100) }}</span>
             </div>
             <div class="multi-select-actions">
                 <Button type="primary" size="small" :disabled="selectedMsgIds.length === 0" @click="onMultiForward">{{ $L('转发') }}</Button>
@@ -461,7 +461,7 @@
             :title="$L('修改资料')"
             :mask-closable="false">
             <Form :model="modifyData" v-bind="formOptions" @submit.native.prevent>
-                <Alert v-if="modifyData.system_name" type="error" style="margin-bottom:18px">{{$L(`正在修改系统机器人：${modifyData.system_name}`)}}</Alert>
+                <Alert v-if="modifyData.system_name" type="error" style="margin-bottom:18px">{{$L('正在修改系统机器人：(*)', modifyData.system_name)}}</Alert>
                 <FormItem prop="avatar" :label="$L('头像')">
                     <ImgUpload v-model="modifyData.avatar" :num="1" :width="512" :height="512" whcut="cover"/>
                 </FormItem>
@@ -743,7 +743,7 @@ import touchclick from "../../../directives/touchclick";
 import longpress from "../../../directives/longpress";
 import TransferDom from "../../../directives/transfer-dom";
 import resizeObserver from "../../../directives/resize-observer";
-import {languageList} from "../../../language";
+import {languageList} from "../../../i18n";
 import {isLocalHost} from "../../../components/Replace/utils";
 import emitter from "../../../store/events";
 import Forwarder from "./Forwarder/index.vue";
@@ -1323,7 +1323,7 @@ export default {
             if (unread_one && unread_one < startMsgId) {
                 array.push({
                     type: 'unread',
-                    label: this.$L(`未读消息${not}条`),
+                    label: this.$L('未读消息(*)条', not),
                     msg_id: unread_one
                 })
             }
@@ -1331,7 +1331,7 @@ export default {
                 array.push(...mention_ids.map(msg_id => {
                     return {
                         type: 'mention',
-                        label: this.$L(`@我的消息`),
+                        label: this.$L('@我的消息'),
                         msg_id
                     }
                 }))
@@ -3165,7 +3165,7 @@ export default {
             } else if (this.selectedMsgIds.length < 100) {
                 this.selectedMsgIds.push(msgId);
             } else {
-                $A.messageWarning(this.$L('最多选择100条消息'));
+                $A.messageWarning(this.$L('最多选择(*)条消息', 100));
             }
         },
 

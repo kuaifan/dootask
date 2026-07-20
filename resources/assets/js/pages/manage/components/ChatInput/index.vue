@@ -340,7 +340,7 @@ import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import longpress from "../../../../directives/longpress";
 import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
-import {languageList, languageName} from "../../../../language";
+import {languageList, languageName} from "../../../../i18n";
 import {isMarkdownFormat, MarkdownConver} from "../../../../utils/markdown";
 import {cutText, extractPlainText} from "../../../../utils/text";
 import {MESSAGE_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../../../../utils/ai";

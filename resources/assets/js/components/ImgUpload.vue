@@ -293,7 +293,7 @@ export default {
             } else {
                 $A.noticeWarning({
                     title: this.$L('上传失败'),
-                    desc: this.$L('文件 ' + file.name + ' 上传失败 ' + res.msg),
+                    desc: this.$L('文件 (*) 上传失败 (*)', file.name, res.msg),
                 });
                 this.$refs.upload.fileList.pop();
             }
@@ -307,14 +307,14 @@ export default {
             //上传类型错误
             $A.noticeWarning({
                 title: this.$L('文件格式不正确'),
-                desc: this.$L('文件 ' + file.name + ' 格式不正确，请上传 jpg、jpeg、webp、gif、png 格式的图片。')
+                desc: this.$L('文件 (*) 格式不正确，请上传 jpg、jpeg、webp、gif、png 格式的图片。', file.name)
             });
         },
         handleMaxSize(file) {
             //上传大小错误
             $A.noticeWarning({
                 title: this.$L('超出文件大小限制'),
-                desc: this.$L('文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxImageSize * 1024))
+                desc: this.$L('文件 (*) 太大，不能超过：(*)', file.name, $A.bytesToSize(this.maxImageSize * 1024))
             });
         },
         handleBeforeUpload(file) {
@@ -325,7 +325,7 @@ export default {
                 check = this.uploadList.length < this.maxNum;
             }
             if (!check) {
-                $A.noticeWarning(this.$L('最多只能上传 ' + this.maxNum + ' 张图片。'));
+                $A.noticeWarning(this.$L('最多只能上传 (*) 张图片。', this.maxNum));
                 return false;
             }
             // ≥ 10MB 走分片（iview max-size 拦在前，需调用方放大 maxSize 才能进到这里）
@@ -370,7 +370,7 @@ export default {
             } catch (err) {
                 $A.noticeWarning({
                     title: this.$L('上传失败'),
-                    desc: this.$L('文件 ' + rawFile.name + ' 上传失败 ' + ((err && err.message) || '')),
+                    desc: this.$L('文件 (*) 上传失败 (*)', rawFile.name, (err && err.message) || ''),
                 });
                 const idx = this.$refs.upload.fileList.indexOf(item);
                 if (idx > -1) this.$refs.upload.fileList.splice(idx, 1);
@@ -452,7 +452,7 @@ export default {
                     }
                     let check = this.uploadList.length < this.maxNum;
                     if (!check) {
-                        $A.noticeWarning(this.$L('最多只能选择 ' + this.maxNum + ' 张图片。'));
+                        $A.noticeWarning(this.$L('最多只能选择 (*) 张图片。', this.maxNum));
                         return;
                     }
                     item.active = true;

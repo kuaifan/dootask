@@ -20,7 +20,7 @@ negative:
   - 语言切换只影响当前账号，不会改其他成员
   - 不影响其他用户给你发的消息（消息不会自动翻译，要单独用「消息翻译」功能）
   - 某些插件 / 微应用可能未提供完整翻译，会回退到中文 / 英文
-last_verified: v1.7.90
+last_verified: v1.8.69
 ---
 
 # 切换界面语言
@@ -33,7 +33,7 @@ last_verified: v1.7.90
 
 ## 支持的语言
 
-由 `resources/assets/js/language/` 下文件清单决定，常见：
+由 `resources/assets/js/i18n/` 下文件清单决定，常见：
 
 - 简体中文（zh）
 - 繁体中文（zh-CHT）

@@ -51,6 +51,7 @@ php .claude/skills/dootask-release/scripts/language.php diff
 ```
 
 输出 JSON：
+- `formatErrorCount > 0`：translate.json **已有条目**含 raw `(*)`/`(**)` key、字段结构错误、非法/不连续的参数编号或规范化重复 → **停止**，报告 `formatErrors`，交用户修复
 - `regexErrorCount > 0`：translate.json **已有条目**的占位符与某语言值不一致 → **停止**，报告 `regexErrors`，交用户修复（这是历史数据问题，不要自行猜测修改）
 - `redundantCount > 0`：translate.json 里有、但原文已删除的条目 → 仅作提示（apply 时会自动剔除，不致命）
 - `needsCount == 0`：无新文案 → **跳到 1.4 直接生成**
@@ -82,7 +83,7 @@ php .claude/skills/dootask-release/scripts/language.php diff
 php .claude/skills/dootask-release/scripts/language.php apply /tmp/dootask-release-translated.json
 ```
 
-脚本会校验字段完整性与占位符完整性、追加新条目、剔除冗余项，并按项目原生格式写回 `translate.json`。任一条不合格会报错停止，按提示修正翻译后重试。
+脚本会校验字段完整性与占位符完整性、追加新条目、剔除冗余项，并按项目原生格式写回 `translate.json`。参数化 key 必须使用 `(%T1)`/`(%M1)` 形式，禁止输入 raw `(*)`/`(**)`；编号须按出现顺序从 1 连续递增，各语言值可调整占位符顺序，但占位符的类型、编号和数量必须与 key 完全一致。输入 JSON 内相同或规范化后相同的 key 会被拒绝；已存在于 `translate.json` 的非待补项也会被拒绝，避免覆盖歧义。任一条不合格会明确报错并停止，按提示修正翻译后重试。
 
 **1.4 生成前端/后端语言文件**
 
@@ -90,7 +91,7 @@ php .claude/skills/dootask-release/scripts/language.php apply /tmp/dootask-relea
 php .claude/skills/dootask-release/scripts/language.php generate
 ```
 
-由 `translate.json` 字节级重新生成 `public/language/web/*.js` 与 `public/language/api/*.json`（排序/转义与项目原生工具完全一致，正常情况下 diff 只包含本次新增条目）。
+由 `translate.json` 字节级重新生成 `public/language/web/*.js` 与 `public/language/api/*.json`（排序/转义与项目原生工具完全一致，正常情况下 diff 只包含本次新增条目）。生成前会再次执行格式与占位符校验；存在 raw `(*)`/`(**)` key 或占位符错误时不会写入生成文件。
 
 **1.5 报告**：用 `git status --short language public/language` 汇总本步改动，向用户报告新增了多少条翻译。
 

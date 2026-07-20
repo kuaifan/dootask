@@ -104,7 +104,7 @@ import {mapState} from "vuex";
 import emitter from "./store/events";
 import AIAssistant from "./components/AIAssistant";
 import UserDetail from "./pages/manage/components/UserDetail.vue";
-import {languageName} from "./language";
+import {languageName} from "./i18n";
 
 export default {
     mixins: [ctrlPressed],

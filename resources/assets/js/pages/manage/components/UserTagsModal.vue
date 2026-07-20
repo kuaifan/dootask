@@ -87,13 +87,13 @@
                             </div>
                         </div>
                         <div class="tag-meta-info" v-if="tag.created_by_name">
-                            <span>{{$L('由 (*) 创建', tag.created_by_name)}}</span>
+                            <span>{{$L('由(*)创建', tag.created_by_name)}}</span>
                         </div>
                     </li>
                 </ul>
             </div>
             <div v-if="total > 0" class="tag-modal-footer">
-                <span>{{$L('当前共 (*) 个标签', total)}}</span>
+                <span>{{$L('当前共(*)个标签', total)}}</span>
             </div>
         </div>
     </ModalAlive>
@@ -242,7 +242,7 @@ export default {
                 return;
             }
             if (name.length > 20) {
-                $A.messageError(this.$L('标签名称最多只能设置20个字'));
+                $A.messageError(this.$L('标签名称最多只能设置(*)个字', 20));
                 return;
             }
             if (this.pending.add) {
@@ -288,7 +288,7 @@ export default {
                 return;
             }
             if (name.length > 20) {
-                $A.messageError(this.$L('标签名称最多只能设置20个字'));
+                $A.messageError(this.$L('标签名称最多只能设置(*)个字', 20));
                 return;
             }
             if (name === tag.name) {

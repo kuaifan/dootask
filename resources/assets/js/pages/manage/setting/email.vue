@@ -2,7 +2,7 @@
     <div class="setting-item submit">
         <Loading v-if="configLoad > 0"/>
         <Form v-else ref="formDatum" :model="formDatum" :rules="ruleDatum" v-bind="formOptions" @submit.native.prevent>
-            <Alert v-if="isLdap" type="warning">{{$L('LDAP 用户禁止修改邮箱地址')}}</Alert>
+            <Alert v-if="isLdap" type="warning">{{$L('LDAP 用户禁止修改邮箱')}}</Alert>
             <FormItem :label="$L('新邮箱地址')" prop="newEmail">
                 <Input v-if="isRegVerify == 1" v-model="formDatum.newEmail"
                        :class="count > 0 ? 'setting-send-input':'setting-input'" search @on-search="sendEmailCode"

@@ -63,7 +63,7 @@
                                 <li v-if="uindex < emojiUsersNum" :key="`emoji-user-li-${uindex}-${uitem}`">
                                     <UserAvatar :userid="uitem" show-name :show-icon="false"/>
                                 </li>
-                                <li v-else-if="uindex == emojiUsersNum" :key="`emoji-user-more-${uindex}`">+{{item.userids.length - emojiUsersNum}}位</li>
+                                <li v-else-if="uindex == emojiUsersNum" :key="`emoji-user-more-${uindex}`">{{$L('+(*)位', item.userids.length - emojiUsersNum)}}</li>
                             </template>
                         </ul>
                     </div>
@@ -75,7 +75,7 @@
             <!--回复数-->
             <div v-if="!hideReply && msgData.reply_num > 0" class="reply" @click="replyList">
                 <i class="taskfont">&#xe6eb;</i>
-                {{msgData.reply_num}}条回复
+                {{$L('(*)条回复', msgData.reply_num)}}
             </div>
             <!--标注-->
             <div v-if="msgData.tag" class="tag" @click="openTag">

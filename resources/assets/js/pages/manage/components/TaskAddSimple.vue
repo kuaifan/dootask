@@ -9,7 +9,7 @@
                     :rows="1"
                     :autosize="{ minRows: 1, maxRows: 3 }"
                     :maxlength="255"
-                    :placeholder="$L(typeName + '描述，回车创建')"
+                    :placeholder="$L('(*)描述，回车创建', $L(typeName))"
                     enterkeyhint="done"
                     @on-focus="onFocus=true"
                     @on-blur="onFocus=false"
@@ -30,7 +30,7 @@
                 </div>
             </div>
             <div class="add-btn" @click="openAdd">
-                <Icon class="add-icon" type="md-add" />{{$L('添加' + typeName)}}
+                <Icon class="add-icon" type="md-add" />{{$L('添加(*)', $L(typeName))}}
             </div>
         </Col>
         <Col span="3"></Col>
@@ -46,13 +46,13 @@
             :rows="2"
             :autosize="{ minRows: 2, maxRows: 3 }"
             :maxlength="255"
-            :placeholder="$L(typeName + '描述，回车创建')"
+            :placeholder="$L('(*)描述，回车创建', $L(typeName))"
             enterkeyhint="done"
             @on-focus="onFocus=true"
             @on-blur="onFocus=false"
             @on-keydown="onKeydown"/>
         <div class="add-placeholder" @click="openAdd">
-            <Icon type="md-add" />{{$L('添加' + typeName)}}
+            <Icon type="md-add" />{{$L('添加(*)', $L(typeName))}}
         </div>
         <div class="priority">
             <ul>

@@ -92,26 +92,26 @@ export default {
                 const now = $A.daytz()
                 const line = $A.dayjs(this.user.line_at)
                 const seconds = now.unix() - line.unix()
-                let stats = '最后在线于很久以前';
+                let stats = this.$L('最后在线于(*)', this.$L('很久以前'));
                 if (seconds < 60) {
-                    stats = `最后在线于刚刚`
+                    stats = this.$L('最后在线于(*)', this.$L('刚刚'))
                 } else if (seconds < 3600) {
-                    stats = `最后在线于 ${Math.floor(seconds / 60)} 分钟前`
+                    stats = this.$L('最后在线于(*)分钟前', Math.floor(seconds / 60))
                 } else if (seconds < 3600 * 6) {
-                    stats = `最后在线于 ${Math.floor(seconds / 3600)} 小时前`
+                    stats = this.$L('最后在线于(*)小时前', Math.floor(seconds / 3600))
                 } else {
                     const nowYmd = now.format('YYYY-MM-DD')
                     const lineYmd = line.format('YYYY-MM-DD')
                     const lineHi = line.format('HH:mm')
                     if (nowYmd === lineYmd) {
-                        stats = `最后在线于今天 ${lineHi}`
+                        stats = this.$L('最后在线于今天(*)', lineHi)
                     } else if (now.clone().subtract(1, 'day').format('YYYY-MM-DD') === lineYmd) {
-                        stats = `最后在线于昨天 ${lineHi}`
+                        stats = this.$L('最后在线于昨天(*)', lineHi)
                     } else if (seconds < 3600 * 24 * 365) {
-                        stats = `最后在线于 ${lineYmd}`
+                        stats = this.$L('最后在线于(*)', lineYmd)
                     }
                 }
-                this.$emit('update:online', this.$L(stats))
+                this.$emit('update:online', stats)
             }
         }
     }

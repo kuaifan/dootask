@@ -136,7 +136,7 @@ import {mapState} from 'vuex'
 import Draggable from 'vuedraggable';
 import VMPreviewNostyle from "../../../../components/VMEditor/nostyle.vue";
 import AllTaskTemplates from "./templates";
-import {languageName} from "../../../../language";
+import {languageName} from "../../../../i18n";
 
 export default {
     name: 'ProjectTaskTemplate',

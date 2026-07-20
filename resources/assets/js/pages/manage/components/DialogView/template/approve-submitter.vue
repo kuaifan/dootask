@@ -1,6 +1,6 @@
 <template>
     <div class="open-approve-details" :data-id="msg.data.id">
-        <b>{{ $L(title) }}</b>
+        <b>{{ title }}</b>
         <div class="cause">
             <p>{{$L("状态")}}：<b>{{ $L(statusText) }}</b></p>
             <p>{{$L("申请人")}}：<span class="mark-color">@{{ msg.data.start_nickname }}</span> {{ msg.data.department }}</p>
@@ -23,7 +23,10 @@ export default {
     },
     computed: {
         title({msg}) {
-            return msg.action === 'pass' ? `您发起的「${msg.data.proc_def_name}」已通过` : `您发起的「${msg.data.proc_def_name}」被 ${msg.data.nickname} 拒绝`
+            const name = this.$L(msg.data.proc_def_name)
+            return msg.action === 'pass'
+                ? this.$L('您发起的「(*)」已通过', name)
+                : this.$L('您发起的「(*)」被(*)拒绝', name, msg.data.nickname)
         },
         statusText({msg}) {
             switch (msg.action) {

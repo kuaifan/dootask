@@ -1,5 +1,5 @@
 import * as openpgp from 'openpgp_hi/lightweight';
-import {initLanguage, languageList, languageName} from "../language";
+import {initLanguage, languageList, languageName} from "../i18n";
 import {$callData, $urlSafe, SSEClient} from '../utils'
 import {isLocalHost} from "../components/Replace/utils";
 import emitter from "./events";
@@ -344,7 +344,7 @@ export default {
                     dispatch("userEditInput", 'nickname').then(() => {
                         dispatch("call", cloneParams).then(resolve).catch(reject)
                     }).catch(err => {
-                        reject({ret: -1, data, msg: err || $A.L('请设置昵称！')})
+                        reject({ret: -1, data, msg: err || $A.L('请设置昵称')})
                     })
                     return
                 }
@@ -354,7 +354,7 @@ export default {
                     dispatch("userEditInput", 'tel').then(() => {
                         dispatch("call", cloneParams).then(resolve).catch(reject)
                     }).catch(err => {
-                        reject({ret: -1, data, msg: err || $A.L('请设置联系电话！')})
+                        reject({ret: -1, data, msg: err || $A.L('请设置联系电话')})
                     })
                     return
                 }

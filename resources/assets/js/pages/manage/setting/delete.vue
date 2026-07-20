@@ -25,7 +25,7 @@
         </div>
         <Modal
             v-model="warningShow"
-            :title="$L(`删除${appTitle}帐号`)"
+            :title="$L('删除(*)帐号', appTitle)"
             class="page-setting-delete-box">
             <div class="big-text">{{ $L('帐号删除后，该帐号将无法正常登录且无法恢复，帐号下的所有数据也将被删除。') }}</div>
             <div class="small-text">
@@ -63,9 +63,9 @@ export default {
                     {
                         validator: (rule, value, callback) => {
                             if (value.trim() === '') {
-                                callback(new Error(this.$L('请输入邮箱帐号！')));
+                                callback(new Error(this.$L('请输入邮箱帐号')));
                             } else if (!$A.isEmail(value.trim())) {
-                                callback(new Error(this.$L('请输入正确邮箱帐号！')));
+                                callback(new Error(this.$L('请输入正确的邮箱地址！')));
                             } else {
                                 callback();
                             }

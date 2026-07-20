@@ -165,17 +165,17 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     return [startSecond, $A.daytz().endOf('month').toDate()];
                 }
             }, {
-                text: $A.L('3天'),
+                text: $A.L('(*)天', 3),
                 value() {
                     return [startSecond, $A.daytz().add(2, 'day').endOf('day').toDate()];
                 }
             }, {
-                text: $A.L('5天'),
+                text: $A.L('(*)天', 5),
                 value() {
                     return [startSecond, $A.daytz().add(4, 'day').endOf('day').toDate()];
                 }
             }, {
-                text: $A.L('7天'),
+                text: $A.L('(*)天', 7),
                 value() {
                     return [startSecond, $A.daytz().add(6, 'day').endOf('day').toDate()];
                 }

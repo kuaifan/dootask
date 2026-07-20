@@ -128,7 +128,7 @@ import DragBallComponent from "../../../../components/DragBallComponent";
 import UserSelect from "../../../../components/UserSelect.vue";
 import emitter from "../../../../store/events";
 import {getErrorMessage} from "./utils";
-import {languageName} from "../../../../language";
+import {languageName} from "../../../../i18n";
 
 export default {
     name: "MeetingManager",

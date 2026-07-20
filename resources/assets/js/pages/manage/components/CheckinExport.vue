@@ -6,7 +6,7 @@
         <Form ref="export" :model="formData" v-bind="formOptions" @submit.native.prevent>
             <FormItem :label="$L('导出成员')">
                 <UserSelect v-model="formData.userid" :multiple-max="100" avatar-name show-disable :title="$L('请选择成员')"/>
-                <div class="form-tip">{{$L('每次最多选择导出100个成员')}}</div>
+                <div class="form-tip">{{$L('每次最多选择导出(*)个成员', 100)}}</div>
             </FormItem>
             <FormItem :label="$L('签到日期')">
                 <DatePicker

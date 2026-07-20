@@ -19,7 +19,7 @@
                 <div class="card-link link-red">{{$L('查看任务')}} →</div>
             </li>
             <li @click="onBlock('soon')">
-                <div class="card-label">{{$L('3 天内到期')}}</div>
+                <div class="card-label">{{$L('(*) 天内到期', 3)}}</div>
                 <div class="card-data">
                     <span class="card-num num-orange">{{blocks.due_soon || 0}}</span>
                     <span class="card-sub">{{$L('项')}}</span>
@@ -302,7 +302,7 @@ export default {
         chips({blocks, highPriorityChip}) {
             return [
                 {type: 'overdue', label: this.$L('已超期'), num: blocks.overdue || 0},
-                {type: 'soon', label: this.$L('3 天内到期'), num: blocks.due_soon || 0},
+                {type: 'soon', label: this.$L('(*) 天内到期', 3), num: blocks.due_soon || 0},
                 {type: 'hi', label: highPriorityChip.label, num: highPriorityChip.num},
                 {type: 'noowner', label: this.$L('未分配负责人'), num: blocks.no_owner || 0},
             ]
@@ -341,7 +341,7 @@ export default {
                 case 'overdue':
                     return this.$L('暂无已超期任务')
                 case 'soon':
-                    return this.$L('未来 3 天内暂无到期任务')
+                    return this.$L('未来 (*) 天内暂无到期任务', 3)
                 case 'hi':
                     return this.$L('暂无高优先级任务')
                 case 'noowner':

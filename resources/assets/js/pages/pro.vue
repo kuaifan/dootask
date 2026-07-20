@@ -2,7 +2,7 @@
 </template>
 
 <script>
-import {languageName} from "../language";
+import {languageName} from "../i18n";
 
 export default {
     mounted() {

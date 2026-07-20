@@ -8,7 +8,7 @@
             @submit.native.prevent>
             <FormItem :label="$L('头像')" prop="userimg">
                 <ImgUpload v-model="formData.userimg" :num="1" :width="512" :height="512" whcut="cover"/>
-                <span class="form-tip">{{$L('建议尺寸：200x200')}}</span>
+                <span class="form-tip">{{$L('建议尺寸：(*)', '200x200')}}</span>
             </FormItem>
             <FormItem :label="$L('邮箱')" prop="email">
                 <Input v-model="userInfo.email" disabled></Input>
@@ -113,7 +113,7 @@ export default {
                 ],
                 nickname: [
                     {required: true, message: this.$L('请输入昵称！'), trigger: 'change'},
-                    {type: 'string', min: 2, message: this.$L('昵称长度至少2位！'), trigger: 'change'}
+                    {type: 'string', min: 2, message: this.$L('昵称长度至少(*)位！', 2), trigger: 'change'}
                 ]
             },
 

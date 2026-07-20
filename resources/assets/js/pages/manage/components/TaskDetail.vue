@@ -304,7 +304,7 @@
                             <i class="taskfont">&#xe6e6;</i>{{$L('附件')}}
                         </div>
                         <ul class="item-content file">
-                            <li v-if="taskDetail.file_num > 50" class="tip">{{$L(`共${taskDetail.file_num}个文件，仅显示最新50个`)}}</li>
+                            <li v-if="taskDetail.file_num > 50" class="tip">{{$L('共(*)个文件，仅显示最新50个', taskDetail.file_num)}}</li>
                             <li v-for="(file, index) in fileList" :key="index" @click="showFileDropdown(file, $event)">
                                 <img v-if="file.id" class="file-ext" :src="file.thumb"/>
                                 <Loading v-else class="file-load"/>

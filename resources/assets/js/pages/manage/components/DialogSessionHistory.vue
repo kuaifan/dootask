@@ -1,6 +1,6 @@
 <template>
     <div class="dialog-session-history">
-        <div class="session-history-title">{{$L('与 (*) 会话历史', sessionData.name)}}</div>
+        <div class="session-history-title">{{$L('与(*)会话历史', sessionData.name)}}</div>
         <Scrollbar
             ref="list"
             class="session-history-list"

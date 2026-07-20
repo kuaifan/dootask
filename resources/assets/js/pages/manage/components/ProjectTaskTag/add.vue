@@ -51,7 +51,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import {languageName} from "../../../../language";
+import {languageName} from "../../../../i18n";
 import {systemTags} from "./utils";
 import Tags from "./tags.vue";
 

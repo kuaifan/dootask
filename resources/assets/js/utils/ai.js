@@ -1,4 +1,4 @@
-import {languageList, languageName} from "../language";
+import {languageList, languageName} from "../i18n";
 
 /**
  * AI 服务商标识与显示名映射

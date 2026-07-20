@@ -7,7 +7,7 @@
             v-bind="formOptions"
             @submit.native.prevent>
             <div class="block-setting-box">
-                <h3>AgoraIO 声网</h3>
+                <h3>{{$L('AgoraIO 声网')}}</h3>
                 <div class="form-box">
                     <FormItem :label="$L('会议功能')" prop="open">
                         <RadioGroup v-model="formData.open">

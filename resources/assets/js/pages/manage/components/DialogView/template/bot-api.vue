@@ -4,7 +4,7 @@
 
 <script>
 import DialogMarkdown from "../../DialogMarkdown.vue";
-import {languageName} from "../../../../../language";
+import {languageName} from "../../../../../i18n";
 
 export default {
     components: {DialogMarkdown},

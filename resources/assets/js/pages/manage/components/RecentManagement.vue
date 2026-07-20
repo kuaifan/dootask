@@ -134,7 +134,7 @@ export default {
                         const actions = [
                             h('Poptip', {
                                 props: {
-                                    title: this.$L(`确定要删除记录"${params.row.name || this.$L('未命名')}"吗？`),
+                                    title: this.$L('确定要删除记录"(*)"吗？', params.row.name || this.$L('未命名')),
                                     confirm: true,
                                     transfer: true,
                                     placement: 'left',

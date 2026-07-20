@@ -6,7 +6,8 @@
 //
 // 子命令：
 //   language.php diff
-//       —— 输出 JSON：needs(待翻译，key 已转成 (%T1)/(%M1) 形式) / redundants(冗余,提示) / regexErrors(占位符错乱,致命)
+//       —— 输出 JSON：needs(待翻译，key 已转成 (%T1)/(%M1) 形式) / redundants(冗余,提示)
+//          / formatErrors(raw 占位符、字段或编号错误,致命) / regexErrors(各语言占位符错乱,致命)
 //   language.php apply <translated.json>
 //       —— 把新翻译合并进 translate.json（追加 + 剔除冗余），不生成 public 文件
 //   language.php generate
@@ -41,43 +42,136 @@ function read_generateds(): array
     return [$originals, $generateds];
 }
 
-// ---- 公共：构建 translations 映射（normalizedKey -> obj），并收集冗余/占位符错乱 ----
+// ---- 公共：占位符与条目结构校验 ----
+function parameter_tokens(string $value): array
+{
+    preg_match_all('/\(%[TM]\d+\)/', $value, $matches);
+    return $matches[0];
+}
+
+function normalize_key(string $key): string
+{
+    return preg_replace(["/\(%T\d+\)/", "/\(%M\d+\)/"], ["(*)", "(**)"], $key);
+}
+
+function validate_entry(array $obj, string $location, bool $requireTranslations): array
+{
+    $formatErrors = [];
+    $regexErrors = [];
+    foreach ($GLOBALS['LANG_FIELDS'] as $field) {
+        if (!array_key_exists($field, $obj)) {
+            $formatErrors[] = ['location' => "$location.$field", 'message' => "缺少字段 $field"];
+        } elseif (!is_string($obj[$field])) {
+            $formatErrors[] = ['location' => "$location.$field", 'message' => "字段 $field 必须是字符串"];
+        } elseif ($requireTranslations && $field !== 'key' && $field !== 'zh' && $obj[$field] === '') {
+            $formatErrors[] = ['location' => "$location.$field", 'message' => "字段 $field 不得为空"];
+        }
+    }
+    if (!isset($obj['key']) || !is_string($obj['key'])) {
+        return [$formatErrors, $regexErrors];
+    }
+
+    $key = $obj['key'];
+    if (preg_match('/\(\*{1,2}\)/', $key)) {
+        $formatErrors[] = [
+            'location' => "$location.key",
+            'message' => "key 不得包含 raw (*)/(**)，必须使用 (%T1)/(%M1)：$key",
+        ];
+    }
+    $withoutValidParameters = preg_replace('/\(%[TM]\d+\)/', '', $key);
+    if (str_contains($withoutValidParameters, '(%')) {
+        $formatErrors[] = ['location' => "$location.key", 'message' => "存在非法参数占位符：$key"];
+    }
+
+    $keyTokens = parameter_tokens($key);
+    foreach ($keyTokens as $index => $token) {
+        preg_match('/\d+/', $token, $number);
+        if ((int)$number[0] !== $index + 1) {
+            $formatErrors[] = [
+                'location' => "$location.key",
+                'message' => "参数编号必须按出现顺序从 1 连续递增：$key",
+            ];
+            break;
+        }
+    }
+
+    $expected = $keyTokens;
+    sort($expected);
+    foreach ($GLOBALS['LANG_FIELDS'] as $field) {
+        if ($field === 'key' || !isset($obj[$field]) || !is_string($obj[$field]) || $obj[$field] === '') {
+            continue;
+        }
+        $actual = parameter_tokens($obj[$field]);
+        sort($actual);
+        if ($actual !== $expected) {
+            $regexErrors[] = [
+                'location' => "$location.$field",
+                'key' => $key,
+                'field' => $field,
+                'value' => $obj[$field],
+                'expected' => $expected,
+                'actual' => $actual,
+                'message' => "参数占位符缺失、类型或编号不一致",
+            ];
+        }
+    }
+    return [$formatErrors, $regexErrors];
+}
+
+function print_validation_errors(array $formatErrors, array $regexErrors): void
+{
+    foreach ($formatErrors as $error) {
+        fwrite(STDERR, "格式错误 {$error['location']}：{$error['message']}\n");
+    }
+    foreach ($regexErrors as $error) {
+        fwrite(STDERR, "占位符错误 {$error['location']}：{$error['message']}；key={$error['key']}\n");
+    }
+}
+
+// ---- 公共：构建 translations 映射（normalizedKey -> obj），并收集冗余/格式/占位符错乱 ----
 function build_translations(array $originals): array
 {
     $translations = [];
     $redundants = [];
-    $regrror = [];
+    $regexErrors = [];
+    $formatErrors = [];
     if (!file_exists("translate.json")) {
         fwrite(STDERR, "translate.json not exists\n");
         exit(1);
     }
     $tmps = json_decode(file_get_contents("translate.json"), true);
-    foreach ($tmps as $obj) {
-        if (!isset($obj['key'])) {
+    if (!is_array($tmps)) {
+        $formatErrors[] = ['location' => 'translate.json', 'message' => '根数据必须是 JSON 数组'];
+        return [$translations, $redundants, $regexErrors, $formatErrors];
+    }
+    foreach ($tmps as $index => $obj) {
+        $location = "translate.json[index $index]";
+        if (!is_array($obj)) {
+            $formatErrors[] = ['location' => $location, 'message' => '条目必须是对象'];
+            continue;
+        }
+        [$entryFormatErrors, $entryRegexErrors] = validate_entry($obj, $location, false);
+        $formatErrors = array_merge($formatErrors, $entryFormatErrors);
+        $regexErrors = array_merge($regexErrors, $entryRegexErrors);
+        if (!isset($obj['key']) || !is_string($obj['key'])) {
             continue;
         }
         $currentKey = $obj['key'];
-        $originalKey = preg_replace(["/\(%T\d+\)/", "/\(%M\d+\)/"], ["(*)", "(**)"], $currentKey);
+        $originalKey = normalize_key($currentKey);
         if (!in_array($originalKey, $originals)) {
             $redundants[$originalKey] = $obj;
             continue;
         }
-        $translations[$originalKey] = $obj;
-        if (preg_match_all('/\(%[TM]\d+\)/', $currentKey, $matches)) {
-            foreach ($matches[0] as $match) {
-                foreach ($obj as $k => $v) {
-                    if (empty($v)) {
-                        continue;
-                    }
-                    if (!str_contains($v, $match)) {
-                        $regrror[$originalKey] = ['key' => $currentKey, 'field' => $k, 'value' => $v, 'match' => $match];
-                        continue 2;
-                    }
-                }
-            }
+        if (isset($translations[$originalKey])) {
+            $formatErrors[] = [
+                'location' => $location,
+                'message' => "规范化后 key 重复：$originalKey",
+            ];
+            continue;
         }
+        $translations[$originalKey] = $obj;
     }
-    return [$translations, $redundants, $regrror];
+    return [$translations, $redundants, $regexErrors, $formatErrors];
 }
 
 // ---- 公共：由 translate.json + originals 重新生成 public 文件 ----
@@ -127,7 +221,7 @@ function generate(array $generateds, array $translations): void
 
 if ($cmd === 'diff') {
     [$originals, $generateds] = read_generateds();
-    [$translations, $redundants, $regrror] = build_translations($originals);
+    [$translations, $redundants, $regexErrors, $formatErrors] = build_translations($originals);
 
     // 需要翻译的数据（对齐 translate.php 150-169：占位符按单一计数器编号）
     $needs = [];
@@ -153,14 +247,16 @@ if ($cmd === 'diff') {
     echo json_encode([
         'needsCount' => count($needsOut),
         'redundantCount' => count($redundants),
-        'regexErrorCount' => count($regrror),
+        'formatErrorCount' => count($formatErrors),
+        'regexErrorCount' => count($regexErrors),
         'needs' => $needsOut,
         'redundants' => array_keys($redundants),
-        'regexErrors' => array_values($regrror),
+        'formatErrors' => array_values($formatErrors),
+        'regexErrors' => array_values($regexErrors),
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
 
-    if (count($regrror) > 0) {
-        exit(2); // 已有数据占位符错乱，需先修复
+    if (count($formatErrors) > 0 || count($regexErrors) > 0) {
+        exit(2); // 已有数据格式或占位符错乱，需先修复
     }
     exit(0);
 }
@@ -172,9 +268,10 @@ if ($cmd === 'apply') {
         exit(1);
     }
     [$originals, $generateds] = read_generateds();
-    [$translations, $redundants, $regrror] = build_translations($originals);
-    if (count($regrror) > 0) {
-        fwrite(STDERR, "translate.json 已有条目占位符错乱，请先修复再发版。\n");
+    [$translations, $redundants, $regexErrors, $formatErrors] = build_translations($originals);
+    if (count($formatErrors) > 0 || count($regexErrors) > 0) {
+        print_validation_errors($formatErrors, $regexErrors);
+        fwrite(STDERR, "translate.json 已有条目格式或占位符错误，请先修复再发版。\n");
         exit(2);
     }
 
@@ -183,45 +280,49 @@ if ($cmd === 'apply') {
         fwrite(STDERR, "translated.json 必须是数组\n");
         exit(1);
     }
-    $added = 0;
-    foreach ($incoming as $raw) {
-        foreach ($GLOBALS['LANG_FIELDS'] as $f) {
-            if (!array_key_exists($f, $raw)) {
-                fwrite(STDERR, "新翻译缺字段 \"$f\"：" . json_encode($raw, JSON_UNESCAPED_UNICODE) . "\n");
-                exit(1);
-            }
+    $originalSet = array_flip($originals);
+    $incomingSeen = [];
+    $itemsToAdd = [];
+    foreach ($incoming as $index => $raw) {
+        if (!is_array($raw)) {
+            fwrite(STDERR, "新翻译 translated.json[index $index] 必须是对象\n");
+            exit(1);
         }
-        // 占位符完整性：key 里每个 (%T1)/(%M1) 必须出现在每个非空语言值里
-        if (preg_match_all('/\(%[TM]\d+\)/', $raw['key'], $m)) {
-            foreach ($m[0] as $match) {
-                foreach ($GLOBALS['LANG_FIELDS'] as $f) {
-                    if ($f === 'key' || $f === 'zh') {
-                        continue;
-                    }
-                    if (empty($raw[$f])) {
-                        continue;
-                    }
-                    if (!str_contains($raw[$f], $match)) {
-                        fwrite(STDERR, "占位符 $match 在字段 \"$f\" 缺失：{$raw['key']}\n");
-                        exit(1);
-                    }
-                }
-            }
+        [$incomingFormatErrors, $incomingRegexErrors] = validate_entry($raw, "translated.json[index $index]", true);
+        if (count($incomingFormatErrors) > 0 || count($incomingRegexErrors) > 0) {
+            print_validation_errors($incomingFormatErrors, $incomingRegexErrors);
+            exit(1);
         }
         // 规范化：固定字段顺序 + zh 置空
         $item = [];
         foreach ($GLOBALS['LANG_FIELDS'] as $f) {
             $item[$f] = $f === 'zh' ? '' : $raw[$f];
         }
-        $originalKey = preg_replace(["/\(%T\d+\)/", "/\(%M\d+\)/"], ["(*)", "(**)"], $item['key']);
+        $originalKey = normalize_key($item['key']);
+        if (!isset($originalSet[$originalKey])) {
+            fwrite(STDERR, "新翻译 key 不在 original-web.txt/original-api.txt：{$item['key']}\n");
+            exit(1);
+        }
+        if (isset($incomingSeen[$originalKey])) {
+            fwrite(STDERR, "新翻译输入内部重复：translated.json[index {$incomingSeen[$originalKey]}] 与 translated.json[index $index] 规范化后均为「$originalKey」\n");
+            exit(1);
+        }
+        if (isset($translations[$originalKey])) {
+            fwrite(STDERR, "新翻译 key 已存在于 translate.json，非待补项或存在覆盖歧义：{$item['key']}（规范化：$originalKey）\n");
+            exit(1);
+        }
+        $incomingSeen[$originalKey] = $index;
+        $itemsToAdd[$originalKey] = $item;
+    }
+
+    foreach ($itemsToAdd as $originalKey => $item) {
         $translations[$originalKey] = $item;
-        $added++;
     }
 
     // array_values：现有条目（去冗余）在前，新条目追加在后
     file_put_contents("translate.json", json_encode(array_values($translations), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     echo json_encode([
-        'added' => $added,
+        'added' => count($itemsToAdd),
         'total' => count($translations),
         'droppedRedundant' => count($redundants),
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
@@ -230,7 +331,12 @@ if ($cmd === 'apply') {
 
 if ($cmd === 'generate') {
     [$originals, $generateds] = read_generateds();
-    [$translations] = build_translations($originals);
+    [$translations, $redundants, $regexErrors, $formatErrors] = build_translations($originals);
+    if (count($formatErrors) > 0 || count($regexErrors) > 0) {
+        print_validation_errors($formatErrors, $regexErrors);
+        fwrite(STDERR, "translate.json 存在格式或占位符错误，已停止生成。\n");
+        exit(2);
+    }
     generate($generateds, $translations);
     exit(0);
 }

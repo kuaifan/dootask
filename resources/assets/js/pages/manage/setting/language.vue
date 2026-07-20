@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import {languageList, languageName, setLanguage} from "../../../language";
+import {languageList, languageName, setLanguage} from "../../../i18n";
 import {mapState} from "vuex";
 
 export default {

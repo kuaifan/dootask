@@ -280,7 +280,7 @@ import FloatButton from "./float-button.vue";
 import AssistantModal from "./modal.vue";
 import PromptImage from "./prompt-image.vue";
 import {buildWeakPrompt, renderWeakPromptText} from "./page-context";
-import {getLanguage} from "../../language";
+import {getLanguage} from "../../i18n";
 import {getWelcomePrompts} from "./welcome-prompts";
 
 export default {

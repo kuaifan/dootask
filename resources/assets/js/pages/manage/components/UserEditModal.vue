@@ -6,7 +6,7 @@
         width="560">
         <Form :model="formData" v-bind="formOptions" @submit.native.prevent>
             <Alert type="warning" style="margin-bottom:18px">
-                {{ $L(`正在编辑帐号【ID:${userData.userid}, ${userData.nickname}】的信息。`) }}
+                {{ $L('正在编辑帐号【ID:(*), (*)】的信息。', userData.userid, userData.nickname) }}
             </Alert>
 
             <FormItem :label="$L('昵称')">
@@ -98,7 +98,7 @@
             <template v-if="checkinMode">
                 <FormItem :label="$L('人脸图片')" class="checkin-field">
                     <ImgUpload v-model="formData.faceimg" :num="1" :width="512" :height="512" whcut="cover"/>
-                    <div class="form-tip">{{ $L('建议尺寸：500x500') }}</div>
+                    <div class="form-tip">{{ $L('建议尺寸：(*)', '500x500') }}</div>
                 </FormItem>
 
                 <FormItem :label="$L('MAC地址')" class="checkin-field">

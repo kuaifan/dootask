@@ -155,8 +155,8 @@
                                 </ul>
                             </li>
                             <li class="loaded">
-                                <template v-if="contactsKey">{{$L('搜索到' + contactsFilter.length + '位联系人')}}</template>
-                                <template v-else>{{$L('共' + contactsTotal + '位联系人')}}</template>
+                                <template v-if="contactsKey">{{$L('搜索到(*)位联系人', contactsFilter.length)}}</template>
+                                <template v-else>{{$L('共(*)位联系人', contactsTotal)}}</template>
                             </li>
                         </template>
                         <li v-else-if="contactsLoad == 0" class="nothing">

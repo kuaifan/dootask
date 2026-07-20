@@ -50,7 +50,7 @@ import 'tui-calendar-hi/toastui-calendar.css';
 import Calendar from "./components/Calendar";
 import {theme} from './components/Calendar/theme';
 import emitter from "../../store/events";
-import {addLanguage} from "../../language";
+import {addLanguage} from "../../i18n";
 import {mapGetters, mapState} from "vuex";
 
 export default {
@@ -95,15 +95,7 @@ export default {
             {"key": "{五}", "zh": "五", "general": "Fri"},
             {"key": "{六}", "zh": "六", "general": "Sat"},
         ]);
-        const dayNames = [
-            this.$L('{日}'),
-            this.$L('{一}'),
-            this.$L('{二}'),
-            this.$L('{三}'),
-            this.$L('{四}'),
-            this.$L('{五}'),
-            this.$L('{六}')
-        ];
+        const dayNames = ['{日}', '{一}', '{二}', '{三}', '{四}', '{五}', '{六}'].map(day => this.$L(day));
         this.options.week.dayNames = dayNames;
         this.options.month.dayNames = dayNames;
         this.options.view = this.$store.state.cacheCalendarView || this.options.view;

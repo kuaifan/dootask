@@ -338,7 +338,7 @@ export default {
                     list.push({
                         id,
                         button: this.$L('重置'),
-                        content: this.$L(`确定重置为【${name}】吗？`),
+                        content: this.$L('确定重置为【(*)】吗？', name),
                     })
                 }
             }

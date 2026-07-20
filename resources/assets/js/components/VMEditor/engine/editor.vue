@@ -77,7 +77,7 @@ import '@kangc/v-md-editor/lib/theme/style/vuepress.css';
 import Prism from 'prismjs';
 
 // Language
-import {languageName} from "../../../language";
+import {languageName} from "../../../i18n";
 import zhCN from '@kangc/v-md-editor/lib/lang/zh-CN';
 import enUS from '@kangc/v-md-editor/lib/lang/en-US';
 
