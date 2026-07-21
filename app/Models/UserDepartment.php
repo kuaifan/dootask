@@ -561,7 +561,7 @@ class UserDepartment extends AbstractModel
             'own_project_ids' => [],
             'own_project_id_map' => [],
         ];
-        if ($ids === null || $ids === '' || Base::settingFind('system', 'department_owner_project_view', 'close') !== 'open') {
+        if ($ids === null || $ids === '' || Base::settingFind('system', 'department_owner_project_view', 'open') !== 'open') {
             return $empty;
         }
         $memberUserids = self::getManagedMemberUserids($user->userid, $ids);
@@ -653,7 +653,7 @@ class UserDepartment extends AbstractModel
             return $result;
         }
         // 部门负责人只读视角
-        if (Base::settingFind('system', 'department_owner_project_view', 'close') !== 'open') {
+        if (Base::settingFind('system', 'department_owner_project_view', 'open') !== 'open') {
             return $result;
         }
         $memberUserids = self::getManagedMemberUserids($viewer->userid, 'all');

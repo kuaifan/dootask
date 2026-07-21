@@ -418,7 +418,7 @@ class UsersController extends AbstractController
     public function info__managed_departments()
     {
         $user = User::auth();
-        if (Base::settingFind('system', 'department_owner_project_view', 'close') !== 'open') {
+        if (Base::settingFind('system', 'department_owner_project_view', 'open') !== 'open') {
             return Base::retSuccess('success', []);
         }
         return Base::retSuccess('success', UserDepartment::getManagedDepartments($user->userid));

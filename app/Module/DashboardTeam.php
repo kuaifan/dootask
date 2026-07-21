@@ -30,7 +30,7 @@ class DashboardTeam
      */
     public static function context(User $user, $selectedDepartmentIds = null): array
     {
-        if (Base::settingFind('system', 'department_owner_project_view', 'close') !== 'open') {
+        if (Base::settingFind('system', 'department_owner_project_view', 'open') !== 'open') {
             throw new ApiException('未开启部门负责人视角功能');
         }
 

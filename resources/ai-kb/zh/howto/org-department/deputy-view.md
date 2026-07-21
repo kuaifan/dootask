@@ -16,7 +16,7 @@ related_tools: []
 related_pages: [dashboard, project_list]
 prerequisites:
   - 当前用户是某部门的部门负责人或部门管理员
-  - 系统管理员已开启部门负责人视角
+  - 系统管理员未关闭部门负责人视角（新安装默认开启）
 negative:
   - 项目负责人视角只能只读查看额外项目，不授予修改权限
   - 项目可单独关闭负责人视角可见性，关闭后不会被纳入

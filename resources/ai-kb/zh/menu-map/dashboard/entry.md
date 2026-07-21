@@ -37,7 +37,7 @@ last_verified: v1.8.69
 - 部门负责人视角顶部的部门按钮可打开「选择团队范围」弹窗。
 
 ## 部门负责人视角出现条件
-1. 系统设置 `department_owner_project_view` 已开启。
+1. 系统设置 `department_owner_project_view` 已开启（新安装或未设置时默认开启，管理员可手动关闭）。
 2. 当前用户是至少一个部门的负责人或部门管理员。
 
 详细界面说明见 [[dashboard.concept]]，部门范围规则见 [[dashboard.team-scope.howto]]。

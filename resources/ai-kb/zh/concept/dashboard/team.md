@@ -15,7 +15,7 @@ aliases:
 related_tools: []
 related_pages: [dashboard]
 prerequisites:
-  - 系统已开启部门负责人视角
+  - 系统已开启部门负责人视角（默认开启）
   - 当前用户是至少一个部门的负责人或部门管理员
 negative:
   - 团队仪表盘不统计私密任务和子任务
