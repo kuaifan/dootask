@@ -1,10 +1,13 @@
 <template>
     <div class="page-dashboard">
         <PageTitle :title="$L('仪表盘')"/>
-        <Alert v-if="warningMsg" class="dashboard-warning" type="warning" show-icon>
-            <span @click="goForward({name: 'manage-setting-license'})">{{warningMsg}}</span>
-        </Alert>
         <Scrollbar class="dashboard-scroller">
+            <!--系统信息-->
+            <div v-if="!!warningMsg" class="dashboard-warning">
+                <Alert type="warning" show-icon>
+                    <span @click="goForward({name: 'manage-setting-license'})">{{warningMsg}}</span>
+                </Alert>
+            </div>
             <div class="dashboard-body">
                 <!--头部-->
                 <div class="dashboard-header">
