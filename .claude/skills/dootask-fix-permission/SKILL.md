@@ -1,64 +1,79 @@
 ---
 name: dootask-fix-permission
-description: 修复 DooTask 可写目录（bootstrap/cache、docker、public、storage）的属主/权限：chown 回当前用户 + 目录 chmod 775，对齐 install 的赋权逻辑，赋权不删数据。
+description: 修复 DooTask 整个项目的目录和文件权限：根目录 chmod 755，bootstrap/cache、docker、public、storage chown 回调用用户且目录 chmod 775，public 文件补充所有用户读权限。用于 Nginx 静态文件 403/Permission denied、install/build EACCES 或可写目录检测失败；优先使用 sudo ./cmd permission，赋权不删数据。
 ---
 
 # DooTask 目录权限修复
 
-容器内进程常以 **root** 写入挂载目录（`storage`、`public/uploads`、`bootstrap/cache` 等），导致宿主机当前用户对这些文件**没有写权限**，进而触发：
+项目根目录如果缺少 `x` 穿越权限，Nginx 即使看到 `public` 中的文件也无法访问。容器内进程还常以 **root** 写入挂载目录（`storage`、`public/uploads`、`bootstrap/cache` 等），导致宿主机当前用户没有写权限。常见现象：
 
-- `./cmd install` 报「目录【xxx】权限不足」/ 目录权限检测失败
-- `./cmd build`（vite）报 `EACCES: permission denied, copyfile`（复制 `public/uploads/...` 时）
+- Nginx 日志出现 `stat() failed (13: Permission denied)`，静态文件请求被回退到 Laravel 首页
+- `./cmd install` 报「目录【xxx】权限不足」/目录权限检测失败
+- `./cmd build`（vite）报 `EACCES: permission denied, copyfile`
 - Laravel 运行时写 `storage`/`bootstrap/cache` 失败
 
-本技能**对齐 `./cmd install` 的目录赋权逻辑**：对四个可写目录做 `chmod 775`（目录）+ `chown` 回当前用户。
+对齐 `./cmd permission`/`./cmd install` 的赋权逻辑：项目根目录设为 `755`；四个可写目录做 `chmod 775`（仅目录）+ `chown` 回调用 sudo 的用户；`public` 普通文件用 `a+r` 补充 Nginx 所需读权限。
 
 ## 适用目录
 
-与 install 一致的四个：
-
-```
+```text
+.                # 项目根目录，只修本层为 755
 bootstrap/cache
 docker
-public          # 含 public/uploads（真实上传数据）
+public           # 目录 775，普通文件 a+r；含真实上传数据
 storage
 ```
 
 ## 核心原则：赋权，不删数据
 
-`public/uploads` 含真实上传文件（头像、附件等）。**永远优先 `chown` 改属主，不要删数据。** 即便用户说"清理一下"，也只允许清临时目录 `public/uploads/tmp`，**切勿**删 uploads 下其他内容。
+`public/uploads` 含真实上传文件。永远优先 `chown` 改属主，不要删数据。即便用户说“清理一下”，也只允许清理临时目录 `public/uploads/tmp`，切勿删除 uploads 下其他内容。
 
 ## 前置检查
 
-1. **工作目录**：在项目根（存在 `cmd` 且这四个目录在）
-2. **sudo**：改属主需 root（当前文件多为 root 属主）。本机一般可免密 sudo；不行则经 docker 以 root 改权限
-3. 确认要修的范围：默认四个目录全修；若用户只想解 build 报错，也可只针对 `public`（含 `public/uploads`）
+1. 在项目根目录执行，确认存在 `cmd` 和上述四个目录。
+2. 用 `ls -ld .` 检查项目根目录是否缺少组/其他用户的 `x` 穿越权限。
+3. 确认可使用 sudo；改 root 属主的文件或目录需要 root 权限。
+4. 用 `find public -type f ! -perm -004 -print` 检查 Nginx 用户可能无法读取的静态文件。
+5. 默认修复项目根目录、四个可写目录和 `public` 文件；若用户只想解决 build 的 uploads 报错，可只处理 `public/uploads`。
 
-检查通过后汇报将执行的命令，**向用户确认一次**再执行。
+检查通过后，汇报将执行的命令，向用户确认一次再执行。
 
 ## 执行
 
-确认后执行（属主修回当前用户，目录权限 775）：
+确认后优先执行独立权限修复命令（不依赖 Docker 正在运行）：
 
 ```shell
-# 1) 属主修回当前用户（递归）
-sudo chown -R "$(id -u):$(id -g)" bootstrap/cache docker public storage
-
-# 2) 目录权限 775（仅目录，对齐 install 的 `find -type d -exec chmod 775`）
-find bootstrap/cache docker public storage -type d -exec chmod 775 {} \;
+sudo ./cmd permission
 ```
 
-> 只想解 build 的 uploads 报错时，可只对 `public`：
-> ```shell
-> sudo chown -R "$(id -u):$(id -g)" public/uploads
-> ```
+旧版 `cmd` 没有 `permission` 命令时，手动执行：
 
-执行后报告：改了哪些目录、属主/权限现状（可 `ls -ld` 抽查），并提示用户可重试之前失败的 install/build/update。
+```shell
+# 1) 保证 Nginx 可穿越项目根目录（不递归）
+sudo chmod 755 .
+
+# 2) 可写目录属主修回当前用户（递归）
+sudo chown -R "$(id -u):$(id -g)" bootstrap/cache docker public storage
+
+# 3) 可写目录权限 775（仅目录）
+find bootstrap/cache docker public storage -type d -exec chmod 775 {} \;
+
+# 4) public 普通文件只补充读权限，保留现有写入/执行位
+find public -type f -exec chmod a+r {} \;
+```
+
+只想解决 build 的 uploads 报错时，可只执行：
+
+```shell
+sudo chown -R "$(id -u):$(id -g)" public/uploads
+```
+
+执行后用 `ls -ld . bootstrap/cache docker public storage` 抽查目录，并用 `find public -type f ! -perm -004 -print` 确认不再有缺少 others 读权限的静态文件。然后重试之前失败的静态文件访问、install/build/update。
 
 ## 失败处理
 
-- `chown` 报权限不足 → 当前用户无 sudo 权限，提示用户用有 root 权限的账户，或经 docker 以 root 执行；不要静默跳过
-- 任何步骤失败立即停止报告，不自动重试
+- `chmod`/`chown` 报权限不足：立即停止，提示使用有 root 权限的账户，或经 docker 以 root 执行；不要静默跳过。
+- 任何步骤失败都立即停止并报告，不自动重试。
 
 ## 禁止项
 
@@ -66,11 +81,15 @@ find bootstrap/cache docker public storage -type d -exec chmod 775 {} \;
 |---------|---------|
 | build 报 uploads EACCES 就 `rm` 删文件 | `chown` 修属主，保留数据 |
 | 删整个 `public/uploads` 清场 | 最多清 `public/uploads/tmp`，别碰真实上传数据 |
-| 对文件无差别 `chmod 777` | 目录 `chmod 775` + `chown` 回当前用户即可 |
+| 对文件无差别 `chmod 777` | 可写目录 `chmod 775` + `chown` 回当前用户 |
+| 把 `public` 所有文件强制改为 `644` | 用 `chmod a+r` 只补读权限，保留现有权限位 |
+| 递归 `chmod 755` 整个项目 | 只对项目根目录执行 `chmod 755 .` |
 | 不加 sudo 直接 chown root 文件 | 改属主需 root |
 
-## Red Flags —— 出现这些念头立即停下
+## Red Flags
 
-- "uploads 复制失败，删掉再 build" → 不，`chown` 赋权，不丢数据
-- "777 一把梭最省事" → 不，按 install 的 775（目录）+ chown
-- "权限不够就跳过这个目录" → 不，报告交用户处理 sudo
+- “uploads 复制失败，删掉再 build” → 不，`chown` 赋权，不丢数据。
+- “777 一把梭最省事” → 不，按 install 的 775（目录）+ chown。
+- “根目录不可穿越，递归 chmod 全仓库” → 不，只修项目根目录为 755。
+- “静态文件 403，给整个项目所有文件加读权限” → 不，只对 `public` 普通文件执行 `a+r`。
+- “权限不够就跳过这个目录” → 不，报告交用户处理 sudo。

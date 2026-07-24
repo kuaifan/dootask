@@ -63,6 +63,8 @@ msg() {
             "端口 (*) 已被占用，请指定其他端口") out="Port (*) is already in use, please specify another port" ;;
             "目录权限检测失败！请检查目录权限设置") out="Directory permission check failed! Please check directory permissions" ;;
             "目录【(*)】权限不足！") out="Directory [(*)] is not writable!" ;;
+            "项目权限修复失败") out="Failed to repair project permissions" ;;
+            "项目权限修复完成") out="Project permissions repaired" ;;
             "安装依赖失败") out="Failed to install dependencies" ;;
             "安装依赖失败，请重试！") out="Failed to install dependencies, please retry!" ;;
             "生成密钥失败") out="Failed to generate app key" ;;
@@ -223,6 +225,49 @@ switch_debug() {
 check_sudo() {
     if [ "$EUID" -ne 0 ]; then
         error "$(msg '请使用 sudo 运行此脚本')"
+        exit 1
+    fi
+}
+
+# 修复项目权限
+permission_fix() {
+    local owner_uid="${SUDO_UID:-$(id -u)}"
+    local owner_gid="${SUDO_GID:-$(id -g)}"
+    volumes=(
+        "bootstrap/cache"
+        "docker"
+        "public"
+        "storage"
+    )
+
+    chmod 755 "${WORK_DIR}"
+    if [ $? -ne 0 ]; then
+        error "$(msg '项目权限修复失败')"
+        exit 1
+    fi
+
+    for vol in "${volumes[@]}"; do
+        tmp_path="${WORK_DIR}/${vol}"
+        mkdir -p "${tmp_path}"
+        if [ $? -ne 0 ]; then
+            error "$(msg '项目权限修复失败')"
+            exit 1
+        fi
+        chown -R "${owner_uid}:${owner_gid}" "${tmp_path}"
+        if [ $? -ne 0 ]; then
+            error "$(msg '项目权限修复失败')"
+            exit 1
+        fi
+        find "${tmp_path}" -type d -exec chmod 775 {} \;
+        if [ $? -ne 0 ]; then
+            error "$(msg '项目权限修复失败')"
+            exit 1
+        fi
+    done
+
+    find "${WORK_DIR}/public" -type f -exec chmod a+r {} \;
+    if [ $? -ne 0 ]; then
+        error "$(msg '项目权限修复失败')"
         exit 1
     fi
 }
@@ -585,6 +630,7 @@ DooTask 管理脚本
   install                     安装 DooTask (支持 --port <端口> --relock)
   update                      更新 DooTask (支持 --branch <分支> --force --local)
   uninstall                   卸载 DooTask
+  permission                  修复整个项目的权限
 
 ⚙️  配置管理:
   port <端口>                 修改服务端口
@@ -621,6 +667,7 @@ DooTask 管理脚本
 示例:
   ./cmd install --port 8080   安装并指定端口 8080
   ./cmd update --branch dev   切换到 dev 分支并更新
+  ./cmd permission            修复整个项目的权限
   ./cmd mysql backup          备份数据库
   ./cmd artisan migrate       执行数据库迁移
 EOF
@@ -634,6 +681,7 @@ Usage: ./cmd <command> [options]
   install                     Install DooTask (supports --port <port> --relock)
   update                      Update DooTask (supports --branch <branch> --force --local)
   uninstall                   Uninstall DooTask
+  permission                  Repair permissions for the whole project
 
 ⚙️  Configuration:
   port <port>                 Change service port
@@ -670,6 +718,7 @@ Usage: ./cmd <command> [options]
 Examples:
   ./cmd install --port 8080   Install on port 8080
   ./cmd update --branch dev   Switch to dev branch and update
+  ./cmd permission            Repair permissions for the whole project
   ./cmd mysql backup          Back up database
   ./cmd artisan migrate       Run database migration
 EOF
@@ -714,20 +763,12 @@ handle_install() {
         rm -rf node_modules package-lock.json vendor composer.lock
     fi
 
-    # 目录权限设置
-    volumes=(
-        "bootstrap/cache"
-        "docker"
-        "public"
-        "storage"
-    )
+    # 目录和静态文件权限设置
+    permission_fix
     cmda=""
     cmdb=""
     for vol in "${volumes[@]}"; do
         tmp_path="${WORK_DIR}/${vol}"
-        mkdir -p "${tmp_path}"
-        find "${tmp_path}" -type d -exec chmod 775 {} \;
-
         rm -f "${tmp_path}/dootask.lock"
         cmda="${cmda} -v ${tmp_path}:/usr/share/${vol}"
         cmdb="${cmdb} touch /usr/share/${vol}/dootask.lock &&"
@@ -962,8 +1003,8 @@ if [[ "$1" == "help" ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]] || [[ $#
     exit 0
 fi
 
-# 非electron命令需要检查Docker环境
-if [[ "$1" != "electron" ]]; then
+# 非electron和permission命令需要检查Docker环境
+if [[ "$1" != "electron" ]] && [[ "$1" != "permission" ]]; then
     check_docker
     env_init
 fi
@@ -981,6 +1022,12 @@ case "$1" in
     "uninstall")
         shift 1
         handle_uninstall
+        ;;
+    "permission")
+        shift 1
+        check_sudo
+        permission_fix
+        success "$(msg '项目权限修复完成')"
         ;;
     "port")
         shift 1
