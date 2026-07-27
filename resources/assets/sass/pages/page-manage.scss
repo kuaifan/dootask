@@ -83,6 +83,10 @@
                     .menu-badge {
                         margin-left: 12px;
                         transform: scale(0.9);
+                        .ivu-badge-dot {
+                            right: 0;
+                            transform: translateX(-50%) scale(1.1);
+                        }
                     }
                     &:first-child {
                         margin-top: 12px;

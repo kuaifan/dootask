@@ -127,6 +127,10 @@
                         right: -16px;
                         top: -16px;
                         padding: 8px;
+
+                        .ivu-badge-dot {
+                            right: 8px;
+                        }
                     }
 
                     &.is-sorting {
@@ -178,6 +182,10 @@
                         .apply-box-top-report {
                             right: -20px;
                             top: -20px;
+
+                            .ivu-badge-dot {
+                                right: 4px;
+                            }
                         }
                     }
                 }

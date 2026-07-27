@@ -89,6 +89,12 @@
                 .ivu-badge-count {
                     font-size: 14px;
                 }
+
+                .ivu-badge-dot {
+                    top: 6px;
+                    right: -24px;
+                    transform: translateX(-50%) scale(1.2);
+                }
             }
 
             &.active {
