@@ -38326,5 +38326,29 @@
         "fr": "Aucune donnée de service à afficher",
         "id": "Tidak ada data departemen yang dapat dilihat",
         "ru": "Нет данных отдела для просмотра"
+    },
+    {
+        "key": "AI 助手设置",
+        "zh": "",
+        "zh-CHT": "AI 助手設定",
+        "en": "AI Assistant Settings",
+        "ko": "AI 어시스턴트 설정",
+        "ja": "AIアシスタント設定",
+        "de": "KI-Assistent-Einstellungen",
+        "fr": "Paramètres de l’assistant IA",
+        "id": "Pengaturan Asisten AI",
+        "ru": "Настройки ИИ-помощника"
+    },
+    {
+        "key": "显示悬浮按钮",
+        "zh": "",
+        "zh-CHT": "顯示懸浮按鈕",
+        "en": "Show floating button",
+        "ko": "플로팅 버튼 표시",
+        "ja": "フローティングボタンを表示",
+        "de": "Schwebende Schaltfläche anzeigen",
+        "fr": "Afficher le bouton flottant",
+        "id": "Tampilkan tombol mengambang",
+        "ru": "Показывать плавающую кнопку"
     }
 ]

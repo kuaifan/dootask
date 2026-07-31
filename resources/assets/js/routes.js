@@ -65,6 +65,11 @@ export default [
                         component: () => import('./pages/manage/setting/keyboard.vue'),
                     },
                     {
+                        name: 'manage-setting-assistant',
+                        path: 'assistant',
+                        component: () => import('./pages/manage/setting/assistant.vue'),
+                    },
+                    {
                         name: 'manage-setting-license',
                         path: 'license',
                         component: () => import('./pages/manage/setting/license.vue'),

@@ -479,13 +479,14 @@ features:
     scope: end-user
     batch: B4
     priority: P0
-    chunk_count_est: 12
+    chunk_count_est: 13
     owner: ~
     status: drafted
     chunks:
       - user-settings.privacy.concept
       - user-settings.shortcut.concept
       - user-settings.app-sort.howto
+      - user-settings.ai-assistant-float.howto
       - user-settings.checkin.howto
       - user-settings.email.howto
       - user-settings.language.howto

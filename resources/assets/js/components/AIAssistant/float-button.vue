@@ -27,6 +27,7 @@
 import {mapState} from "vuex";
 import emitter from "../../store/events";
 import {createOperationModule} from "./operation-module";
+import {loadFloatButtonVisible} from "./float-button-preference";
 
 export default {
     name: 'AIAssistantFloatButton',
@@ -43,6 +44,8 @@ export default {
             },
             dragging: false,
             positionLoaded: false,
+            visibilityLoaded: false,
+            floatButtonVisible: true,
             cacheKey: 'aiAssistant.floatButtonPosition',
             btnSize: 44,
             collapsedHeight: 48,  // 收起时的高度
@@ -68,6 +71,8 @@ export default {
             return this.aiInstalled &&
                 this.userId > 0 &&
                 this.positionLoaded &&
+                this.visibilityLoaded &&
+                this.floatButtonVisible &&
                 this.routeName !== 'login' &&
                 !this.$parent?.showModal;
         },
@@ -153,6 +158,7 @@ export default {
         emitter.on('openAIAssistantGlobal', this.onClick);
         emitter.on('aiAssistantClosed', this.onAssistantClosed);
         emitter.on('aiOperationRequest', this.onOperationRequest);
+        emitter.on('aiAssistantFloatButtonVisibilityChanged', this.onVisibilityChanged);
         this.initOperationModule();
     },
 
@@ -161,6 +167,7 @@ export default {
         emitter.off('openAIAssistantGlobal', this.onClick);
         emitter.off('aiAssistantClosed', this.onAssistantClosed);
         emitter.off('aiOperationRequest', this.onOperationRequest);
+        emitter.off('aiAssistantFloatButtonVisibilityChanged', this.onVisibilityChanged);
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('mouseup', this.onMouseUp);
         document.removeEventListener('contextmenu', this.onContextMenu);
@@ -171,7 +178,32 @@ export default {
         this.destroyOperationModule();
     },
 
+    watch: {
+        userId: {
+            handler(userId) {
+                this.loadVisibility(userId);
+            },
+            immediate: true,
+        },
+    },
+
     methods: {
+        async loadVisibility(userId) {
+            this.visibilityLoaded = false;
+            const visible = await loadFloatButtonVisible(userId);
+            if (this.userId === userId) {
+                this.floatButtonVisible = visible;
+                this.visibilityLoaded = userId > 0;
+            }
+        },
+
+        onVisibilityChanged({userId, visible}) {
+            if (this.userId === userId) {
+                this.floatButtonVisible = visible;
+                this.visibilityLoaded = true;
+            }
+        },
+
         /**
          * 加载保存的位置
          */

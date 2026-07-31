@@ -2656,3 +2656,5 @@ LDAP 用户禁止修改邮箱
 [weekday].四
 [weekday].五
 [weekday].六
+AI 助手设置
+显示悬浮按钮

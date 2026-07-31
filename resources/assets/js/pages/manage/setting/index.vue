@@ -72,7 +72,11 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'systemConfig']),
+        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'systemConfig', 'microAppsIds']),
+
+        aiInstalled() {
+            return this.microAppsIds?.includes('ai');
+        },
 
         showContent() {
             return this.$route.path.match(/^\/manage\/setting\/\w+$/)
@@ -89,6 +93,10 @@ export default {
 
             if (this.$Electron || this.$isEEUIApp) {
                 menu.push({path: 'keyboard', name: '键盘设置'})
+            }
+
+            if (this.aiInstalled) {
+                menu.push({path: 'assistant', name: 'AI 助手设置'})
             }
 
             if ($A.isDooServer() && this.$isEEUIApp) {
@@ -139,10 +147,17 @@ export default {
             handler(name) {
                 if (name === 'manage-setting' && this.windowLandscape) {
                     this.goForward({name: 'manage-setting-personal'}, true);
+                } else if (name === 'manage-setting-assistant' && !this.aiInstalled) {
+                    this.goForward({name: 'manage-setting-personal'}, true);
                 }
             },
             immediate: true
-        }
+        },
+        microAppsIds() {
+            if (this.routeName === 'manage-setting-assistant' && !this.aiInstalled) {
+                this.goForward({name: 'manage-setting-personal'}, true);
+            }
+        },
     },
 
     methods: {
