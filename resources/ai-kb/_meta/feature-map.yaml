@@ -122,6 +122,7 @@ features:
       - file.public-link.howto
       - file.preview.concept
       - file.search.howto
+      - file.collaboration.howto
       - file.version.concept
 
   - id: application

@@ -19,7 +19,7 @@
                         <Loading v-if="packList.find(({status}) => status !== 'finished')"/>
                         <Button v-else shape="circle" icon="md-arrow-round-down"></Button>
                     </div>
-                    <div class="file-search" @click="onSearchFocus">
+                    <div :class="['file-search', {collaboration: board === 'collaboration'}]" @click="onSearchFocus">
                         <Input
                             v-model="searchKey"
                             ref="searchInput"
@@ -27,10 +27,10 @@
                             @on-focus="searchIsFocus=true"
                             @on-blur="searchIsFocus=false"
                             @on-change="onSearchChange"
-                            :placeholder="$L('搜索名称')"
+                            :placeholder="$L(board === 'collaboration' ? '搜索名称、会话、项目或任务' : '搜索名称')"
                             clearable/>
                     </div>
-                    <div class="file-add">
+                    <div v-if="board !== 'collaboration'" class="file-add">
                         <Button shape="circle" icon="md-add" @click.stop="handleRightClick($event, null, true)"></Button>
                     </div>
                 </div>
@@ -40,6 +40,7 @@
                 <div class="file-tabs-nav">
                     <div :class="['file-tab', {active: board === 'mine'}]" @click="switchBoard('mine')">{{$L('我的文件')}}</div>
                     <div :class="['file-tab', {active: board === 'shared'}]" @click="switchBoard('shared')">{{$L('共享文件')}}</div>
+                    <div :class="['file-tab', {active: board === 'collaboration'}]" @click="switchBoard('collaboration')">{{$L('协作文件')}}</div>
                 </div>
                 <div class="file-tabs-full"></div>
                 <div v-if="board === 'shared' && pid == 0 && !searchKey" class="file-shared-src">
@@ -47,12 +48,18 @@
                     <span :class="{on: sharedSrc === 'byme'}" @click="sharedSrc = 'byme'">{{$L('我共享的')}}</span>
                     <span :class="{on: sharedSrc === 'tome'}" @click="sharedSrc = 'tome'">{{$L('共享给我的')}}</span>
                 </div>
-                <div :class="['switch-button', tableMode]">
+                <div v-if="board !== 'collaboration'" :class="['switch-button', tableMode]">
                     <div @click="tableMode='block'"><i class="taskfont">&#xe60c;</i></div>
                     <div @click="tableMode='table'"><i class="taskfont">&#xe66a;</i></div>
                 </div>
             </div>
 
+            <CollaborationFileList
+                v-if="board === 'collaboration'"
+                ref="collaborationFiles"
+                :search-key="searchKey"/>
+
+            <template v-else>
             <div v-show="showNavigator" class="file-navigator">
                 <ul class="scrollbar-hidden" v-show="showBtnText || (!selectedItems.length && !shearFirst)">
                     <li v-if="pid > 0 || searchKey" @click="browseFolder(0)">
@@ -275,6 +282,7 @@
                     </DropdownMenu>
                 </Dropdown>
             </div>
+            </template>
         </div>
 
         <div v-if="uploadShow && uploadList.length > 0" class="file-upload-list">
@@ -500,6 +508,7 @@ import longpress from "../../directives/longpress";
 import UserSelect from "../../components/UserSelect.vue";
 import UserAvatarTip from "../../components/UserAvatar/tip.vue";
 import Forwarder from "./components/Forwarder/index.vue";
+import CollaborationFileList from "./components/CollaborationFileList.vue";
 import {chunkedUpload, CHUNK_THRESHOLD} from "../../store/chunkedUpload";
 
 const FilePreview = () => import('./components/FilePreview');
@@ -507,7 +516,7 @@ const FileContent = () => import('./components/FileContent');
 const FileObject = {sort: null, mode: null, board: null};
 
 export default {
-    components: {Forwarder, UserAvatarTip, UserSelect, FilePreview, DrawerOverlay, FileContent},
+    components: {CollaborationFileList, Forwarder, UserAvatarTip, UserSelect, FilePreview, DrawerOverlay, FileContent},
     directives: {longpress},
     data() {
         return {
@@ -571,7 +580,7 @@ export default {
             ],
 
             tableMode: "",
-            board: "mine",         // 当前板块：mine=我的文件、shared=共享文件
+            board: "mine",         // 当前板块：mine=我的文件、shared=共享文件、collaboration=协作文件
             sharedSrc: "all",      // 共享板块二次筛选：all=全部、byme=我共享的、tome=共享给我的
             columns: [],
 
@@ -639,7 +648,7 @@ export default {
 
     created() {
         this.tableMode = FileObject.mode
-        this.board = FileObject.board === 'shared' ? 'shared' : 'mine'
+        this.board = ['mine', 'shared', 'collaboration'].includes(FileObject.board) ? FileObject.board : 'mine'
         this.columns = [
             {
                 type: 'selection',
@@ -1172,6 +1181,10 @@ export default {
             if (this.routeName !== 'manage-file') {
                 return;
             }
+            if (this.board === 'collaboration') {
+                this.$refs.collaborationFiles?.refresh();
+                return;
+            }
             this.loadIng++;
             // 按当前板块拉取（拉多少缓存多少）；已有缓存时 fileList 会先渲染缓存，接口回来再静态刷新
             this.$store.dispatch("getFiles", {pid: this.pid, scope: this.board}).then(async () => {
@@ -1512,6 +1525,7 @@ export default {
             this.board = board;
             this.sharedSrc = 'all';
             this.selectedItems = [];
+            this.contextMenuVisible = false;
             this.clearShear();
             if (this.pid > 0) {
                 // 从子目录切板块时退回根目录（pid 变化触发加载）
@@ -2128,6 +2142,9 @@ export default {
         },
 
         onSearchChange() {
+            if (this.board === 'collaboration') {
+                return;
+            }
             this.searchTimeout && clearTimeout(this.searchTimeout);
             if (this.searchKey.trim() != '') {
                 this.searchTimeout = setTimeout(() => {

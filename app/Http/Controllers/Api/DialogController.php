@@ -34,6 +34,7 @@ use App\Models\WebSocketDialogMsgTodo;
 use App\Models\WebSocketDialogMsgTranslate;
 use App\Models\WebSocketDialogSession;
 use App\Models\UserRecentItem;
+use App\Services\CollaborationFileService;
 use App\Module\Table\OnlineData;
 use App\Module\Manticore\ManticoreMsg;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -1974,6 +1975,7 @@ class DialogController extends AbstractController
         if (empty($dialogMsg)) {
             return Base::retError("文件不存在");
         }
+        CollaborationFileService::authorizeMessage($dialogMsg, $user);
         //
         if ($only_update_at == 'yes') {
             return Base::retSuccess('success', [
@@ -2035,7 +2037,7 @@ class DialogController extends AbstractController
      */
     public function msg__download()
     {
-        User::auth();
+        $user = User::auth();
         //
         $msg_id = intval(Request::input('msg_id'));
         $down = Request::input('down', 'yes');
@@ -2043,6 +2045,11 @@ class DialogController extends AbstractController
         $msg = WebSocketDialogMsg::whereId($msg_id)->first();
         abort_if(empty($msg), 403, "This file not exist.");
         abort_if($msg->type != 'file', 403, "This file not support download.");
+        try {
+            CollaborationFileService::authorizeMessage($msg, $user);
+        } catch (\Throwable $e) {
+            abort(403, $e->getMessage() ?: "This file not support download.");
+        }
         $array = Base::json2array($msg->getRawOriginal('msg'));
         //
         if ($down === 'preview') {

@@ -12,6 +12,7 @@ use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
 use App\Models\UserRecentItem;
+use App\Services\CollaborationFileService;
 use App\Module\Base;
 use App\Module\Down;
 use App\Module\Lock;
@@ -32,6 +33,47 @@ use ZipArchive;
  */
 class FileController extends AbstractController
 {
+    /**
+     * @api {get} api/file/collaboration/lists 获取协作文件列表
+     *
+     * @apiDescription 汇总用户有权访问的会话、项目群聊和任务中的文件消息
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName collaboration__lists
+     *
+     * @apiParam {String} [scope]                 范围：all、conversation、project
+     * @apiParam {String} [conversation_type]     会话类型：all、private、group
+     * @apiParam {Number} [project_id]            项目ID（scope=project 时传0表示全部未归档项目）
+     * @apiParam {String} [project_source]         项目来源：all、project_chat、task
+     * @apiParam {String} [file_type]              文件类型
+     * @apiParam {Number} [sender_id]              发送人ID
+     * @apiParam {String} [key]                    搜索关键词
+     * @apiParam {Number} [cursor]                 上一页最后一条消息ID
+     * @apiParam {Number} [take]                   获取条数，默认50，最大100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {String} data.list[].image_url 图片缩略图地址，非图片时为空
+     */
+    public function collaboration__lists()
+    {
+        $user = User::auth();
+        $params = Request::only([
+            'scope',
+            'conversation_type',
+            'project_id',
+            'project_source',
+            'file_type',
+            'sender_id',
+            'key',
+            'cursor',
+            'take',
+        ]);
+
+        return Base::retSuccess('success', CollaborationFileService::lists($user, $params));
+    }
+
     /**
      * @api {get} api/file/lists 获取文件列表
      *

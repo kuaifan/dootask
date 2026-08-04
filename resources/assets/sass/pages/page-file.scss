@@ -73,6 +73,11 @@
                             }
                         }
                     }
+                    &.collaboration {
+                        .ivu-input-wrapper .ivu-input {
+                            width: 240px;
+                        }
+                    }
                 }
                 .file-add {
                     cursor: pointer;
