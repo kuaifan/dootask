@@ -11,6 +11,7 @@ use App\Tasks\PushTask;
 use App\Models\ProjectTaskRelation;
 use App\Exceptions\ApiException;
 use App\Tasks\WebSocketDialogMsgTask;
+use App\Services\MessageAttachmentService;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -1477,6 +1478,7 @@ class WebSocketDialogMsg extends AbstractModel
             ];
             $dialogMsg->updateInstance($updateData);
             $dialogMsg->generateKeyAndSave($search_key);
+            MessageAttachmentService::syncSafely($dialogMsg, true);
             ProjectTaskRelation::recordMentionsFromMessage($dialogMsg);
             //
             WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($sender)->whereHide(1)->change([
@@ -1544,6 +1546,7 @@ class WebSocketDialogMsg extends AbstractModel
                     'updated_at' => Carbon::now()->toDateTimeString('millisecond'),
                 ]);
             });
+            MessageAttachmentService::syncSafely($dialogMsg);
             ProjectTaskRelation::recordMentionsFromMessage($dialogMsg);
             //
             $task = new WebSocketDialogMsgTask($dialogMsg->id);

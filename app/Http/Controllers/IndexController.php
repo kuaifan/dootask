@@ -25,6 +25,7 @@ use App\Tasks\ManticoreSyncTask;
 use App\Tasks\UnclaimedTaskRemindTask;
 use App\Tasks\TodoRemindTask;
 use App\Tasks\AiTaskLoopTask;
+use App\Tasks\MessageAttachmentBackfillTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use App\Module\PatchedAvatar as Avatar;
 
@@ -281,6 +282,8 @@ class IndexController extends InvokeController
         Task::deliver(new ManticoreSyncTask());
         // AI 任务建议
         Task::deliver(new AiTaskLoopTask());
+        // 聊天附件历史索引回填
+        Task::deliver(new MessageAttachmentBackfillTask());
 
         return "success";
     }
