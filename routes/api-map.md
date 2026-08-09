@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：315
+接口总数：316
 
 ## 路由规则
 
@@ -303,6 +303,7 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | URL | 方法名 | HTTP | 说明 |
 | --- | --- | --- | --- |
 | api/file/collaboration/lists | collaboration__lists() | get | 获取协作文件列表 |
+| api/file/collaboration/download | collaboration__download() | get | 下载协作文件附件 |
 | api/file/lists | lists() | get | 获取文件列表 |
 | api/file/one | one() | get | 获取单条数据 |
 | api/file/fetch | fetch() | get | 通过路径获取文件文本内容 |

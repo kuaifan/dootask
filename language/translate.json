@@ -38746,5 +38746,17 @@
         "fr": "Vous n’avez pas l’autorisation d’accéder à ce fichier",
         "id": "Anda tidak memiliki izin untuk mengakses file ini",
         "ru": "У вас нет доступа к этому файлу"
+    },
+    {
+        "key": "聊天图片 (%T1)",
+        "zh": "",
+        "zh-CHT": "聊天圖片 (%T1)",
+        "en": "Chat image (%T1)",
+        "ko": "채팅 이미지 (%T1)",
+        "ja": "チャット画像 (%T1)",
+        "de": "Chatbild (%T1)",
+        "fr": "Image de discussion (%T1)",
+        "id": "Gambar obrolan (%T1)",
+        "ru": "Изображение из чата (%T1)"
     }
 ]

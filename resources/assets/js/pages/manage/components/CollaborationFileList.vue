@@ -73,7 +73,7 @@
                         <span>{{$L('大小')}}</span>
                         <span>{{$L('操作')}}</span>
                     </div>
-                    <div v-for="item in items" :key="item.msg_id" class="table-row">
+                    <div v-for="item in items" :key="itemKey(item)" class="table-row">
                         <div class="file-main" @click="preview(item)">
                             <div class="collaboration-file-preview">
                                 <img
@@ -85,7 +85,7 @@
                                 <div v-else :class="['no-dark-content', 'collaboration-file-icon', fileIconType(item)]"></div>
                             </div>
                             <div class="file-text">
-                                <AutoTip class="file-title">{{item.name}}</AutoTip>
+                                <AutoTip class="file-title">{{fileName(item)}}</AutoTip>
                                 <span>{{fileTypeText(item)}}</span>
                             </div>
                         </div>
@@ -106,7 +106,7 @@
                 </div>
 
                 <div v-else class="collaboration-grid">
-                    <div v-for="item in items" :key="item.msg_id" class="grid-item" @click="preview(item)">
+                    <div v-for="item in items" :key="itemKey(item)" class="grid-item" @click="preview(item)">
                         <div class="grid-preview">
                             <img
                                 v-if="showThumbnail(item)"
@@ -116,7 +116,7 @@
                                 @error.stop="handleThumbnailError(item)"/>
                             <div v-else :class="['no-dark-content', 'collaboration-file-icon', fileIconType(item)]"></div>
                         </div>
-                        <AutoTip class="grid-title">{{item.name}}</AutoTip>
+                        <AutoTip class="grid-title">{{fileName(item)}}</AutoTip>
                         <div class="grid-source">
                             <span :class="['source-type', item.source_type]">{{sourceTypeText(item)}}</span>
                             <AutoTip class="grid-source-name" :content="sourcePath(item)">{{item.source_name}}</AutoTip>
@@ -250,7 +250,7 @@ export default {
             this.reload();
         },
         load() {
-            if (this.loading || (this.cursor > 0 && !this.hasMore)) return;
+            if (this.loading || (this.cursor && !this.hasMore)) return;
             const requestId = ++this.requestId;
             this.loading++;
             this.$store.dispatch('call', {
@@ -294,6 +294,9 @@ export default {
             if (item.file_type === 'archive') return 'archive';
             return 'file';
         },
+        itemKey(item) {
+            return item.attachment_id ? `attachment-${item.attachment_id}` : `message-${item.msg_id}`;
+        },
         showThumbnail(item) {
             return !!item.image_url && !item._thumbnailError;
         },
@@ -311,6 +314,13 @@ export default {
                 other: '其他',
             };
             return `${this.$L(labels[item.file_type] || '其他')} · ${(item.ext || '').toUpperCase()}`;
+        },
+        fileName(item) {
+            if (item.attachment_source === 'inline_image' && item.generated_name) {
+                const time = $A.dayjs(item.created_at).format('YYYY-MM-DD HH:mm');
+                return this.$L('聊天图片 (*)', `${time} #${(item.attachment_position || 0) + 1}`);
+            }
+            return item.name;
         },
         sourceTypeText(item) {
             const labels = {
@@ -334,6 +344,10 @@ export default {
             return value.format('YYYY-MM-DD HH:mm');
         },
         preview(item) {
+            if (item.attachment_source === 'inline_image' && item.image_url) {
+                this.$store.dispatch('previewImage', item.image_url);
+                return;
+            }
             openFileInClient(this, item, {
                 path: `/single/file/msg/${item.msg_id}`,
                 windowName: `file-msg-${item.msg_id}`,
@@ -353,12 +367,15 @@ export default {
             }).catch(({msg}) => msg && $A.modalError(msg));
         },
         download(item) {
+            const url = item.attachment_id
+                ? `file/collaboration/download?attachment_id=${item.attachment_id}`
+                : `dialog/msg/download?msg_id=${item.msg_id}`;
             $A.modalConfirm({
                 language: false,
                 title: this.$L('下载文件'),
                 okText: this.$L('立即下载'),
-                content: `${item.name} (${$A.bytesToSize(item.size)})`,
-                onOk: () => this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${item.msg_id}`)),
+                content: `${this.fileName(item)} (${$A.bytesToSize(item.size)})`,
+                onOk: () => this.$store.dispatch('downUrl', $A.apiUrl(url)),
             });
         },
     },

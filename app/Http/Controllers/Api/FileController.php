@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\WebSocketDialogMsg;
+use App\Models\WebSocketDialogMsgAttachment;
 use App\Models\WebSocketDialog;
 use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
@@ -36,7 +37,7 @@ class FileController extends AbstractController
     /**
      * @api {get} api/file/collaboration/lists 获取协作文件列表
      *
-     * @apiDescription 汇总用户有权访问的会话、项目群聊和任务中的文件消息
+     * @apiDescription 汇总用户有权访问的会话、项目群聊和任务中的文件消息及聊天正文图片
      * @apiVersion 1.0.0
      * @apiGroup file
      * @apiName collaboration__lists
@@ -48,12 +49,14 @@ class FileController extends AbstractController
      * @apiParam {String} [file_type]              文件类型
      * @apiParam {Number} [sender_id]              发送人ID
      * @apiParam {String} [key]                    搜索关键词
-     * @apiParam {Number} [cursor]                 上一页最后一条消息ID
+     * @apiParam {String} [cursor]                 上一页返回的不透明游标
      * @apiParam {Number} [take]                   获取条数，默认50，最大100
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {Number} data.list[].attachment_id 附件索引ID
+     * @apiSuccess {String} data.list[].attachment_source 附件来源：file_message、inline_image
      * @apiSuccess {String} data.list[].image_url 图片缩略图地址，非图片时为空
      */
     public function collaboration__lists()
@@ -72,6 +75,39 @@ class FileController extends AbstractController
         ]);
 
         return Base::retSuccess('success', CollaborationFileService::lists($user, $params));
+    }
+
+    /**
+     * @api {get} api/file/collaboration/download 下载协作文件附件
+     *
+     * @apiDescription 下载文件消息附件或聊天正文图片
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName collaboration__download
+     *
+     * @apiParam {Number} attachment_id 附件索引ID
+     */
+    public function collaboration__download()
+    {
+        $attachment = WebSocketDialogMsgAttachment::whereId(intval(Request::input('attachment_id')))->first();
+        abort_if(empty($attachment), 404, 'This file not exist.');
+
+        try {
+            CollaborationFileService::authorizeAttachment($attachment, User::auth());
+        } catch (\Throwable $e) {
+            abort(403, $e->getMessage() ?: 'This file not support download.');
+        }
+
+        $path = (string)$attachment->path;
+        abort_if($path === '', 404, 'This file not exist.');
+        if (preg_match('/^https?:\/\//i', $path)) {
+            return Redirect::away($path);
+        }
+
+        $filePath = CollaborationFileService::resolveLocalAttachmentPath($path);
+        abort_if($filePath === null, 404, 'This file not exist.');
+        $name = trim((string)$attachment->name) ?: basename($filePath);
+        return Base::DownloadFileResponse($filePath, $name);
     }
 
     /**
