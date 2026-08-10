@@ -1174,7 +1174,8 @@ export default {
                     'clientId',
                     'cacheServerUrl',
                     'cacheCalendarView',
-                    'cacheTranslationLanguage'
+                    'cacheTranslationLanguage',
+                    'collaborationFileViewMode'
                 ],
                 array: [
                     'cacheUserBasic',
@@ -1199,6 +1200,7 @@ export default {
                     'userInfo',
                     'taskRelatedCache',
                     'dialogCommonCountCache',
+                    'collaborationFileCache',
                     'mcpServerStatus'
                 ]
             };

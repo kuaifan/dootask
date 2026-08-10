@@ -62,7 +62,7 @@
         </div>
 
         <div ref="scroller" class="collaboration-scroll" @scroll="onScroll">
-            <div v-if="loading && items.length === 0" class="initial-loading"><Loading/></div>
+            <div v-if="initializing || (loading && items.length === 0)" class="initial-loading"><Loading/></div>
             <template v-else-if="items.length">
                 <div v-if="viewMode === 'list'" class="collaboration-table">
                     <div class="table-head">
@@ -143,6 +143,8 @@
 import {mapState} from "vuex";
 import {openFileInClient} from "../../../utils/file";
 
+const CACHE_VERSION = 1;
+
 export default {
     name: "CollaborationFileList",
     props: {
@@ -159,17 +161,18 @@ export default {
             projectSource: 'all',
             fileType: 'all',
             senderScope: 'all',
-            viewMode: 'list',
+            viewMode: this.$store.state.collaborationFileViewMode === 'grid' ? 'grid' : 'list',
             items: [],
             cursor: 0,
             hasMore: false,
             loading: 0,
+            initializing: true,
             searchTimer: null,
             requestId: 0,
         }
     },
     computed: {
-        ...mapState(['cacheProjects', 'userId']),
+        ...mapState(['cacheProjects', 'collaborationFileCache', 'userId']),
         projects() {
             return this.cacheProjects
                 .filter(project => !project.deleted_at && !project.archived_at)
@@ -210,14 +213,18 @@ export default {
             this.searchTimer = setTimeout(() => this.reload(), 400);
         },
         viewMode(value) {
-            $A.IDBSave('collaborationFileViewMode', value);
+            this.$store.commit('collaboration/file/view/save', value);
         },
     },
-    async mounted() {
-        const mode = await $A.IDBString('collaborationFileViewMode');
-        this.viewMode = mode === 'grid' ? 'grid' : 'list';
+    created() {
+        if (this.restoreCache(this.collaborationFileCache)) {
+            this.initializing = false;
+        }
+    },
+    mounted() {
         this.$store.dispatch('getProjects').catch(() => {});
-        this.reload();
+        this.refresh();
+        this.initializing = false;
     },
     beforeDestroy() {
         clearTimeout(this.searchTimer);
@@ -239,19 +246,25 @@ export default {
             this.reload();
         },
         reload() {
-            this.requestId++;
-            this.loading = 0;
-            this.items = [];
-            this.cursor = 0;
-            this.hasMore = false;
-            this.load();
+            this.loadFirstPage(false);
         },
         refresh() {
-            this.reload();
+            this.loadFirstPage(true);
         },
-        load() {
+        loadFirstPage(keepItems) {
+            this.requestId++;
+            this.loading = 0;
+            if (!keepItems) {
+                this.items = [];
+            }
+            this.cursor = 0;
+            this.hasMore = false;
+            this.load(true);
+        },
+        load(replace = false) {
             if (this.loading || (this.cursor && !this.hasMore)) return;
             const requestId = ++this.requestId;
+            const requestCursor = replace ? 0 : this.cursor;
             this.loading++;
             this.$store.dispatch('call', {
                 url: 'file/collaboration/lists',
@@ -263,20 +276,78 @@ export default {
                     file_type: this.fileType,
                     sender_id: this.senderScope === 'mine' ? this.userId : 0,
                     key: this.searchKey.trim(),
-                    cursor: this.cursor,
+                    cursor: requestCursor,
                     take: 50,
                 },
             }).then(({data}) => {
                 if (requestId !== this.requestId) return;
-                this.items.push(...data.list);
+                if (replace) {
+                    this.items = data.list;
+                } else {
+                    this.items.push(...data.list);
+                }
                 this.cursor = data.next_cursor;
                 this.hasMore = data.has_more;
+                if (replace && !this.searchKey.trim()) {
+                    this.saveCache(data);
+                }
             }).catch(({msg}) => {
                 if (msg) $A.modalError(msg);
             }).finally(() => {
                 if (requestId === this.requestId) {
                     this.loading--;
                 }
+            });
+        },
+        cacheParams() {
+            return {
+                scope: this.scope,
+                conversationType: this.conversationType,
+                projectId: this.projectId,
+                projectSource: this.projectSource,
+                fileType: this.fileType,
+                senderScope: this.senderScope,
+            };
+        },
+        restoreCache(cache) {
+            if (!$A.isJson(cache)
+                || cache.version !== CACHE_VERSION
+                || cache.userId !== this.userId
+                || !$A.isJson(cache.params)
+                || !$A.isArray(cache.list)) {
+                return false;
+            }
+
+            const params = cache.params;
+            if (!['all', 'conversation', 'project'].includes(params.scope)
+                || !['all', 'private', 'group'].includes(params.conversationType)
+                || !['all', 'project_chat', 'task'].includes(params.projectSource)
+                || !['all', 'document', 'sheet', 'slide', 'image', 'video', 'archive', 'other'].includes(params.fileType)
+                || !['all', 'mine'].includes(params.senderScope)) {
+                return false;
+            }
+
+            this.scope = params.scope;
+            this.conversationType = params.conversationType;
+            this.projectId = Math.max(0, parseInt(params.projectId) || 0);
+            this.projectSource = params.projectSource;
+            this.fileType = params.fileType;
+            this.senderScope = params.senderScope;
+            if (!this.searchKey.trim()) {
+                this.items = cache.list;
+                this.cursor = cache.next_cursor || 0;
+                this.hasMore = cache.has_more === true;
+            }
+            return true;
+        },
+        saveCache(data) {
+            this.$store.commit('collaboration/file/cache/save', {
+                version: CACHE_VERSION,
+                userId: this.userId,
+                params: this.cacheParams(),
+                list: data.list,
+                next_cursor: data.next_cursor,
+                has_more: data.has_more,
             });
         },
         onScroll(event) {

@@ -278,6 +278,16 @@ export default {
         $A.IDBSave("fileLists", state.fileLists, 600)
     },
 
+    'collaboration/file/cache/save': function(state, data) {
+        state.collaborationFileCache = data
+        $A.IDBSave("collaborationFileCache", data, 600)
+    },
+
+    'collaboration/file/view/save': function(state, mode) {
+        state.collaborationFileViewMode = mode === 'grid' ? 'grid' : 'list'
+        $A.IDBSave("collaborationFileViewMode", state.collaborationFileViewMode)
+    },
+
     // 草稿管理
     'draft/set': function(state, {id, content}) {
         const index = state.dialogDrafts.findIndex(item => item.id === id)

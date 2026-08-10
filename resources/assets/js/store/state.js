@@ -182,6 +182,8 @@ export default {
 
     // 文件
     fileLists: [],
+    collaborationFileCache: {},
+    collaborationFileViewMode: 'list',
     fileLinks: [],
     filePackLists: [],
     fileShakeId: 0,
