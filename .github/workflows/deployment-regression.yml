@@ -1,0 +1,131 @@
+name: Deployment Regression
+
+on:
+  push:
+    branches: [pro]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployment-regression-pro
+  cancel-in-progress: true
+
+jobs:
+  fresh-install:
+    name: Fresh install
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout pro
+        uses: actions/checkout@v4
+
+      - name: Install
+        run: sudo ./cmd install
+
+      - name: Verify installation
+        run: |
+          .github/scripts/deployment-regression.sh assert-revision "$GITHUB_SHA"
+          .github/scripts/deployment-regression.sh check-installation
+
+      - name: Print diagnostics
+        if: failure()
+        run: |
+          docker compose ps -a || true
+          docker compose logs --no-color --tail=300 || true
+          sudo find storage/logs -maxdepth 1 -type f -name '*.log' -exec tail -n 300 {} \; || true
+
+      - name: Clean up
+        if: always()
+        run: docker compose down --volumes --remove-orphans || true
+
+  upgrade-v1-8-64:
+    name: Upgrade v1.8.64 with ./cmd update
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare historical version
+        run: |
+          cp .github/scripts/deployment-regression.sh "$RUNNER_TEMP/deployment-regression.sh"
+          chmod +x "$RUNNER_TEMP/deployment-regression.sh"
+          git checkout -B pro v1.8.64
+
+      - name: Install v1.8.64
+        run: sudo ./cmd install
+
+      - name: Seed upgrade sentinel
+        run: |
+          "$RUNNER_TEMP/deployment-regression.sh" check-installation
+          "$RUNNER_TEMP/deployment-regression.sh" seed-upgrade-sentinel
+
+      - name: Upgrade with ./cmd update
+        run: sudo ./cmd update
+
+      - name: Verify upgrade
+        run: |
+          "$RUNNER_TEMP/deployment-regression.sh" assert-revision "$GITHUB_SHA"
+          "$RUNNER_TEMP/deployment-regression.sh" check-installation
+          "$RUNNER_TEMP/deployment-regression.sh" verify-upgrade-sentinel
+
+      - name: Print diagnostics
+        if: failure()
+        run: |
+          docker compose ps -a || true
+          docker compose logs --no-color --tail=300 || true
+          sudo find storage/logs -maxdepth 1 -type f -name '*.log' -exec tail -n 300 {} \; || true
+
+      - name: Clean up
+        if: always()
+        run: docker compose down --volumes --remove-orphans || true
+
+  upgrade-v1-6-89:
+    name: Upgrade v1.6.89 with one-click installer
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare historical version
+        run: |
+          cp .github/scripts/deployment-regression.sh "$RUNNER_TEMP/deployment-regression.sh"
+          chmod +x "$RUNNER_TEMP/deployment-regression.sh"
+          git checkout -B pro v1.6.89
+
+      - name: Install v1.6.89
+        run: sudo ./cmd install
+
+      - name: Seed upgrade sentinel
+        run: |
+          "$RUNNER_TEMP/deployment-regression.sh" check-installation
+          "$RUNNER_TEMP/deployment-regression.sh" seed-upgrade-sentinel
+
+      - name: Upgrade with one-click installer
+        run: |
+          printf 'Y\n' | script -qefc \
+            'curl -fsSL https://raw.githubusercontent.com/kuaifan/dootask/pro/bin/install | bash' \
+            /dev/null
+
+      - name: Verify upgrade
+        run: |
+          "$RUNNER_TEMP/deployment-regression.sh" assert-revision "$GITHUB_SHA"
+          "$RUNNER_TEMP/deployment-regression.sh" check-installation
+          "$RUNNER_TEMP/deployment-regression.sh" verify-upgrade-sentinel
+
+      - name: Print diagnostics
+        if: failure()
+        run: |
+          docker compose ps -a || true
+          docker compose logs --no-color --tail=300 || true
+          sudo find storage/logs -maxdepth 1 -type f -name '*.log' -exec tail -n 300 {} \; || true
+
+      - name: Clean up
+        if: always()
+        run: docker compose down --volumes --remove-orphans || true
