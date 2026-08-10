@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout pro
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install
         run: sudo ./cmd install
@@ -45,7 +45,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -89,7 +89,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 

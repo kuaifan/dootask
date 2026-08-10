@@ -72,6 +72,7 @@ check_installation() {
         "http://127.0.0.1:${port}/health" >/dev/null
 
     expected_version="$(jq -r '.version' package.json)"
+    echo "Checking database-backed API: GET /api/system/setting (expected version: ${expected_version})"
     setting_response="$(curl --fail --silent --show-error \
         --retry 5 --retry-delay 2 --retry-connrefused \
         "http://127.0.0.1:${port}/api/system/setting")"
@@ -80,6 +81,7 @@ check_installation() {
         and .data.reg == "open"
         and .data.server_version == $expected_version
     ' <<<"$setting_response" >/dev/null
+    echo "Database-backed API check passed: ret=1, reg=open, server_version=${expected_version}"
 
     prefix="$(table_prefix)"
     user_count="$(printf 'SELECT COUNT(*) FROM `%susers`;\n' "$prefix" | db_exec | tr -d '[:space:]')"
