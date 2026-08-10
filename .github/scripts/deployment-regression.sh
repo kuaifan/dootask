@@ -63,13 +63,23 @@ wait_for_services() {
 }
 
 check_installation() {
-    local port prefix user_count migration_status
+    local port prefix user_count migration_status expected_version setting_response
     wait_for_services
 
     port="$(env_value APP_PORT)"
     curl --fail --silent --show-error \
         --retry 30 --retry-delay 2 --retry-connrefused \
         "http://127.0.0.1:${port}/health" >/dev/null
+
+    expected_version="$(jq -r '.version' package.json)"
+    setting_response="$(curl --fail --silent --show-error \
+        --retry 5 --retry-delay 2 --retry-connrefused \
+        "http://127.0.0.1:${port}/api/system/setting")"
+    jq -e --arg expected_version "$expected_version" '
+        .ret == 1
+        and .data.reg == "open"
+        and .data.server_version == $expected_version
+    ' <<<"$setting_response" >/dev/null
 
     prefix="$(table_prefix)"
     user_count="$(printf 'SELECT COUNT(*) FROM `%susers`;\n' "$prefix" | db_exec | tr -d '[:space:]')"

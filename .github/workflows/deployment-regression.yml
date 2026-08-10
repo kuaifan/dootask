@@ -102,6 +102,11 @@ jobs:
       - name: Install v1.6.89
         run: sudo ./cmd install
 
+      - name: Reload v1.6.89 services
+        run: |
+          sudo ./cmd restart php
+          sudo ./cmd up
+
       - name: Seed upgrade sentinel
         run: |
           "$RUNNER_TEMP/deployment-regression.sh" check-installation
