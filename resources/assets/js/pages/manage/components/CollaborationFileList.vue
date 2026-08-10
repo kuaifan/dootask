@@ -466,9 +466,12 @@ export default {
 .collaboration-toolbar {
     min-height: 58px;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
     margin: 0 32px;
+    padding: 10px 0;
+    box-sizing: border-box;
     border-bottom: 1px solid #e8eaec;
     .toolbar-full { flex: 1; }
     .project-select { width: 180px; }
@@ -511,13 +514,16 @@ export default {
     }
 }
 .sub-segment {
+    flex-shrink: 0;
     display: flex;
     gap: 8px;
     button {
+        flex-shrink: 0;
         height: 30px;
         padding: 0 11px;
         border: 1px solid transparent;
         border-radius: 15px;
+        white-space: nowrap;
         color: $primary-text-color;
         background: rgba(0, 0, 0, 0.03);
         cursor: pointer;
@@ -803,9 +809,7 @@ export default {
 }
 @media (max-width: 900px) {
     .collaboration-toolbar {
-        flex-wrap: wrap;
         margin: 0 16px;
-        padding: 10px 0;
     }
     .collaboration-summary,
     .collaboration-table,
