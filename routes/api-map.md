@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：325
+接口总数：326
 
 ## 路由规则
 
@@ -306,6 +306,7 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/file/dav/credentials | dav__credentials() | get | 获取 WebDAV 凭据 |
 | api/file/dav/create | dav__create() | post | 创建 WebDAV 应用密码 |
 | api/file/dav/revoke | dav__revoke() | post | 撤销 WebDAV 应用密码 |
+| api/file/dav/delete | dav__delete() | post | 永久删除已失效的 WebDAV 应用密码 |
 | api/file/dav/adminsetting | dav__adminsetting() | get | 获取或保存 WebDAV 设置 |
 | api/file/dav/adminstatus | dav__adminstatus() | get | 获取 WebDAV 运行状态 |
 | api/file/dav/conflicts | dav__conflicts() | get | 获取 WebDAV 路径冲突明细 |

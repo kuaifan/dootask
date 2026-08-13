@@ -66,7 +66,7 @@ WebDAV 暴露的是由 `files`、`file_contents`、`file_users` 组成的虚拟�
 4. 服务端返回一次性的用户名和应用密码；应用密码此后不可再次读取。
 5. 页面提供服务器地址、用户名和密码字段及复制按钮，同时提示必须使用 HTTPS。
 6. 用户在客户端连接后，页面更新最后使用时间、IP 和客户端名称。
-7. 用户可以撤销单个凭据；撤销后新请求立即失败，已有锁同步失效。
+7. 用户可以撤销单个凭据；撤销后新请求立即失败，已有锁同步失效。已撤销或已过期的凭据可以永久删除，删除前保留一条不含秘密信息的操作审计；有效凭据必须先撤销。
 
 ### 3.3 文件操作闭环
 
@@ -476,8 +476,9 @@ UNLOCK   /dav/{path?}
 | `api/file/dav/credentials` | GET | 登录用户 | 凭据列表，不返回哈希 |
 | `api/file/dav/create` | POST | 登录用户 | 创建并一次性返回密码 |
 | `api/file/dav/revoke` | POST | 登录用户 | 撤销凭据 |
+| `api/file/dav/delete` | POST | 登录用户 | 永久删除本人已撤销或已过期的凭据，保留操作审计 |
 
-这些 URL 保持 `file/{method}/{action}` 的两段动态路由限制，控制器方法分别为 `dav__adminsetting`、`dav__adminstatus`、`dav__userrevoke`、`dav__status`、`dav__credentials`、`dav__create`、`dav__revoke`。
+这些 URL 保持 `file/{method}/{action}` 的两段动态路由限制，控制器方法分别为 `dav__adminsetting`、`dav__adminstatus`、`dav__userrevoke`、`dav__status`、`dav__credentials`、`dav__create`、`dav__revoke`、`dav__delete`。
 
 路由中先将 `method = dav` 明确分派到 `FileDavController`，再让其他 `file/{method}/{action}` 进入现有 `FileController`；现有 FileController 路由应增加排除 `dav` 的约束，避免相同 URI 模式产生不确定匹配。新增控制器和路由后运行 `./cmd artisan doc:api-map`。
 

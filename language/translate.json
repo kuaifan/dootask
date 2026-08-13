@@ -39072,6 +39072,18 @@
         "ru": "Пароль приложения WebDAV не существует"
     },
     {
+        "key": "有效的应用密码请先撤销",
+        "zh": "",
+        "zh-CHT": "有效的應用密碼請先撤銷",
+        "en": "Revoke the active app password first",
+        "ko": "활성 앱 비밀번호를 먼저 취소하세요",
+        "ja": "有効なアプリパスワードを先に取り消してください",
+        "de": "Widerrufen Sie zuerst das aktive App-Passwort",
+        "fr": "Révoquez d’abord le mot de passe d’application actif",
+        "id": "Cabut kata sandi aplikasi yang aktif terlebih dahulu",
+        "ru": "Сначала отзовите активный пароль приложения"
+    },
+    {
         "key": "WebDAV 应用密码数量已达上限",
         "zh": "",
         "zh-CHT": "WebDAV 應用密碼數量已達上限",

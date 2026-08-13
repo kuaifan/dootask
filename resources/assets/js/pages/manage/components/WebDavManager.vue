@@ -50,23 +50,29 @@
                             v-if="!createVisible"
                             type="primary"
                             icon="md-add"
-                            :disabled="!status.https || credentials.length >= status.max_credentials"
+                            :disabled="!status.https || activeCredentialCount >= status.max_credentials"
                             @click="createVisible=true">
                             {{$L('新建')}}
                         </Button>
                     </div>
 
                     <Form v-if="createVisible" class="webdav-create" @submit.native.prevent>
-                        <FormItem :label="$L('设备名称')">
-                            <Input v-model="createForm.name" :maxlength="100" :placeholder="$L('例如：办公室电脑')"/>
-                        </FormItem>
-                        <FormItem :label="$L('有效期')">
-                            <InputNumber
-                                v-model="createForm.expire_days"
-                                :min="1"
-                                :max="status.max_expire_days"/>
-                            <span class="webdav-days">{{$L('[day_unit].天')}}</span>
-                        </FormItem>
+                        <div class="webdav-create-fields">
+                            <div class="webdav-create-field">
+                                <label>{{$L('设备名称')}}</label>
+                                <Input v-model="createForm.name" :maxlength="100" :placeholder="$L('例如：办公室电脑')"/>
+                            </div>
+                            <div class="webdav-create-field">
+                                <label>{{$L('有效期')}}</label>
+                                <Input
+                                    v-model="createForm.expire_days"
+                                    type="number"
+                                    :min="1"
+                                    :max="status.max_expire_days">
+                                    <span slot="append">{{$L('[day_unit].天')}}</span>
+                                </Input>
+                            </div>
+                        </div>
                         <div class="webdav-create-actions">
                             <Button @click="createVisible=false">{{$L('取消')}}</Button>
                             <Button type="primary" :loading="creating" @click="createCredential">{{$L('创建')}}</Button>
@@ -76,20 +82,22 @@
                     <div v-if="credentials.length" class="webdav-credentials">
                         <div v-for="item in credentials" :key="item.id" class="webdav-credential">
                             <div class="webdav-credential-main">
-                                <strong>{{item.name}}</strong>
+                                <div class="webdav-credential-title">
+                                    <strong>{{item.name}}</strong>
+                                    <Tag :color="item.status === 'active' ? 'green' : 'default'">{{statusText(item.status)}}</Tag>
+                                </div>
                                 <span>{{item.public_id}} · ****{{item.password_suffix}}</span>
                                 <span>
                                     {{$L('有效期至')}}：{{item.expires_at || $L('永久')}}
                                     <template v-if="item.last_used_at"> · {{$L('最近使用')}}：{{item.last_used_at}}</template>
                                 </span>
                             </div>
-                            <Tag :color="item.status === 'active' ? 'green' : 'default'">{{statusText(item.status)}}</Tag>
-                            <Button
-                                v-if="item.status === 'active'"
-                                type="text"
-                                icon="ios-trash-outline"
-                                class="webdav-revoke"
-                                @click="revokeCredential(item)"/>
+                            <Tooltip v-if="item.status === 'active'" :content="$L('撤销')" placement="top" transfer>
+                                <Button icon="md-close" class="webdav-credential-action" @click="revokeCredential(item)"/>
+                            </Tooltip>
+                            <Tooltip v-else :content="$L('删除')" placement="top" transfer>
+                                <Button icon="ios-trash-outline" class="webdav-credential-action webdav-delete" @click="deleteCredential(item)"/>
+                            </Tooltip>
                         </div>
                     </div>
                     <div v-else-if="!createVisible" class="webdav-empty">{{$L('暂无应用密码')}}</div>
@@ -137,6 +145,11 @@ export default {
                 this.created = {};
                 this.createVisible = false;
             }
+        },
+    },
+    computed: {
+        activeCredentialCount() {
+            return this.credentials.filter(item => item.status === 'active').length;
         },
     },
     methods: {
@@ -189,10 +202,21 @@ export default {
                 }).then(() => this.load()),
             });
         },
+        deleteCredential(item) {
+            $A.modalConfirm({
+                title: '删除',
+                content: '你确定要删除吗？',
+                onOk: () => this.$store.dispatch('call', {
+                    url: 'file/dav/delete',
+                    method: 'post',
+                    data: {id: item.id},
+                }).then(() => this.load()),
+            });
+        },
         statusText(status) {
-            if (status === 'active') return $L('[credential_status].有效');
-            if (status === 'expired') return $L('已过期');
-            if (status === 'revoked') return $L('已撤销');
+            if (status === 'active') return this.$L('[credential_status].有效');
+            if (status === 'expired') return this.$L('已过期');
+            if (status === 'revoked') return this.$L('已撤销');
             return status;
         },
     },
@@ -238,8 +262,20 @@ export default {
     border-top: 1px solid #f0f0f0;
     border-bottom: 1px solid #f0f0f0;
 }
-.webdav-days {
-    margin-left: 8px;
+.webdav-create-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.webdav-create-field {
+    min-width: 0;
+}
+.webdav-create-field > label {
+    display: block;
+    margin-bottom: 8px;
+    color: #515a6e;
+    line-height: 1;
 }
 .webdav-create-actions {
     display: flex;
@@ -248,8 +284,24 @@ export default {
 }
 .webdav-credential {
     min-height: 70px;
-    gap: 12px;
+    gap: 8px;
+    padding: 8px 0;
     border-bottom: 1px solid #f0f0f0;
+}
+.webdav-credential .ivu-tag {
+    margin: 0;
+}
+.webdav-credential-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.webdav-credential-title strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .webdav-credential-main {
     flex: 1;
@@ -265,12 +317,21 @@ export default {
     font-size: 12px;
     margin-top: 3px;
 }
-.webdav-revoke {
+.webdav-credential-action {
+    flex: none;
+}
+.webdav-delete {
     color: #ed4014;
 }
 .webdav-empty {
     color: #808695;
     padding: 24px 0;
     text-align: center;
+}
+@media (max-width: 520px) {
+    .webdav-create-fields {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
 }
 </style>

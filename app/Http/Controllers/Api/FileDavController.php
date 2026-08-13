@@ -9,6 +9,7 @@ use App\Models\WebDavLock;
 use App\Module\Base;
 use App\Services\WebDav\WebDavConfig;
 use App\Services\WebDav\WebDavConflictService;
+use App\Services\WebDav\WebDavCredentialService;
 use Request;
 
 /**
@@ -149,6 +150,29 @@ class FileDavController extends AbstractController
             'id' => $credential->id,
             'revoked_at' => $credential->revoked_at?->toDateTimeString(),
         ]);
+    }
+
+    /**
+     * @api {post} api/file/dav/delete 永久删除已失效的 WebDAV 应用密码
+     * @apiDescription 需要token身份，仅允许删除本人已撤销或已过期的凭据，操作日志保留
+     * @apiVersion 1.0.0
+     * @apiGroup fileDav
+     * @apiName dav__delete
+     *
+     * @apiParam {Number} id 应用密码 ID
+     */
+    public function dav__delete()
+    {
+        $user = User::auth();
+        $id = intval(Request::input('id'));
+        (new WebDavCredentialService())->deleteInactive(
+            $user,
+            $id,
+            Request::header('X-Request-Id'),
+            Request::ip(),
+            Request::userAgent()
+        );
+        return Base::retSuccess('删除成功', ['id' => $id]);
     }
 
     /**

@@ -8,7 +8,9 @@ use App\Models\File;
 use App\Models\FileUser;
 use App\Models\User;
 use App\Models\WebDavCredential;
+use App\Models\WebDavLock;
 use App\Models\WebDavOperationLog;
+use App\Services\WebDav\WebDavCredentialService;
 use App\Services\WebDav\WebDavConfig;
 use App\Services\WebDav\WebDavConflictService;
 use App\Services\WebDav\WebDavExceptionMapper;
@@ -219,6 +221,44 @@ class WebDavContractTest extends TestCase
         $this->assertStringContainsString('admin-conflict.txt -> admin-renamed.txt', (string) $log->result);
     }
 
+    public function test_only_inactive_credentials_can_be_permanently_deleted_with_audit_retained(): void
+    {
+        $user = User::query()->firstOrFail();
+        [$credential] = WebDavCredential::issue($user, 'delete-test', 30);
+        $service = new WebDavCredentialService();
+
+        try {
+            $service->deleteInactive($user, intval($credential->id), 'delete-active', '127.0.0.1', 'phpunit');
+            $this->fail('Active credential deletion should be rejected.');
+        } catch (\App\Exceptions\ApiException $exception) {
+            $this->assertSame('有效的应用密码请先撤销', $exception->getMessage());
+        }
+
+        $credential->revoke();
+        WebDavLock::createInstance([
+            'token' => 'delete-test-lock',
+            'userid' => $user->userid,
+            'credential_id' => $credential->id,
+            'uri' => 'files/delete-test',
+            'uri_hash' => hash('sha256', 'files/delete-test'),
+            'scope' => 'exclusive',
+            'depth' => 'infinity',
+            'timeout_at' => now()->addHour(),
+        ])->save();
+
+        $service->deleteInactive($user, intval($credential->id), 'delete-inactive', '127.0.0.1', 'phpunit');
+
+        $this->assertNull(WebDavCredential::find($credential->id));
+        $this->assertFalse(WebDavLock::whereCredentialId($credential->id)->exists());
+        $this->assertDatabaseHas('webdav_operation_logs', [
+            'request_id' => 'delete-inactive',
+            'userid' => $user->userid,
+            'credential_id' => $credential->id,
+            'method' => 'CREDENTIAL_DELETE',
+            'status' => 200,
+        ]);
+    }
+
     public function test_server_factory_registers_required_plugins(): void
     {
         $user = User::createInstance(['userid' => 123]);
@@ -239,6 +279,7 @@ class WebDavContractTest extends TestCase
         $this->assertStringContainsString('api/file/dav/status', $map);
         $this->assertStringContainsString('dav__status()', $map);
         $this->assertStringContainsString('api/file/dav/adminsetting', $map);
+        $this->assertStringContainsString('api/file/dav/delete', $map);
     }
 
     public function test_protocol_bridge_handles_sabre_null_body_as_empty_response(): void
