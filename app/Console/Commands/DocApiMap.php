@@ -22,10 +22,10 @@ class DocApiMap extends Command
 
         $total = 0;
         $sections = [];
-        foreach ($controllers as $prefix => $class) {
-            $rows = $this->collectMethods($prefix, $class);
+        foreach ($controllers as $prefix => $controller) {
+            $rows = $this->collectMethods($prefix, $controller['class'], $controller['fixed_method']);
             $total += count($rows);
-            $sections[] = $this->renderSection($prefix, $class, $rows);
+            $sections[] = $this->renderSection($prefix, $controller['class'], $rows);
         }
 
         $path = base_path('routes/api-map.md');
@@ -38,19 +38,29 @@ class DocApiMap extends Command
     /**
      * 从已注册路由中收集 api 前缀与控制器的映射
      * 匹配 routes/web.php 中的动态路由：api/{prefix}/{method}
-     * @return array [prefix => 控制器类名]
+     * 同时支持固定 method 的三级路由，如 api/file/dav/{action}。
+     * @return array [prefix => ['class' => 控制器类名, 'fixed_method' => 固定方法名|null]]
      */
     private function collectControllers(): array
     {
         $controllers = [];
         foreach (Route::getRoutes() as $route) {
-            if (!preg_match('/^api\/(\w+)\/\{method}$/', $route->uri())) {
+            $uri = $route->uri();
+            $fixedMethod = null;
+            if (preg_match('/^api\/(.+)\/\{method}$/', $uri, $match)) {
+                $prefix = $match[1];
+            } elseif (preg_match('/^api\/(.+)\/\{action}$/', $uri, $match) && isset($route->defaults['method'])) {
+                $prefix = $match[1];
+                $fixedMethod = (string) $route->defaults['method'];
+            } else {
                 continue;
             }
-            preg_match('/^api\/(\w+)\/\{method}$/', $route->uri(), $match);
             $class = $route->getAction('controller');
             if ($class && class_exists($class)) {
-                $controllers[$match[1]] = $class;
+                $controllers[$prefix] = [
+                    'class' => $class,
+                    'fixed_method' => $fixedMethod,
+                ];
             }
         }
         return $controllers;
@@ -62,7 +72,7 @@ class DocApiMap extends Command
      * @param string $class 控制器类名
      * @return array [['url' => ..., 'method' => ..., 'http' => ..., 'title' => ...], ...]
      */
-    private function collectMethods(string $prefix, string $class): array
+    private function collectMethods(string $prefix, string $class, ?string $fixedMethod): array
     {
         $rows = [];
         $reflection = new ReflectionClass($class);
@@ -73,10 +83,20 @@ class DocApiMap extends Command
                 || str_starts_with($method->getName(), '__')) {
                 continue;
             }
+            $methodName = $method->getName();
+            if ($fixedMethod !== null) {
+                $fixedPrefix = $fixedMethod . '__';
+                if (!str_starts_with($methodName, $fixedPrefix)) {
+                    continue;
+                }
+                $urlMethod = substr($methodName, strlen($fixedPrefix));
+            } else {
+                $urlMethod = str_replace('__', '/', $methodName);
+            }
             [$http, $title] = $this->parseApiDoc($method);
             $rows[] = [
-                'url' => "api/{$prefix}/" . str_replace('__', '/', $method->getName()),
-                'method' => $method->getName() . '()',
+                'url' => "api/{$prefix}/{$urlMethod}",
+                'method' => $methodName . '()',
                 'http' => $http,
                 'title' => $title,
             ];

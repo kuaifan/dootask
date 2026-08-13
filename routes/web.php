@@ -2,8 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
+use App\Http\Controllers\WebDavProtocolController;
 use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\FileController;
+use App\Http\Controllers\Api\FileDavController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\DialogController;
 use App\Http\Controllers\Api\PublicController;
@@ -53,6 +55,7 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     Route::any('dialog/{method}',                       DialogController::class);
     Route::any('dialog/{method}/{action}',              DialogController::class);
     // 文件
+    Route::any('file/dav/{action}',                     FileDavController::class)->defaults('method', 'dav');
     Route::any('file/{method}',                         FileController::class);
     Route::any('file/{method}/{action}',                FileController::class);
     // 分片上传
@@ -80,6 +83,14 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     Route::any('test/{method}',                         TestController::class);
     Route::any('test/{method}/{action}',                TestController::class);
 });
+
+/**
+ * WebDAV 协议入口（必须位于页面兜底路由之前）
+ */
+Route::match([
+    'OPTIONS', 'PROPFIND', 'PROPPATCH', 'HEAD', 'GET', 'PUT',
+    'MKCOL', 'COPY', 'MOVE', 'DELETE', 'LOCK', 'UNLOCK',
+], 'dav/{path?}', WebDavProtocolController::class)->where('path', '.*');
 
 /**
  * 页面

@@ -38,6 +38,13 @@ return [
     // 临时文件自动清理天数（DeleteTmpTask）
     'auto_empty_temp_file' => env('AUTO_EMPTY_TEMP_FILE', 30),
 
+    // WebDAV 协议硬限制；用户可配置值不能超过这里的上限
+    'webdav' => [
+        'max_file_bytes' => 1024 * 1024 * 1024,
+        'lock_timeout_seconds' => 1800,
+        'lock_max_timeout_seconds' => 7200,
+    ],
+
     // 在线授权：appstore 授权中心地址（OnlineLicense；默认中央，测试可指向 dev appstore）
     // [调试中] 临时指向本地 dev appstore，发版前改回 'https://appstore.dootask.com'
     'online_license_appstore_url' => env('ONLINE_LICENSE_APPSTORE_URL', 'https://appstore.dootask.com'),

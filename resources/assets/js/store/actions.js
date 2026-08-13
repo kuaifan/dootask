@@ -524,7 +524,12 @@ export default {
             // 如果 当前不是消息页面 或 是竖屏 则关闭对话窗口
             dispatch("openDialog", 0);
         }
-        $A.goForward({name: 'manage-file', params: data});
+        const {board, ...params} = data;
+        $A.goForward({
+            name: 'manage-file',
+            params,
+            query: ['mine', 'shared'].includes(board) ? {board} : undefined,
+        });
     },
 
     /**

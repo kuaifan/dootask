@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：316
+接口总数：325
 
 ## 路由规则
 
@@ -297,6 +297,20 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/dialog/session/list | session__list() | get | AI-获取会话列表 |
 | api/dialog/session/open | session__open() | get | AI-打开会话 |
 | api/dialog/session/rename | session__rename() | post | AI-重命名会话 |
+
+## file/dav（FileDavController）
+
+| URL | 方法名 | HTTP | 说明 |
+| --- | --- | --- | --- |
+| api/file/dav/status | dav__status() | get | 获取 WebDAV 状态 |
+| api/file/dav/credentials | dav__credentials() | get | 获取 WebDAV 凭据 |
+| api/file/dav/create | dav__create() | post | 创建 WebDAV 应用密码 |
+| api/file/dav/revoke | dav__revoke() | post | 撤销 WebDAV 应用密码 |
+| api/file/dav/adminsetting | dav__adminsetting() | get | 获取或保存 WebDAV 设置 |
+| api/file/dav/adminstatus | dav__adminstatus() | get | 获取 WebDAV 运行状态 |
+| api/file/dav/conflicts | dav__conflicts() | get | 获取 WebDAV 路径冲突明细 |
+| api/file/dav/conflictrename | dav__conflictrename() | post | 管理员重命名 WebDAV 冲突文件 |
+| api/file/dav/userrevoke | dav__userrevoke() | post | 撤销用户全部 WebDAV 应用密码 |
 
 ## file（FileController）
 

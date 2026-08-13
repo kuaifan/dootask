@@ -33,6 +33,8 @@ return Application::configure(basePath: $_ENV['APP_BASE_PATH'] ?? dirname(__DIR_
         $middleware->validateCsrfTokens(except: [
             // 接口部分
             'api/*',
+            'dav',
+            'dav/*',
 
             // 发布桌面端
             'desktop/publish/',

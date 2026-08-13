@@ -37,6 +37,7 @@
         "phpoffice/phppresentation": "^1.2",
         "phpoffice/phpword": "^1.4",
         "predis/predis": "^2.3",
+        "sabre/dav": "^4.7",
         "smalot/pdfparser": "^2.11",
         "symfony/console": "^7.4",
         "symfony/yaml": "^7.4"

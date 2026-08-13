@@ -33,6 +33,12 @@
                     <div v-if="board !== 'collaboration'" class="file-add">
                         <Button shape="circle" icon="md-add" @click.stop="handleRightClick($event, null, true)"></Button>
                     </div>
+                    <Dropdown v-if="board !== 'collaboration'" placement="bottom-end" trigger="click" transfer @on-click="webDavShow=true">
+                        <Button shape="circle" icon="ios-more"></Button>
+                        <DropdownMenu slot="list">
+                            <DropdownItem name="webdav">{{$L('WebDAV')}}</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
                 </div>
             </div>
 
@@ -481,6 +487,8 @@
             <FileContent v-else ref="fileContent" v-model="fileShow" :file="fileInfo"/>
         </DrawerOverlay>
 
+        <WebDavManager v-model="webDavShow"/>
+
         <!--拖动上传提示-->
         <Modal
             v-model="pasteShow"
@@ -509,6 +517,7 @@ import UserSelect from "../../components/UserSelect.vue";
 import UserAvatarTip from "../../components/UserAvatar/tip.vue";
 import Forwarder from "./components/Forwarder/index.vue";
 import CollaborationFileList from "./components/CollaborationFileList.vue";
+import WebDavManager from "./components/WebDavManager.vue";
 import {chunkedUpload, CHUNK_THRESHOLD} from "../../store/chunkedUpload";
 
 const FilePreview = () => import('./components/FilePreview');
@@ -516,10 +525,11 @@ const FileContent = () => import('./components/FileContent');
 const FileObject = {sort: null, mode: null, board: null};
 
 export default {
-    components: {CollaborationFileList, Forwarder, UserAvatarTip, UserSelect, FilePreview, DrawerOverlay, FileContent},
+    components: {WebDavManager, CollaborationFileList, Forwarder, UserAvatarTip, UserSelect, FilePreview, DrawerOverlay, FileContent},
     directives: {longpress},
     data() {
         return {
+            webDavShow: false,
             packList: [],
             packShow: false,
 
@@ -641,7 +651,9 @@ export default {
     async beforeRouteEnter(to, from, next) {
         FileObject.sort = await $A.IDBJson("cacheFileSort")
         FileObject.mode = await $A.IDBString("fileTableMode")
-        FileObject.board = await $A.IDBString("fileBoard")
+        FileObject.board = ['mine', 'shared'].includes(to.query.board)
+            ? to.query.board
+            : await $A.IDBString("fileBoard")
         next()
     },
 
@@ -843,6 +855,9 @@ export default {
     },
 
     activated() {
+        if (['mine', 'shared'].includes(this.$route.query.board)) {
+            this.board = this.$route.query.board;
+        }
         this.getFileList();
     },
 

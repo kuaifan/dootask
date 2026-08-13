@@ -124,6 +124,7 @@ features:
       - file.search.howto
       - file.collaboration.howto
       - file.version.concept
+      - file.webdav.howto
 
   - id: application
     name: 应用中心（导航入口）
@@ -580,6 +581,7 @@ features:
       - system-setting.auto-archive.howto
       - system-setting.task-ai-analyze.howto
       - system-setting.file-upload-limit.howto
+      - system-setting.webdav.howto
       - system-setting.video-process.howto
       - system-setting.task-visibility.howto
       - system-setting.chat-mute.howto
