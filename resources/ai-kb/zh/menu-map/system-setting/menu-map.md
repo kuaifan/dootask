@@ -19,30 +19,32 @@ related_pages: []
 negative:
   - 移动端通常不展示「系统设置」入口，需用桌面端 / 网页后台
   - 普通成员看不到该页，无入口
-  - 这 4 个 tab 只是「系统设置」一级菜单内的内容；邮件、AI、签到等是同级别的其他左侧菜单项，不在这个页内
-last_verified: v1.7.90
+  - 这 6 个 tab 只是「系统设置」一级菜单内的内容；邮件、AI、签到等是同级别的其他左侧菜单项，不在这个页内
+last_verified: v1.8.89
 ---
 
 # 系统设置页面总览
 
 ## 路径
 桌面端：左上角头像 → 下拉菜单 →「系统设置」（仅管理员可见）→ 左侧子菜单选「系统设置」一级项。
-打开后顶部是 4 个并列的 tab，对应同一 URL 下的 4 个子表单。
+打开后顶部是 6 个并列的 tab，对应同一 URL 下按领域整理的设置表单。
 
 移动端：不展示，需用桌面端或浏览器后台。
 
-## 4 个 tab 一句话目录
+## 6 个 tab 一句话目录
 
 | Tab | name | 内容 |
 |---|---|---|
-| **系统设置** | `setting` | 全站通用开关：注册、密码、消息、视频、上传、欢迎语等几十项；详见 [[system-setting.general.howto]] |
-| **任务优先级** | `taskPriority` | 自定义任务优先级的颜色、名称、提前提醒天数；详见 [[system-setting.priority.howto]] |
-| **项目模板** | `columnTemplate` | 新建项目时可选的预置「列模板」清单（如 看板列、状态列）；详见 [[system-setting.column-template.howto]] |
-| **文件设置** | `fileSetting` | 文件相关策略（如打包下载权限、缩略图）；详见 [[system-setting.file.howto]] |
+| **基础设置** | `general` | 系统别名和仪表盘欢迎语；详见 [[system-setting.general.howto]] |
+| **帐号与安全** | `account` | 注册方式、临时帐号、登录验证码和密码策略 |
+| **项目设置** | `project` | 项目创建与邀请权限、部门负责人视角、项目模板；详见 [[system-setting.column-template.howto]] |
+| **任务设置** | `task` | 任务默认规则、提醒、AI 分析和任务优先级；详见 [[system-setting.priority.howto]] |
+| **消息设置** | `message` | 群聊、私聊、匿名消息、加密、撤回和待办权限 |
+| **文件与存储** | `file` | 上传与媒体处理、打包下载权限和 WebDAV；详见 [[system-setting.file.howto]] |
 
-默认进入「系统设置」tab。切换 tab 不会重置已填未保存的表单值，但每个 tab 单独保存。
+默认进入「基础设置」tab。每个 tab 底部只有一组「提交 / 重置」；一个 tab 涉及多类配置时，提交会依次调用对应接口并统一反馈结果。
 
-## 同级菜单（不在这 4 tab 内）
+## 同级菜单（不在这 6 个 tab 内）
 左侧子菜单的其他独立项见 [[system-setting.entry.menu-map]]，包括邮件、会议、AI 设置、AI 机器人、签到、APP 推送、第三方接入、License 等。
 
 ## 权限要求

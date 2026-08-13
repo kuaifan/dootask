@@ -1,17 +1,23 @@
 <template>
     <div class="setting-item submit">
         <Tabs v-model="tabAction">
-            <TabPane :label="$L('系统设置')" name="setting">
-                <SystemSetting/>
+            <TabPane :label="$L('基础设置')" name="general">
+                <SystemSetting scope="general"/>
             </TabPane>
-            <TabPane :label="$L('任务优先级')" name="taskPriority">
-                <SystemTaskPriority/>
+            <TabPane :label="$L('帐号与安全')" name="account">
+                <SystemSetting scope="account"/>
             </TabPane>
-            <TabPane :label="$L('项目模板')" name="columnTemplate">
-                <SystemColumnTemplate/>
+            <TabPane :label="$L('项目设置')" name="project">
+                <SystemSetting scope="project"/>
             </TabPane>
-            <TabPane :label="$L('文件设置')" name="fileSetting">
-                <SystemFileSetting/>
+            <TabPane :label="$L('任务设置')" name="task">
+                <SystemSetting scope="task"/>
+            </TabPane>
+            <TabPane :label="$L('消息设置')" name="message">
+                <SystemSetting scope="message"/>
+            </TabPane>
+            <TabPane :label="$L('文件与存储')" name="file">
+                <SystemSetting scope="file"/>
             </TabPane>
         </Tabs>
     </div>
@@ -19,14 +25,17 @@
 
 <script>
 import SystemSetting from "./components/SystemSetting";
-import SystemTaskPriority from "./components/SystemTaskPriority";
-import SystemColumnTemplate from "./components/SystemColumnTemplate";
-import SystemFileSetting from "./components/SystemFileSetting";
 
-const VALID_TABS = ['setting', 'taskPriority', 'columnTemplate', 'fileSetting'];
+const VALID_TABS = ['general', 'account', 'project', 'task', 'message', 'file'];
+const LEGACY_TABS = {
+    setting: 'general',
+    taskPriority: 'task',
+    columnTemplate: 'project',
+    fileSetting: 'file',
+};
 
 export default {
-    components: {SystemColumnTemplate, SystemTaskPriority, SystemSetting, SystemFileSetting},
+    components: {SystemSetting},
     data() {
         return {
             tabAction: this.tabFromRoute(),
@@ -41,7 +50,10 @@ export default {
     methods: {
         tabFromRoute() {
             const tab = this.$route?.query?.tab;
-            return VALID_TABS.includes(tab) ? tab : 'setting';
+            if (VALID_TABS.includes(tab)) {
+                return tab;
+            }
+            return LEGACY_TABS[tab] || 'general';
         },
     },
 }

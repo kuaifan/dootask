@@ -39466,5 +39466,77 @@
         "fr": "Vous renommez un fichier privé appartenant à (%T1). Cette action modifiera directement le nom du fichier.",
         "id": "Anda akan mengganti nama file pribadi milik (%T1). Tindakan ini akan langsung mengubah nama file.",
         "ru": "Вы переименовываете личный файл пользователя (%T1). Это действие напрямую изменит имя файла."
+    },
+    {
+        "key": "帐号与安全",
+        "zh": "",
+        "zh-CHT": "帳號與安全",
+        "en": "Account & Security",
+        "ko": "계정 및 보안",
+        "ja": "アカウントとセキュリティ",
+        "de": "Konto und Sicherheit",
+        "fr": "Compte et securite",
+        "id": "Akun dan Keamanan",
+        "ru": "Аккаунт и безопасность"
+    },
+    {
+        "key": "基础设置",
+        "zh": "",
+        "zh-CHT": "基礎設置",
+        "en": "General Settings",
+        "ko": "기본 설정",
+        "ja": "基本設定",
+        "de": "Grundeinstellungen",
+        "fr": "Parametres generaux",
+        "id": "Pengaturan Dasar",
+        "ru": "Основные настройки"
+    },
+    {
+        "key": "任务设置",
+        "zh": "",
+        "zh-CHT": "任務設置",
+        "en": "Task Settings",
+        "ko": "작업 설정",
+        "ja": "タスク設定",
+        "de": "Aufgabeneinstellungen",
+        "fr": "Parametres des taches",
+        "id": "Pengaturan Tugas",
+        "ru": "Настройки задач"
+    },
+    {
+        "key": "消息设置",
+        "zh": "",
+        "zh-CHT": "消息設置",
+        "en": "Message Settings",
+        "ko": "메시지 설정",
+        "ja": "メッセージ設定",
+        "de": "Nachrichteneinstellungen",
+        "fr": "Parametres des messages",
+        "id": "Pengaturan Pesan",
+        "ru": "Настройки сообщений"
+    },
+    {
+        "key": "文件与存储",
+        "zh": "",
+        "zh-CHT": "文件與存儲",
+        "en": "Files & Storage",
+        "ko": "파일 및 저장소",
+        "ja": "ファイルとストレージ",
+        "de": "Dateien und Speicher",
+        "fr": "Fichiers et stockage",
+        "id": "File dan Penyimpanan",
+        "ru": "Файлы и хранилище"
+    },
+    {
+        "key": "上传与媒体处理",
+        "zh": "",
+        "zh-CHT": "上傳與媒體處理",
+        "en": "Upload & Media Processing",
+        "ko": "업로드 및 미디어 처리",
+        "ja": "アップロードとメディア処理",
+        "de": "Upload und Medienverarbeitung",
+        "fr": "Importation et traitement des medias",
+        "id": "Unggah dan Pemrosesan Media",
+        "ru": "Загрузка и обработка медиа"
     }
 ]

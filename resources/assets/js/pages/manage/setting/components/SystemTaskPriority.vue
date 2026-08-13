@@ -1,6 +1,6 @@
 <template>
-    <div class="setting-component-item system-task-priority">
-        <Form ref="formDatum" label-width="auto" @submit.native.prevent>
+    <div :class="{'setting-component-item': !embedded, 'system-task-priority': true}">
+        <div>
             <Row class="setting-color color-label-box">
                 <Col span="2">{{$L('默认')}}</Col>
                 <Col span="10">{{$L('名称')}}</Col>
@@ -40,11 +40,11 @@
                     </Col>
                 </Row>
             </RadioGroup>
-            <div class="priority-add-action">
+            <div class="setting-add-action">
                 <Button type="default" icon="md-add" @click="addDatum">{{$L('添加优先级')}}</Button>
             </div>
-        </Form>
-        <div class="setting-footer">
+        </div>
+        <div v-if="!embedded" class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
             <Button :loading="loadIng > 0" @click="resetForm">{{$L('重置')}}</Button>
         </div>
@@ -56,6 +56,9 @@ import {mapState} from "vuex";
 
 export default {
     name: 'SystemTaskPriority',
+    props: {
+        embedded: Boolean,
+    },
     data() {
         return {
             loadIng: 0,
@@ -101,11 +104,7 @@ export default {
 
     methods: {
         submitForm() {
-            this.$refs.formDatum.validate((valid) => {
-                if (valid) {
-                    this.systemSetting(true);
-                }
-            })
+            this.systemSetting(true);
         },
 
         resetForm() {
@@ -141,23 +140,26 @@ export default {
             })
         },
 
-        systemSetting(save) {
+        systemSetting(save, silent = false) {
             this.loadIng++;
             this.applyDefaultIndex();
-            this.$store.dispatch("call", {
+            return this.$store.dispatch("call", {
                 url: 'system/priority?type=' + (save ? 'save' : 'get'),
                 method: 'post',
                 data: {
                     list: this.formDatum
                 },
             }).then(({data}) => {
-                if (save) {
+                if (save && !silent) {
                     $A.messageSuccess('修改成功');
                 }
                 this.$store.state.taskPriority = $A.cloneJSON(data);
             }).catch(({msg}) => {
-                if (save) {
+                if (save && !silent) {
                     $A.modalError(msg);
+                }
+                if (silent) {
+                    return Promise.reject(msg);
                 }
             }).finally(_ => {
                 this.loadIng--;

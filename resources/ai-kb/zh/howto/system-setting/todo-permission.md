@@ -21,13 +21,13 @@ negative:
   - 这是消息→待办（聊天里把某条消息变成 todo）权限，与项目任务无关
   - 自己给自己设 / 取消 todo 不受开关限制
   - 关闭后任何人都不能"批量给一群人设 todo"，包括非自己的成员
-last_verified: v1.7.90
+last_verified: v1.8.89
 ---
 
 # 待办设置权限
 
 ## 入口
-桌面端：左上角头像 →「系统设置」→「系统设置」标签 →「消息相关」→「待办设置权限」。
+桌面端：左上角头像 →「系统设置」→「消息设置」→「待办设置权限」。
 
 字段名：`todo_set_permission`，枚举 `open` / `close`，默认 `open`。
 
@@ -48,7 +48,7 @@ last_verified: v1.7.90
 后端校验点：`WebSocketDialogMsg::setTodoRemind` 与 `DialogController::msg__todo_indicate` 两处都会读 `todo_set_permission`，关闭时校验 `checkTodoOwnerPermission`。
 
 ## 操作步骤
-1. 进入「系统设置」→「系统设置」→「消息相关」
+1. 进入「系统设置」→「消息设置」
 2. 「待办设置权限」选「允许」或「禁止」
 3. 「提交」保存，立即生效
 

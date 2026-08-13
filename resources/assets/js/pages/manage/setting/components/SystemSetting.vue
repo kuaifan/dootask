@@ -5,8 +5,8 @@
             :model="formDatum"
             v-bind="formOptions"
             @submit.native.prevent>
-            <div class="block-setting-box">
-                <h3>{{ $L('帐号相关') }}</h3>
+            <div v-if="scope === 'account'" class="block-setting-box">
+                <h3>{{ $L('帐号与安全') }}</h3>
                 <div class="form-box">
                     <FormItem :label="$L('允许注册')" prop="reg">
                         <RadioGroup v-model="formDatum.reg">
@@ -65,8 +65,8 @@
                     </FormItem>
                 </div>
             </div>
-            <div class="block-setting-box">
-                <h3>{{ $L('项目相关') }}</h3>
+            <div v-if="scope === 'project'" class="block-setting-box">
+                <h3>{{ $L('项目设置') }}</h3>
                 <div class="form-box">
                     <FormItem :label="$L('邀请项目')" prop="projectInvite">
                         <RadioGroup v-model="formDatum.project_invite">
@@ -104,8 +104,14 @@
                     </FormItem>
                 </div>
             </div>
-            <div class="block-setting-box">
-                <h3>{{ $L('任务相关') }}</h3>
+            <div v-if="scope === 'project'" class="block-setting-box">
+                <h3>{{ $L('项目模板') }}</h3>
+                <div class="form-box">
+                    <SystemColumnTemplate ref="columnTemplate" embedded/>
+                </div>
+            </div>
+            <div v-if="scope === 'task'" class="block-setting-box">
+                <h3>{{ $L('任务设置') }}</h3>
                 <div class="form-box">
                     <FormItem :label="$L('自动归档')" prop="autoArchived">
                         <RadioGroup :value="formDatum.auto_archived" @on-change="formArchived">
@@ -171,8 +177,14 @@
                     </FormItem>
                 </div>
             </div>
-            <div class="block-setting-box">
-                <h3>{{ $L('消息相关') }}</h3>
+            <div v-if="scope === 'task'" class="block-setting-box">
+                <h3>{{ $L('任务优先级') }}</h3>
+                <div class="form-box">
+                    <SystemTaskPriority ref="taskPriority" embedded/>
+                </div>
+            </div>
+            <div v-if="scope === 'message'" class="block-setting-box">
+                <h3>{{ $L('消息设置') }}</h3>
                 <div class="form-box">
                     <FormItem :label="$L('自动进入全员群')" prop="allGroupAutoin">
                         <RadioGroup v-model="formDatum.all_group_autoin">
@@ -235,22 +247,6 @@
                         <div v-if="formDatum.todo_set_permission == 'open'" class="form-tip">{{$L('允许：所有成员可设置/取消他人待办。')}}</div>
                         <div v-else class="form-tip">{{$L('禁止：仅本人、系统管理员、群主（含群管理员）、项目负责人（含项目管理员）、任务负责人可设置/取消待办。')}}</div>
                     </FormItem>
-                    <FormItem :label="$L('视频转换')" prop="convertVideo">
-                        <RadioGroup v-model="formDatum.convert_video">
-                            <Radio label="open">{{$L('开启')}}</Radio>
-                            <Radio label="close">{{$L('关闭')}}</Radio>
-                        </RadioGroup>
-                        <div v-if="formDatum.convert_video == 'open'" class="form-tip">{{$L('将MOV、WEBM格式的视频转换为MP4格式。')}}</div>
-                        <div v-else class="form-tip">{{$L('关闭视频格式转换功能。')}}</div>
-                    </FormItem>
-                    <FormItem :label="$L('视频压缩')" prop="compressVideo">
-                        <RadioGroup v-model="formDatum.compress_video">
-                            <Radio label="open">{{$L('开启')}}</Radio>
-                            <Radio label="close">{{$L('关闭')}}</Radio>
-                        </RadioGroup>
-                        <div v-if="formDatum.compress_video == 'open'" class="form-tip">{{$L('对MP4格式的视频进行压缩处理。')}}</div>
-                        <div v-else class="form-tip">{{$L('关闭视频压缩功能。')}}</div>
-                    </FormItem>
                     <FormItem :label="$L('端到端加密')" prop="e2eMessage">
                         <RadioGroup v-model="formDatum.e2e_message">
                             <Radio label="open">{{$L('开启')}}</Radio>
@@ -281,8 +277,8 @@
                     </FormItem>
                 </div>
             </div>
-            <div class="block-setting-box">
-                <h3>{{ $L('其他设置') }}</h3>
+            <div v-if="scope === 'general'" class="block-setting-box">
+                <h3>{{ $L('基础设置') }}</h3>
                 <div class="form-box">
                     <FormItem :label="$L('系统别名')" prop="system_alias">
                         <div style="width: 220px;">
@@ -296,6 +292,11 @@
                         </div>
                         <div class="form-tip">{{$L('仪表盘欢迎词，(*)代表用户昵称', '{username}')}}</div>
                     </FormItem>
+                </div>
+            </div>
+            <div v-if="scope === 'file'" class="block-setting-box">
+                <h3>{{ $L('上传与媒体处理') }}</h3>
+                <div class="form-box">
                     <FormItem :label="$L('图片优化')" prop="image_compress">
                         <RadioGroup v-model="formDatum.image_compress">
                             <Radio label="open">{{$L('开启')}}</Radio>
@@ -324,8 +325,25 @@
                         </div>
                         <div class="form-tip">{{$L('包含消息发送的文件')}}</div>
                     </FormItem>
+                    <FormItem :label="$L('视频转换')" prop="convertVideo">
+                        <RadioGroup v-model="formDatum.convert_video">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.convert_video == 'open'" class="form-tip">{{$L('将MOV、WEBM格式的视频转换为MP4格式。')}}</div>
+                        <div v-else class="form-tip">{{$L('关闭视频格式转换功能。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('视频压缩')" prop="compressVideo">
+                        <RadioGroup v-model="formDatum.compress_video">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.compress_video == 'open'" class="form-tip">{{$L('对MP4格式的视频进行压缩处理。')}}</div>
+                        <div v-else class="form-tip">{{$L('关闭视频压缩功能。')}}</div>
+                    </FormItem>
                 </div>
             </div>
+            <SystemFileSetting v-if="scope === 'file'" ref="fileSetting" embedded/>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
@@ -337,11 +355,30 @@
 <script>
 import {mapState} from "vuex";
 import UserSelect from "../../../../components/UserSelect.vue";
+import SystemColumnTemplate from "./SystemColumnTemplate.vue";
+import SystemFileSetting from "./SystemFileSetting.vue";
+import SystemTaskPriority from "./SystemTaskPriority.vue";
+
+const SCOPE_FIELDS = {
+    general: ['system_alias', 'system_welcome'],
+    account: ['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy'],
+    project: ['project_invite', 'project_add_permission', 'project_add_userids', 'department_owner_project_view'],
+    task: ['auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'task_user_limit', 'unclaimed_task_reminder', 'unclaimed_task_reminder_time', 'task_ai_auto_analyze'],
+    message: ['chat_information', 'anon_message', 'e2e_message', 'msg_rev_limit', 'msg_edit_limit', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'todo_set_permission'],
+    file: ['convert_video', 'compress_video', 'image_compress', 'image_quality', 'image_save_local', 'file_upload_limit'],
+};
 
 export default {
     name: 'SystemSetting',
 
-    components: {UserSelect},
+    components: {SystemTaskPriority, SystemFileSetting, SystemColumnTemplate, UserSelect},
+
+    props: {
+        scope: {
+            type: String,
+            required: true,
+        },
+    },
 
     data() {
         return {
@@ -380,13 +417,56 @@ export default {
         submitForm() {
             this.$refs.formDatum.validate((valid) => {
                 if (valid) {
-                    this.systemSetting(true);
+                    this.saveAll();
                 }
             })
         },
 
         resetForm() {
             this.formDatum = $A.cloneJSON(this.formDatum_bak);
+            this.$refs.columnTemplate?.resetForm();
+            this.$refs.taskPriority?.resetForm();
+            this.$refs.fileSetting?.resetForm();
+        },
+
+        saveAll() {
+            if (this.loadIng > 0) {
+                return;
+            }
+            const extra = {
+                project: () => this.$refs.columnTemplate.systemSetting(true, true),
+                task: () => this.$refs.taskPriority.systemSetting(true, true),
+                file: () => this.$refs.fileSetting.systemSetting(true, true),
+            }[this.scope];
+            this.loadIng++;
+            this.saveSystemScope()
+                .then(() => extra?.())
+                .then(() => {
+                    $A.messageSuccess('修改成功');
+                    this.$store.dispatch("getUserInfo").catch(() => {});
+                })
+                .catch(msg => $A.modalError(msg))
+                .finally(() => {
+                    this.loadIng--;
+                });
+        },
+
+        saveSystemScope() {
+            const fields = SCOPE_FIELDS[this.scope];
+            const currentValues = fields.reduce((data, field) => {
+                data[field] = $A.cloneJSON(this.formDatum[field]);
+                return data;
+            }, {});
+            return this.$store.dispatch("call", {
+                url: 'system/setting?type=all',
+                method: 'post',
+            }).then(({data}) => this.$store.dispatch("call", {
+                url: 'system/setting?type=save',
+                method: 'post',
+                data: Object.assign({}, data, currentValues),
+            })).then(({data}) => {
+                this.setSystemDatum(data);
+            }).catch(({msg}) => Promise.reject(msg));
         },
 
         formArchived(value) {
@@ -397,28 +477,35 @@ export default {
             this.formDatum = { ...this.formDatum, unclaimed_task_reminder: value };
         },
 
-        systemSetting(save) {
+        systemSetting(save, silent = false) {
             this.loadIng++;
-            this.$store.dispatch("call", {
+            return this.$store.dispatch("call", {
                 url: 'system/setting?type=' + (save ? 'save' : 'all'),
                 method: 'post',
                 data: this.formDatum,
             }).then(({data}) => {
-                if (save) {
+                if (save && !silent) {
                     $A.messageSuccess('修改成功');
                     this.$store.dispatch("getUserInfo").catch(() => {});
                 }
-                this.formDatum = data;
-                this.formDatum_bak = $A.cloneJSON(this.formDatum);
-                this.$store.state.systemConfig = Object.assign(this.formDatum_bak, {
-                    __state: "success",
-                })
+                this.setSystemDatum(data);
             }).catch(({msg}) => {
-                if (save) {
+                if (save && !silent) {
                     $A.modalError(msg);
+                }
+                if (silent) {
+                    return Promise.reject(msg);
                 }
             }).finally(_ => {
                 this.loadIng--;
+            });
+        },
+
+        setSystemDatum(data) {
+            this.formDatum = data;
+            this.formDatum_bak = $A.cloneJSON(data);
+            this.$store.state.systemConfig = Object.assign({}, this.formDatum_bak, {
+                __state: "success",
             });
         }
     }

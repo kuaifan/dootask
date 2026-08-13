@@ -1,6 +1,6 @@
 <template>
-    <div class="setting-component-item">
-        <Form ref="formDatum" label-width="auto" @submit.native.prevent>
+    <div :class="{'setting-component-item': !embedded}">
+        <div>
             <Row class="setting-template">
                 <Col span="8">{{$L('名称')}}</Col>
                 <Col span="16">{{$L('项目模板')}}</Col>
@@ -18,9 +18,9 @@
                     <TagInput v-model="item.columns"/>
                 </Col>
             </Row>
-            <Button type="default" icon="md-add" @click="addDatum">{{$L('添加模板')}}</Button>
-        </Form>
-        <div class="setting-footer">
+            <Button class="setting-add-action" type="default" icon="md-add" @click="addDatum">{{$L('添加模板')}}</Button>
+        </div>
+        <div v-if="!embedded" class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
             <Button :loading="loadIng > 0" @click="resetForm">{{$L('重置')}}</Button>
         </div>
@@ -32,6 +32,9 @@ import {mapState} from "vuex";
 
 export default {
     name: 'SystemColumnTemplate',
+    props: {
+        embedded: Boolean,
+    },
     data() {
         return {
             loadIng: 0,
@@ -67,11 +70,7 @@ export default {
 
     methods: {
         submitForm() {
-            this.$refs.formDatum.validate((valid) => {
-                if (valid) {
-                    this.systemSetting(true);
-                }
-            })
+            this.systemSetting(true);
         },
 
         resetForm() {
@@ -89,16 +88,16 @@ export default {
             }
         },
 
-        systemSetting(save) {
+        systemSetting(save, silent = false) {
             this.loadIng++;
-            this.$store.dispatch("call", {
+            return this.$store.dispatch("call", {
                 url: 'system/column/template?type=' + (save ? 'save' : 'get'),
                 method: 'post',
                 data: {
                     list: this.formDatum
                 },
             }).then(({data}) => {
-                if (save) {
+                if (save && !silent) {
                     $A.messageSuccess('修改成功');
                 }
                 this.$store.state.columnTemplate = $A.cloneJSON(data).map(item => {
@@ -108,8 +107,11 @@ export default {
                     return item;
                 });
             }).catch(({msg}) => {
-                if (save) {
+                if (save && !silent) {
                     $A.modalError(msg);
+                }
+                if (silent) {
+                    return Promise.reject(msg);
                 }
             }).finally(_ => {
                 this.loadIng--;

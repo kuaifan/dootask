@@ -1,11 +1,6 @@
 <template>
-    <div class="setting-component-item">
-        <Form
-            ref="formData"
-            :model="formData"
-            :rules="ruleData"
-            v-bind="formOptions"
-            @submit.native.prevent>
+    <div :class="{'setting-component-item': !embedded}">
+        <div>
             <div class="block-setting-box">
                 <h3>{{$L('权限设置')}}</h3>
                 <div class="form-box">
@@ -71,8 +66,8 @@
                     </template>
                 </div>
             </div>
-        </Form>
-        <div class="setting-footer">
+        </div>
+        <div v-if="!embedded" class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
             <Button :loading="loadIng > 0" @click="resetForm">{{ $L('重置') }}</Button>
         </div>
@@ -103,6 +98,9 @@ import UserSelect from "../../../../components/UserSelect.vue";
 export default {
     name: "SystemFileSetting",
     components: {UserSelect},
+    props: {
+        embedded: Boolean,
+    },
     data() {
         return {
             loadIng: 0,
@@ -170,7 +168,6 @@ export default {
             formData: {
 
             },
-            ruleData: {},
         }
     },
 
@@ -179,16 +176,12 @@ export default {
     },
 
     computed: {
-        ...mapState(['formOptions', 'userId']),
+        ...mapState(['userId']),
     },
 
     methods: {
         submitForm() {
-            this.$refs.formData.validate((valid) => {
-                if (valid) {
-                    this.systemSetting(true);
-                }
-            })
+            this.systemSetting(true);
         },
 
         resetForm() {
@@ -271,7 +264,7 @@ export default {
             });
         },
 
-        systemSetting(save) {
+        systemSetting(save, silent = false) {
             this.loadIng++;
             const fileRequest = () => this.$store.dispatch("call", {
                 url: 'system/setting/file?type=' + (save ? 'save' : 'all'),
@@ -292,16 +285,19 @@ export default {
                     webDavStatusRequest(),
                 ])))
                 : Promise.all([fileRequest(), webDavRequest(), webDavStatusRequest()]);
-            request.then(([fileSetting, webDavSetting, webDavStatus]) => {
-                if (save) {
+            return request.then(([fileSetting, webDavSetting, webDavStatus]) => {
+                if (save && !silent) {
                     $A.messageSuccess('修改成功');
                 }
                 this.formData = Object.assign({}, fileSetting.data, webDavSetting.data);
                 this.webDavStatus = webDavStatus.data || {};
                 this.formDatum_bak = $A.cloneJSON(this.formData);
             }).catch(({msg}) => {
-                if (save) {
+                if (save && !silent) {
                     $A.modalError(msg);
+                }
+                if (silent) {
+                    return Promise.reject(msg);
                 }
             }).finally(_ => {
                 this.loadIng--;

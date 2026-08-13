@@ -30,15 +30,15 @@ const LINKS = {
     setting_license:  { route: { name: 'manage-setting-license' } },
     setting_password: { route: { name: 'manage-setting-password' } },
     setting_email:    { route: { name: 'manage-setting-email' } },
-    setting_system:   { route: { name: 'manage-setting-system', query: { tab: 'setting' } } },
+    setting_system:   { route: { name: 'manage-setting-system', query: { tab: 'general' } } },
     setting_device:   { route: { name: 'manage-setting-device' } },
     setting_version:  { route: { name: 'manage-setting-version' } },
     setting_delete:   { route: { name: 'manage-setting-delete' } },
 
     // 系统设置内的二级 Tab（system.vue 据 query.tab 切换）
-    setting_system_task_priority:   { route: { name: 'manage-setting-system', query: { tab: 'taskPriority' } } },
-    setting_system_column_template: { route: { name: 'manage-setting-system', query: { tab: 'columnTemplate' } } },
-    setting_system_file:            { route: { name: 'manage-setting-system', query: { tab: 'fileSetting' } } },
+    setting_system_task_priority:   { route: { name: 'manage-setting-system', query: { tab: 'task' } } },
+    setting_system_column_template: { route: { name: 'manage-setting-system', query: { tab: 'project' } } },
+    setting_system_file:            { route: { name: 'manage-setting-system', query: { tab: 'file' } } },
 };
 
 export const CATALOG_IDS = Object.keys(LINKS);
