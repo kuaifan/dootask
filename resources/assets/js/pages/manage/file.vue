@@ -81,7 +81,7 @@
                     </template>
                 </ul>
                 <template v-if="shearFirst">
-                    <Button :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo" :style="{marginLeft: showBtnText ? '12px' : 0}">
+                    <Button :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo" :style="{marginLeft: pid > 0 ? '12px' : 0}">
                         <div class="file-shear">
                             <span>{{$L('粘贴')}}</span>
                             <template v-show="showBtnText">"<em>{{shearFirst.name}}</em>"</template>
@@ -91,7 +91,7 @@
                     <Button type="primary" size="small" @click="clearShear">{{ $L('取消剪切') }}</Button>
                 </template>
                 <template v-else-if="selectedItems.length > 0">
-                    <Button size="small" type="info" @click="handleContextClick('shearSelect')" :style="{marginLeft: showBtnText ? '12px' : 0}">
+                    <Button size="small" type="info" @click="handleContextClick('shearSelect')" :style="{marginLeft: pid > 0 ? '12px' : 0}">
                         <div class="tool-box">
                             <Icon type="ios-cut" />
                             <span v-show="showBtnText">{{$L('剪切')}}</span>
