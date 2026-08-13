@@ -39538,5 +39538,29 @@
         "fr": "Importation et traitement des medias",
         "id": "Unggah dan Pemrosesan Media",
         "ru": "Загрузка и обработка медиа"
+    },
+    {
+        "key": "至少保留一项",
+        "zh": "",
+        "zh-CHT": "至少保留一項",
+        "en": "Keep at least one item",
+        "ko": "하나 이상의 항목을 유지하세요",
+        "ja": "少なくとも1項目は残してください",
+        "de": "Mindestens einen Eintrag beibehalten",
+        "fr": "Conservez au moins un element",
+        "id": "Pertahankan setidaknya satu item",
+        "ru": "Оставьте хотя бы один элемент"
+    },
+    {
+        "key": "确定要删除该优先级吗？",
+        "zh": "",
+        "zh-CHT": "確定要刪除該優先級嗎？",
+        "en": "Are you sure you want to delete this priority?",
+        "ko": "이 우선순위를 삭제하시겠습니까?",
+        "ja": "この優先度を削除しますか？",
+        "de": "Möchten Sie diese Priorität wirklich löschen?",
+        "fr": "Voulez-vous vraiment supprimer cette priorite ?",
+        "id": "Yakin ingin menghapus prioritas ini?",
+        "ru": "Удалить этот приоритет?"
     }
 ]

@@ -3,7 +3,7 @@
         <div>
             <Row class="setting-color color-label-box">
                 <Col span="2">{{$L('默认')}}</Col>
-                <Col span="10">{{$L('名称')}}</Col>
+                <Col span="9">{{$L('名称')}}</Col>
                 <Col span="4">
                     <ETooltip :content="$L('数值越小级别越高')" max-width="auto" placement="top" transfer>
                         <div><Icon class="information" type="ios-information-circle-outline" /> {{$L('级别')}}</div>
@@ -15,19 +15,19 @@
                     </ETooltip>
                 </Col>
                 <Col span="4">{{$L('颜色')}}</Col>
+                <Col span="1" class="setting-row-action"></Col>
             </Row>
             <RadioGroup v-model="defaultIndex">
                 <Row v-for="(item, key) in formDatum" :key="key" class="setting-color">
                     <Col span="2" class="priority-default-col">
                         <Radio :label="key"><span></span></Radio>
                     </Col>
-                    <Col span="10">
+                    <Col span="9">
                         <Input
                             v-model="item.name"
                             :maxlength="20"
                             :placeholder="$L('请输入名称')"
-                            clearable
-                            @on-clear="delDatum(key)"/>
+                            clearable/>
                     </Col>
                     <Col span="4">
                         <Input v-model="item.priority" type="number"/>
@@ -37,6 +37,15 @@
                     </Col>
                     <Col span="4">
                         <ColorPicker v-model="item.color" recommend transfer/>
+                    </Col>
+                    <Col span="1" class="setting-row-action">
+                        <Tooltip :content="formDatum.length > 1 ? $L('删除') : $L('至少保留一项')" placement="top" transfer>
+                            <Button
+                                type="text"
+                                icon="ios-trash-outline"
+                                :disabled="formDatum.length <= 1"
+                                @click="delDatum(key)"/>
+                        </Tooltip>
                     </Col>
                 </Row>
             </RadioGroup>
@@ -123,15 +132,23 @@ export default {
         },
 
         delDatum(key) {
-            this.formDatum.splice(key, 1);
-            if (this.formDatum.length === 0) {
-                this.addDatum();
+            if (this.formDatum.length <= 1) {
                 return;
             }
-            if (this.defaultIndex >= this.formDatum.length) {
-                this.defaultIndex = 0;
-            }
-            this.applyDefaultIndex();
+            $A.modalConfirm({
+                title: '确认删除',
+                content: '确定要删除该优先级吗？',
+                onOk: () => {
+                    const deletingDefault = key === this.defaultIndex;
+                    this.formDatum.splice(key, 1);
+                    if (deletingDefault) {
+                        this.defaultIndex = 0;
+                    } else if (key < this.defaultIndex) {
+                        this.defaultIndex--;
+                    }
+                    this.applyDefaultIndex();
+                },
+            });
         },
 
         applyDefaultIndex() {

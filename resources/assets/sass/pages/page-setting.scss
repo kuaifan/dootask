@@ -226,12 +226,15 @@
         > div {
             flex-shrink: 0;
             text-align: left;
-            &:last-child {
+            &:nth-last-child(2) {
                 flex: 1;
                 width: auto;
                 max-width: none;
             }
         }
+    }
+    .setting-row-action .ivu-btn {
+        color: #ed4014;
     }
     .setting-add-action {
         margin-bottom: 12px;

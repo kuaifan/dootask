@@ -2,20 +2,29 @@
     <div :class="{'setting-component-item': !embedded}">
         <div>
             <Row class="setting-template">
-                <Col span="8">{{$L('名称')}}</Col>
+                <Col span="7">{{$L('名称')}}</Col>
                 <Col span="16">{{$L('项目模板')}}</Col>
+                <Col span="1" class="setting-row-action"></Col>
             </Row>
             <Row v-for="(item, key) in formDatum" :key="key" class="setting-template">
-                <Col span="8">
+                <Col span="7">
                     <Input
                         v-model="item.name"
                         :maxlength="20"
                         :placeholder="$L('请输入名称')"
-                        clearable
-                        @on-clear="delDatum(key)"/>
+                        clearable/>
                 </Col>
                 <Col span="16">
                     <TagInput v-model="item.columns"/>
+                </Col>
+                <Col span="1" class="setting-row-action">
+                    <Tooltip :content="formDatum.length > 1 ? $L('删除') : $L('至少保留一项')" placement="top" transfer>
+                        <Button
+                            type="text"
+                            icon="ios-trash-outline"
+                            :disabled="formDatum.length <= 1"
+                            @click="delDatum(key)"/>
+                    </Tooltip>
                 </Col>
             </Row>
             <Button class="setting-add-action" type="default" icon="md-add" @click="addDatum">{{$L('添加模板')}}</Button>
@@ -82,10 +91,16 @@ export default {
         },
 
         delDatum(key) {
-            this.formDatum.splice(key, 1);
-            if (this.formDatum.length === 0) {
-                this.addDatum();
+            if (this.formDatum.length <= 1) {
+                return;
             }
+            $A.modalConfirm({
+                title: '确认删除',
+                content: '确定要删除该模板吗？',
+                onOk: () => {
+                    this.formDatum.splice(key, 1);
+                },
+            });
         },
 
         systemSetting(save, silent = false) {

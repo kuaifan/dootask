@@ -129,6 +129,7 @@ class SystemController extends AbstractController
             if (isset($setting['reg_invite'])) unset($setting['reg_invite']);
         }
         //
+        $setting['system_alias'] = ($setting['system_alias'] ?? '') ?: config('app.name');
         $setting['reg'] = $setting['reg'] ?: 'open';
         $setting['reg_identity'] = $setting['reg_identity'] ?: 'normal';
         $setting['temp_account_alias'] = $setting['temp_account_alias'] ?: '';
