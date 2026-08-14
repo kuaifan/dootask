@@ -113,7 +113,7 @@ class OnlineLicense
         if ($bearer !== '') {
             $headers['Authorization'] = 'Bearer ' . $bearer;
         }
-        $resp = Ihttp::ihttp_request($url, json_encode($payload, JSON_UNESCAPED_UNICODE), $headers, 15);
+        $resp = Ihttp::ihttp_request($url, json_encode($payload, JSON_UNESCAPED_UNICODE), $headers, 30);
         if (Base::isError($resp)) {
             return ['ok' => false, 'data' => [], 'message' => $resp['msg'] ?: '无法连接授权服务'];
         }
