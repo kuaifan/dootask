@@ -825,7 +825,8 @@ body {
 
 /*登录右侧滑入*/
 .login-mode-enter-active {
-    transition: all 0.3s ease;
+    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), opacity 140ms ease-out;
+    will-change: transform, opacity;
 }
 
 .login-mode-leave-active {
@@ -836,7 +837,7 @@ body {
 
 .login-mode-enter,
 .login-mode-leave-to {
-    transform: translate(100%, 0);
+    transform: translate3d(48px, 0, 0);
     opacity: 0;
 }
 

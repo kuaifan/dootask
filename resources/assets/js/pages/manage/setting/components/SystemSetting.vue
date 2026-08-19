@@ -15,6 +15,7 @@
                             <Radio label="close">{{$L('禁止')}}</Radio>
                         </RadioGroup>
                         <div v-if="formDatum.reg == 'open'" class="form-tip">{{$L('允许：开放注册功能。')}}</div>
+                        <div v-else-if="formDatum.reg == 'close'" class="form-tip">{{$L('禁止：关闭注册功能。')}}</div>
                         <template v-else-if="formDatum.reg == 'invite'">
                             <div class="form-tip">{{$L('邀请码：注册时需填写下方邀请码。')}}</div>
                             <Input v-model="formDatum.reg_invite" style="width:220px;margin-top:6px">
