@@ -11,8 +11,7 @@
                     <Input
                         v-model="item.name"
                         :maxlength="20"
-                        :placeholder="$L('请输入名称')"
-                        clearable/>
+                        :placeholder="$L('请输入名称')"/>
                 </Col>
                 <Col span="16">
                     <TagInput v-model="item.columns"/>
