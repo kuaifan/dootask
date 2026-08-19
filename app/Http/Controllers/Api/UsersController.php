@@ -339,21 +339,25 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/reg/needinvite 是否需要邀请码
+     * @api {get} api/users/reg/needinvite 注册状态
      *
-     * @apiDescription 用于判断注册是否需要邀请码
+     * @apiDescription 用于判断是否允许注册及是否需要邀请码
      * @apiVersion 1.0.0
      * @apiGroup users
      * @apiName reg__needinvite
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {Object} data          返回数据
+     * @apiSuccess {Boolean} data.enabled 是否允许注册
+     * @apiSuccess {Boolean} data.need    是否需要邀请码
      */
     public function reg__needinvite()
     {
+        $reg = Base::settingFind('system', 'reg', 'open');
         return Base::retSuccess('success', [
-            'need' => Base::settingFind('system', 'reg') == 'invite'
+            'enabled' => $reg !== 'close',
+            'need' => $reg === 'invite',
         ]);
     }
 

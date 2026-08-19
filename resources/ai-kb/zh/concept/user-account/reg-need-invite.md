@@ -19,7 +19,7 @@ negative:
   - 邀请码与「邀请同事加入项目」是两回事；这里指的是系统级开放注册的密钥
   - 邀请码只有一个全局值，不区分用户、不限次数、不过期
   - 验证不通过会直接拒绝，没有「邀请码错了几次锁定」的限制
-last_verified: v1.7.90
+last_verified: v1.8.89
 ---
 
 # 注册是否需要邀请码
@@ -39,9 +39,11 @@ DooTask 的注册方式由系统设置 `system.reg` 控制，共三档：
 - 注册时把这个字符串填到「邀请码」字段提交，后端比对 `Request.invite == setting.reg_invite`
 
 ## 接口判定
-前端可调 `api/users/reg/needinvite` 拿到 `{ need: true/false }`，据此决定登录页注册 tab 是否展示「邀请码」输入框：
+前端可调 `api/users/reg/needinvite` 拿到 `{ enabled: true/false, need: true/false }`，据此决定是否显示注册入口，以及注册表单是否展示「邀请码」输入框：
+- `enabled=false` → reg=close，隐藏注册入口；即使通过 `/login?type=reg` 直达也停留在登录表单
+- `enabled=true` → reg=open 或 reg=invite，显示注册入口
 - `need=true` → reg=invite，显示邀请码输入框
-- `need=false` → reg=open（reg=close 时注册入口本身就该隐藏）
+- `need=false` → reg=open 或 reg=close，以 `enabled` 为准
 
 ## 与「项目邀请加入」的区别
 - **本概念**：决定能否成为 DooTask 用户（账号级别）

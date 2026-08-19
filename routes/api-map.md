@@ -23,7 +23,7 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/users/login/codejson | login__codejson() | get | 验证码json |
 | api/users/logout | logout() | get | 退出登录 |
 | api/users/token/expire | token__expire() | get | 查询 token 过期时间 |
-| api/users/reg/needinvite | reg__needinvite() | get | 是否需要邀请码 |
+| api/users/reg/needinvite | reg__needinvite() | get | 注册状态 |
 | api/users/info | info() | get | 获取我的信息 |
 | api/users/info/managed_departments | info__managed_departments() | get | 获取我可切换负责人视角的部门列表 |
 | api/users/info/departments | info__departments() | get | 获取我的部门列表 |

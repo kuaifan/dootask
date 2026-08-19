@@ -100,7 +100,7 @@
                         <Button type="primary" :loading="loadIng > 0 || loginJump" size="large" long @click="onLogin">{{$L(loginText)}}</Button>
 
                         <div v-if="loginType=='reg'" class="login-switch">{{$L('已经有帐号？')}} <a href="javascript:void(0)" @click="loginType='login'">{{$L('登录帐号')}}</a></div>
-                        <div v-else class="login-switch">{{$L('还没有帐号？')}} <a href="javascript:void(0)" @click="loginType='reg'">{{$L('注册帐号')}}</a></div>
+                        <div v-else-if="registrationAvailable" class="login-switch">{{$L('还没有帐号？')}} <a href="javascript:void(0)" @click="loginType='reg'">{{$L('注册帐号')}}</a></div>
                     </div>
                 </transition>
             </div>
@@ -199,6 +199,7 @@ export default {
             invite: '',
 
             needInvite: false,
+            registrationAvailable: false,
 
             privacyShow: false,
         }
@@ -225,7 +226,7 @@ export default {
     },
 
     activated() {
-        this.loginType = this.$route.query.type === 'reg' ? 'reg' : 'login'
+        this.refreshRegistrationSetting();
         //
         this.getDemoAccount();
     },
@@ -284,19 +285,13 @@ export default {
 
     watch: {
         '$route' ({query}) {
-            if (query.type=='reg'){
-                this.$nextTick(()=>{
-                    this.loginType = "reg"
-                })
+            if (this.routeName !== 'login') {
+                return;
             }
+            this.refreshRegistrationSetting(query.type === 'reg');
         },
         loginMode() {
             this.qrcodeRefresh()
-        },
-        loginType(val) {
-            if (val == 'reg') {
-                this.getNeedInvite();
-            }
         },
     },
 
@@ -321,13 +316,23 @@ export default {
             });
         },
 
-        getNeedInvite() {
-            this.$store.dispatch("call", {
+        refreshRegistrationSetting(requestRegistration = this.$route.query.type === 'reg') {
+            if (this.isNotServer()) {
+                this.registrationAvailable = false;
+                this.loginType = 'login';
+                return Promise.resolve();
+            }
+            return this.$store.dispatch("call", {
                 url: 'users/reg/needinvite',
             }).then(({data}) => {
                 this.needInvite = !!data.need;
+                // Older servers only return `need`; preserve their original registration behavior.
+                this.registrationAvailable = typeof data.enabled === 'undefined' || !!data.enabled;
+                this.loginType = requestRegistration && this.registrationAvailable ? 'reg' : 'login';
             }).catch(_ => {
                 this.needInvite = false;
+                this.registrationAvailable = false;
+                this.loginType = 'login';
             });
         },
 
