@@ -1111,6 +1111,7 @@
                                     background-color: #ffffff;
                                     display: flex;
                                     align-items: center;
+                                    position: relative;
                                     padding: 10px 14px;
                                     border-radius: 3px;
                                     width: 220px;
@@ -1123,6 +1124,8 @@
 
                                     .file-info {
                                         margin-left: 12px;
+                                        min-width: 0;
+                                        padding-right: 24px;
                                         display: flex;
                                         flex-direction: column;
                                         justify-content: center;
@@ -1143,6 +1146,41 @@
                                             padding-top: 4px;
                                             color: $primary-text-color;
                                             font-size: 14px;
+                                        }
+                                    }
+
+                                    .file-local-action {
+                                        position: absolute;
+                                        right: 8px;
+                                        bottom: 8px;
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        width: 24px;
+                                        height: 24px;
+                                        padding: 0;
+                                        border: 0;
+                                        border-radius: 3px;
+                                        color: $primary-text-color;
+                                        background: transparent;
+                                        cursor: pointer;
+
+                                        &:hover {
+                                            color: $flow-status-end-color;
+                                            background-color: rgba($flow-status-end-color, 0.08);
+                                        }
+
+                                        &:disabled {
+                                            cursor: default;
+                                        }
+
+                                        > i {
+                                            font-size: 18px;
+                                        }
+
+                                        .common-loading {
+                                            width: 16px;
+                                            height: 16px;
                                         }
                                     }
                                 }

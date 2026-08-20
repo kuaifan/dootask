@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 const loger = require("electron-log");
 const Store = require('electron-store');
 const utils = require("./utils");
@@ -93,6 +94,52 @@ class DownloadManager {
                 _source: undefined,
             };
         });
+    }
+
+    /**
+     * 获取聊天文件消息对应的下载状态。
+     *
+     * @param {number|string} msgId
+     * @returns {{status: 'available'|'downloading'|'missing', path?: string}}
+     */
+    getMessageFileStatus(msgId) {
+        const targetId = parseInt(msgId, 10);
+        if (!targetId) {
+            return {status: 'missing'};
+        }
+
+        const items = this.downloadHistory.filter(item => this.getMessageFileId(item) === targetId);
+        const downloading = items.some(item => item.state === 'progressing' && !item.paused);
+        if (downloading) {
+            return {status: 'downloading'};
+        }
+
+        const available = items.find(item => item.state === 'completed' && item.path && fs.existsSync(item.path));
+        return available ? {status: 'available', path: available.path} : {status: 'missing'};
+    }
+
+    /**
+     * 从下载地址中识别聊天文件消息 ID。
+     *
+     * @param {Object} item
+     * @returns {number}
+     */
+    getMessageFileId(item) {
+        const urls = [...(Array.isArray(item.urls) ? item.urls : []), item.url].filter(Boolean);
+        for (const value of urls) {
+            try {
+                const url = new URL(value);
+                if (url.pathname.endsWith('/api/dialog/msg/download')) {
+                    const msgId = parseInt(url.searchParams.get('msg_id'), 10);
+                    if (msgId > 0) {
+                        return msgId;
+                    }
+                }
+            } catch {
+                // Ignore malformed history URLs.
+            }
+        }
+        return 0;
     }
 
     /**

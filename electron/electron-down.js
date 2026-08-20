@@ -12,7 +12,13 @@ let downloadWindow = null,
     downloadLanguageCode = 'zh',
     downloadWaiting = false;
 
-function initialize(onStarted = null) {
+function initialize(onStarted = null, onChanged = null) {
+    const notifyChanged = (item) => {
+        if (typeof onChanged === 'function') {
+            onChanged(item)
+        }
+    }
+
     // 下载配置
     electronDl({
         showBadge: false,
@@ -25,10 +31,12 @@ function initialize(onStarted = null) {
             if (typeof onStarted === 'function') {
                 onStarted(item)
             }
+            notifyChanged(item)
         },
         onCancel: (item) => {
             downloadManager.refresh(item.getSavePath())
             syncDownloadItems();
+            notifyChanged(item)
         },
         onInterrupted: (item) => {
             downloadManager.refresh(item.getSavePath());
@@ -41,6 +49,7 @@ function initialize(onStarted = null) {
                     syncDownloadItems();
                 }
             });
+            notifyChanged(item)
         },
         onProgress: (item) => {
             downloadManager.refresh(item.path);
@@ -49,11 +58,12 @@ function initialize(onStarted = null) {
         onCompleted: (item) => {
             downloadManager.refresh(item.path);
             syncDownloadItems();
+            notifyChanged(item)
         }
     });
 
     // IPC
-    ipcMain.handle('downloadManager', async (event, {action, path}) => {
+    ipcMain.handle('downloadManager', async (event, {action, path, msgId}) => {
         switch (action) {
             case "get": {
                 return {
@@ -104,6 +114,20 @@ function initialize(onStarted = null) {
                     throw new Error('file not found');
                 }
                 shell.showItemInFolder(path);
+                return true;
+            }
+
+            case "messageFileStatus": {
+                const {status} = downloadManager.getMessageFileStatus(msgId);
+                return {status};
+            }
+
+            case "showMessageFile": {
+                const file = downloadManager.getMessageFileStatus(msgId);
+                if (file.status !== 'available') {
+                    return false;
+                }
+                shell.showItemInFolder(file.path);
                 return true;
             }
         }

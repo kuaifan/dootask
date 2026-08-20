@@ -19,6 +19,18 @@
                     <div class="file-name">{{ msg.name }}</div>
                     <div class="file-size">{{ $A.bytesToSize(msg.size) }}</div>
                 </div>
+                <button
+                    v-if="$Electron"
+                    class="file-local-action"
+                    type="button"
+                    :title="localActionTitle"
+                    :aria-label="localActionTitle"
+                    :disabled="localFileStatus === 'downloading'"
+                    @click.stop="handleLocalAction">
+                    <Loading v-if="localFileStatus === 'downloading'"/>
+                    <Icon v-else-if="localFileStatus === 'available'" type="ios-folder-open-outline"/>
+                    <Icon v-else type="md-download"/>
+                </button>
             </div>
             <div v-if="msg.percentage" class="file-percentage">
                 <span :style="fileStyle(msg.percentage)"></span>
@@ -30,7 +42,41 @@
 <script>
 export default {
     props: {
+        msgId: {
+            type: [Number, String],
+            default: 0,
+        },
         msg: Object,
+    },
+    data() {
+        return {
+            localFileStatus: 'missing',
+            removeDownloadListener: null,
+        }
+    },
+    computed: {
+        localActionTitle() {
+            return this.localFileStatus === 'available' ? this.$L('在文件夹中显示') : this.$L('下载');
+        },
+    },
+    watch: {
+        msgId() {
+            this.refreshLocalFileStatus();
+        },
+    },
+    mounted() {
+        if (!this.$Electron) {
+            return;
+        }
+        this.refreshLocalFileStatus();
+        this.removeDownloadListener = $A.Electron.listener('downloadItemsChanged', () => {
+            this.refreshLocalFileStatus();
+        });
+    },
+    beforeDestroy() {
+        if (typeof this.removeDownloadListener === 'function') {
+            this.removeDownloadListener();
+        }
     },
     methods: {
         viewFile() {
@@ -38,6 +84,47 @@ export default {
         },
         downFile() {
             this.$emit('downFile');
+        },
+
+        async refreshLocalFileStatus() {
+            if (!this.$Electron || !this.msgId) {
+                this.localFileStatus = 'missing';
+                return;
+            }
+            try {
+                const result = await $A.Electron.sendAsync('downloadManager', {
+                    action: 'messageFileStatus',
+                    msgId: this.msgId,
+                });
+                this.localFileStatus = result?.status || 'missing';
+            } catch {
+                this.localFileStatus = 'missing';
+            }
+        },
+
+        async handleLocalAction() {
+            if (this.localFileStatus === 'downloading') {
+                return;
+            }
+            if (this.localFileStatus === 'available') {
+                try {
+                    const shown = await $A.Electron.sendAsync('downloadManager', {
+                        action: 'showMessageFile',
+                        msgId: this.msgId,
+                    });
+                    if (shown) {
+                        return;
+                    }
+                } catch {
+                    // Refresh the action when the local file disappears or cannot be revealed.
+                }
+                this.localFileStatus = 'missing';
+                return;
+            }
+
+            this.localFileStatus = 'downloading';
+            this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${this.msgId}`));
+            setTimeout(() => this.refreshLocalFileStatus(), 500);
         },
 
         fileStyle(percentage) {

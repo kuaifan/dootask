@@ -30,7 +30,7 @@
                 <!--长文本-->
                 <LongTextMsg v-else-if="msgData.type === 'longtext'" :msgId="msgData.id" :msg="msgData.msg" @viewText="viewText" @downFile="downFile"/>
                 <!--文件-->
-                <FileMsg v-else-if="msgData.type === 'file'" :msg="msgData.msg" @viewFile="viewFile" @downFile="downFile"/>
+                <FileMsg v-else-if="msgData.type === 'file'" :msg-id="msgData.id" :msg="msgData.msg" @viewFile="viewFile" @downFile="downFile"/>
                 <!--录音-->
                 <RecordMsg v-else-if="msgData.type === 'record'" :msgId="msgData.id" :msg="msgData.msg" @viewText="viewText" @playRecord="playRecord"/>
                 <!--位置-->

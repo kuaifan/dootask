@@ -39562,5 +39562,17 @@
         "fr": "Voulez-vous vraiment supprimer cette priorite ?",
         "id": "Yakin ingin menghapus prioritas ini?",
         "ru": "Удалить этот приоритет?"
+    },
+    {
+        "key": "在文件夹中显示",
+        "zh": "",
+        "zh-CHT": "在資料夾中顯示",
+        "en": "Show in Folder",
+        "ko": "폴더에서 보기",
+        "ja": "フォルダーに表示",
+        "de": "Im Ordner anzeigen",
+        "fr": "Afficher dans le dossier",
+        "id": "Tampilkan di Folder",
+        "ru": "Показать в папке"
     }
 ]

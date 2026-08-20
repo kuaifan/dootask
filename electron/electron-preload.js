@@ -54,9 +54,13 @@ contextBridge.exposeInMainWorld(
         },
 
         listener: function (action, callback) {
-            ipcRenderer.on(action, function (event, args) {
+            const listener = function (event, args) {
                 callback(args);
-            });
+            };
+            ipcRenderer.on(action, listener);
+            return function () {
+                ipcRenderer.removeListener(action, listener);
+            };
         },
         listenOnce: function (action, callback) {
             ipcRenderer.once(action, function (event, args) {

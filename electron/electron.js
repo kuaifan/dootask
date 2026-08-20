@@ -101,6 +101,12 @@ electronDown.initialize(() => {
     if (mainWindow) {
         mainWindow.webContents.send("openDownloadWindow", {})
     }
+}, () => {
+    BrowserWindow.getAllWindows().forEach(window => {
+        if (!window.isDestroyed()) {
+            window.webContents.send("downloadItemsChanged", {})
+        }
+    })
 })
 
 /**
