@@ -99,8 +99,14 @@
                         <span class="time-text">{{formatTime(item.created_at)}}</span>
                         <span class="size-text">{{$A.bytesToSize(item.size)}}</span>
                         <div class="row-actions">
-                            <ETooltip :content="$L('打开来源')"><button @click="locateMessage(item)"><Icon type="md-open"/></button></ETooltip>
-                            <ETooltip :content="$L('下载')"><button @click="download(item)"><Icon type="md-download"/></button></ETooltip>
+                            <ETooltip :content="$L('打开来源')"><button @click="locateMessage(item)"><CollaborationSourceIcon/></button></ETooltip>
+                            <ETooltip :content="localActionTitle(item)">
+                                <button
+                                    :disabled="localFileStatus(item) === 'downloading'"
+                                    @click="handleLocalAction(item)">
+                                    <LocalFileStatusIcon :status="localFileStatus(item)"/>
+                                </button>
+                            </ETooltip>
                         </div>
                     </div>
                 </div>
@@ -123,8 +129,13 @@
                         </div>
                         <div class="grid-meta">{{item.sender.nickname || $L('未知成员')}} · {{formatTime(item.created_at)}}</div>
                         <div class="grid-actions" @click.stop>
-                            <button :title="$L('打开来源')" @click="locateMessage(item)"><Icon type="md-open"/></button>
-                            <button :title="$L('下载')" @click="download(item)"><Icon type="md-download"/></button>
+                            <button :title="$L('打开来源')" @click="locateMessage(item)"><CollaborationSourceIcon/></button>
+                            <button
+                                :title="localActionTitle(item)"
+                                :disabled="localFileStatus(item) === 'downloading'"
+                                @click="handleLocalAction(item)">
+                                <LocalFileStatusIcon :status="localFileStatus(item)"/>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -142,11 +153,14 @@
 <script>
 import {mapState} from "vuex";
 import {openFileInClient} from "../../../utils/file";
+import CollaborationSourceIcon from "./CollaborationSourceIcon.vue";
+import LocalFileStatusIcon from "./DialogView/LocalFileStatusIcon.vue";
 
 const CACHE_VERSION = 1;
 
 export default {
     name: "CollaborationFileList",
+    components: {CollaborationSourceIcon, LocalFileStatusIcon},
     props: {
         searchKey: {
             type: String,
@@ -169,6 +183,8 @@ export default {
             initializing: true,
             searchTimer: null,
             requestId: 0,
+            localFileStatuses: {},
+            removeDownloadListener: null,
         }
     },
     computed: {
@@ -223,11 +239,20 @@ export default {
     },
     mounted() {
         this.$store.dispatch('getProjects').catch(() => {});
+        if (this.$Electron) {
+            this.removeDownloadListener = $A.Electron.listener('downloadItemsChanged', () => {
+                this.refreshLocalFileStatuses();
+            });
+            this.refreshLocalFileStatuses();
+        }
         this.refresh();
         this.initializing = false;
     },
     beforeDestroy() {
         clearTimeout(this.searchTimer);
+        if (typeof this.removeDownloadListener === 'function') {
+            this.removeDownloadListener();
+        }
     },
     methods: {
         setScope(scope) {
@@ -256,6 +281,7 @@ export default {
             this.loading = 0;
             if (!keepItems) {
                 this.items = [];
+                this.localFileStatuses = {};
             }
             this.cursor = 0;
             this.hasMore = false;
@@ -286,6 +312,7 @@ export default {
                 } else {
                     this.items.push(...data.list);
                 }
+                this.refreshLocalFileStatuses(data.list);
                 this.cursor = data.next_cursor;
                 this.hasMore = data.has_more;
                 if (replace && !this.searchKey.trim()) {
@@ -368,6 +395,40 @@ export default {
         itemKey(item) {
             return item.attachment_id ? `attachment-${item.attachment_id}` : `message-${item.msg_id}`;
         },
+        fileReference(item) {
+            return {
+                key: this.itemKey(item),
+                msgId: item.msg_id,
+                attachmentId: item.attachment_id,
+            };
+        },
+        localFileStatus(item) {
+            if (!this.$Electron) return 'missing';
+            return this.localFileStatuses[this.itemKey(item)] || 'missing';
+        },
+        localActionTitle(item) {
+            if (this.localFileStatus(item) === 'available') {
+                return this.$L('在文件夹中显示');
+            }
+            return this.$L('下载');
+        },
+        async refreshLocalFileStatuses(items = this.items) {
+            if (!this.$Electron || !items.length) return;
+            const references = items.map(item => this.fileReference(item));
+            const batches = [];
+            for (let index = 0; index < references.length; index += 500) {
+                batches.push(references.slice(index, index + 500));
+            }
+            try {
+                const results = await Promise.all(batches.map(files => $A.Electron.sendAsync('downloadManager', {
+                    action: 'fileStatuses',
+                    files,
+                })));
+                this.localFileStatuses = Object.assign({}, this.localFileStatuses, ...results);
+            } catch {
+                // Keep the download action available when local history cannot be read.
+            }
+        },
         showThumbnail(item) {
             return !!item.image_url && !item._thumbnailError;
         },
@@ -437,16 +498,45 @@ export default {
                 search_msg_id: item.msg_id,
             }).catch(({msg}) => msg && $A.modalError(msg));
         },
-        download(item) {
-            const url = item.attachment_id
+        downloadUrl(item) {
+            if (item.attachment_source === 'file_message') {
+                return `dialog/msg/download?msg_id=${item.msg_id}`;
+            }
+            return item.attachment_id
                 ? `file/collaboration/download?attachment_id=${item.attachment_id}`
                 : `dialog/msg/download?msg_id=${item.msg_id}`;
+        },
+        async handleLocalAction(item) {
+            if (!this.$Electron) {
+                this.download(item);
+                return;
+            }
+            const status = this.localFileStatus(item);
+            if (status === 'downloading') return;
+            if (status === 'available') {
+                try {
+                    const shown = await $A.Electron.sendAsync('downloadManager', {
+                        action: 'showFile',
+                        file: this.fileReference(item),
+                    });
+                    if (shown) return;
+                } catch {
+                    // Refresh the action when the local file cannot be revealed.
+                }
+                this.$set(this.localFileStatuses, this.itemKey(item), 'missing');
+                return;
+            }
+            this.$set(this.localFileStatuses, this.itemKey(item), 'downloading');
+            this.$store.dispatch('downUrl', $A.apiUrl(this.downloadUrl(item)));
+            setTimeout(() => this.refreshLocalFileStatuses([item]), 500);
+        },
+        download(item) {
             $A.modalConfirm({
                 language: false,
                 title: this.$L('下载文件'),
                 okText: this.$L('立即下载'),
                 content: `${this.fileName(item)} (${$A.bytesToSize(item.size)})`,
-                onOk: () => this.$store.dispatch('downUrl', $A.apiUrl(url)),
+                onOk: () => this.$store.dispatch('downUrl', $A.apiUrl(this.downloadUrl(item))),
             });
         },
     },
@@ -724,12 +814,17 @@ export default {
     .ivu-tooltip-rel button {
         width: 30px;
         height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         border: 0;
         border-radius: 5px;
         color: $primary-text-color;
         background: transparent;
         cursor: pointer;
         &:hover { color: $primary-color; background: rgba($primary-color, 0.08); }
+        &:disabled { cursor: default; }
+        .common-loading { width: 16px; height: 16px; }
     }
 }
 .collaboration-grid {
@@ -784,7 +879,19 @@ export default {
         top: 10px;
         right: 8px;
         display: flex;
-        button { width: 28px; height: 28px; border: 0; color: $primary-text-color; background: transparent; cursor: pointer; }
+        button {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            color: $primary-text-color;
+            background: transparent;
+            cursor: pointer;
+            &:disabled { cursor: default; }
+            .common-loading { width: 16px; height: 16px; }
+        }
     }
 }
 .empty-state {

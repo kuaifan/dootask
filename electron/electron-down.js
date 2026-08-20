@@ -63,7 +63,7 @@ function initialize(onStarted = null, onChanged = null) {
     });
 
     // IPC
-    ipcMain.handle('downloadManager', async (event, {action, path, msgId}) => {
+    ipcMain.handle('downloadManager', async (event, {action, path, msgId, file, files}) => {
         switch (action) {
             case "get": {
                 return {
@@ -93,12 +93,14 @@ function initialize(onStarted = null, onChanged = null) {
             case "remove": {
                 downloadManager.remove(path);
                 syncDownloadItems();
+                notifyChanged();
                 return true;
             }
 
             case "removeAll": {
                 downloadManager.removeAll();
                 syncDownloadItems();
+                notifyChanged();
                 return true;
             }
 
@@ -128,6 +130,22 @@ function initialize(onStarted = null, onChanged = null) {
                     return false;
                 }
                 shell.showItemInFolder(file.path);
+                return true;
+            }
+
+            case "fileStatuses": {
+                if (!Array.isArray(files)) {
+                    return {};
+                }
+                return downloadManager.getFileStatuses(files.slice(0, 500));
+            }
+
+            case "showFile": {
+                const localFile = downloadManager.getFileStatus(file);
+                if (localFile.status !== 'available') {
+                    return false;
+                }
+                shell.showItemInFolder(localFile.path);
                 return true;
             }
         }

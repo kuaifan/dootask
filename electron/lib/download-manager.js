@@ -103,12 +103,27 @@ class DownloadManager {
      * @returns {{status: 'available'|'downloading'|'missing', path?: string}}
      */
     getMessageFileStatus(msgId) {
-        const targetId = parseInt(msgId, 10);
-        if (!targetId) {
+        return this.getFileStatus({msgId});
+    }
+
+    /**
+     * 获取会话附件对应的下载状态。
+     *
+     * @param {{msgId?: number|string, attachmentId?: number|string}} reference
+     * @returns {{status: 'available'|'downloading'|'missing', path?: string}}
+     */
+    getFileStatus(reference = {}) {
+        const msgId = parseInt(reference.msgId, 10) || 0;
+        const attachmentId = parseInt(reference.attachmentId, 10) || 0;
+        if (!msgId && !attachmentId) {
             return {status: 'missing'};
         }
 
-        const items = this.downloadHistory.filter(item => this.getMessageFileId(item) === targetId);
+        const items = this.downloadHistory.filter(item => {
+            const file = this.getFileReference(item);
+            return (msgId > 0 && file.msgId === msgId)
+                || (attachmentId > 0 && file.attachmentId === attachmentId);
+        });
         const downloading = items.some(item => item.state === 'progressing' && !item.paused);
         if (downloading) {
             return {status: 'downloading'};
@@ -119,12 +134,75 @@ class DownloadManager {
     }
 
     /**
+     * 批量获取会话附件的下载状态，只扫描一次下载历史。
+     *
+     * @param {Array<{key: string, msgId?: number|string, attachmentId?: number|string}>} references
+     * @returns {Object<string, 'available'|'downloading'|'missing'>}
+     */
+    getFileStatuses(references = []) {
+        const statuses = {};
+        const msgKeys = new Map();
+        const attachmentKeys = new Map();
+        const addKey = (map, id, key) => {
+            if (!id) return;
+            if (!map.has(id)) map.set(id, []);
+            map.get(id).push(key);
+        };
+
+        references.forEach(reference => {
+            if (!reference || typeof reference !== 'object') return;
+            const key = `${reference.key || ''}`;
+            if (!key) return;
+            const msgId = parseInt(reference.msgId, 10) || 0;
+            const attachmentId = parseInt(reference.attachmentId, 10) || 0;
+            statuses[key] = 'missing';
+            addKey(msgKeys, msgId, key);
+            addKey(attachmentKeys, attachmentId, key);
+        });
+
+        this.downloadHistory.forEach(item => {
+            const file = this.getFileReference(item);
+            const keys = new Set([
+                ...(msgKeys.get(file.msgId) || []),
+                ...(attachmentKeys.get(file.attachmentId) || []),
+            ]);
+            if (!keys.size) return;
+
+            let status = '';
+            if (item.state === 'progressing' && !item.paused) {
+                status = 'downloading';
+            } else if (item.state === 'completed' && item.path && fs.existsSync(item.path)) {
+                status = 'available';
+            }
+            if (!status) return;
+
+            keys.forEach(key => {
+                if (status === 'downloading' || statuses[key] === 'missing') {
+                    statuses[key] = status;
+                }
+            });
+        });
+        return statuses;
+    }
+
+    /**
      * 从下载地址中识别聊天文件消息 ID。
      *
      * @param {Object} item
      * @returns {number}
      */
     getMessageFileId(item) {
+        return this.getFileReference(item).msgId;
+    }
+
+    /**
+     * 从下载地址中识别会话消息或协作附件 ID。
+     *
+     * @param {Object} item
+     * @returns {{msgId: number, attachmentId: number}}
+     */
+    getFileReference(item) {
+        const reference = {msgId: 0, attachmentId: 0};
         const urls = [...(Array.isArray(item.urls) ? item.urls : []), item.url].filter(Boolean);
         for (const value of urls) {
             try {
@@ -132,14 +210,19 @@ class DownloadManager {
                 if (url.pathname.endsWith('/api/dialog/msg/download')) {
                     const msgId = parseInt(url.searchParams.get('msg_id'), 10);
                     if (msgId > 0) {
-                        return msgId;
+                        reference.msgId = msgId;
+                    }
+                } else if (url.pathname.endsWith('/api/file/collaboration/download')) {
+                    const attachmentId = parseInt(url.searchParams.get('attachment_id'), 10);
+                    if (attachmentId > 0) {
+                        reference.attachmentId = attachmentId;
                     }
                 }
             } catch {
                 // Ignore malformed history URLs.
             }
         }
-        return 0;
+        return reference;
     }
 
     /**

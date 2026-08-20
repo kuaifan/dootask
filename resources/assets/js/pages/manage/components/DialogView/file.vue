@@ -16,7 +16,7 @@
             <div v-else class="file-box" @click="downFile">
                 <img class="file-thumb" :src="msg.thumb"/>
                 <div class="file-info">
-                    <div class="file-name">{{ msg.name }}</div>
+                    <div class="file-name" :title="msg.name">{{ msg.name }}</div>
                     <div class="file-size">{{ $A.bytesToSize(msg.size) }}</div>
                 </div>
                 <button
@@ -27,9 +27,7 @@
                     :aria-label="localActionTitle"
                     :disabled="localFileStatus === 'downloading'"
                     @click.stop="handleLocalAction">
-                    <Loading v-if="localFileStatus === 'downloading'"/>
-                    <Icon v-else-if="localFileStatus === 'available'" type="ios-folder-open-outline"/>
-                    <Icon v-else type="md-download"/>
+                    <LocalFileStatusIcon :status="localFileStatus"/>
                 </button>
             </div>
             <div v-if="msg.percentage" class="file-percentage">
@@ -40,7 +38,10 @@
 </template>
 
 <script>
+import LocalFileStatusIcon from "./LocalFileStatusIcon.vue";
+
 export default {
+    components: {LocalFileStatusIcon},
     props: {
         msgId: {
             type: [Number, String],
