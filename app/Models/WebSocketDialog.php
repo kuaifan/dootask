@@ -456,9 +456,13 @@ class WebSocketDialog extends AbstractModel
      */
     public static function generatePeople($dialogId)
     {
-        $counts = WebSocketDialogUser::whereDialogId($dialogId)
-            ->groupBy('bot')
-            ->selectRaw('bot, COUNT(*) as count')
+        $counts = DB::table('web_socket_dialog_users as du')
+            ->join('users', 'users.userid', '=', 'du.userid')
+            ->where('du.dialog_id', $dialogId)
+            ->whereNull('users.disable_at')
+            ->groupBy('du.bot')
+            ->select('du.bot')
+            ->selectRaw('COUNT(*) as count')
             ->pluck('count', 'bot');
         $userCount = $counts->get(0, 0);    // 非机器人数量
         $botCount = $counts->get(1, 0);     // 机器人数量
