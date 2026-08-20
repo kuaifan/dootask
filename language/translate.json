@@ -1908,6 +1908,18 @@
         "ru": "Разрешить: Открыть функцию регистрации."
     },
     {
+        "key": "禁止：关闭注册功能。",
+        "zh": "",
+        "zh-CHT": "禁止：關閉註冊功能。",
+        "en": "Disable: Close registration.",
+        "ko": "금지: 회원가입 기능을 닫습니다.",
+        "ja": "禁止：登録機能を閉じます。",
+        "de": "Deaktivieren: Registrierung schließen.",
+        "fr": "Interdire : Fermer les inscriptions.",
+        "id": "Nonaktifkan: Tutup pendaftaran.",
+        "ru": "Запретить: Закрыть регистрацию."
+    },
+    {
         "key": "已清楚风险，确定注销",
         "zh": "",
         "zh-CHT": "已清楚風險，確定註銷",
