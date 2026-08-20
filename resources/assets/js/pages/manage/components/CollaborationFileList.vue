@@ -707,7 +707,10 @@ export default {
     justify-content: center;
 }
 .collaboration-table {
-    margin: 0 32px;
+    width: 100%;
+    min-width: 1088px;
+    padding: 0 32px;
+    box-sizing: border-box;
 }
 .table-head,
 .table-row {
@@ -919,8 +922,12 @@ export default {
         margin: 0 16px;
     }
     .collaboration-summary,
-    .collaboration-table,
     .collaboration-grid { margin-right: 16px; margin-left: 16px; }
+    .collaboration-table {
+        min-width: 0;
+        padding-right: 16px;
+        padding-left: 16px;
+    }
     .toolbar-full { display: none; }
     .project-select { flex: 1; min-width: 160px; }
     .table-head { display: none; }
