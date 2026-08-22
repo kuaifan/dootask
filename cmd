@@ -115,6 +115,14 @@ WORK_DIR="$(pwd)"
 INPUT_ARGS=$@
 COMPOSE="docker-compose"
 
+# 项目运行时需要写入并检查权限的目录
+PROJECT_WRITABLE_DIRS=(
+    "bootstrap/cache"
+    "docker"
+    "public"
+    "storage"
+)
+
 # TTY 参数检测
 TTY_FLAG=""
 if [ -t 0 ] && [ -t 1 ]; then
@@ -231,22 +239,19 @@ check_sudo() {
 
 # 修复项目权限
 permission_fix() {
+    # 确定可写目录的归属用户，sudo 执行时恢复为原调用用户。
     local owner_uid="${SUDO_UID:-$(id -u)}"
     local owner_gid="${SUDO_GID:-$(id -g)}"
-    volumes=(
-        "bootstrap/cache"
-        "docker"
-        "public"
-        "storage"
-    )
 
+    # 项目根目录需要允许服务进程穿越。
     chmod 755 "${WORK_DIR}"
     if [ $? -ne 0 ]; then
         error "$(msg '项目权限修复失败')"
         exit 1
     fi
 
-    for vol in "${volumes[@]}"; do
+    # 可写目录归还给调用用户，并统一补充组写入权限。
+    for vol in "${PROJECT_WRITABLE_DIRS[@]}"; do
         tmp_path="${WORK_DIR}/${vol}"
         mkdir -p "${tmp_path}"
         if [ $? -ne 0 ]; then
@@ -265,10 +270,41 @@ permission_fix() {
         fi
     done
 
+    # public 中的静态文件需要允许 Web 服务读取。
     find "${WORK_DIR}/public" -type f -exec chmod a+r {} \;
     if [ $? -ne 0 ]; then
         error "$(msg '项目权限修复失败')"
         exit 1
+    fi
+
+    # AI 容器以非 root 用户只读挂载主程序知识库。
+    local kb_path="${WORK_DIR}/resources/ai-kb"
+    if [[ -d "${kb_path}" ]]; then
+        find "${kb_path}" -type d -exec chmod a+rx {} \;
+        if [ $? -ne 0 ]; then
+            error "$(msg '项目权限修复失败')"
+            exit 1
+        fi
+        find "${kb_path}" -type f -exec chmod a+r {} \;
+        if [ $? -ne 0 ]; then
+            error "$(msg '项目权限修复失败')"
+            exit 1
+        fi
+    fi
+
+    # 应用知识库由 config.yml 声明并统一放在 ai-kb 目录；不修改应用运行数据文件。
+    local appstore_apps_path="${WORK_DIR}/docker/appstore/apps"
+    if [[ -d "${appstore_apps_path}" ]]; then
+        find "${appstore_apps_path}" -type f -name "config.yml" -exec chmod a+r {} \;
+        if [ $? -ne 0 ]; then
+            error "$(msg '项目权限修复失败')"
+            exit 1
+        fi
+        find "${appstore_apps_path}" -type f -path "*/ai-kb/*" -name "*.md" -exec chmod a+r {} \;
+        if [ $? -ne 0 ]; then
+            error "$(msg '项目权限修复失败')"
+            exit 1
+        fi
     fi
 }
 
@@ -767,7 +803,7 @@ handle_install() {
     permission_fix
     cmda=""
     cmdb=""
-    for vol in "${volumes[@]}"; do
+    for vol in "${PROJECT_WRITABLE_DIRS[@]}"; do
         tmp_path="${WORK_DIR}/${vol}"
         rm -f "${tmp_path}/dootask.lock"
         cmda="${cmda} -v ${tmp_path}:/usr/share/${vol}"
@@ -784,7 +820,7 @@ handle_install() {
             error "$(msg '目录权限检测失败！请检查目录权限设置')"
             exit 1
         fi
-        for vol in "${volumes[@]}"; do
+        for vol in "${PROJECT_WRITABLE_DIRS[@]}"; do
             if [ ! -f "${vol}/dootask.lock" ]; then
                 if [ $remaining -lt 0 ]; then
                     error "$(msg '目录【(*)】权限不足！' "$vol")"

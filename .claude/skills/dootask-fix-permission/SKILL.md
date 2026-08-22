@@ -1,6 +1,6 @@
 ---
 name: dootask-fix-permission
-description: 修复 DooTask 整个项目的目录和文件权限：根目录 chmod 755，bootstrap/cache、docker、public、storage chown 回调用用户且目录 chmod 775，public 文件补充所有用户读权限。用于 Nginx 静态文件 403/Permission denied、install/build EACCES 或可写目录检测失败；优先使用 sudo ./cmd permission，赋权不删数据。
+description: 修复 DooTask 整个项目的目录和文件权限：根目录 chmod 755，bootstrap/cache、docker、public、storage chown 回调用用户且目录 chmod 775，public、主程序 AI 知识库与应用知识库补充只读访问权限。用于 Nginx 静态文件 403/Permission denied、AI 知识库无法读取、install/build EACCES 或可写目录检测失败；优先使用 sudo ./cmd permission，赋权不删数据。
 ---
 
 # DooTask 目录权限修复
@@ -12,7 +12,7 @@ description: 修复 DooTask 整个项目的目录和文件权限：根目录 chm
 - `./cmd build`（vite）报 `EACCES: permission denied, copyfile`
 - Laravel 运行时写 `storage`/`bootstrap/cache` 失败
 
-对齐 `./cmd permission`/`./cmd install` 的赋权逻辑：项目根目录设为 `755`；四个可写目录做 `chmod 775`（仅目录）+ `chown` 回调用 sudo 的用户；`public` 普通文件用 `a+r` 补充 Nginx 所需读权限。
+对齐 `./cmd permission`/`./cmd install` 的赋权逻辑：项目根目录设为 `755`；四个可写目录做 `chmod 775`（仅目录）+ `chown` 回调用 sudo 的用户；`public` 普通文件用 `a+r` 补充 Nginx 所需读权限；`resources/ai-kb` 目录用 `a+rx`、文件用 `a+r`；应用包目录沿用 `docker` 的 `775` 目录权限，并给用于定位知识库的 `config.yml` 和 `ai-kb` 内的 Markdown 补充读权限。上述知识库权限供非 root AI 容器只读访问。
 
 ## 适用目录
 
@@ -22,6 +22,8 @@ bootstrap/cache
 docker
 public           # 目录 775，普通文件 a+r；含真实上传数据
 storage
+resources/ai-kb  # 目录 a+rx、普通文件 a+r；AI 容器只读挂载
+docker/appstore/apps  # config.yml 与 ai-kb 内的 Markdown 文件 a+r
 ```
 
 ## 核心原则：赋权，不删数据
@@ -34,7 +36,7 @@ storage
 2. 用 `ls -ld .` 检查项目根目录是否缺少组/其他用户的 `x` 穿越权限。
 3. 确认可使用 sudo；改 root 属主的文件或目录需要 root 权限。
 4. 用 `find public -type f ! -perm -004 -print` 检查 Nginx 用户可能无法读取的静态文件。
-5. 默认修复项目根目录、四个可写目录和 `public` 文件；若用户只想解决 build 的 uploads 报错，可只处理 `public/uploads`。
+5. 默认修复项目根目录、四个可写目录、`public` 文件、主程序知识库和应用知识库只读权限；若用户只想解决 build 的 uploads 报错，可只处理 `public/uploads`。
 
 检查通过后，汇报将执行的命令，向用户确认一次再执行。
 
@@ -60,6 +62,14 @@ find bootstrap/cache docker public storage -type d -exec chmod 775 {} \;
 
 # 4) public 普通文件只补充读权限，保留现有写入/执行位
 find public -type f -exec chmod a+r {} \;
+
+# 5) AI 知识库目录补充读取/穿越权限，文件只补充读权限
+find resources/ai-kb -type d -exec chmod a+rx {} \;
+find resources/ai-kb -type f -exec chmod a+r {} \;
+
+# 6) 应用知识库依赖 config.yml 定位，当前应用统一使用 ai-kb 目录
+find docker/appstore/apps -type f -name "config.yml" -exec chmod a+r {} \;
+find docker/appstore/apps -type f -path "*/ai-kb/*" -name "*.md" -exec chmod a+r {} \;
 ```
 
 只想解决 build 的 uploads 报错时，可只执行：
@@ -68,7 +78,7 @@ find public -type f -exec chmod a+r {} \;
 sudo chown -R "$(id -u):$(id -g)" public/uploads
 ```
 
-执行后用 `ls -ld . bootstrap/cache docker public storage` 抽查目录，并用 `find public -type f ! -perm -004 -print` 确认不再有缺少 others 读权限的静态文件。然后重试之前失败的静态文件访问、install/build/update。
+执行后用 `ls -ld . bootstrap/cache docker public storage resources/ai-kb` 抽查目录，并用 `find public resources/ai-kb -type f ! -perm -004 -print`、`find docker/appstore/apps -type f -name "config.yml" ! -perm -004 -print` 及 `find docker/appstore/apps -type f -path "*/ai-kb/*" -name "*.md" ! -perm -004 -print` 确认不再有缺少 others 读权限的文件。然后重试之前失败的静态文件访问、AI 知识库检索或 install/build/update。
 
 ## 失败处理
 
