@@ -156,6 +156,7 @@ class SystemController extends AbstractController
         $setting['unclaimed_task_reminder_time'] = $setting['unclaimed_task_reminder_time'] ?: '';
         $setting['task_ai_auto_analyze'] = $setting['task_ai_auto_analyze'] ?: 'open';
         $setting['department_owner_project_view'] = $setting['department_owner_project_view'] ?: 'open';
+        $setting['app_ai_hidden'] = config('dootask.app_ai_hidden');
         $setting['server_timezone'] = config('app.timezone');
         $setting['server_version'] = Base::getVersion();
         // 指定人员名单仅管理员可见

@@ -5,6 +5,7 @@
             ref="forwardSelect"
             :title="title"
             :show-bot="showBot"
+            :hide-ai-bot="appAiHidden"
             :multiple-max="userMaxSelect"
             :before-submit="onSelectBefore"
             :show-select-all="false"
@@ -31,6 +32,7 @@
 <script>
 import UserSelect from "../../../../components/UserSelect.vue";
 import ForwardConfirm from "./confirm.vue";
+import {mapGetters} from "vuex";
 
 export default {
     name: "Forwarder",
@@ -92,6 +94,10 @@ export default {
             forwardDialogId: 0,
             forwardTo: [],
         }
+    },
+
+    computed: {
+        ...mapGetters(['appAiHidden']),
     },
 
     methods: {

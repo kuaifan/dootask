@@ -35,7 +35,7 @@
                     </div>
                 </div>
 
-                <div class="profile-actions">
+                <div v-if="!aiConversationHidden" class="profile-actions">
                     <Button @click="onOpenDialog"><i class="taskfont">&#xe6eb;</i>{{ $L("开始聊天") }}</Button>
                     <Button @click="onCreateGroup"><i class="taskfont">&#xe63f;</i>{{ $L("创建群组") }}</Button>
                 </div>
@@ -131,7 +131,7 @@
 
 <script>
 import emitter from "../../../store/events";
-import { mapState } from "vuex";
+import { mapGetters, mapState } from "vuex";
 import transformEmojiToHtml from "../../../utils/emoji";
 import UserTagsModal from "./UserTagsModal.vue";
 import CommonDialogModal from "./CommonDialogModal.vue";
@@ -182,6 +182,12 @@ export default {
     },
 
     computed: {
+        ...mapGetters(['appAiHidden']),
+
+        aiConversationHidden() {
+            return this.appAiHidden && $A.isAiBotUser(this.userData)
+        },
+
         isFullscreen({ windowWidth }) {
             return windowWidth < 576;
         },

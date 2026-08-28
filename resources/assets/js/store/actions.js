@@ -5401,7 +5401,7 @@ export default {
      *  - props             传递参数
      *  更多说明详见 https://appstore.dootask.com/development/manual
      */
-    async openMicroApp({state}, data) {
+    async openMicroApp({state, getters}, data) {
         // 参数基础校验：必须是对象且包含 id/name/url
         if (!data || !$A.isJson(data)) {
             return
@@ -5417,6 +5417,9 @@ export default {
         }
         if (!microAppId) {
             $A.modalWarning(`应用「${data.id}」未安装`)
+            return
+        }
+        if (microAppId === 'ai' && !getters.aiVisible) {
             return
         }
 

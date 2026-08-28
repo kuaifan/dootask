@@ -468,6 +468,10 @@ interface DooTaskGlobal {
     timeOptionShortcuts(): Array<{ text: string; value(): [Date, Date] }>;
     /** 对话标签（已完成/已删除/已归档） */
     dialogTags(dialog: any): Array<{ color: string; text: string }>;
+    /** 是否为 AI 机器人账号 */
+    isAiBotUser(user: any): boolean;
+    /** 是否为 AI 机器人单聊 */
+    isAiBotDialog(dialog: any): boolean;
     /** 对话是否完成（返回 success 标签） */
     dialogCompleted(dialog: any): { color: string; text: string } | undefined;
     /** 返回对话未读数量（不含免打扰，但如果免打扰中有@则返回@数量） */

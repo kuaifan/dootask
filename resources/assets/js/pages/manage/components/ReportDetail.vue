@@ -43,7 +43,7 @@
                 </li>
             </ul>
             <div ref="reportContent" @click="onClick" class="report-content user-select-auto" v-html="currentDetail.content"></div>
-            <div v-if="currentDetail.id" class="report-ai-analysis">
+            <div v-if="currentDetail.id && aiVisible" class="report-ai-analysis">
                 <div class="analysis-header">
                     <div class="analysis-title">{{ $L("AI 分析") }}</div>
                     <Button
@@ -72,7 +72,7 @@
 
 <script>
 const VMPreview = () => import('../../../components/VMEditor/preview');
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import emitter from "../../../store/events";
 import {extractPlainText} from "../../../utils/text";
 import {REPORT_ANALYSIS_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../../../utils/ai";
@@ -97,6 +97,8 @@ export default {
         }
     },
     computed: {
+        ...mapGetters(['aiVisible']),
+
         ...mapState(['formOptions', 'userInfo']),
         currentDetail() {
             return this.detail || this.data || {};

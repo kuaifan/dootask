@@ -158,7 +158,7 @@
                             :placeholder="$L('请选择提醒时间')"
                             transfer/>
                     </FormItem>
-                    <FormItem :label="$L('AI任务分析')" prop="taskAiAutoAnalyze">
+                    <FormItem v-if="aiVisible" :label="$L('AI任务分析')" prop="taskAiAutoAnalyze">
                         <RadioGroup v-model="formDatum.task_ai_auto_analyze">
                             <Radio label="open">{{$L('开启')}}</Radio>
                             <Radio label="close">{{$L('关闭')}}</Radio>
@@ -354,7 +354,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import UserSelect from "../../../../components/UserSelect.vue";
 import SystemColumnTemplate from "./SystemColumnTemplate.vue";
 import SystemFileSetting from "./SystemFileSetting.vue";
@@ -394,6 +394,8 @@ export default {
     },
 
     computed: {
+        ...mapGetters(['aiVisible']),
+
         ...mapState(['formOptions']),
 
         projectAddAll() {

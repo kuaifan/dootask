@@ -42,7 +42,7 @@
         <UserDetail/>
 
         <!--AI 助理-->
-        <AIAssistant/>
+        <AIAssistant v-if="aiVisible"/>
 
         <!--返回效果-->
         <MobileBack v-if="isFirstPage"/>
@@ -100,7 +100,7 @@ import MobileNotification from "./components/Mobile/Notification.vue";
 import MobileBack from "./components/Mobile/Back.vue";
 import DropdownMenu from "./components/DropdownMenu";
 import {ctrlPressed} from "./mixins/ctrlPressed";
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import emitter from "./store/events";
 import AIAssistant from "./components/AIAssistant";
 import UserDetail from "./pages/manage/components/UserDetail.vue";
@@ -152,6 +152,8 @@ export default {
     },
 
     computed: {
+        ...mapGetters(['aiVisible']),
+
         ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize', 'isFirstPage', 'mobileTabbar', 'themeName']),
 
         statusColor({routeName, windowLandscape}) {

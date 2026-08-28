@@ -279,15 +279,45 @@ export default {
     },
 
     /**
+     * AI 界面是否可见
+     * 移动 APP 等待系统配置加载完成后再展示，避免启动时闪现。
+     */
+    aiVisible(state, getters) {
+        const installed = state.microAppsIds?.includes('ai')
+        if (!$A.isEEUIApp) {
+            return installed
+        }
+        return installed && state.systemConfig.__state === 'success' && !getters.appAiHidden
+    },
+
+    /**
+     * 移动 APP 是否隐藏 AI 功能
+     */
+    appAiHidden(state) {
+        return $A.isEEUIApp
+            && (state.systemConfig.__state !== 'success' || state.systemConfig.app_ai_hidden === true)
+    },
+
+    /**
+     * 当前客户端可见的会话
+     */
+    visibleDialogs(state, getters) {
+        if (!getters.appAiHidden) {
+            return state.cacheDialogs
+        }
+        return state.cacheDialogs.filter(dialog => !$A.isAiBotDialog(dialog))
+    },
+
+    /**
      * 获取应用菜单
      * 过滤出location为application的菜单项
      *
      * @param {Object} state
      * @returns {Array}
      */
-    filterMicroAppsMenus: (state) => {
+    filterMicroAppsMenus: (state, getters) => {
         return state.microAppsMenus.filter(item => {
-            return item.location === 'application'
+            return item.location === 'application' && (item.id !== 'ai' || getters.aiVisible)
         })
     },
 
@@ -298,9 +328,9 @@ export default {
      * @param {Object} state
      * @returns {Array}
      */
-    filterMicroAppsMenusAdmin: (state) => {
+    filterMicroAppsMenusAdmin: (state, getters) => {
         return state.microAppsMenus.filter(item => {
-            return item.location === 'application/admin'
+            return item.location === 'application/admin' && (item.id !== 'ai' || getters.aiVisible)
         })
     },
 
@@ -311,9 +341,9 @@ export default {
      * @param {Object} state
      * @returns {Array}
      */
-    filterMicroAppsMenusMain: (state) => {
+    filterMicroAppsMenusMain: (state, getters) => {
         return state.microAppsMenus.filter(item => {
-            return item.location === 'main/menu'
+            return item.location === 'main/menu' && (item.id !== 'ai' || getters.aiVisible)
         })
     }
 }

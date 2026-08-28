@@ -234,6 +234,11 @@ export default {
             type: Boolean,
             default: false
         },
+        // 是否隐藏 AI 机器人
+        hideAiBot: {
+            type: Boolean,
+            default: false
+        },
         // 是否显示禁用的
         showDisable: {
             type: Boolean,
@@ -403,9 +408,7 @@ export default {
         }
     },
     computed: {
-        ...mapState([
-            'cacheDialogs',
-        ]),
+        ...mapState(['cacheDialogs']),
 
         isFullscreen({windowWidth}) {
             return windowWidth < 576
@@ -424,7 +427,7 @@ export default {
                     return recents
 
                 case 'contact':
-                    return contacts
+                    return this.hideAiBot ? contacts.filter(item => !$A.isAiBotUser(item)) : contacts
 
                 case 'project':
                     return projects
@@ -595,6 +598,9 @@ export default {
 
         searchRecent() {
             this.recents = this.cacheDialogs.filter(dialog => {
+                if (this.hideAiBot && $A.isAiBotDialog(dialog)) {
+                    return false
+                }
                 if (this.onlyGroup && dialog.type != 'group') {
                     return false
                 }

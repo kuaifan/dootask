@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from "vuex";
+import {mapGetters} from "vuex";
 import NetworkException from "../NetworkException";
 import emitter from "../../store/events";
 
@@ -55,8 +55,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs']),
-        ...mapGetters(['dashboardTask']),
+        ...mapGetters(['dashboardTask', 'visibleDialogs']),
 
         // 父『应用』入口聚合角标（规则收敛在 appBadges 模块 getter）
         ...mapGetters('appBadges', {
@@ -71,7 +70,7 @@ export default {
         msgUnreadMention() {
             let num = 0;        // 未读
             let mention = 0;    // 提及
-            this.cacheDialogs.some(dialog => {
+            this.visibleDialogs.some(dialog => {
                 num += $A.getDialogUnread(dialog, false);
                 mention += $A.getDialogMention(dialog);
             })
@@ -109,7 +108,7 @@ export default {
          */
         msgAllUnread() {
             let num = 0;
-            this.cacheDialogs.some(dialog => {
+            this.visibleDialogs.some(dialog => {
                 num += $A.getDialogNum(dialog);
             })
             return num;
@@ -120,7 +119,7 @@ export default {
          * @returns {string|null}
          */
         msgTodoTotal() {
-            let todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
+            let todoNum = this.visibleDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
             if (todoNum > 0) {
                 if (todoNum > 999) {
                     todoNum = "999+"

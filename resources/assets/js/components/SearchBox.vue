@@ -91,7 +91,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import emitter from "../store/events";
 import transformEmojiToHtml from "../utils/emoji";
 import {SEARCH_AI_SYSTEM_PROMPT, withLanguagePreferencePrompt} from "../utils/ai";
@@ -147,6 +147,8 @@ export default {
     },
 
     computed: {
+        ...mapGetters(['aiVisible', 'appAiHidden']),
+
         ...mapState([
             'themeName',
             'keyboardShow',
@@ -156,7 +158,7 @@ export default {
         aiSearchAvailable() {
             return this.microAppsIds 
                 && this.microAppsIds.includes('search') 
-                && this.microAppsIds.includes('ai')
+                && this.aiVisible
         },
 
         isFullscreen({windowWidth}) {
@@ -164,7 +166,18 @@ export default {
         },
 
         items({searchKey, searchResults, action}) {
-            return searchResults.filter(item => item.key === searchKey && (!action || item.type === action))
+            return searchResults.filter(item => {
+                if (item.key !== searchKey || (action && item.type !== action)) {
+                    return false
+                }
+                if (!this.appAiHidden) {
+                    return true
+                }
+                if (item.type === 'message') {
+                    return !$A.isAiBotDialog(item.rawData)
+                }
+                return true
+            })
         },
 
         total() {

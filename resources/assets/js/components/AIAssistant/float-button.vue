@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters} from "vuex";
 import emitter from "../../store/events";
 import {createOperationModule} from "./operation-module";
 import {loadFloatButtonVisible} from "./float-button-preference";
@@ -61,14 +61,10 @@ export default {
     },
 
     computed: {
-        ...mapState(['microAppsIds']),
-
-        aiInstalled() {
-            return this.microAppsIds?.includes('ai');
-        },
+        ...mapGetters(['aiVisible']),
 
         visible() {
-            return this.aiInstalled &&
+            return this.aiVisible &&
                 this.userId > 0 &&
                 this.positionLoaded &&
                 this.visibilityLoaded &&

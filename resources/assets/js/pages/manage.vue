@@ -272,7 +272,7 @@
                         <Icon type="ios-arrow-down"></Icon>
                     </Button>
                     <DropdownMenu slot="list">
-                        <DropdownItem v-if="aiInstalled" name="aiAssistant">{{$L('AI 助手')}} ({{mateName}}+I)</DropdownItem>
+                        <DropdownItem v-if="aiVisible" name="aiAssistant">{{$L('AI 助手')}} ({{mateName}}+I)</DropdownItem>
                         <DropdownItem name="task">{{$L('新建任务')}} ({{mateName}}+K)</DropdownItem>
                         <DropdownItem name="project">{{$L('新建项目')}} ({{mateName}}+B)</DropdownItem>
                         <DropdownItem name="group">{{$L('创建群组')}} ({{mateName}}+U)</DropdownItem>
@@ -313,6 +313,7 @@
                     <div class="page-manage-project-ai-wrapper">
                         <Input ref="projectName" type="text" v-model="addData.name"></Input>
                         <div
+                            v-if="aiVisible"
                             class="project-ai-button"
                             type="text"
                             @click="onProjectAI">
@@ -651,21 +652,16 @@ export default {
             'departmentOwnerProjectsRefreshing',
             'departmentOwnerProjectViewEnabled',
 
-            'mcpServerStatus',
-            'microAppsIds'
+            'mcpServerStatus'
         ]),
 
-        ...mapGetters(['dashboardTask', "filterMicroAppsMenusMain"]),
+        ...mapGetters(['aiVisible', 'dashboardTask', "filterMicroAppsMenusMain", 'visibleDialogs']),
 
         // 父『应用』入口聚合角标（规则收敛在 appBadges 模块 getter）
         ...mapGetters('appBadges', {
             applicationBadgeCount: 'applicationCount',
             applicationBadgeDot: 'applicationDot',
         }),
-
-        aiInstalled() {
-            return this.microAppsIds?.includes('ai');
-        },
 
         departmentOwnerViewAvailable() {
             return this.systemConfig.department_owner_project_view === 'open' && (this.userInfo.managed_departments || []).length > 0;
@@ -701,7 +697,7 @@ export default {
         msgUnreadMention() {
             let num = 0;        // 未读
             let mention = 0;    // 提及
-            this.cacheDialogs.some(dialog => {
+            this.visibleDialogs.some(dialog => {
                 num += $A.getDialogUnread(dialog, false);
                 mention += $A.getDialogMention(dialog);
             })
@@ -739,7 +735,7 @@ export default {
          */
         msgAllUnread() {
             let num = 0;
-            this.cacheDialogs.some(dialog => {
+            this.visibleDialogs.some(dialog => {
                 num += $A.getDialogNum(dialog);
             })
             return num;
@@ -750,7 +746,7 @@ export default {
          * @returns {string|null}
          */
         msgTodoTotal() {
-            let todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
+            let todoNum = this.visibleDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
             if (todoNum > 0) {
                 if (todoNum > 99) {
                     todoNum = "99+"
@@ -1486,7 +1482,7 @@ export default {
                     break;
 
                 case 73: // I - AI助手
-                    if (this.aiInstalled) {
+                    if (this.aiVisible) {
                         e.preventDefault();
                         this.onOpenAIAssistant();
                     }

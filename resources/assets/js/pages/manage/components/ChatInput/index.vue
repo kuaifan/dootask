@@ -152,7 +152,7 @@
                                 <em>{{$L('上传文件')}}</em>
                             </div>
                         </template>
-                        <div v-if="dialogId > 0" class="chat-input-popover-item" @click="onToolbar('ai')">
+                        <div v-if="dialogId > 0 && aiVisible" class="chat-input-popover-item" @click="onToolbar('ai')">
                             <i class="taskfont">&#xe8a1;</i>
                             <em>{{$L('AI 生成')}}</em>
                         </div>
@@ -606,7 +606,7 @@ export default {
             'viewportHeight',
         ]),
 
-        ...mapGetters(['getDialogDraft', 'getDialogQuote']),
+        ...mapGetters(['aiVisible', 'getDialogDraft', 'getDialogQuote']),
 
         isEnterSend({cacheKeyboard}) {
             if (this.$isEEUIApp) {

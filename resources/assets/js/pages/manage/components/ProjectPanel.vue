@@ -435,7 +435,7 @@
                     </template>
 
                 </FormItem>
-                <FormItem :label="$L('AI任务分析')" prop="ai_auto_analyze">
+                <FormItem v-if="aiVisible" :label="$L('AI任务分析')" prop="ai_auto_analyze">
                     <RadioGroup v-model="settingData.ai_auto_analyze">
                         <Radio label="open" :disabled="systemConfig.task_ai_auto_analyze === 'close'">{{$L('开启')}}</Radio>
                         <Radio label="close">{{$L('关闭')}}</Radio>
@@ -765,7 +765,7 @@ export default {
             'systemConfig',
         ]),
 
-        ...mapGetters(['projectData', 'transforTasks']),
+        ...mapGetters(['aiVisible', 'projectData', 'transforTasks']),
 
         tabTypeActive() {
             return this.projectData.cacheParameter.menuType

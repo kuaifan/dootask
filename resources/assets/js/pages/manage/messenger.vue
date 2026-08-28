@@ -380,7 +380,12 @@ export default {
             'longpressData'
         ]),
 
-        ...mapGetters(['getDialogDraft', 'tagDialogDraft']),
+        ...mapGetters([
+            'appAiHidden',
+            'getDialogDraft',
+            'tagDialogDraft',
+            'visibleDialogs',
+        ]),
 
         contactAvatarSize() {
             return this.windowPortrait ? 36 : 30
@@ -389,19 +394,19 @@ export default {
         dialogList() {
             const {dialogActive, dialogSearchKey, dialogSearchList} = this
             if (dialogSearchList.length > 0) {
-                return dialogSearchList.sort((a, b) => {
+                return dialogSearchList.filter(dialog => !this.appAiHidden || !$A.isAiBotDialog(dialog)).sort((a, b) => {
                     // 搜索结果排在后面
                     return (a.is_search === true ? 1 : 0) - (b.is_search === true ? 1 : 0)
                 })
             }
             if (dialogActive == '' && dialogSearchKey == '') {
-                return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort(this.dialogSort);
+                return this.visibleDialogs.filter(dialog => this.filterDialog(dialog)).sort(this.dialogSort);
             }
             if (dialogActive == 'mark' && !dialogSearchKey) {
                 const lists = [];
                 this.dialogMsgs.filter(h => h.tag).forEach(h => {
                     let dialog = $A.cloneJSON(this.cacheDialogs).find(p => p.id == h.dialog_id)
-                    if (dialog) {
+                    if (dialog && (!this.appAiHidden || !$A.isAiBotDialog(dialog))) {
                         dialog.last_msg = h;
                         dialog.search_msg_id = h.id;
                         lists.push(dialog);
@@ -409,7 +414,7 @@ export default {
                 });
                 return lists;
             }
-            const list = this.cacheDialogs.filter(dialog => {
+            const list = this.visibleDialogs.filter(dialog => {
                 if (!this.filterDialog(dialog)) {
                     return false;
                 }
@@ -508,7 +513,7 @@ export default {
         msgUnread() {
             return function (type) {
                 let num = 0
-                this.cacheDialogs.some((dialog) => {
+                this.visibleDialogs.some((dialog) => {
                     switch (type) {
                         case 'project':
                         case 'task':
@@ -839,6 +844,9 @@ export default {
         },
 
         filterDialog(dialog) {
+            if (this.appAiHidden && $A.isAiBotDialog(dialog)) {
+                return false
+            }
             if ((dialog.id > 0 && dialog.id == this.dialogId) || dialog.top_at || dialog.todo_num > 0 || $A.getDialogNum(dialog) > 0) {
                 return true
             }

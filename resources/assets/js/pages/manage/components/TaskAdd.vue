@@ -39,7 +39,7 @@
                     :placeholder="$L('任务描述')"
                     enterkeyhint="done"
                     @on-keydown="onKeydown"/>
-                <div class="ai-btn" @click="onAI">
+                <div v-if="aiVisible" class="ai-btn" @click="onAI">
                     <i class="taskfont">&#xe8a1;</i>
                 </div>
             </div>
@@ -201,7 +201,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import emitter from "../../../store/events";
 import UserSelect from "../../../components/UserSelect.vue";
 import TaskExistTips from "./TaskExistTips.vue";
@@ -292,6 +292,8 @@ export default {
     },
 
     computed: {
+        ...mapGetters(['aiVisible']),
+
         ...mapState(['cacheProjects', 'projectId', 'cacheColumns', 'taskPriority', 'taskTemplates', 'formOptions']),
 
         taskTemplateShareEnabled() {

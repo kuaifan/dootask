@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import axios from "axios";
 import MobileNavTitle from "../../../components/Mobile/NavTitle.vue";
 import emitter from "../../../store/events";
@@ -72,11 +72,9 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'systemConfig', 'microAppsIds']),
+        ...mapGetters(['aiVisible']),
 
-        aiInstalled() {
-            return this.microAppsIds?.includes('ai');
-        },
+        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'systemConfig']),
 
         showContent() {
             return this.$route.path.match(/^\/manage\/setting\/\w+$/)
@@ -95,7 +93,7 @@ export default {
                 menu.push({path: 'keyboard', name: '键盘设置'})
             }
 
-            if (this.aiInstalled) {
+            if (this.aiVisible) {
                 menu.push({path: 'assistant', name: 'AI 助手设置'})
             }
 
@@ -147,14 +145,14 @@ export default {
             handler(name) {
                 if (name === 'manage-setting' && this.windowLandscape) {
                     this.goForward({name: 'manage-setting-personal'}, true);
-                } else if (name === 'manage-setting-assistant' && !this.aiInstalled) {
+                } else if (name === 'manage-setting-assistant' && !this.aiVisible) {
                     this.goForward({name: 'manage-setting-personal'}, true);
                 }
             },
             immediate: true
         },
-        microAppsIds() {
-            if (this.routeName === 'manage-setting-assistant' && !this.aiInstalled) {
+        aiVisible(visible) {
+            if (this.routeName === 'manage-setting-assistant' && !visible) {
                 this.goForward({name: 'manage-setting-personal'}, true);
             }
         },

@@ -46,6 +46,7 @@
                 <div class="report-bottoms">
                     <Button type="primary" @click="handleSubmit" :loading="loadIng > 0" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
                     <Button
+                        v-if="aiVisible"
                         type="default"
                         class="report-bottom"
                         @click="onOrganize">
@@ -60,7 +61,7 @@
 
 <script>
 import UserSelect from "../../../components/UserSelect.vue";
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import emitter from "../../../store/events";
 import {MarkdownConver} from "../../../utils/markdown";
 import {extractPlainText} from "../../../utils/text";
@@ -112,6 +113,8 @@ export default {
         },
     },
     computed: {
+        ...mapGetters(['aiVisible']),
+
         ...mapState(['formOptions']),
     },
     methods: {

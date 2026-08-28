@@ -214,6 +214,24 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
         },
 
         /**
+         * 是否为 AI 机器人账号
+         * @param user
+         * @returns {boolean}
+         */
+        isAiBotUser(user) {
+            return !!user?.bot && /^ai-[^@]+@bot\.system$/.test(user.email || '')
+        },
+
+        /**
+         * 是否为 AI 机器人单聊
+         * @param dialog
+         * @returns {boolean}
+         */
+        isAiBotDialog(dialog) {
+            return dialog?.type === 'user' && this.isAiBotUser(dialog)
+        },
+
+        /**
          * 对话完成
          * @param dialog
          * @returns {*[]}

@@ -12,7 +12,7 @@
                         {{mateName}}<div class="input-box-push">+</div>{{altName}}<div class="input-box-push">+</div>L
                     </div>
                 </FormItem>
-                <FormItem v-if="aiInstalled" :label="$L('AI 助手')">
+                <FormItem v-if="aiVisible" :label="$L('AI 助手')">
                     <div class="input-box">
                         {{mateName}}<div class="input-box-push">+</div>I
                     </div>
@@ -75,15 +75,11 @@
 }
 </style>
 <script>
-import {mapState} from "vuex";
+import {mapGetters} from "vuex";
 
 export default {
     computed: {
-        ...mapState(['microAppsIds']),
-
-        aiInstalled() {
-            return this.microAppsIds?.includes('ai');
-        },
+        ...mapGetters(['aiVisible']),
     },
 
     data() {
