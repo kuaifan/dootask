@@ -203,16 +203,17 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <FormItem v-if="getOwner.length > 0">
+                    <FormItem v-if="getOwner.length > 0 || ownerForce">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6e4;</i>{{$L('负责人')}}
                         </div>
                         <UserSelect
+                            ref="owner"
                             class="item-content user"
                             v-model="ownerData.owner_userid"
                             :multiple-max="10"
                             :avatar-size="28"
-                            :title="$L('修改负责人')"
+                            :title="$L(getOwner.length > 0 ? '修改负责人' : '选择任务负责人')"
                             :project-id="taskDetail.project_id"
                             :add-icon="false"
                             :disabled="isDepartmentReadonly"
@@ -638,6 +639,7 @@ export default {
 
             ownerData: {},
             ownerLoad: 0,
+            ownerForce: false,
 
             removeLoad: 0,
 
@@ -928,6 +930,13 @@ export default {
                     name: '优先级',
                 });
             }
+            if (!($A.isArray(taskDetail.task_user) && taskDetail.task_user.find(({owner}) => owner === 1))) {
+                list.push({
+                    command: 'owner',
+                    icon: '&#xe6e4;',
+                    name: '负责人',
+                });
+            }
             if (!($A.isArray(taskDetail.task_user) && taskDetail.task_user.find(({owner}) => owner === 0 ))) {
                 list.push({
                     command: 'assist',
@@ -1061,6 +1070,7 @@ export default {
                     this.timeForce = false;
                     this.loopForce = false;
                     this.tagForce = false;
+                    this.ownerForce = false;
                     this.assistForce = false;
                     this.visibleForce = false;
                     this.addsubForce = false;
@@ -1837,6 +1847,13 @@ export default {
                     this.$nextTick(() => {
                         this.onPriority({target: this.$refs.priorityText})
                     })
+                    break;
+
+                case 'owner':
+                    this.ownerForce = true;
+                    this.$nextTick(() => {
+                        this.$refs.owner.onSelection();
+                    });
                     break;
 
                 case 'assist':
