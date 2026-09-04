@@ -1197,6 +1197,9 @@ export default {
         'parentTask.length'() {
             this.handleColumnDebounce();
         },
+        'projectData.task_num'() {
+            this.handleColumnDebounce();
+        },
         searchText() {
             this.handleColumnDebounce(true);
         },
