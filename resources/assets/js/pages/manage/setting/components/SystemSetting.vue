@@ -285,7 +285,16 @@
                         <div style="width: 220px;">
                             <Input v-model="formDatum.system_alias"/>
                         </div>
-                        <div class="form-tip">{{$L('用于网页默认标题、邮件发送等')}}</div>
+                        <div class="form-tip">{{$L('用于网页标题、邮件发送，以及 Web 端和客户端登录页的欢迎语。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('登录页 Logo')" prop="login_logo">
+                        <ImgUpload
+                            v-model="formDatum.login_logo"
+                            :num="1"
+                            :width="512"
+                            :height="512"
+                            whcut="percentage"/>
+                        <div class="form-tip">{{$L('用于 Web 端和客户端登录页，未设置时使用默认 Logo。')}}</div>
                     </FormItem>
                     <FormItem :label="$L('欢迎词')" prop="system_welcome">
                         <div style="width: 220px;">
@@ -359,9 +368,10 @@ import UserSelect from "../../../../components/UserSelect.vue";
 import SystemColumnTemplate from "./SystemColumnTemplate.vue";
 import SystemFileSetting from "./SystemFileSetting.vue";
 import SystemTaskPriority from "./SystemTaskPriority.vue";
+import ImgUpload from "../../../../components/ImgUpload.vue";
 
 const SCOPE_FIELDS = {
-    general: ['system_alias', 'system_welcome'],
+    general: ['system_alias', 'login_logo', 'system_welcome'],
     account: ['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy'],
     project: ['project_invite', 'project_add_permission', 'project_add_userids', 'department_owner_project_view'],
     task: ['auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'task_user_limit', 'unclaimed_task_reminder', 'unclaimed_task_reminder_time', 'task_ai_auto_analyze'],
@@ -372,7 +382,7 @@ const SCOPE_FIELDS = {
 export default {
     name: 'SystemSetting',
 
-    components: {SystemTaskPriority, SystemFileSetting, SystemColumnTemplate, UserSelect},
+    components: {ImgUpload, SystemTaskPriority, SystemFileSetting, SystemColumnTemplate, UserSelect},
 
     props: {
         scope: {

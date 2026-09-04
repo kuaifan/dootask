@@ -23,6 +23,7 @@
         };
         window.systemInfo = {
             title: "{{$system_alias}}",
+            loginLogo: "{{$login_logo}}",
             debug: "{{config('app.debug') ? 'yes' : 'no'}}",
             version: "{{ $version }}",
             origin: window.location.origin + "/",

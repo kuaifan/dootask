@@ -25380,16 +25380,16 @@
         "ru": "Системный псевдоним"
     },
     {
-        "key": "用于网页默认标题、邮件发送等",
+        "key": "用于网页标题、邮件发送，以及 Web 端和客户端登录页的欢迎语。",
         "zh": "",
-        "zh-CHT": "用於網頁默認標題、郵件發送等",
-        "en": "Used for web default titles, email sending, etc.",
-        "ko": "웹 기본 제목, 이메일 전송 등에 사용",
-        "ja": "ウェブのデフォルトタイトル、メール送信などに使用されます",
-        "de": "Wird für Web-Standardtitel, E-Mail-Versand usw. verwendet",
-        "fr": "Utilisé pour les titres par défaut des pages Web, l'envoi d'e-mails, etc.",
-        "id": "Digunakan untuk judul default web, pengiriman email, dll.",
-        "ru": "Используется для веб-страниц по умолчанию, отправки электронной почты и т. д."
+        "zh-CHT": "用於網頁標題、郵件發送，以及 Web 端和客戶端登入頁的歡迎語。",
+        "en": "Used for webpage titles, email delivery, and the welcome message on Web and client login pages.",
+        "ko": "웹 페이지 제목, 이메일 발송, Web 및 클라이언트 로그인 페이지의 환영 문구에 사용됩니다.",
+        "ja": "Webページのタイトル、メール送信、Web版およびクライアント版のログインページのウェルカムメッセージに使用されます。",
+        "de": "Wird für Webseitentitel, den E-Mail-Versand und die Begrüßung auf den Anmeldeseiten der Web- und Client-Version verwendet.",
+        "fr": "Utilisé pour les titres des pages Web, l'envoi d'e-mails et le message de bienvenue des pages de connexion Web et client.",
+        "id": "Digunakan untuk judul halaman web, pengiriman email, dan pesan sambutan pada halaman login Web dan klien.",
+        "ru": "Используется для заголовков веб-страниц, отправки электронной почты и приветствия на страницах входа веб-версии и клиента."
     },
     {
         "key": "打包下载【(%T1)】文件夹",
@@ -39586,5 +39586,29 @@
         "fr": "Afficher dans le dossier",
         "id": "Tampilkan di Folder",
         "ru": "Показать в папке"
+    },
+    {
+        "key": "登录页 Logo",
+        "zh": "",
+        "zh-CHT": "登錄頁 Logo",
+        "en": "Login Page Logo",
+        "ko": "로그인 페이지 로고",
+        "ja": "ログインページのロゴ",
+        "de": "Logo der Anmeldeseite",
+        "fr": "Logo de la page de connexion",
+        "id": "Logo Halaman Masuk",
+        "ru": "Логотип страницы входа"
+    },
+    {
+        "key": "用于 Web 端和客户端登录页，未设置时使用默认 Logo。",
+        "zh": "",
+        "zh-CHT": "用於 Web 端和客戶端登入頁，未設定時使用預設 Logo。",
+        "en": "Used on Web and client login pages. The default logo is used when not configured.",
+        "ko": "Web 및 클라이언트 로그인 페이지에 사용되며, 설정하지 않으면 기본 로고가 사용됩니다.",
+        "ja": "Web版およびクライアント版のログインページで使用されます。未設定の場合はデフォルトのロゴが使用されます。",
+        "de": "Wird auf den Anmeldeseiten der Web- und Client-Version verwendet. Ohne Konfiguration wird das Standardlogo verwendet.",
+        "fr": "Utilisé sur les pages de connexion Web et client. Le logo par défaut est utilisé si aucun logo n'est configuré.",
+        "id": "Digunakan pada halaman login Web dan klien. Logo default digunakan jika tidak dikonfigurasi.",
+        "ru": "Используется на страницах входа веб-версии и клиента. Если не настроено, используется логотип по умолчанию."
     }
 ]

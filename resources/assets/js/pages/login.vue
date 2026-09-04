@@ -2,7 +2,7 @@
     <div class="page-login">
         <PageTitle :title="$L('登录')"/>
         <div class="login-body">
-            <div class="login-logo no-dark-content"></div>
+            <div class="login-logo no-dark-content" :style="loginLogo ? {'background-image': 'url(' + loginLogo + ')'} : null"></div>
             <div class="login-box">
                 <div class="login-mode-switch">
                     <div class="login-mode-switch-box">
@@ -245,24 +245,31 @@ export default {
 
             'themeConf',
             'themeList',
+            'systemConfig',
         ]),
 
         currentLanguage() {
             return languageList[languageName] || 'Language'
         },
 
+        systemAlias() {
+            return this.systemConfig.system_alias || window.systemInfo.title || "DooTask"
+        },
+
+        loginLogo() {
+            return this.systemConfig.login_logo || window.systemInfo.loginLogo || ''
+        },
+
         welcomeTitle() {
             if (this.loginMode == 'qrcode') {
                 return this.$L("扫码登录")
             }
-            const title = window.systemInfo.title || "DooTask";
-            return "Welcome " + title
+            return "Welcome " + this.systemAlias
         },
 
         subTitle() {
-            const title = window.systemInfo.title || "DooTask";
             if (this.loginMode == 'qrcode') {
-                return this.$L('请使用(*)移动端扫描二维码。', title)
+                return this.$L('请使用(*)移动端扫描二维码。', this.systemAlias)
             }
             if (this.loginType=='reg') {
                 return this.$L('输入您的信息以创建帐户。')

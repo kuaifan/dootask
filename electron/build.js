@@ -347,6 +347,7 @@ async function startBuild(data) {
     // system info
     const systemInfo = {
         title: data.name,
+        loginLogo: "",
         debug: "no",
         version: config.version,
         origin: "./",

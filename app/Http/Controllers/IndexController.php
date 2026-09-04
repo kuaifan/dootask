@@ -75,6 +75,7 @@ class IndexController extends InvokeController
         }
         return response()->view('main', [
             'system_alias' => Base::settingFind('system', 'system_alias', 'WebPage'),
+            'login_logo' => Base::fillUrl(Base::settingFind('system', 'login_logo')),
             'version' => Base::getVersion(),
             'style' => $style,
             'script' => $script,

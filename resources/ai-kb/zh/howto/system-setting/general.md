@@ -26,7 +26,7 @@ negative:
   - SYSTEM_SETTING=disabled 时所有系统设置都不能改（演示环境常用）
   - 自动归档天数限制为 1-100 天，超出会报错
   - 邀请码留空会自动生成随机码，不能完全关闭"凭码注册"模式
-last_verified: v1.8.89
+last_verified: v1.9.18
 ---
 
 # 通用设置
@@ -66,7 +66,8 @@ last_verified: v1.8.89
 - `file_upload_limit` — 单文件上传大小（MB）
 
 **外观**
-- `system_alias` / `system_welcome` — 系统名称别名与欢迎语
+- `system_alias` / `system_welcome` — 系统名称别名与欢迎语；系统别名同时显示在 Web、桌面端和移动端登录页的 `Welcome` 标题中
+- `login_logo` — 登录页 Logo；支持上传、预览和删除，删除后恢复内置 DooTask Logo
 - 系统别名与部署的默认应用名称相同时，服务端使用空值存储以表示“沿用默认名称”，但保存响应和后续读取仍显示实际默认名称
 
 ## 操作步骤

@@ -20,7 +20,7 @@ negative:
   - 账号被停用（disable_at 非空）会提示「帐号已停用」，需联系管理员
   - 开启「注册需邮箱验证」时，未验证邮箱的账号无法登录，必须先完成验证（[[user-account.email-verify.howto]]）
   - 多次失败后系统会强制要求填验证码（[[user-account.login-codeimg.howto]]）
-last_verified: v1.7.90
+last_verified: v1.9.18
 ---
 
 # 登录账号
@@ -28,6 +28,7 @@ last_verified: v1.7.90
 ## 入口
 - 登录页：`/login`
 - 客户端启动时自动跳转
+- Web、桌面端和移动端登录页会显示管理员配置的登录 Logo 和系统别名；未配置时显示内置 DooTask 品牌
 
 ## 支持的登录方式
 DooTask 同时支持以下登录方式（在登录页可切换）：
