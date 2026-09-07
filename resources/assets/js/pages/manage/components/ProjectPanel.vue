@@ -101,10 +101,27 @@
                     <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleParameter('completedTask')">{{$L('显示已完成')}}</Checkbox>
                 </div>
                 <div class="project-select">
-                    <Cascader ref="flow" :data="flowData" @on-change="flowChange" transfer-class-name="project-panel-flow-cascader" transfer>
+                    <Cascader
+                        ref="flow"
+                        :data="flowData"
+                        :open-trigger="$isEEUIApp || windowTouch ? 'click' : 'hover'"
+                        @on-change="flowChange"
+                        transfer-class-name="project-panel-flow-cascader"
+                        transfer>
                         <span :class="`project-flow ${flowInfo.status || ''}`" :style="flowInfo.style">{{ flowTitle }}</span>
                     </Cascader>
                 </div>
+                <ProjectTableGroupDropdown
+                    v-if="tabTypeActive === 'table'"
+                    v-model="tableGroupsOpen"
+                    class="project-table-settings"
+                    :touch="$isEEUIApp || windowTouch"
+                    :selected="visibleTableGroups"
+                    @change="setTableGroupVisible">
+                    <button type="button" class="project-table-settings-icon">
+                        <Icon type="md-settings"/>
+                    </button>
+                </ProjectTableGroupDropdown>
                 <div class="project-switch-button">
                     <div class="slider" :style="tabTypeStyle"></div>
                     <div @click="tabTypeChange('column')" :class="{ 'active': tabTypeActive === 'column'}"><i class="taskfont">&#xe60c;</i></div>
@@ -314,7 +331,7 @@
                 </Row>
             </div>
             <!--我的任务-->
-            <div :class="['project-table-body', !projectData.cacheParameter.showMy ? 'project-table-hide' : '']">
+            <div v-if="visibleTableGroups.includes('my')" data-table-group="my" :class="['project-table-body', !projectData.cacheParameter.showMy ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="taskfont" @click="toggleParameter('showMy')">&#xe689;</i>
@@ -334,9 +351,10 @@
                     open-key="my"
                     @on-priority="addTaskOpen"
                     fast-add-task/>
+                <div v-if="projectData.cacheParameter.showMy && !myList.length" class="project-table-empty">{{$L('暂无任务')}}</div>
             </div>
             <!--协助的任务-->
-            <div v-if="helpList.length" :class="['project-table-body', !projectData.cacheParameter.showHelp ? 'project-table-hide' : '']">
+            <div v-if="visibleTableGroups.includes('help')" data-table-group="help" :class="['project-table-body', !projectData.cacheParameter.showHelp ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="taskfont" @click="toggleParameter('showHelp')">&#xe689;</i>
@@ -355,9 +373,10 @@
                     :readonly="isDepartmentReadonly"
                     open-key="help"
                     @on-priority="addTaskOpen"/>
+                <div v-if="projectData.cacheParameter.showHelp && !helpList.length" class="project-table-empty">{{$L('暂无任务')}}</div>
             </div>
             <!--未完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectData.cacheParameter.showUndone ? 'project-table-hide' : '']">
+            <div v-if="visibleTableGroups.includes('undone')" data-table-group="undone" :class="['project-table-body', !projectData.cacheParameter.showUndone ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="taskfont" @click="toggleParameter('showUndone')">&#xe689;</i>
@@ -376,9 +395,10 @@
                     :readonly="isDepartmentReadonly"
                     open-key="undone"
                     @on-priority="addTaskOpen"/>
+                <div v-if="projectData.cacheParameter.showUndone && !unList.length" class="project-table-empty">{{$L('暂无任务')}}</div>
             </div>
             <!--已完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectData.cacheParameter.showCompleted ? 'project-table-hide' : '']">
+            <div v-if="visibleTableGroups.includes('completed')" data-table-group="completed" :class="['project-table-body', !projectData.cacheParameter.showCompleted ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="taskfont" @click="toggleParameter('showCompleted')">&#xe689;</i>
@@ -389,7 +409,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                     <Col span="3">
-                        <div class="ellipsis">{{projectData.task_num > 0 && projectData.cacheParameter.showCompleted ? $L('完成时间') : ''}}</div>
+                        <div class="ellipsis">{{projectData.cacheParameter.showCompleted ? $L('完成时间') : ''}}</div>
                     </Col>
                 </Row>
                 <TaskRow
@@ -400,6 +420,32 @@
                     open-key="completed"
                     @on-priority="addTaskOpen"
                     showCompleteAt/>
+                <div v-if="projectData.cacheParameter.showCompleted && !completedList.length" class="project-table-empty">{{$L('暂无任务')}}</div>
+            </div>
+            <div
+                v-for="group in additionalTableGroups"
+                :key="group.key"
+                :data-table-group="group.key"
+                :class="['project-table-body', !projectData.cacheParameter[group.expandedKey] ? 'project-table-hide' : '']">
+                <Row class="task-row">
+                    <Col span="12" class="row-title">
+                        <i class="taskfont" @click="toggleParameter(group.expandedKey)">&#xe689;</i>
+                        <div class="row-h1">{{$L(group.title)}}</div>
+                        <div class="row-num">({{group.tasks.length}})</div>
+                    </Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                </Row>
+                <TaskRow
+                    v-if="projectData.cacheParameter[group.expandedKey]"
+                    :list="group.tasks"
+                    :task-visibilitys="taskRowVisibilitys"
+                    :readonly="isDepartmentReadonly"
+                    :open-key="group.key"
+                    @on-priority="addTaskOpen"/>
+                <div v-if="projectData.cacheParameter[group.expandedKey] && !group.tasks.length" class="project-table-empty">{{$L('暂无任务')}}</div>
             </div>
         </Scrollbar>
         <div v-else-if="tabTypeActive === 'gantt'" class="project-gantt">
@@ -650,11 +696,14 @@ import TaskMenu from "./TaskMenu";
 import TaskDeleted from "./TaskDeleted";
 import TaskTag from "./ProjectTaskTag/tags.vue";
 import ProjectGantt from "./ProjectGantt";
+import ProjectTableGroupDropdown from "./ProjectTableGroupDropdown.vue";
 import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import VMPreviewNostyle from "../../../components/VMEditor/nostyle.vue";
 import emitter from "../../../store/events";
 import transformEmojiToHtml from "../../../utils/emoji";
+import {projectTableGroups, normalizeProjectTableGroups, projectWeekRanges, taskMatchesProjectGroup} from "../../../utils/projectTableGroups";
+import {scrollToStableTarget} from "../../../utils/scrollToStableTarget";
 
 export default {
     name: "ProjectPanel",
@@ -677,6 +726,7 @@ export default {
         TaskDeleted,
         TaskTag,
         ProjectGantt,
+        ProjectTableGroupDropdown,
     },
     data() {
         return {
@@ -684,6 +734,8 @@ export default {
 
             nowTime: $A.dayjs().unix(),
             nowInterval: null,
+            tableToday: $A.daytz().format('YYYY-MM-DD'),
+            tableGroupsOpen: false,
 
             columnLoad: {},
             columnTopShow: {},
@@ -740,10 +792,12 @@ export default {
     mounted() {
         this.nowInterval = setInterval(() => {
             this.nowTime = $A.dayjs().unix();
+            this.tableToday = $A.daytz().format('YYYY-MM-DD');
         }, 1000);
     },
 
     destroyed() {
+        this.cancelTableGroupScroll();
         clearInterval(this.nowInterval);
     },
 
@@ -769,6 +823,35 @@ export default {
 
         tabTypeActive() {
             return this.projectData.cacheParameter.menuType
+        },
+
+        tableGroupOptions() {
+            return projectTableGroups;
+        },
+
+        visibleTableGroups() {
+            return normalizeProjectTableGroups(this.projectData.cacheParameter.tableGroups);
+        },
+
+        tableWeekRanges() {
+            return projectWeekRanges($A.dayjs(this.tableToday));
+        },
+
+        additionalTableGroups() {
+            const groups = this.tableGroupOptions.filter(group => group.kind && this.visibleTableGroups.includes(group.key));
+            if (!groups.length) return [];
+            const tasks = this.panelTask(this.parentTask);
+            const now = groups.some(group => group.kind === 'overdue') ? $A.daytz(this.nowTime).valueOf() : 0;
+            return groups.map(group => ({
+                ...group,
+                tasks: tasks.filter(task => taskMatchesProjectGroup(task, group, this.tableWeekRanges, now, $A.dayjs)).sort((a, b) => {
+                    if (this.sortType === 'asc') [a, b] = [b, a];
+                    if (this.sortField === 'level' || a.end_at === b.end_at) {
+                        return $A.sortFloat(a.p_level, b.p_level);
+                    }
+                    return $A.sortDay(a.end_at || '2099-12-31 23:59:59', b.end_at || '2099-12-31 23:59:59');
+                }),
+            }));
         },
 
         tabTypeStyle() {
@@ -1182,8 +1265,23 @@ export default {
     },
 
     watch: {
+        tabTypeActive(type) {
+            if (type !== 'table') {
+                this.tableGroupsOpen = false;
+                this.cancelTableGroupScroll();
+            }
+        },
+        additionalTableGroups() {
+            this.handleColumnDebounce();
+        },
+        visibleTableGroups() {
+            if (this._tableGroupScroll && !this.visibleTableGroups.includes(this._tableGroupScroll.key)) this.cancelTableGroupScroll();
+            this.handleColumnDebounce();
+        },
         projectId: {
             handler(id) {
+                this.cancelTableGroupScroll();
+                this.tableGroupsOpen = false;
                 if (id > 0) {
                     this.getFlowData();
                     this.handleColumnDebounce();
@@ -1947,6 +2045,47 @@ export default {
 
         expiresFormat(date) {
             return $A.countDownFormat(this.nowTime, date)
+        },
+
+        setTableGroupVisible(group, visible) {
+            const selected = this.visibleTableGroups;
+            if (!visible && selected.length === 1 && selected.includes(group.key)) return;
+            const tableGroups = visible
+                ? this.tableGroupOptions.filter(item => item.key === group.key || selected.includes(item.key)).map(item => item.key)
+                : selected.filter(key => key !== group.key);
+            this.toggleParameter({
+                project_id: this.projectId,
+                key: visible ? {tableGroups, [group.expandedKey]: true} : {tableGroups},
+            });
+            if (visible) this.scrollToTableGroup(group.key);
+            else this.cancelTableGroupScroll();
+        },
+
+        cancelTableGroupScroll() {
+            this._tableGroupScroll?.cancel?.();
+            this._tableGroupScroll = null;
+        },
+
+        scrollToTableGroup(key) {
+            this.cancelTableGroupScroll();
+            const projectId = this.projectId;
+            const request = {key};
+            this._tableGroupScroll = request;
+            const isActive = () => this._tableGroupScroll === request && this.projectId === projectId && this.tabTypeActive === 'table' && this.visibleTableGroups.includes(key);
+            this.$nextTick(() => {
+                if (!isActive()) return;
+                const scrollbar = this.$refs.projectTableScroll;
+                const container = scrollbar?.scrollElement();
+                const target = container?.querySelector(`[data-table-group="${key}"]`);
+                if (!target) return;
+                request.cancel = scrollToStableTarget({
+                    container, target, inputRoot: scrollbar.$el, isActive,
+                    render: async () => {
+                        await this.handleTaskScroll({target: container});
+                        await this.$nextTick();
+                    },
+                });
+            });
         },
 
         tabTypeChange(type) {

@@ -39610,5 +39610,77 @@
         "fr": "Utilisé sur les pages de connexion Web et client. Le logo par défaut est utilisé si aucun logo n'est configuré.",
         "id": "Digunakan pada halaman login Web dan klien. Logo default digunakan jika tidak dikonfigurasi.",
         "ru": "Используется на страницах входа веб-версии и клиента. Если не настроено, используется логотип по умолчанию."
+    },
+    {
+        "key": "本周到期",
+        "zh": "",
+        "zh-CHT": "本週到期",
+        "en": "Due this week",
+        "ko": "이번 주 마감",
+        "ja": "今週が期限",
+        "de": "Diese Woche fällig",
+        "fr": "À échéance cette semaine",
+        "id": "Jatuh tempo minggu ini",
+        "ru": "Срок на этой неделе"
+    },
+    {
+        "key": "下周到期",
+        "zh": "",
+        "zh-CHT": "下週到期",
+        "en": "Due next week",
+        "ko": "다음 주 마감",
+        "ja": "来週が期限",
+        "de": "Nächste Woche fällig",
+        "fr": "À échéance la semaine prochaine",
+        "id": "Jatuh tempo minggu depan",
+        "ru": "Срок на следующей неделе"
+    },
+    {
+        "key": "本周排期",
+        "zh": "",
+        "zh-CHT": "本週排期",
+        "en": "Scheduled this week",
+        "ko": "이번 주 예정",
+        "ja": "今週の予定",
+        "de": "Diese Woche geplant",
+        "fr": "Planifiées cette semaine",
+        "id": "Dijadwalkan minggu ini",
+        "ru": "Запланировано на эту неделю"
+    },
+    {
+        "key": "下周排期",
+        "zh": "",
+        "zh-CHT": "下週排期",
+        "en": "Scheduled next week",
+        "ko": "다음 주 예정",
+        "ja": "来週の予定",
+        "de": "Nächste Woche geplant",
+        "fr": "Planifiées la semaine prochaine",
+        "id": "Dijadwalkan minggu depan",
+        "ru": "Запланировано на следующую неделю"
+    },
+    {
+        "key": "已逾期",
+        "zh": "",
+        "zh-CHT": "已逾期",
+        "en": "Overdue",
+        "ko": "기한 초과",
+        "ja": "期限超過",
+        "de": "Überfällig",
+        "fr": "En retard",
+        "id": "Lewat tenggat",
+        "ru": "Просроченные"
+    },
+    {
+        "key": "未排期",
+        "zh": "",
+        "zh-CHT": "未排期",
+        "en": "Unscheduled",
+        "ko": "일정 미정",
+        "ja": "予定未設定",
+        "de": "Nicht geplant",
+        "fr": "Non planifiées",
+        "id": "Belum dijadwalkan",
+        "ru": "Не запланированы"
     }
 ]

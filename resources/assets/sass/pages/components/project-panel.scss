@@ -204,6 +204,28 @@
                     }
                 }
             }
+            .project-table-settings {
+                flex-shrink: 0;
+                margin-right: 8px;
+                color: $primary-text-color;
+                .project-table-settings-icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 24px;
+                    height: 30px;
+                    padding: 0;
+                    border: 0;
+                    border-radius: 6px;
+                    background: transparent;
+                    color: inherit;
+                    font-size: 18px;
+                    cursor: pointer;
+                    &:hover {
+                        color: $primary-color;
+                    }
+                }
+            }
             .project-switch-button {
                 display: flex;
                 align-items: center;
@@ -653,6 +675,13 @@
             border: 1px solid #F4F4F5;
             border-bottom: 0;
             overflow: hidden;
+            .project-table-empty {
+                padding: 16px;
+                color: $primary-text-color;
+                text-align: center;
+                background-color: #ffffff;
+                border-bottom: 1px solid #F4F4F5;
+            }
             &.project-table-hide {
                 .task-rows {
                     display: none;
@@ -954,6 +983,24 @@
     .project-gantt {
         height: 100%;
         position: relative
+    }
+}
+
+.project-table-groups-dropdown {
+    max-width: calc(100vw - 24px);
+    max-height: none;
+    overflow: visible;
+    .project-table-group-options {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        overflow-y: auto;
+        .ivu-checkbox-wrapper {
+            margin-right: 0;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            padding-right: 28px;
+        }
     }
 }
 
