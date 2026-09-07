@@ -95,6 +95,7 @@
             <FormItem :label="$L('负责人')" >
                 <UserSelect
                     v-model="addData.owner"
+                    contextmenu-remove
                     :multiple-max="10"
                     :title="$L('选择任务负责人')"
                     :project-id="addData.project_id"
@@ -104,6 +105,7 @@
             <FormItem :label="$L('协助人员')" >
                 <UserSelect
                     v-model="addData.assist"
+                    contextmenu-remove
                     :multiple-max="10"
                     :title="$L('选择任务协助人员')"
                     :project-id="addData.project_id"
@@ -161,6 +163,7 @@
                         <Col span="4">
                             <UserSelect
                                 v-model="item.owner"
+                                contextmenu-remove
                                 :multiple-max="1"
                                 :title="$L('选择负责人')"
                                 :project-id="addData.project_id"

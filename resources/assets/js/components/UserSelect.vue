@@ -2,7 +2,7 @@
     <div class="common-user-select" :class="warpClass">
         <ul v-if="!module">
             <template v-for="userid in values">
-                <li v-if="userid" :key="userid" @click="onSelection">
+                <li v-if="userid" :key="userid" @click="onSelection" @contextmenu="onContextRemove($event, userid)">
                     <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName"/>
                 </li>
             </template>
@@ -296,6 +296,12 @@ export default {
         },
         // 模块化（通过 api 方法调用）
         module: {
+            type: Boolean,
+            default: false
+        },
+
+        // 是否允许右键取消已选人员
+        contextmenuRemove: {
             type: Boolean,
             default: false
         },
@@ -852,6 +858,20 @@ export default {
                     this.selects.push(item.userid)
                 }
             })
+        },
+
+        onContextRemove(event, userid) {
+            if (!this.contextmenuRemove) {
+                return
+            }
+            event.preventDefault()
+            event.stopPropagation()
+            if (this.disabled || this.submittIng > 0 || this.showModal || this.isUncancelable(userid)) {
+                return
+            }
+            this.selects = $A.cloneJSON(this.values)
+            this.onRemoveItem(userid)
+            this.onSubmit()
         },
 
         onRemoveItem(userid) {
