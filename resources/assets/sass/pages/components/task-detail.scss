@@ -38,6 +38,7 @@
                                 padding-top: 14px;
                                 padding-right: 4px;
                                 height: 58px;
+                                min-height: 58px;
                             }
                         }
 
@@ -78,6 +79,7 @@
             display: flex;
             align-items: center;
             height: 42px;
+            min-height: 42px;
             margin-left: 5px;
             padding-bottom: 10px;
             color: #888888;
@@ -798,6 +800,7 @@
             display: flex;
             align-items: center;
             height: 42px;
+            min-height: 42px;
             margin: 0 5px;
             padding-bottom: 10px;
             color: #888888;
@@ -906,7 +909,6 @@
             &.head-wrap {
                 flex-wrap: wrap;
                 height: auto !important;
-                min-height: 58px;
                 row-gap: 8px;
                 .icon {
                     flex-shrink: 0;
