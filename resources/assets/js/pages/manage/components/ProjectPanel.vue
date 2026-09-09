@@ -119,7 +119,7 @@
                     :selected="visibleTableGroups"
                     @change="setTableGroupVisible">
                     <button type="button" class="project-table-settings-icon">
-                        <Icon type="md-settings"/>
+                        <Icon type="md-funnel"/>
                     </button>
                 </ProjectTableGroupDropdown>
                 <div class="project-switch-button">
