@@ -20,7 +20,7 @@ negative:
   - 移动端通常不展示「系统设置」入口，需用桌面端 / 网页后台
   - 普通成员看不到该页，无入口
   - 这 6 个 tab 只是「系统设置」一级菜单内的内容；邮件、AI、签到等是同级别的其他左侧菜单项，不在这个页内
-last_verified: v1.8.89
+last_verified: v1.9.18
 ---
 
 # 系统设置页面总览
@@ -38,7 +38,7 @@ last_verified: v1.8.89
 | **基础设置** | `general` | 系统别名和仪表盘欢迎语；详见 [[system-setting.general.howto]] |
 | **帐号与安全** | `account` | 注册方式、临时帐号、登录验证码和密码策略 |
 | **项目设置** | `project` | 项目创建与邀请权限、部门负责人视角、项目模板；详见 [[system-setting.column-template.howto]] |
-| **任务设置** | `task` | 任务默认规则、提醒、AI 分析和任务优先级；详见 [[system-setting.priority.howto]] |
+| **任务设置** | `task` | 任务默认规则、提醒、AI 分析、任务优先级及流转设置；详见 [[system-setting.priority.howto]] 和 [[system-setting.handoff.howto]] |
 | **消息设置** | `message` | 群聊、私聊、匿名消息、加密、撤回和待办权限 |
 | **文件与存储** | `file` | 上传与媒体处理、打包下载权限和 WebDAV；详见 [[system-setting.file.howto]] |
 

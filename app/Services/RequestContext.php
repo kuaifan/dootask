@@ -46,7 +46,7 @@ class RequestContext
 
         // 尝试从当前请求获取
         $request = request();
-        if ($request && method_exists($request, 'attributes') && $request->attributes) {
+        if ($request && isset($request->attributes)) {
             if (!$request->attributes->has(static::CONTEXT_KEY)) {
                 $request->attributes->set(static::CONTEXT_KEY, self::generateRequestId());
             }

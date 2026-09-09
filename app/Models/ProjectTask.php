@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Module\ProjectTaskHandoffRecord;
 use App\Module\Timer;
 use DB;
 use Arr;
@@ -631,6 +632,7 @@ class ProjectTask extends AbstractModel
                 }
             }
             $task->addLog("创建{任务}");
+            ProjectTaskHandoffRecord::created($task);
             return $task;
         });
     }
@@ -648,7 +650,7 @@ class ProjectTask extends AbstractModel
     public function updateTask($data, &$updateMarking = [])
     {
         //
-        AbstractModel::transaction(function () use ($data, &$updateMarking) {
+        ProjectTaskHandoffRecord::track($this, isset($data['flow_item_id']) ? 'flow' : 'update', function () use ($data, &$updateMarking) {
             // 主任务
             $mainTask = $this->parent_id > 0 ? self::find($this->parent_id) : null;
             // 工作流
@@ -1267,6 +1269,7 @@ class ProjectTask extends AbstractModel
                 $tmp->save();
             }
             //
+            ProjectTaskHandoffRecord::created($task, 'copy');
             return $task;
         });
     }
@@ -1600,7 +1603,7 @@ class ProjectTask extends AbstractModel
      */
     public function completeTask($complete_at, $complete_name = null)
     {
-        AbstractModel::transaction(function () use ($complete_at, $complete_name) {
+        ProjectTaskHandoffRecord::track($this, 'complete', function () use ($complete_at, $complete_name) {
             $addMsg = $this->parent_id == 0 && $this->dialog_id > 0;
             if ($complete_at === null) {
                 // 标记未完成
@@ -1672,7 +1675,7 @@ class ProjectTask extends AbstractModel
             }
             throw new ApiException('仅限【' . $flowItems . '】状态的任务归档');
         }
-        AbstractModel::transaction(function () use ($isAuto, $archived_at) {
+        ProjectTaskHandoffRecord::track($this, $isAuto ? 'auto_archive' : 'archive', function () use ($isAuto, $archived_at) {
             if ($archived_at === null) {
                 // 还原任务栏
                 if (!$this->projectColumn) {
@@ -2123,7 +2126,7 @@ class ProjectTask extends AbstractModel
      */
     public function moveTask(int $projectId, int $columnId, int $flowItemId = 0, array $owner = [], array $assist = [], ?string $completed = null)
     {
-        AbstractModel::transaction(function () use ($projectId, $columnId, $flowItemId, $owner, $assist, $completed) {
+        ProjectTaskHandoffRecord::track($this, 'move', function () use ($projectId, $columnId, $flowItemId, $owner, $assist, $completed) {
             $newTaskUser =  array_merge($owner, $assist);
             //
             $oldProject = Project::find($this->project_id);

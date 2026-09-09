@@ -213,6 +213,12 @@ export default {
             }
         },
 
+        // 指定完整人员名单；null 保持原有远程搜索，空数组表示无人可选
+        users: {
+            type: Array,
+            default: null
+        },
+
         // 指定项目ID
         projectId: {
             type: Number,
@@ -420,11 +426,16 @@ export default {
             return windowWidth < 576
         },
 
-        isWhole({projectId, noProjectId, dialogId, onlyGroup}) {
-            return projectId === 0 && noProjectId === 0 && dialogId === 0 && !onlyGroup
+        isWhole({projectId, noProjectId, dialogId, onlyGroup, users}) {
+            return users === null && projectId === 0 && noProjectId === 0 && dialogId === 0 && !onlyGroup
         },
 
-        lists({switchActive, searchKey, recents, contacts, projects}) {
+        lists({switchActive, searchKey, recents, contacts, projects, users}) {
+            if (users !== null) {
+                return users.filter(item => (!this.hideAiBot || !$A.isAiBotUser(item))
+                    && (!searchKey || $A.strExists(`${item.nickname || item.name || ''} ${item.email || ''} ${item.pinyin || ''}`, searchKey)))
+                    .map(item => ({...item, type: 'user'}))
+            }
             switch (switchActive) {
                 case 'recent':
                     if (searchKey) {
@@ -590,7 +601,7 @@ export default {
         },
 
         searchBefore() {
-            if (!this.showModal) {
+            if (!this.showModal || this.users !== null) {
                 return
             }
             if (this.switchActive === 'recent') {

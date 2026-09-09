@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\AppsController;
 use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ProjectTaskHandoffController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,7 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 项目
     Route::any('project/{method}',                      ProjectController::class);
     Route::any('project/{method}/{action}',             ProjectController::class);
+    Route::any('projecttaskhandoff/{method}',              ProjectTaskHandoffController::class);
     // 仪表盘
     Route::any('dashboard/{method}',                    DashboardController::class);
     Route::any('dashboard/{method}/{action}',           DashboardController::class);

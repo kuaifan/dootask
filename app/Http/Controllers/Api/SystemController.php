@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Module\ProjectTaskHandoffSettings;
 use App\Models\UserDevice;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
@@ -61,6 +62,11 @@ class SystemController extends AbstractController
             Base::checkClientVersion('0.41.11');
             User::auth('admin');
             $all = Request::input();
+            foreach (ProjectTaskHandoffSettings::OPTIONS as $key => $options) {
+                if (array_key_exists($key, $all) && !in_array($all[$key], $options, true)) {
+                    return Base::retError('流转设置选项无效');
+                }
+            }
             foreach ($all AS $key => $value) {
                 if (!in_array($key, [
                     'reg',
@@ -99,6 +105,11 @@ class SystemController extends AbstractController
                     'unclaimed_task_reminder_time',
                     'task_ai_auto_analyze',
                     'department_owner_project_view',
+                    'project_task_handoff',
+                    'project_task_handoff_role',
+                    'project_task_handoff_candidates',
+                    'project_task_handoff_adjust',
+                    'project_task_handoff_note',
                     'todo_set_permission',
                 ])) {
                     unset($all[$key]);
@@ -162,6 +173,7 @@ class SystemController extends AbstractController
         $setting['unclaimed_task_reminder_time'] = $setting['unclaimed_task_reminder_time'] ?: '';
         $setting['task_ai_auto_analyze'] = $setting['task_ai_auto_analyze'] ?: 'open';
         $setting['department_owner_project_view'] = $setting['department_owner_project_view'] ?: 'open';
+        $setting = ProjectTaskHandoffSettings::normalize($setting);
         $setting['app_ai_hidden'] = config('dootask.app_ai_hidden');
         $setting['server_timezone'] = config('app.timezone');
         $setting['server_version'] = Base::getVersion();

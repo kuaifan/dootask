@@ -179,6 +179,44 @@
                 </div>
             </div>
             <div v-if="scope === 'task'" class="block-setting-box">
+                <h3>{{ $L('流转设置') }}</h3>
+                <div class="form-box">
+                    <FormItem :label="$L('任务流转')">
+                        <RadioGroup v-model="formDatum.project_task_handoff">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                    </FormItem>
+                    <template v-if="formDatum.project_task_handoff === 'open'">
+                        <FormItem :label="$L('部门视角指派权限')">
+                            <RadioGroup v-model="formDatum.project_task_handoff_role">
+                                <Radio label="close">{{$L('关闭')}}</Radio>
+                                <Radio label="owner">{{$L('仅部门负责人')}}</Radio>
+                                <Radio label="managers">{{$L('部门负责人及部门管理员')}}</Radio>
+                            </RadioGroup>
+                        </FormItem>
+                        <FormItem :label="$L('可指派人员范围')">
+                            <RadioGroup v-model="formDatum.project_task_handoff_candidates">
+                                <Radio label="department">{{$L('管理部门范围内的项目成员')}}</Radio>
+                                <Radio label="project">{{$L('项目内全部成员')}}</Radio>
+                            </RadioGroup>
+                        </FormItem>
+                        <FormItem :label="$L('原负责人调整范围')">
+                            <RadioGroup v-model="formDatum.project_task_handoff_adjust">
+                                <Radio label="department">{{$L('仅调整管理范围内负责人')}}</Radio>
+                                <Radio label="all">{{$L('允许调整全部负责人')}}</Radio>
+                            </RadioGroup>
+                        </FormItem>
+                        <FormItem :label="$L('指派留言要求')">
+                            <RadioGroup v-model="formDatum.project_task_handoff_note">
+                                <Radio label="optional">{{$L('选填')}}</Radio>
+                                <Radio label="required">{{$L('必填')}}</Radio>
+                            </RadioGroup>
+                        </FormItem>
+                    </template>
+                </div>
+            </div>
+            <div v-if="scope === 'task'" class="block-setting-box">
                 <h3>{{ $L('任务优先级') }}</h3>
                 <div class="form-box">
                     <SystemTaskPriority ref="taskPriority" embedded/>
@@ -374,7 +412,7 @@ const SCOPE_FIELDS = {
     general: ['system_alias', 'login_logo', 'system_welcome'],
     account: ['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy'],
     project: ['project_invite', 'project_add_permission', 'project_add_userids', 'department_owner_project_view'],
-    task: ['auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'task_user_limit', 'unclaimed_task_reminder', 'unclaimed_task_reminder_time', 'task_ai_auto_analyze'],
+    task: ['auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'task_user_limit', 'unclaimed_task_reminder', 'unclaimed_task_reminder_time', 'task_ai_auto_analyze', 'project_task_handoff', 'project_task_handoff_role', 'project_task_handoff_candidates', 'project_task_handoff_adjust', 'project_task_handoff_note'],
     message: ['chat_information', 'anon_message', 'e2e_message', 'msg_rev_limit', 'msg_edit_limit', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'todo_set_permission'],
     file: ['convert_video', 'compress_video', 'image_compress', 'image_quality', 'image_save_local', 'file_upload_limit'],
 };

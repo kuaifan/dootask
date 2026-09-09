@@ -448,7 +448,8 @@
                                 </span>
                             </div>
                             <div class="nav-item" :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</div>
-                            <div v-if="navActive=='log'" class="refresh">
+                            <div v-if="handoffEnabled" class="nav-item" :class="{active:navActive=='handoff'}" @click="navActive='handoff'">{{$L('流转')}}</div>
+                            <div v-if="navActive=='log' || navActive=='handoff'" class="refresh">
                                 <Loading v-if="logLoadIng"/>
                                 <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
                             </div>
@@ -456,19 +457,33 @@
                     </div>
                 </DialogWrapper>
                 <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" @on-load-change="logLoadChange"/>
+                <ProjectTaskHandoff
+                    v-if="handoffEnabled && navActive=='handoff' && taskId > 0"
+                    ref="handoff"
+                    :task="taskDetail"
+                    @on-load-change="logLoadChange"/>
             </template>
             <div v-else>
-                <div class="head">
+                <div class="head head-wrap">
                     <Icon class="icon" type="ios-chatbubbles-outline" />
                     <div class="nav">
                         <div class="nav-item" :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('讨论')}}</div>
                         <div class="nav-item" :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</div>
-                        <div v-if="navActive=='log'" class="refresh">
+                        <div v-if="handoffEnabled" class="nav-item" :class="{active:navActive=='handoff'}" @click="navActive='handoff'">{{$L('流转')}}</div>
+                        <div v-if="navActive=='log' || navActive=='handoff'" class="refresh">
                             <Loading v-if="logLoadIng"/>
                             <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
                         </div>
                     </div>
                     <div class="menu">
+                        <div
+                            v-if="handoffEnabled && navActive=='handoff' && handoffAssign.visible"
+                            class="menu-item"
+                            @click.stop="!handoffAssign.loading && $refs.handoff.openAssign()">
+                            <div v-if="handoffAssign.loading" class="menu-load"><Loading/></div>
+                            {{$L('指派')}}
+                            <i class="taskfont">&#xe703;</i>
+                        </div>
                         <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onOpen">
                             <div v-if="openLoad > 0" class="menu-load"><Loading/></div>
                             {{$L('任务讨论')}}
@@ -482,6 +497,14 @@
                     ref="log"
                     :task-id="taskDetail.id"
                     :show-load="false"
+                    @on-load-change="logLoadChange"/>
+                <ProjectTaskHandoff
+                    v-else-if="handoffEnabled && navActive=='handoff' && taskId > 0"
+                    ref="handoff"
+                    :task="taskDetail"
+                    :show-load="false"
+                    :show-assign="false"
+                    @on-assign-state="handoffAssign = $event"
                     @on-load-change="logLoadChange"/>
                 <div
                     v-else
@@ -573,6 +596,7 @@ import TaskPriority from "./TaskPriority";
 import TaskUpload from "./TaskUpload";
 import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
+import ProjectTaskHandoff from "./ProjectTaskHandoff.vue";
 import TaskMenu from "./TaskMenu";
 import ChatInput from "./ChatInput";
 import UserSelect from "../../../components/UserSelect.vue";
@@ -600,6 +624,7 @@ export default {
         ChatInput,
         TaskMenu,
         ProjectLog,
+        ProjectTaskHandoff,
         DialogWrapper,
         TaskUpload,
         TaskPriority,
@@ -683,6 +708,7 @@ export default {
             msgType: '',
             navActive: 'dialog',
             logLoadIng: false,
+            handoffAssign: {visible: false, loading: false},
 
             sendLoad: 0,
             openLoad: 0,
@@ -725,7 +751,7 @@ export default {
 
     created() {
         const navActive = $A.getObject(this.$route.query, 'navActive')
-        if (['dialog', 'log'].includes(navActive)) {
+        if (['dialog', 'log'].includes(navActive) || (navActive === 'handoff' && this.handoffEnabled)) {
             this.navActive = navActive;
         }
         $A.IDBJson('delayTaskForm').then(data => {
@@ -825,6 +851,10 @@ export default {
 
         hasOpenDialog() {
             return this.taskDetail.dialog_id > 0 && this.windowLandscape;
+        },
+
+        handoffEnabled() {
+            return this.systemConfig.project_task_handoff === 'open';
         },
 
         dialogStyle() {
@@ -1050,6 +1080,11 @@ export default {
     },
 
     watch: {
+        handoffEnabled(enabled) {
+            if (!enabled && this.navActive === 'handoff') {
+                this.navActive = 'dialog';
+            }
+        },
         openTask: {
             handler(data) {
                 this.taskDetail = $A.cloneJSON(data);
@@ -1668,6 +1703,10 @@ export default {
         },
 
         getLogLists() {
+            if (this.navActive === 'handoff') {
+                this.$refs.handoff?.load(true);
+                return;
+            }
             if (this.navActive != 'log') {
                 return;
             }

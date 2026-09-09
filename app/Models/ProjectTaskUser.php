@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Module\ProjectTaskHandoffRecord;
+
 /**
  * App\Models\ProjectTaskUser
  *
@@ -56,34 +58,42 @@ class ProjectTaskUser extends AbstractModel
             $tastIds = [];
             /** @var self $item */
             foreach ($list as $item) {
-                $row = self::whereTaskId($item->task_id)->whereUserid($newUserid)->first();
-                if ($row) {
-                    // 已存在则删除原数据，判断改变已存在的数据
-                    $row->owner = max($row->owner, $item->owner);
-                    $row->save();
-                    $item->delete();
-                } else {
-                    // 不存在则改变原数据
-                    $item->userid = $newUserid;
-                    $item->save();
-                }
-                if ($item->projectTask) {
-                    $item->projectTask->addLog("移交{任务}身份", [
-                        'change' => [
-                            [
-                                'type' => 'user',
-                                'data' => $originalUserid,
-                            ],
-                            [
-                                'type' => 'user',
-                                'data' => $newUserid,
-                            ]
-                        ],
-                    ], 0, 1);
-                    if (!in_array($item->task_pid, $tastIds)) {
-                        $tastIds[] = $item->task_pid;
-                        $item->projectTask->syncDialogUser();
+                $transfer = function () use ($item, $originalUserid, $newUserid, &$tastIds) {
+                    $row = self::whereTaskId($item->task_id)->whereUserid($newUserid)->first();
+                    if ($row) {
+                        // 已存在则删除原数据，判断改变已存在的数据
+                        $row->owner = max($row->owner, $item->owner);
+                        $row->save();
+                        $item->delete();
+                    } else {
+                        // 不存在则改变原数据
+                        $item->userid = $newUserid;
+                        $item->save();
                     }
+                    if ($item->projectTask) {
+                        $item->projectTask->addLog("移交{任务}身份", [
+                            'change' => [
+                                [
+                                    'type' => 'user',
+                                    'data' => $originalUserid,
+                                ],
+                                [
+                                    'type' => 'user',
+                                    'data' => $newUserid,
+                                ]
+                            ],
+                        ], 0, 1);
+                        if (!in_array($item->task_pid, $tastIds)) {
+                            $tastIds[] = $item->task_pid;
+                            $item->projectTask->syncDialogUser();
+                        }
+                    }
+                };
+                $task = ProjectTask::withTrashed()->find($item->task_id);
+                if ($task) {
+                    ProjectTaskHandoffRecord::track($task, 'transfer', $transfer);
+                } else {
+                    $transfer();
                 }
             }
         });

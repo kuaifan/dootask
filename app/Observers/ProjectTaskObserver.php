@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Module\ProjectTaskHandoffRecord;
 use App\Models\Deleted;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskUser;
@@ -30,6 +31,7 @@ class ProjectTaskObserver extends AbstractObserver
      */
     public function updated(ProjectTask $projectTask)
     {
+        ProjectTaskHandoffRecord::updated($projectTask);
         if ($projectTask->isDirty('visibility')) {
             self::visibilityUpdate($projectTask);
         }

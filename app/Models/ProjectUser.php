@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Module\ProjectTaskHandoffRecord;
 use App\Module\Base;
 
 /**
@@ -156,7 +157,13 @@ class ProjectUser extends AbstractModel
                 $tastIds = [];
                 /** @var ProjectTaskUser $item */
                 foreach ($list as $item) {
-                    $item->delete();
+                    if ($item->projectTask) {
+                        ProjectTaskHandoffRecord::track($item->projectTask, 'member_exit', function () use ($item) {
+                            $item->delete();
+                        });
+                    } else {
+                        $item->delete();
+                    }
                     if (!in_array($item->task_pid, $tastIds)) {
                         $tastIds[] = $item->task_pid;
                         $item->projectTask?->syncDialogUser();

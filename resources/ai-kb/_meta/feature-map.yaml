@@ -211,6 +211,7 @@ features:
       - task.field.description.concept
       - task.related.concept
       - task.flow.concept
+      - task.handoff.howto
       - task.dialog.concept
       - task.notify.concept
 
@@ -584,6 +585,7 @@ features:
       - system-setting.webdav.howto
       - system-setting.video-process.howto
       - system-setting.task-visibility.howto
+      - system-setting.handoff.howto
       - system-setting.chat-mute.howto
       - system-setting.todo-permission.howto
       - system-setting.entry.menu-map
