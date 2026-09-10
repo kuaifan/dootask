@@ -108,14 +108,14 @@
                 flex-shrink: 0;
                 display: flex;
                 align-items: center;
-                margin: -6px 24px;
+                margin: 0 24px;
 
                 .search-selected {
                     flex: none;
                     height: auto;
                     flex-shrink: 0;
                     max-width: 60%;
-                    margin-right: 12px;
+                    margin: -6px 12px -6px 0;
 
                     ul {
                         display: flex;
@@ -298,6 +298,14 @@
 
                 ul {
                     padding: 8px 24px;
+
+                    &.department-members {
+                        padding-left: 44px;
+                    }
+
+                    .user-modal-view.department-count {
+                        font-size: 12px;
+                    }
 
                     &:first-child {
                         padding-top: 16px;

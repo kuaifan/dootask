@@ -147,10 +147,10 @@
                                     <Icon class="user-modal-icon" :type="selectIcon(items.userid_list)"/>
                                     <span>{{ items.name }}</span>
                                 </div>
-                                <div class="user-modal-view">{{ items.list.length }} {{ $L('部门成员') }}</div>
+                                <div class="user-modal-view department-count">{{ items.list.length }} {{ $L('部门成员') }}</div>
                             </li>
                         </ul>
-                        <ul :key="`${items.id}-list`">
+                        <ul :key="`${items.id}-list`" :class="{'department-members': items.name !== null}">
                             <li
                                 v-for="item in items.list"
                                 :key="item.userid"
