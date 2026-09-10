@@ -70,10 +70,10 @@
                             <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
                             <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
                             <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
-                            <EDropdownItem command="archived">{{$L('归档项目')}}</EDropdownItem>
+                            <EDropdownItem command="archived" divided>{{$L('归档项目')}}</EDropdownItem>
                             <!--主独占（仅主负责人可见）-->
                             <template v-if="canManageDeputy">
-                                <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
+                                <EDropdownItem command="transfer">{{$L('移交项目')}}</EDropdownItem>
                                 <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
                             </template>
                         </EDropdownMenu>
