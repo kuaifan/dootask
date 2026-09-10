@@ -40150,5 +40150,17 @@
         "fr": "Non planifiées",
         "id": "Belum dijadwalkan",
         "ru": "Не запланированы"
+    },
+    {
+        "key": "展开显示更多",
+        "zh": "",
+        "zh-CHT": "展開顯示更多",
+        "en": "Show more",
+        "ko": "더 보기",
+        "ja": "さらに表示",
+        "de": "Mehr anzeigen",
+        "fr": "Afficher plus",
+        "id": "Tampilkan lebih banyak",
+        "ru": "Показать больше"
     }
 ]

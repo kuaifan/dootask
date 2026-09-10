@@ -2,35 +2,29 @@
     <div class="dashboard-team">
         <!--核心指标-->
         <ul class="dashboard-cards">
-            <li @click="onBlock('uncompleted')">
+            <li class="stat-uncompleted" @click="onBlock('uncompleted')">
                 <div class="card-label">{{$L('未完成')}}</div>
                 <div class="card-data">
                     <span class="card-num">{{blocks.uncompleted || 0}}</span>
-                    <span class="card-sub">{{$L('[task_unit].项')}}</span>
                 </div>
-                <div class="card-link">{{$L('查看任务')}} →</div>
             </li>
-            <li @click="onBlock('overdue')">
+            <li class="stat-overdue" @click="onBlock('overdue')">
                 <div class="card-label">{{$L('已超期')}}</div>
                 <div class="card-data">
                     <span class="card-num num-red">{{blocks.overdue || 0}}</span>
-                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="blocks.overdue_owner_count"> · {{$L('涉及 (*) 人', blocks.overdue_owner_count)}}</template></span>
+                    <span v-if="blocks.overdue_owner_count" class="card-sub">{{$L('涉及 (*) 人', blocks.overdue_owner_count)}}</span>
                 </div>
-                <div class="card-link link-red">{{$L('查看任务')}} →</div>
             </li>
-            <li @click="onBlock('soon')">
+            <li class="stat-soon" @click="onBlock('soon')">
                 <div class="card-label">{{$L('(*) 天内到期', 3)}}</div>
                 <div class="card-data">
                     <span class="card-num num-orange">{{blocks.due_soon || 0}}</span>
-                    <span class="card-sub">{{$L('[task_unit].项')}}</span>
                 </div>
-                <div class="card-link link-orange">{{$L('查看任务')}} →</div>
             </li>
-            <li class="card-static">
+            <li class="card-static stat-completed" :title="weekDiffText">
                 <div class="card-label">{{$L('本周完成')}}</div>
                 <div class="card-data">
                     <span class="card-num num-green">{{blocks.week_completed || 0}}</span>
-                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="weekDiffText"> · {{weekDiffText}}</template></span>
                 </div>
             </li>
         </ul>
@@ -40,16 +34,16 @@
                 <div class="card-head">
                     <span class="head-title">{{$L('成员任务分配')}}</span>
                     <span class="head-legend">
-                        <span><i style="background:#bfe3cd"></i>{{$L('待处理')}}</span>
-                        <span><i style="background:#1e9e55"></i>{{$L('进行中')}}</span>
-                        <span><i style="background:#6ba7d8"></i>{{$L('验收/测试')}}</span>
+                        <span><i style="background:#bcc1cc"></i>{{$L('待处理')}}</span>
+                        <span><i style="background:#85acff"></i>{{$L('进行中')}}</span>
+                        <span><i style="background:#8bcf70"></i>{{$L('验收/测试')}}</span>
                     </span>
                 </div>
                 <div v-if="showStatsLoading" class="team-stats-loading"><Loading/></div>
                 <template v-else>
                     <ul class="member-list">
                         <li v-for="member in visibleMembers" :key="member.userid" class="member-row" @click="onMember(member)">
-                            <UserAvatar class="team-avatar" :userid="member.userid" :size="26"/>
+                            <UserAvatar class="team-avatar" :userid="member.userid" :size="24"/>
                             <span class="member-name">{{member.nickname}}</span>
                             <ETooltip
                                 :disabled="$isEEUIApp || $store.state.windowTouch || member.total === 0"
@@ -59,9 +53,9 @@
                                 popper-class="dashboard-member-progress-popper">
                                 <span class="member-track">
                                     <span class="member-bar" :style="{width: memberBarWidth(member)}">
-                                        <i v-if="member.segments.start > 0" :style="{flex: member.segments.start, background: '#bfe3cd'}"></i>
-                                        <i v-if="member.segments.progress > 0" :style="{flex: member.segments.progress, background: '#1e9e55'}"></i>
-                                        <i v-if="member.segments.test > 0" :style="{flex: member.segments.test, background: '#6ba7d8'}"></i>
+                                        <i v-if="member.segments.start > 0" :style="{flex: member.segments.start, background: '#bcc1cc'}"></i>
+                                        <i v-if="member.segments.progress > 0" :style="{flex: member.segments.progress, background: '#85acff'}"></i>
+                                        <i v-if="member.segments.test > 0" :style="{flex: member.segments.test, background: '#8bcf70'}"></i>
                                     </span>
                                 </span>
                                 <div slot="content" class="member-progress-tooltip">
@@ -105,23 +99,24 @@
                     <span v-if="!showStatsLoading" class="head-note">{{$L('未完成 (*) 项', blocks.uncompleted || 0)}}</span>
                 </div>
                 <div v-if="showStatsLoading" class="team-stats-loading"><Loading/></div>
-                <div v-else class="priority-list">
-                    <div v-for="item in visiblePriorityList" :key="item.level" class="priority-row" @click="onPriority(item)">
-                        <div class="priority-head">
-                            <span class="priority-name">{{item.name}}</span>
-                            <span class="priority-num">{{$L('(*) 项', item.num)}} · {{item.percent}}%</span>
+                <div v-else class="priority-distribution">
+                    <DashboardPriorityChart :items="priorityList" :total="blocks.uncompleted || 0" @select="onPriority"/>
+                    <div class="priority-list">
+                        <button v-for="item in visiblePriorityList" :key="item.level" type="button" class="priority-row" @click="onPriority(item)">
+                            <div class="priority-head">
+                                <i class="priority-dot" :style="{backgroundColor: item.color}"></i>
+                                <span class="priority-name">{{item.name}}</span>
+                                <span class="priority-num">{{$L('(*) 项', item.num)}} · {{item.percent}}%</span>
+                            </div>
+                        </button>
+                        <div
+                            v-if="priorityList.length > priorityLimit"
+                            class="priority-tip priority-more"
+                            @click="priorityExpand = !priorityExpand">
+                            {{priorityExpand ? $L('收起') : $L('查看全部 (*) 个优先级', priorityList.length) + ' →'}}
                         </div>
-                        <div class="priority-bar">
-                            <i :style="{width: item.percent + '%', background: item.color}"></i>
-                        </div>
+                        <span v-if="priorityList.length === 0" class="priority-tip">{{$L('暂无数据')}}</span>
                     </div>
-                    <div
-                        v-if="priorityList.length > priorityLimit"
-                        class="priority-tip priority-more"
-                        @click="priorityExpand = !priorityExpand">
-                        {{priorityExpand ? $L('收起') : $L('查看全部 (*) 个优先级', priorityList.length) + ' →'}}
-                    </div>
-                    <div v-else class="priority-tip">{{$L('点击任一档位可下钻到任务列表')}}</div>
                 </div>
             </div>
         </div>
@@ -129,7 +124,6 @@
         <div class="team-focus-section" :class="{'focus-scroll-reserve': focusScrollReserved}">
             <div ref="focusCard" class="dashboard-card team-focus">
                 <div class="card-head focus-head">
-                    <span class="head-title">{{$L('重点关注任务')}}</span>
                     <span
                         v-for="chip in chips"
                         :key="chip.type"
@@ -142,19 +136,19 @@
                 </div>
                 <div class="focus-table">
                     <div class="focus-row focus-thead">
-                        <span>{{$L('任务')}}</span>
-                        <span class="f-project">{{$L('项目')}}</span>
-                        <span class="f-owner">{{$L('负责人')}}</span>
-                        <span class="f-priority">{{$L('优先级')}}</span>
-                        <span class="f-status">{{$L('状态')}}</span>
-                        <span class="f-end">{{$L('截止时间')}}</span>
+                        <span><DashboardIcon name="task"/>{{$L('任务')}}</span>
+                        <span class="f-project"><DashboardIcon name="project"/>{{$L('项目')}}</span>
+                        <span class="f-owner"><DashboardIcon name="owner"/>{{$L('负责人')}}</span>
+                        <span class="f-priority"><DashboardIcon name="priority"/>{{$L('优先级')}}</span>
+                        <span class="f-status"><DashboardIcon name="status"/>{{$L('状态')}}</span>
+                        <span class="f-end"><DashboardIcon name="calendar"/>{{$L('截止时间')}}</span>
                     </div>
                     <div v-for="item in currentList.list" :key="item.id" class="focus-row" @click="onTask(item)">
                         <span class="f-name">{{item.name}}</span>
                         <span class="f-project">{{item.project_name}}</span>
                         <span class="f-owner">
                             <template v-if="item.owner">
-                                <UserAvatar class="team-avatar" :userid="item.owner.userid" :size="20"/>
+                                <UserAvatar class="team-avatar" :userid="item.owner.userid" :size="24"/>
                                 <span class="owner-name">{{item.owner.nickname}}</span>
                                 <em v-if="item.owners.length > 1" class="owner-more">+{{item.owners.length - 1}}</em>
                             </template>
@@ -164,7 +158,7 @@
                         </span>
                         <span class="f-priority">
                             <template v-if="item.p_name">
-                                <i class="priority-dot" :style="{backgroundColor: item.p_color}"></i>
+                                <i class="priority-glyph" :style="{backgroundColor: item.p_color}"></i>
                                 <span>{{item.p_name}}</span>
                             </template>
                             <template v-else>—</template>
@@ -189,9 +183,12 @@
 <script>
 import {mapState} from "vuex";
 import dashboardTimeMixin from "./dashboard-time-mixin";
+import DashboardIcon from "./DashboardIcon";
+import DashboardPriorityChart from "./DashboardPriorityChart";
 
 export default {
     name: "DashboardTeam",
+    components: {DashboardIcon, DashboardPriorityChart},
     mixins: [dashboardTimeMixin],
     props: {
         initialFocus: {
@@ -219,7 +216,7 @@ export default {
             pageSize: 20,
             refreshSeconds: 60,
 
-            memberLimit: 6,
+            memberLimit: 5,
             memberExpand: false,
             priorityLimit: 6,
             priorityExpand: false,
@@ -555,9 +552,9 @@ export default {
         memberProgressDetails(member) {
             const total = Math.max(member.total || 0, 1)
             return [
-                {type: 'start', label: this.$L('待处理'), color: '#bfe3cd', count: member.segments.start || 0},
-                {type: 'progress', label: this.$L('进行中'), color: '#1e9e55', count: member.segments.progress || 0},
-                {type: 'test', label: this.$L('验收/测试'), color: '#6ba7d8', count: member.segments.test || 0},
+                {type: 'start', label: this.$L('待处理'), color: '#bcc1cc', count: member.segments.start || 0},
+                {type: 'progress', label: this.$L('进行中'), color: '#85acff', count: member.segments.progress || 0},
+                {type: 'test', label: this.$L('验收/测试'), color: '#8bcf70', count: member.segments.test || 0},
             ].filter(item => item.count > 0).map(item => {
                 return {
                     ...item,

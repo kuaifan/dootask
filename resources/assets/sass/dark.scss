@@ -486,6 +486,37 @@ body.dark-mode-reverse {
     }
 
     .page-dashboard {
+        .dashboard-empty-art {
+            .empty-art-light {
+                display: none;
+            }
+
+            .empty-art-dark {
+                display: block;
+            }
+        }
+
+        .dashboard-cards > li {
+            .card-label {
+                color: rgba(0, 0, 0, 0.85);
+            }
+
+            .card-data .card-num {
+                color: #000;
+            }
+
+            .card-data .card-sub {
+                background-color: rgba(255, 236, 232, 0.4);
+            }
+
+            .duo-upcoming {
+                .side-num,
+                .side-label {
+                    color: #000;
+                }
+            }
+        }
+
         .dashboard-wrapper {
             .dashboard-block {
                 > li {

@@ -76,36 +76,32 @@
                     <!--列表布局-->
                     <template v-if="layout === 'list'">
                         <ul class="dashboard-cards personal-panel">
-                            <li :class="{'card-off': dashboardTask.overdue_count === 0}" @click="scrollTo('overdue')">
+                            <li :class="{'card-off': dashboardTask.overdue_count === 0}" :title="overdueMaxDays > 0 ? $L('最久 (*) 天', overdueMaxDays) : ''" @click="scrollTo('overdue')">
                                 <div class="card-label">{{getTitle('overdue')}}</div>
                                 <div class="card-data">
                                     <span class="card-num num-red">{{dashboardTask.overdue_count}}</span>
-                                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="overdueMaxDays > 0"> · {{$L('最久 (*) 天', overdueMaxDays)}}</template></span>
                                 </div>
                             </li>
-                            <li :class="{'card-off': dashboardTask.today_count === 0}" @click="scrollTo('today')">
+                            <li :class="{'card-off': dashboardTask.today_count === 0}" :title="todayNearest ? $L('最近') + ' ' + todayNearest : ''" @click="scrollTo('today')">
                                 <div class="card-label">{{getTitle('today')}}</div>
                                 <div class="card-data">
                                     <span class="card-num num-orange">{{dashboardTask.today_count}}</span>
-                                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="todayNearest"> · {{$L('最近')}} {{todayNearest}}</template></span>
                                 </div>
                             </li>
                             <li :class="{'card-off': dashboardTask.todo_count === 0}" @click="scrollTo('todo')">
                                 <div class="card-label">{{getTitle('todo')}}</div>
                                 <div class="card-data">
                                     <span class="card-num">{{dashboardTask.todo_count}}</span>
-                                    <span class="card-sub">{{$L('[task_unit].项')}}</span>
                                 </div>
                                 <div v-if="upcomingTask.count > 0" class="duo-upcoming" @click.stop="scrollTo('upcoming')">
                                     <div class="side-num">{{upcomingTask.count}}</div>
                                     <div class="side-label">{{$L('待开始')}}</div>
                                 </div>
                             </li>
-                            <li :class="{'card-off': assistTask.length === 0}" @click="scrollTo('assist')">
+                            <li :class="{'card-off': assistTask.length === 0}" :title="assistTodayCount > 0 ? $L('今天 (*) 项到期', assistTodayCount) : ''" @click="scrollTo('assist')">
                                 <div class="card-label">{{getTitle('assist')}}</div>
                                 <div class="card-data">
                                     <span class="card-num">{{assistTask.length}}</span>
-                                    <span class="card-sub">{{$L('[task_unit].项')}}<template v-if="assistTodayCount > 0"> · {{$L('今天 (*) 项到期', assistTodayCount)}}</template></span>
                                 </div>
                             </li>
                         </ul>
@@ -143,15 +139,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-else class="table-row table-thead">
-                                <span></span>
-                                <span>{{$L('任务')}}</span>
-                                <span class="t-project">{{$L('项目')}}</span>
-                                <span class="t-status">{{$L('状态')}}</span>
-                                <span class="t-priority">{{$L('优先级')}}</span>
-                                <span class="t-sub">{{$L('子任务')}}</span>
-                                <span class="t-end">{{$L('截止时间')}}</span>
-                            </div>
                             <template v-for="group in listColumns">
                                 <div
                                     :key="`head-${group.type}`"
@@ -160,8 +147,8 @@
                                     :class="[`group-${group.type}`, {'group-flash': flashType === group.type}]"
                                     @click="toggleGroup(group.type)">
                                     <i class="group-dot"></i>
-                                    <span class="group-title">{{group.title}} · {{group.count}}</span>
-                                    <i class="group-chevron taskfont" :class="{'chevron-close': group.hidden}">&#xe702;</i>
+                                    <span class="group-title">{{group.title}}（{{group.count}}）</span>
+                                    <DashboardIcon name="chevron" :size="16" class="group-chevron" :class="{'chevron-close': group.hidden}"/>
                                 </div>
                                 <template v-if="!group.hidden">
                                     <div v-if="group.list.length === 0" :key="`empty-${group.type}`" class="table-empty-group">
@@ -169,6 +156,15 @@
                                         <span>{{listEmptyText(group.type)}}</span>
                                     </div>
                                     <div class="table-body" :key="`list-${group.type}`">
+                                        <div class="table-row table-thead">
+                                            <span></span>
+                                            <span><DashboardIcon name="task"/>{{$L('任务')}}</span>
+                                            <span class="t-project"><DashboardIcon name="project"/>{{$L('项目')}}</span>
+                                            <span class="t-status"><DashboardIcon name="status"/>{{$L('状态')}}</span>
+                                            <span class="t-priority"><DashboardIcon name="priority"/>{{$L('优先级')}}</span>
+                                            <span class="t-sub"><DashboardIcon name="subtask"/>{{$L('子任务')}}</span>
+                                            <span class="t-end"><DashboardIcon name="calendar"/>{{$L('截止时间')}}</span>
+                                        </div>
                                         <div
                                             v-for="item in groupList(group, listLimit(group))"
                                             :key="`${group.type}-${item.id}`"
@@ -198,7 +194,7 @@
                                             </span>
                                             <span class="t-priority">
                                                 <template v-if="item.p_name">
-                                                    <i class="priority-dot" :style="{backgroundColor: item.p_color}"></i>
+                                                    <i class="priority-glyph" :style="{backgroundColor: item.p_color}"></i>
                                                     <span>{{item.p_name}}</span>
                                                 </template>
                                                 <template v-else>—</template>
@@ -235,7 +231,7 @@
                             <div class="quad-head">
                                 <i class="group-dot"></i>
                                 <span class="group-title">{{group.title}}</span>
-                                <span class="quad-num" :class="{'num-zero': group.count === 0}">{{group.count}}</span>
+                                <span class="quad-num">（{{group.count}}）</span>
                             </div>
                             <div
                                 v-for="item in groupList(group, quadLimit)"
@@ -253,22 +249,26 @@
                                     class="status-pill"
                                     :class="item.flow_item_name ? item.flow_item_status : {end: !!item.complete_at}"
                                     @click.stop="openMenu($event, item)">{{item.flow_item_name || (item.complete_at ? $L('已完成') : $L('未完成'))}}</em>
-                                <span v-if="item.p_name" class="quad-priority"><i class="priority-dot" :style="{backgroundColor: item.p_color}"></i></span>
-                                <span v-if="item.sub_num > 0" class="quad-sub">{{item.sub_complete}}/{{item.sub_num}}</span>
-                                <span v-if="item.end_at" class="t-end" :class="deadlineClass(item.end_at)">{{deadlineText(item.end_at)}}</span>
+                                <span class="quad-priority" :title="item.p_name"><i v-if="item.p_name" class="priority-glyph" :style="{backgroundColor: item.p_color}"></i><span>{{item.p_name || '—'}}</span></span>
+                                <span class="quad-sub">{{item.sub_num > 0 ? `${item.sub_complete}/${item.sub_num}` : '—'}}</span>
+                                <span class="t-end" :class="deadlineClass(item.end_at)" :title="item.end_at">{{deadlineText(item.end_at) || '—'}}</span>
                             </div>
                             <div v-if="group.list.length === 0" class="quad-empty">
-                                <span class="empty-icon"><Icon type="md-checkmark"/></span>
+                                <span class="dashboard-empty-art">
+                                    <img class="empty-art-light" :src="emptyArt" width="147" height="123" alt=""/>
+                                    <img class="empty-art-dark" :src="emptyDarkArt" width="150" height="150" alt=""/>
+                                </span>
                                 <span>{{quadEmptyText(group.type)}}</span>
                             </div>
                             <div v-else-if="group.list.length <= quadLimit" class="quad-filler">
                                 {{group.type === 'today' && group.list.length === 1 ? $L('今天只有这一项，处理完就轻松了') : $L('全部显示完毕')}}
                             </div>
                             <div
-                                v-else
+                                v-else-if="group.list.length > quadLimit"
                                 class="card-more"
                                 @click="toggleExpand(group.type)">
-                                {{expandedGroups.includes(group.type) ? $L('收起') : $L('数量较多，仅显示最近 (*) 项，展开其余 (*) 项', quadLimit, group.list.length - quadLimit) + ' →'}}
+                                {{expandedGroups.includes(group.type) ? $L('收起') : $L('展开显示更多')}}
+                                <DashboardIcon name="chevron" :size="12" :class="{'more-expanded': expandedGroups.includes(group.type)}"/>
                             </div>
                         </div>
                     </div>
@@ -292,6 +292,7 @@
 import {mapGetters, mapState} from "vuex";
 import TaskMenu from "./components/TaskMenu";
 import DashboardTeam from "./components/DashboardTeam";
+import DashboardIcon from "./components/DashboardIcon";
 import DepartmentOwnerView from "./components/DepartmentOwnerView";
 import dashboardTimeMixin from "./components/dashboard-time-mixin";
 import emitter from "../../store/events";
@@ -304,10 +305,12 @@ const prefsCache = {
 }
 
 export default {
-    components: {TaskMenu, DashboardTeam, DepartmentOwnerView},
+    components: {TaskMenu, DashboardTeam, DashboardIcon, DepartmentOwnerView},
     mixins: [dashboardTimeMixin],
     data() {
         return {
+            emptyArt: $A.mainUrl('images/dashboard/empty.svg'),
+            emptyDarkArt: $A.mainUrl('images/dashboard/empty-black.svg'),
             licenseTimer: null,
 
             view: prefsCache.view,
@@ -320,7 +323,7 @@ export default {
             expandedGroups: [],
             groupLimit: 10,
             completedLimit: 5,
-            quadLimit: 5,
+            quadLimit: 7,
             flashType: '',
             flashTimer: null,
 
