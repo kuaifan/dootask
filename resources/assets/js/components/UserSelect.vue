@@ -44,8 +44,16 @@
             <!-- 搜索 -->
             <div class="user-modal-search">
                 <Scrollbar ref="selected" class="search-selected" v-if="selects.length > 0" enable-x :enable-y="false">
-                    <ul>
-                        <li v-for="item in formatSelect(selects)" :key="item.userid" :data-id="item.userid" @click.stop="onRemoveItem(item.userid)">
+                    <ul class="selected-avatar-list">
+                        <li
+                            v-for="item in formatSelect(selects)"
+                            :key="item.userid"
+                            :data-id="item.userid"
+                            :class="{'selected-mouse': selectedPointerType === 'mouse', 'selected-removable': !isUncancelable(item.userid)}"
+                            @pointerover="selectedPointerType = $event.pointerType"
+                            @pointerdown="selectedPointerType = $event.pointerType"
+                            @touchstart.passive="selectedPointerType = 'touch'"
+                            @click.stop="onSelectedAvatarClick($event, item.userid)">
                             <template v-if="item.type=='group'">
                                 <EAvatar v-if="item.avatar" class="img-avatar" :src="item.avatar" :size="32"></EAvatar>
                                 <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
@@ -55,6 +63,15 @@
                                 <Icon v-else class="icon-avatar" type="ios-people"/>
                             </template>
                             <UserAvatar v-else :userid="item.userid"/>
+                            <button
+                                v-if="!isUncancelable(item.userid)"
+                                type="button"
+                                class="selected-remove"
+                                :aria-label="$L('取消选择')"
+                                :title="$L('取消选择')"
+                                @click.stop="onRemoveItem(item.userid)">
+                                <Icon type="ios-close"/>
+                            </button>
                         </li>
                     </ul>
                 </Scrollbar>
@@ -340,6 +357,7 @@ export default {
             waitIng: 0,             // 页面等待效果
             submittIng: 0,          // 提交按钮等待效果
             backspaceDelete: false, // 是否按删除键删除
+            selectedPointerType: 'mouse',
 
             values: [],
             selects: [],
@@ -885,6 +903,13 @@ export default {
             this.onSubmit()
         },
 
+        onSelectedAvatarClick(event, userid) {
+            const pointerType = event.pointerType || this.selectedPointerType;
+            if (pointerType === 'touch' || pointerType === 'pen') {
+                this.onRemoveItem(userid);
+            }
+        },
+
         onRemoveItem(userid) {
             if (this.isUncancelable(userid)) {
                 return
@@ -955,6 +980,13 @@ export default {
                     const userid = this.selects[i];
                     if (!this.isUncancelable(userid)) {
                         this.onRemoveItem(userid);
+                        this.$nextTick(() => {
+                            const selected = this.$refs.selected;
+                            const element = selected && selected.scrollElement();
+                            if (element) {
+                                element.scrollLeft = element.scrollWidth;
+                            }
+                        });
                         break; // 找到并移除后立即退出循环
                     }
                 }

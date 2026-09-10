@@ -20,7 +20,7 @@ negative:
   - 默认排除机器人（bot=0），需要机器人时 bot=1/2
   - 单次最多返回 100 条，超过需翻页（page + pagesize）
   - 搜索结果只含基础字段（basicField），完整资料需调 user/info 或 get_users_basic
-last_verified: v1.7.90
+last_verified: v1.9.18
 ---
 
 # 搜索用户
@@ -36,6 +36,12 @@ last_verified: v1.7.90
 - 含 `@` → 按 email 模糊匹配
 - 纯数字 → 同时按 userid 精确 + nickname / pinyin / profession 模糊
 - 其它 → 按 nickname / pinyin / profession 模糊
+
+## 取消已选成员
+- 人员选择弹窗搜索框左侧显示已选头像。鼠标悬停头像后，点击右上角的关闭图标取消选择；鼠标点击头像本身不会取消。
+- 触摸操作直接轻点已选头像取消选择。禁止取消的成员不会显示关闭图标，触摸点击也不会取消。
+- 搜索框为空时按 Backspace，取消末尾第一个允许取消的成员，并将已选列表滚动到最右端；没有可取消成员时保持不变。
+- 关闭图标支持键盘聚焦后按 Enter 或空格取消选择。修改选择后仍需点击「确定」提交。
 
 ## 高级筛选
 - `keys.disable`：`0` 仅在职（默认）/ `1` 仅离职 / `2` 全部

@@ -108,7 +108,7 @@
                 flex-shrink: 0;
                 display: flex;
                 align-items: center;
-                margin: 0 24px;
+                margin: -6px 24px;
 
                 .search-selected {
                     flex: none;
@@ -122,9 +122,57 @@
                         align-items: center;
                         cursor: pointer;
 
+                        &.selected-avatar-list {
+                            padding: 10px 0;
+                            cursor: default;
+
+                            > li {
+                                position: relative;
+                                flex-shrink: 0;
+                            }
+                        }
+
                         > li {
                             list-style: none;
                             margin-right: 6px;
+
+                            &.selected-removable:not(.selected-mouse) {
+                                cursor: pointer;
+                            }
+
+                            .selected-remove {
+                                position: absolute;
+                                top: -6px;
+                                right: -4px;
+                                z-index: 1;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                width: 18px;
+                                height: 18px;
+                                padding: 0;
+                                border: 1px solid #ffffff;
+                                border-radius: 50%;
+                                background: #ed4014;
+                                color: #ffffff;
+                                font-size: 18px;
+                                line-height: 1;
+                                cursor: pointer;
+                                opacity: 0;
+                                pointer-events: none;
+
+                                &:focus-visible {
+                                    opacity: 1;
+                                    pointer-events: auto;
+                                    outline: 2px solid #2d8cf0;
+                                    outline-offset: 1px;
+                                }
+                            }
+
+                            &.selected-mouse:hover .selected-remove {
+                                opacity: 1;
+                                pointer-events: auto;
+                            }
 
                             &:last-child {
                                 margin-right: 0;
