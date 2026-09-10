@@ -454,13 +454,16 @@
         </div>
 
         <!--项目设置-->
-        <Modal
+        <DrawerOverlay
             v-model="settingShow"
-            :title="$L('项目设置')"
+            placement="right"
+            :size="720"
+            class-name="project-setting-drawer"
             :mask-closable="false">
-            <Form :model="settingData" v-bind="formOptions" @submit.native.prevent>
+            <template #title>{{$L('项目设置')}}</template>
+            <Form class="project-setting-content" :model="settingData" v-bind="formOptions" @submit.native.prevent>
                 <FormItem prop="name" :label="$L('项目名称')">
-                    <Input ref="projectName" type="text" v-model="settingData.name" :maxlength="32" :placeholder="$L('必填')"></Input>
+                    <Input type="text" v-model="settingData.name" :maxlength="32" :placeholder="$L('必填')"></Input>
                 </FormItem>
                 <FormItem prop="desc" :label="$L('项目介绍')">
                     <Input ref="projectDesc" type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" v-model="settingData.desc" :maxlength="255" :placeholder="`${$L('选填')} (${$L('支持 Markdown 格式')})`"></Input>
@@ -479,7 +482,6 @@
                             </Input>
                         </div>
                     </template>
-
                 </FormItem>
                 <FormItem v-if="aiVisible" :label="$L('AI任务分析')" prop="ai_auto_analyze">
                     <RadioGroup v-model="settingData.ai_auto_analyze">
@@ -507,11 +509,11 @@
                     <div v-else class="form-tip">{{$L('关闭后，本项目及其群聊对部门负责人视角隐藏。')}}</div>
                 </FormItem>
             </Form>
-            <div slot="footer" class="adaption">
+            <div class="project-setting-footer">
                 <Button type="default" @click="settingShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="settingLoad > 0" @click="onSetting">{{$L('修改')}}</Button>
+                <Button type="primary" :loading="settingLoad > 0" @click="onSetting">{{$L('保存')}}</Button>
             </div>
-        </Modal>
+        </DrawerOverlay>
 
         <!--项目权限-->
         <DrawerOverlay
@@ -1786,7 +1788,6 @@ export default {
                     });
                     this.settingShow = true;
                     this.$nextTick(() => {
-                        this.$refs.projectName.focus()
                         setTimeout(this.$refs.projectDesc.resizeTextarea, 0)
                     });
                     break;

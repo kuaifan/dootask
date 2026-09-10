@@ -1177,3 +1177,36 @@ body.window-portrait {
         }
     }
 }
+.project-setting-drawer {
+    .overlay-content-body {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .project-setting-content {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 20px 25px;
+    }
+
+    .project-setting-footer {
+        flex-shrink: 0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        padding: 16px 25px;
+        border-top: 1px solid #F4F4F5;
+
+        button {
+            min-width: 100px;
+            height: 38px;
+        }
+    }
+
+    &.drawer-fullscreen .project-setting-footer button {
+        flex: 1;
+        min-width: 0;
+    }
+}
