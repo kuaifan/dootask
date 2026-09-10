@@ -28,7 +28,7 @@
                 <div class="handoff-time">{{time(item.created_at)}}</div>
             </div>
         </div>
-        <div v-if="loading && showLoad" class="handoff-empty"><Loading/></div>
+        <div v-if="loading && showLoad" class="handoff-empty handoff-loading"><Loading/></div>
         <div v-else-if="error" class="handoff-empty">
             <span>{{error}}</span>
             <Button type="text" @click="load(true)">{{$L('重试')}}</Button>
@@ -421,6 +421,15 @@ export default {
     }
     .handoff-empty {
         overflow-wrap: anywhere;
+        &.handoff-loading {
+            display: flex;
+            align-items: center;
+            .common-loading {
+                width: 22px;
+                height: 22px;
+                margin: 0;
+            }
+        }
     }
 }
 .handoff-people, .handoff-summary {
