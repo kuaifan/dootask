@@ -39,6 +39,8 @@
 .task-editor {
     position: relative;
     word-break: break-all;
+    min-height: 24px;
+    
     ::v-deep .mce-content-body,
     ::v-deep .task-editor-content {
         line-height: 1.6;
