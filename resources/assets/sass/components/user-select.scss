@@ -115,7 +115,7 @@
                     height: auto;
                     flex-shrink: 0;
                     max-width: 60%;
-                    margin: -6px 12px -6px 0;
+                    margin: -6px 8px -6px 0;
 
                     ul {
                         display: flex;
@@ -123,7 +123,7 @@
                         cursor: pointer;
 
                         &.selected-avatar-list {
-                            padding: 10px 0;
+                            padding: 10px 4px 10px 0;
                             cursor: default;
 
                             > li {
@@ -221,6 +221,7 @@
                     border-radius: 6px;
                     height: 36px;
                     padding: 0 6px;
+                    margin: 2px 0;
 
                     .search-pre {
                         flex-shrink: 0;
