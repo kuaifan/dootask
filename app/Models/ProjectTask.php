@@ -1177,8 +1177,10 @@ class ProjectTask extends AbstractModel
                 $this->loop_at = null;
                 break;
             default:
-                if (Base::isNumber($this->loop)) {
-                    $this->loop_at = $base->addDays($this->loop);
+                // 自定义天数须为正整数：Carbon 3 的 addDays 不接受字符串，0 天会让新任务立刻再次命中周期
+                $days = Base::isNumber($this->loop) ? (int)$this->loop : 0;
+                if ($days > 0) {
+                    $this->loop_at = $base->addDays($days);
                 } else {
                     $this->loop_at = null;
                     $success = false;

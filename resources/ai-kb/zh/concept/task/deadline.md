@@ -16,9 +16,9 @@ related_pages: [task_detail, calendar]
 prerequisites: []
 negative:
   - DooTask 任务没有 time_estimate / time_log 字段，不能记录工时
-  - 不支持只设开始时间不设结束时间（end_at 是计算到期与循环周期的依赖）
+  - 不支持只设开始时间不设结束时间（end_at 是计算到期的依赖）
   - 跨时区显示按用户所在时区，但服务端统一存 UTC
-last_verified: v1.7.90
+last_verified: v1.9.36
 ---
 
 # 任务计划时间（start_at / end_at）
@@ -28,7 +28,7 @@ DooTask 任务用两个字段描述时间：
 - `start_at`：计划开始时间
 - `end_at`：计划截止时间（俗称 deadline）
 
-两者都可空。**填入 end_at 才能启用循环重复、到期提醒、日历展示。**
+两者都可空。**填入 end_at 才能启用到期提醒、日历展示。** 重复循环不要求填 end_at。
 
 ## 在哪里能看到
 - 任务详情页 → 「计划时间」字段
@@ -42,12 +42,11 @@ DooTask 任务用两个字段描述时间：
 - 全天任务则 end_at 自动设为当天 23:59:59
 
 ## 与其他字段联动
-- **重复循环**（[[task.recurring.howto]]）依赖 end_at 计算下一次 loop_at
+- **重复循环**（[[task.recurring.howto]]）以 start_at 为基准计算下一次 loop_at，不依赖 end_at；新任务沿用原任务的时长
 - **到期提醒**（ProjectTaskPushLog）按 end_at 触发推送（默认到期日推送、超期再推送）
 - **日历视图** 只显示有 start_at 或 end_at 的任务
 - **完成时间**（complete_at）与计划时间无关，是否超期由 complete_at vs end_at 比较
 
 ## 不支持
-- 不能只设 start_at 不设 end_at 来启用循环
 - 不能录工时（time_estimate / time_log 字段不存在）
 - 修改 end_at 不会回填已生成的循环任务实例

@@ -19,8 +19,8 @@ prerequisites:
 negative:
   - 父任务完成不会自动完成所有子任务，需要手动或 [[task.subtask.howto.create]] 后逐个处理
   - 完成不等于归档，归档要走 [[task.archive.howto]]
-  - 重复任务在完成的瞬间生成下一份，详见 [[task.recurring.howto]]
-last_verified: v1.7.90
+  - 完成任务不会触发生成下一份重复任务，重复任务按 loop_at 时间点自动生成，详见 [[task.recurring.howto]]
+last_verified: v1.9.36
 ---
 
 # 标记任务完成 / 取消完成
@@ -37,7 +37,6 @@ last_verified: v1.7.90
 1. 点击复选框 / 完成按钮
 2. 任务 `complete_at` 写入当前时间，整个卡片显示删除线 / 灰化
 3. 项目动态记一条「X 完成了任务 Y」日志
-4. 若该任务带 `loop`（循环），同时生成下一份新任务
 
 ## 取消完成
 1. 在已完成任务上再次点击复选框
