@@ -745,8 +745,16 @@ function createWebTabView(windowId, args) {
                 renderer.openExternal(url).catch(() => {})
             })
         } else if (url && url !== 'about:blank') {
-            // tab 模式下创建新标签
-            createWebTabWindow({ url, afterId: browserView.webContents.id, windowId: browserView.webTabWindowId })
+            // tab 模式下交给页面判断（同域名链接会追加用户身份后再打开），页面无此能力时直接创建新标签
+            const afterId = browserView.webContents.id
+            const windowId = browserView.webTabWindowId
+            utils.onBeforeOpenWindow(browserView.webContents, url).then(handled => {
+                if (handled === false) {
+                    renderer.openExternal(url).catch(() => {})
+                } else {
+                    createWebTabWindow({ url, afterId, windowId })
+                }
+            })
         }
         return { action: 'deny' }
     })

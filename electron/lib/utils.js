@@ -332,14 +332,14 @@ const utils = {
      * 新窗口打开事件
      * @param webContents
      * @param url
-     * @returns {Promise<unknown>}
+     * @returns {Promise<unknown>} 页面未接管时 resolve；resolve(false) 表示页面明确要求用默认浏览器打开，resolve(undefined) 表示页面没有 __onBeforeOpenWindow
      */
     onBeforeOpenWindow(webContents, url) {
         return new Promise(resolve => {
             const dataStr = JSON.stringify({url: url})
             webContents.executeJavaScript(`if(typeof window.__onBeforeOpenWindow === 'function'){window.__onBeforeOpenWindow(${dataStr})}`, true).then(options => {
                 if (options !== true) {
-                    resolve()
+                    resolve(options)
                 }
             }).catch(_ => {
                 resolve()
