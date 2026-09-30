@@ -12,11 +12,12 @@ aliases:
   - 历史浏览记录
 related_tools: []
 related_pages: [application]
-prerequisites: []
+prerequisites:
+  - 「系统功能」应用已安装且其中的「最近打开」开关为开启（默认开启）
 negative:
   - 「最近打开」只记录任务 / 文件 / 任务附件 / 消息附件，不包含项目和会话
   - 不支持手动清空全部记录
-last_verified: v1.7.90
+last_verified: v1.9.36
 ---
 
 # 最近打开入口在哪
@@ -39,3 +40,6 @@ last_verified: v1.7.90
 
 ## 相关
 - 收藏与最近的总入口：[[favorite.entry.menu-map]]
+
+## 入口不显示时
+「最近打开」的所有入口受「系统功能」应用控制：管理员在应用商店停用了「最近打开」开关，或卸载了「系统功能」应用时，入口会统一隐藏（数据不会删除）。恢复方法见 [[system-functions.toggle.howto]]。

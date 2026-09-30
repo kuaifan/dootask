@@ -13,12 +13,13 @@ aliases:
   - calendar 在哪
 related_tools: [list_tasks]
 related_pages: [calendar]
-prerequisites: []
+prerequisites:
+  - 「系统功能」应用已安装且其中的「日历」开关为开启（默认开启）
 negative:
   - 日历只显示有 end_at 的任务，不显示会议、签到等其他事件
   - 移动端日历只读，不能拖动改时间
   - 日历不支持其他人的视图
-last_verified: v1.7.90
+last_verified: v1.9.36
 ---
 
 # 日历入口在哪
@@ -50,3 +51,6 @@ last_verified: v1.7.90
 - 不显示会议（B2 模块）、签到、报告
 - 不支持订阅他人日历
 - 详见 [[calendar.meeting-not-shown.faq]]
+
+## 入口不显示时
+「日历」的所有入口受「系统功能」应用控制：管理员在应用商店停用了「日历」开关，或卸载了「系统功能」应用时，入口会统一隐藏（数据不会删除）。恢复方法见 [[system-functions.toggle.howto]]。

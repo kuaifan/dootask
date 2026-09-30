@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Module\Badge;
 use App\Module\Base;
+use App\Module\SystemFunctions;
 use Request;
 
 /**
@@ -14,6 +15,7 @@ use Request;
  *   api/apps/badge/set     -> badge__set()    应用密钥鉴权，绝对设置/清除角标
  *   api/apps/badge/clear   -> badge__clear()  当前用户 token 鉴权，清除自己的角标
  *   api/apps/badge/list    -> badge__list()   当前用户 token 鉴权，拉取自己全部角标（初始同步）
+ *   api/apps/functions     -> functions()     当前用户 token 鉴权，获取「系统功能」应用的功能开关
  */
 class AppsController extends AbstractController
 {
@@ -90,5 +92,26 @@ class AppsController extends AbstractController
     {
         $user = User::auth();
         return Base::retSuccess('success', Badge::userBadges((int)$user->userid));
+    }
+
+    /**
+     * @api {get} api/apps/functions 获取系统功能开关
+     *
+     * @apiDescription 需要token身份。返回「系统功能」应用是否已安装，以及工作报告、日历、我的收藏、最近打开、签到打卡的启用状态。
+     *  应用未安装时全部为 false；前端据此统一显示或隐藏这些功能的入口。
+     * @apiVersion 1.0.0
+     * @apiGroup apps
+     * @apiName functions
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccess {Boolean} data.installed     应用是否已安装
+     * @apiSuccess {Object} data.functions      功能开关（report/calendar/favorite/recent/checkin => Boolean）
+     */
+    public function functions()
+    {
+        User::auth();
+        return Base::retSuccess('success', SystemFunctions::status());
     }
 }

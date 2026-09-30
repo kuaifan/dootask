@@ -82,7 +82,7 @@
                                 <DropdownItem name="allUser">{{$L('团队管理')}}</DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                                 <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
-                                <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
+                                <DropdownItem v-if="systemFunctionEnabled('checkin')" name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <!-- 部门负责人视角 -->
@@ -141,7 +141,7 @@
                             <Badge v-else-if="dashboardTask.today_count > 0" class="menu-badge" type="info" :overflow-count="999" :count="dashboardTask.today_count"/>
                             <Badge v-else-if="dashboardTask.todo_count > 0" class="menu-badge" type="primary" :overflow-count="999" :count="dashboardTask.todo_count"/>
                         </li>
-                        <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
+                        <li v-if="systemFunctionEnabled('calendar')" @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                             <i class="taskfont">&#xe6f5;</i>
                             <div class="menu-title">{{$L('日历')}}</div>
                         </li>
@@ -655,13 +655,21 @@ export default {
             'mcpServerStatus'
         ]),
 
-        ...mapGetters(['aiVisible', 'dashboardTask', "filterMicroAppsMenusMain", 'visibleDialogs']),
+        ...mapGetters(['aiVisible', 'dashboardTask', "filterMicroAppsMenusMain", 'visibleDialogs', 'systemFunctionEnabled']),
 
         // 父『应用』入口聚合角标（规则收敛在 appBadges 模块 getter）
         ...mapGetters('appBadges', {
             applicationBadgeCount: 'applicationCount',
             applicationBadgeDot: 'applicationDot',
         }),
+
+        /**
+         * 当前处于日历页且日历已明确停用（开关尚未加载时不判定为停用）
+         * @returns {boolean}
+         */
+        calendarDisabled() {
+            return this.routeName === 'manage-calendar' && this.$store.state.systemFunctions.calendar === false;
+        },
 
         departmentOwnerViewAvailable() {
             return this.systemConfig.department_owner_project_view === 'open' && (this.userInfo.managed_departments || []).length > 0;
@@ -783,51 +791,64 @@ export default {
          * @returns {Array}
          */
         menu() {
-            const {userIsAdmin} = this;
-            const array = [
-                {path: 'taskBrowse', name: '最近打开的任务'},
-                {path: 'favorite', name: '我的收藏'},
-                {path: 'download', name: '下载内容', visible: !!this.$Electron},
-                {path: 'mcpServer', name: '启用桌面 MCP 服务器', visible: !!this.$Electron, selected: this.mcpServerStatus.running === 'running'},
+            const {userIsAdmin, systemFunctionEnabled} = this;
+            // 按分组组织：每组（第一组除外）的首个可见项显示分割线。
+            // 先过滤不可见的菜单项再计算分割线，隐藏任意项都不会留下多余的分割线。
+            const groups = [
+                [
+                    {path: 'taskBrowse', name: '最近打开的任务', visible: systemFunctionEnabled('recent')},
+                    {path: 'favorite', name: '我的收藏', visible: systemFunctionEnabled('favorite')},
+                    {path: 'download', name: '下载内容', visible: !!this.$Electron},
+                    {path: 'mcpServer', name: '启用桌面 MCP 服务器', visible: !!this.$Electron, selected: this.mcpServerStatus.running === 'running'},
+                ],
             ];
+            const departmentOwnerView = this.departmentOwnerViewAvailable ? [{
+                path: 'departmentOwnerView',
+                name: '负责人视角',
+                selected: this.departmentOwnerProjectViewEnabled,
+                selectedCount: this.departmentOwnerProjectViewEnabled ? this.cacheDepartmentOwnerIds.length : 0,
+            }] : [];
             if (userIsAdmin) {
-                array.push(...[
-                    {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'system', name: '系统设置'},
-                    {path: 'license', name: 'License Key'},
-
-                    {path: 'downloadClient', name: '客户端下载', divided: true, visible: this.showDownloadClient},
-                    {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
-
-                    {path: 'allProject', name: '所有项目', divided: true},
-                    {path: 'archivedProject', name: '已归档的项目'},
-
-                    {path: 'team', name: '团队管理', divided: true},
-                ])
+                groups.push(
+                    [
+                        {path: 'personal', name: '个人设置'},
+                        {path: 'system', name: '系统设置'},
+                        {path: 'license', name: 'License Key'},
+                    ],
+                    [{path: 'downloadClient', name: '客户端下载', visible: this.showDownloadClient}],
+                    [{path: 'version', name: '更新版本', visible: !!this.clientNewVersion}],
+                    [
+                        {path: 'allProject', name: '所有项目'},
+                        {path: 'archivedProject', name: '已归档的项目'},
+                    ],
+                    [
+                        {path: 'team', name: '团队管理'},
+                        ...departmentOwnerView,
+                    ],
+                )
             } else {
-                array.push(...[
-                    {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'downloadClient', name: '客户端下载', divided: true, visible: this.showDownloadClient},
-                    {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
-
-                    {path: 'workReport', name: '工作报告', divided: true},
-                    {path: 'archivedProject', name: '已归档的项目'},
-                ])
+                groups.push(
+                    [{path: 'personal', name: '个人设置'}],
+                    [{path: 'downloadClient', name: '客户端下载', visible: this.showDownloadClient}],
+                    [{path: 'version', name: '更新版本', visible: !!this.clientNewVersion}],
+                    [
+                        {path: 'workReport', name: '工作报告', visible: systemFunctionEnabled('report')},
+                        {path: 'archivedProject', name: '已归档的项目'},
+                    ],
+                    departmentOwnerView,
+                )
             }
-            if (this.departmentOwnerViewAvailable) {
-                array.push({
-                    path: 'departmentOwnerView',
-                    name: '负责人视角',
-                    divided: !userIsAdmin,
-                    visible: true,
-                    selected: this.departmentOwnerProjectViewEnabled,
-                    selectedCount: this.departmentOwnerProjectViewEnabled ? this.cacheDepartmentOwnerIds.length : 0,
-                });
-            }
-            array.push(...[
-                {path: 'clearCache', name: '清除缓存', divided: true},
+            groups.push([
+                {path: 'clearCache', name: '清除缓存'},
                 {path: 'logout', name: '退出登录', style: {color: '#f40'}}
             ])
+            const array = [];
+            groups.forEach(group => {
+                const items = group.filter(item => item.visible !== false);
+                items.forEach((item, index) => {
+                    array.push(Object.assign({}, item, {divided: index === 0 && array.length > 0}));
+                });
+            });
             return array
         },
 
@@ -911,6 +932,16 @@ export default {
     watch: {
         '$route' () {
             this.chackPass();
+        },
+
+        // 日历被停用（或「系统功能」已卸载）时，不允许停留在日历页
+        calendarDisabled: {
+            handler(disabled) {
+                if (disabled) {
+                    this.goForward({name: 'manage-dashboard'}, true);
+                }
+            },
+            immediate: true
         },
 
         userInfo() {

@@ -309,6 +309,17 @@ export default {
     },
 
     /**
+     * 系统功能是否启用（「系统功能」应用未安装或该功能被停用时为 false）
+     * 工作报告、日历、我的收藏、最近打开、签到打卡的所有入口统一以此判断
+     *
+     * @param {Object} state
+     * @returns {function(string): boolean} 参数为功能标识：report/calendar/favorite/recent/checkin
+     */
+    systemFunctionEnabled: (state) => (name) => {
+        return state.systemFunctions?.[name] === true
+    },
+
+    /**
      * 获取应用菜单
      * 过滤出location为application的菜单项
      *

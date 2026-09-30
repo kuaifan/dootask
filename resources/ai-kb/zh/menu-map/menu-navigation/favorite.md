@@ -12,11 +12,12 @@ aliases:
   - 我收藏过的怎么看
 related_tools: []
 related_pages: [application]
-prerequisites: []
+prerequisites:
+  - 「系统功能」应用已安装且其中的「我的收藏」开关为开启（默认开启）
 negative:
   - 没有左侧栏一级入口，藏在「应用」中心和头像下拉里
   - 没有快捷键
-last_verified: v1.7.90
+last_verified: v1.9.36
 ---
 
 # 我的收藏入口在哪
@@ -39,3 +40,6 @@ last_verified: v1.7.90
 - 收藏入口与最近打开：[[favorite.entry.menu-map]]
 - 添加收藏：[[favorite.add.howto]]
 - 与最近打开的区别：[[favorite.concept]]
+
+## 入口不显示时
+「我的收藏」的所有入口受「系统功能」应用控制：管理员在应用商店停用了「我的收藏」开关，或卸载了「系统功能」应用时，入口会统一隐藏（数据不会删除）。恢复方法见 [[system-functions.toggle.howto]]。

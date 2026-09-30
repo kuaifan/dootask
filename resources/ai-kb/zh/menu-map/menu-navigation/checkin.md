@@ -13,12 +13,13 @@ aliases:
   - 打卡机器人在哪
 related_tools: []
 related_pages: [application, messenger]
-prerequisites: []
+prerequisites:
+  - 「系统功能」应用已安装且其中的「签到打卡」开关为开启（默认开启）
 negative:
   - 没有左侧一级菜单，必须从「应用」展开
   - 不支持快捷键
   - 「签到打卡」卡片被管理员关闭时不会显示
-last_verified: v1.7.90
+last_verified: v1.9.36
 ---
 
 # 签到打卡入口在哪
@@ -39,3 +40,6 @@ last_verified: v1.7.90
 - 签到入口总览：[[checkin.entry.menu-map]]
 - 怎么打卡：[[checkin.regular.howto]]
 - 管理员配置规则：[[checkin.rule.concept]]
+
+## 入口不显示时
+「签到打卡」的所有入口受「系统功能」应用控制：管理员在应用商店停用了「签到打卡」开关，或卸载了「系统功能」应用时，入口会统一隐藏（数据不会删除）。恢复方法见 [[system-functions.toggle.howto]]。

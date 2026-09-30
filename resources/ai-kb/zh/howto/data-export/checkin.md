@@ -14,6 +14,7 @@ aliases:
 related_tools: []
 related_pages: [application]
 prerequisites:
+  - 「系统功能」应用已安装且其中的「签到打卡」开关为开启（默认开启）
   - 需要系统管理员权限
   - 系统设置中签到功能已开启（`checkinSetting.open = open`）
 negative:
@@ -21,7 +22,7 @@ negative:
   - 单次最多 100 个成员
   - 日期范围最多 35 天
   - 必填成员 / 日期 / 时间三个参数，缺一不可
-last_verified: v1.7.90
+last_verified: v1.9.36
 ---
 
 # 导出签到数据
@@ -52,3 +53,6 @@ last_verified: v1.7.90
 - 不支持导出无班次成员
 - 不支持跨月超 35 天一次导
 - 不支持自定义结果判定规则（用系统全局设置）
+
+## 入口不显示时
+「导出签到数据」入口受「系统功能」应用控制：管理员在应用商店停用了「签到打卡」开关，或卸载了「系统功能」应用时，入口会统一隐藏（数据不会删除）。恢复方法见 [[system-functions.toggle.howto]]。

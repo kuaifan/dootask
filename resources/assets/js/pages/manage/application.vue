@@ -541,15 +541,16 @@ export default {
         ...mapGetters([
             'filterMicroAppsMenus',
             'filterMicroAppsMenusAdmin',
+            'systemFunctionEnabled',
         ]),
         applyList() {
             const list = [
                 // 常用应用
-                {value: "favorite", label: "我的收藏", sort: 45},
-                {value: "recent", label: "最近打开", sort: 47},
-                {value: "report", label: "工作报告", sort: 50},
+                {value: "favorite", label: "我的收藏", sort: 45, show: this.systemFunctionEnabled('favorite')},
+                {value: "recent", label: "最近打开", sort: 47, show: this.systemFunctionEnabled('recent')},
+                {value: "report", label: "工作报告", sort: 50, show: this.systemFunctionEnabled('report')},
                 {value: "mybot", label: "我的机器人", sort: 55},
-                {value: "signin", label: "签到打卡", sort: 70},
+                {value: "signin", label: "签到打卡", sort: 70, show: this.systemFunctionEnabled('checkin')},
                 {value: "meeting", label: "在线会议", sort: 80},
                 {value: "createGroup", label: "创建群组", sort: 85},
                 {value: "word-chain", label: "群接龙", sort: 90},
@@ -569,7 +570,7 @@ export default {
             // 竖屏模式
             if (this.windowPortrait) {
                 list.push(...[
-                    {value: "calendar", label: "日历", sort: 10},
+                    {value: "calendar", label: "日历", sort: 10, show: this.systemFunctionEnabled('calendar')},
                     {value: "file", label: "文件", sort: 20},
                     {value: "setting", label: "设置", sort: 140},
                 ])
@@ -992,8 +993,10 @@ export default {
             const list = [
                 {label: this.$L('导出任务统计'), value: 'task'},
                 {label: this.$L('导出超期任务'), value: 'overdue'},
-                {label: this.$L('导出签到数据'), value: 'checkin'},
             ];
+            if (this.systemFunctionEnabled('checkin')) {
+                list.push({label: this.$L('导出签到数据'), value: 'checkin'});
+            }
             this.$store.commit('menu/operation', {
                 event: menuEvent,
                 list,

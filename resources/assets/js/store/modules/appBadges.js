@@ -122,10 +122,11 @@ export default {
         },
 
         /**
-         * 父『应用』入口聚合数字：工作报告未读 + 所有插件角标数字之和
+         * 父『应用』入口聚合数字：工作报告未读（功能启用时）+ 所有插件角标数字之和
          */
-        applicationCount: (state, getters, rootState) => {
-            return (Number(rootState.reportUnreadNumber) || 0) + getters.totalCount
+        applicationCount: (state, getters, rootState, rootGetters) => {
+            const reportCount = rootGetters.systemFunctionEnabled('report') ? (Number(rootState.reportUnreadNumber) || 0) : 0
+            return reportCount + getters.totalCount
         },
 
         /**

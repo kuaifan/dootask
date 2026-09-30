@@ -463,6 +463,10 @@ export default {
         // 更新菜单
         const menus = [];
         data.forEach((item) => {
+            // 「系统功能」只控制内置入口的显示，自身不产生应用菜单，避免与内置入口重复
+            if (item.id === 'system-functions') {
+                return;
+            }
             if (Array.isArray(item.menu_items) && item.menu_items.length > 0) {
                 menus.push(...item.menu_items.map(menu => Object.assign({}, menu, {id: item.id})));
             }
@@ -481,6 +485,11 @@ export default {
         })
         $A.IDBSave("microAppsIds", state.microAppsIds = data.map(item => item.id));
         $A.IDBSave("microAppsMenus", state.microAppsMenus = menus);
+    },
+
+    // 系统功能开关
+    'systemFunctions/save': function(state, data) {
+        $A.IDBSave("systemFunctions", state.systemFunctions = $A.isJson(data) ? data : {});
     },
 
     // MCP 服务器状态

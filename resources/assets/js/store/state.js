@@ -301,6 +301,9 @@ export default {
     microAppsIds: [],
     microAppsMenus: [],
 
+    // 系统功能开关（「系统功能」应用，功能标识 => 是否启用；未安装时全部为 false）
+    systemFunctions: {},
+
     // MCP 服务器状态
     mcpServerStatus: {running: 'stopped'},
 };

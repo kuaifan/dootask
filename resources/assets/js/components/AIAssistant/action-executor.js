@@ -206,6 +206,9 @@ class ActionExecutor {
      * 导航到日历页面
      */
     async navigateToCalendar() {
+        if (!this.store?.getters?.systemFunctionEnabled?.('calendar')) {
+            throw new Error('日历功能未启用');
+        }
         window.$A.goForward({ name: 'manage-calendar' });
         return { navigated: true, page: 'calendar' };
     }

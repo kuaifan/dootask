@@ -1206,7 +1206,8 @@ export default {
                     'taskRelatedCache',
                     'dialogCommonCountCache',
                     'collaborationFileCache',
-                    'mcpServerStatus'
+                    'mcpServerStatus',
+                    'systemFunctions'
                 ]
             };
 
@@ -5500,6 +5501,11 @@ export default {
      * @param dispatch
      */
     async updateMicroAppsStatus({commit, state, dispatch}) {
+        // 系统功能开关：不依赖应用商店接口，商店不可用时也能更新
+        dispatch('call', {url: 'apps/functions'}).then(({data}) => {
+            commit("systemFunctions/save", data?.functions)
+        }).catch(() => {})
+        //
         const {data: {code, data}} = await axios.get($A.mainUrl('appstore/api/v1/internal/installed'), {
             headers: {
                 Token: state.userToken,

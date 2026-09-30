@@ -663,6 +663,19 @@ features:
       - compliance.howto
       - compliance.entry.menu-map
 
+  - id: system-functions
+    name: 系统功能（内置功能入口开关：工作报告/日历/我的收藏/最近打开/签到打卡）
+    scope: admin
+    batch: B4
+    priority: P0
+    chunk_count_est: 3
+    owner: ~
+    status: drafted
+    chunks:
+      - system-functions.overview.concept
+      - system-functions.toggle.howto
+      - system-functions.entry-missing.faq
+
   - id: appstore
     name: 应用市场（AppStore 管理）
     scope: admin
