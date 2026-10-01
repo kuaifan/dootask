@@ -56,19 +56,53 @@
                             <Icon type="ios-search"/>
                             <span>{{$L('搜索')}} ({{mateName}}+F)</span>
                         </div>
-                        <div v-if="currentView === 'my'" class="header-seg">
-                            <span :class="{'seg-active': layout === 'list'}" @click="setLayout('list')">{{$L('列表')}}</span>
-                            <span :class="{'seg-active': layout === 'quad'}" @click="setLayout('quad')">{{$L('四象限')}}</span>
+                        <!--外层按内层实际宽度过渡，内容变化时宽度平滑伸缩-->
+                        <div v-show="!windowPortrait" ref="headerSeg" class="header-seg">
+                            <div ref="headerSegInner" class="seg-inner">
+                                <span :class="{'seg-active': currentView === 'my' && layout === 'list'}" @click="setLayout('list')">{{$L('列表')}}</span>
+                                <span :class="{'seg-active': currentView === 'my' && layout === 'quad'}" @click="setLayout('quad')">{{$L('四象限')}}</span>
+                                <!--部门视角：未选中显示入口文案，选中后变为部门范围选择-->
+                                <span v-if="teamEnabled && currentView === 'team'" class="seg-active seg-dept" :title="$L('选择团队范围')" @click="deptViewShow = true">
+                                    <em class="dept-name">{{deptLabel}}</em>
+                                    <em v-if="teamStats.member_count" class="dept-badge" :title="$L('团队成员 (*) 人', teamStats.member_count)">{{teamStats.member_count}}</em>
+                                    <div v-else-if="teamStatsLoading" class="dept-load"><Loading/></div>
+                                </span>
+                                <span v-else-if="teamEnabled" @click="setView('team')">{{$L('部门总览')}}</span>
+                            </div>
                         </div>
-                        <div v-else class="header-dept" @click="deptViewShow = true">
-                            <Icon type="md-people"/>
-                            <span>{{deptLabel}}</span>
-                            <em v-if="teamStats.member_count" class="dept-badge">{{teamStats.member_count}}</em>
-                        </div>
-                        <div v-if="teamEnabled" class="header-seg">
-                            <span :class="{'seg-active': currentView === 'my'}" @click="setView('my')">{{$L('个人视角')}}</span>
-                            <span :class="{'seg-active': currentView === 'team'}" @click="setView('team')">{{$L('部门负责人')}}</span>
-                        </div>
+                        <!--移动端：部门负责人用下拉切换，其余用户点击在列表/四象限间来回切换-->
+                        <template v-if="windowPortrait">
+                            <Dropdown v-if="teamEnabled" trigger="click" placement="bottom-end" transfer @on-click="onModeMenu">
+                                <div class="header-mode">
+                                    <i class="taskfont" v-html="modeIcon"></i>
+                                    <template v-if="currentView === 'team'">
+                                        <em v-if="teamStats.member_count" class="mode-badge">{{teamStats.member_count > 99 ? '99+' : teamStats.member_count}}</em>
+                                        <div v-else-if="teamStatsLoading" class="mode-load"><Loading/></div>
+                                    </template>
+                                </div>
+                                <DropdownMenu slot="list">
+                                    <DropdownItem name="list" :selected="currentView === 'my' && layout === 'list'">
+                                        <div class="dashboard-mode-item"><i class="taskfont">&#xe894;</i>{{$L('列表')}}</div>
+                                    </DropdownItem>
+                                    <DropdownItem name="quad" :selected="currentView === 'my' && layout === 'quad'">
+                                        <div class="dashboard-mode-item"><i class="taskfont">&#xe746;</i>{{$L('四象限')}}</div>
+                                    </DropdownItem>
+                                    <DropdownItem name="team" :selected="currentView === 'team'">
+                                        <div class="dashboard-mode-item"><i class="taskfont">&#xe681;</i>{{$L('部门总览')}}</div>
+                                    </DropdownItem>
+                                    <DropdownItem v-if="currentView === 'team'" name="scope" divided>
+                                        <div class="dashboard-mode-item">
+                                            <span>{{deptScopeLabel}}</span>
+                                            <em v-if="teamStats.member_count" class="mode-count">{{$L('(*) 人', teamStats.member_count)}}</em>
+                                            <i class="taskfont mode-arrow">&#xe700;</i>
+                                        </div>
+                                    </DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
+                            <div v-else class="header-mode" @click="setLayout(layout === 'list' ? 'quad' : 'list')">
+                                <i class="taskfont" v-html="modeIcon"></i>
+                            </div>
+                        </template>
                     </div>
                 </div>
                 <!--个人视角-->
@@ -355,6 +389,16 @@ export default {
         })
     },
 
+    mounted() {
+        this.segObserver = new ResizeObserver(this.syncSegWidth);
+        this.segObserver.observe(this.$refs.headerSegInner);
+    },
+
+    beforeDestroy() {
+        this.segObserver?.disconnect();
+        this.segObserver = null;
+    },
+
     activated() {
         this.loadInterval(true);
         this.loadLicense(true);
@@ -577,17 +621,43 @@ export default {
             return teamStats.generated_at ? $A.dayjs(teamStats.generated_at).format('HH:mm:ss') : '--'
         },
 
-        deptLabel({userInfo, cacheDepartmentOwnerIds}) {
+        // 当前团队范围：未选择或选中全部可管理部门时 all 为 true
+        deptSelected({userInfo, cacheDepartmentOwnerIds}) {
             const managed = (userInfo.managed_departments || []).map(item => ({...item, id: parseInt(item.id)}));
             const ids = (cacheDepartmentOwnerIds || []).map(id => parseInt(id));
             const selected = ids.length > 0 ? managed.filter(item => ids.includes(item.id)) : managed;
-            if (selected.length === 0 || selected.length === managed.length) {
-                return managed.length === 1 ? managed[0].name : this.$L('我的部门');
+            return {
+                managed,
+                selected,
+                all: selected.length === 0 || selected.length === managed.length,
+            };
+        },
+
+        deptLabel({deptSelected}) {
+            const {managed, selected, all} = deptSelected;
+            if (all) {
+                return managed.length === 1 ? managed[0].name : this.$L('部门总览');
             }
             if (selected.length === 1) {
                 return selected[0].name;
             }
             return `${selected[0].name} +${selected.length - 1}`;
+        },
+
+        // 移动端下拉菜单里的部门范围：全选多个部门时显示「全部部门」，其余同 deptLabel
+        deptScopeLabel({deptSelected, deptLabel}) {
+            if (deptSelected.all && deptSelected.managed.length > 1) {
+                return this.$L('全部部门');
+            }
+            return deptLabel;
+        },
+
+        // 移动端切换图标跟随当前模式（taskfont 字符）
+        modeIcon({currentView, layout}) {
+            if (currentView === 'team') {
+                return '&#xe681;';
+            }
+            return layout === 'quad' ? '&#xe746;' : '&#xe894;';
         },
 
         dashboardHello({systemConfig, userInfo, nowTime}) {
@@ -647,7 +717,35 @@ export default {
             $A.IDBSave("dashboardView", view);
         },
 
+        /**
+         * 头部切换器宽度跟随内容：外层设置显式宽度才能触发 CSS 过渡
+         */
+        syncSegWidth() {
+            const seg = this.$refs.headerSeg;
+            const inner = this.$refs.headerSegInner;
+            if (!seg || !inner || inner.offsetWidth === 0) {
+                return; // keep-alive 隐藏时宽度为 0，不同步，避免再次显示时从 0 展开
+            }
+            const style = window.getComputedStyle(seg);
+            const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+            seg.style.width = `${inner.offsetWidth + padding}px`;
+        },
+
+        onModeMenu(name) {
+            if (name === 'team') {
+                this.setView('team');
+            } else if (name === 'scope') {
+                this.deptViewShow = true;
+            } else {
+                this.setLayout(name);
+            }
+        },
+
+        // 列表/四象限属于个人视角，选中即切回个人视角
         setLayout(layout) {
+            if (this.view !== 'my') {
+                this.setView('my');
+            }
             this.layout = layout;
             prefsCache.layout = layout;
             $A.IDBSave("dashboardLayout", layout);

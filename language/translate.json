@@ -37476,18 +37476,6 @@
         "ru": "Четыре квадранта"
     },
     {
-        "key": "个人视角",
-        "zh": "",
-        "zh-CHT": "個人視角",
-        "en": "Personal view",
-        "ko": "개인 보기",
-        "ja": "個人ビュー",
-        "de": "Persönliche Ansicht",
-        "fr": "Vue personnelle",
-        "id": "Tampilan pribadi",
-        "ru": "Личный вид"
-    },
-    {
         "key": "部门任务总览",
         "zh": "",
         "zh-CHT": "部門任務總覽",
@@ -37978,18 +37966,6 @@
         "fr": "Beaucoup d’éléments ; affichage des (%T1) plus récents, développez les (%T2) restants",
         "id": "Item banyak; menampilkan (%T1) terbaru, buka (%T2) sisanya",
         "ru": "Элементов много: показаны последние (%T1), разверните остальные (%T2)"
-    },
-    {
-        "key": "我的部门",
-        "zh": "",
-        "zh-CHT": "我的部門",
-        "en": "My department",
-        "ko": "내 부서",
-        "ja": "自分の部署",
-        "de": "Meine Abteilung",
-        "fr": "Mon service",
-        "id": "Departemen saya",
-        "ru": "Мой отдел"
     },
     {
         "key": "待开始",
@@ -40162,5 +40138,41 @@
         "fr": "Afficher plus",
         "id": "Tampilkan lebih banyak",
         "ru": "Показать больше"
+    },
+    {
+        "key": "部门总览",
+        "zh": "",
+        "zh-CHT": "部門總覽",
+        "en": "Department overview",
+        "ko": "부서 개요",
+        "ja": "部門概要",
+        "de": "Abteilungsübersicht",
+        "fr": "Vue du service",
+        "id": "Ikhtisar departemen",
+        "ru": "Обзор отдела"
+    },
+    {
+        "key": "全部部门",
+        "zh": "",
+        "zh-CHT": "全部部門",
+        "en": "All departments",
+        "ko": "모든 부서",
+        "ja": "すべての部門",
+        "de": "Alle Abteilungen",
+        "fr": "Tous les services",
+        "id": "Semua departemen",
+        "ru": "Все отделы"
+    },
+    {
+        "key": "团队成员 (%T1) 人",
+        "zh": "",
+        "zh-CHT": "團隊成員 (%T1) 人",
+        "en": "(%T1) team members",
+        "ko": "팀원 (%T1)명",
+        "ja": "チームメンバー (%T1)人",
+        "de": "(%T1) Teammitglieder",
+        "fr": "(%T1) membres de l’équipe",
+        "id": "(%T1) anggota tim",
+        "ru": "Участников команды: (%T1)"
     }
 ]

@@ -154,73 +154,79 @@
                 min-height: 40px;
                 flex-shrink: 0;
                 max-width: 100%;
+                overflow: hidden;
+                transition: width 0.2s ease;
 
-                > span {
-                    padding: 0 16px;
-                    min-width: 0;
-                    min-height: 32px;
+                @media (prefers-reduced-motion: reduce) {
+                    transition: none;
+                }
+
+                // 内层保持内容自然宽度，外层宽度由 syncSegWidth 同步后过渡
+                .seg-inner {
                     display: flex;
-                    align-items: center;
-                    border-radius: 8px;
-                    font-size: 14px;
-                    color: #999;
-                    cursor: pointer;
-                    white-space: nowrap;
-                    overflow-wrap: anywhere;
-                    text-align: center;
+                    flex-shrink: 0;
+                    width: max-content;
 
-                    &.seg-active {
-                        background: #ffffff;
-                        color: #2a2b2d;
+                    > span {
+                        padding: 0 16px;
+                        min-width: 0;
+                        min-height: 32px;
+                        display: flex;
+                        align-items: center;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        color: #999;
+                        cursor: pointer;
+                        white-space: nowrap;
+                        overflow-wrap: anywhere;
+                        text-align: center;
+
+                        &.seg-active {
+                            background: #ffffff;
+                            color: #2a2b2d;
+                        }
+
+                        // 部门视角选中后，该项变为部门范围选择
+                        &.seg-dept {
+                            gap: 6px;
+                            max-width: 240px;
+
+                            .dept-name {
+                                font-style: normal;
+                                font-weight: 500;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+
+                            .dept-badge {
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                flex-shrink: 0;
+                                min-width: 19px;
+                                height: 19px;
+                                border-radius: 10px;
+                                padding: 0 5px;
+                                background: #e6e8ea;
+                                color: #5f665c;
+                                font-style: normal;
+                                font-size: 11px;
+                                font-weight: 500;
+                                font-variant-numeric: tabular-nums;
+                            }
+
+                            // 切换部门范围时成员数被清空，加载中占位
+                            .dept-load {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                flex-shrink: 0;
+                                width: 14px;
+                                height: 14px;
+                                padding: 1px;
+                            }
+                        }
                     }
-                }
-            }
-
-            // 部门范围选择（团队视角，占个人视角布局切换的同一槽位）
-            .header-dept {
-                display: flex;
-                align-items: center;
-                gap: 7px;
-                background: #f9f9f9;
-                border-radius: 12px;
-                height: 40px;
-                padding: 8px 12px;
-                max-width: 260px;
-                font-size: 13px;
-                color: #22261f;
-                cursor: pointer;
-                transition: background 0.2s;
-
-                > i {
-                    color: #7a8078;
-                    font-size: 17px;
-                }
-
-                > span {
-                    font-weight: 500;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-
-                .dept-badge {
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    min-width: 19px;
-                    height: 19px;
-                    border-radius: 10px;
-                    padding: 0 5px;
-                    background: #e6e8ea;
-                    color: #5f665c;
-                    font-style: normal;
-                    font-size: 11px;
-                    font-weight: 500;
-                    font-variant-numeric: tabular-nums;
-                }
-
-                &:hover {
-                    background: #f4f5f7;
                 }
             }
         }
@@ -1637,6 +1643,37 @@
     }
 }
 
+// 移动端模式切换下拉项（transfer 到 body）
+.dashboard-mode-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+
+    > i {
+        font-size: 16px;
+    }
+
+    > span {
+        max-width: 160px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mode-count {
+        flex-shrink: 0;
+        color: #a2a89f;
+        font-style: normal;
+        font-size: 12px;
+    }
+
+    .mode-arrow {
+        margin-left: auto;
+        color: #a2a89f;
+    }
+}
+
 .dashboard-cache-popper {
     .dashboard-cache-popover {
         width: 260px;
@@ -1892,13 +1929,17 @@ body.window-portrait {
 
         .dashboard-header {
             .header-left {
-                .header-hello,
-                .header-title > h2 {
+                // 右侧只剩图标按钮，取消最小宽度避免窄屏时右侧换行
+                min-width: 0;
+
+                .header-hello {
                     font-size: 20px;
                 }
             }
 
             .header-right {
+                // 只占图标实际宽度，余下空间留给标题
+                flex: none;
                 gap: 8px;
 
                 // 与右侧切换器等高对齐
@@ -1915,22 +1956,66 @@ body.window-portrait {
                     }
                 }
 
+                // 移动端模式切换：图标跟随当前模式，部门视角带成员数角标
+                .header-mode {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 34px;
+                    height: 34px;
+                    border-radius: 12px;
+                    background: #f9f9f9;
+                    color: #7a8078;
+                    cursor: pointer;
+
+                    > i {
+                        font-size: 20px;
+                        transform: scale(0.86);
+                    }
+
+                    .mode-badge {
+                        position: absolute;
+                        top: -5px;
+                        right: -6px;
+                        min-width: 16px;
+                        height: 16px;
+                        padding: 0 4px;
+                        border-radius: 8px;
+                        background: $primary-color;
+                        color: #ffffff;
+                        font-style: normal;
+                        font-size: 10px;
+                        line-height: 16px;
+                        text-align: center;
+                        font-variant-numeric: tabular-nums;
+                    }
+
+                    .mode-load {
+                        position: absolute;
+                        top: -4px;
+                        right: -4px;
+                        width: 14px;
+                        height: 14px;
+                        padding: 1px;
+                        border-radius: 50%;
+                        background: #ffffff;
+                    }
+                }
+
                 .header-seg {
                     min-height: 34px;
                     align-items: center;
 
-                    > span {
+                    .seg-inner > span {
                         padding: 4px 10px;
                         min-height: 26px;
                         font-size: 12px;
-                    }
-                }
 
-                .header-dept {
-                    height: 34px;
-                    padding: 0 10px;
-                    max-width: 180px;
-                    font-size: 12px;
+                        &.seg-dept {
+                            max-width: 160px;
+                        }
+                    }
                 }
             }
         }
@@ -2052,6 +2137,10 @@ body.window-portrait {
             }
 
             .team-focus {
+                .focus-chip {
+                    padding: 4px 0;
+                }
+
                 .focus-row {
                     grid-template-columns: minmax(0, 1fr) 90px 96px;
                     gap: 8px;
