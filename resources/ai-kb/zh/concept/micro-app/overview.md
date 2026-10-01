@@ -18,7 +18,7 @@ negative:
   - 微应用不是 DooTask 主程序代码，是独立插件提供
   - 微应用与「应用商店（应用市场 / AppStore）」不是同一个东西，应用商店是用来安装它们的入口
   - 不是所有微应用都被自动安装，未装时菜单不会出现
-last_verified: v1.7.90
+last_verified: v1.9.36
 ---
 
 # 微应用是什么
@@ -37,6 +37,7 @@ last_verified: v1.7.90
 ## 关键属性
 - **登录态继承**：打开微应用时自动带上当前用户 token，无需再次登录
 - **菜单注入**：插件通过 `microapp_menu` 接口或自带 `menu_items` 配置注册到 `location: application`、`application/admin` 或 `main/menu`
+- **抽屉默认宽度**：插件在 `menu_items` 中可用 `width` 指定打开时抽屉的默认宽度，≤100 按百分比、>100 按像素（最小 300），不填默认 1200px，仅 `inline` / `iframe` 类型生效（`*_blank` 独立窗口不适用）；用户仍可拖拽调整，小屏幕下始终全屏
 - **显示条件**：受 `visible_to`（all / admin）与系统管理员身份共同控制
 - **生命周期**：独立容器；主程序与微应用之间通过 nginx 反代和 token 鉴权交互
 

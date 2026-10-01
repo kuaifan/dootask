@@ -5,7 +5,7 @@
             :key="key"
             :open="app.isOpen"
             :ref="`ref-${app.name}`"
-            :size="1200"
+            :size="app.width || 1200"
             :options="app"
             :windowType="windowType"
             :forceCapsuleVisible="loadErrors[app.name] != null"

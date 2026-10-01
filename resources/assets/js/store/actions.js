@@ -5399,6 +5399,7 @@ export default {
      *  - auto_dark_theme   是否自动适配深色主题 (true/false)，默认 true
      *  - keep_alive        是否开启微应用保活 (true/false)，默认 true
      *  - immersive         是否开启沉浸式模式 (true/false)，默认 false
+     *  - width             抽屉默认宽度（可选，number，仅 inline/iframe 生效，*_blank 独立窗口不适用）；≤100 按百分比，>100 按 px（最小 300），缺省 1200
      *  - props             传递参数
      *  更多说明详见 https://appstore.dootask.com/development/manual
      */
@@ -5461,6 +5462,7 @@ export default {
             auto_dark_theme: typeof data.auto_dark_theme == 'boolean' ? data.auto_dark_theme : true,
             keep_alive: typeof data.keep_alive == 'boolean' ? data.keep_alive : true,
             immersive: typeof data.immersive == 'boolean' ? data.immersive : false,
+            width: typeof data.width == 'number' && data.width > 0 ? (data.width > 100 ? Math.max(300, data.width) : data.width) : 0,
             badge_clear_on_open: typeof data.badge_clear_on_open == 'boolean' ? data.badge_clear_on_open : false,
             props: $A.isJson(data.props) ? data.props : {},
         }
