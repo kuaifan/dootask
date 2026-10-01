@@ -18,7 +18,7 @@ prerequisites: []
 negative:
   - 个人设置没有移动端 Tabbar 一级入口，需先进「我的」再进设置
   - 未登录用户没有「个人设置」入口
-last_verified: v1.8.89
+last_verified: v1.9.36
 ---
 
 # 个人设置入口
@@ -42,7 +42,7 @@ last_verified: v1.8.89
 - 键盘设置（仅 Electron / 移动端）→ [[user-settings.shortcut.concept]]
 - AI 助手设置（仅安装 ai 插件后显示）→ [[user-settings.ai-assistant-float.howto]]
 - 系统设置 / License Key（仅系统管理员可见）
-- 更新日志 / 版本 / 登录设备 / 清除缓存 / 退出登录
+- 更新日志（桌面端有新版本时显示为「更新客户端」，点击打开客户端更新弹窗） / 版本 / 登录设备 / 清除缓存 / 退出登录
 
 ## 权限要求
 

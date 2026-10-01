@@ -816,7 +816,7 @@ export default {
                         {path: 'license', name: 'License Key'},
                     ],
                     [{path: 'downloadClient', name: '客户端下载', visible: this.showDownloadClient}],
-                    [{path: 'version', name: '更新版本', visible: !!this.clientNewVersion}],
+                    [{path: 'version', name: '更新客户端', visible: !!this.clientNewVersion}],
                     [
                         {path: 'allProject', name: '所有项目'},
                         {path: 'archivedProject', name: '已归档的项目'},
@@ -830,7 +830,7 @@ export default {
                 groups.push(
                     [{path: 'personal', name: '个人设置'}],
                     [{path: 'downloadClient', name: '客户端下载', visible: this.showDownloadClient}],
-                    [{path: 'version', name: '更新版本', visible: !!this.clientNewVersion}],
+                    [{path: 'version', name: '更新客户端', visible: !!this.clientNewVersion}],
                     [
                         {path: 'workReport', name: '工作报告', visible: systemFunctionEnabled('report')},
                         {path: 'archivedProject', name: '已归档的项目'},

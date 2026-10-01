@@ -111,7 +111,7 @@ export default {
                 ])
             }
             menu.push(...[
-                {path: 'version', name: '更新日志', divided: true},
+                {path: 'version', name: this.clientNewVersion ? '更新客户端' : '更新日志', title: '更新日志', divided: true},
                 {path: 'version-show', name: '版本'},
                 {path: 'device', name: '登录设备', divided: true},
                 {path: 'clearCache', name: '清除缓存'},
@@ -125,7 +125,7 @@ export default {
             let name = '';
             menu.some((item) => {
                 if (routeName === `manage-setting-${item.path}`) {
-                    name = `${this.$L(item.name)}${item.desc||''}`;
+                    name = `${this.$L(item.title || item.name)}${item.desc||''}`;
                     return true;
                 }
             })

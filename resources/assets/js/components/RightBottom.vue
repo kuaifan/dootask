@@ -17,7 +17,7 @@
             class-name="common-right-bottom-notification">
             <div slot="header">
                 <div class="notification-head">
-                    <div class="notification-title">{{$L('发现新版本')}}</div>
+                    <div class="notification-title">{{$L('发现客户端新版本')}}</div>
                     <Tag color="volcano">v{{systemVersion}} -&gt; v{{updateVersion}}</Tag>
                 </div>
                 <div v-if="$Platform === 'mac'" class="notification-tip">{{$L('离最新版本只有一步之遥了！重新启动应用即可完成更新。')}}</div>
@@ -27,7 +27,7 @@
             </Scrollbar>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="updateShow=false">{{$L('稍后')}}</Button>
-                <Button type="primary" :loading="updateIng" @click="updateQuitAndInstall">{{$L($Platform === 'mac' ? '重新启动' : '立即升级')}}</Button>
+                <Button type="primary" :loading="updateIng" @click="updateQuitAndInstall">{{$L($Platform === 'mac' ? '重新启动' : '立即更新')}}</Button>
             </div>
         </Modal>
     </div>

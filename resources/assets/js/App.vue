@@ -815,7 +815,7 @@ export default {
             $A.eeuiAppSetCachesString("languageWebForward", this.$L("前进"))
             $A.eeuiAppSetCachesString("languageWebBrowser", this.$L("浏览器打开"))
             $A.eeuiAppSetCachesString("languageWebRefresh", this.$L("刷新"))
-            $A.eeuiAppSetCachesString("updateDefaultTitle", this.$L("发现新版本"))
+            $A.eeuiAppSetCachesString("updateDefaultTitle", this.$L("APP 新版本"))
             $A.eeuiAppSetCachesString("updateDefaultContent", this.$L("暂无更新介绍！"))
             $A.eeuiAppSetCachesString("updateDefaultCancelText", this.$L("以后再说"))
             $A.eeuiAppSetCachesString("updateDefaultUpdateText", this.$L("立即更新"))
