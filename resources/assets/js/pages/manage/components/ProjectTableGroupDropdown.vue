@@ -22,7 +22,8 @@
                 :disabled="selected.length === 1 && selected.includes(group.key)"
                 :title="selected.length === 1 && selected.includes(group.key) ? $L('至少保留一项') : ''"
                 @on-change="$emit('change', group, $event)">
-                {{$L(group.title)}}
+                <span class="project-table-group-name">{{$L(group.title)}}</span>
+                <span v-if="counts" class="project-table-group-num">{{counts[group.key] || 0}}</span>
             </Checkbox>
         </div>
     </Dropdown>
@@ -37,6 +38,7 @@ export default {
         value: {type: Boolean, default: false},
         touch: {type: Boolean, default: false},
         selected: {type: Array, required: true},
+        counts: {type: Object, default: null},
         placement: {type: String, default: 'bottom-start'},
     },
     computed: {

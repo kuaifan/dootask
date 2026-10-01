@@ -121,6 +121,7 @@
                     class="project-table-settings"
                     :touch="$isEEUIApp || windowTouch"
                     :selected="visibleTableGroups"
+                    :counts="tableGroupsOpen ? tableGroupCounts : null"
                     @change="setTableGroupVisible">
                     <button type="button" class="project-table-settings-icon">
                         <Icon type="md-funnel"/>
@@ -862,6 +863,23 @@ export default {
                     return $A.sortDay(a.end_at || '2099-12-31 23:59:59', b.end_at || '2099-12-31 23:59:59');
                 }),
             }));
+        },
+
+        // 各分组任务数，与分组标题旁的数量一致（未显示的分组也计算）
+        tableGroupCounts() {
+            const counts = {
+                my: this.myList.length,
+                help: this.helpList.length,
+                undone: this.unList.length,
+                completed: this.completedList.length,
+            };
+            const groups = this.tableGroupOptions.filter(group => group.kind);
+            const tasks = this.panelTask(this.parentTask);
+            const now = $A.daytz(this.nowTime).valueOf();
+            groups.forEach(group => {
+                counts[group.key] = tasks.filter(task => taskMatchesProjectGroup(task, group, this.tableWeekRanges, now, $A.dayjs)).length;
+            });
+            return counts;
         },
 
         tabTypeStyle() {
