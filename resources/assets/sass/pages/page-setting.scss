@@ -670,3 +670,228 @@ body.window-portrait {
         }
     }
 }
+
+.system-update-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    padding: 24px 40px;
+    .update-view {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 420px;
+        .view-head {
+            margin-bottom: 20px;
+            .view-title {
+                font-size: 18px;
+                font-weight: 500;
+                line-height: 26px;
+                color: $primary-title-color;
+            }
+            .view-desc {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px 16px;
+                margin-top: 4px;
+                font-size: 13px;
+                color: $primary-desc-color;
+            }
+        }
+        &.is-success,
+        &.is-update {
+            .view-head .view-title {
+                color: $primary-color;
+            }
+        }
+        &.is-failed .view-head .view-title {
+            color: #ed4014;
+        }
+        .view-notice {
+            margin-bottom: 16px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: $primary-text-color;
+            word-break: break-all;
+            .notice-title {
+                font-weight: 500;
+                color: $primary-title-color;
+            }
+            a {
+                margin-left: 8px;
+            }
+            &.success {
+                background-color: rgba($primary-color, 0.1);
+            }
+            &.warning {
+                background-color: rgba(#ff9900, 0.1);
+            }
+            &.error {
+                background-color: rgba(#ed4014, 0.06);
+                .notice-title {
+                    color: #ed4014;
+                }
+            }
+        }
+        .view-panel {
+            flex: 1;
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f7f8fa;
+            .panel-head {
+                flex-shrink: 0;
+                padding: 12px 18px;
+                font-size: 13px;
+                font-weight: 500;
+                color: $primary-desc-color;
+            }
+            .panel-body {
+                flex: 1;
+                height: 0;
+                margin: 0;
+                padding: 0 18px 14px;
+                overflow: auto;
+                color: $primary-text-color;
+                &.is-log {
+                    font-size: 12px;
+                    line-height: 1.7;
+                    white-space: pre-wrap;
+                    word-break: break-all;
+                }
+                &.is-markdown {
+                    padding: 4px 18px 12px;
+                }
+                .panel-empty {
+                    padding: 8px 0;
+                    color: $primary-desc-color;
+                }
+                .vuepress-markdown-body {
+                    padding: 0 !important;
+                    color: inherit;
+                    font-size: 14px;
+                    background-color: transparent;
+                    h2 {
+                        font-size: 1.25em;
+                        margin: 1em 0 .6em;
+                        padding-bottom: 0;
+                        border-bottom: 0;
+                    }
+                    h3 {
+                        font-size: 1.05em;
+                        margin: 1em 0 .5em;
+                    }
+                    ul, ol {
+                        padding-left: 2em;
+                        line-height: 1.6;
+                    }
+                }
+            }
+        }
+    }
+    .task-steps {
+        display: flex;
+        margin-bottom: 24px;
+        > li {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: $primary-desc-color;
+            // 连接线：从上一个节点中心连到当前节点中心
+            &:not(:first-child):before {
+                content: "";
+                position: absolute;
+                top: 10px;
+                right: calc(50% + 16px);
+                left: calc(-50% + 16px);
+                height: 2px;
+                border-radius: 1px;
+                background-color: #ebeef5;
+            }
+            .step-dot {
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                border: 2px solid #dcdfe6;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                color: #ffffff;
+                .common-loading {
+                    width: 22px;
+                    height: 22px;
+                }
+            }
+            .step-label {
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            &.finish {
+                color: $primary-text-color;
+                &:before {
+                    background-color: $primary-color;
+                }
+                .step-dot {
+                    border-color: $primary-color;
+                    background-color: $primary-color;
+                }
+            }
+            &.process {
+                color: $primary-title-color;
+                font-weight: 500;
+                &:before {
+                    background-color: $primary-color;
+                }
+                .step-dot {
+                    border: 0;
+                }
+            }
+            &.error {
+                color: #ed4014;
+                font-weight: 500;
+                &:before {
+                    background-color: $primary-color;
+                }
+                .step-dot {
+                    border-color: #ed4014;
+                    background-color: #ed4014;
+                }
+            }
+        }
+    }
+}
+.system-update-confirm {
+    > p {
+        margin-bottom: 16px;
+        line-height: 1.6;
+    }
+}
+body.window-portrait {
+    .system-update-box {
+        padding: 20px;
+        .task-steps {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 8px;
+            > li {
+                flex-direction: row;
+                &:before {
+                    display: none;
+                }
+            }
+        }
+    }
+}

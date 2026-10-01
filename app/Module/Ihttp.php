@@ -191,9 +191,9 @@ class Ihttp
         $split1[1] = substr($data, $pos + 4, strlen($data));
 
         $split2 = explode("\r\n", $split1[0], 2);
-        preg_match('/^(\S+) (\S+) (\S+)$/', $split2[0], $matches);
+        preg_match('/^(\S+) (\S+)(?: (.*))?$/', $split2[0], $matches);
         $rlt['code'] = $matches[2];
-        $rlt['status'] = $matches[3];
+        $rlt['status'] = $matches[3] ?? '';
         $rlt['responseline'] = $split2[0];
         $header = explode("\r\n", $split2[1]);
         $rlt['headers'] = [];

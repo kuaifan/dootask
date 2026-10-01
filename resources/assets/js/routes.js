@@ -95,6 +95,11 @@ export default [
                         component: () => import('./pages/manage/setting/device.vue'),
                     },
                     {
+                        name: 'manage-setting-system-update',
+                        path: 'system-update',
+                        component: () => import('./pages/manage/setting/system-update.vue'),
+                    },
+                    {
                         name: 'manage-setting-version',
                         path: 'version',
                         component: () => import('./pages/manage/setting/version.vue'),

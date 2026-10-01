@@ -15,6 +15,7 @@ use App\Module\Doo;
 use App\Models\User;
 use App\Module\Base;
 use App\Module\OnlineLicense;
+use App\Module\SystemUpdate;
 use App\Module\Timer;
 use App\Models\Setting;
 use LdapRecord\Container;
@@ -1585,6 +1586,70 @@ class SystemController extends AbstractController
             return Base::retSuccess('success', $array);
         }
         return $array;
+    }
+
+    /**
+     * @api {get} api/system/update/check 检查系统更新（限管理员）
+     *
+     * @apiDescription 检查服务端（主程序）是否有新版本，结果缓存 10 分钟
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName update__check
+     *
+     * @apiParam {Number} [force]   1：跳过缓存重新检查
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据（supported、reason、current_version、latest_version、behind、has_update、has_local_changes、has_db_changes、changelog）
+     */
+    public function update__check()
+    {
+        User::auth('admin');
+        $force = intval(Request::input('force')) === 1;
+        return Base::retSuccess('success', SystemUpdate::check($force));
+    }
+
+    /**
+     * @api {post} api/system/update/start 发起系统更新（限管理员）
+     *
+     * @apiDescription 校验登录密码后，由 appstore 拉起独立容器执行 ./cmd update，接口立即返回；进度通过 api/system/update/status 查询
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName update__start
+     *
+     * @apiParam {String} password  当前管理员登录密码
+     * @apiParam {String} version   确认时看到的目标版本号
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据（id、from_version、to_version）
+     */
+    public function update__start()
+    {
+        $user = User::auth('admin');
+        $password = (string) Request::input('password');
+        $version = trim((string) Request::input('version'));
+        return Base::retSuccess('已开始更新系统', SystemUpdate::start($user, $password, $version));
+    }
+
+    /**
+     * @api {get} api/system/update/status 系统更新进度（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName update__status
+     *
+     * @apiParam {Number} [offset]  日志读取偏移（字节），用于增量获取日志
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据（status：idle|running|success|failed、stage、from_version、to_version、error、log、offset 等）
+     */
+    public function update__status()
+    {
+        User::auth('admin');
+        $offset = intval(Request::input('offset'));
+        return Base::retSuccess('success', SystemUpdate::status($offset));
     }
 
     /**

@@ -106,6 +106,7 @@ services:
       - ./:/var/www
     environment:
       HOST_PWD: "${PWD}"
+      HOST_DOCKER_SOCK: "${HOST_DOCKER_SOCK:-/var/run/docker.sock}"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 5s

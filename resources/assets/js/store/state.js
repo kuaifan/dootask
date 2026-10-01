@@ -259,6 +259,9 @@ export default {
     // 客户端新版本号
     clientNewVersion: null,
 
+    // 系统（服务端）新版本号，仅管理员检查
+    systemNewVersion: null,
+
     // 客户端下载地址（网页版）
     clientDownloadUrl: '',
 

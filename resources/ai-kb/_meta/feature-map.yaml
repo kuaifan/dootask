@@ -605,6 +605,18 @@ features:
       - license.howto
       - license.online.howto
 
+  - id: system-update
+    name: 系统更新
+    scope: admin
+    batch: B4
+    priority: P1
+    chunk_count_est: 2
+    owner: ~
+    status: drafted
+    chunks:
+      - system-update.online-update.howto
+      - system-update.unsupported.faq
+
   - id: ldap
     name: LDAP 集成
     scope: admin
@@ -817,6 +829,7 @@ features:
       - menu-navigation.recent.menu-map
       - menu-navigation.search.menu-map
       - menu-navigation.system-setting.menu-map
+      - menu-navigation.system-update.menu-map
       - menu-navigation.team-mgmt.menu-map
       - menu-navigation.theme.menu-map
 

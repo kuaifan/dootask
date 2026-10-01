@@ -85,6 +85,8 @@ msg() {
             "更新PHP依赖失败") out="Failed to update PHP dependencies" ;;
             "执行数据库备份...") out="Backing up database..." ;;
             "重启服务失败") out="Failed to restart services" ;;
+            "检测到本地修改，已中止在线更新，请在服务器处理后重试") out="Local changes detected, online update aborted. Please resolve them on the server and retry" ;;
+            "服务未能在规定时间内恢复") out="Services did not recover in time" ;;
             "更新完成") out="Update complete" ;;
             "警告：此操作将永久删除以下内容：") out="WARNING: This will permanently delete:" ;;
             "- 数据库") out="- Database" ;;
@@ -130,7 +132,7 @@ if [ -t 0 ] && [ -t 1 ]; then
 fi
 
 # 缓存执行
-if [ -z "$CACHED_EXECUTION" ] && [ "$1" == "update" ]; then
+if [ -z "$CACHED_EXECUTION" ] && [ "$1" == "update" ] && [[ " $* " != *" --check "* ]]; then
     if ! cat "$0" > ._cmd 2>/dev/null; then
         error "$(msg '无法创建脚本副本')"
         exit 1
@@ -181,6 +183,7 @@ warning() {
 
 # 输出错误
 error() {
+    UPDATE_LAST_ERROR="$1"
     echo -e "${Error} ${RedBG}$1${Font}"
 }
 
@@ -362,10 +365,11 @@ wait_php_healthy() {
     [ -z "$name" ] && return 0
     while [ $wait -lt 90 ]; do
         st="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$name" 2>/dev/null)"
-        { [ "$st" = "healthy" ] || [ "$st" = "running" ]; } && break
+        { [ "$st" = "healthy" ] || [ "$st" = "running" ]; } && return 0
         sleep 3
         wait=$((wait + 3))
     done
+    return 1
 }
 
 # 编译前端
@@ -664,7 +668,7 @@ DooTask 管理脚本
 
 📦 核心操作:
   install                     安装 DooTask (支持 --port <端口> --relock)
-  update                      更新 DooTask (支持 --branch <分支> --force --local)
+  update                      更新 DooTask (支持 --branch <分支> --force --local --check --non-interactive)
   uninstall                   卸载 DooTask
   permission                  修复整个项目的权限
 
@@ -715,7 +719,7 @@ Usage: ./cmd <command> [options]
 
 📦 Core:
   install                     Install DooTask (supports --port <port> --relock)
-  update                      Update DooTask (supports --branch <branch> --force --local)
+  update                      Update DooTask (supports --branch <branch> --force --local --check --non-interactive)
   uninstall                   Uninstall DooTask
   permission                  Repair permissions for the whole project
 
@@ -883,6 +887,111 @@ handle_install() {
     container_exec mariadb "sh /etc/mysql/repassword.sh"
 }
 
+# 信任项目目录，避免 git 归属检查拦截（sudo / 容器内以 root 执行时）
+git_trust_workdir() {
+    git config --global --get-all safe.directory 2>/dev/null | grep -qxF "${WORK_DIR}" \
+        || git config --global --add safe.directory "${WORK_DIR}" 2>/dev/null
+}
+
+# 读取 package.json 中的版本号（从标准输入读取）
+pkg_version() {
+    grep -m1 '"version"' | sed -E 's/.*"version"[^"]*"([^"]+)".*/\1/'
+}
+
+# JSON 字符串转义（单行）
+json_str() {
+    printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr -d '\r' | tr '\n\t' '  '
+}
+
+# 在线更新状态文件（仅 --non-interactive 模式写入，供 Web 端轮询进度）
+UPDATE_STATE_FILE=""
+UPDATE_LAST_ERROR=""
+US_STATUS=""
+US_STAGE=""
+US_FROM_VERSION=""
+US_TO_VERSION=""
+US_FROM_COMMIT=""
+US_TO_COMMIT=""
+US_BACKUP=""
+US_STARTED=""
+US_FINISHED=0
+US_ERROR=""
+
+update_state_write() {
+    [[ -z "$UPDATE_STATE_FILE" ]] && return 0
+    local tmp="${UPDATE_STATE_FILE}.tmp"
+    printf '{"id":"%s","status":"%s","stage":"%s","from_version":"%s","to_version":"%s","from_commit":"%s","to_commit":"%s","backup_file":"%s","operator":%d,"log":"%s","started_at":%d,"finished_at":%d,"error":"%s"}\n' \
+        "$(json_str "${UPDATE_ID}")" "$US_STATUS" "$US_STAGE" \
+        "$(json_str "$US_FROM_VERSION")" "$(json_str "$US_TO_VERSION")" \
+        "$US_FROM_COMMIT" "$US_TO_COMMIT" "$(json_str "$US_BACKUP")" \
+        "${UPDATE_OPERATOR:-0}" "$(json_str "${UPDATE_LOG}")" \
+        "$US_STARTED" "$US_FINISHED" "$(json_str "$US_ERROR")" > "$tmp" && mv -f "$tmp" "$UPDATE_STATE_FILE"
+}
+
+update_stage() {
+    US_STAGE="$1"
+    update_state_write
+}
+
+# 异常退出时（exec_judge 失败 exit 1 等）标记失败
+update_state_exit() {
+    if [[ "$US_STATUS" == "running" ]]; then
+        US_STATUS="failed"
+        US_ERROR="${UPDATE_LAST_ERROR:-unknown error}"
+        US_FINISHED=$(date +%s)
+        update_state_write
+    fi
+}
+
+update_state_init() {
+    mkdir -p "${WORK_DIR}/docker/logs/update"
+    UPDATE_STATE_FILE="${WORK_DIR}/docker/logs/update/state.json"
+    UPDATE_ID="${UPDATE_ID:-$(date +%Y%m%d%H%M%S)}"
+    US_STATUS="running"
+    US_STARTED=$(date +%s)
+    US_FROM_VERSION="$(pkg_version < "${WORK_DIR}/package.json")"
+    git_trust_workdir
+    US_FROM_COMMIT="$(git rev-parse HEAD 2>/dev/null)"
+    trap update_state_exit EXIT
+    update_stage "preparing"
+}
+
+# 检查更新（只读：仅 git fetch，不改动工作区），结果以 JSON 输出到 stdout
+update_check_json() {
+    local reason="" branch="" current="" latest="" behind=0 local_changes=false db_changes=false changelog=""
+    current="$(pkg_version < "${WORK_DIR}/package.json")"
+    if [ ! -f "${WORK_DIR}/vendor/autoload.php" ]; then
+        reason="not_installed"
+    elif [ ! -d "${WORK_DIR}/.git" ]; then
+        reason="no_git"
+    else
+        git_trust_workdir
+        branch="$(git symbolic-ref --short -q HEAD)"
+        if [ -z "$branch" ]; then
+            reason="detached_head"
+        elif ! git fetch origin "$branch" &> /dev/null; then
+            reason="fetch_failed"
+        else
+            latest="$(git show "origin/${branch}:package.json" 2>/dev/null | pkg_version)"
+            behind="$(git rev-list --count "HEAD..origin/${branch}" 2>/dev/null || echo 0)"
+            if ! git diff --quiet || ! git diff --cached --quiet; then
+                local_changes=true
+            fi
+            if [ -n "$(git diff --name-only "HEAD...origin/${branch}" -- database/ 2>/dev/null)" ]; then
+                db_changes=true
+            fi
+            # 截取远端 CHANGELOG 中比当前版本新的段落
+            changelog="$(git show "origin/${branch}:CHANGELOG.md" 2>/dev/null \
+                | awk -v v="## [${current}]" 'index($0, v) == 1 { exit } /^## \[/ { started = 1 } started { print }' \
+                | base64 | tr -d '\n')"
+        fi
+    fi
+    printf '{"supported":%s,"reason":"%s","branch":"%s","current_version":"%s","latest_version":"%s","behind":%d,"has_local_changes":%s,"has_db_changes":%s,"changelog_base64":"%s"}\n' \
+        "$([ -z "$reason" ] && echo true || echo false)" "$reason" "$(json_str "$branch")" \
+        "$(json_str "$current")" "$(json_str "$latest")" "${behind:-0}" \
+        "$local_changes" "$db_changes" "$changelog"
+}
+
 # 更新函数
 handle_update() {
     check_sudo
@@ -890,6 +999,26 @@ handle_update() {
     local target_branch=$(arg_get branch)
     local is_local=$(arg_get local)
     local force_update=$(arg_get force)
+    local online_update=$(arg_get non-interactive)
+
+    # 在线更新（Web 端发起）不能交互，凭据缺失时让 git 直接失败而不是等待输入
+    if [[ "$(arg_get check)" == "yes" ]] || [[ "$online_update" == "yes" ]]; then
+        export GIT_TERMINAL_PROMPT=0
+        export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
+    fi
+
+    if [[ "$(arg_get check)" == "yes" ]]; then
+        update_check_json
+        return 0
+    fi
+
+    if [[ "$online_update" == "yes" ]]; then
+        # 在线更新只允许更新当前分支：不切分支、不强制覆盖、不走本地模式
+        target_branch=""
+        is_local=""
+        force_update=""
+        update_state_init
+    fi
 
     # 检查是否已经安装
     if [ ! -f "${WORK_DIR}/vendor/autoload.php" ]; then
@@ -903,11 +1032,13 @@ handle_update() {
     fi
 
     if [[ -z "$is_local" ]]; then
-        # 信任项目目录，避免 git 归属检查拦截
-        git config --global --get-all safe.directory 2>/dev/null | grep -qxF "${WORK_DIR}" \
-            || git config --global --add safe.directory "${WORK_DIR}" 2>/dev/null
+        git_trust_workdir
         # 检查本地修改
         if ! git diff --quiet || ! git diff --cached --quiet; then
+            if [[ "$online_update" == "yes" ]]; then
+                error "$(msg '检测到本地修改，已中止在线更新，请在服务器处理后重试')"
+                exit 1
+            fi
             if [[ "$force_update" != "yes" ]]; then
                 warning "$(msg '检测到本地修改，是否强制更新？[Y/n]')"
                 read -r confirm_force
@@ -925,6 +1056,7 @@ handle_update() {
         fi
 
         # 远程更新模式
+        update_stage "fetching"
         exec_judge "git fetch --all" "$(msg '获取远程更新失败')"
 
         # 确定目标分支
@@ -947,19 +1079,31 @@ handle_update() {
 
         # 检查数据库迁移变动
         db_changes=$(git diff --name-only HEAD..origin/${current_branch} 2>/dev/null | grep -E "^database/" || true)
-        if [[ -n "$db_changes" ]]; then
-            echo "$(msg '数据库有迁移变动，执行数据库备份...')"
+        if [[ -n "$db_changes" ]] || [[ "$online_update" == "yes" ]]; then
+            # 在线更新无人值守，无论是否有迁移都先备份
+            update_stage "backup"
+            if [[ -n "$db_changes" ]]; then
+                echo "$(msg '数据库有迁移变动，执行数据库备份...')"
+            else
+                echo "$(msg '执行数据库备份...')"
+            fi
             exec_judge "mysql_snapshot backup" "$(msg '数据库备份失败')" "$(msg '数据库备份完成')"
+            US_BACKUP="${filename#${WORK_DIR}/}"
         fi
 
         # 更新代码
+        update_stage "pulling"
         if [[ "$force_update" == "yes" ]]; then
             exec_judge "git reset --hard origin/${current_branch}" "$(msg '强制更新代码失败')"
         else
             exec_judge "git pull --ff-only origin ${current_branch}" "$(msg '代码拉取失败，可能存在冲突，请使用 --force 参数')"
         fi
 
+        US_TO_VERSION="$(pkg_version < "${WORK_DIR}/package.json")"
+        US_TO_COMMIT="$(git rev-parse HEAD 2>/dev/null)"
+
         # 更新依赖
+        update_stage "composer"
         exec_judge "container_run php 'composer install --optimize-autoloader'" "$(msg '更新PHP依赖失败')"
     else
         # 本地更新模式
@@ -968,9 +1112,11 @@ handle_update() {
     fi
 
     # 数据库迁移
+    update_stage "migrating"
     exec_judge "container_run php 'php artisan migrate'" "$(msg '数据库迁移失败')"
 
     # 停止服务
+    update_stage "restarting"
     $COMPOSE stop php nginx &> /dev/null
     $COMPOSE rm -f php nginx &> /dev/null
 
@@ -982,10 +1128,21 @@ handle_update() {
     fi
     
     # 兜底拉起 nginx（避免首启时序竞态）
-    wait_php_healthy
+    update_stage "verifying"
+    local php_healthy="yes"
+    wait_php_healthy || php_healthy=""
     [ -z "$(docker_name nginx)" ] && $COMPOSE up -d --remove-orphans
 
     env_set UPDATE_TIME "$(date +%s)"
+    if [[ "$online_update" == "yes" ]] && [[ -z "$php_healthy" ]]; then
+        error "$(msg '服务未能在规定时间内恢复')"
+        exit 1
+    fi
+    if [[ "$online_update" == "yes" ]]; then
+        US_STATUS="success"
+        US_FINISHED=$(date +%s)
+        update_stage "done"
+    fi
     success "$(msg '更新完成')"
 }
 

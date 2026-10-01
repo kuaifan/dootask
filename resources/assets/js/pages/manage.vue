@@ -15,7 +15,7 @@
                         <UserAvatar :userid="userId" :size="36"/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
-                    <Badge v-if="!!clientNewVersion" class="manage-box-top-report" dot/>
+                    <Badge v-if="!!clientNewVersion || (userIsAdmin && !!systemNewVersion)" class="manage-box-top-report" dot/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
                         <Icon type="ios-arrow-down" />
@@ -121,6 +121,10 @@
                                         v-if="item.path === 'version'"
                                         class="manage-menu-report-badge"
                                         :text="clientNewVersion"/>
+                                    <Badge
+                                        v-else-if="item.path === 'system-update'"
+                                        class="manage-menu-report-badge"
+                                        :text="systemNewVersion"/>
                                     <Badge
                                         v-else-if="item.path === 'workReport' && reportUnreadNumber > 0"
                                         class="manage-menu-report-badge"
@@ -600,6 +604,7 @@ export default {
         emitter.on('openFavorite', this.openFavorite);
         emitter.on('openRecent', this.openRecent);
         emitter.on('openManageExport', this.openManageExport);
+        emitter.on('websocketMsg', this.onWebsocketMsg);
         //
         document.addEventListener('keydown', this.shortcutEvent);
     },
@@ -618,6 +623,7 @@ export default {
         emitter.off('openFavorite', this.openFavorite);
         emitter.off('openRecent', this.openRecent);
         emitter.off('openManageExport', this.openManageExport);
+        emitter.off('websocketMsg', this.onWebsocketMsg);
         //
         document.removeEventListener('keydown', this.shortcutEvent);
     },
@@ -641,6 +647,7 @@ export default {
 
             'clientNewVersion',
             'clientDownloadUrl',
+            'systemNewVersion',
 
             'reportUnreadNumber',
 
@@ -815,8 +822,11 @@ export default {
                         {path: 'system', name: '系统设置'},
                         {path: 'license', name: 'License Key'},
                     ],
-                    [{path: 'downloadClient', name: '客户端下载', visible: this.showDownloadClient}],
-                    [{path: 'version', name: '更新客户端', visible: !!this.clientNewVersion}],
+                    [
+                        {path: 'system-update', name: '更新系统', visible: !!this.systemNewVersion},
+                        {path: 'downloadClient', name: '客户端下载', visible: this.showDownloadClient},
+                        {path: 'version', name: '更新客户端', visible: !!this.clientNewVersion},
+                    ],
                     [
                         {path: 'allProject', name: '所有项目'},
                         {path: 'archivedProject', name: '已归档的项目'},
@@ -829,8 +839,10 @@ export default {
             } else {
                 groups.push(
                     [{path: 'personal', name: '个人设置'}],
-                    [{path: 'downloadClient', name: '客户端下载', visible: this.showDownloadClient}],
-                    [{path: 'version', name: '更新客户端', visible: !!this.clientNewVersion}],
+                    [
+                        {path: 'downloadClient', name: '客户端下载', visible: this.showDownloadClient},
+                        {path: 'version', name: '更新客户端', visible: !!this.clientNewVersion},
+                    ],
                     [
                         {path: 'workReport', name: '工作报告', visible: systemFunctionEnabled('report')},
                         {path: 'archivedProject', name: '已归档的项目'},
@@ -932,6 +944,17 @@ export default {
     watch: {
         '$route' () {
             this.chackPass();
+        },
+
+        userIsAdmin: {
+            handler(isAdmin) {
+                if (isAdmin) {
+                    this.checkSystemUpdate();
+                } else {
+                    this.$store.state.systemNewVersion = null;
+                }
+            },
+            immediate: true
         },
 
         // 日历被停用（或「系统功能」已卸载）时，不允许停留在日历页
@@ -1169,6 +1192,28 @@ export default {
             }
             if (this.menu.findIndex((m) => m.path == path) > -1) {
                 this.toggleRoute('setting-' + path);
+            }
+        },
+
+        /**
+         * 检查系统（服务端）更新，仅管理员；服务端缓存 10 分钟
+         */
+        checkSystemUpdate() {
+            this.$store.dispatch("call", {
+                url: 'system/update/check',
+                checkNetwork: false,
+            }).then(({data}) => {
+                this.$store.state.systemNewVersion = data.has_update ? data.latest_version : null;
+            }).catch(_ => {});
+        },
+
+        onWebsocketMsg({type}) {
+            if (type === 'systemUpdate') {
+                $A.noticeWarning({
+                    title: '系统更新',
+                    desc: '系统正在更新，期间可能短暂无法使用，稍后将自动恢复',
+                    duration: 10,
+                });
             }
         },
 

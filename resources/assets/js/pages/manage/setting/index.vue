@@ -25,6 +25,10 @@
                             <AutoTip disabled>{{$L(item.name)}}</AutoTip>
                             <Badge v-if="!!clientNewVersion" :text="clientNewVersion"/>
                         </template>
+                        <template v-else-if="item.path === 'system-update'">
+                            <AutoTip disabled>{{$L(item.name)}}</AutoTip>
+                            <Badge v-if="!!systemNewVersion" :text="systemNewVersion"/>
+                        </template>
                         <template v-else-if="item.path === 'version-show'">
                             <AutoTip>{{$L(item.name)}}: {{clientVersion}}</AutoTip>
                         </template>
@@ -74,10 +78,10 @@ export default {
     computed: {
         ...mapGetters(['aiVisible']),
 
-        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'systemConfig']),
+        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'systemNewVersion', 'systemConfig']),
 
         showContent() {
-            return this.$route.path.match(/^\/manage\/setting\/\w+$/)
+            return this.$route.path.match(/^\/manage\/setting\/[\w-]+$/)
         },
 
         menu() {
@@ -110,8 +114,11 @@ export default {
                     {path: 'license', name: 'License Key'},
                 ])
             }
+            if (this.userIsAdmin) {
+                menu.push({path: 'system-update', name: '系统更新', divided: true})
+            }
             menu.push(...[
-                {path: 'version', name: this.clientNewVersion ? '更新客户端' : '更新日志', title: '更新日志', divided: true},
+                {path: 'version', name: this.clientNewVersion ? '更新客户端' : '更新日志', title: '更新日志', divided: !this.userIsAdmin},
                 {path: 'version-show', name: '版本'},
                 {path: 'device', name: '登录设备', divided: true},
                 {path: 'clearCache', name: '清除缓存'},

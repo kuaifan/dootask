@@ -11,6 +11,9 @@ return [
     // 移动 APP AI 界面开关：设为 true 时仅在移动 APP 隐藏 AI 相关界面
     'app_ai_hidden' => filter_var(env('APP_AI_HIDDEN', false), FILTER_VALIDATE_BOOLEAN),
 
+    // 在线更新开关：设为 false 时禁止管理员在网页端发起系统更新（SystemUpdate）
+    'online_update' => filter_var(env('ONLINE_UPDATE', true), FILTER_VALIDATE_BOOLEAN),
+
     // 演示账号：登录页展示的演示账号（SystemController::demo）
     'demo_account' => env('DEMO_ACCOUNT'),
 
