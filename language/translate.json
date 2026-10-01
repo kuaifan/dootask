@@ -37467,13 +37467,13 @@
         "key": "四象限",
         "zh": "",
         "zh-CHT": "四象限",
-        "en": "Four quadrants",
-        "ko": "4분면",
-        "ja": "4象限",
-        "de": "Vier Quadranten",
-        "fr": "Quatre quadrants",
-        "id": "Empat kuadran",
-        "ru": "Четыре квадранта"
+        "en": "Matrix",
+        "ko": "매트릭스",
+        "ja": "マトリクス",
+        "de": "Matrix",
+        "fr": "Matrice",
+        "id": "Matriks",
+        "ru": "Матрица"
     },
     {
         "key": "部门任务总览",
@@ -40143,13 +40143,13 @@
         "key": "部门总览",
         "zh": "",
         "zh-CHT": "部門總覽",
-        "en": "Department overview",
-        "ko": "부서 개요",
-        "ja": "部門概要",
-        "de": "Abteilungsübersicht",
-        "fr": "Vue du service",
-        "id": "Ikhtisar departemen",
-        "ru": "Обзор отдела"
+        "en": "Team",
+        "ko": "팀",
+        "ja": "チーム",
+        "de": "Team",
+        "fr": "Équipe",
+        "id": "Tim",
+        "ru": "Команда"
     },
     {
         "key": "全部部门",
