@@ -81,7 +81,13 @@ class SyncMsgToManticore extends Command
         // 持续处理循环（增量模式下）
         do {
             $round++;
-            $lastId = $isIncremental ? intval(ManticoreKeyValue::get($lastKey, 0)) : 0;
+            try {
+                // 严格读取：读失败（引擎重启/不可达）不能当成 0，否则会从头重灌并把指针写回低值
+                $lastId = $isIncremental ? intval(ManticoreKeyValue::getStrict($lastKey)) : 0;
+            } catch (\RuntimeException $e) {
+                $this->error("读取同步指针失败，本轮终止（避免从头重灌）：" . $e->getMessage());
+                break;
+            }
 
             if ($round === 1) {
                 if ($lastId > 0) {

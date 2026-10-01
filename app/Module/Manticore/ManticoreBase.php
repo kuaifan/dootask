@@ -599,6 +599,37 @@ class ManticoreBase
     }
 
     /**
+     * 查询单行（严格版）：连接/查询失败抛异常，而不是和「没有这一行」一样返回 null
+     *
+     * 用于「读不到就当默认值」会造成后果的场景，如同步命令读增量指针——
+     * 引擎不可达时若当成指针 0，会从头重灌全部数据。
+     *
+     * @param string $sql SQL语句
+     * @param array $params 参数
+     * @return array|null 单行结果；没有匹配行返回 null
+     * @throws \RuntimeException 连接或查询失败
+     */
+    public function queryOneStrict(string $sql, array $params = []): ?array
+    {
+        $failed = new \stdClass();
+        $result = $this->runWithRetry(
+            function (PDO $pdo) use ($sql, $params) {
+                $stmt = $pdo->prepare($sql);
+                $this->bindParams($stmt, $params);
+                $stmt->execute();
+                $row = $stmt->fetch();
+                return $row ? $this->convertNumericTypesRow($row) : null;
+            },
+            $failed,
+            ['sql' => $sql, 'params' => $params]
+        );
+        if ($result === $failed) {
+            throw new \RuntimeException('Manticore 不可达或查询失败');
+        }
+        return $result;
+    }
+
+    /**
      * 转换结果集中的数值类型
      * PDO 默认将 BIGINT 等数值类型返回为字符串，这里统一转换
      *

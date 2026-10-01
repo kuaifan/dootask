@@ -35,6 +35,31 @@ class ManticoreKeyValue
     }
 
     /**
+     * 严格获取值：键不存在返回 null，引擎不可达/查询失败抛异常
+     *
+     * get() 对「键不存在」和「读取失败」都返回默认值，无法区分。同步命令用它读增量指针：
+     * 引擎重启期间读失败若当成 0，会从头重灌全部数据并把指针写回低值。
+     *
+     * @param string $key 键
+     * @return string|null 值；键不存在返回 null
+     * @throws \RuntimeException 引擎不可达或查询失败
+     */
+    public static function getStrict(string $key): ?string
+    {
+        if (!Apps::isInstalled("search")) {
+            throw new \RuntimeException('Manticore Search 未安装');
+        }
+
+        $instance = new ManticoreBase();
+        $result = $instance->queryOneStrict(
+            "SELECT v FROM key_values WHERE k = ?",
+            [$key]
+        );
+
+        return $result ? (string) $result['v'] : null;
+    }
+
+    /**
      * 设置值
      *
      * @param string $key 键
