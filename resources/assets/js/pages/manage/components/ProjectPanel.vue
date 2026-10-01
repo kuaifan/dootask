@@ -356,7 +356,7 @@
                     open-key="my"
                     @on-priority="addTaskOpen"
                     fast-add-task/>
-                <div v-if="projectData.cacheParameter.showMy && !myList.length" class="project-table-empty">{{$L('暂无任务')}}</div>
+                <div v-if="projectData.cacheParameter.showMy && !myList.length && isDepartmentReadonly" class="project-table-empty">{{$L('暂无任务')}}</div>
             </div>
             <!--协助的任务-->
             <div v-if="visibleTableGroups.includes('help')" data-table-group="help" :class="['project-table-body', !projectData.cacheParameter.showHelp ? 'project-table-hide' : '']">
