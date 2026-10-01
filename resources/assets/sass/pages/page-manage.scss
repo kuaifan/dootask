@@ -37,6 +37,12 @@
             display: flex;
             flex-direction: column;
         }
+        .manage-item {
+            &:focus-visible {
+                outline: none;
+                box-shadow: none;
+            }
+        }
         .menu-base {
             position: sticky;
             top: 0;
