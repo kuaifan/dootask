@@ -45,6 +45,7 @@
 <script>
 import {mapGetters, mapState} from "vuex";
 import GanttView from "../../../components/GanttView";
+import {taskMatchesProjectFlowFilter} from "../../../utils/projectFlowFilter";
 
 export default {
     name: 'ProjectGantt',
@@ -53,8 +54,9 @@ export default {
         projectColumn: {
             default: []
         },
-        flowInfo: {
-            default: {}
+        flowFilter: {
+            type: Object,
+            default: () => ({})
         },
         readonly: {
             type: Boolean,
@@ -134,7 +136,7 @@ export default {
             },
             deep: true,
         },
-        flowInfo: {
+        flowFilter: {
             handler() {
                 this.initData();
             },
@@ -152,12 +154,7 @@ export default {
         },
 
         flowTask(task) {
-            if ($A.leftExists(this.flowInfo.value, "user:") && !task.task_user.find(({userid, owner}) => userid === this.flowInfo.userid && owner)) {
-                return true;
-            } else if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
-                return true;
-            }
-            return false;
+            return !taskMatchesProjectFlowFilter(task, this.flowFilter);
         },
 
         filtrLength(list) {

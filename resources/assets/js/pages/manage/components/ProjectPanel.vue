@@ -101,15 +101,19 @@
                     <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleParameter('completedTask')">{{$L('显示已完成')}}</Checkbox>
                 </div>
                 <div class="project-select">
-                    <Cascader
-                        ref="flow"
-                        :data="flowData"
-                        :open-trigger="$isEEUIApp || windowTouch ? 'click' : 'hover'"
-                        @on-change="flowChange"
-                        transfer-class-name="project-panel-flow-cascader"
-                        transfer>
-                        <span :class="`project-flow ${flowInfo.status || ''}`" :style="flowInfo.style">{{ flowTitle }}</span>
-                    </Cascader>
+                    <ProjectFlowFilterDropdown
+                        v-model="flowFilterOpen"
+                        :touch="$isEEUIApp || windowTouch"
+                        :groups="flowFilterGroups"
+                        :selected="flowFilter"
+                        :total="flowFilterTotal"
+                        @change="flowFilterChange"
+                        @clear="flowFilterClear">
+                        <span :class="['project-flow', flowTrigger.class]" :style="flowTrigger.style">
+                            <span class="project-flow-text">{{ flowTrigger.title }}</span>
+                            <Icon v-if="flowFilterTotal > 0" type="ios-close-circle" class="project-flow-clear" @click.native.stop="flowFilterClear()"/>
+                        </span>
+                    </ProjectFlowFilterDropdown>
                 </div>
                 <ProjectTableGroupDropdown
                     v-if="tabTypeActive === 'table'"
@@ -450,7 +454,7 @@
         </Scrollbar>
         <div v-else-if="tabTypeActive === 'gantt'" class="project-gantt">
             <!--甘特图-->
-            <ProjectGantt :projectColumn="columnList" :flowInfo="flowInfo" :readonly="isDepartmentReadonly"/>
+            <ProjectGantt :projectColumn="columnList" :flowFilter="flowFilter" :readonly="isDepartmentReadonly"/>
         </div>
 
         <!--项目设置-->
@@ -699,6 +703,7 @@ import TaskDeleted from "./TaskDeleted";
 import TaskTag from "./ProjectTaskTag/tags.vue";
 import ProjectGantt from "./ProjectGantt";
 import ProjectTableGroupDropdown from "./ProjectTableGroupDropdown.vue";
+import ProjectFlowFilterDropdown from "./ProjectFlowFilterDropdown.vue";
 import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import VMPreviewNostyle from "../../../components/VMEditor/nostyle.vue";
@@ -706,6 +711,7 @@ import emitter from "../../../store/events";
 import transformEmojiToHtml from "../../../utils/emoji";
 import {projectTableGroups, normalizeProjectTableGroups, projectWeekRanges, taskMatchesProjectGroup} from "../../../utils/projectTableGroups";
 import {scrollToStableTarget} from "../../../utils/scrollToStableTarget";
+import {emptyProjectFlowFilter, projectFlowFilterCount, taskMatchesProjectFlowFilter} from "../../../utils/projectFlowFilter";
 
 export default {
     name: "ProjectPanel",
@@ -729,6 +735,7 @@ export default {
         TaskTag,
         ProjectGantt,
         ProjectTableGroupDropdown,
+        ProjectFlowFilterDropdown,
     },
     data() {
         return {
@@ -782,7 +789,8 @@ export default {
             archivedTaskShow: false,
             deletedTaskShow: false,
 
-            flowInfo: {},
+            flowFilter: emptyProjectFlowFilter(),
+            flowFilterOpen: false,
             flowList: [],
 
             columnVisibilitys: {},
@@ -901,22 +909,14 @@ export default {
         },
 
         panelTask() {
-            const {searchText, flowInfo} = this;
+            const {searchText, flowFilter} = this;
             return function (list) {
                 if (!this.projectData.cacheParameter.completedTask) {
                     list = list.filter(({complete_at}) => {
                         return !complete_at;
                     });
                 }
-                if ($A.leftExists(flowInfo.value, "user:")) {
-                    list = list.filter(({task_user}) => task_user.find(({userid, owner}) => userid === flowInfo.userid && owner));
-                } else if ($A.leftExists(flowInfo.value, "tag:")) {
-                    list = list.filter(({task_tag}) => task_tag.find(({name}) => name === flowInfo.tag_name));
-                } else if (flowInfo.value > 0) {
-                    list = list.filter(({flow_item_id}) => flow_item_id === flowInfo.value);
-                } else if (flowInfo.value == -1) {
-                    list = list.filter(({start_at}) => !start_at);
-                }
+                list = list.filter(task => taskMatchesProjectFlowFilter(task, flowFilter));
                 if (searchText) {
                     list = list.filter(({id, name, desc}) => {
                         return id == searchText || $A.strExists(`${name} ${desc}`, searchText)
@@ -1158,111 +1158,100 @@ export default {
             return tags;
         },
 
-        flowTitle() {
-            const {flowInfo, flowData, allTask} = this;
-            if (flowInfo.value==-1) {
-                return flowInfo.label;
-            }
-            if (flowInfo.value) {
-                const item = flowData.find(item => item.value === flowInfo.value);
-                return item ? item.label : flowInfo.label;
-            }
-            return `${this.$L('全部')} (${allTask.length})`
+        flowFilterTotal() {
+            return projectFlowFilterCount(this.flowFilter);
         },
 
-        flowData() {
-            const {flowList, allTask, cacheUserBasic} = this;
-            const list = [{
-                value: 0,
-                label: `${this.$L('全部')} (${allTask.length})`,
-                children: []
+        flowFilterGroups() {
+            const {flowList, allTask, cacheUserBasic, flowFilter} = this;
+            const groups = [];
+            // 状态（含未计划）
+            const flowSections = [{
+                items: [{
+                    value: -1,
+                    label: this.$L('未计划'),
+                    count: allTask.filter(({start_at, complete_at}) => !start_at && !complete_at).length,
+                }]
             }];
-            list.push({
-                value: -1,
-                label: `${this.$L('未计划')} (${allTask.filter(({start_at, complete_at}) => !start_at && !complete_at).length})`,
-                children: []
+            flowList.forEach(flow => {
+                flowSections.push({
+                    title: flowList.length > 1 ? flow.name : '',
+                    items: flow.project_flow_item.map(item => ({
+                        value: item.id,
+                        label: item.name,
+                        count: allTask.filter(({flow_item_id}) => flow_item_id == item.id).length,
+                        status: item.status,
+                        style: $A.generateColorVarStyle(item.color, [10], 'flow-item-custom-color'),
+                    }))
+                });
             });
-            const flows = flowList.map(item1 => {
-                return {
-                    value: item1.id,
-                    label: item1.name,
-                    status: item1.status,
-                    children: item1.project_flow_item.map(item2 => {
-                        const length = allTask.filter(({flow_item_id}) => {
-                            return flow_item_id == item2.id;
-                        }).length
-                        return {
-                            value: item2.id,
-                            label: `${item2.name} (${length})`,
-                            status: item2.status,
-                            class: item2.status,
-                            style: $A.generateColorVarStyle(item2.color, [10], 'flow-item-custom-color'),
-                        }
-                    })
-                }
-            });
-            if (flows.length === 1) {
-                list.push(...flows[0].children)
-            } else if (flows.length > 0) {
-                list.push(...flows)
-            }
+            groups.push({key: 'flows', title: '状态', sections: flowSections});
             // 标签
             if (this.tagList.length > 0) {
-                const tagItems = this.tagList.map(({name, color}) => {
-                    const length = allTask.filter(({task_tag}) => {
-                        return task_tag.find(tag => tag.name === name);
-                    }).length
-                    return {
-                        value: `tag:${name}`,
-                        label: `${name} (${length})`,
-                        status: 'tag-dot',
-                        style: {
-                            '--bg-color': color,
-                        },
-                        tag_name: name,
-                        length,
-                    }
-                })
-                if (tagItems.length > 0) {
-                    list.push(...tagItems.map((item, index)=>{
-                        item.class = `tag-dot tag-${index}`
-                        return item;
-                    }))
-                }
+                groups.push({
+                    key: 'tags',
+                    title: '标签',
+                    sections: [{
+                        items: this.tagList.map(({name, color}) => ({
+                            value: name,
+                            label: name,
+                            count: allTask.filter(({task_tag}) => task_tag.find(tag => tag.name === name)).length,
+                            color,
+                        }))
+                    }]
+                });
             }
-            // 用户
+            // 负责人
             const {project_user} = this.projectData;
             if ($A.isArray(project_user)) {
-                const userItems = project_user.map((item) => {
+                const userItems = project_user.map(item => {
                     const userInfo = cacheUserBasic.find(({userid}) => userid === item.userid) || {}
-                    const length = allTask.filter(({task_user, complete_at}) => {
-                        if (!this.projectData.cacheParameter.completedTask) {
-                            if (complete_at) {
-                                return false;
-                            }
+                    const count = allTask.filter(({task_user, complete_at}) => {
+                        if (!this.projectData.cacheParameter.completedTask && complete_at) {
+                            return false;
                         }
                         return task_user.find(({userid, owner}) => userid === item.userid && owner);
                     }).length
                     return {
-                        value: `user:${userInfo.userid}`,
-                        label: `${userInfo.nickname} (${length})`,
-                        status: 'user',
+                        value: userInfo.userid || 0,
+                        label: userInfo.nickname,
+                        count,
                         userid: userInfo.userid || 0,
-                        length,
                     }
-                }).filter(({userid, length}) => userid > 0 && length > 0)
+                }).filter(({userid, count}) => userid > 0 && (count > 0 || flowFilter.users.includes(userid)))
                 if (userItems.length > 0) {
-                    userItems.sort((a) => {
-                        return a.userid == this.userId ? -1 : 1
-                    })
-                    list.push(...userItems.map((item, index)=>{
-                        item.class = `user-${index}`
-                        return item;
-                    }))
+                    userItems.sort((a, b) => (b.userid == this.userId) - (a.userid == this.userId))
+                    // 负责人超过 10 人时显示搜索框
+                    groups.push({key: 'users', title: '负责人', searchable: userItems.length > 10, sections: [{items: userItems}]});
                 }
             }
-            //
-            return list
+            return groups;
+        },
+
+        flowTrigger() {
+            const {flowFilter, flowFilterTotal, flowFilterGroups, allTask} = this;
+            if (flowFilterTotal === 0) {
+                return {title: `${this.$L('全部')} (${allTask.length})`};
+            }
+            if (flowFilterTotal === 1) {
+                const group = flowFilterGroups.find(({key}) => flowFilter[key].length > 0);
+                const item = group?.sections.flatMap(({items}) => items).find(({value}) => value === flowFilter[group.key][0]);
+                if (item) {
+                    const title = `${item.label} (${item.count})`;
+                    if (item.status) {
+                        return {title, class: item.status, style: item.style};
+                    }
+                    if (item.color) {
+                        return {title, class: 'active tag-dot', style: {'--bg-color': item.color}};
+                    }
+                    return {title, class: 'active'};
+                }
+            }
+            const parts = flowFilterGroups
+                .filter(({key}) => flowFilter[key].length > 0)
+                .map(({key, title}) => `${this.$L(title)}·${flowFilter[key].length}`);
+            const count = allTask.filter(task => taskMatchesProjectFlowFilter(task, flowFilter)).length;
+            return {title: `${parts.join(' / ')} (${count})`, class: 'active'};
         },
     },
 
@@ -1930,7 +1919,8 @@ export default {
         },
 
         getFlowData() {
-            this.flowInfo = {}
+            this.flowFilter = emptyProjectFlowFilter();
+            this.flowFilterOpen = false;
             this.$store.dispatch("call", {
                 url: 'project/flow/list',
                 data: {
@@ -1938,20 +1928,28 @@ export default {
                 },
             }).then(({data}) => {
                 this.flowList = data;
-                this.$refs.flow?.clearSelect();
             }).catch(() => {
                 this.flowList = [];
             });
         },
 
-        flowChange(_, data) {
-            this.flowInfo = data.pop() || {};
+        flowFilterChange(key, item, checked) {
+            const values = this.flowFilter[key].filter(value => value !== item.value);
+            if (checked) {
+                values.push(item.value);
+            }
+            this.flowFilter = {...this.flowFilter, [key]: values};
 
             // 判断查看 "已完成流程" 但是没有显示已完成时切换显示已完成
-            if (this.flowInfo.status === 'end' && !this.projectData.cacheParameter.completedTask) {
+            if (checked && item.status === 'end' && !this.projectData.cacheParameter.completedTask) {
                 this.toggleParameter('completedTask')
             }
 
+            this.handleColumnDebounce(true);
+        },
+
+        flowFilterClear(key) {
+            this.flowFilter = key ? {...this.flowFilter, [key]: []} : emptyProjectFlowFilter();
             this.handleColumnDebounce(true);
         },
 
@@ -2032,16 +2030,7 @@ export default {
         },
 
         flowTask(task) {
-            if ($A.leftExists(this.flowInfo.value, "user:") && !task.task_user.find(({userid, owner}) => userid === this.flowInfo.userid && owner)) {
-                return true;
-            } else if ($A.leftExists(this.flowInfo.value, "tag:") && !task.task_tag.find(({name}) => name === this.flowInfo.tag_name)) {
-                return true;
-            } else if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
-                return true;
-            }else if (this.flowInfo.value == -1 && task.start_at) {
-                return true;
-            }
-            return false;
+            return !taskMatchesProjectFlowFilter(task, this.flowFilter);
         },
 
         expiresFormat(date) {

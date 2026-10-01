@@ -161,6 +161,7 @@
                 opacity: 0.9;
                 height: 30px;
                 .project-flow {
+                    max-width: 240px;
                     font-size: 13px;
                     height: 28px;
                     line-height: 26px;
@@ -200,6 +201,26 @@
                         padding-left: 26px;
                         &:after {
                             left: 8px;
+                        }
+                    }
+                    &.active {
+                        background-color: rgba($primary-color, 0.12);
+                        border-color: rgba($primary-color, 0.35);
+                        color: darken($primary-color, 15%);
+                    }
+                    .project-flow-text {
+                        min-width: 0;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                    .project-flow-clear {
+                        flex-shrink: 0;
+                        margin-left: 4px;
+                        margin-right: -2px;
+                        font-size: 15px;
+                        opacity: 0.6;
+                        &:hover {
+                            opacity: 1;
                         }
                     }
                 }
@@ -1051,48 +1072,122 @@
     }
 }
 
-.project-panel-flow-cascader {
-    max-height: none !important;
-    .ivu-cascader-menu {
-        height: auto;
-        max-height: 360px;
-        overflow: auto;
-    }
-    .ivu-cascader-menu-item {
-        color: $primary-text-color !important;
-
-        &.start {
-            color: var(--flow-item-custom-color-100, $flow-status-start-color) !important;
-        }
-        &.progress {
-            color: var(--flow-item-custom-color-100, $flow-status-progress-color) !important;
-        }
-        &.test {
-            color: var(--flow-item-custom-color-100, $flow-status-test-color) !important;
-        }
-        &.end {
-            color: var(--flow-item-custom-color-100, $flow-status-end-color) !important;
-        }
-
-        &.tag-dot {
-            position: relative;
-            padding-left: 34px;
-            &:after {
-                left: 16px;
+// 提高优先级，覆盖 common.scss 中 body .ivu-select-dropdown 的 max-height，由内部 body 区域滚动
+.ivu-select-dropdown.project-flow-filter-dropdown {
+    max-width: calc(100vw - 24px);
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    .project-flow-filter {
+        display: flex;
+        flex-direction: column;
+        min-width: 180px;
+        max-width: min(320px, calc(100vw - 24px));
+        max-height: min(440px, calc(var(--window-height) - var(--status-bar-height) - var(--navigation-bar-height) - 120px));
+        .flow-filter-head {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px 8px;
+            border-bottom: 1px solid #EBEEF5;
+            .flow-filter-count {
+                color: $primary-title-color;
+                font-weight: 500;
+            }
+            .flow-filter-clear {
+                color: $primary-color;
+                cursor: pointer;
+                &.disabled {
+                    color: #c0c4cc;
+                    cursor: not-allowed;
+                }
             }
         }
-
-        &.tag-0,
-        &.user-0 {
-            margin-top: 12px;
-            position: relative;
-            &:before {
-                content: "";
-                position: absolute;
-                top: -6px;
-                left: 0;
-                right: 0;
+        .flow-filter-body {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 6px;
+        }
+        .flow-filter-group {
+            & + .flow-filter-group {
+                margin-top: 6px;
                 border-top: 1px solid #EBEEF5;
+            }
+        }
+        .flow-filter-group-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px 4px;
+            font-size: 12px;
+            color: #909399;
+            .flow-filter-group-clear {
+                color: #b0b3b8;
+                cursor: pointer;
+                &:hover {
+                    color: $primary-color;
+                }
+            }
+        }
+        .flow-filter-section-title {
+            padding: 6px 16px 2px;
+            font-size: 12px;
+            color: #b0b3b8;
+        }
+        .flow-filter-search {
+            padding: 4px 16px;
+        }
+        .flow-filter-empty {
+            padding: 6px 16px;
+            font-size: 12px;
+            color: #c0c4cc;
+        }
+        .flow-filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            color: $primary-text-color;
+            cursor: pointer;
+            user-select: none;
+            &:hover {
+                background-color: #f3f3f3;
+            }
+            &.start .flow-filter-name {
+                color: var(--flow-item-custom-color-100, $flow-status-start-color);
+            }
+            &.progress .flow-filter-name {
+                color: var(--flow-item-custom-color-100, $flow-status-progress-color);
+            }
+            &.test .flow-filter-name {
+                color: var(--flow-item-custom-color-100, $flow-status-test-color);
+            }
+            &.end .flow-filter-name {
+                color: var(--flow-item-custom-color-100, $flow-status-end-color);
+            }
+            .flow-filter-checkbox {
+                margin-right: 0;
+                pointer-events: none;
+            }
+            .flow-filter-dot {
+                flex-shrink: 0;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+            }
+            .flow-filter-name {
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+            .flow-filter-num {
+                flex-shrink: 0;
+                margin-left: 8px;
+                font-size: 12px;
+                color: #b0b3b8;
             }
         }
     }
