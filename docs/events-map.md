@@ -3,11 +3,11 @@
 > **本文件由脚本自动生成，请勿手改。**
 >
 > - 生成命令: `node scripts/gen-events-map.mjs`
-> - 扫描范围: `resources/assets/js` 下所有 `.js` / `.vue` 文件（共 285 个）
+> - 扫描范围: `resources/assets/js` 下所有 `.js` / `.vue` 文件（共 284 个）
 > - 事件总线: `resources/assets/js/store/events.js`（mitt 实例）
 > - 仅匹配裸 `emitter.emit/on/off(` 调用；`xxx.emitter.emit(`（如 Quill 内部 emitter）不属于本总线，已排除
 
-共 **30** 个静态可解析事件，**126** 处 `emitter.emit/on/off` 调用。
+共 **30** 个静态可解析事件，**125** 处 `emitter.emit/on/off` 调用。
 
 ## 事件清单
 
@@ -51,8 +51,7 @@
 
 ### `aiAssistantFloatButtonVisibilityChanged`
 
-- **emit（1）**
-  - `resources/assets/js/pages/manage/setting/assistant.vue:59`
+- **emit（0）**：无（疑似死事件）
 - **on（1）**
   - `resources/assets/js/components/AIAssistant/float-button.vue:157`
 - **off（1）**
@@ -277,7 +276,7 @@
 
 - **emit（2）**
   - `resources/assets/js/pages/manage.vue:1153`
-  - `resources/assets/js/pages/manage/setting/index.vue:211`
+  - `resources/assets/js/pages/manage/setting/index.vue:198`
 - **on（1）**
   - `resources/assets/js/components/RightBottom.vue:65`
 - **off（1）**
@@ -326,5 +325,5 @@
 
 - 事件总数（静态可解析）: **30**
 - 只 emit 无 on（疑似死事件）: **0**
-- 只 on 无 emit（无人发射）: **0**
+- 只 on 无 emit（无人发射）: **1** — `aiAssistantFloatButtonVisibilityChanged`
 - 动态事件名调用: **1**

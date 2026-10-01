@@ -8,10 +8,3 @@ export function loadFloatButtonVisible(userId) {
     }
     return $A.IDBBoolean(cacheKey(userId), true).catch(() => true);
 }
-
-export function saveFloatButtonVisible(userId, visible) {
-    if (userId <= 0) {
-        return Promise.resolve();
-    }
-    return $A.IDBSet(cacheKey(userId), visible);
-}

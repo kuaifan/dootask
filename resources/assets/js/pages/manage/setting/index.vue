@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from "vuex";
+import {mapState} from "vuex";
 import axios from "axios";
 import MobileNavTitle from "../../../components/Mobile/NavTitle.vue";
 import emitter from "../../../store/events";
@@ -76,8 +76,6 @@ export default {
     },
 
     computed: {
-        ...mapGetters(['aiVisible']),
-
         ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'systemNewVersion', 'systemConfig']),
 
         showContent() {
@@ -95,10 +93,6 @@ export default {
 
             if (this.$Electron || this.$isEEUIApp) {
                 menu.push({path: 'keyboard', name: '键盘设置'})
-            }
-
-            if (this.aiVisible) {
-                menu.push({path: 'assistant', name: 'AI 助手设置'})
             }
 
             if ($A.isDooServer() && this.$isEEUIApp) {
@@ -152,16 +146,9 @@ export default {
             handler(name) {
                 if (name === 'manage-setting' && this.windowLandscape) {
                     this.goForward({name: 'manage-setting-personal'}, true);
-                } else if (name === 'manage-setting-assistant' && !this.aiVisible) {
-                    this.goForward({name: 'manage-setting-personal'}, true);
                 }
             },
             immediate: true
-        },
-        aiVisible(visible) {
-            if (this.routeName === 'manage-setting-assistant' && !visible) {
-                this.goForward({name: 'manage-setting-personal'}, true);
-            }
         },
     },
 

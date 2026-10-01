@@ -45,5 +45,5 @@ last_verified: v1.7.90
 
 ## 没有 AI 入口怎么办
 - 确认应用商店已安装 ai 插件
-- 确认管理员已在 AI 助手设置中配置可用模型（[[system-setting.ai-model.howto]]）
+- 确认管理员已在「AI 助手」应用的设置面板中配置可用模型（[[system-setting.ai-model.howto]]）
 - 详细排查见 [[report.permission.faq]]
