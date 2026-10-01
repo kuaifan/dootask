@@ -299,6 +299,13 @@ export default {
     },
 
     /**
+     * 当前客户端需在应用商店中隐藏的应用 ID 列表
+     */
+    hiddenStoreAppIds(state, getters) {
+        return getters.appAiHidden ? ['ai'] : []
+    },
+
+    /**
      * 当前客户端可见的会话
      */
     visibleDialogs(state, getters) {

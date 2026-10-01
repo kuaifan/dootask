@@ -433,7 +433,7 @@ export default {
                     location: "application/admin",
                     label: $A.L("应用商店"),
                     icon: $A.mainUrl("images/application/appstore.svg"),
-                    url: 'appstore/internal?language={system_lang}&theme={system_theme}',
+                    url: 'appstore/internal?language={system_lang}&theme={system_theme}&hide_apps={store_hidden_app_ids}',
                     disable_scope_css: true,
                     auto_dark_theme: false,
                     capsule: {

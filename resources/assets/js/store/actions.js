@@ -5475,7 +5475,8 @@ export default {
             .replace(/\{user_avatar}/g, encodeURIComponent(state.userInfo.userimg))
             .replace(/\{user_token}/g, encodeURIComponent(state.userToken))
             .replace(/\{system_theme}/g, state.themeName)
-            .replace(/\{system_lang}/g, languageName);
+            .replace(/\{system_lang}/g, languageName)
+            .replace(/\{store_hidden_app_ids}/g, encodeURIComponent(getters.hiddenStoreAppIds.join(',')));
 
         // 通知 MicroApps 容器打开应用
         emitter.emit('observeMicroApp:open', config);
