@@ -258,7 +258,8 @@ class TextExtractor
                 }
             }
             return Base::retSuccess("success", $content);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
+            // 含 Error：第三方解析库遇到异常文档会抛 TypeError（如 PhpWord 的批注引用），不能让它穿透到调用方
             return Base::retError($e->getMessage());
         }
     }
