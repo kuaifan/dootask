@@ -486,6 +486,19 @@ class ManticoreFile
             return ['error' => '文件不存在'];
         }
 
+        // The "uploads/" prefix check in callers only matches the string's
+        // start; a path like "uploads/../../etc/passwd" still starts with
+        // "uploads/" but public_path() does no ../ resolution of its own, so
+        // it would resolve outside the uploads directory. Resolve the real
+        // path and require it to stay within the uploads root.
+        $uploadsRoot = realpath(public_path('uploads'));
+        $resolvedPath = realpath($fullPath);
+        if ($uploadsRoot === false || $resolvedPath === false
+            || !str_starts_with($resolvedPath, $uploadsRoot . DIRECTORY_SEPARATOR)) {
+            return ['error' => '不支持的文件路径'];
+        }
+        $fullPath = $resolvedPath;
+
         $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
         $maxFileSize = self::getMaxFileSizeByExt($ext);
 
