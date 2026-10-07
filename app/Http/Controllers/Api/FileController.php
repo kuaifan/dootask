@@ -817,6 +817,9 @@ class FileController extends AbstractController
      */
     public function office__token()
     {
+        // 此前该接口未校验登录状态，任何未认证的调用方都能让服务端用
+        // APP_KEY 为其任意提交的 config 签发合法 JWT
+        User::auth();
         File::isNeedInstallApp('office');
         //
         $config = Request::input('config');
@@ -1185,8 +1188,9 @@ class FileController extends AbstractController
         $refresh = Request::input('refresh', 'no');
         $guestAccess = Request::input('guest_access', 'no');
         //
-        $file = File::permissionFind($id, $user);
-        
+        // 修改游客访问权限属于写操作，需要读写权限（1），而非默认的只读权限（0）
+        $file = File::permissionFind($id, $user, 1);
+
         // 更新文件的游客访问权限
         $file->guest_access = $guestAccess === 'yes' ? 1 : 0;
         $file->save();
