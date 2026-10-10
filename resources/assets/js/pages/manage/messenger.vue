@@ -28,6 +28,15 @@
                                 clearable/>
                         </Form>
                     </div>
+                    <div
+                        v-if="tabActive==='contacts'"
+                        class="search-mode"
+                        :class="{active: contactsViewMode==='department'}"
+                        :title="$L(contactsViewMode==='department' ? '按字母显示' : '按部门显示')"
+                        @click="toggleContactsView">
+                        <i v-if="contactsViewMode==='department'" class="taskfont">&#xe634;</i>
+                        <i v-else class="taskfont team">&#xe75c;</i>
+                    </div>
                 </div>
                 <div v-if="tabActive==='dialog' && !dialogSearchKey" class="messenger-nav">
                     <EDropdown
@@ -131,10 +140,16 @@
                         </li>
                     </ul>
                     <ul v-else class="contacts">
-                        <template v-if="contactsFilter.length > 0">
-                            <li v-for="items in contactsList">
-                                <div class="label">{{items.az}}</div>
+                        <template v-if="contactsList.length > 0">
+                            <li v-for="items in contactsList" :key="items.key" :style="contactsGroupStyle(items)">
+                                <div v-if="items.dept" class="label department-label" @click="toggleDepartment(items.dept)">
+                                    <Icon class="arrow" :class="{expanded: items.expanded}" type="ios-arrow-forward"/>
+                                    <span class="name">{{items.az}}</span>
+                                    <span class="count">{{items.dept.total_count}}</span>
+                                </div>
+                                <div v-else class="label">{{items.az}}</div>
                                 <ul>
+                                    <li v-if="items.loading && items.list.length === 0" class="members-loading"><Loading/></li>
                                     <li
                                         v-for="(user, index) in items.list"
                                         :key="index"
@@ -156,10 +171,10 @@
                             </li>
                             <li class="loaded">
                                 <template v-if="contactsKey">{{$L('搜索到(*)位联系人', contactsFilter.length)}}</template>
-                                <template v-else>{{$L('共(*)位联系人', contactsTotal)}}</template>
+                                <template v-else>{{$L('共(*)位联系人', contactsDepartmentMode ? departmentData.total : contactsTotal)}}</template>
                             </li>
                         </template>
-                        <li v-else-if="contactsLoad == 0" class="nothing">
+                        <li v-else-if="contactsLoad == 0 && departmentLoad == 0" class="nothing">
                             {{$L(contactsKey ? `没有任何与"${contactsKey}"相关的结果` : `没有任何联系人`)}}
                         </li>
                     </ul>
@@ -280,6 +295,8 @@ import TransferDom from "../../directives/transfer-dom";
 import emitter from "../../store/events";
 import transformEmojiToHtml from "../../utils/emoji";
 
+let contactsViewModeCache = 'list';
+
 const navDatas = {
     menus: [
         {type: '', name: '全部'},
@@ -319,6 +336,13 @@ export default {
             contactsCurrentPage: 1,
             contactsHasMorePages: false,
             contactsLastTime: 0,
+            contactsPartial: false,     // 部门视图下搜索会往 contactsData 混入部分数据，切回列表视图时需重新加载
+            contactsViewMode: contactsViewModeCache,    // list|department
+
+            departmentLoad: 0,
+            departmentData: null,
+            departmentExpanded: {},     // 部门ID => 是否展开
+            departmentMembers: {},      // 部门ID => {list, loading}
 
             operateItem: {},
             operateStyles: {},
@@ -332,6 +356,8 @@ export default {
         if (navDatas.historys.length === 0) {
             navDatas.historys = navDatas.menus.map(item => Object.assign(item, {time: 0}))
         }
+        const viewMode = await $A.IDBString("messengerContactsViewMode", contactsViewModeCache)
+        contactsViewModeCache = ['list', 'department'].includes(viewMode) ? viewMode : 'list'
         next()
     },
 
@@ -486,7 +512,58 @@ export default {
             return contactsData;
         },
 
+        contactsDepartmentMode() {
+            return this.contactsViewMode === 'department' && !this.contactsKey
+        },
+
+        departmentGroups() {
+            const {departmentData, departmentExpanded, departmentMembers} = this;
+            if (departmentData === null) {
+                return [];
+            }
+            const departments = departmentData.departments.slice();
+            if (departmentData.no_department_count > 0) {
+                departments.push({
+                    id: 0,
+                    name: this.$L('默认部门'),
+                    owner_userid: 0,
+                    level: 0,
+                    total_count: departmentData.no_department_count,
+                });
+            }
+            const groups = [];
+            let skipLevel = null;
+            departments.forEach(dept => {
+                if (skipLevel !== null && dept.level > skipLevel) {
+                    return;
+                }
+                skipLevel = null;
+                const expanded = !!departmentExpanded[dept.id];
+                if (!expanded) {
+                    skipLevel = dept.level;
+                }
+                const members = departmentMembers[dept.id];
+                let list = expanded && members ? members.list : [];
+                if (dept.owner_userid > 0) {
+                    // 部门负责人排在最前
+                    list = [...list.filter(u => u.userid == dept.owner_userid), ...list.filter(u => u.userid != dept.owner_userid)];
+                }
+                groups.push({
+                    key: `department-${dept.id}`,
+                    az: dept.name,
+                    dept,
+                    expanded,
+                    loading: expanded && !!members?.loading,
+                    list,
+                });
+            });
+            return groups;
+        },
+
         contactsList() {
+            if (this.contactsDepartmentMode) {
+                return this.departmentGroups;
+            }
             const {contactsKey} = this;
             const list = [];
             this.contactsFilter.some(data => {
@@ -502,6 +579,7 @@ export default {
                     }
                 } else {
                     list.push({
+                        key: az,
                         az,
                         list: [user]
                     })
@@ -547,11 +625,11 @@ export default {
             }
         },
 
-        searchLoading({tabActive, loadDialogs, dialogSearchLoad, contactsLoad}) {
+        searchLoading({tabActive, loadDialogs, dialogSearchLoad, contactsLoad, departmentLoad}) {
             if (tabActive === 'dialog') {
                 return loadDialogs > 0 || dialogSearchLoad > 0
             } else {
-                return contactsLoad > 0
+                return contactsLoad > 0 || departmentLoad > 0
             }
         },
     },
@@ -615,14 +693,7 @@ export default {
         tabActive: {
             handler(val) {
                 if (val == 'contacts') {
-                    if ($A.dayjs().unix() - this.contactsLastTime > 24 * 3600) {
-                        this.contactsData = null;   // 24个小时重新加载列表
-                    }
-                    if (this.contactsData === null) {
-                        this.getContactsList(1);
-                    } else {
-                        this.updateContactsList(1000);
-                    }
+                    this.loadContactsView();
                     this.dialogSearchSelectedParams = null;
                 } else {
                     this.updateDialogs(1000);
@@ -630,6 +701,14 @@ export default {
                 }
             },
             immediate: true
+        },
+
+        contactsViewMode(val) {
+            contactsViewModeCache = val
+            $A.IDBSet("messengerContactsViewMode", val)
+            if (this.tabActive === 'contacts') {
+                this.loadContactsView()
+            }
         },
 
         dialogId: {
@@ -949,7 +1028,108 @@ export default {
             });
         },
 
+        contactsGroupStyle(items) {
+            if (items.dept && items.dept.level > 0) {
+                return {marginLeft: `${24 + items.dept.level * 14}px`}
+            }
+            return null
+        },
+
+        toggleContactsView() {
+            this.contactsViewMode = this.contactsViewMode === 'department' ? 'list' : 'department'
+        },
+
+        loadContactsView() {
+            if (this.contactsViewMode === 'department') {
+                this.getDepartmentList();
+                return;
+            }
+            if (this.contactsPartial || $A.dayjs().unix() - this.contactsLastTime > 24 * 3600) {
+                this.contactsData = null;   // 24个小时重新加载列表
+                this.contactsPartial = false;
+            }
+            if (this.contactsData === null) {
+                this.getContactsList(1);
+            } else {
+                this.updateContactsList(1000);
+            }
+        },
+
+        toggleDepartment(dept) {
+            const expanded = !this.departmentExpanded[dept.id]
+            this.$set(this.departmentExpanded, dept.id, expanded)
+            if (expanded) {
+                this.getDepartmentMembers(dept.id)  // 每次展开都刷新，已有缓存时静默更新
+            }
+        },
+
+        getDepartmentList() {
+            this.departmentLoad++;
+            this.$store.dispatch("call", {
+                url: 'contacts/departments',
+            }).then(({data}) => {
+                if (this.departmentData === null) {
+                    // 首次加载：展开顶级部门（没有任何部门时展开默认部门）
+                    data.departments.forEach(dept => {
+                        if (dept.level === 0) {
+                            this.$set(this.departmentExpanded, dept.id, true)
+                        }
+                    })
+                    if (data.departments.length === 0) {
+                        this.$set(this.departmentExpanded, 0, true)
+                    }
+                }
+                this.departmentData = data;
+                // 加载或刷新已展开部门的成员
+                Object.keys(this.departmentExpanded).forEach(id => {
+                    if (this.departmentExpanded[id]) {
+                        this.getDepartmentMembers(Number(id))
+                    }
+                })
+            }).catch(() => {}).finally(_ => {
+                this.departmentLoad--;
+            });
+        },
+
+        getDepartmentMembers(id) {
+            let state = this.departmentMembers[id]
+            if (state?.loading) {
+                return;
+            }
+            if (!state) {
+                this.$set(this.departmentMembers, id, {list: [], loading: true})
+                state = this.departmentMembers[id]
+            } else {
+                state.loading = true
+            }
+            const list = []
+            const load = page => {
+                return this.$store.dispatch("call", {
+                    url: 'users/search',
+                    data: {
+                        keys: {departments: String(id)},
+                        sorts: {az: 'asc'},
+                        page,
+                        pagesize: 100
+                    },
+                }).then(({data}) => {
+                    list.push(...data.data)
+                    if (data.current_page < data.last_page && page < 200) {
+                        return load(page + 1)
+                    }
+                })
+            }
+            load(1).then(() => {
+                state.list = list
+            }).catch(() => {}).finally(() => {
+                state.loading = false
+            })
+        },
+
         getContactsList(page) {
+            if (this.contactsViewMode === 'department') {
+                this.contactsPartial = true;
+            }
             this.contactsLoad++;
             const key = this.contactsKey
             this.$store.dispatch("call", {
@@ -991,6 +1171,7 @@ export default {
         getContactsNextPage() {
             if (this.scrollE() < 10
                 && this.tabActive === 'contacts'
+                && !this.contactsDepartmentMode
                 && this.contactsLoad === 0
                 && this.contactsHasMorePages) {
                 this.getContactsList(this.contactsCurrentPage + 1);
@@ -1001,7 +1182,7 @@ export default {
             this.__updateContactsList && clearTimeout(this.__updateContactsList)
             if (timeout > -1) {
                 this.__updateContactsList = setTimeout(_ => {
-                    if (this.tabActive === 'contacts') {
+                    if (this.tabActive === 'contacts' && this.contactsViewMode === 'list' && this.contactsData !== null) {
                         this.$store.dispatch("call", {
                             url: 'users/search',
                             data: {

@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：333
+接口总数：334
 
 ## 路由规则
 
@@ -85,6 +85,12 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/users/favorite/remark | favorite__remark() | post | 修改收藏备注 |
 | api/users/favorites/clean | favorites__clean() | post | 清理用户收藏 |
 | api/users/favorite/check | favorite__check() | get | 检查收藏状态 |
+
+## contacts（ContactsController）
+
+| URL | 方法名 | HTTP | 说明 |
+| --- | --- | --- | --- |
+| api/contacts/departments | departments() | get | 通讯录部门树 |
 
 ## project（ProjectController）
 

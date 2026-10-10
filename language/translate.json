@@ -40930,5 +40930,29 @@
         "fr": "Mise à jour du système lancée",
         "id": "Pembaruan sistem dimulai",
         "ru": "Обновление системы запущено"
+    },
+    {
+        "key": "按字母显示",
+        "zh": "",
+        "zh-CHT": "按字母顯示",
+        "en": "Sort by Letter",
+        "ko": "알파벳순 보기",
+        "ja": "文字順で表示",
+        "de": "Nach Buchstaben anzeigen",
+        "fr": "Afficher par ordre alphabétique",
+        "id": "Tampilkan menurut abjad",
+        "ru": "Показать по алфавиту"
+    },
+    {
+        "key": "按部门显示",
+        "zh": "",
+        "zh-CHT": "按部門顯示",
+        "en": "Group by Department",
+        "ko": "부서별 보기",
+        "ja": "部門別に表示",
+        "de": "Nach Abteilung anzeigen",
+        "fr": "Afficher par département",
+        "id": "Tampilkan menurut departemen",
+        "ru": "Показать по отделам"
     }
 ]

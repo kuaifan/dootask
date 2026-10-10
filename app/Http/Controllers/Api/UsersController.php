@@ -658,7 +658,7 @@ class UsersController extends AbstractController
      * - keys.project_id                    在指定项目ID
      * - keys.no_project_id                 不在指定项目ID
      * - keys.dialog_id                     在指定对话ID
-     * - keys.departments                   部门ID（多个用逗号分隔）
+     * - keys.departments                   部门ID（多个用逗号分隔，0 表示未加入任何部门）
      * @apiParam {Object} sorts         排序方式
      * - sorts.az                           按字母：asc|desc
      * @apiParam {Number} updated_time  在这个时间戳之后更新的
@@ -740,13 +740,20 @@ class UsersController extends AbstractController
                 $query->select('userid')->from('web_socket_dialog_users')->where('dialog_id', $keys['dialog_id']);
             });
         }
-        if ($keys['departments']) {
-            if (!is_array($keys['departments'])) {
-                $keys['departments'] = explode(",", $keys['departments']);
-            }
-            $builder->where(function($query) use ($keys) {
-                foreach ($keys['departments'] AS $department) {
-                    $query->orWhereRaw("FIND_IN_SET('{$department}', department)");
+        if (isset($keys['departments']) && $keys['departments'] !== '' && $keys['departments'] !== []) {
+            $departments = is_array($keys['departments']) ? $keys['departments'] : explode(",", $keys['departments']);
+            // 只保留数字项，避免空串/非法值被 intval 成 0 后误匹配“未加入任何部门”
+            $departments = array_map('intval', array_filter($departments, fn($item) => is_numeric($item)));
+            $builder->where(function($query) use ($departments) {
+                foreach ($departments AS $department) {
+                    if ($department === 0) {
+                        // 0 表示未加入任何部门
+                        $query->orWhere(function($q) {
+                            $q->whereNull("department")->orWhere("department", "");
+                        });
+                    } else {
+                        $query->orWhereRaw("FIND_IN_SET(?, department)", [$department]);
+                    }
                 }
             });
         }
