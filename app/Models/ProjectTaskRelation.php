@@ -97,6 +97,10 @@ class ProjectTaskRelation extends AbstractModel
             return false;
         }
 
+        $existed = static::whereTaskId($sourceTaskId)
+            ->whereRelatedTaskId($targetTaskId)
+            ->exists();
+
         // 创建正向关联：源任务提及目标任务
         $mentionRelation = static::updateOrCreate(
             [
@@ -125,6 +129,12 @@ class ProjectTaskRelation extends AbstractModel
             ]
         );
 
+        // 记录任务动态（仅首次建立关联时）
+        if (!$existed) {
+            self::addRelationLog($sourceTask, $targetTask, '关联任务', $userid);
+            self::addRelationLog($targetTask, $sourceTask, '关联任务', $userid);
+        }
+
         // 推送关联更新
         if ($push) {
             $needPush = $mentionRelation->wasRecentlyCreated || $mentionRelation->wasChanged()
@@ -148,9 +158,10 @@ class ProjectTaskRelation extends AbstractModel
      *
      * @param int $taskId 任务ID
      * @param int $relatedTaskId 关联任务ID
+     * @param int|null $userid 操作人
      * @return bool 是否删除成功
      */
-    public static function deleteRelation(int $taskId, int $relatedTaskId): bool
+    public static function deleteRelation(int $taskId, int $relatedTaskId, ?int $userid = null): bool
     {
         // 删除正向关联
         $deleted1 = static::whereTaskId($taskId)
@@ -166,6 +177,11 @@ class ProjectTaskRelation extends AbstractModel
             // 推送关联更新
             $sourceTask = ProjectTask::with('project')->find($taskId);
             $targetTask = ProjectTask::with('project')->find($relatedTaskId);
+            // 记录任务动态
+            if ($sourceTask && $targetTask) {
+                self::addRelationLog($sourceTask, $targetTask, '解除关联任务', $userid);
+                self::addRelationLog($targetTask, $sourceTask, '解除关联任务', $userid);
+            }
             if ($sourceTask?->project) {
                 $sourceTask->pushMsg('relation', null, null, false);
             }
@@ -176,6 +192,21 @@ class ProjectTaskRelation extends AbstractModel
         }
 
         return false;
+    }
+
+    /**
+     * 记录任务关联变更动态
+     *
+     * @param ProjectTask $task 记录动态的任务
+     * @param ProjectTask $relatedTask 关联的任务
+     * @param string $detail 动态内容
+     * @param int|null $userid 操作人
+     */
+    private static function addRelationLog(ProjectTask $task, ProjectTask $relatedTask, string $detail, ?int $userid): void
+    {
+        $task->addLog($detail, [
+            'change' => ['#' . $relatedTask->id . ' ' . $relatedTask->name],
+        ], $userid ?: 0);
     }
 
     public static function recordMentionsFromMessage(WebSocketDialogMsg $msg): void

@@ -2449,7 +2449,7 @@ class ProjectController extends AbstractController
         $project = Project::userProject($task->project_id);
         ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_UPDATE, $task);
         //
-        $success = ProjectTaskRelation::deleteRelation($task_id, $related_task_id);
+        $success = ProjectTaskRelation::deleteRelation($task_id, $related_task_id, User::userid());
         if (!$success) {
             return Base::retError('关联不存在');
         }
