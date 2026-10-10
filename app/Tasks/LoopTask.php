@@ -8,6 +8,7 @@ use App\Module\ProjectTaskHandoffRecord;
 use App\Models\ProjectFlow;
 use App\Models\ProjectFlowItem;
 use App\Models\ProjectTask;
+use App\Models\ProjectTaskRelation;
 use App\Models\ProjectTaskUser;
 use Carbon\Carbon;
 
@@ -50,18 +51,19 @@ class LoopTask extends AbstractTask
     /**
      * 按周期生成新任务并关闭原任务周期
      * 复制、刷新周期、关闭旧周期在同一事务内，任一步失败整体回滚，不会留下 loop_at 仍在窗口内的残留副本
+     * 提交后再为新旧任务建立关联，关联失败不影响已生成的任务
      * @param ProjectTask $item
      */
     private function createLoopTask(ProjectTask $item)
     {
-        AbstractModel::transaction(function () use ($item) {
+        $task = AbstractModel::transaction(function () use ($item) {
             // 锁定并复核原任务：已被并发或上一轮处理（loop_at 已变化/清空）则跳过
             $source = ProjectTask::whereKey($item->id)->lockForUpdate()->first();
             if (!$source
                 || $source->parent_id > 0
                 || !$source->loop_at
                 || Carbon::parse($source->loop_at)->toDateTimeString() !== Carbon::parse($item->loop_at)->toDateTimeString()) {
-                return;
+                return null;
             }
             $task = $source->copyTask();
             ProjectTaskHandoffRecord::track($task, 'recurring', function () use ($task, $source) {
@@ -113,7 +115,17 @@ class LoopTask extends AbstractTask
             $source->loop_at = null;
             $source->save();
             $source->addLog("已创建新的周期任务ID：{$task->id}，此任务关闭周期", [], $task->userid);
+            return $task;
         });
+        if (!$task) {
+            return;
+        }
+        // 新旧任务建立关联
+        try {
+            ProjectTaskRelation::createRelation($item->id, $task->id, null, null, $task->userid);
+        } catch (\Throwable $e) {
+            info($e);
+        }
     }
 
     public function end()
