@@ -40954,5 +40954,17 @@
         "fr": "Afficher par département",
         "id": "Tampilkan menurut departemen",
         "ru": "Показать по отделам"
+    },
+    {
+        "key": "解除关联任务",
+        "zh": "",
+        "zh-CHT": "解除關聯任務",
+        "en": "Unlink task",
+        "ko": "작업 연결 해제",
+        "ja": "タスクの関連付けを解除",
+        "de": "Aufgabenverknüpfung aufheben",
+        "fr": "Dissocier la tâche",
+        "id": "Putuskan tautan tugas",
+        "ru": "Отвязать задачу"
     }
 ]
