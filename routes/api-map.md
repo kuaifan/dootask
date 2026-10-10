@@ -122,7 +122,7 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/project/task/one | task__one() | get | 获取单个任务信息 |
 | api/project/task/subdata | task__subdata() | get | 获取子任务数据 |
 | api/project/task/related | task__related() | get | 获取任务关联任务列表 |
-| api/project/task/related/delete | task__related__delete() | post | 删除任务关联 |
+| api/project/task/related_delete | task__related_delete() | post | 删除任务关联 |
 | api/project/task/content | task__content() | get | 获取任务详细描述 |
 | api/project/task/content_history | task__content_history() | get | 获取任务详细历史描述 |
 | api/project/task/files | task__files() | get | 获取任务文件列表 |

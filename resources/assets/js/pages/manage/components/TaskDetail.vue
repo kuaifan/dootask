@@ -1761,8 +1761,9 @@ export default {
                 return;
             }
             $A.modalConfirm({
-                title: '温馨提示',
-                content: '确定要解除与任务 #' + item.related_task_id + ' 的关联吗？',
+                language: false,
+                title: this.$L('温馨提示'),
+                content: this.$L('确定要解除与任务 #(*) 的关联吗？', item.related_task_id),
                 onOk: () => {
                     this.$store.dispatch('deleteTaskRelated', {
                         taskId: this.taskId,

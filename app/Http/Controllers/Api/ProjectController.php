@@ -2420,12 +2420,12 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/related/delete 删除任务关联
+     * @api {post} api/project/task/related_delete 删除任务关联
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
      * @apiGroup project
-     * @apiName task__related__delete
+     * @apiName task__related_delete
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {Number} related_task_id        关联任务ID
@@ -2434,7 +2434,7 @@ class ProjectController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function task__related__delete()
+    public function task__related_delete()
     {
         User::auth();
         //
