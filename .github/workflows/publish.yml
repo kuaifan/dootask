@@ -25,8 +25,9 @@ jobs:
 
       - name: Check if tag exists
         id: check-tag
+        env:
+          VERSION: ${{ steps.get-version.outputs.version }}
         run: |
-          VERSION=${{ steps.get-version.outputs.version }}
           if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}$"; then
             echo "This version v${VERSION} has been released"
             echo "should_release=false" >> $GITHUB_OUTPUT
@@ -50,10 +51,12 @@ jobs:
       - name: Create Release
         id: create-release
         uses: actions/github-script@v7
+        env:
+          VERSION: ${{ needs.check-version.outputs.version }}
         with:
           script: |
             const fs = require('fs');
-            const version = '${{ needs.check-version.outputs.version }}';
+            const version = process.env.VERSION;
 
             // 从 CHANGELOG.md 提取当前版本段落
             let changelog = '';
