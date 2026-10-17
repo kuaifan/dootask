@@ -4,3 +4,6 @@
 [submodule "resources/mobile"]
 	path = resources/mobile
 	url = https://github.com/kuaifan/dootask-app.git
+[submodule "resources/app"]
+	path = resources/app
+	url = https://github.com/dootask/app.git
