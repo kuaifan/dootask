@@ -429,6 +429,34 @@ electron_operate() {
     env BUILD_FRONTEND=$BUILD_FRONTEND node ./electron/build.js $argv
 }
 
+# Expo 内测：同 electron 使用本机 Node，不依赖 Docker 或旧 eeui 容器。
+appexpo_operate() {
+    check_node
+    case "${1:-build}" in
+        "build")
+            if [[ $# -gt 1 ]]; then
+                error "用法: ./cmd appexpo [build] | ./cmd appexpo npm <参数...>"
+                return 1
+            fi
+            if [ ! -d "./node_modules" ]; then
+                npm install --no-package-lock || return $?
+            fi
+            if [ ! -d "./electron/node_modules" ]; then
+                (cd electron && ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install --no-package-lock) || return $?
+            fi
+            node ./electron/build.js app-expo build
+            ;;
+        "npm")
+            shift
+            (cd "${WORK_DIR}/resources/app" && npm "$@")
+            ;;
+        *)
+            error "用法: ./cmd appexpo [build] | ./cmd appexpo npm <参数...>"
+            return 1
+            ;;
+    esac
+}
+
 # 执行容器命令
 container_exec() {
     local container=$1
@@ -683,6 +711,8 @@ DooTask 管理脚本
   serve, dev                  启动开发模式
   build, prod                 生产环境构建
   electron                    构建桌面应用
+  appexpo [build]             编译并同步 Expo 内测前端
+  appexpo npm <参数...>       在 Expo 子模块执行本机 npm
 
 🔧 服务管理:
   up [服务名]                 启动容器
@@ -734,6 +764,8 @@ Usage: ./cmd <command> [options]
   serve, dev                  Start dev mode
   build, prod                 Production build
   electron                    Build desktop app
+  appexpo [build]             Build and copy Expo internal web assets
+  appexpo npm <args...>       Run local npm in the Expo submodule
 
 🔧 Services:
   up [service]                Start containers
@@ -1196,8 +1228,8 @@ if [[ "$1" == "help" ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]] || [[ $#
     exit 0
 fi
 
-# 非electron和permission命令需要检查Docker环境
-if [[ "$1" != "electron" ]] && [[ "$1" != "permission" ]]; then
+# 非electron、appexpo和permission命令需要检查Docker环境
+if [[ "$1" != "electron" ]] && [[ "$1" != "appexpo" ]] && [[ "$1" != "permission" ]]; then
     check_docker
     env_init
 fi
@@ -1259,6 +1291,11 @@ case "$1" in
     "appbuild"|"buildapp")
         shift 1
         electron_operate app "$@"
+        ;;
+    "appexpo")
+        shift 1
+        appexpo_operate "$@"
+        exit $?
         ;;
     "electron")
         shift 1

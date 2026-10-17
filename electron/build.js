@@ -336,8 +336,12 @@ async function uploadDraftFile(client, localFile, version) {
  * @param data
  */
 async function startBuild(data) {
-    if (BUILD_FRONTEND === 'build' && !buildChecked) {
+    if ((BUILD_FRONTEND === 'build' || data.id === 'app-expo') && !buildChecked) {
         buildChecked = true
+        // Expo 每次重新编译，避免把上次桌面端或旧版本的文件带进内测包。
+        if (data.id === 'app-expo') {
+            fse.emptyDirSync(electronDir);
+        }
         fs.mkdirSync(electronDir, { recursive: true });
         fse.copySync(path.resolve(__dirname, "index.html"), path.resolve(electronDir, "index.html"))
         child_process.execSync("npx vite build -- fromcmd electronBuild", {stdio: "inherit"});
@@ -355,7 +359,7 @@ async function startBuild(data) {
         apiUrl:  utils.formatUrl(data.url) + "api/",
     }
     // information
-    if (data.id === 'app') {
+    if (['app', 'app-expo'].includes(data.id)) {
         console.log("\n=== 编译信息 ===");
         console.log("名称:", data.name);
         console.log("版本:", config.version + ` (${config.codeVerson})`);
@@ -385,11 +389,16 @@ async function startBuild(data) {
     // config.js
     fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(electronDir + "/dark", '', 'utf8');
-    fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
-    fs.writeFileSync(devloadCachePath, "", 'utf8');
+    if (data.id !== 'app-expo') {
+        fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
+        fs.writeFileSync(devloadCachePath, "", 'utf8');
+    }
     // index.html
     let manifestFile = path.resolve(electronDir, "manifest.json");
     if (!fs.existsSync(manifestFile)) {
+        if (data.id === 'app-expo') {
+            throw new Error("manifest.json 未找到，Expo 前端构建失败");
+        }
         console.error("manifest.json 未找到");
         return;
     }
@@ -401,6 +410,18 @@ async function startBuild(data) {
     indexString = indexString.replace("<!--script-->", `<script type="module" src="./${manifestContent['resources/assets/js/app.js']['file']}"></script>`);
     fs.writeFileSync(indexFile, indexString, 'utf8');
     //
+    if (data.id === 'app-expo') {
+        const appDir = path.resolve(__dirname, "../resources/app");
+        const webDir = path.join(appDir, "assets/web");
+        fse.emptyDirSync(webDir);
+        fse.copySync(electronDir, webDir);
+        fs.writeFileSync(path.join(appDir, "version.json"), JSON.stringify({
+            version: config.version,
+            codeVerson: config.codeVerson,
+        }, null, 2) + "\n", 'utf8');
+        console.log("Expo 前端资源已同步至 resources/app/assets/web/");
+        return;
+    }
     if (data.id === 'app') {
         const eeuiDir = path.resolve(__dirname, "../resources/mobile");
         const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
@@ -553,6 +574,32 @@ if (["dev"].includes(argv[2])) {
             notarize: false,
         }
     })
+} else if (argv[2] === 'app-expo') {
+    if ((argv[3] && argv[3] !== 'build') || argv.length > 4) {
+        console.error("用法: node ./electron/build.js app-expo [build]");
+        process.exit(1);
+    }
+    if (!fs.existsSync(path.resolve(__dirname, "../resources/app/app.config.ts"))) {
+        console.error("resources/app 未找到，请先初始化 Expo 子模块");
+        process.exit(1);
+    }
+    startBuild({
+        name: 'App',
+        id: 'app-expo',
+        // public 是前端“尚未设置服务器”的占位域名，不是静态资源的 origin。
+        // electronBuild 的 ./ 资源路径在 localhost:22223/ 下加载，路由自动使用 hash。
+        url: 'http://public/',
+        configure: {
+            platform: '',
+            archs: [],
+            publish: false,
+            release: true,
+            notarize: false,
+        }
+    }).catch(error => {
+        console.error(error.message || error);
+        process.exitCode = 1;
+    });
 } else if (["android-upload"].includes(argv[2])) {
     // 上传安卓文件到 R2 draft（GitHub Actions）
     (async () => {
