@@ -44,6 +44,10 @@ cd dootask
 ./cmd install
 ```
 
+### 一键部署
+
+[![在 RepoCloud 上部署](https://d16t0pc4846x52.cloudfront.net/deploylobe.svg)](https://repocloud.io/details/DooTask/)
+
 ### 重置密码
 
 ```bash
