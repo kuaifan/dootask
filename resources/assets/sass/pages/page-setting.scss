@@ -91,6 +91,12 @@
                     opacity: 0.8;
                 }
 
+                .check-update {
+                    flex-shrink: 0;
+                    margin-left: 12px;
+                    color: $primary-color;
+                }
+
                 .ivu-badge {
                     transform: scale(0.8);
                     transform-origin: right center;

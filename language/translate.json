@@ -41026,5 +41026,65 @@
         "fr": "Les nouvelles versions de l’application utilisent DooPush et les anciennes Umeng. Les deux peuvent être activés simultanément.",
         "id": "Versi aplikasi baru menggunakan DooPush, sedangkan versi lama menggunakan Umeng. Keduanya dapat diaktifkan bersamaan.",
         "ru": "Новые версии приложения используют DooPush, а старые — Umeng. Оба сервиса можно включить одновременно."
+    },
+    {
+        "key": "DooTask 新版本 (%T1) 已发布，建议更新以获得更好的使用体验。",
+        "zh": "",
+        "zh-CHT": "DooTask 新版本 (%T1) 已發布，建議更新以獲得更好的使用體驗。",
+        "en": "DooTask (%T1) is now available. Update for a better experience.",
+        "ko": "DooTask 새 버전 (%T1)이(가) 출시되었습니다. 더 나은 사용 경험을 위해 업데이트하세요.",
+        "ja": "DooTask の新しいバージョン (%T1) がリリースされました。より快適にご利用いただくため、更新をおすすめします。",
+        "de": "DooTask (%T1) ist verfügbar. Aktualisiere für ein besseres Nutzungserlebnis.",
+        "fr": "DooTask (%T1) est disponible. Mettez à jour pour une meilleure expérience.",
+        "id": "DooTask versi baru (%T1) telah dirilis. Perbarui untuk pengalaman yang lebih baik.",
+        "ru": "Доступна новая версия DooTask (%T1). Обновите приложение для более удобной работы."
+    },
+    {
+        "key": "已是最新版本",
+        "zh": "",
+        "zh-CHT": "已是最新版本",
+        "en": "You're on the latest version",
+        "ko": "최신 버전입니다",
+        "ja": "最新バージョンです",
+        "de": "Du verwendest die neueste Version",
+        "fr": "Vous utilisez la dernière version",
+        "id": "Anda sudah menggunakan versi terbaru",
+        "ru": "У вас последняя версия"
+    },
+    {
+        "key": "检查更新失败，请稍后再试",
+        "zh": "",
+        "zh-CHT": "檢查更新失敗，請稍後再試",
+        "en": "Failed to check for updates. Please try again later.",
+        "ko": "업데이트 확인에 실패했습니다. 잠시 후 다시 시도하세요.",
+        "ja": "更新の確認に失敗しました。しばらくしてからもう一度お試しください。",
+        "de": "Suche nach Updates fehlgeschlagen. Bitte versuche es später erneut.",
+        "fr": "Impossible de rechercher des mises à jour. Veuillez réessayer plus tard.",
+        "id": "Gagal memeriksa pembaruan. Silakan coba lagi nanti.",
+        "ru": "Не удалось проверить обновления. Повторите попытку позже."
+    },
+    {
+        "key": "推送设备ID必须为1至64位数字",
+        "zh": "",
+        "zh-CHT": "推送裝置ID必須為1至64位數字",
+        "en": "Push device ID must be 1 to 64 digits",
+        "ko": "푸시 기기 ID는 1~64자리 숫자여야 합니다",
+        "ja": "プッシュデバイスIDは1〜64桁の数字である必要があります",
+        "de": "Die Push-Geräte-ID muss aus 1 bis 64 Ziffern bestehen",
+        "fr": "L'ID de l'appareil push doit comporter de 1 à 64 chiffres",
+        "id": "ID perangkat push harus berupa 1 hingga 64 digit angka",
+        "ru": "ID устройства для push-уведомлений должен содержать от 1 до 64 цифр"
+    },
+    {
+        "key": "推送厂商错误",
+        "zh": "",
+        "zh-CHT": "推送廠商錯誤",
+        "en": "Invalid push vendor",
+        "ko": "푸시 제조사가 올바르지 않습니다",
+        "ja": "プッシュベンダーが正しくありません",
+        "de": "Ungültiger Push-Anbieter",
+        "fr": "Fournisseur push invalide",
+        "id": "Vendor push tidak valid",
+        "ru": "Неверный поставщик push-уведомлений"
     }
 ]

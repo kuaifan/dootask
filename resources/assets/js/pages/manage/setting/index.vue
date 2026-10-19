@@ -31,6 +31,7 @@
                         </template>
                         <template v-else-if="item.path === 'version-show'">
                             <AutoTip>{{$L(item.name)}}: {{clientVersion}}</AutoTip>
+                            <span v-if="canCheckUpdate" class="check-update" @click.stop="onCheckUpdate">{{$L('检查更新')}}</span>
                         </template>
                         <span v-else>{{$L(item.name)}}</span>
                     </li>
@@ -62,6 +63,7 @@ export default {
             deviceCount: 0,
             serverVersion: null,
             clientVersion: window.systemInfo.version,
+            canCheckUpdate: $A.eeuiAppIsExpo(),
         }
     },
 
@@ -241,6 +243,10 @@ export default {
                 title: this.$L('版本信息'),
                 content: array.join('<br/>')
             })
+        },
+
+        onCheckUpdate() {
+            $A.eeuiAppCheckUpdate(true);
         },
 
         getVersion() {

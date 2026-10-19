@@ -18,7 +18,7 @@ prerequisites: []
 negative:
   - 个人设置没有移动端 Tabbar 一级入口，需先进「我的」再进设置
   - 未登录用户没有「个人设置」入口
-last_verified: v1.9.36
+last_verified: v1.9.66
 ---
 
 # 个人设置入口
@@ -42,7 +42,7 @@ last_verified: v1.9.36
 - 键盘设置（仅 Electron / 移动端）→ [[user-settings.shortcut.concept]]
 - 系统设置 / License Key（仅系统管理员可见）
 - 系统更新（仅系统管理员可见，有系统新版本时显示新版本号）→ [[system-update.online-update.howto]]
-- 更新日志（桌面端有新版本时显示为「更新客户端」，点击打开客户端更新弹窗） / 版本 / 登录设备 / 清除缓存 / 退出登录
+- 更新日志（桌面端有新版本时显示为「更新客户端」，点击打开客户端更新弹窗） / 版本（新版移动端 App 右侧有「检查更新」，见 [[mobile-client.update.howto]]） / 登录设备 / 清除缓存 / 退出登录
 
 ## 权限要求
 

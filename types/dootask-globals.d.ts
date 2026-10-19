@@ -615,8 +615,10 @@ interface DooTaskGlobal {
     eeuiAppHideWebviewSnapshot(): void;
     /** 扫码（成功时回调扫码文本） */
     eeuiAppScan(callback: (text: string) => void): void;
-    /** 检查更新 */
-    eeuiAppCheckUpdate(): void;
+    /** 是否新版 App 壳（Expo） */
+    eeuiAppIsExpo(): boolean;
+    /** 检查更新（manual：手动检查，提示已是最新/检查失败） */
+    eeuiAppCheckUpdate(manual?: boolean): void;
     /** 获取主题名称 light|dark */
     eeuiAppGetThemeName(): string | undefined;
     /** 判断软键盘是否可见 */
