@@ -48,7 +48,7 @@ last_verified: v1.9.66
 - **发送失败的消息**:不会自动重发,用户需手动点重试
 
 ## 离线推送
-即使设备完全离线,服务端仍会通过 DooPush 或 UMENG 通道下发推送([[mobile-client.notify.concept]]),iOS 设备会在恢复网络后由 APNs 投递。Android 则取决于厂商通道是否能在弱网下唤醒。
+即使设备完全离线,服务端仍会通过 DooPush 下发推送([[mobile-client.notify.concept]]),iOS 设备会在恢复网络后由 APNs 投递。Android 则取决于厂商通道是否能在弱网下唤醒。
 
 ## 弱网体验优化
 - App 会自动重试关键请求(消息发送)

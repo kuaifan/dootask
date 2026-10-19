@@ -5904,18 +5904,6 @@
         "ru": "Ошибка параметра"
     },
     {
-        "key": "友盟推送",
-        "zh": "",
-        "zh-CHT": "友盟推送",
-        "en": "UMeng push",
-        "ko": "UMeng 푸시",
-        "ja": "UMengプッシュ",
-        "de": "UMeng-Push",
-        "fr": "Push UMeng",
-        "id": "Push UMeng",
-        "ru": "UMeng push"
-    },
-    {
         "key": "发布成功",
         "zh": "",
         "zh-CHT": "發布成功",
@@ -41016,18 +41004,6 @@
         "ru": "URL сервиса"
     },
     {
-        "key": "新版 App 使用 DooPush，旧版 App 使用友盟，两者可同时开启。",
-        "zh": "",
-        "zh-CHT": "新版 App 使用 DooPush，舊版 App 使用友盟，兩者可同時開啟。",
-        "en": "New app versions use DooPush, and older versions use Umeng. Both can be enabled at the same time.",
-        "ko": "새 버전 앱은 DooPush를, 이전 버전 앱은 Umeng을 사용합니다. 두 서비스를 동시에 활성화할 수 있습니다.",
-        "ja": "新しいバージョンのアプリはDooPush、旧バージョンはUmengを使用します。両方を同時に有効にできます。",
-        "de": "Neue App-Versionen verwenden DooPush, ältere Versionen Umeng. Beide können gleichzeitig aktiviert werden.",
-        "fr": "Les nouvelles versions de l’application utilisent DooPush et les anciennes Umeng. Les deux peuvent être activés simultanément.",
-        "id": "Versi aplikasi baru menggunakan DooPush, sedangkan versi lama menggunakan Umeng. Keduanya dapat diaktifkan bersamaan.",
-        "ru": "Новые версии приложения используют DooPush, а старые — Umeng. Оба сервиса можно включить одновременно."
-    },
-    {
         "key": "DooTask 新版本 (%T1) 已发布，建议更新以获得更好的使用体验。",
         "zh": "",
         "zh-CHT": "DooTask 新版本 (%T1) 已發布，建議更新以獲得更好的使用體驗。",
@@ -41098,5 +41074,125 @@
         "fr": "La version du serveur est obsolète. Veuillez mettre à jour après la mise à niveau du serveur.",
         "id": "Versi server saat ini lebih lama. Silakan perbarui setelah server ditingkatkan.",
         "ru": "Версия сервера устарела. Обновите приложение после обновления сервера."
+    },
+    {
+        "key": "推送服务",
+        "zh": "",
+        "zh-CHT": "推送服務",
+        "en": "Push service",
+        "ko": "푸시 서비스",
+        "ja": "プッシュサービス",
+        "de": "Push-Dienst",
+        "fr": "Service de notifications",
+        "id": "Layanan push",
+        "ru": "Служба push-уведомлений"
+    },
+    {
+        "key": "系统配置",
+        "zh": "",
+        "zh-CHT": "系統配置",
+        "en": "System default",
+        "ko": "시스템 기본값",
+        "ja": "システム既定",
+        "de": "Systemstandard",
+        "fr": "Configuration système",
+        "id": "Bawaan sistem",
+        "ru": "Системная настройка"
+    },
+    {
+        "key": "使用官方推送服务，无需配置。",
+        "zh": "",
+        "zh-CHT": "使用官方推送服務，無需配置。",
+        "en": "Uses the official push service. No setup required.",
+        "ko": "공식 푸시 서비스를 사용하며 별도 설정이 필요 없습니다.",
+        "ja": "公式のプッシュサービスを使用します。設定は不要です。",
+        "de": "Verwendet den offiziellen Push-Dienst. Keine Einrichtung erforderlich.",
+        "fr": "Utilise le service de notifications officiel. Aucune configuration requise.",
+        "id": "Menggunakan layanan push resmi. Tidak perlu konfigurasi.",
+        "ru": "Используется официальная служба push-уведомлений. Настройка не требуется."
+    },
+    {
+        "key": "使用自己的 DooPush 应用，需搭配自行打包的 App。",
+        "zh": "",
+        "zh-CHT": "使用自己的 DooPush 應用，需搭配自行打包的 App。",
+        "en": "Uses your own DooPush app. Requires a self-built App.",
+        "ko": "자체 DooPush 앱을 사용하며, 직접 빌드한 App과 함께 사용해야 합니다.",
+        "ja": "独自の DooPush アプリを使用します。自前でビルドした App が必要です。",
+        "de": "Verwendet Ihre eigene DooPush-App. Erfordert eine selbst erstellte App.",
+        "fr": "Utilise votre propre application DooPush. Nécessite une App compilée par vos soins.",
+        "id": "Menggunakan aplikasi DooPush Anda sendiri. Memerlukan App yang dibangun sendiri.",
+        "ru": "Используется собственное приложение DooPush. Требуется самостоятельно собранное App."
+    },
+    {
+        "key": "推送Token不能为空",
+        "zh": "",
+        "zh-CHT": "推送Token不能為空",
+        "en": "Push token cannot be empty",
+        "ko": "푸시 토큰은 비워 둘 수 없습니다",
+        "ja": "プッシュトークンは必須です",
+        "de": "Push-Token darf nicht leer sein",
+        "fr": "Le jeton de notification ne peut pas être vide",
+        "id": "Token push tidak boleh kosong",
+        "ru": "Push-токен не может быть пустым"
+    },
+    {
+        "key": "推送服务注册失败，请稍后再试",
+        "zh": "",
+        "zh-CHT": "推送服務註冊失敗，請稍後再試",
+        "en": "Failed to register with the push service. Please try again later.",
+        "ko": "푸시 서비스 등록에 실패했습니다. 잠시 후 다시 시도하세요.",
+        "ja": "プッシュサービスへの登録に失敗しました。しばらくしてから再試行してください。",
+        "de": "Registrierung beim Push-Dienst fehlgeschlagen. Bitte später erneut versuchen.",
+        "fr": "Échec de l'inscription au service de notifications. Veuillez réessayer plus tard.",
+        "id": "Gagal mendaftar ke layanan push. Silakan coba lagi nanti.",
+        "ru": "Не удалось зарегистрироваться в службе push-уведомлений. Повторите попытку позже."
+    },
+    {
+        "key": "推送设备未注册，请稍后再试",
+        "zh": "",
+        "zh-CHT": "推送設備未註冊，請稍後再試",
+        "en": "Push device is not registered yet. Please try again later.",
+        "ko": "푸시 기기가 아직 등록되지 않았습니다. 잠시 후 다시 시도하세요.",
+        "ja": "プッシュデバイスが未登録です。しばらくしてから再試行してください。",
+        "de": "Push-Gerät ist noch nicht registriert. Bitte später erneut versuchen.",
+        "fr": "L'appareil n'est pas encore enregistré. Veuillez réessayer plus tard.",
+        "id": "Perangkat push belum terdaftar. Silakan coba lagi nanti.",
+        "ru": "Устройство ещё не зарегистрировано. Повторите попытку позже."
+    },
+    {
+        "key": "推送服务已被停用",
+        "zh": "",
+        "zh-CHT": "推送服務已被停用",
+        "en": "Push service has been disabled",
+        "ko": "푸시 서비스가 비활성화되었습니다",
+        "ja": "プッシュサービスは停止されています",
+        "de": "Push-Dienst wurde deaktiviert",
+        "fr": "Le service de notifications a été désactivé",
+        "id": "Layanan push telah dinonaktifkan",
+        "ru": "Служба push-уведомлений отключена"
+    },
+    {
+        "key": "推送设备绑定失败，请稍后再试",
+        "zh": "",
+        "zh-CHT": "推送設備綁定失敗，請稍後再試",
+        "en": "Failed to bind push device. Please try again later.",
+        "ko": "푸시 기기 연결에 실패했습니다. 잠시 후 다시 시도하세요.",
+        "ja": "プッシュデバイスの紐付けに失敗しました。しばらくしてから再試行してください。",
+        "de": "Push-Gerät konnte nicht verknüpft werden. Bitte später erneut versuchen.",
+        "fr": "Échec de l'association de l'appareil. Veuillez réessayer plus tard.",
+        "id": "Gagal menautkan perangkat push. Silakan coba lagi nanti.",
+        "ru": "Не удалось привязать устройство. Повторите попытку позже."
+    },
+    {
+        "key": "推送模式错误",
+        "zh": "",
+        "zh-CHT": "推送模式錯誤",
+        "en": "Invalid push mode",
+        "ko": "잘못된 푸시 모드입니다",
+        "ja": "プッシュモードが正しくありません",
+        "de": "Ungültiger Push-Modus",
+        "fr": "Mode de notification invalide",
+        "id": "Mode push tidak valid",
+        "ru": "Неверный режим push-уведомлений"
     }
 ]

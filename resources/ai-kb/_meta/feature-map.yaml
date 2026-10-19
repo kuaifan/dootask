@@ -390,7 +390,7 @@ features:
       - email-notice.user-opt.howto
 
   - id: push-notice
-    name: APP 推送（DooPush / UMENG）
+    name: APP 推送（DooPush）
     scope: admin
     batch: B3
     priority: P1

@@ -44,6 +44,13 @@ return [
     // 临时文件自动清理天数（DeleteTmpTask）
     'auto_empty_temp_file' => env('AUTO_EMPTY_TEMP_FILE', 30),
 
+    // APP 推送「系统配置」使用的官方 DooPush 应用（App Key 随客户端公开，不是密钥）
+    'doopush_system' => [
+        'base_url' => env('DOOPUSH_SYSTEM_BASE_URL', 'https://doopush.com/api/v1'),
+        'app_id' => env('DOOPUSH_SYSTEM_APP_ID', '10'),
+        'app_key' => env('DOOPUSH_SYSTEM_APP_KEY', 'dp_ak_eSqQPRXcjSR1xXtOrXGcHvjKGVEKarBA'),
+    ],
+
     // WebDAV 协议硬限制；用户可配置值不能超过这里的上限
     'webdav' => [
         'max_file_bytes' => 1024 * 1024 * 1024,

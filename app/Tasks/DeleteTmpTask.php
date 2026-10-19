@@ -6,7 +6,6 @@ use App\Models\File;
 use App\Models\TaskWorker;
 use App\Models\Tmp;
 use App\Models\UserDevice;
-use App\Models\UmengLog;
 use App\Models\WebSocketTmpMsg;
 use App\Module\Base;
 use Carbon\Carbon;
@@ -122,17 +121,6 @@ class DeleteTmpTask extends AbstractTask
                         /** @var UserDevice $device */
                         foreach ($devices as $device) {
                             UserDevice::forget($device);
-                        }
-                    });
-                break;
-
-            case 'umeng_log':
-                UmengLog::where('created_at', '<', Carbon::now()->subHours($this->hours))
-                    ->orderBy('id')
-                    ->chunk(500, function ($logs) {
-                        /** @var UmengLog $log */
-                        foreach ($logs as $log) {
-                            $log->delete();
                         }
                     });
                 break;

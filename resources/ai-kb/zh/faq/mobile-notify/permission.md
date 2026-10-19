@@ -32,7 +32,7 @@ DooTask 移动端 APP 收不到通知 / 没振动 / 锁屏后没推送。
 - 系统通知权限未授予
 - 国产 ROM 后台杀进程严格，APP 被关闭
 - DooTask 时段免打扰打开
-- 网络异常导致推送未达（DooPush / 友盟通道无法触达设备）
+- 网络异常导致推送未达（DooPush 通道无法触达设备）
 
 ## 解决（iOS）
 1. 「设置 → DooTask」
@@ -69,5 +69,5 @@ DooTask 移动端 APP 收不到通知 / 没振动 / 锁屏后没推送。
 1. 检查 DooTask 内时段免打扰是否打开（[[mobile-notify.silent.howto]]）
 2. 检查会话是否被免打扰（[[push-notice.silent.howto]]）
 3. 检查 APP 内是否已登录（退出登录后推送设备解绑）
-4. 联系管理员查 `[DooPush]` 应用日志及 DooPush 投递结果，或 `umeng_logs` 的友盟返回信息
+4. 联系管理员查 `[DooPush]` 应用日志及 DooPush 投递结果
 5. 详见 [[push-notice.troubleshoot.faq]]

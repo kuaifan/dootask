@@ -36,7 +36,7 @@ last_verified: v1.9.66
 
 ## 移动端独有
 - 底部 Tabbar 原生导航
-- 系统级推送(新版 DooPush / 旧版 UMENG,见 [[mobile-client.notify.concept]])
+- 系统级推送(DooPush,见 [[mobile-client.notify.concept]])
 - 手势操作(左滑会话项 / 长按消息等,见 [[mobile-client.gesture.concept]])
 - 移动键盘的「发送按钮」配置(切换 Enter 是发送还是换行)
 - 二维码扫码 / 调起相机拍摄上传

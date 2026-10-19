@@ -8,9 +8,9 @@ locale: zh
 aliases:
   - APP 推送怎么打开
   - 手机推送配置
-  - UMENG 设置
+  - 推送服务设置
   - DooPush 设置
-  - 友盟推送
+  - DooPush 推送
 related_tools: []
 related_pages: [application]
 prerequisites:
@@ -25,15 +25,15 @@ last_verified: v1.9.66
 # APP 推送入口
 
 ## 是什么
-APP 推送应用让管理员配置 DooTask 移动端通知：新版 App 使用 DooPush，旧版 App 使用友盟 UMENG，两者可同时开启。任务和审批等提醒通过会话消息进入推送链路。
+APP 推送应用让管理员配置 DooTask 移动端通知：统一使用 DooPush，可选系统配置（默认）、自定义或关闭。任务和审批等提醒通过会话消息进入推送链路。
 
 ## 入口
 - 桌面端：左侧「应用」→「管理员」分区 →「APP 推送」卡片，打开配置抽屉。
 - 也可从左上角头像 →「系统设置」→ 左侧「APP 推送」进入相同表单。
 
 ## 配置项
-- 「友盟推送」区：独立开关、iOS / Android 各自的 Appkey 和 App Master Secret。
-- 「DooPush 推送」区：独立开关、App ID、密码形式输入的 App Secret、服务地址。
+- 「推送服务」：系统配置（默认，使用官方推送服务，无需配置）/ 自定义 / 关闭。
+- 选择「自定义」时填写 App ID、密码形式输入的 App Secret、服务地址，需搭配自行打包的 App。
 - 服务地址留空使用 https://doopush.com/api/v1。
 - 点击底部「提交」保存；详细字段及设备绑定见 [[push-notice.config.howto]]。
 

@@ -18,7 +18,7 @@ prerequisites:
   - 使用 DooTask 桌面端（Electron 客户端）或允许了浏览器通知的 Web 版
 negative:
   - Web 版需用户在浏览器对话框中点「允许」才能弹出通知，否则只能在 APP 内提示
-  - 桌面通知不走 DooPush / 友盟，与 APP 推送是完全独立的通道
+  - 桌面通知不走 DooPush，与 APP 推送是完全独立的通道
   - 关闭 DooTask 进程后不会有通知（与移动端不同，没有后台守护服务）
 last_verified: v1.9.66
 ---
@@ -43,7 +43,7 @@ last_verified: v1.9.66
 | Linux | libnotify | 仅通知 |
 
 ## 与其他通知的关系
-- [[push-notice.concept]] DooPush / 友盟推送只走移动 APP，桌面端不参与
+- [[push-notice.concept]] DooPush 推送只走移动 APP，桌面端不参与
 - [[email-notice.concept]] 邮件只用于汇总未读或系统验证，与桌面通知并行
 - 浏览器 Web 版桌面通知由浏览器实现，关闭浏览器即失效
 

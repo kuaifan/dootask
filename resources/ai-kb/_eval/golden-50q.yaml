@@ -414,7 +414,7 @@ tests:
     q: "手机端收不到推送通知"
     locale: zh
     expected_chunk_ids: [mobile-client.push-fail.faq]
-    expected_answer: "检查：App 通知权限是否开启、系统省电模式是否限制后台、UMENG 推送是否配置完成、网络是否受限。"
+    expected_answer: "检查：App 通知权限是否开启、系统省电模式是否限制后台、管理员是否关闭了 APP 推送（默认系统配置）、网络是否受限。"
     must_say: [推送, 移动端, App]
     must_not_say: []
     bucket: medium
@@ -472,7 +472,7 @@ tests:
       - task.notify.concept
       - mobile-client.notify.concept
       - electron-client.notify.concept
-    expected_answer: "到期前/超期后约 1 小时，task-alert 机器人私聊发送提醒（依赖管理员开启「APP 推送」设置）：桌面端收到站内消息并弹系统通知（依赖系统通知权限）、移动端走 UMENG 推送；任务到期提醒不发邮件——邮件通知仅覆盖未读聊天消息（文本/文件/语音/会议类），不含此类模板提醒。"
+    expected_answer: "到期前/超期后约 1 小时，task-alert 机器人私聊发送提醒（依赖管理员开启「APP 推送」设置）：桌面端收到站内消息并弹系统通知（依赖系统通知权限）、移动端走 DooPush 推送；任务到期提醒不发邮件——邮件通知仅覆盖未读聊天消息（文本/文件/语音/会议类），不含此类模板提醒。"
     must_say: [桌面, 移动, 推送, 提醒]
     must_not_say: []
     bucket: hard

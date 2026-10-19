@@ -2,7 +2,7 @@
 
 > 此文件由 `php artisan doc:api-map` 生成，勿手改。
 
-接口总数：335
+接口总数：334
 
 ## 路由规则
 
@@ -40,7 +40,6 @@ API 使用动态路由（见 `routes/web.php`），URL 段映射为控制器方�
 | api/users/import | import() | post | 批量导入用户（管理员） |
 | api/users/import/template | import__template() | get | 下载批量导入模板（管理员） |
 | api/users/email/verification | email__verification() | get | 邮箱验证 |
-| api/users/umeng/alias | umeng__alias() | get | 设置友盟别名 |
 | api/users/meeting/open | meeting__open() | get | 【会议】创建会议、加入会议 |
 | api/users/tags/lists | tags__lists() | get | 获取个性标签列表 |
 | api/users/tags/add | tags__add() | post | 新增个性标签 |

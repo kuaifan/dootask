@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9563bf2796d1179ba8740789be1ef49b",
+    "content-hash": "3ce4ce992d9f646b9ad6173c4f0d8605",
     "packages": [
         {
             "name": "brick/math",
@@ -1480,72 +1480,6 @@
                 }
             ],
             "time": "2026-05-23T22:00:21+00:00"
-        },
-        {
-            "name": "hedeqiang/umeng",
-            "version": "v2.1.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/hedeqiang/UMeng-Push.git",
-                "reference": "f7556dd390e94d908fae715ed2978c7265f5f957"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/hedeqiang/UMeng-Push/zipball/f7556dd390e94d908fae715ed2978c7265f5f957",
-                "reference": "f7556dd390e94d908fae715ed2978c7265f5f957",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "guzzlehttp/guzzle": "^6.3|^7.0",
-                "php": ">=7.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.19|^3.8"
-            },
-            "type": "library",
-            "extra": {
-                "hyperf": {
-                    "config": "Hedeqiang\\UMeng\\ConfigProvider"
-                },
-                "laravel": {
-                    "providers": [
-                        "Hedeqiang\\UMeng\\PushServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Hedeqiang\\UMeng\\": "./src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "hedeqiang",
-                    "email": "laravel_code@163.com"
-                },
-                {
-                    "name": "housemecn",
-                    "email": "houseme@outlook.com"
-                }
-            ],
-            "description": "友盟推送",
-            "keywords": [
-                "U-Push",
-                "php",
-                "sdk",
-                "umeng",
-                "友盟"
-            ],
-            "support": {
-                "issues": "https://github.com/hedeqiang/UMeng-Push/issues",
-                "source": "https://github.com/hedeqiang/UMeng-Push/tree/v2.1.6"
-            },
-            "time": "2022-09-28T08:52:46+00:00"
         },
         {
             "name": "intervention/gif",

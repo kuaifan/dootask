@@ -43,7 +43,7 @@ last_verified: v1.9.66
 ## 推送渠道
 - **站内消息**：「消息」列表中 task-alert「任务提醒」机器人的私聊会话
 - **桌面端**：经 Electron 系统通知弹出
-- **移动端**：离线 / 后台用户经 DooPush（新版 App）或 UMENG（旧版 App）推送触达，见 [[mobile-client.notify.concept]]
+- **移动端**：离线 / 后台用户经 DooPush 推送触达，见 [[mobile-client.notify.concept]]
 
 ## 不支持
 - 不能为单条任务自定义提醒时间偏移（如「提前 2 小时」），固定为到期前约 1 小时、超期后约 1 小时各提醒一次

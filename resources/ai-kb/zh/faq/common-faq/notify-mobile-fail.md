@@ -18,7 +18,7 @@ prerequisites: []
 negative:
   - PC 在线时 APP 推送会延迟 10 秒；这期间被读则跳过推送，不是故障
   - 静默消息（silence=1）和自己发的消息本来不推
-  - DooPush 设备和友盟别名超过一个月未更新时不参与推送，需重新登录刷新
+  - 推送设备超过一个月未更新时不参与推送，需重新登录刷新
 last_verified: v1.9.66
 ---
 
@@ -33,14 +33,14 @@ last_verified: v1.9.66
 2. **系统通知权限**：iOS / Android 是否给 DooTask 通知权限，详见 [[mobile-notify.permission.faq]]
 3. **国产 ROM 后台杀进程**：华为 / 小米 / OPPO / VIVO 需手动允许 DooTask「自启动 + 后台运行」
 4. **PC 端 60 秒内活跃过**：DooTask 推送规则会延迟手机 10 秒，期间消息被 PC 读完会跳过 APP 推送（设计行为）
-5. **管理员有没有配置对应通道**：系统设置 → APP 推送 → 新版检查 DooPush App ID / App Secret，旧版检查友盟凭证
-6. **设备绑定过期**：超过一个月未更新 → 重新登录 APP，刷新 DooPush 设备或友盟别名
+5. **管理员有没有配置对应通道**：系统设置 → APP 推送 → 推送服务不能是「关闭」；自定义模式检查 App ID / App Secret
+6. **设备绑定过期**：超过一个月未更新 → 重新登录 APP，刷新推送设备
 7. **会话级 / 项目级免打扰**：在 APP 内对应会话 / 项目设置里检查
 
 ## 解决
 1. 退出 APP 重新登录刷新 token 和推送设备绑定
 2. 关掉 PC 端临时测试（断网或退出账号）→ 验证 APP 是否能即时收
-3. 找系统管理员看 `[DooPush]` 应用日志及 DooPush 投递结果，或 `umeng_logs` 表的最新返回；详见 [[push-notice.troubleshoot.faq]]
+3. 找系统管理员看 `[DooPush]` 应用日志及 DooPush 投递结果；详见 [[push-notice.troubleshoot.faq]]
 4. 国产 ROM 详细步骤见 [[mobile-notify.permission.faq]]
 
 ## 不支持

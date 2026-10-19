@@ -165,7 +165,7 @@ class WebSocketDialogMsgTask extends AbstractTask
             ]);
         }
         // 开始推送消息
-        $umengUserid = [];
+        $appUserid = [];
         foreach ($array as $item) {
             $this->endPush[] = [
                 'userid' => $item['userid'],
@@ -183,25 +183,25 @@ class WebSocketDialogMsgTask extends AbstractTask
                 ]
             ];
             if ($item['userid'] != $msg->userid && !$item['silence'] && !$this->silence) {
-                $umengUserid[] = $item['userid'];
+                $appUserid[] = $item['userid'];
             }
         }
-        // APP 推送（友盟 / DooPush）
-        if ($umengUserid) {
+        // APP 推送（DooPush）
+        if ($appUserid) {
             if (AppPush::enabled()) {
                 if ($msg->userid == -1) {
                     // AI 助手虚拟用户没有会员记录，取自定义昵称或默认名称
-                    $umengTitle = ($msg->msg['nickname'] ?? '') ?: Doo::translate('AI 助手');
+                    $appTitle = ($msg->msg['nickname'] ?? '') ?: Doo::translate('AI 助手');
                 } else {
-                    $umengTitle = User::userid2nickname($msg->userid);
+                    $appTitle = User::userid2nickname($msg->userid);
                 }
-                $umengBody = WebSocketDialogMsg::previewMsg($msg);
+                $appBody = WebSocketDialogMsg::previewMsg($msg);
                 if ($dialog->type == 'group') {
-                    $umengBody = $umengTitle . ': ' . $umengBody;
-                    $umengTitle = $dialog->getGroupName();
+                    $appBody = $appTitle . ': ' . $appBody;
+                    $appTitle = $dialog->getGroupName();
                 }
                 $langs = User::select(['userid', 'lang'])
-                    ->whereIn('userid', $umengUserid)
+                    ->whereIn('userid', $appUserid)
                     ->whereDisableAt(null)
                     ->get()
                     ->groupBy('lang')
@@ -210,9 +210,9 @@ class WebSocketDialogMsgTask extends AbstractTask
                     });
                 foreach ($langs as $lang => $uids) {
                     Doo::setLanguage($lang);
-                    $umengMsg = [
-                        'title' => $umengTitle,
-                        'body' => $umengBody,
+                    $appMsg = [
+                        'title' => $appTitle,
+                        'body' => $appBody,
                         'description' => "MID:{$msg->id}",
                         'seconds' => 3600,
                         'badge' => 1,
@@ -221,7 +221,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                             'msg_id' => $msg->id,
                         ]
                     ];
-                    $this->endArray[] = new PushUmengMsg($uids->toArray(), $umengMsg);
+                    $this->endArray[] = new PushAppMsg($uids->toArray(), $appMsg);
                 }
             }
         }

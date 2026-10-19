@@ -39,7 +39,7 @@ last_verified: v1.9.66
 - **AI 设置** — 配置 AI 模型供应商：[[system-setting.ai-model.howto]]
 - **AI 机器人** — 关联机器人与默认模型：[[system-setting.ai-bot.howto]]
 - **签到** — 打卡规则、地理围栏、人脸：[[system-setting.checkin.howto]]
-- **APP 推送** — DooPush / 友盟推送开关与凭证配置：[[push-notice.config.howto]]
+- **APP 推送** — DooPush 推送模式（系统配置 / 自定义 / 关闭）配置：[[push-notice.config.howto]]
 - **第三方接入** — LDAP / OAuth：[[system-setting.third-access.howto]]
 - **文件** — 文件打包下载权限：[[system-setting.file.howto]]
 - **任务优先级** — 自定义颜色与天数：[[system-setting.priority.howto]]

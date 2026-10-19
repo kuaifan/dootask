@@ -81,7 +81,7 @@ tests:
     q: "任务到截止时间会怎么提醒我？"
     locale: zh
     expected_chunk_ids: [task.deadline.concept, notification.task-deadline.howto, mobile-notify.task.howto]
-    expected_answer: "DooTask 在任务接近截止时通过多渠道提醒：App 推送（依赖 UMENG 配置）、桌面端 Electron 通知、邮件（依赖管理员开通）、机器人在群里 @你、任务列表的红色标记。可在个人设置关闭部分通道。"
+    expected_answer: "DooTask 在任务接近截止时通过多渠道提醒：App 推送（DooPush，默认系统配置）、桌面端 Electron 通知、邮件（依赖管理员开通）、机器人在群里 @你、任务列表的红色标记。可在个人设置关闭部分通道。"
     must_say: [提醒]
     must_not_say: []
     bucket: hard

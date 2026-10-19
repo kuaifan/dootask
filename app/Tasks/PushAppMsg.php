@@ -7,9 +7,9 @@ use Cache;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
- * 推送 APP 消息（友盟 / DooPush）
+ * 推送 APP 消息（DooPush）
  */
-class PushUmengMsg extends AbstractTask
+class PushAppMsg extends AbstractTask
 {
     protected $userid = 0;
     protected $array = [];
@@ -93,7 +93,7 @@ class PushUmengMsg extends AbstractTask
             return;
         }
         foreach ($this->endPush as $item) {
-            $task = new PushUmengMsg($item['userid'], $item['array']);
+            $task = new PushAppMsg($item['userid'], $item['array']);
             $task->delay(10);
             Task::deliver($task);
         }

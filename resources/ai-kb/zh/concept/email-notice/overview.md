@@ -39,7 +39,7 @@ last_verified: v1.9.66
 具体场景见 [[email-notice.scenarios.concept]]。
 
 ## 与其他通知的关系
-- **APP 推送**（DooPush / 友盟）：见 [[push-notice.concept]]，独立通道
+- **APP 推送**（DooPush）：见 [[push-notice.concept]]，独立通道
 - **桌面通知**（Electron）：本地系统通知，不走邮件
 - **移动端通知**：iOS/Android 推送，不走邮件
 

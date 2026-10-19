@@ -222,7 +222,7 @@ export default {
                 this.$store.dispatch("websocketConnection");
                 //
                 if (this.$isEEUIApp) {
-                    this.umengAliasTimer && clearTimeout(this.umengAliasTimer)
+                    this.pushDeviceTimer && clearTimeout(this.pushDeviceTimer)
                     if (this.userId > 0) {
                         // 给 APP 发送初始化消息
                         $A.eeuiAppSendMessage({
@@ -255,19 +255,17 @@ export default {
                             })
                         }).catch(console.log)
 
-                        // 设置友盟别名
-                        this.umengAliasTimer = setTimeout(_ => {
-                            this.umengAliasTimer = null;
+                        // 注册推送设备（消息名沿用旧壳协议）
+                        this.pushDeviceTimer = setTimeout(_ => {
+                            this.pushDeviceTimer = null;
                             $A.eeuiAppSendMessage({
                                 action: 'setUmengAlias',
-                                url: $A.apiUrl('users/umeng/alias')
                             });
                         }, 6000)
                     } else {
-                        // 删除友盟别名
+                        // 移除推送设备
                         $A.eeuiAppSendMessage({
                             action: 'delUmengAlias',
-                            url: $A.apiUrl('users/umeng/alias')
                         });
                     }
                 }

@@ -23,7 +23,6 @@
         "directorytree/ldaprecord-laravel": "^4.0",
         "firebase/php-jwt": "^7.1",
         "guzzlehttp/guzzle": "^7.3.0",
-        "hedeqiang/umeng": "^2.1",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "laravolt/avatar": "^6.5",

@@ -18,7 +18,7 @@ prerequisites: []
 negative:
   - 桌面端通知不依赖浏览器权限,但需要系统级允许 DooTask 发通知
   - 系统勿扰模式 / 专注模式开启时,不会弹出但会进通知中心
-  - 桌面端通知与移动端 DooPush / UMENG 推送是两套独立通道,见 [[mobile-client.notify.concept]]
+  - 桌面端通知与移动端 DooPush 推送是两套独立通道,见 [[mobile-client.notify.concept]]
 last_verified: v1.9.66
 ---
 

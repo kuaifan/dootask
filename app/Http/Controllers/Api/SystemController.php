@@ -13,6 +13,7 @@ use Response;
 use Carbon\Carbon;
 use App\Module\Doo;
 use App\Models\User;
+use App\Module\AppPush\AppPush;
 use App\Module\Base;
 use App\Module\OnlineLicense;
 use App\Module\SystemUpdate;
@@ -560,7 +561,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['push', 'ios_key', 'ios_secret', 'android_key', 'android_secret', 'doopush', 'doopush_app_id', 'doopush_app_secret', 'doopush_base_url']）
+     * - save: 保存设置（参数：['doopush'（system 系统配置、custom 自定义、close 关闭）, 'doopush_app_id', 'doopush_app_secret', 'doopush_base_url']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -577,11 +578,6 @@ class SystemController extends AbstractController
             $all = Request::input();
             foreach ($all as $key => $value) {
                 if (!in_array($key, [
-                    'push',
-                    'ios_key',
-                    'ios_secret',
-                    'android_key',
-                    'android_secret',
                     'doopush',
                     'doopush_app_id',
                     'doopush_app_secret',
@@ -590,13 +586,15 @@ class SystemController extends AbstractController
                     unset($all[$key]);
                 }
             }
+            if (!in_array($all['doopush'] ?? '', ['system', 'custom', 'close'], true)) {
+                return Base::retError('推送模式错误');
+            }
             $setting = Base::setting('appPushSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('appPushSetting');
         }
         //
-        $setting['push'] = $setting['push'] ?: 'close';
-        $setting['doopush'] = ($setting['doopush'] ?? '') ?: 'close';
+        $setting['doopush'] = AppPush::mode();
         $setting['doopush_app_id'] = $setting['doopush_app_id'] ?? '';
         $setting['doopush_app_secret'] = $setting['doopush_app_secret'] ?? '';
         $setting['doopush_base_url'] = $setting['doopush_base_url'] ?? '';

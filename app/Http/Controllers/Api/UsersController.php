@@ -19,7 +19,6 @@ use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
 use App\Models\UserBot;
 use App\Models\WebSocket;
-use App\Models\UmengAlias;
 use App\Models\UserDelete;
 use App\Models\UserDevice;
 use App\Models\UserTransfer;
@@ -1512,85 +1511,6 @@ class UsersController extends AbstractController
         ]);
 
         return Base::retSuccess('绑定邮箱成功');
-    }
-
-    /**
-     * @api {get} api/users/umeng/alias 设置友盟别名
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup users
-     * @apiName umeng__alias
-     *
-     * @apiParam {String} action
-     * - update: 更新（默认）
-     * - remove: 删除
-     * @apiParam {String} alias           别名
-     * @apiParam {String} [userAgent]     浏览器信息
-     * @apiParam {String} [deviceModel]   设备型号
-     * @apiParam {String} [isNotified]    是否有通知权限（0不通知、1通知）
-     * @apiParam {Number} [isDebug]       是否调试（0不调试、1调试）
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function umeng__alias()
-    {
-        $data = Request::input();
-        // 判断是否调试
-        if (intval($data['isDebug'])) {
-            return Base::retError('调试模式下不允许使用');
-        }
-        // 表单验证
-        Base::validator($data, [
-            'alias.required' => '别名不能为空',
-            'alias.between:2,20' => '别名的长度在2-20个字符',
-        ]);
-        //
-        if ($data['action'] === 'remove') {
-            if ($data['alias']) {
-                UmengAlias::whereAlias($data['alias'])->delete();
-            }
-            return Base::retSuccess('删除成功');
-        }
-        //
-        if (!in_array(Base::platform(), ['ios', 'android'])) {
-            return Base::retError('设备类型错误');
-        }
-        //
-        $user = User::auth();
-        $inArray = [
-            'userid' => $user->userid,
-            'alias' => $data['alias'],
-            'platform' => Base::platform(),
-        ];
-        $version = $data['appVersion'] ? ($data['appVersionName'] . " ({$data['appVersion']})") : '';
-        $isNotified = trim($data['isNotified']) === 'true' || $data['isNotified'] === true ? 1 : intval($data['isNotified']);
-        $row = UmengAlias::where($inArray);
-        if ($row->exists()) {
-            $row->update([
-                'ua' => $data['userAgent'],
-                'device' => $data['deviceModel'],
-                'device_hash' => UserDevice::check(),
-                'version' => $version,
-                'is_notified' => $isNotified,
-                'updated_at' => Carbon::now()
-            ]);
-            return Base::retSuccess('别名已存在');
-        }
-        $row = UmengAlias::createInstance(array_merge($inArray, [
-            'ua' => $data['userAgent'],
-            'device' => $data['deviceModel'],
-            'device_hash' => UserDevice::check(),
-            'version' => $version,
-            'is_notified' => $isNotified,
-        ]));
-        if ($row->save()) {
-            return Base::retSuccess('添加成功');
-        } else {
-            return Base::retError('添加错误');
-        }
     }
 
     /**

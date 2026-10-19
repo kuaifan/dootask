@@ -7,43 +7,18 @@
             v-bind="formOptions"
             @submit.native.prevent>
             <div class="block-setting-box">
-                <h3>{{ $L('友盟推送') }}</h3>
-                <div class="form-box">
-                    <FormItem :label="$L('开启推送')" prop="push">
-                        <RadioGroup v-model="formData.push">
-                            <Radio label="open">{{ $L('开启') }}</Radio>
-                            <Radio label="close">{{ $L('关闭') }}</Radio>
-                        </RadioGroup>
-                    </FormItem>
-                    <template v-if="formData.push === 'open'">
-                        <Divider orientation="left">iOS {{$L('参数配置')}}</Divider>
-                        <FormItem label="Appkey" prop="ios_appkey">
-                            <Input :maxlength="255" v-model="formData.ios_key"/>
-                        </FormItem>
-                        <FormItem label="App Master Secret" prop="secret">
-                            <Input :maxlength="255" v-model="formData.ios_secret" type="password"/>
-                        </FormItem>
-                        <Divider orientation="left">Android {{$L('参数配置')}}</Divider>
-                        <FormItem label="Appkey" prop="android_appkey">
-                            <Input :maxlength="255" v-model="formData.android_key"/>
-                        </FormItem>
-                        <FormItem label="App Master Secret" prop="secret">
-                            <Input :maxlength="255" v-model="formData.android_secret" type="password"/>
-                        </FormItem>
-                    </template>
-                </div>
-            </div>
-            <div class="block-setting-box">
                 <h3>{{ $L('DooPush 推送') }}</h3>
                 <div class="form-box">
-                    <FormItem :label="$L('开启推送')" prop="doopush">
+                    <FormItem :label="$L('推送服务')" prop="doopush">
                         <RadioGroup v-model="formData.doopush">
-                            <Radio label="open">{{ $L('开启') }}</Radio>
+                            <Radio label="system">{{ $L('系统配置') }}</Radio>
+                            <Radio label="custom">{{ $L('自定义') }}</Radio>
                             <Radio label="close">{{ $L('关闭') }}</Radio>
                         </RadioGroup>
-                        <div class="form-tip">{{ $L('新版 App 使用 DooPush，旧版 App 使用友盟，两者可同时开启。') }}</div>
+                        <div v-if="formData.doopush === 'system'" class="form-tip">{{ $L('使用官方推送服务，无需配置。') }}</div>
+                        <div v-else-if="formData.doopush === 'custom'" class="form-tip">{{ $L('使用自己的 DooPush 应用，需搭配自行打包的 App。') }}</div>
                     </FormItem>
-                    <template v-if="formData.doopush === 'open'">
+                    <template v-if="formData.doopush === 'custom'">
                         <FormItem :label="$L('App ID')" prop="doopush_app_id">
                             <Input :maxlength="255" v-model="formData.doopush_app_id"/>
                         </FormItem>
@@ -73,12 +48,7 @@ export default {
         return {
             loadIng: 0,
             formData: {
-                push: '',
-                ios_key: '',
-                ios_secret: '',
-                android_key: '',
-                android_secret: '',
-                doopush: 'close',
+                doopush: 'system',
                 doopush_app_id: '',
                 doopush_app_secret: '',
                 doopush_base_url: '',

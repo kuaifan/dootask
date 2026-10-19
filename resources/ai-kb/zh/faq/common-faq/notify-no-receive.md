@@ -32,7 +32,7 @@ DooTask 有四条独立的通知通道，依次自检：
 
 1. **应用内红点**：左侧聊天列表、任务列表是否有红点。没有 → 后端根本没产生通知，从源头排查（消息真的发给你了？被设了可见用户排除？）
 2. **桌面 / Web 通知**：桌面端 / Web 是否拿到系统通知权限，详见 [[desktop-notify.permission.faq]]
-3. **移动端 APP 推送**：手机是否给 DooTask 通知权限 + 后台运行；管理员是否配了对应的 DooPush / 友盟通道 [[mobile-notify.permission.faq]] / [[push-notice.troubleshoot.faq]]
+3. **移动端 APP 推送**：手机是否给 DooTask 通知权限 + 后台运行；管理员是否关闭了 APP 推送 [[mobile-notify.permission.faq]] / [[push-notice.troubleshoot.faq]]
 4. **邮件通知**：管理员是否配 SMTP；该用户是否在「忽略邮箱」列表里，详见 [[email-notice.troubleshoot.faq]]
 
 ## 解决
@@ -40,7 +40,7 @@ DooTask 有四条独立的通知通道，依次自检：
 2. 检查个人是否开了「全局免打扰」「勿扰时间段」
 3. 检查目标会话 / 项目是否被你单独设了免打扰
 4. 重新登录刷新 socket 连接
-5. 全公司都没通知 → 让管理员检查 swoole 进程、Redis、SMTP、DooPush / 友盟配置
+5. 全公司都没通知 → 让管理员检查 swoole 进程、Redis、SMTP、DooPush 推送配置
 
 ## 不支持
 - 没有「通知历史」可回放所有过去通知的全局界面（仅站内红点 + 邮件）
