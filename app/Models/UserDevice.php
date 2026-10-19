@@ -307,6 +307,7 @@ class UserDevice extends AbstractModel
         if (isset($hash)) {
             Cache::forget(self::ck($hash));
             UmengAlias::whereDeviceHash($hash)->delete();
+            AppPushDevice::whereDeviceHash($hash)->delete();
         }
     }
 }

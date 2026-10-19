@@ -2844,3 +2844,8 @@ APP 新版本
 更新内容
 按字母显示
 按部门显示
+DooPush 推送
+App ID
+App Secret
+服务地址
+新版 App 使用 DooPush，旧版 App 使用友盟，两者可同时开启。

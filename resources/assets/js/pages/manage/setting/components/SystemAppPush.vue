@@ -33,6 +33,29 @@
                     </template>
                 </div>
             </div>
+            <div class="block-setting-box">
+                <h3>{{ $L('DooPush 推送') }}</h3>
+                <div class="form-box">
+                    <FormItem :label="$L('开启推送')" prop="doopush">
+                        <RadioGroup v-model="formData.doopush">
+                            <Radio label="open">{{ $L('开启') }}</Radio>
+                            <Radio label="close">{{ $L('关闭') }}</Radio>
+                        </RadioGroup>
+                        <div class="form-tip">{{ $L('新版 App 使用 DooPush，旧版 App 使用友盟，两者可同时开启。') }}</div>
+                    </FormItem>
+                    <template v-if="formData.doopush === 'open'">
+                        <FormItem :label="$L('App ID')" prop="doopush_app_id">
+                            <Input :maxlength="255" v-model="formData.doopush_app_id"/>
+                        </FormItem>
+                        <FormItem :label="$L('App Secret')" prop="doopush_app_secret">
+                            <Input :maxlength="255" v-model="formData.doopush_app_secret" type="password"/>
+                        </FormItem>
+                        <FormItem :label="$L('服务地址')" prop="doopush_base_url">
+                            <Input :maxlength="255" v-model="formData.doopush_base_url" placeholder="https://doopush.com/api/v1"/>
+                        </FormItem>
+                    </template>
+                </div>
+            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
@@ -55,6 +78,10 @@ export default {
                 ios_secret: '',
                 android_key: '',
                 android_secret: '',
+                doopush: 'close',
+                doopush_app_id: '',
+                doopush_app_secret: '',
+                doopush_base_url: '',
             },
             ruleData: {},
         }

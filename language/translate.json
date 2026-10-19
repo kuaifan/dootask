@@ -40966,5 +40966,65 @@
         "fr": "Dissocier la tâche",
         "id": "Putuskan tautan tugas",
         "ru": "Отвязать задачу"
+    },
+    {
+        "key": "DooPush 推送",
+        "zh": "",
+        "zh-CHT": "DooPush 推送",
+        "en": "DooPush Notifications",
+        "ko": "DooPush 푸시 알림",
+        "ja": "DooPush プッシュ通知",
+        "de": "DooPush-Benachrichtigungen",
+        "fr": "Notifications DooPush",
+        "id": "Notifikasi DooPush",
+        "ru": "Уведомления DooPush"
+    },
+    {
+        "key": "App ID",
+        "zh": "",
+        "zh-CHT": "App ID",
+        "en": "App ID",
+        "ko": "앱 ID",
+        "ja": "App ID",
+        "de": "App ID",
+        "fr": "App ID",
+        "id": "App ID",
+        "ru": "App ID"
+    },
+    {
+        "key": "App Secret",
+        "zh": "",
+        "zh-CHT": "App Secret",
+        "en": "App Secret",
+        "ko": "앱 시크릿",
+        "ja": "App Secret",
+        "de": "App Secret",
+        "fr": "App Secret",
+        "id": "App Secret",
+        "ru": "App Secret"
+    },
+    {
+        "key": "服务地址",
+        "zh": "",
+        "zh-CHT": "服務地址",
+        "en": "Service URL",
+        "ko": "서비스 주소",
+        "ja": "サービスURL",
+        "de": "Dienst-URL",
+        "fr": "URL du service",
+        "id": "URL layanan",
+        "ru": "URL сервиса"
+    },
+    {
+        "key": "新版 App 使用 DooPush，旧版 App 使用友盟，两者可同时开启。",
+        "zh": "",
+        "zh-CHT": "新版 App 使用 DooPush，舊版 App 使用友盟，兩者可同時開啟。",
+        "en": "New app versions use DooPush, and older versions use Umeng. Both can be enabled at the same time.",
+        "ko": "새 버전 앱은 DooPush를, 이전 버전 앱은 Umeng을 사용합니다. 두 서비스를 동시에 활성화할 수 있습니다.",
+        "ja": "新しいバージョンのアプリはDooPush、旧バージョンはUmengを使用します。両方を同時に有効にできます。",
+        "de": "Neue App-Versionen verwenden DooPush, ältere Versionen Umeng. Beide können gleichzeitig aktiviert werden.",
+        "fr": "Les nouvelles versions de l’application utilisent DooPush et les anciennes Umeng. Les deux peuvent être activés simultanément.",
+        "id": "Versi aplikasi baru menggunakan DooPush, sedangkan versi lama menggunakan Umeng. Keduanya dapat diaktifkan bersamaan.",
+        "ru": "Новые версии приложения используют DooPush, а старые — Umeng. Оба сервиса можно включить одновременно."
     }
 ]

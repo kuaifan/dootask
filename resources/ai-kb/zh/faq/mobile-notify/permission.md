@@ -20,7 +20,7 @@ negative:
   - 通知权限拒绝过一次后 DooTask 不会主动再次弹窗请求；只能去系统设置改
   - 即便授予通知权限，国产 ROM 的电池优化 / 自启动限制仍可能屏蔽后台通知
   - 通知权限和「APP 后台运行」是两件事，二者都允许才稳定收推送
-last_verified: v1.7.90
+last_verified: v1.9.66
 ---
 
 # 移动端没有通知权限
@@ -32,7 +32,7 @@ DooTask 移动端 APP 收不到通知 / 没振动 / 锁屏后没推送。
 - 系统通知权限未授予
 - 国产 ROM 后台杀进程严格，APP 被关闭
 - DooTask 时段免打扰打开
-- 网络异常导致推送未达（友盟服务器无法触达设备）
+- 网络异常导致推送未达（DooPush / 友盟通道无法触达设备）
 
 ## 解决（iOS）
 1. 「设置 → DooTask」
@@ -68,6 +68,6 @@ DooTask 移动端 APP 收不到通知 / 没振动 / 锁屏后没推送。
 ## 仍然不收？
 1. 检查 DooTask 内时段免打扰是否打开（[[mobile-notify.silent.howto]]）
 2. 检查会话是否被免打扰（[[push-notice.silent.howto]]）
-3. 检查 APP 内是否已登录（退出登录后 UmengAlias 失效）
-4. 联系管理员查 `umeng_logs` 看友盟侧是否收到了推送请求
+3. 检查 APP 内是否已登录（退出登录后推送设备解绑）
+4. 联系管理员查 `[DooPush]` 应用日志及 DooPush 投递结果，或 `umeng_logs` 的友盟返回信息
 5. 详见 [[push-notice.troubleshoot.faq]]

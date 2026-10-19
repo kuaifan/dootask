@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
+use App\Module\AppPush\AppPush;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Services\RequestContext;
@@ -185,10 +186,9 @@ class WebSocketDialogMsgTask extends AbstractTask
                 $umengUserid[] = $item['userid'];
             }
         }
-        // umeng推送app
+        // APP 推送（友盟 / DooPush）
         if ($umengUserid) {
-            $setting = Base::setting('appPushSetting');
-            if ($setting['push'] === 'open') {
+            if (AppPush::enabled()) {
                 if ($msg->userid == -1) {
                     // AI 助手虚拟用户没有会员记录，取自定义昵称或默认名称
                     $umengTitle = ($msg->msg['nickname'] ?? '') ?: Doo::translate('AI 助手');

@@ -560,7 +560,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['push', 'ios_key', 'ios_secret', 'android_key', 'android_secret']）
+     * - save: 保存设置（参数：['push', 'ios_key', 'ios_secret', 'android_key', 'android_secret', 'doopush', 'doopush_app_id', 'doopush_app_secret', 'doopush_base_url']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -582,6 +582,10 @@ class SystemController extends AbstractController
                     'ios_secret',
                     'android_key',
                     'android_secret',
+                    'doopush',
+                    'doopush_app_id',
+                    'doopush_app_secret',
+                    'doopush_base_url',
                 ])) {
                     unset($all[$key]);
                 }
@@ -592,6 +596,10 @@ class SystemController extends AbstractController
         }
         //
         $setting['push'] = $setting['push'] ?: 'close';
+        $setting['doopush'] = ($setting['doopush'] ?? '') ?: 'close';
+        $setting['doopush_app_id'] = $setting['doopush_app_id'] ?? '';
+        $setting['doopush_app_secret'] = $setting['doopush_app_secret'] ?? '';
+        $setting['doopush_base_url'] = $setting['doopush_base_url'] ?? '';
         //
         return Base::retSuccess($type == 'save' ? '保存成功' : 'success', $setting ?: json_decode('{}'));
     }

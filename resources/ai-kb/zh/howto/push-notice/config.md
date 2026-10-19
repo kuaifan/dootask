@@ -1,6 +1,6 @@
 ---
 id: push-notice.config.howto
-title: 配置友盟 APP 推送
+title: 配置 APP 推送（DooPush / 友盟）
 type: howto
 feature: push-notice
 scope: admin
@@ -9,52 +9,44 @@ aliases:
   - 配置友盟
   - UMENG 配置
   - APP 推送配置
-  - 配置 appkey
   - 怎么开推送
-  - 友盟密钥
+  - DooPush 怎么配置
+  - DooPush 服务地址怎么填
 related_tools: []
 related_pages: []
 prerequisites:
   - 需要系统管理员权限
-  - 已在 https://www.umeng.com 注册友盟账号并创建对应的 iOS / Android 应用
-  - 已拿到 App Key 和 App Master Secret
+  - 已获得对应推送服务的应用凭证
 negative:
-  - 当环境变量 SYSTEM_SETTING=disabled 时禁止从界面修改推送设置（密钥会脱敏显示）
-  - 必须同时填 iOS 和 Android 的 key/secret 才能两端都收到；只填一端则只推一端
-  - 默认 production_mode=true，意味必须用正式签名的 APP 包，开发版 APP 收不到
-last_verified: v1.7.90
+  - 当前环境禁止修改系统设置时无法保存推送配置
+  - App Secret 是服务端发送凭证，不是客户端 App Key
+  - 页面没有测试推送或事件订阅按钮
+last_verified: v1.9.66
 ---
 
-# 配置友盟 APP 推送
+# 配置 APP 推送（DooPush / 友盟）
 
 ## 入口
-桌面端：左侧栏「管理后台」→「系统设置」→「APP 推送」选项卡
+桌面端：左上角头像 →「系统设置」→ 左侧「APP 推送」。也可通过管理员应用「APP 推送」打开配置。
 
 ## 操作步骤
-1. 在「开启推送」选择「开启」
-2. 「iOS 参数配置」区填写：
-   - Appkey
-   - App Master Secret
-3. 「Android 参数配置」区填写：
-   - Appkey
-   - App Master Secret
-4. 底部「提交」保存
-5. 保存后即时生效，无需重启服务
+1. 新版 App：在「DooPush 推送」区开启推送，填写 App ID、App Secret；服务地址留空时使用 `https://doopush.com/api/v1`，自部署 DooPush 可填写自己的 API 地址。
+2. 旧版 App：在「友盟推送」区开启推送，按需填写 iOS / Android 各自的 Appkey 和 App Master Secret。
+3. 两个通道可以同时开启；底部点击「提交」保存，点击「重置」恢复本次修改前的数据。
+4. App 登录后自动注册对应通道的设备，无需管理员手工绑定用户。旧版升级到新版上报时会清理同设备的旧友盟别名。
 
 ## 字段说明
 | 字段 | 默认 | 说明 |
 |---|---|---|
-| push | close | 总开关；close 时所有 APP 推送任务不入队 |
-| ios_key | 空 | 友盟 iOS App Key |
-| ios_secret | 空 | 友盟 iOS App Master Secret，前端 password 显示 |
-| android_key | 空 | 友盟 Android App Key |
-| android_secret | 空 | 友盟 Android App Master Secret |
-
-## 推送配置生效后做什么
-- 接 alias 注册：APP 启动登录后自动调 `api/users/umeng/alias` 注册别名（详见 [[push-notice.alias.concept]]）
-- 推送触发：新消息到达 `WebSocketDialogMsgTask` 会调用 `PushUmengMsg` 入队推送，参考 [[push-notice.scenarios.concept]]
-- 推送结果落 `umeng_logs` 表：可用于排查（详见 [[push-notice.troubleshoot.faq]]）
+| push | close | 友盟通道开关 |
+| ios_key / ios_secret | 空 | 友盟 iOS 凭证 |
+| android_key / android_secret | 空 | 友盟 Android 凭证 |
+| doopush | close | DooPush 通道开关 |
+| doopush_app_id | 空 | DooPush 应用 ID |
+| doopush_app_secret | 空 | 服务端 App Secret，密码输入框显示，至少需要 push:send 权限 |
+| doopush_base_url | 空 | DooPush API 服务地址，默认 https://doopush.com/api/v1 |
 
 ## 不支持
-- 国内厂商通道（OPPO/华为/小米/VIVO）不开箱即用：需走友盟厂商通道下发，并在友盟控制台单独配置厂商证书
-- 不能用替代推送服务，DooTask 推送层与友盟 SDK 强绑定
+- 关闭某个通道只停止该通道发送，另一个已开启通道仍可工作。
+- App Secret 是服务端凭证，不应填成客户端 App Key，也不要放进客户端或版本库。
+- 页面没有测试推送或事件订阅按钮；排查见 [[push-notice.troubleshoot.faq]]。

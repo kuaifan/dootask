@@ -21,7 +21,7 @@ negative:
   - 移动端不是网页直接套壳,是基于 EEUI 框架的原生混合 App
   - 移动端不支持桌面端的全局快捷键 / 截图工具 / 多窗口
   - 移动端不能改服务器地址(首次登录设置后存住,需重置才能切换)
-last_verified: v1.7.90
+last_verified: v1.9.66
 ---
 
 # 移动端是什么
@@ -38,12 +38,12 @@ DooTask 移动端是 iOS 与 Android 双平台的原生 App,基于 EEUI 框架�
 ## 与桌面 / 网页端的差异
 - 导航形态:移动端用底部 Tabbar(消息 / 任务 / 应用 / 我的),桌面端用左侧栏
 - 输入习惯:发送按钮 / 换行按钮在移动端可切换(键盘上的「发送」是发还是换行)
-- 推送通道:走 UMENG 系统推送([[mobile-client.notify.concept]]),不是 WebSocket 自送
+- 推送通道:新版走 DooPush、旧版走 UMENG 系统推送([[mobile-client.notify.concept]]),不是 WebSocket 自送
 - 富文本编辑器在小屏上做了简化
 
 ## 设备识别
 - 前端通过 UA `/eeui/i` 检测 `$isEEUIApp`,据此走移动端专属逻辑
-- 服务端调用别名注册接口(`/api/users/umeng/alias`)记录该设备 ID,用于推送路由
+- App 向服务端注册推送绑定：新版调用 `/api/push/device` 上报 DooPush 设备 ID，旧版调用 `/api/users/umeng/alias` 上报友盟别名
 
 ## 何时选移动端
 - 出差 / 通勤时收消息和处理任务

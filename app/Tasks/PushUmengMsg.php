@@ -1,14 +1,13 @@
 <?php
 namespace App\Tasks;
 
-use App\Models\UmengAlias;
 use App\Models\WebSocketDialogMsgRead;
-use App\Module\Base;
+use App\Module\AppPush\AppPush;
 use Cache;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
- * 推送友盟消息
+ * 推送 APP 消息（友盟 / DooPush）
  */
 class PushUmengMsg extends AbstractTask
 {
@@ -32,8 +31,7 @@ class PushUmengMsg extends AbstractTask
         if (empty($this->userid) || empty($this->array)) {
             return;
         }
-        $setting = Base::setting('appPushSetting');
-        if ($setting['push'] !== 'open') {
+        if (!AppPush::enabled()) {
             return;
         }
 
@@ -77,7 +75,7 @@ class PushUmengMsg extends AbstractTask
 
         // 直接推送
         if ($directPushUsers) {
-            UmengAlias::pushMsgToUserid($directPushUsers, $this->array);
+            AppPush::pushToUsers($directPushUsers, $this->array);
         }
 
         // 创建延迟推送任务

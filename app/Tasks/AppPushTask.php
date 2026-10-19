@@ -3,7 +3,7 @@
 namespace App\Tasks;
 
 use App\Models\ProjectTask;
-use App\Module\Base;
+use App\Module\AppPush\AppPush;
 use Carbon\Carbon;
 
 class AppPushTask extends AbstractTask
@@ -15,8 +15,7 @@ class AppPushTask extends AbstractTask
 
     public function start()
     {
-        $setting = Base::setting('appPushSetting');
-        if ($setting['push'] !== 'open') {
+        if (!AppPush::enabled()) {
             return;
         }
         ProjectTask::whereNull("complete_at")

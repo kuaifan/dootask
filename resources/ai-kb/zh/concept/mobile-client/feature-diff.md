@@ -20,7 +20,7 @@ negative:
   - 桌面端独有的能力(截图、全局快捷键、托盘)由原生 OS 集成,移动端无对应概念
   - 微应用 / 插件部分能在移动端打开(走 WebView),但触屏不一定可用
   - 部署环境可通过 APP_AI_HIDDEN=true 隐藏移动 APP 的 AI 界面,但不会关闭 Web、Electron 或服务端 AI 接口
-last_verified: v1.9.18
+last_verified: v1.9.66
 ---
 
 # 移动端与桌面端功能差异
@@ -36,7 +36,7 @@ last_verified: v1.9.18
 
 ## 移动端独有
 - 底部 Tabbar 原生导航
-- 系统级推送(UMENG,见 [[mobile-client.notify.concept]])
+- 系统级推送(新版 DooPush / 旧版 UMENG,见 [[mobile-client.notify.concept]])
 - 手势操作(左滑会话项 / 长按消息等,见 [[mobile-client.gesture.concept]])
 - 移动键盘的「发送按钮」配置(切换 Enter 是发送还是换行)
 - 二维码扫码 / 调起相机拍摄上传

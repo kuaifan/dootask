@@ -21,7 +21,7 @@ negative:
   - 免打扰只对该单个会话生效，不影响其他会话
   - 免打扰只屏蔽 APP 推送和未读邮件，不屏蔽 WebSocket 站内消息（消息列表仍能看到）
   - 没有「按时段免打扰单个会话」，只有总开关
-last_verified: v1.7.90
+last_verified: v1.9.66
 ---
 
 # 单个会话免打扰
@@ -36,7 +36,7 @@ last_verified: v1.7.90
 ## 工作原理
 - 后端记录 `web_socket_dialog_users.silence` = 1
 - 该用户对该会话的所有新消息：
-  - 不触发友盟 APP 推送（`silence=1` 会被 [[push-notice.scenarios.concept]] 过滤）
+  - 不触发 DooPush / 友盟 APP 推送（`silence=1` 会被 [[push-notice.scenarios.concept]] 过滤）
   - 不汇总进未读邮件（EmailNoticeTask 跳过 silence=1 的记录）
   - 角标计数也不算它（badge 未读统计排除 silence）
 - 但消息**仍会**到达 WebSocket，仍出现在消息列表和会话内

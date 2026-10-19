@@ -802,6 +802,13 @@ export default {
             window.__handleLink = (path) => {
                 this.goForward({ path: (path || '').indexOf('/') !==0 ? "/" + path : path });
             }
+            // 点击推送通知，打开对应会话
+            window.__onNotificationClick = (data) => {
+                const dialogId = $A.runNum($A.isJson(data) ? data.dialog_id : 0);
+                if (dialogId > 0 && this.userId > 0) {
+                    this.$store.dispatch('openDialog', dialogId).catch(() => {});
+                }
+            }
             // 发送网页尺寸
             $A.eeuiAppSendMessage({
                 action: 'windowSize',

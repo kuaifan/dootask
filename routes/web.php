@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\FileDavController;
 use App\Http\Controllers\Api\UsersController;
+use App\Http\Controllers\Api\PushController;
 use App\Http\Controllers\Api\ContactsController;
 use App\Http\Controllers\Api\DialogController;
 use App\Http\Controllers\Api\PublicController;
@@ -41,6 +42,8 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 会员
     Route::any('users/{method}',                        UsersController::class);
     Route::any('users/{method}/{action}',               UsersController::class);
+    // APP 推送设备
+    Route::any('push/{method}',                         PushController::class);
     // 通讯录
     Route::any('contacts/{method}',                     ContactsController::class);
     Route::any('contacts/{method}/{action}',            ContactsController::class);

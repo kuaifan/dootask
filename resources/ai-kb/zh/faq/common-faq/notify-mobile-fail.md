@@ -18,14 +18,14 @@ prerequisites: []
 negative:
   - PC 在线时 APP 推送会延迟 10 秒；这期间被读则跳过推送，不是故障
   - 静默消息（silence=1）和自己发的消息本来不推
-  - 友盟别名 30 天不启动 APP 会过期，需重新登录刷新
-last_verified: v1.7.90
+  - DooPush 设备和友盟别名超过一个月未更新时不参与推送，需重新登录刷新
+last_verified: v1.9.66
 ---
 
 # 手机收不到通知
 
 ## 问题
-桌面 / Web 端可以正常收到 DooTask 消息，但移动 APP 后台 / 退出登录状态下没推送提醒、没振动、锁屏空白。
+桌面 / Web 端可以正常收到 DooTask 消息，但移动 APP 后台或锁屏时没推送提醒、没振动、锁屏空白。
 
 ## 排查顺序
 
@@ -33,14 +33,14 @@ last_verified: v1.7.90
 2. **系统通知权限**：iOS / Android 是否给 DooTask 通知权限，详见 [[mobile-notify.permission.faq]]
 3. **国产 ROM 后台杀进程**：华为 / 小米 / OPPO / VIVO 需手动允许 DooTask「自启动 + 后台运行」
 4. **PC 端 60 秒内活跃过**：DooTask 推送规则会延迟手机 10 秒，期间消息被 PC 读完会跳过 APP 推送（设计行为）
-5. **管理员有没配友盟**：管理后台 → APP 推送 → 检查 iOS/Android Appkey + Master Secret 是否填好
-6. **友盟别名失效**：卸载 APP / 30 天没启动 → 重新登录 APP 触发 UmengAlias 注册
+5. **管理员有没有配置对应通道**：系统设置 → APP 推送 → 新版检查 DooPush App ID / App Secret，旧版检查友盟凭证
+6. **设备绑定过期**：超过一个月未更新 → 重新登录 APP，刷新 DooPush 设备或友盟别名
 7. **会话级 / 项目级免打扰**：在 APP 内对应会话 / 项目设置里检查
 
 ## 解决
-1. 退出 APP 重新登录刷新 token + 友盟别名
+1. 退出 APP 重新登录刷新 token 和推送设备绑定
 2. 关掉 PC 端临时测试（断网或退出账号）→ 验证 APP 是否能即时收
-3. 找系统管理员看 `umeng_logs` 表的最新返回；详见 [[push-notice.troubleshoot.faq]]
+3. 找系统管理员看 `[DooPush]` 应用日志及 DooPush 投递结果，或 `umeng_logs` 表的最新返回；详见 [[push-notice.troubleshoot.faq]]
 4. 国产 ROM 详细步骤见 [[mobile-notify.permission.faq]]
 
 ## 不支持
