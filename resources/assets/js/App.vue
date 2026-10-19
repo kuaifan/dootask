@@ -705,6 +705,10 @@ export default {
             setTimeout(() => {
                 this.appActivated && $A.eeuiAppHideWebviewSnapshot()
             }, 500)
+            // 旧 eeui 壳启动时由原生检查更新；新版壳只查询，冷启动后由前端检查一次（当天回前台不再重复）
+            if ($A.eeuiAppIsExpo()) {
+                setTimeout(() => this.checkAppUpdate(), 3000)
+            }
             // APP进入前台
             window.__onAppActive = async () => {
                 this.appActivated = true
