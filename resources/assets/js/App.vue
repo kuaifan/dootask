@@ -145,10 +145,12 @@ export default {
     mounted() {
         this.appInter = setInterval(this.appTimerHandler, 1000)
         $A.loadVConsole()
+        emitter.on('checkAppUpdate', this.checkAppUpdate)
     },
 
     beforeDestroy() {
         this.appInter && clearInterval(this.appInter)
+        emitter.off('checkAppUpdate', this.checkAppUpdate)
     },
 
     computed: {
@@ -339,6 +341,51 @@ export default {
     },
 
     methods: {
+        /**
+         * App 检查更新（manual：设置页手动检查，各种结果都给提示）
+         * 与桌面端一致：新版本不高于服务器版本才提示，避免包内新前端调用旧服务器接口
+         */
+        checkAppUpdate(manual = false) {
+            $A.eeuiAppCheckUpdate(async ({status, version, url} = {}) => {
+                if (status !== 'update') {
+                    manual && (status === 'latest' ? $A.messageSuccess('已是最新版本') : $A.messageError('检查更新失败，请稍后再试'))
+                    return
+                }
+                const serverVersion = await this.$store.dispatch("call", {url: 'system/version'}).then(({data}) => data.version).catch(() => '')
+                if (!serverVersion) {
+                    manual && $A.messageError('检查更新失败，请稍后再试')
+                    return
+                }
+                if (this.compareVersion(version, serverVersion) > 0) {
+                    manual && $A.messageWarning('当前服务器版本较低，请等待服务器升级后再更新')
+                    return
+                }
+                $A.modalConfirm({
+                    language: false,
+                    title: this.$L('发现新版本'),
+                    content: this.$L('DooTask 新版本 (*) 已发布，建议更新以获得更好的使用体验。', version),
+                    cancelText: this.$L('以后再说'),
+                    okText: this.$L('立即更新'),
+                    onOk: () => $A.eeuiAppOpenWeb(url),
+                })
+            })
+        },
+
+        /**
+         * 按数字段比较版本号，a > b 返回正数
+         */
+        compareVersion(a, b) {
+            const pa = String(a).split('.').map(n => parseInt(n, 10) || 0)
+            const pb = String(b).split('.').map(n => parseInt(n, 10) || 0)
+            for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+                const diff = (pa[i] || 0) - (pb[i] || 0)
+                if (diff !== 0) {
+                    return diff
+                }
+            }
+            return 0
+        },
+
         appTimerHandler() {
             this.searchEnter()
             //
@@ -674,7 +721,7 @@ export default {
                 const nowYmd = $A.daytz().format('YYYY-MM-DD')
                 if (this.lastCheckUpgradeYmd != nowYmd) {
                     this.lastCheckUpgradeYmd = nowYmd
-                    $A.eeuiAppCheckUpdate();
+                    this.checkAppUpdate();
                 }
             }
             // APP进入后台

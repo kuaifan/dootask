@@ -617,8 +617,8 @@ interface DooTaskGlobal {
     eeuiAppScan(callback: (text: string) => void): void;
     /** 是否新版 App 壳（Expo） */
     eeuiAppIsExpo(): boolean;
-    /** 检查更新（manual：手动检查，提示已是最新/检查失败） */
-    eeuiAppCheckUpdate(manual?: boolean): void;
+    /** 检查更新（新版壳回调 {status: 'update' | 'latest' | 'error', version, url}；旧 eeui 壳由原生处理） */
+    eeuiAppCheckUpdate(callback?: (result: {status: 'update' | 'latest' | 'error', version?: string, url?: string}) => void): void;
     /** 获取主题名称 light|dark */
     eeuiAppGetThemeName(): string | undefined;
     /** 判断软键盘是否可见 */

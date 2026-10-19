@@ -7,14 +7,14 @@
 > - 事件总线: `resources/assets/js/store/events.js`（mitt 实例）
 > - 仅匹配裸 `emitter.emit/on/off(` 调用；`xxx.emitter.emit(`（如 Quill 内部 emitter）不属于本总线，已排除
 
-共 **30** 个静态可解析事件，**125** 处 `emitter.emit/on/off` 调用。
+共 **31** 个静态可解析事件，**128** 处 `emitter.emit/on/off` 调用。
 
 ## 事件清单
 
 ### `addMeeting`
 
 - **emit（10）**
-  - `resources/assets/js/App.vue:422`
+  - `resources/assets/js/App.vue:469`
   - `resources/assets/js/pages/manage.vue:1278`
   - `resources/assets/js/pages/manage.vue:1285`
   - `resources/assets/js/pages/manage/application.vue:1198`
@@ -23,7 +23,7 @@
   - `resources/assets/js/pages/manage/components/DialogView/index.vue:621`
   - `resources/assets/js/pages/manage/components/DialogWrapper.vue:2040`
   - `resources/assets/js/pages/manage/components/DialogWrapper.vue:2048`
-  - `resources/assets/js/pages/manage/messenger.vue:1227`
+  - `resources/assets/js/pages/manage/messenger.vue:1408`
 - **on（1）**
   - `resources/assets/js/pages/manage/components/MeetingManager/index.vue:187`
 - **off（1）**
@@ -66,21 +66,30 @@
 - **off（1）**
   - `resources/assets/js/components/AIAssistant/float-button.vue:165`
 
+### `checkAppUpdate`
+
+- **emit（1）**
+  - `resources/assets/js/pages/manage/setting/index.vue:249`
+- **on（1）**
+  - `resources/assets/js/App.vue:148`
+- **off（1）**
+  - `resources/assets/js/App.vue:153`
+
 ### `clickAgainDialog`
 
 - **emit（1）**
   - `resources/assets/js/components/Mobile/Tabbar.vue:188`
 - **on（1）**
-  - `resources/assets/js/pages/manage/messenger.vue:344`
+  - `resources/assets/js/pages/manage/messenger.vue:370`
 - **off（1）**
-  - `resources/assets/js/pages/manage/messenger.vue:348`
+  - `resources/assets/js/pages/manage/messenger.vue:374`
 
 ### `createGroup`
 
 - **emit（3）**
   - `resources/assets/js/pages/manage/components/DialogWrapper.vue:2894`
   - `resources/assets/js/pages/manage/components/UserDetail.vue:294`
-  - `resources/assets/js/pages/manage/messenger.vue:1232`
+  - `resources/assets/js/pages/manage/messenger.vue:1413`
 - **on（1）**
   - `resources/assets/js/pages/manage.vue:601`
 - **off（1）**
@@ -121,7 +130,7 @@
 ### `observeMicroApp:open`
 
 - **emit（1）**
-  - `resources/assets/js/store/actions.js:5479`
+  - `resources/assets/js/store/actions.js:5482`
 - **on（1）**
   - `resources/assets/js/components/MicroApps/index.vue:202`
 - **off（1）**
@@ -199,7 +208,7 @@
 ### `openProjectInvite`
 
 - **emit（1）**
-  - `resources/assets/js/App.vue:434`
+  - `resources/assets/js/App.vue:481`
 - **on（1）**
   - `resources/assets/js/pages/manage/components/ProjectInvite.vue:83`
 - **off（1）**
@@ -238,7 +247,7 @@
   - `resources/assets/js/components/UserAvatar/index.vue:184`
   - `resources/assets/js/pages/manage/components/DialogWrapper.vue:2963`
   - `resources/assets/js/pages/manage/components/DialogWrapper.vue:4546`
-  - `resources/assets/js/pages/manage/messenger.vue:1237`
+  - `resources/assets/js/pages/manage/messenger.vue:1418`
 - **on（1）**
   - `resources/assets/js/pages/manage/components/UserDetail.vue:166`
 - **off（1）**
@@ -276,7 +285,7 @@
 
 - **emit（2）**
   - `resources/assets/js/pages/manage.vue:1153`
-  - `resources/assets/js/pages/manage/setting/index.vue:198`
+  - `resources/assets/js/pages/manage/setting/index.vue:200`
 - **on（1）**
   - `resources/assets/js/components/RightBottom.vue:65`
 - **off（1）**
@@ -323,7 +332,7 @@
 
 ## 统计
 
-- 事件总数（静态可解析）: **30**
+- 事件总数（静态可解析）: **31**
 - 只 emit 无 on（疑似死事件）: **0**
 - 只 on 无 emit（无人发射）: **1** — `aiAssistantFloatButtonVisibilityChanged`
 - 动态事件名调用: **1**

@@ -152,26 +152,13 @@ import {languageName} from "../i18n";
             return !!window.__eeuiBridge;
         },
 
-        // 检查更新（manual：手动检查，提示已是最新/检查失败）
-        eeuiAppCheckUpdate(manual = false) {
+        // 检查更新：新版壳只查询，结果 {status, version, url} 回调给前端提示；旧 eeui 壳由原生自行处理
+        eeuiAppCheckUpdate(callback) {
             if (!$A.eeuiAppIsExpo()) {
                 $A.eeuiModule()?.checkUpdate();
                 return;
             }
-            $A.eeuiModule()?.checkUpdate(({status, version, url} = {}) => {
-                if (status === 'update') {
-                    $A.modalConfirm({
-                        language: false,
-                        title: $A.L('发现新版本'),
-                        content: $A.L('DooTask 新版本 (*) 已发布，建议更新以获得更好的使用体验。', version),
-                        cancelText: $A.L('以后再说'),
-                        okText: $A.L('立即更新'),
-                        onOk: () => $A.eeuiAppOpenWeb(url),
-                    });
-                } else if (manual) {
-                    status === 'latest' ? $A.messageSuccess('已是最新版本') : $A.messageError('检查更新失败，请稍后再试');
-                }
-            });
+            $A.eeuiModule()?.checkUpdate(callback);
         },
 
         // 获取主题名称 light|dark

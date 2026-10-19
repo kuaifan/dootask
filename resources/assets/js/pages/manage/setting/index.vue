@@ -246,7 +246,7 @@ export default {
         },
 
         onCheckUpdate() {
-            $A.eeuiAppCheckUpdate(true);
+            emitter.emit('checkAppUpdate', true);
         },
 
         getVersion() {

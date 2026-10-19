@@ -41086,5 +41086,17 @@
         "fr": "Fournisseur push invalide",
         "id": "Vendor push tidak valid",
         "ru": "Неверный поставщик push-уведомлений"
+    },
+    {
+        "key": "当前服务器版本较低，请等待服务器升级后再更新",
+        "zh": "",
+        "zh-CHT": "目前伺服器版本較低，請等待伺服器升級後再更新",
+        "en": "The server version is outdated. Please update after the server has been upgraded.",
+        "ko": "현재 서버 버전이 낮습니다. 서버가 업그레이드된 후 업데이트하세요.",
+        "ja": "現在のサーバーのバージョンが古いため、サーバーのアップグレード後に更新してください。",
+        "de": "Die Serverversion ist veraltet. Bitte aktualisiere erst, nachdem der Server aktualisiert wurde.",
+        "fr": "La version du serveur est obsolète. Veuillez mettre à jour après la mise à niveau du serveur.",
+        "id": "Versi server saat ini lebih lama. Silakan perbarui setelah server ditingkatkan.",
+        "ru": "Версия сервера устарела. Обновите приложение после обновления сервера."
     }
 ]
