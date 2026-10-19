@@ -383,6 +383,21 @@ class AppPushTest extends TestCase
         $this->assertSame('https://push.test/api/v1/apps/10/tenant/devices/77005', $client->requests[0]['url']);
     }
 
+    public function test_logout_forget_unbinds_system_devices(): void
+    {
+        $client = $this->systemMode('dp_ts_live');
+        $token = 'logout-system-token';
+        $this->device(910103, '77006', ['channel' => AppPush::CHANNEL_SYSTEM, 'device_hash' => md5($token)]);
+        $this->device(910103, '96102', ['device_hash' => md5($token)]);
+        UserDevice::forget($token);
+        $this->assertFalse(AppPushDevice::whereDeviceHash(md5($token))->exists());
+        // 仅系统配置的设备需要向 DooPush 解绑，自定义通道的设备只删本地记录。
+        $this->assertCount(1, $client->requests);
+        $this->assertSame('DELETE', $client->requests[0]['method']);
+        $this->assertSame('https://push.test/api/v1/apps/10/tenant/devices/77006', $client->requests[0]['url']);
+        $this->assertSame(3, $client->requests[0]['timeout']);
+    }
+
     public function test_close_mode_does_not_record_devices(): void
     {
         $this->settings(['doopush' => 'close']);
@@ -400,9 +415,9 @@ class RecordingDooPushClient extends DooPushClient
 
     public function __construct(public array $responses = []) {}
 
-    protected function request(string $url, array $headers, array $body, string $method = 'POST'): array
+    protected function request(string $url, array $headers, array $body, string $method = 'POST', int $timeout = 10): array
     {
-        $this->requests[] = compact('url', 'headers', 'body', 'method');
+        $this->requests[] = compact('url', 'headers', 'body', 'method', 'timeout');
         $response = array_shift($this->responses);
         if ($response instanceof \Throwable) {
             throw $response;

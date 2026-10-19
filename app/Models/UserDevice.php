@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Module\AppPush\DeviceRegistry;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Lock;
@@ -306,7 +307,7 @@ class UserDevice extends AbstractModel
         }
         if (isset($hash)) {
             Cache::forget(self::ck($hash));
-            AppPushDevice::whereDeviceHash($hash)->delete();
+            DeviceRegistry::forgetHash($hash);
         }
     }
 }

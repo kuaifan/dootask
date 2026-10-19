@@ -47,14 +47,20 @@ class DeviceRegistry
             return;
         }
         // 与 UserDevice::check()/forget() 共用 TOKEN MD5 算法，不依赖 token 解码。
-        $channels = AppPushDevice::whereIn('channel', [AppPush::CHANNEL_SYSTEM, AppPush::CHANNEL_CUSTOM])
-            ->whereDeviceId($deviceId)->whereDeviceHash(md5($token))->pluck('channel')->all();
-        if (!$channels) {
-            return;
-        }
-        AppPushDevice::whereIn('channel', $channels)->whereDeviceId($deviceId)->whereDeviceHash(md5($token))->delete();
-        if (in_array(AppPush::CHANNEL_SYSTEM, $channels, true)) {
-            app(DooPushClient::class)->unbindDevice($deviceId);
+        self::forgetHash(md5($token), $deviceId);
+    }
+
+    /**
+     * 按登录 token 哈希清理推送设备（退出登录、踢下线等），系统配置的设备同时解除租户绑定
+     */
+    public static function forgetHash(string $hash, ?string $deviceId = null): void
+    {
+        $query = AppPushDevice::whereIn('channel', [AppPush::CHANNEL_SYSTEM, AppPush::CHANNEL_CUSTOM])->whereDeviceHash($hash)
+            ->when($deviceId !== null, fn ($q) => $q->whereDeviceId($deviceId));
+        $systemIds = (clone $query)->whereChannel(AppPush::CHANNEL_SYSTEM)->pluck('device_id')->all();
+        $query->delete();
+        foreach ($systemIds as $id) {
+            app(DooPushClient::class)->unbindDevice($id);
         }
     }
 }

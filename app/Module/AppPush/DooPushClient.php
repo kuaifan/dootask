@@ -154,9 +154,10 @@ class DooPushClient
         try {
             $tenant = $this->tenant(false);
             if ($tenant) {
+                // 在退出登录请求中同步执行：只请求一次且缩短超时，网络异常时不拖慢退出。
                 $this->send('DELETE', $this->systemUrl('/tenant/devices/' . rawurlencode($deviceId)), [
                     'Authorization' => 'Bearer ' . $tenant['tenant_secret'],
-                ], [], 0, 1);
+                ], [], 0, 1, 3);
             }
         } catch (\Throwable $e) {
             info('[DooPush] unbind failed: ' . $e->getMessage());
@@ -235,13 +236,13 @@ class DooPushClient
     /**
      * 发送请求，网络错误或 5xx 时最多重试2次；返回 [HTTP 状态码（网络失败为 0）, 响应 JSON]
      */
-    private function send(string $method, string $url, array $headers, array $body, int $userid = 0, int $attempts = 3): array
+    private function send(string $method, string $url, array $headers, array $body, int $userid = 0, int $attempts = 3, int $timeout = 10): array
     {
         $status = 0;
         $result = [];
         for ($attempt = 1; $attempt <= $attempts; $attempt++) {
             try {
-                $response = $this->request($url, $headers, $body, $method);
+                $response = $this->request($url, $headers, $body, $method, $timeout);
                 $result = Base::json2array($response['data'] ?? '');
                 $status = Base::isSuccess($response) ? (int)($response['msg'] ?? 0) : 0;
                 if ($status >= 200 && $status < 300 && in_array($result['code'] ?? 0, [200, 201], true)) {
@@ -266,7 +267,7 @@ class DooPushClient
         return [$status >= 200 && $status < 300 ? 0 : $status, $result];
     }
 
-    protected function request(string $url, array $headers, array $body, string $method = 'POST'): array
+    protected function request(string $url, array $headers, array $body, string $method = 'POST', int $timeout = 10): array
     {
         $post = $method === 'POST' ? json_encode($body, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) : '';
         $options = [
@@ -276,6 +277,6 @@ class DooPushClient
         if ($method !== 'POST') {
             $options['CURLOPT_CUSTOMREQUEST'] = $method;
         }
-        return Ihttp::ihttp_request($url, $post, array_merge($headers, $options), 10);
+        return Ihttp::ihttp_request($url, $post, array_merge($headers, $options), $timeout);
     }
 }
