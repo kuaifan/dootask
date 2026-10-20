@@ -7,7 +7,7 @@ on:
   # TEMP: dev 分支验证 CI 出包，验证后删除
   push:
     branches: [dev]
-    paths: ['.github/workflows/app-internal.yml']
+    paths: ['.github/workflows/app-internal.yml', '.github/workflows/app-build.yml']
   workflow_dispatch:
     inputs:
       platform:
