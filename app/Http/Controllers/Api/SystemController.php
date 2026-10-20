@@ -147,34 +147,40 @@ class SystemController extends AbstractController
             if (isset($setting['reg_invite'])) unset($setting['reg_invite']);
         }
         //
+        // 未设置或为空的字段使用默认值
+        $defaults = [
+            'reg' => 'open',
+            'reg_identity' => 'normal',
+            'temp_account_alias' => '',
+            'login_code' => 'auto',
+            'password_policy' => 'simple',
+            'project_invite' => 'open',
+            'chat_information' => 'optional',
+            'anon_message' => 'open',
+            'convert_video' => 'close',
+            'compress_video' => 'close',
+            'e2e_message' => 'close',
+            'msg_rev_limit' => '',
+            'msg_edit_limit' => '',
+            'auto_archived' => 'close',
+            'task_visible' => 'close',
+            'all_group_mute' => 'open',
+            'todo_set_permission' => 'open',
+            'all_group_autoin' => 'yes',
+            'user_private_chat_mute' => 'open',
+            'user_group_chat_mute' => 'open',
+            'file_upload_limit' => '',
+            'unclaimed_task_reminder' => 'close',
+            'unclaimed_task_reminder_time' => '',
+            'task_ai_auto_analyze' => 'open',
+            'department_owner_project_view' => 'open',
+        ];
+        foreach ($defaults as $key => $default) {
+            $setting[$key] = ($setting[$key] ?? '') ?: $default;
+        }
         $setting['system_alias'] = ($setting['system_alias'] ?? '') ?: config('app.name');
         $setting['login_logo'] = Base::fillUrl($setting['login_logo'] ?? '');
-        $setting['reg'] = ($setting['reg'] ?? '') ?: 'open';
-        $setting['reg_identity'] = ($setting['reg_identity'] ?? '') ?: 'normal';
-        $setting['temp_account_alias'] = ($setting['temp_account_alias'] ?? '') ?: '';
-        $setting['login_code'] = ($setting['login_code'] ?? '') ?: 'auto';
-        $setting['password_policy'] = ($setting['password_policy'] ?? '') ?: 'simple';
-        $setting['project_invite'] = ($setting['project_invite'] ?? '') ?: 'open';
-        $setting['chat_information'] = ($setting['chat_information'] ?? '') ?: 'optional';
-        $setting['anon_message'] = ($setting['anon_message'] ?? '') ?: 'open';
-        $setting['convert_video'] = ($setting['convert_video'] ?? '') ?: 'close';
-        $setting['compress_video'] = ($setting['compress_video'] ?? '') ?: 'close';
-        $setting['e2e_message'] = ($setting['e2e_message'] ?? '') ?: 'close';
-        $setting['msg_rev_limit'] = ($setting['msg_rev_limit'] ?? '') ?: '';
-        $setting['msg_edit_limit'] = ($setting['msg_edit_limit'] ?? '') ?: '';
-        $setting['auto_archived'] = ($setting['auto_archived'] ?? '') ?: 'close';
         $setting['archived_day'] = floatval($setting['archived_day'] ?? 0) ?: 7;
-        $setting['task_visible'] = ($setting['task_visible'] ?? '') ?: 'close';
-        $setting['all_group_mute'] = ($setting['all_group_mute'] ?? '') ?: 'open';
-        $setting['todo_set_permission'] = ($setting['todo_set_permission'] ?? '') ?: 'open';
-        $setting['all_group_autoin'] = ($setting['all_group_autoin'] ?? '') ?: 'yes';
-        $setting['user_private_chat_mute'] = ($setting['user_private_chat_mute'] ?? '') ?: 'open';
-        $setting['user_group_chat_mute'] = ($setting['user_group_chat_mute'] ?? '') ?: 'open';
-        $setting['file_upload_limit'] = ($setting['file_upload_limit'] ?? '') ?: '';
-        $setting['unclaimed_task_reminder'] = ($setting['unclaimed_task_reminder'] ?? '') ?: 'close';
-        $setting['unclaimed_task_reminder_time'] = ($setting['unclaimed_task_reminder_time'] ?? '') ?: '';
-        $setting['task_ai_auto_analyze'] = ($setting['task_ai_auto_analyze'] ?? '') ?: 'open';
-        $setting['department_owner_project_view'] = ($setting['department_owner_project_view'] ?? '') ?: 'open';
         $setting = ProjectTaskHandoffSettings::normalize($setting);
         $setting['app_ai_hidden'] = config('dootask.app_ai_hidden');
         $setting['server_timezone'] = config('app.timezone');
