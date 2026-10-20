@@ -55,7 +55,7 @@ class DooPushClient
             $payload = array_merge($extra ? ['data' => Base::array2json($extra)] : [], [
                 'huawei' => ['importance' => 'NORMAL', 'category' => 'IM'],
                 'honor' => ['importance' => 'NORMAL'],
-                'oppo' => ['category' => 'IM'],
+                // OPPO 的 IM 类别属私信通道，需在 OPPO 后台申请权限，否则整条推送被拒（错误 67），暂不指定。
                 // DooPush 的 vivo 通道使用 classification，而非 category。
                 'vivo' => ['classification' => 1],
             ]);
