@@ -139,8 +139,6 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
-
       - name: Install Expo dependencies
         working-directory: resources/app
         run: npm ci --include=dev --no-audit --no-fund
