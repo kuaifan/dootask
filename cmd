@@ -429,7 +429,7 @@ electron_operate() {
     env BUILD_FRONTEND=$BUILD_FRONTEND node ./electron/build.js $argv
 }
 
-# Expo 内测：同 electron 使用本机 Node，不依赖 Docker 或旧 eeui 容器。
+# Expo App 前端：同 electron 使用本机 Node，不依赖 Docker。
 appexpo_operate() {
     check_node
     case "${1:-build}" in
@@ -711,7 +711,7 @@ DooTask 管理脚本
   serve, dev                  启动开发模式
   build, prod                 生产环境构建
   electron                    构建桌面应用
-  appexpo [build]             编译并同步 Expo 内测前端
+  appexpo [build]             编译并同步 Expo App 前端
   appexpo npm <参数...>       在 Expo 子模块执行本机 npm
 
 🔧 服务管理:
@@ -764,7 +764,7 @@ Usage: ./cmd <command> [options]
   serve, dev                  Start dev mode
   build, prod                 Production build
   electron                    Build desktop app
-  appexpo [build]             Build and copy Expo internal web assets
+  appexpo [build]             Build and copy Expo App web assets
   appexpo npm <args...>       Run local npm in the Expo submodule
 
 🔧 Services:
@@ -1288,10 +1288,6 @@ case "$1" in
         shift 1
         web_build prod
         ;;
-    "appbuild"|"buildapp")
-        shift 1
-        electron_operate app "$@"
-        ;;
     "appexpo")
         shift 1
         appexpo_operate "$@"
@@ -1301,24 +1297,12 @@ case "$1" in
         shift 1
         electron_operate "$@"
         ;;
-    "eeui")
-        shift 1
-        cli="$@"
-        por=""
-        if [[ "$cli" == "build" ]]; then
-            cli="build --simple"
-        elif [[ "$cli" == "dev" ]]; then
-            por="-p 8880:8880"
-        fi
-        docker run $TTY_FLAG --rm -v ${WORK_DIR}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
-        ;;
     "npm")
         shift 1
         npm "$@"
         pushd electron || exit
         npm "$@"
         popd || exit
-        docker run $TTY_FLAG --rm -v ${WORK_DIR}/resources/mobile:/work -w /work --entrypoint=/bin/bash node:16 -c "npm $@"
         ;;
     "doc")
         shift 1

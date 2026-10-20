@@ -131,8 +131,6 @@ jobs:
         include:
           - platform: "macos-latest"
             build_type: "mac"
-          - platform: "ubuntu-latest"
-            build_type: "android"
           - platform: "windows-latest"
             build_type: "windows"
 
@@ -146,73 +144,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
-
-      # Android 构建步骤
-      - name: (Android) Build Js
-        if: matrix.build_type == 'android'
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: |
-            git submodule init
-            git submodule update --remote "resources/mobile"
-            ./cmd appbuild publish
-
-      - name: (Android) Setup JDK 11
-        if: matrix.build_type == 'android'
-        uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "11"
-
-      - name: (Android) Build App
-        if: matrix.build_type == 'android'
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 20
-          max_attempts: 5
-          command: |
-            cd resources/mobile/platforms/android/eeuiApp
-            chmod +x ./gradlew
-            ./gradlew assembleRelease --quiet
-
-      - name: (Android) Upload File
-        if: matrix.build_type == 'android'
-        env:
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
-        run: |
-          node ./electron/build.js android-upload
-
-      - name: (Android) Upload Release
-        if: matrix.build_type == 'android'
-        uses: actions/github-script@v7
-        env:
-          RELEASE_ID: ${{ needs.create-release.outputs.release_id }}
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const globby = require('globby');
-
-            // 查找 APK 文件
-            const files = await globby('resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release/*.apk');
-
-            for (const file of files) {
-              const data = await fs.promises.readFile(file);
-
-              await github.rest.repos.uploadReleaseAsset({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: process.env.RELEASE_ID,
-                name: path.basename(file),
-                data: data
-              });
-            }
 
       # Mac 构建步骤
       - name: (Mac) Build Client
@@ -247,8 +178,75 @@ jobs:
         run: |
           ./cmd electron win
 
+  build-android:
+    needs: [ check-version, create-release ]
+    if: needs.check-version.outputs.should_release == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/app-build.yml
+    with:
+      platform: android
+      release: true
+    secrets: inherit
+
+  upload-android:
+    needs: [ check-version, create-release, build-android ]
+    if: needs.check-version.outputs.should_release == 'true'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    environment: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-android
+          path: dist-android
+
+      - name: Upload File
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+        run: |
+          pushd electron || exit
+          npm install
+          popd || exit
+          node ./electron/build.js android-upload dist-android
+
+      - name: Upload Release
+        uses: actions/github-script@v7
+        env:
+          RELEASE_ID: ${{ needs.create-release.outputs.release_id }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const files = fs.readdirSync('dist-android').filter(name => name.endsWith('.apk'));
+            if (!files.length) {
+              throw new Error('APK 未找到');
+            }
+            for (const name of files) {
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: process.env.RELEASE_ID,
+                name: name,
+                data: await fs.promises.readFile(path.join('dist-android', name))
+              });
+            }
+
   publish-release:
-    needs: [ check-version, create-release, pack-vendor, build-client ]
+    needs: [ check-version, create-release, pack-vendor, build-client, upload-android ]
     if: needs.check-version.outputs.should_release == 'true' && github.ref == 'refs/heads/pro'
     permissions:
       contents: write

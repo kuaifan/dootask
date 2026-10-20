@@ -26,7 +26,6 @@ const architectures = ["arm64", "x64"];
 let buildChecked = false,
     updaterChecked = false;
 
-const shellQuote = (value) => `'${String(value).replace(/'/g, `'\\''`)}'`;
 const elapsedSeconds = (startTime) => `${((Date.now() - startTime) / 1000).toFixed(1)}s`;
 
 /**
@@ -359,7 +358,7 @@ async function startBuild(data) {
         apiUrl:  utils.formatUrl(data.url) + "api/",
     }
     // information
-    if (['app', 'app-expo'].includes(data.id)) {
+    if (data.id === 'app-expo') {
         console.log("\n=== 编译信息 ===");
         console.log("名称:", data.name);
         console.log("版本:", config.version + ` (${config.codeVerson})`);
@@ -420,51 +419,6 @@ async function startBuild(data) {
             codeVerson: config.codeVerson,
         }, null, 2) + "\n", 'utf8');
         console.log("Expo 前端资源已同步至 resources/app/assets/web/");
-        return;
-    }
-    if (data.id === 'app') {
-        const eeuiDir = path.resolve(__dirname, "../resources/mobile");
-        const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
-        const containerName = `dootask-eeui-${Date.now()}-${process.pid}`;
-        fse.removeSync(publicDir)
-        fse.copySync(electronDir, publicDir)
-        if (argv[3] === "publish") {
-            // Android config
-            const gradleFile = path.resolve(eeuiDir, "platforms/android/eeuiApp/local.properties")
-            let gradleResult = fs.existsSync(gradleFile) ? fs.readFileSync(gradleFile, 'utf8') : "";
-            gradleResult = gradleResult.replace(/(versionCode|versionName)\s*=\s*(.+?)(\n|$)/g, '')
-            gradleResult += `versionCode = ${config.codeVerson}\nversionName = ${config.version}\n`
-            fs.writeFileSync(gradleFile, gradleResult, 'utf8')
-            // iOS config
-            const xcconfigFile = path.resolve(eeuiDir, "platforms/ios/eeuiApp/Config/Version.xcconfig")
-            let xcconfigResult = fs.existsSync(xcconfigFile) ? fs.readFileSync(xcconfigFile, 'utf8') : "";
-            xcconfigResult = xcconfigResult.replace(/(VERSION_CODE|VERSION_NAME)\s*=\s*(.+?)(\n|$)/g, '')
-            xcconfigResult += `VERSION_CODE = ${config.codeVerson}\nVERSION_NAME = ${config.version}\n`
-            fs.writeFileSync(xcconfigFile, xcconfigResult, 'utf8')
-        }
-        if (['build', 'publish'].includes(argv[3])) {
-            child_process.execSync(
-                `docker run -d --name ${containerName} -v ${shellQuote(eeuiDir)}:/work -w /work kuaifan/eeui-cli:0.0.1 sleep infinity`,
-                {stdio: "ignore", cwd: "resources/mobile"}
-            );
-            try {
-                if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
-                    child_process.execSync(`docker exec ${containerName} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
-                }
-                child_process.execSync(`docker exec ${containerName} node /work/scripts/patch-eeui-build.js`, {stdio: "inherit", cwd: "resources/mobile"});
-                child_process.execSync(`docker exec ${containerName} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
-            } finally {
-                child_process.execSync(`docker rm -f ${containerName}`, {stdio: "ignore", cwd: "resources/mobile"});
-            }
-        } else {
-            [
-                path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),
-                path.resolve(publicDir, "../../platforms/android/eeuiApp/app/src/main/assets/eeui/public"),
-            ].some(dir => {
-                fse.removeSync(dir)
-                fse.copySync(electronDir, dir)
-            })
-        }
         return;
     }
     const output = `dist/${data.id.replace(/\./g, '-')}/${platform}`
@@ -554,26 +508,6 @@ if (["dev"].includes(argv[2])) {
     fs.writeFileSync(devloadCachePath, utils.formatUrl("localhost:" + env.parsed.APP_PORT), 'utf8');
     child_process.spawn("npx", ["vite", "--", "fromcmd", "electronDev"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
-} else if (["app"].includes(argv[2])) {
-    // 编译前端页面给 App
-    let mobileSrcDir = path.resolve(__dirname, "../resources/mobile");
-    if (!fs.existsSync(mobileSrcDir)) {
-        console.error("resources/mobile 未找到");
-        process.exit()
-    }
-    startBuild({
-        name: 'App',
-        id: 'app',
-        platform: '',
-        url: 'http://public/',
-        configure: {
-            platform: '',
-            archs: [],
-            publish: false,
-            release: true,
-            notarize: false,
-        }
-    })
 } else if (argv[2] === 'app-expo') {
     if ((argv[3] && argv[3] !== 'build') || argv.length > 4) {
         console.error("用法: node ./electron/build.js app-expo [build]");
@@ -601,14 +535,14 @@ if (["dev"].includes(argv[2])) {
         process.exitCode = 1;
     });
 } else if (["android-upload"].includes(argv[2])) {
-    // 上传安卓文件到 R2 draft（GitHub Actions）
+    // 上传安卓文件到 R2 draft（GitHub Actions）：参数为 APK 所在目录（app-build.yml 产出的 app-android）
     (async () => {
         if (!r2.r2Configured()) {
             console.error("缺少 R2_* 环境变量（R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_ENDPOINT/R2_BUCKET）")
             process.exit(1)
         }
         const client = r2.createR2Client()
-        const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
+        const releaseDir = path.resolve(argv[3] || path.resolve(__dirname, "../resources/app/android/app/build/outputs/apk/release"));
         if (!fs.existsSync(releaseDir)) {
             console.error("发布文件未找到")
             process.exit(1)

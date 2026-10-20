@@ -34,8 +34,6 @@ const ACTUAL_SOURCE_ROOTS = [
     "electron",
     "resources/assets/js",
     "resources/assets/sass",
-    "resources/mobile/src",
-    "resources/mobile/scripts",
     "resources/views",
     "routes",
     "bin",

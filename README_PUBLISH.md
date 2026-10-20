@@ -22,10 +22,17 @@ npm run build       # 编译前端
 - 如果想手动生成客户端执行 `./cmd electron` 根据提示选择操作。
 
 
-## 编译 App
+## App（Expo，`resources/app` 子模块）
 
-```shell
-./cmd appbuild publish  # 编译生成App需要的资源
-```
+- **Android**：推送到 `pro` 时随 Publish 工作流自动构建（`.github/workflows/app-build.yml`），以正式签名出包，上传官网下载（R2）并附到 GitHub Release；App 内「检查更新」读取官网下载索引。
+- **iOS**：手动运行 **iOS Publish** 工作流（`gh workflow run ios-publish.yml --ref pro`），构建后上传 App Store Connect，再到 App Store Connect 提交审核。
+- **内测包**：手动运行 **App Internal** 工作流，只产出 artifact。
+- 本地出包见 `resources/app/scripts/mac-build.sh`（Android 正式签名读取构建机 iCloud 云盘 `DooTaskKeys/android/`）。
 
-编译完后进入 `resources/mobile` EEUI框架目录内打包 Android 或 iOS 应用（Android 以实现 GitHub Actions 自动发布）
+| Secret | 用途 |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD` | Android 正式签名（与旧版证书一致，CI 校验指纹） |
+| `IOS_CERTIFICATE_BASE64` / `IOS_CERTIFICATE_PASSWORD` | Apple Distribution 证书 |
+| `IOS_PROVISION_PROFILE_BASE64` / `IOS_SHARE_EXTENSION_PROVISION_PROFILE_BASE64` | App Store profiles（主 App 需含推送与 App Group `group.im.dootask`） |
+| `ASC_API_KEY_ID` / `ASC_ISSUER_ID` / `ASC_API_KEY_P8_BASE64` | App Store Connect API（构建号查询与上传） |
+| `IOS_INTERNAL_PROVISION_PROFILE_BASE64` / `IOS_INTERNAL_SHARE_EXTENSION_PROVISION_PROFILE_BASE64` | 可选，iOS 内测 profiles |

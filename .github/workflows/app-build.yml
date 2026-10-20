@@ -1,0 +1,407 @@
+name: "App Build"
+
+# Expo App（resources/app 子模块）构建，供 publish.yml（Android 发版）、ios-publish.yml（App Store）
+# 与 app-internal.yml（内测）调用；只产出 artifact（app-android / app-ios），上传发布由调用方负责。
+#
+# Secrets（仓库级，调用方 secrets: inherit）：
+#   ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD  Android 正式签名
+#   IOS_CERTIFICATE_BASE64 / IOS_CERTIFICATE_PASSWORD                                            Apple Distribution 证书
+#   IOS_PROVISION_PROFILE_BASE64 / IOS_SHARE_EXTENSION_PROVISION_PROFILE_BASE64                  App Store profiles
+#   IOS_INTERNAL_PROVISION_PROFILE_BASE64 / IOS_INTERNAL_SHARE_EXTENSION_PROVISION_PROFILE_BASE64  内测 profiles（可选）
+#   ASC_API_KEY_ID / ASC_ISSUER_ID / ASC_API_KEY_P8_BASE64                                        App Store 构建号查询
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        description: all / android / ios
+        type: string
+        default: all
+      ios_export_method:
+        description: app-store / ad-hoc / development
+        type: string
+        default: ad-hoc
+      release:
+        description: 正式发布：签名缺失或不符时失败，不退化为 debug 签名或跳过
+        type: boolean
+        default: false
+    outputs:
+      version:
+        value: ${{ jobs.prepare.outputs.version }}
+
+permissions:
+  contents: read
+
+env:
+  CI: '1'
+  NODE_ENV: production
+  # 必须使用包内前端，禁止开发机 .env 覆盖 WebView 地址
+  EXPO_NO_DOTENV: '1'
+  EXPO_PUBLIC_WEB_URL: ''
+  # 旧版正式包（eeui）使用的签名证书；新包必须一致才能覆盖升级
+  ANDROID_CERT_SHA256: CE:30:13:6F:B9:28:56:13:C7:41:CB:CE:E3:6B:3C:DB:1F:01:D5:26:A7:3F:17:4E:1E:B2:B8:37:F1:E4:A2:B6
+
+jobs:
+  prepare:
+    name: Prepare bundled web assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      ios_ready: ${{ steps.signing.outputs.ios_ready }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # 只取 Expo 子模块（drawio 体积大且与 App 无关），使用主仓库锁定的提交
+      - name: Checkout Expo submodule
+        run: git submodule update --init resources/app
+
+      - uses: actions/setup-node@v4
+        with:
+          # Expo 58 / RN 0.88 需要 Node ^22.13 / ^24.3 或更新版本
+          node-version: '24'
+
+      - name: Read version
+        id: version
+        run: node -e 'require("fs").appendFileSync(process.env.GITHUB_OUTPUT, `version=${require("./package.json").version}\n`)'
+
+      - name: Check iOS signing inputs
+        id: signing
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          RELEASE: ${{ inputs.release }}
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          APP_PROFILE: ${{ inputs.ios_export_method == 'app-store' && secrets.IOS_PROVISION_PROFILE_BASE64 || secrets.IOS_INTERNAL_PROVISION_PROFILE_BASE64 }}
+          SHARE_PROFILE: ${{ inputs.ios_export_method == 'app-store' && secrets.IOS_SHARE_EXTENSION_PROVISION_PROFILE_BASE64 || secrets.IOS_INTERNAL_SHARE_EXTENSION_PROVISION_PROFILE_BASE64 }}
+        run: |
+          if [ "$PLATFORM" = android ]; then
+            echo 'ios_ready=false' >> "$GITHUB_OUTPUT"
+          elif [ -n "$IOS_CERTIFICATE_BASE64" ] && [ -n "$APP_PROFILE" ] && [ -n "$SHARE_PROFILE" ]; then
+            echo 'ios_ready=true' >> "$GITHUB_OUTPUT"
+          elif [ "$RELEASE" = true ]; then
+            echo '::error::缺少 iOS 证书或 App Store profiles（IOS_CERTIFICATE_BASE64 / IOS_PROVISION_PROFILE_BASE64 / IOS_SHARE_EXTENSION_PROVISION_PROFILE_BASE64）'
+            exit 1
+          else
+            echo 'ios_ready=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::跳过 iOS：缺少证书或内测 profiles（IOS_INTERNAL_PROVISION_PROFILE_BASE64 / IOS_INTERNAL_SHARE_EXTENSION_PROVISION_PROFILE_BASE64）'
+          fi
+
+      - name: Install frontend dependencies
+        # 主仓库没有追踪 npm lockfile；须显式包含 Vite 等 devDependencies
+        run: npm install --include=dev --no-package-lock --no-audit --no-fund
+
+      - name: Install build script dependencies
+        working-directory: electron
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+        run: npm install --include=dev --no-package-lock --no-audit --no-fund
+
+      - name: Build and copy web assets
+        run: ./cmd appexpo build
+
+      - name: Upload bundled web assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-web-assets
+          path: |
+            resources/app/assets/web/
+            resources/app/version.json
+          if-no-files-found: error
+          retention-days: 3
+
+  android:
+    name: Android APK
+    needs: prepare
+    if: inputs.platform != 'ios'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+
+      - uses: actions/checkout@v4
+
+      - name: Checkout Expo submodule
+        run: git submodule update --init resources/app
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-web-assets
+          path: resources/app
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: resources/app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Expo dependencies
+        working-directory: resources/app
+        run: npm ci --include=dev --no-audit --no-fund
+
+      - name: Prebuild Android
+        working-directory: resources/app
+        run: npx expo prebuild --platform android --clean --no-install
+
+      - name: Prepare Android keystore
+        id: signing
+        env:
+          RELEASE: ${{ inputs.release }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
+            umask 077
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/dootask-release.jks"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/dootask-release.jks" >> "$GITHUB_ENV"
+            echo 'mode=release' >> "$GITHUB_OUTPUT"
+          elif [ "$RELEASE" = true ]; then
+            echo '::error::缺少 Android 签名 secrets（ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD）'
+            exit 1
+          else
+            echo 'mode=debug' >> "$GITHUB_OUTPUT"
+            echo '::notice::Android 签名 secrets 不完整，使用 debug 签名（不能覆盖安装正式包）'
+          fi
+
+      - name: Assemble Release
+        working-directory: resources/app/android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        # R8 混淆元空间占用大，默认 512m 会 OOM
+        run: ./gradlew :app:assembleRelease --no-daemon --init-script ../scripts/android-signing.gradle "-Dorg.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g"
+
+      - name: Rename and verify APK
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          MODE: ${{ steps.signing.outputs.mode }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/apk"
+          # 文件名与旧版一致：官网下载索引与 App 检查更新按 android 平台取 .apk
+          apk="$RUNNER_TEMP/apk/DooTask-v${VERSION}-android.apk"
+          mv resources/app/android/app/build/outputs/apk/release/app-release.apk "$apk"
+          apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$apksigner" verify "$apk"
+          if [ "$MODE" = release ]; then
+            actual=$("$apksigner" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)
+            expected=$(echo "$ANDROID_CERT_SHA256" | tr -d ':' | tr 'A-F' 'a-f')
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::APK 签名证书与正式包不一致（$actual），无法覆盖升级"
+              exit 1
+            fi
+          fi
+          ls -la "$RUNNER_TEMP/apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-android
+          path: ${{ runner.temp }}/apk/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Remove Android keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/dootask-release.jks"
+
+  ios:
+    name: iOS IPA
+    needs: prepare
+    if: needs.prepare.outputs.ios_ready == 'true'
+    runs-on: macos-26
+    timeout-minutes: 120
+    env:
+      IOS_EXPORT_METHOD: ${{ inputs.ios_export_method }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout Expo submodule
+        run: git submodule update --init resources/app
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-web-assets
+          path: resources/app
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: resources/app/package-lock.json
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Resolve App Store build number
+        if: inputs.ios_export_method == 'app-store'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+        run: |
+          set -euo pipefail
+          ruby <<'RUBY'
+          require 'base64'
+          require 'json'
+          require 'net/http'
+          require 'openssl'
+          require 'uri'
+
+          BUNDLE_ID = 'com.dootask.task'
+
+          def base64url(value)
+            Base64.urlsafe_encode64(value).delete('=')
+          end
+
+          def asc_token
+            private_key = OpenSSL::PKey.read(Base64.decode64(ENV.fetch('ASC_API_KEY_P8_BASE64')))
+            now = Time.now.to_i
+            header = { alg: 'ES256', kid: ENV.fetch('ASC_API_KEY_ID'), typ: 'JWT' }
+            payload = { iss: ENV.fetch('ASC_ISSUER_ID'), iat: now, exp: now + 20 * 60, aud: 'appstoreconnect-v1' }
+            unsigned = "#{base64url(header.to_json)}.#{base64url(payload.to_json)}"
+            # ES256 签名须为 r||s 各 32 字节，而非 DER
+            der = OpenSSL::ASN1.decode(private_key.sign('SHA256', unsigned))
+            signature = der.value.map { |integer| integer.value.to_s(2).rjust(32, "\0")[-32, 32] }.join
+            "#{unsigned}.#{base64url(signature)}"
+          end
+
+          def asc_get(path, params, token)
+            uri = URI::HTTPS.build(host: 'api.appstoreconnect.apple.com', path: path, query: URI.encode_www_form(params))
+            loop do
+              response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+                request = Net::HTTP::Get.new(uri)
+                request['Authorization'] = "Bearer #{token}"
+                http.request(request)
+              end
+              abort "App Store Connect API request failed: #{response.code} #{response.body}" unless response.is_a?(Net::HTTPSuccess)
+              parsed = JSON.parse(response.body)
+              yield parsed
+              next_link = parsed.dig('links', 'next')
+              break unless next_link
+              uri = URI(next_link)
+            end
+          end
+
+          token = asc_token
+          app_id = nil
+          asc_get('/v1/apps', { 'filter[bundleId]' => BUNDLE_ID, 'limit' => 1 }, token) do |page|
+            app_id = page.fetch('data').first&.fetch('id')
+          end
+          abort "App Store Connect app not found for bundle id #{BUNDLE_ID}" unless app_id
+
+          versions = []
+          asc_get('/v1/builds', { 'filter[app]' => app_id, 'fields[builds]' => 'version', 'limit' => 200 }, token) do |page|
+            versions.concat(page.fetch('data').map { |build| build.dig('attributes', 'version').to_s })
+          end
+          max_build = versions.select { |v| v.match?(/\A\d+\z/) }.map(&:to_i).max || 0
+          code = JSON.parse(File.read('resources/app/version.json')).fetch('codeVerson').to_i
+          next_build = [max_build + 1, code].max
+          File.open(ENV.fetch('GITHUB_ENV'), 'a') { |file| file.puts "IOS_BUILD_NUMBER=#{next_build}" }
+          puts "App Store Connect 最大构建号 #{max_build}，本次构建号 #{next_build}"
+          RUBY
+
+      - name: Install Expo dependencies
+        working-directory: resources/app
+        run: npm ci --include=dev --no-audit --no-fund
+
+      - name: Prebuild iOS
+        working-directory: resources/app
+        run: npx expo prebuild --platform ios --clean --no-install
+
+      - name: Install CocoaPods
+        working-directory: resources/app/ios
+        run: pod install
+
+      - name: Import signing certificate
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          SIGNING_DIR="$RUNNER_TEMP/dootask-ios-signing"
+          mkdir -p "$SIGNING_DIR"
+          KEYCHAIN_PATH="$SIGNING_DIR/signing.keychain-db"
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 20)
+          security list-keychains -d user > "$SIGNING_DIR/original-keychains.txt"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          echo "$IOS_CERTIFICATE_BASE64" | base64 --decode > "$SIGNING_DIR/certificate.p12"
+          security import "$SIGNING_DIR/certificate.p12" -P "$IOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+
+      - name: Install and validate profiles
+        working-directory: resources/app
+        env:
+          IOS_PROVISION_PROFILE_BASE64: ${{ inputs.ios_export_method == 'app-store' && secrets.IOS_PROVISION_PROFILE_BASE64 || secrets.IOS_INTERNAL_PROVISION_PROFILE_BASE64 }}
+          IOS_SHARE_EXTENSION_PROVISION_PROFILE_BASE64: ${{ inputs.ios_export_method == 'app-store' && secrets.IOS_SHARE_EXTENSION_PROVISION_PROFILE_BASE64 || secrets.IOS_INTERNAL_SHARE_EXTENSION_PROVISION_PROFILE_BASE64 }}
+        run: python3 scripts/prepare-ios-signing.py "$RUNNER_TEMP/dootask-ios-signing"
+
+      - name: Configure product target signing via Expo mod
+        working-directory: resources/app
+        run: node scripts/configure-ios-signing.js "$RUNNER_TEMP/dootask-ios-signing/signing.json"
+
+      - name: Archive iOS Release
+        working-directory: resources/app
+        run: |
+          xcodebuild archive -quiet \
+            -workspace ios/DooTask.xcworkspace \
+            -scheme DooTask \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/DooTask.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/dootask-derived-data"
+
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/DooTask.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/dootask-ios-signing/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/dootask-ipa"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-ios
+          path: ${{ runner.temp }}/dootask-ipa/*.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Remove signing material
+        if: always()
+        run: |
+          SIGNING_DIR="$RUNNER_TEMP/dootask-ios-signing"
+          if [ -f "$SIGNING_DIR/signing.json" ]; then
+            python3 - "$SIGNING_DIR/signing.json" <<'PY'
+          import json
+          from pathlib import Path
+          import sys
+          for filename in json.loads(Path(sys.argv[1]).read_text())["installed_profiles"]:
+              Path(filename).unlink(missing_ok=True)
+          PY
+          fi
+          if [ -f "$SIGNING_DIR/original-keychains.txt" ]; then
+            python3 - "$SIGNING_DIR/original-keychains.txt" <<'PY'
+          from pathlib import Path
+          import shlex
+          import subprocess
+          import sys
+          subprocess.run(["security", "list-keychains", "-d", "user", "-s", *shlex.split(Path(sys.argv[1]).read_text())], check=True)
+          PY
+          fi
+          security delete-keychain "$SIGNING_DIR/signing.keychain-db" 2>/dev/null || true
+          rm -rf "$SIGNING_DIR"
