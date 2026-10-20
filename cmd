@@ -442,7 +442,7 @@ appexpo_operate() {
                 npm install --no-package-lock || return $?
             fi
             if [ ! -d "./electron/node_modules" ]; then
-                (cd electron && ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install --no-package-lock) || return $?
+                (cd electron && npm install --no-package-lock) || return $?
             fi
             node ./electron/build.js app-expo build
             ;;

@@ -90,10 +90,9 @@ jobs:
         # 主仓库没有追踪 npm lockfile；须显式包含 Vite 等 devDependencies
         run: npm install --include=dev --no-package-lock --no-audit --no-fund
 
+      # electron/build.js 经 lib/utils.js 在加载时 require("electron")，需要完整安装（含二进制）
       - name: Install build script dependencies
         working-directory: electron
-        env:
-          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
         run: npm install --include=dev --no-package-lock --no-audit --no-fund
 
       - name: Build and copy web assets
