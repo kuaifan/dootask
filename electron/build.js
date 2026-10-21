@@ -509,31 +509,78 @@ if (["dev"].includes(argv[2])) {
     child_process.spawn("npx", ["vite", "--", "fromcmd", "electronDev"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 } else if (argv[2] === 'app-expo') {
-    if ((argv[3] && argv[3] !== 'build') || argv.length > 4) {
-        console.error("用法: node ./electron/build.js app-expo [build]");
+    if ((argv[3] && !['build', 'dev'].includes(argv[3])) || argv.length > 4) {
+        console.error("用法: node ./electron/build.js app-expo [build|dev]");
         process.exit(1);
     }
-    if (!fs.existsSync(path.resolve(__dirname, "../resources/app/app.config.ts"))) {
+    const appDir = path.resolve(__dirname, "../resources/app");
+    if (!fs.existsSync(path.resolve(appDir, "app.config.ts"))) {
         console.error("resources/app 未找到，请先初始化 Expo 子模块");
         process.exit(1);
     }
-    startBuild({
-        name: 'App',
-        id: 'app-expo',
-        // public 是前端“尚未设置服务器”的占位域名，不是静态资源的 origin。
-        // electronBuild 的 ./ 资源路径在 localhost:22223/ 下加载，路由自动使用 hash。
-        url: 'http://public/',
-        configure: {
-            platform: '',
-            archs: [],
-            publish: false,
-            release: true,
-            notarize: false,
-        }
-    }).catch(error => {
-        console.error(error.message || error);
-        process.exitCode = 1;
-    });
+    if (argv[3] === 'dev') {
+        // 开发模式：前端 vite + Metro；键盘交给 Metro（r 重载等），任一退出则全部结束
+        // 地址优先取命令行环境变量，其次按 VSCODE_PROXY_URI 端口模板推导，都没有则 Metro 由 Expo 自动取局域网地址、前端取本机局域网 IP
+        // 手动指定 EXPO_PACKAGER_PROXY_URL 时端口固定（METRO_PORT，默认 2220），否则从 2220 起自动找空闲端口
+        const appPort = env.parsed.APP_PORT;
+        const proxyUri = process.env.VSCODE_PROXY_URI || '';
+        const proxyUrl = port => proxyUri.includes('{{port}}') ? proxyUri.replace(/\{\{port\}\}/g, port).replace(/\/+$/, '') : '';
+        const lanIp = Object.values(require('os').networkInterfaces()).flat().find(item => item.family === 'IPv4' && !item.internal)?.address;
+        const webUrl = process.env.EXPO_PUBLIC_WEB_URL || proxyUrl(appPort) || (lanIp ? `http://${lanIp}:${appPort}` : '');
+        const fixedPort = !!process.env.EXPO_PACKAGER_PROXY_URL;
+        const isPortFree = port => new Promise(resolve => {
+            const server = require('net').createServer();
+            server.once('error', () => resolve(false));
+            server.listen(port, () => server.close(() => resolve(true)));
+        });
+        (async () => {
+            let metroPort = Number(process.env.METRO_PORT) || 2220;
+            // 跳过前端端口 APP_PORT：nginx 未启动时它也是空闲的，被 Metro 占用会导致 nginx 起不来
+            while (metroPort == appPort || !await isPortFree(metroPort)) {
+                if (fixedPort || metroPort >= 2299) {
+                    console.error(`Metro 端口 ${metroPort} 已被占用，请先关闭旧的 Metro`);
+                    process.exit(1);
+                }
+                metroPort++;
+            }
+            const packagerUrl = process.env.EXPO_PACKAGER_PROXY_URL || proxyUrl(metroPort);
+            console.log(`Metro 地址：${packagerUrl || '自动（局域网）'}`);
+            console.log(`前端地址：${webUrl || '本地 Web 服务'}`);
+            const appEnv = {...process.env, EXPO_PUBLIC_WEB_URL: webUrl};
+            if (packagerUrl) appEnv.EXPO_PACKAGER_PROXY_URL = packagerUrl;
+            const children = [
+                child_process.spawn("npx", ["vite", "--", "fromcmd"], {stdio: ["ignore", "inherit", "inherit"]}),
+                child_process.spawn("npx", ["expo", "start", "--dev-client", "--port", String(metroPort)], {stdio: "inherit", cwd: appDir, env: appEnv}),
+            ];
+            let exiting = false;
+            const stopAll = (code) => {
+                if (exiting) return;
+                exiting = true;
+                process.exitCode = code;
+                children.forEach(child => child.exitCode === null && child.kill('SIGTERM'));
+            };
+            children.forEach(child => child.on('exit', code => stopAll(code || 0)));
+            ['SIGINT', 'SIGTERM'].forEach(signal => process.on(signal, () => stopAll(0)));
+        })();
+    } else {
+        startBuild({
+            name: 'App',
+            id: 'app-expo',
+            // public 是前端“尚未设置服务器”的占位域名，不是静态资源的 origin。
+            // electronBuild 的 ./ 资源路径在 localhost:22223/ 下加载，路由自动使用 hash。
+            url: 'http://public/',
+            configure: {
+                platform: '',
+                archs: [],
+                publish: false,
+                release: true,
+                notarize: false,
+            }
+        }).catch(error => {
+            console.error(error.message || error);
+            process.exitCode = 1;
+        });
+    }
 } else if (["android-upload"].includes(argv[2])) {
     // 上传安卓文件到 R2 draft（GitHub Actions）：参数为 APK 所在目录（app-build.yml 产出的 app-android）
     (async () => {

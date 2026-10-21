@@ -74,6 +74,11 @@ function devProxyPlugin(env, devBase) {
                     `    proxy_set_header Connection $connection_upgrade;`,
                     `    proxy_read_timeout 1d;`,
                     `    proxy_buffering off;`,
+                    // vite 开发服务不压缩，模块总量十几 MB，手机经公网加载时尤其慢
+                    `    gzip on;`,
+                    `    gzip_proxied any;`,
+                    `    gzip_min_length 1024;`,
+                    `    gzip_types application/javascript text/javascript text/css application/json;`,
                     `    proxy_pass http://host.docker.internal:${port};`,
                     `}`,
                     ``,

@@ -96,7 +96,7 @@ jobs:
         run: npm install --include=dev --no-package-lock --no-audit --no-fund
 
       - name: Build and copy web assets
-        run: ./cmd appexpo build
+        run: ./cmd expo build
 
       - name: Upload bundled web assets
         uses: actions/upload-artifact@v4
