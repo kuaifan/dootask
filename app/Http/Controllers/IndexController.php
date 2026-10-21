@@ -63,11 +63,8 @@ class IndexController extends InvokeController
         if (file_exists($hotFile)) {
             $array = Base::json2array(file_get_contents($hotFile));
             $style = null;
-            $script = preg_replace("/^(\/\/(.*?))(:\d+)?\//i", "$1:" . $array['APP_DEV_PORT'] . "/", asset_main("resources/assets/js/app.js"));
-            $proxyUri = Base::liveEnv('VSCODE_PROXY_URI');
-            if (is_string($proxyUri) && preg_match('/^https?:\/\//i', $proxyUri)) {
-                $script = preg_replace('/^(https?:\/\/|\/\/)[^\/]+/', rtrim($proxyUri, '/'), $script, 1);
-            }
+            // 开发模式：vite 经 nginx 反代在同源的 base 路径下（见 vite.config.js devProxyPlugin）
+            $script = asset_main(trim($array['base'] ?? '/__vite/', '/') . "/resources/assets/js/app.js");
         } else {
             $array = Base::json2array(file_get_contents($manifestFile));
             $style = asset_main($array['resources/assets/js/app.js']['css'][0]);

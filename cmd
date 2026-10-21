@@ -379,18 +379,6 @@ web_build() {
     if [ ! -d "./node_modules" ]; then
         npm install
     fi
-    if [ "$type" = "dev" ]; then
-        echo "<script>window.location.href=window.location.href.replace(/:\d+/, ':' + $(env_get APP_PORT))</script>" > ./index.html
-        if [ -z "$(env_get APP_DEV_PORT)" ]; then
-            env_set APP_DEV_PORT $(rand 20001 30000)
-        fi
-        if [ -n "${VSCODE_PROXY_URI:-}" ]; then
-            APP_REAL_URI=$(TARGET_PORT="$(env_get APP_PORT)" node -p "process.env.VSCODE_PROXY_URI.replace(/\{\{port\}\}/g, process.env.TARGET_PORT || '')")
-            VSCODE_PROXY_URI=$(APP_DEV_PORT="$(env_get APP_DEV_PORT)" node -p "process.env.VSCODE_PROXY_URI.replace(/\{\{port\}\}/g, process.env.APP_DEV_PORT || '')")
-            echo "<script>window.location.href='${APP_REAL_URI}'</script>" > ./index.html
-        fi
-        env_set VSCODE_PROXY_URI "${VSCODE_PROXY_URI:-}"
-    fi
     switch_debug "$type"
     #
     if [ "$type" = "prod" ]; then

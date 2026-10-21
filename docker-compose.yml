@@ -45,6 +45,8 @@ services:
       - "${APP_SSL_PORT:-0}:443"
     environment:
       APP_SCHEME: "${APP_SCHEME:-auto}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/templates/default.conf.template
       - ./:/var/www
