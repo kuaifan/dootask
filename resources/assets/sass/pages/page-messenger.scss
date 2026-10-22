@@ -23,7 +23,7 @@
                 flex-shrink: 0;
                 .search-mode {
                     flex-shrink: 0;
-                    width: 32px;
+                    width: 40px;
                     height: 32px;
                     display: flex;
                     align-items: center;
@@ -34,10 +34,6 @@
                     border-radius: 8px;
                     .team {
                         font-size: 20px;
-                    }
-                    &:hover,
-                    &.active {
-                        color: #84C56A;
                     }
                 }
                 .search-wrapper {

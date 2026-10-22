@@ -14,6 +14,7 @@
             <div
                 v-if="ownerViewAvailable"
                 class="owner-view-button"
+                :class="{active: departmentOwnerProjectViewEnabled}"
                 @click="departmentOwnerViewShow=true">
                 <i class="taskfont">&#xe75c;</i>
                 <em v-if="departmentOwnerProjectViewEnabled">{{ownerDepartmentIds.length}}</em>

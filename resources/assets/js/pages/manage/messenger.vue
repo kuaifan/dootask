@@ -31,7 +31,6 @@
                     <div
                         v-if="tabActive==='contacts'"
                         class="search-mode"
-                        :class="{active: contactsViewMode==='department'}"
                         :title="$L(contactsViewMode==='department' ? '按字母显示' : '按部门显示')"
                         @click="toggleContactsView">
                         <i v-if="contactsViewMode==='department'" class="taskfont">&#xe634;</i>
