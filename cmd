@@ -897,8 +897,11 @@ handle_install() {
         exit 1
     fi
 
-    # 生成应用密钥
-    [[ -z "$(env_get APP_KEY)" ]] && exec_judge "container_exec php 'php artisan key:generate'" "$(msg '生成密钥失败')"
+    # 生成应用密钥（LaravelS 可能在 composer install 后已先行启动，需重启以加载新密钥）
+    if [[ -z "$(env_get APP_KEY)" ]]; then
+        exec_judge "container_exec php 'php artisan key:generate'" "$(msg '生成密钥失败')"
+        restart_php
+    fi
 
     # 设置生产模式
     switch_debug "false"
