@@ -1927,19 +1927,33 @@ body.window-portrait {
             gap: 16px;
         }
 
+        // 标题与右侧图标同一行，副标题、服务器时间各自独占整行
         .dashboard-header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            column-gap: 14px;
+            row-gap: 12px;
+
             .header-left {
-                // 右侧只剩图标按钮，取消最小宽度避免窄屏时右侧换行
-                min-width: 0;
+                // 拆开容器，让子元素直接参与外层网格布局
+                display: contents;
 
                 .header-hello {
+                    grid-column: 1;
+                    grid-row: 1;
                     font-size: 20px;
+                }
+
+                .header-sub,
+                .header-servertime {
+                    grid-column: 1 / -1;
                 }
             }
 
             .header-right {
-                // 只占图标实际宽度，余下空间留给标题
-                flex: none;
+                grid-column: 2;
+                grid-row: 1;
                 gap: 8px;
 
                 // 与右侧切换器等高对齐
