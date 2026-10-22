@@ -1,5 +1,5 @@
 <template>
-    <div id="app" class="app-view">
+    <div id="app" class="app-view" :class="{'immersive-status': immersiveStatus}">
         <!--顶部状态栏-->
         <div class="child-status-bar"></div>
 
@@ -70,6 +70,13 @@
         flex-shrink: 0;
         height: var(--status-bar-height);
         background-color: var(--status-bar-color);
+    }
+
+    // 沉浸状态栏：隐藏占位，页面内容延伸到状态栏下方
+    &.immersive-status {
+        .child-status-bar {
+            display: none;
+        }
     }
 
     .child-navigation-bar {
@@ -169,6 +176,14 @@ export default {
                 return '#f8f8f8'
             }
             return null
+        },
+
+        /**
+         * 移动端仪表盘使用沉浸状态栏，滚动内容可穿过状态栏
+         * @returns {boolean}
+         */
+        immersiveStatus({routeName, windowPortrait}) {
+            return windowPortrait && routeName === 'manage-dashboard'
         },
 
         navigationColor({routeName, windowLandscape, mobileTabbar}) {

@@ -1922,8 +1922,18 @@
 // ==================== 竖屏适配 ====================
 body.window-portrait {
     .page-dashboard {
+        // 沉浸状态栏：滚动区域从屏幕顶部开始，内容让出状态栏高度（见 App.vue immersiveStatus）
+        .dashboard-warning {
+            top: var(--status-bar-height);
+            margin-top: var(--status-bar-height);
+        }
+
+        .dashboard-warning + .dashboard-body {
+            padding-top: 16px;
+        }
+
         .dashboard-body {
-            padding: 16px 12px 24px;
+            padding: calc(var(--status-bar-height) + 16px) 12px 24px;
             gap: 16px;
         }
 
