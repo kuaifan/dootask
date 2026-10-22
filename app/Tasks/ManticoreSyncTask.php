@@ -248,14 +248,14 @@ class ManticoreSyncTask extends AbstractTask
     private function runIncrementalSync(): void
     {
         // 启动各类型的增量同步命令
-        @shell_exec("php /var/www/artisan manticore:sync-files --i 2>&1 &");
-        @shell_exec("php /var/www/artisan manticore:sync-users --i 2>&1 &");
-        @shell_exec("php /var/www/artisan manticore:sync-projects --i 2>&1 &");
-        @shell_exec("php /var/www/artisan manticore:sync-tasks --i 2>&1 &");
-        @shell_exec("php /var/www/artisan manticore:sync-msgs --i 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-files --i > /dev/null 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-users --i > /dev/null 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-projects --i > /dev/null 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-tasks --i > /dev/null 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:sync-msgs --i > /dev/null 2>&1 &");
 
         // 启动失败重试命令
-        @shell_exec("php /var/www/artisan manticore:retry-failures 2>&1 &");
+        @shell_exec("php /var/www/artisan manticore:retry-failures > /dev/null 2>&1 &");
     }
 
     public function end()
