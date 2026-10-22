@@ -66,7 +66,7 @@ jobs:
       - name: Run PHPUnit in DooTask PHP image
         run: |
           docker run --rm --network host -v "$GITHUB_WORKSPACE":/var/www -w /var/www \
-            kuaifan/php:swoole-8.4 sh -c '
+            kuaifan/php:swoole-8.4.27 sh -c '
               composer install --prefer-dist --no-interaction &&
               cp .env.example .env &&
               sed -i "s/^DB_HOST=.*/DB_HOST=127.0.0.1/" .env &&
