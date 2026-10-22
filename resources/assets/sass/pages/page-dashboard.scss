@@ -2082,6 +2082,19 @@ body.window-portrait {
                 .cell-name .name-status {
                     display: inline-block;
                 }
+
+                .t-end {
+                    text-align: right;
+                }
+            }
+
+            // 整组都没有截止时间时隐藏该栏
+            .table-body.no-end .table-row {
+                grid-template-columns: 28px minmax(0, 1fr);
+
+                .t-end {
+                    display: none;
+                }
             }
 
             .table-all-empty {
@@ -2126,6 +2139,13 @@ body.window-portrait {
                         display: none;
                     }
                     .quad-priority { width: 16px; > span { display: none; } }
+                    .t-end { text-align: right; }
+                }
+
+                // 整个象限都没有优先级/截止时间时隐藏对应栏
+                &.no-priority .quad-row .quad-priority,
+                &.no-end .quad-row .t-end {
+                    display: none;
                 }
             }
         }

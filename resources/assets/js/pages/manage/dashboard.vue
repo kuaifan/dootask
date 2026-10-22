@@ -189,7 +189,7 @@
                                         <span class="empty-icon"><Icon type="md-checkmark"/></span>
                                         <span>{{listEmptyText(group.type)}}</span>
                                     </div>
-                                    <div class="table-body" :key="`list-${group.type}`">
+                                    <div class="table-body" :class="emptyColumnClass(groupList(group, listLimit(group)))" :key="`list-${group.type}`">
                                         <div class="table-row table-thead">
                                             <span></span>
                                             <span><DashboardIcon name="task"/>{{$L('任务')}}</span>
@@ -243,7 +243,7 @@
                                             <span
                                                 class="t-end"
                                                 :class="deadlineClass(item.end_at)"
-                                                :title="item.end_at">{{deadlineText(item.end_at) || '—'}}</span>
+                                                :title="item.end_at">{{deadlineText(item.end_at) || (windowPortrait ? '' : '—')}}</span>
                                         </div>
                                         <div
                                             v-if="group.list.length > listLimit(group) && !expandedGroups.includes(group.type)"
@@ -261,7 +261,7 @@
                             v-for="group in columns"
                             :key="group.type"
                             class="dashboard-card quad-card"
-                            :class="[`group-${group.type}`]">
+                            :class="[`group-${group.type}`, emptyColumnClass(groupList(group, quadLimit))]">
                             <div class="quad-head">
                                 <i class="group-dot"></i>
                                 <span class="group-title">{{group.title}}</span>
@@ -283,9 +283,9 @@
                                     class="status-pill"
                                     :class="item.flow_item_name ? item.flow_item_status : {end: !!item.complete_at}"
                                     @click.stop="openMenu($event, item)">{{item.flow_item_name || (item.complete_at ? $L('已完成') : $L('未完成'))}}</em>
-                                <span class="quad-priority" :title="item.p_name"><i v-if="item.p_name" class="priority-glyph" :style="{backgroundColor: item.p_color}"></i><span>{{item.p_name || '—'}}</span></span>
-                                <span class="quad-sub">{{item.sub_num > 0 ? `${item.sub_complete}/${item.sub_num}` : '—'}}</span>
-                                <span class="t-end" :class="deadlineClass(item.end_at)" :title="item.end_at">{{deadlineText(item.end_at) || '—'}}</span>
+                                <span class="quad-priority" :title="item.p_name"><i v-if="item.p_name" class="priority-glyph" :style="{backgroundColor: item.p_color}"></i><span>{{item.p_name || (windowPortrait ? '' : '—')}}</span></span>
+                                <span class="quad-sub">{{item.sub_num > 0 ? `${item.sub_complete}/${item.sub_num}` : (windowPortrait ? '' : '—')}}</span>
+                                <span class="t-end" :class="deadlineClass(item.end_at)" :title="item.end_at">{{deadlineText(item.end_at) || (windowPortrait ? '' : '—')}}</span>
                             </div>
                             <div v-if="group.list.length === 0" class="quad-empty">
                                 <span class="dashboard-empty-art">
@@ -806,6 +806,21 @@ export default {
 
         listLimit(group) {
             return group.type === 'completed' ? this.completedLimit : this.groupLimit;
+        },
+
+        /**
+         * 移动端：当前显示的任务某一栏全部为空时，整栏隐藏
+         * @param list
+         * @returns {object}
+         */
+        emptyColumnClass(list) {
+            if (!this.windowPortrait) {
+                return {};
+            }
+            return {
+                'no-priority': !list.some(item => item.p_name),
+                'no-end': !list.some(item => item.end_at),
+            };
         },
 
         listEmptyText(type) {
