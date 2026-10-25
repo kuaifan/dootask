@@ -155,7 +155,7 @@
                                         :data-id="user.userid"
                                         data-type="contacts"
                                         :class="userClass(user)"
-                                        @click="openContacts(user)"
+                                        @click="handleContactsSelect(user)"
                                         @pointerdown="handleOperation">
                                         <div class="avatar"><UserAvatar :userid="user.userid" :size="contactAvatarSize"/></div>
                                         <div class="nickname">
@@ -896,6 +896,13 @@ export default {
             this.$store.dispatch("openDialog", dialogId)
         },
 
+        handleContactsSelect(user) {
+            if (this.operateVisible) {
+                return
+            }
+            this.openContacts(user)
+        },
+
         openContacts(user) {
             if (user.loading) {
                 return
@@ -1278,7 +1285,7 @@ export default {
                 if (this.contactsKey) {
                     return;
                 }
-                this.operateItem = this.contactsFilter.find(item => item.userid == data.dataId)
+                this.operateItem = this.contactsList.reduce((found, group) => found || group.list.find(item => item.userid == data.dataId), null)
             } else {
                 if (this.dialogSearchKey) {
                     return;
