@@ -96,6 +96,11 @@ class UserBot extends AbstractModel
         if (!preg_match('/^https?:\/\//', $this->webhook_url)) {
             return false;
         }
+        // 防止 webhook 地址指向内网/环回/链路本地地址（SSRF），避免机器人
+        // 令牌和一小时有效的用户令牌被投递给服务器自身可达的内部服务
+        if (!Ihttp::isPublicDestination($this->webhook_url)) {
+            return false;
+        }
         return in_array($event, $this->webhook_events ?? [], true);
     }
 

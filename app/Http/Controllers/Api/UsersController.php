@@ -208,7 +208,9 @@ class UsersController extends AbstractController
             return Base::retSuccess("扫码成功");
         }
         //
-        $userid = intval(Cache::get($key));
+        // 原子取出并消费授权状态，防止同一个二维码在有效期内被重复兑换
+        // （例如被并发请求竞争，或在授权后、过期前被第二方用同一 code 兑换）
+        $userid = intval(Cache::pull($key));
         if ($userid > 0 && $user = User::whereUserid($userid)->first()) {
             $array = [
                 'login_num' => $user->login_num + 1,

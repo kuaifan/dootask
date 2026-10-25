@@ -6,6 +6,7 @@ use Cache;
 use Carbon\Carbon;
 use App\Module\Base;
 use App\Module\Doo;
+use App\Module\Ihttp;
 use App\Module\Image;
 use App\Tasks\PushTask;
 use App\Models\ProjectTaskRelation;
@@ -1142,7 +1143,9 @@ class WebSocketDialogMsg extends AbstractModel
                     if (file_exists(public_path($imagePath))) {
                         $imageSize = getimagesize(public_path($imagePath));
                     } else {
-                        $image = file_get_contents($matchSrc[1]);
+                        // SSRF 防护：拒绝内网/环回/链路本地地址，避免聊天内容
+                        // 驱动服务端对任意内部服务发起请求
+                        $image = Ihttp::isPublicDestination($matchSrc[1]) ? file_get_contents($matchSrc[1]) : false;
                         if ($image && file_put_contents(public_path($imagePath), $image)) {
                             $imageSize = getimagesize(public_path($imagePath));
                             // 添加后缀
@@ -1205,7 +1208,9 @@ class WebSocketDialogMsg extends AbstractModel
                 }
                 $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
             } else {
-                $image = file_get_contents($str);
+                // SSRF 防护：拒绝内网/环回/链路本地地址，避免聊天内容
+                // 驱动服务端对任意内部服务发起请求
+                $image = Ihttp::isPublicDestination($str) ? file_get_contents($str) : false;
                 if (empty($image)) {
                     $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
                 } else if (Base::saveContentImage(public_path($imagePath), $image)) {
