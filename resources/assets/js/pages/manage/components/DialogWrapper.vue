@@ -181,7 +181,8 @@
         <div
             ref="msgs"
             class="dialog-msgs"
-            v-longpress="{callback: handleLongpress, preventEndEvent: true}">
+            v-longpress="{callback: handleLongpress, preventEndEvent: true}"
+            @error.capture="onImageError">
             <!--定位提示-->
             <div v-if="positionShow && positionMsg" class="dialog-position">
                 <div class="position-label" @click="onPositionMark(positionMsg.msg_id)">
@@ -758,6 +759,7 @@ import Forwarder from "./Forwarder/index.vue";
 import {throttle} from "lodash";
 import transformEmojiToHtml from "../../../utils/emoji";
 import {webhookEventOptions} from "../../../utils/webhook";
+import {imageFailedSrc, markImageFailed, unmarkImageFailed} from "../../../utils/imageFailed";
 
 export default {
     name: "DialogWrapper",
@@ -2515,6 +2517,20 @@ export default {
             }
         },
 
+        // 图片加载失败后换成占位图并登记，消息重新渲染时不再请求（Safari 不缓存失败图片，会反复请求）
+        onImageError({target}) {
+            if (target.tagName !== 'IMG' || target.dataset.failedSrc !== undefined) {
+                return
+            }
+            const src = target.getAttribute('src')
+            if (!src || src.startsWith('data:')) {
+                return
+            }
+            markImageFailed(src)
+            target.dataset.failedSrc = src
+            target.src = imageFailedSrc
+        },
+
         onPointerover({pointerType}) {
             this.pointerMouse = pointerType === 'mouse';
         },
@@ -3936,6 +3952,13 @@ export default {
             switch (target.nodeName) {
                 // 打开图片
                 case "IMG":
+                    // 加载失败的图片点击重试
+                    if (target.dataset.failedSrc !== undefined) {
+                        unmarkImageFailed(target.dataset.failedSrc)
+                        target.src = target.dataset.failedSrc
+                        delete target.dataset.failedSrc
+                        break
+                    }
                     if (!(target.classList.contains('browse') && this.onViewPicture(target.currentSrc))) {
                         const list = $A.getTextImagesInfo(el.outerHTML)
                         this.$store.dispatch("previewImage", {index: target.currentSrc, list})

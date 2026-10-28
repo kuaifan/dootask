@@ -1,11 +1,15 @@
 import {MarkdownPreview} from "../utils/markdown";
 import {convertLocalResourcePath} from "../components/Replace/utils";
+import {imageFailedSrc, isImageFailed} from "../utils/imageFailed";
 
 /**
  * 页面专用
  */
 (function (window) {
     const $ = window.$A;
+
+    // 已加载失败的图片直接输出占位图，避免重新渲染时反复请求
+    const imageSrcAttr = src => isImageFailed(src) ? `src="${imageFailedSrc}" data-failed-src="${src}"` : `src="${src}"`;
     /**
      * =============================================================================
      * *******************************   web extra   *******************************
@@ -405,10 +409,12 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     const value = item.original
                         .replace(/\s+width=/, ` original-width=`)
                         .replace(/\s+height=/, ` original-height=`)
-                        .replace(/\s+src=(["'])([^'"]*)\1/i, ` style="width:${data.width}px;height:${data.height}px" src="${convertLocalResourcePath(data.src)}"`)
+                        .replace(/\s+src=(["'])([^'"]*)\1/i, ` style="width:${data.width}px;height:${data.height}px" ${imageSrcAttr(convertLocalResourcePath(data.src))}`)
                     text = text.replace(item.original, value)
                 } else {
-                    text = text.replace(item.original, `<div class="no-size-image-box">${item.original}</div>`);
+                    const value = item.original
+                        .replace(/\s+src=(["'])([^'"]*)\1/i, (match, quote, src) => ` ${imageSrcAttr(src)}`)
+                    text = text.replace(item.original, `<div class="no-size-image-box">${value}</div>`);
                 }
             })
             return text;
