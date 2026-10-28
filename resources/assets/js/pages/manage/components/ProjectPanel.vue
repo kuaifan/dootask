@@ -148,140 +148,20 @@
                 tag="ul"
                 draggable=".column-item"
                 @sort="sortUpdate(true)">
-                <li
+                <ProjectColumn
                     v-for="column in columnList"
                     :ref="`column_${column.id}`"
                     :key="column.id"
-                    :data-id="column.id"
-                    class="column-item">
-                    <div
-                        :class="['column-head', column.color ? 'custom-color' : '']"
-                        :style="column.color ? {backgroundColor: column.color} : {}">
-                        <div class="column-head-title">
-                            <AutoTip v-html="transformEmojiToHtml(column.name)"></AutoTip>
-                            <em>({{panelTask(column.tasks).length}})</em>
-                        </div>
-                        <div class="column-head-icon">
-                            <div v-if="columnLoad[column.id] === true" class="loading"><Loading /></div>
-                            <EDropdown
-                                v-else-if="!isDepartmentReadonly"
-                                trigger="click"
-                                size="medium"
-                                @visible-change="onColumnMenuVisible(column.id, $event)"
-                                @command="dropColumn(column, $event)">
-                                <Icon type="ios-more" />
-                                <EDropdownMenu slot="dropdown" class="project-panel-more-dropdown-menu">
-                                    <li v-if="columnMenuIds.includes(column.id)" class="project-panel-more-dropdown-warp">
-                                        <ul>
-                                            <EDropdownItem command="title">
-                                                <div class="item">
-                                                    <Icon type="md-create" />{{$L('修改')}}
-                                                </div>
-                                            </EDropdownItem>
-                                            <EDropdownItem command="archive_completed">
-                                                <div class="item">
-                                                    <Icon type="ios-filing" />{{$L('归档')}}
-                                                </div>
-                                            </EDropdownItem>
-                                            <EDropdownItem command="remove">
-                                                <div class="item">
-                                                    <Icon type="md-trash" />{{$L('删除')}}
-                                                </div>
-                                            </EDropdownItem>
-                                            <EDropdownItem v-for="(c, k) in $store.state.columnColorList" :key="k" :divided="k==0" :command="c">
-                                                <div class="item">
-                                                    <i class="taskfont" :style="{color:c.color||'#ddd'}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
-                                                </div>
-                                            </EDropdownItem>
-                                        </ul>
-                                    </li>
-                                </EDropdownMenu>
-                            </EDropdown>
-                            <Icon v-if="!isDepartmentReadonly" class="last" type="md-add" @click="addTopShow(column.id, true)" />
-                        </div>
-                    </div>
-                    <Scrollbar
-                        class="column-task"
-                        class-name="task-scrollbar"
-                        @on-scroll="handleTaskScroll">
-                        <div v-if="!isDepartmentReadonly && !!columnTopShow[column.id]" class="task-item additem">
-                            <TaskAddSimple
-                                :column-id="column.id"
-                                :project-id="projectId"
-                                :add-top="true"
-                                @on-close="addTopShow(column.id, false)"
-                                @on-priority="addTaskOpen"
-                                auto-active/>
-                        </div>
-                        <Draggable
-                            :list="column.tasks"
-                            :animation="150"
-                            :disabled="sortDisabled || isDepartmentReadonly || $isEEUIApp || windowTouch"
-                            class="task-list"
-                            draggable=".task-draggable"
-                            filter=".complete"
-                            group="task"
-                            @sort="sortUpdate"
-                            @remove="sortUpdate">
-                            <div
-                                v-for="item in column.tasks"
-                                :key="`${column.id}_${item.id}`"
-                                :data-id="item.id"
-                                :class="['task-item task-draggable', item.complete_at ? 'complete' : '', taskIsHidden(item) ? 'hidden' : '']"
-                                :style="$A.generateColorVarStyle(item.flow_item_color, [10], 'flow-item-custom-color', taskItemStyle(item))"
-                                @click="openTask(item)">
-                                <template v-if="taskItemVisible(item)">
-                                    <div :class="['task-head', item.desc ? 'has-desc' : '']">
-                                        <div class="task-title">
-                                            <!--工作流状态-->
-                                            <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu($event, item)">{{item.flow_item_name}}</span>
-                                            <!--任务描述-->
-                                            <pre>{{item.name}}</pre>
-                                        </div>
-                                        <div class="task-menu" @click.stop="">
-                                            <TaskMenu v-if="!isDepartmentReadonly" :ref="`taskMenu_${item.id}`" :task="item" icon="ios-more"/>
-                                        </div>
-                                    </div>
-                                    <template v-if="!item.complete_at">
-                                        <div v-if="item.desc" class="task-desc"><pre v-html="item.desc"></pre></div>
-                                        <TaskTag v-if="item.task_tag.length > 0" class="task-tags" :tags="item.task_tag"/>
-                                        <div class="task-users">
-                                            <ul>
-                                                <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu">
-                                                    <UserAvatar :userid="user.userid" size="32" :borderWidth="2" :borderColor="item.color"/>
-                                                </li>
-                                                <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
-                                                    <Button type="primary" size="small" ghost @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
-                                                </li>
-                                            </ul>
-                                            <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
-                                            <div v-if="item.msg_num > 0" class="task-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
-                                        </div>
-                                        <div class="task-progress">
-                                            <div v-if="item.sub_num > 0" class="task-sub-num">{{item.sub_complete}}/{{item.sub_num}}</div>
-                                            <Progress :percent="item.percent" :stroke-width="6" />
-                                            <ETooltip
-                                                v-if="item.end_at"
-                                                :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                                :disabled="$isEEUIApp || windowTouch"
-                                                :open-delay="600"
-                                                :content="item.end_at">
-                                                <div v-if="!item.complete_at"><i class="taskfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
-                                            </ETooltip>
-                                        </div>
-                                        <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
-                                    </template>
-                                </template>
-                            </div>
-                            <div v-if="!isDepartmentReadonly" class="task-item additem">
-                                <TaskAddSimple
-                                    :column-id="column.id"
-                                    :project-id="projectId"
-                                    @on-priority="addTaskOpen"/>
-                            </div>
-                        </Draggable>
-                    </Scrollbar>
-                </li>
+                    :column="column"
+                    :project-id="projectId"
+                    :readonly="isDepartmentReadonly"
+                    :drag-disabled="sortDisabled || isDepartmentReadonly || $isEEUIApp || windowTouch"
+                    :loading="columnLoad[column.id] === true"
+                    :top-show="!!columnTopShow[column.id]"
+                    @on-command="dropColumn(column, $event)"
+                    @on-top-show="addTopShow(column.id, $event)"
+                    @on-priority="addTaskOpen"
+                    @on-sort="sortUpdate"/>
                 <li v-if="!isDepartmentReadonly" :class="['add-column', addColumnShow ? 'show-input' : '']">
                     <div class="add-column-text" @click="addColumnOpen">
                         <Icon type="md-add" />{{$L('添加列表')}}
@@ -691,8 +571,8 @@ import {debounce} from "lodash";
 import Draggable from 'vuedraggable'
 import TaskPriority from "./TaskPriority";
 import {mapGetters, mapState} from "vuex";
-import TaskAddSimple from "./TaskAddSimple";
 import TaskRow from "./TaskRow";
+import ProjectColumn from "./ProjectColumn.vue";
 import TaskArchived from "./TaskArchived";
 import ProjectLog from "./ProjectLog";
 import DrawerOverlay from "../../../components/DrawerOverlay";
@@ -700,9 +580,7 @@ import ProjectTaskTag from "./ProjectTaskTag";
 import ProjectTaskTemplate from "./ProjectTaskTemplate";
 import ProjectWorkflow from "./ProjectWorkflow";
 import ProjectPermission from "./ProjectPermission";
-import TaskMenu from "./TaskMenu";
 import TaskDeleted from "./TaskDeleted";
-import TaskTag from "./ProjectTaskTag/tags.vue";
 import ProjectGantt from "./ProjectGantt";
 import ProjectTableGroupDropdown from "./ProjectTableGroupDropdown.vue";
 import ProjectFlowFilterDropdown from "./ProjectFlowFilterDropdown.vue";
@@ -713,6 +591,7 @@ import emitter from "../../../store/events";
 import transformEmojiToHtml from "../../../utils/emoji";
 import {projectTableGroups, normalizeProjectTableGroups, projectWeekRanges, taskMatchesProjectGroup} from "../../../utils/projectTableGroups";
 import {scrollToStableTarget} from "../../../utils/scrollToStableTarget";
+import {updateTaskVisibilitys} from "../../../utils/taskVisibility";
 import {emptyProjectFlowFilter, projectFlowFilterCount, taskMatchesProjectFlowFilter} from "../../../utils/projectFlowFilter";
 
 export default {
@@ -721,7 +600,6 @@ export default {
         VMPreviewNostyle,
         UserAvatarTip,
         UserSelect,
-        TaskMenu,
         ProjectTaskTag,
         ProjectTaskTemplate,
         ProjectWorkflow,
@@ -730,11 +608,10 @@ export default {
         ProjectLog,
         TaskArchived,
         TaskRow,
+        ProjectColumn,
         Draggable,
-        TaskAddSimple,
         TaskPriority,
         TaskDeleted,
-        TaskTag,
         ProjectGantt,
         ProjectTableGroupDropdown,
         ProjectFlowFilterDropdown,
@@ -742,8 +619,6 @@ export default {
     data() {
         return {
             loading: false,
-
-            columnMenuIds: [],
 
             nowTime: $A.dayjs().unix(),
             nowInterval: null,
@@ -797,9 +672,13 @@ export default {
             flowFilterOpen: false,
             flowList: [],
 
-            columnVisibilitys: {},
-            taskVisibilitys: {},
             taskRowVisibilitys: {},
+        }
+    },
+
+    provide() {
+        return {
+            projectPanel: this,
         }
     },
 
@@ -1517,12 +1396,6 @@ export default {
             });
         },
 
-        onColumnMenuVisible(columnId, visible) {
-            if (visible && !this.columnMenuIds.includes(columnId)) {
-                this.columnMenuIds.push(columnId)
-            }
-        },
-
         dropColumn(column, command) {
             if (this.isDepartmentReadonly) {
                 return;
@@ -1895,13 +1768,6 @@ export default {
             }
         },
 
-        openMenu(event, task) {
-            const el = this.$refs[`taskMenu_${task.id}`];
-            if (el) {
-                el[0].handleClick(event)
-            }
-        },
-
         taskIsHidden(task) {
             const {id, name, desc, complete_at} = task;
             const {searchText} = this;
@@ -1919,12 +1785,6 @@ export default {
                 }
             }
             return false;
-        },
-
-        ownerUser(list) {
-            return list.filter(({owner}) => owner == 1).sort((a, b) => {
-                return a.id - b.id;
-            });
         },
 
         inviteGet(refresh) {
@@ -2060,10 +1920,6 @@ export default {
             return !taskMatchesProjectFlowFilter(task, this.flowFilter);
         },
 
-        expiresFormat(date) {
-            return $A.countDownFormat(this.nowTime, date)
-        },
-
         setTableGroupVisible(group, visible) {
             const selected = this.visibleTableGroups;
             if (!visible && selected.length === 1 && selected.includes(group.key)) return;
@@ -2156,21 +2012,6 @@ export default {
             this.settingData = { ...this.settingData, archive_method: value };
         },
 
-        taskItemVisible({id, column_id}) {
-            return this.columnVisibilitys[column_id] && this.taskVisibilitys[id]?.visible
-        },
-
-        taskItemStyle({id, column_id, complete_at, color}) {
-            const style = {}
-            if (color) {
-                style.backgroundColor = color;
-            }
-            if (!this.taskItemVisible({id, column_id})) {
-                style.height = (this.taskVisibilitys[id]?.height || (complete_at ? 46 :146)) + 'px';
-            }
-            return style;
-        },
-
         handleColumnDebounce(wait = 10, needView = false) {
             if (typeof wait === "boolean") {
                 needView = wait
@@ -2210,85 +2051,22 @@ export default {
         },
 
         handleColumnScroll() {
+            const mainContainer = this.$refs.projectColumn;
+            if (!mainContainer) {
+                return
+            }
+            const mainRect = mainContainer.getBoundingClientRect();
             this.columnList.forEach(({id}) => {
                 const ref = this.$refs[`column_${id}`];
-                ref && this.checkColumnVisibility(ref[0])
+                ref && ref[0] && ref[0].checkVisibility(mainRect)
             })
         },
 
-        checkColumnVisibility(columnContainer = null) {
-            if (!columnContainer) {
+        handleTaskScroll({target}) {
+            if (this.tabTypeActive !== 'table') {
                 return
             }
-            const dataId = columnContainer.getAttribute('data-id')
-            if (!dataId) {
-                return
-            }
-            const mainContainer = this.$refs.projectColumn;
-            if (!mainContainer) {
-                return false;
-            }
-
-            // 获取容器的边界信息
-            const mainRect = mainContainer.getBoundingClientRect();
-            const columnRect = columnContainer.getBoundingClientRect();
-
-            // 检查元素是否在容器的可视区域内
-            const visible = (
-                columnRect.left < mainRect.right &&
-                columnRect.right > mainRect.left &&
-                columnRect.top < mainRect.bottom &&
-                columnRect.bottom > mainRect.top
-            )
-            if (visible) {
-                this.handleTaskScroll({target: columnContainer.querySelector('.task-scrollbar')})
-            }
-            this.$set(this.columnVisibilitys, dataId, visible)
-        },
-
-        async handleTaskScroll({target}) {
-            if (!target) {
-                return
-            }
-            const targetItem = target.querySelectorAll('.task-item');
-            if (!targetItem.length) {
-                return
-            }
-            let visibleType = null;
-            switch (this.tabTypeActive) {
-                case 'column':
-                    visibleType = 'taskVisibilitys'
-                    break;
-                case 'table':
-                    visibleType = 'taskRowVisibilitys'
-                    break;
-                default:
-                    return
-            }
-            const targetRect = target.getBoundingClientRect();
-            for (const item of targetItem) {
-                const dataId = item.getAttribute('data-id');
-                if (!dataId) {
-                    continue;
-                }
-                const taskRect = item.getBoundingClientRect();
-                const originalVisible = this[visibleType][dataId]?.visible || false;
-                const currentVisible = (
-                    taskRect.top >= targetRect.top - taskRect.height &&
-                    taskRect.bottom <= targetRect.bottom + taskRect.height
-                );
-                if (currentVisible === originalVisible) {
-                    continue;
-                }
-                const firstVisible = this[visibleType][dataId] === undefined && currentVisible;
-                this.$set(this[visibleType], dataId, {
-                    visible: currentVisible,
-                    height: taskRect.height
-                });
-                if (firstVisible) {
-                    await this.$nextTick();
-                }
-            }
+            return updateTaskVisibilitys(this, target, this.taskRowVisibilitys)
         },
 
         /**
