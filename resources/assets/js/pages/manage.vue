@@ -1119,6 +1119,8 @@ export default {
             this.releaseViewCover()
             this.viewLeavePath = from.path
             const isSubPage = route => /^manage-(setting|calendar|file)/.test(route.name || '')
+            const isProjectList = route => route.name === 'manage-project' && !/^\d+$/.test(route.params.projectId)
+            const isProjectPanel = route => route.name === 'manage-project' && /^\d+$/.test(route.params.projectId)
             if (this.$isEEUIApp && this.windowPortrait) {
                 if (from.name === 'manage-application' && isSubPage(to)) {
                     // 划入动画结束后再隐藏底部选项卡
@@ -1130,6 +1132,13 @@ export default {
                 if (isSubPage(from) && to.name === 'manage-application') {
                     this.tabbarTransition = 'mobile-slide'
                     this.viewTransition = {enter: 'manage-view-stay', leave: 'mobile-dialog-leave-active manage-view-top'}
+                    return
+                }
+                if (isProjectList(from) && isProjectPanel(to)) {
+                    // 项目列表与详情为同一页面组件，划入动画由项目页处理并负责释放 tabbarHold
+                    this.tabbarHold = true
+                    this.tabbarTransition = 'none'
+                    this.viewTransition = {enter: '', leave: ''}
                     return
                 }
             }
