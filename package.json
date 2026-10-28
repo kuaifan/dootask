@@ -43,6 +43,7 @@
         "html-to-md": "^0.8.8",
         "inquirer": "^8.2.0",
         "internal-ip": "^6.2.0",
+        "ionicons": "^8.1.0",
         "jquery": "^3.6.4",
         "jspdf": "^2.5.1",
         "less": "^4.1.2",

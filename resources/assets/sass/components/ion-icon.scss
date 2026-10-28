@@ -1,0 +1,25 @@
+// 与 ionicons 官方 <ion-icon> 样式保持一致（见 components/IonIcon.vue）
+.ion-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    font-style: normal;
+    line-height: 1;
+    vertical-align: middle;
+    fill: currentColor;
+
+    > svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        stroke: currentColor;
+    }
+
+    .ionicon-fill-none {
+        fill: none;
+    }
+
+    .ionicon-stroke-width {
+        stroke-width: 32px;
+    }
+}

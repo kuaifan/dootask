@@ -11,12 +11,21 @@
         <div class="setting-box">
             <div class="setting-menu">
                 <MobileNavTitle :title="$L('设置')"/>
+                <div v-if="windowPortrait" class="setting-profile" @click="toggleRoute('personal')">
+                    <UserAvatar :userid="userId" :size="52" :show-state-dot="false"/>
+                    <div class="setting-profile-info">
+                        <div class="setting-profile-name">{{userInfo.nickname}}</div>
+                        <div class="setting-profile-email">{{userInfo.email}}</div>
+                    </div>
+                    <IonIcon class="setting-menu-arrow" :icon="chevronForward"/>
+                </div>
                 <ul>
                     <li
-                        v-for="(item, key) in menu"
+                        v-for="(item, key) in (windowPortrait ? mobileMenu : menu)"
                         :key="key"
-                        :class="classNameRoute(item.path, item.divided)"
+                        :class="classNameRoute(item.path, item.divided, item.danger)"
                         @click="toggleRoute(item.path)">
+                        <IonIcon v-if="item.icon" class="setting-menu-icon" :icon="item.icon"/>
                         <template v-if="item.path === 'device'">
                             <AutoTip>{{$L(item.name)}}</AutoTip>
                             <span v-if="deviceCount > 0" class="op-8">{{deviceCount}}</span>
@@ -30,12 +39,20 @@
                             <Badge v-if="!!systemNewVersion" :text="systemNewVersion"/>
                         </template>
                         <template v-else-if="item.path === 'version-show'">
-                            <AutoTip>{{$L(item.name)}}: {{clientVersion}}</AutoTip>
+                            <AutoTip v-if="windowPortrait">{{$L(item.name)}}</AutoTip>
+                            <AutoTip v-else>{{$L(item.name)}}: {{clientVersion}}</AutoTip>
+                            <span v-if="windowPortrait" class="setting-menu-value">{{clientVersion}}</span>
                             <span v-if="canCheckUpdate" class="check-update" @click.stop="onCheckUpdate">{{$L('检查更新')}}</span>
                         </template>
+                        <template v-else-if="item.value">
+                            <AutoTip>{{$L(item.name)}}</AutoTip>
+                            <span class="setting-menu-value">{{item.value}}</span>
+                        </template>
                         <span v-else>{{$L(item.name)}}</span>
+                        <IonIcon v-if="item.arrow" class="setting-menu-arrow" :icon="chevronForward"/>
                     </li>
                 </ul>
+                <div v-if="windowPortrait" class="setting-logout" @click="toggleRoute('logout')">{{$L('退出登录')}}</div>
             </div>
             <transition :name="$isEEUIApp ? 'mobile-dialog' : 'none'">
                 <div v-if="showContent" class="setting-content">
@@ -55,6 +72,24 @@ import {mapState} from "vuex";
 import axios from "axios";
 import MobileNavTitle from "../../../components/Mobile/NavTitle.vue";
 import emitter from "../../../store/events";
+import {languageList, languageName} from "../../../i18n";
+import {
+    chevronForward,
+    contrastOutline,
+    documentTextOutline,
+    informationCircleOutline,
+    keyOutline,
+    keypadOutline,
+    languageOutline,
+    lockClosedOutline,
+    mailOutline,
+    personRemoveOutline,
+    phonePortraitOutline,
+    settingsOutline,
+    shieldCheckmarkOutline,
+    syncOutline,
+    trashOutline,
+} from "ionicons/icons";
 
 export default {
     components: {MobileNavTitle},
@@ -64,6 +99,7 @@ export default {
             serverVersion: null,
             clientVersion: window.systemInfo.version,
             canCheckUpdate: $A.eeuiAppIsExpo(),
+            chevronForward,
         }
     },
 
@@ -78,7 +114,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'systemNewVersion', 'systemConfig']),
+        ...mapState(['userId', 'userInfo', 'userIsAdmin', 'clientNewVersion', 'systemNewVersion', 'systemConfig', 'themeConf', 'themeList']),
 
         showContent() {
             return this.$route.path.match(/^\/manage\/setting\/[\w-]+$/)
@@ -121,6 +157,49 @@ export default {
                 {path: 'logout', name: '退出登录'},
             ])
             return menu;
+        },
+
+        /**
+         * 移动端菜单：个人设置移至顶部资料卡、退出登录改为底部按钮，其余按语义重新分组
+         */
+        mobileMenu() {
+            const theme = this.themeList.find(item => item.value === this.themeConf)
+            const groups = [
+                [
+                    {path: 'password', name: '密码设置', icon: lockClosedOutline},
+                    {path: 'email', name: '修改邮箱', icon: mailOutline},
+                    {path: 'device', name: '登录设备', icon: phonePortraitOutline},
+                ],
+                [
+                    {path: 'language', name: '语言设置', icon: languageOutline, value: languageList[languageName]},
+                    {path: 'theme', name: '主题设置', icon: contrastOutline, value: theme ? this.$L(theme.name) : ''},
+                    (this.$Electron || this.$isEEUIApp) && {path: 'keyboard', name: '键盘设置', icon: keypadOutline},
+                ],
+                this.userIsAdmin && [
+                    {path: 'system', name: '系统设置', icon: settingsOutline},
+                    {path: 'license', name: 'License Key', icon: keyOutline},
+                    {path: 'system-update', name: '系统更新', icon: syncOutline},
+                ],
+                [
+                    {path: 'version-show', name: '版本', icon: informationCircleOutline},
+                    {path: 'version', name: this.clientNewVersion ? '更新客户端' : '更新日志', title: '更新日志', icon: documentTextOutline},
+                    $A.isDooServer() && this.$isEEUIApp && {path: 'privacy', name: '隐私政策', icon: shieldCheckmarkOutline},
+                ],
+                [
+                    {path: 'clearCache', name: '清除缓存', icon: trashOutline},
+                    $A.isDooServer() && this.$isEEUIApp && {path: 'delete', name: '删除帐号', icon: personRemoveOutline, danger: true},
+                ],
+            ]
+            const menu = []
+            groups.filter(Boolean).forEach(group => {
+                group.filter(Boolean).forEach((item, index) => {
+                    menu.push(Object.assign(item, {
+                        divided: index === 0,
+                        arrow: item.path !== 'version-show',
+                    }))
+                })
+            })
+            return menu
         },
 
         titleNameRoute() {
@@ -219,11 +298,12 @@ export default {
             }
         },
 
-        classNameRoute(path, divided) {
+        classNameRoute(path, divided, danger) {
             return {
                 "flex": true,
                 "active": this.windowLandscape && this.routeName === `manage-setting-${path}`,
-                "divided": !!divided
+                "divided": !!divided,
+                "danger": !!danger
             };
         },
 
