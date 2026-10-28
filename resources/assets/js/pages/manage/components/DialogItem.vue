@@ -64,8 +64,6 @@
                 :hide-percentage="hidePercentage"
                 :hide-reply="hideReply"
                 :hide-forward="hideForward"
-                :operate-visible="operateVisible"
-                :operate-action="operateVisible && source.id === operateItem.id"
                 :pointer-mouse="pointerMouse"
                 :is-right-msg="isRightMsg"
                 @on-view-reply="onViewReply"
@@ -97,16 +95,6 @@ export default {
             }
         },
         dialogData: {
-            type: Object,
-            default() {
-                return {}
-            }
-        },
-        operateVisible: {
-            type: Boolean,
-            default: false
-        },
-        operateItem: {
             type: Object,
             default() {
                 return {}

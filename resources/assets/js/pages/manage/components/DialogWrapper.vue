@@ -200,7 +200,7 @@
                 :data-sources="allMsgs"
                 :data-component="msgItem"
 
-                :extra-props="{dialogData, operateVisible, operateItem, pointerMouse, isMyDialog, msgId, unreadOne, scrollIng, readEnabled, multiSelectMode, selectedMsgIdsSet}"
+                :extra-props="msgExtraProps"
                 :estimate-size="dialogData.type=='group' ? 105 : 77"
                 :keeps="dialogMsgKeep"
                 :disabled="scrollDisabled"
@@ -772,6 +772,12 @@ export default {
     },
     directives: {touchclick, longpress, TransferDom, resizeObserver},
 
+    provide() {
+        return {
+            dialogOperate: this.dialogOperate,
+        }
+    },
+
     props: {
         dialogId: {
             type: Number,
@@ -862,6 +868,8 @@ export default {
             operateCopys: [],
             operateStyles: {},
             operateItem: {},
+            // 操作菜单状态（通过 provide 下发给消息项，避免作为 props 传递导致打开菜单时所有消息重渲染）
+            dialogOperate: {visible: false, actionId: 0},
 
             multiSelectMode: false,
             selectedMsgIds: [],
@@ -971,6 +979,11 @@ export default {
     },
 
     computed: {
+        msgExtraProps() {
+            const {dialogData, pointerMouse, isMyDialog, msgId, unreadOne, scrollIng, readEnabled, multiSelectMode, selectedMsgIdsSet} = this;
+            return {dialogData, pointerMouse, isMyDialog, msgId, unreadOne, scrollIng, readEnabled, multiSelectMode, selectedMsgIdsSet}
+        },
+
         ...mapState([
             'systemConfig',
             'userIsAdmin',
@@ -1586,7 +1599,13 @@ export default {
             this.positionShow = true
         },
 
+        'operateItem.id'(id) {
+            this.dialogOperate.actionId = this.operateVisible ? id : 0
+        },
+
         operateVisible(val) {
+            this.dialogOperate.visible = val
+            this.dialogOperate.actionId = val ? this.operateItem.id : 0
             if (val || this.pointerMouse || this.focusLazy) {
                 return
             }
@@ -3307,67 +3326,68 @@ export default {
                         this.onMultiSelectToggle(data.id);
                         return;
                     }
-                    this.operateVisible = $A.isJson(data) && this.operateItem.id === data.id;
-                    this.operateItem = $A.isJson(data) ? data : {};
-                    this.operateCopys = []
-                    if (event.target.nodeName === 'IMG') {
-                        if (this.$Electron) {
+                    // 菜单状态与位置在同一帧内更新，避免会话窗口连续重渲染两次
+                    requestAnimationFrame(() => {
+                        this.operateVisible = $A.isJson(data) && this.operateItem.id === data.id;
+                        this.operateItem = $A.isJson(data) ? data : {};
+                        this.operateCopys = []
+                        if (event.target.nodeName === 'IMG') {
+                            if (this.$Electron) {
+                                this.operateCopys.push({
+                                    type: 'image',
+                                    icon: '&#xe7cd;',
+                                    label: '复制图片',
+                                    value: $A.thumbRestore(event.target.currentSrc),
+                                })
+                            }
+                            if (data.type !== 'file' && !isLocalHost(event.target.currentSrc)) {
+                                this.operateCopys.push({
+                                    type: 'imagedown',
+                                    icon: '&#xe7a8;',
+                                    label: '下载图片',
+                                    value: $A.thumbRestore(event.target.currentSrc),
+                                })
+                            }
+                        } else if (event.target.nodeName === 'A') {
+                            if (event.target.classList.contains("mention") && event.target.classList.contains("file")) {
+                                this.findOperateFile(this.operateItem.id, event.target.href)
+                            }
                             this.operateCopys.push({
-                                type: 'image',
-                                icon: '&#xe7cd;',
-                                label: '复制图片',
-                                value: $A.thumbRestore(event.target.currentSrc),
+                                type: 'link',
+                                icon: '&#xe7cb;',
+                                label: '复制链接',
+                                value: event.target.href,
                             })
-                        }
-                        if (data.type !== 'file' && !isLocalHost(event.target.currentSrc)) {
-                            this.operateCopys.push({
-                                type: 'imagedown',
-                                icon: '&#xe7a8;',
-                                label: '下载图片',
-                                value: $A.thumbRestore(event.target.currentSrc),
-                            })
-                        }
-                    } else if (event.target.nodeName === 'A') {
-                        if (event.target.classList.contains("mention") && event.target.classList.contains("file")) {
-                            this.findOperateFile(this.operateItem.id, event.target.href)
                         }
                         this.operateCopys.push({
-                            type: 'link',
-                            icon: '&#xe7cb;',
-                            label: '复制链接',
-                            value: event.target.href,
+                            type: 'selected',
+                            icon: '&#xe7df;',
+                            label: '复制选择',
+                            value: '',
+                            visible: false,
                         })
-                    }
-                    this.operateCopys.push({
-                        type: 'selected',
-                        icon: '&#xe7df;',
-                        label: '复制选择',
-                        value: '',
-                        visible: false,
-                    })
-                    if (data.type === 'text') {
-                        if (data.msg.text.replace(/<[^>]+>/g,"").length > 0) {
-                            this.operateCopys.push({
-                                type: 'text',
-                                icon: '&#xe77f;',
-                                label: null,
-                                title: this.operateCopys.length > 1 ? '复制文本' : '复制',
-                                value: '',
-                            })
+                        if (data.type === 'text') {
+                            if (data.msg.text.replace(/<[^>]+>/g,"").length > 0) {
+                                this.operateCopys.push({
+                                    type: 'text',
+                                    icon: '&#xe77f;',
+                                    label: null,
+                                    title: this.operateCopys.length > 1 ? '复制文本' : '复制',
+                                    value: '',
+                                })
+                            }
+                            if (data.msg.type === 'md') {
+                                this.operateCopys.push({
+                                    type: 'md',
+                                    icon: '&#xe77f;',
+                                    label: '复制原文',
+                                    value: '',
+                                })
+                            }
                         }
-                        if (data.msg.type === 'md') {
-                            this.operateCopys.push({
-                                type: 'md',
-                                icon: '&#xe77f;',
-                                label: '复制原文',
-                                value: '',
-                            })
+                        if (this.operateVisible) {
+                            this.checkMessageFavoriteStatus(this.operateItem);
                         }
-                    }
-                    if (this.operateVisible) {
-                        this.checkMessageFavoriteStatus(this.operateItem);
-                    }
-                    requestAnimationFrame(() => {
                         this.operateItem.clientX = event.clientX
                         this.operateItem.clientY = event.clientY
                         this.onSelectionchange()

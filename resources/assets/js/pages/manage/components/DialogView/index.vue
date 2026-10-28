@@ -257,6 +257,12 @@ export default {
         FileMsg,
         WCircle
     },
+    inject: {
+        // 操作菜单状态（由 DialogWrapper 提供）
+        dialogOperate: {
+            default: () => ({visible: false, actionId: 0})
+        },
+    },
     props: {
         msgData: {
             type: Object,
@@ -280,14 +286,6 @@ export default {
             type: Boolean,
             default: false
         },
-        operateVisible: {
-            type: Boolean,
-            default: false
-        },
-        operateAction: {
-            type: Boolean,
-            default: false
-        },
         pointerMouse: {
             type: Boolean,
             default: false
@@ -301,6 +299,7 @@ export default {
     data() {
         return {
             timeShow: false,
+            operateAction: false,
             operateEnter: false,
 
             percentageLoad: 0,
@@ -433,6 +432,13 @@ export default {
     },
 
     watch: {
+        // 仅当前消息的操作状态变化时才更新 operateAction，避免打开菜单时所有消息重渲染
+        'dialogOperate.actionId': {
+            handler(id) {
+                this.operateAction = !!id && id === this.msgData.id
+            },
+            immediate: true
+        },
         operateAction(val) {
             this.operateEnter = false;
             if (val) {
@@ -605,7 +611,7 @@ export default {
         },
 
         playRecord() {
-            if (this.operateVisible) {
+            if (this.dialogOperate.visible) {
                 return
             }
             if (!this.msgData.created_at) {
@@ -615,7 +621,7 @@ export default {
         },
 
         openMeeting() {
-            if (this.operateVisible) {
+            if (this.dialogOperate.visible) {
                 return
             }
             emitter.emit('addMeeting', {
