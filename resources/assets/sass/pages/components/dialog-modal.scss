@@ -87,3 +87,68 @@ body {
         }
     }
 }
+
+// 会话内容挂载前的消息骨架占位（见 DialogModal.vue）
+.dialog-wrapper {
+    .dialog-skeleton {
+        flex: 1;
+        height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 16px 16px 8px;
+        animation: dialog-skeleton-animation 1.2s ease-in-out infinite;
+
+        .skeleton-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+
+            .skeleton-avatar {
+                flex-shrink: 0;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background-color: #ececec;
+            }
+
+            .skeleton-bubble {
+                margin-left: 10px;
+                border-radius: 8px;
+                background-color: #eeeeee;
+            }
+
+            &.self {
+                flex-direction: row-reverse;
+
+                .skeleton-bubble {
+                    margin-left: 0;
+                    margin-right: 10px;
+                    background-color: #e4f3dc;
+                }
+            }
+        }
+    }
+
+    .dialog-skeleton-footer {
+        flex-shrink: 0;
+        padding: 8px 24px 0;
+        margin-bottom: 16px;
+
+        .skeleton-input {
+            height: 40px;
+            border-radius: 20px;
+            background-color: #ffffff;
+        }
+    }
+}
+
+@keyframes dialog-skeleton-animation {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
