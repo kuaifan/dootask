@@ -509,8 +509,8 @@ if (["dev"].includes(argv[2])) {
     child_process.spawn("npx", ["vite", "--", "fromcmd", "electronDev"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 } else if (argv[2] === 'app-expo') {
-    if ((argv[3] && !['build', 'dev'].includes(argv[3])) || argv.length > 4) {
-        console.error("用法: node ./electron/build.js app-expo [build|dev]");
+    if ((argv[3] && !['build', 'dev'].includes(argv[3])) || (argv[3] !== 'dev' && argv.length > 4)) {
+        console.error("用法: node ./electron/build.js app-expo [build|dev [expo start 参数...]]");
         process.exit(1);
     }
     const appDir = path.resolve(__dirname, "../resources/app");
@@ -522,6 +522,7 @@ if (["dev"].includes(argv[2])) {
         // 开发模式：前端 vite + Metro；键盘交给 Metro（r 重载等），任一退出则全部结束
         // 地址优先取命令行环境变量，其次按 VSCODE_PROXY_URI 端口模板推导，都没有则 Metro 由 Expo 自动取局域网地址、前端取本机局域网 IP
         // 手动指定 EXPO_PACKAGER_PROXY_URL 时端口固定（METRO_PORT，默认 2220），否则从 2220 起自动找空闲端口
+        // dev 之后的参数原样透传给 expo start（如 -c 清缓存）
         const appPort = env.parsed.APP_PORT;
         const proxyUri = process.env.VSCODE_PROXY_URI || '';
         const proxyUrl = port => proxyUri.includes('{{port}}') ? proxyUri.replace(/\{\{port\}\}/g, port).replace(/\/+$/, '') : '';
@@ -550,7 +551,7 @@ if (["dev"].includes(argv[2])) {
             if (packagerUrl) appEnv.EXPO_PACKAGER_PROXY_URL = packagerUrl;
             const children = [
                 child_process.spawn("npx", ["vite", "--", "fromcmd"], {stdio: ["ignore", "inherit", "inherit"]}),
-                child_process.spawn("npx", ["expo", "start", "--dev-client", "--port", String(metroPort)], {stdio: "inherit", cwd: appDir, env: appEnv}),
+                child_process.spawn("npx", ["expo", "start", "--dev-client", "--port", String(metroPort), ...argv.slice(4)], {stdio: "inherit", cwd: appDir, env: appEnv}),
             ];
             let exiting = false;
             const stopAll = (code) => {

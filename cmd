@@ -419,11 +419,11 @@ electron_operate() {
 
 # Expo App：同 electron 使用本机 Node，不依赖 Docker。
 expo_operate() {
-    local usage="用法: ./cmd expo [build] | ./cmd expo dev | ./cmd expo npm <参数...>"
+    local usage="用法: ./cmd expo [build] | ./cmd expo dev [expo start 参数...] | ./cmd expo npm <参数...>"
     check_node
     case "${1:-build}" in
         "build"|"dev")
-            if [[ $# -gt 1 ]]; then
+            if [[ "$1" != "dev" ]] && [[ $# -gt 1 ]]; then
                 error "$usage"
                 return 1
             fi
@@ -438,7 +438,8 @@ expo_operate() {
                     (cd resources/app && npm install --no-audit --no-fund) || return $?
                 fi
                 switch_debug dev
-                node ./electron/build.js app-expo dev
+                shift
+                node ./electron/build.js app-expo dev "$@"
             else
                 node ./electron/build.js app-expo build
             fi
@@ -709,7 +710,7 @@ DooTask 管理脚本
   build, prod                 生产环境构建
   electron                    构建桌面应用
   expo [build]                编译并同步 Expo App 前端
-  expo dev                    启动 App 开发模式（Metro + 前端）
+  expo dev [参数...]          启动 App 开发模式（Metro + 前端），参数透传给 expo start（如 -c）
   expo npm <参数...>          在 Expo 子模块执行本机 npm
 
 🔧 服务管理:
@@ -763,7 +764,7 @@ Usage: ./cmd <command> [options]
   build, prod                 Production build
   electron                    Build desktop app
   expo [build]                Build and copy Expo App web assets
-  expo dev                    Start App dev mode (Metro + web)
+  expo dev [args...]          Start App dev mode (Metro + web), args passed to expo start (e.g. -c)
   expo npm <args...>          Run local npm in the Expo submodule
 
 🔧 Services:
