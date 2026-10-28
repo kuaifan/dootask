@@ -33,9 +33,11 @@
                         font-size: 18px;
                     }
                 }
-                &:hover {
-                    .file-refresh {
-                        display: block;
+                @media (hover: hover) {
+                    &:hover {
+                        .file-refresh {
+                            display: block;
+                        }
                     }
                 }
             }
@@ -334,6 +336,7 @@
             }
             .file-table {
                 flex: 1;
+                height: 0;
                 cursor: default;
                 margin: 16px 32px 32px;
                 .ivu-table {
@@ -554,12 +557,21 @@
                         &.highlight {
                             background-color: #f4f5f7;
                         }
-                        &.operate,
-                        &:hover {
+                        &.operate {
                             background-color: #f4f5f7;
                             .file-menu,
                             .file-check {
                                 opacity: 1;
+                            }
+                        }
+                        // 触屏不响应 hover：点击入口后 hover 会停留在点击位置，页面切换后误命中该处的 item
+                        @media (hover: hover) {
+                            &:hover {
+                                background-color: #f4f5f7;
+                                .file-menu,
+                                .file-check {
+                                    opacity: 1;
+                                }
                             }
                         }
                     }
@@ -803,6 +815,21 @@ body.window-portrait {
         .file-wrapper {
             .file-head {
                 margin: 24px 16px 16px;
+                gap: 22px 16px;
+                .file-actions {
+                    gap: 8px 12px;
+                    .file-search {
+                        flex: 1;
+                        min-width: 0;
+                        max-width: 240px;
+                        .ivu-input-wrapper {
+                            width: 100%;
+                            .ivu-input {
+                                width: 100%;
+                            }
+                        }
+                    }
+                }
             }
             .file-tabs {
                 margin: 0 16px 6px;

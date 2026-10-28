@@ -122,7 +122,7 @@
                 @drop.prevent="filePasteDrag($event, 'drag')"
                 @dragover.prevent="fileDragOver(true, $event)"
                 @dragleave.prevent="fileDragOver(false, $event)">
-                <div v-if="tableMode === 'table'" class="file-table" @contextmenu.prevent="handleContextmenu">
+                <div v-if="tableMode === 'table'" class="file-table" v-resize-observer="onTableResize" @contextmenu.prevent="handleContextmenu">
                     <Table
                         :columns="columns"
                         :data="fileList"
@@ -513,6 +513,7 @@ import {sortBy} from "lodash";
 import {isImageFile} from "../../utils/file";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import longpress from "../../directives/longpress";
+import resizeObserver from "../../directives/resize-observer";
 import UserSelect from "../../components/UserSelect.vue";
 import UserAvatarTip from "../../components/UserAvatar/tip.vue";
 import Forwarder from "./components/Forwarder/index.vue";
@@ -526,9 +527,11 @@ const FileObject = {sort: null, mode: null, board: null};
 
 export default {
     components: {WebDavManager, CollaborationFileList, Forwarder, UserAvatarTip, UserSelect, FilePreview, DrawerOverlay, FileContent},
-    directives: {longpress},
+    directives: {longpress, resizeObserver},
     data() {
         return {
+            tableBoxHeight: 0,
+
             webDavShow: false,
             packList: [],
             packShow: false,
@@ -1013,7 +1016,8 @@ export default {
         },
 
         tableHeight() {
-            return this.windowHeight - 150
+            // 跟随容器高度（移动端需扣除安全区域等），未测量到时按窗口估算
+            return this.tableBoxHeight || this.windowHeight - 150
         },
 
         showDownloadZipButton() {
@@ -1121,6 +1125,13 @@ export default {
     },
 
     methods: {
+        onTableResize({height}) {
+            // keep-alive 隐藏时高度为 0，忽略
+            if (height > 0) {
+                this.tableBoxHeight = Math.floor(height)
+            }
+        },
+
         fileBlockIconClasses(item) {
             const classes = ['no-dark-before', 'file-icon'];
             if (item && item.type) {
