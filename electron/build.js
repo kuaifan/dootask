@@ -549,10 +549,10 @@ if (["dev"].includes(argv[2])) {
             console.log(`前端地址：${webUrl || '本地 Web 服务'}`);
             const appEnv = {...process.env, EXPO_PUBLIC_WEB_URL: webUrl};
             if (packagerUrl) appEnv.EXPO_PACKAGER_PROXY_URL = packagerUrl;
-            const children = [
-                child_process.spawn("npx", ["vite", "--", "fromcmd"], {stdio: ["ignore", "inherit", "inherit"]}),
-                child_process.spawn("npx", ["expo", "start", "--dev-client", "--port", String(metroPort), ...argv.slice(4)], {stdio: "inherit", cwd: appDir, env: appEnv}),
-            ];
+            // vite 直接用当前 node 运行入口文件：经 npx → sh → node 多层启动时，只杀 npx 会留下孤儿 vite 占着 517x 端口
+            const vite = child_process.spawn(process.execPath, [require.resolve('vite/bin/vite.js'), "--", "fromcmd"], {stdio: ["ignore", "inherit", "inherit"]});
+            const metro = child_process.spawn("npx", ["expo", "start", "--dev-client", "--port", String(metroPort), ...argv.slice(4)], {stdio: "inherit", cwd: appDir, env: appEnv});
+            const children = [vite, metro];
             let exiting = false;
             const stopAll = (code) => {
                 if (exiting) return;
@@ -561,7 +561,7 @@ if (["dev"].includes(argv[2])) {
                 children.forEach(child => child.exitCode === null && child.kill('SIGTERM'));
             };
             children.forEach(child => child.on('exit', code => stopAll(code || 0)));
-            ['SIGINT', 'SIGTERM'].forEach(signal => process.on(signal, () => stopAll(0)));
+            ['SIGINT', 'SIGTERM', 'SIGHUP'].forEach(signal => process.on(signal, () => stopAll(0)));
         })();
     } else {
         startBuild({
