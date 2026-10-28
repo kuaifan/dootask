@@ -359,11 +359,10 @@
                                 </li>
                                 <li
                                     v-for="(item, index) in operateCopys"
-                                    v-if="item.visible !== false"
                                     :key="index"
                                     @click="onOperate('copy', item)">
                                     <i class="taskfont" v-html="item.icon"></i>
-                                    <span>{{ $L(item.label || item.title) }}</span>
+                                    <span>{{ $L(item.label) }}</span>
                                 </li>
                                 <li v-if="actionPermission(operateItem, 'forward')" @click="onOperate('forward')">
                                     <i class="taskfont">&#xe638;</i>
@@ -711,6 +710,14 @@
             </template>
         </DrawerOverlay>
 
+        <!--选择复制-->
+        <DrawerOverlay
+            v-model="textSelectShow"
+            placement="right"
+            :size="600">
+            <DialogTextSelect v-if="textSelectShow" :text="textSelectData.text" :source="textSelectData.source"/>
+        </DrawerOverlay>
+
         <!-- 群接龙 -->
         <DialogGroupWordChain/>
 
@@ -727,6 +734,7 @@ import DialogUpload from "./DialogUpload";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import DialogGroupInfo from "./DialogGroupInfo";
 import DialogRespond from "./DialogRespond";
+import DialogTextSelect from "./DialogTextSelect.vue";
 import DialogSessionHistory from "./DialogSessionHistory";
 import ChatInput from "./ChatInput";
 
@@ -759,6 +767,7 @@ export default {
         UserSelect,
         ImgUpload,
         DialogRespond,
+        DialogTextSelect,
         DialogSessionHistory,
         DialogItem,
         VirtualList,
@@ -871,6 +880,10 @@ export default {
             // 操作菜单状态（通过 provide 下发给消息项，避免作为 props 传递导致打开菜单时所有消息重渲染）
             dialogOperate: {visible: false, actionId: 0},
 
+            // 选择复制
+            textSelectShow: false,
+            textSelectData: {},
+
             multiSelectMode: false,
             selectedMsgIds: [],
 
@@ -951,13 +964,11 @@ export default {
             emitter.on('websocketMsg', this.onWebsocketMsg);
             emitter.on('streamMsgData', this.onMsgChange);
             this.keepInterval = setInterval(this.keepIntoInput, 1000)
-            this.windowTouch && document.addEventListener('selectionchange', this.onSelectionchange);
         }
     },
 
     beforeDestroy() {
         if (!this.isStaticMode) {
-            this.windowTouch && document.removeEventListener('selectionchange', this.onSelectionchange);
             clearInterval(this.keepInterval);
             emitter.off('streamMsgData', this.onMsgChange);
             emitter.off('websocketMsg', this.onWebsocketMsg);
@@ -3359,38 +3370,24 @@ export default {
                                 value: event.target.href,
                             })
                         }
-                        this.operateCopys.push({
-                            type: 'selected',
-                            icon: '&#xe7df;',
-                            label: '复制选择',
-                            value: '',
-                            visible: false,
-                        })
-                        if (data.type === 'text') {
-                            if (data.msg.text.replace(/<[^>]+>/g,"").length > 0) {
-                                this.operateCopys.push({
-                                    type: 'text',
-                                    icon: '&#xe77f;',
-                                    label: null,
-                                    title: this.operateCopys.length > 1 ? '复制文本' : '复制',
-                                    value: '',
-                                })
-                            }
-                            if (data.msg.type === 'md') {
-                                this.operateCopys.push({
-                                    type: 'md',
-                                    icon: '&#xe77f;',
-                                    label: '复制原文',
-                                    value: '',
-                                })
-                            }
+                        if (data.type === 'text' && data.msg.text.replace(/<[^>]+>/g,"").length > 0) {
+                            this.operateCopys.push({
+                                type: 'text',
+                                icon: '&#xe77f;',
+                                label: this.operateCopys.length > 0 ? '复制文本' : '复制',
+                                value: '',
+                            }, {
+                                type: 'textselect',
+                                icon: '&#xe7df;',
+                                label: '选择复制',
+                                value: '',
+                            })
                         }
                         if (this.operateVisible) {
                             this.checkMessageFavoriteStatus(this.operateItem);
                         }
                         this.operateItem.clientX = event.clientX
                         this.operateItem.clientY = event.clientY
-                        this.onSelectionchange()
                         this.onUpdateOperate(element)
                     })
                     break;
@@ -3419,25 +3416,6 @@ export default {
                     }
                     break;
             }
-        },
-
-        onSelectionchange() {
-            if (!this.operateVisible) {
-                return
-            }
-            const selectedItem = this.operateCopys.find(({type}) => type === 'selected')
-            if (!selectedItem) {
-                return;
-            }
-            const selectText = this.getSelectedTextInElement(this.$refs.scroller.$el.querySelector(`[data-id="${this.operateItem.id}"]`))
-            selectedItem.value = selectText
-            selectedItem.visible = selectText.length > 0
-            //
-            const textItem = this.operateCopys.find(({type}) => type === 'text');
-            if (!textItem) {
-                return;
-            }
-            textItem.label = selectText.length > 0 ? '复制全部' : null
         },
 
         onUpdateOperate(el) {
@@ -3775,27 +3753,38 @@ export default {
                     this.copyText(value);
                     break;
 
-                case 'selected':
-                    this.copyText(value);
-                    break;
-
                 case 'text':
-                    const copyEl = this.$refs.scroller.$el.querySelector(`[data-id="${this.operateItem.id}"]`)?.querySelector(".dialog-content")
-                    if (copyEl) {
-                        let copyText = copyEl.innerText;
-                        if ($A.getObject(this.operateItem.msg, 'type') !== 'md') {
-                            copyText = copyText.replace(/\n\n/g, "\n").replace(/(^\s*)|(\s*$)/g, "")
-                        }
+                case 'textselect':
+                    const copyText = this.getOperateText()
+                    if (copyText === null) {
+                        $A.messageWarning('不可复制的内容');
+                    } else if (type === 'text') {
                         this.copyText(copyText)
                     } else {
-                        $A.messageWarning('不可复制的内容');
+                        this.textSelectData = {
+                            text: copyText,
+                            source: $A.getObject(this.operateItem.msg, 'type') === 'md' ? this.operateItem.msg.text : '',
+                        }
+                        this.textSelectShow = true
                     }
                     break;
-
-                case 'md':
-                    this.copyText(this.operateItem.msg.text)
-                    break;
             }
+        },
+
+        /**
+         * 获取当前操作消息显示的文本
+         * @returns {string|null}
+         */
+        getOperateText() {
+            const copyEl = this.$refs.scroller.$el.querySelector(`[data-id="${this.operateItem.id}"]`)?.querySelector(".dialog-content")
+            if (!copyEl) {
+                return null
+            }
+            let copyText = copyEl.innerText;
+            if ($A.getObject(this.operateItem.msg, 'type') !== 'md') {
+                copyText = copyText.replace(/\n\n/g, "\n").replace(/(^\s*)|(\s*$)/g, "")
+            }
+            return copyText
         },
 
         onWithdraw() {

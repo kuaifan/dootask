@@ -1,0 +1,73 @@
+.dialog-text-select {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .text-select-title {
+        flex-shrink: 0;
+        height: 56px;
+        line-height: 56px;
+        padding: 0 56px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        color: $primary-title-color;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &.bordered {
+            border-bottom: 1px solid #f0f0f0;
+        }
+    }
+
+    .text-select-tabs {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 0 20px;
+        border-bottom: 1px solid #f0f0f0;
+
+        > li {
+            list-style: none;
+            line-height: 42px;
+            font-size: 14px;
+            color: #888888;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+
+            &.active {
+                color: $primary-title-color;
+                font-weight: 500;
+                border-bottom-color: $primary-color;
+            }
+        }
+    }
+
+    .text-select-content {
+        flex: 1;
+        overflow: auto;
+        padding: 16px 20px 24px;
+        user-select: text;
+
+        > pre {
+            margin: 0;
+            font-family: inherit;
+            font-size: 15px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: $primary-title-color;
+        }
+    }
+
+    .text-select-button {
+        flex-shrink: 0;
+        margin: 12px 20px 18px;
+    }
+}

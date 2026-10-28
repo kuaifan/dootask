@@ -41194,5 +41194,29 @@
         "fr": "Mode de notification invalide",
         "id": "Mode push tidak valid",
         "ru": "Неверный режим push-уведомлений"
+    },
+    {
+        "key": "选择复制",
+        "zh": "",
+        "zh-CHT": "選擇複製",
+        "en": "Select & Copy",
+        "ko": "선택하여 복사",
+        "ja": "選択してコピー",
+        "de": "Auswählen und kopieren",
+        "fr": "Sélectionner et copier",
+        "id": "Pilih dan Salin",
+        "ru": "Выбрать и копировать"
+    },
+    {
+        "key": "原文",
+        "zh": "",
+        "zh-CHT": "原文",
+        "en": "Source",
+        "ko": "원문",
+        "ja": "原文",
+        "de": "Quelltext",
+        "fr": "Source",
+        "id": "Sumber",
+        "ru": "Исходный текст"
     }
 ]

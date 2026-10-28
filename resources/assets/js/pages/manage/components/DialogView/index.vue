@@ -300,7 +300,6 @@ export default {
         return {
             timeShow: false,
             operateAction: false,
-            operateEnter: false,
 
             percentageLoad: 0,
             percentageShow: false,
@@ -399,7 +398,7 @@ export default {
 
         replyClass() {
             const classArray = [];
-            if (this.operateEnter || this.pointerMouse) {
+            if (this.pointerMouse) {
                 classArray.push('user-select-auto')
             }
             return classArray;
@@ -409,7 +408,7 @@ export default {
             const {type, msg} = this.msgData;
             const classArray = [];
 
-            if (this.operateEnter || this.pointerMouse) {
+            if (this.pointerMouse) {
                 classArray.push('user-select-auto')
             }
 
@@ -438,12 +437,6 @@ export default {
                 this.operateAction = !!id && id === this.msgData.id
             },
             immediate: true
-        },
-        operateAction(val) {
-            this.operateEnter = false;
-            if (val) {
-                setTimeout(_ => this.operateEnter = true, 500)
-            }
         },
         voteData: {
             handler(val) {
