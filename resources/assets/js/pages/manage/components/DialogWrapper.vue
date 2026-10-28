@@ -7,6 +7,9 @@
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)"
         @touchstart="onTouchStart"
+        @touchstart.capture="onTouchState"
+        @touchend.capture="onTouchState"
+        @touchcancel.capture="onTouchState"
         @pointerover="onPointerover">
         <!--顶部导航-->
         <div ref="nav" class="dialog-nav">
@@ -210,6 +213,7 @@
                 @totop="onPrevPage"
                 @range="onRange"
                 @visible="onVisible"
+                @scroll.native.passive="onNativeScroll"
 
                 @on-view-reply="onViewReply"
                 @on-view-text="onViewText"
@@ -2531,6 +2535,35 @@ export default {
             target.src = imageFailedSrc
         },
 
+        // 捕获阶段记录是否有手指在屏幕上（子元素如 v-longpress 会阻止 touchend 冒泡）
+        onTouchState({touches}) {
+            this.__touching = !!touches && touches.length > 0
+        },
+
+        onNativeScroll() {
+            this.__scroll_at = Date.now()
+        },
+
+        // iOS 手指按住或惯性滚动（含顶部回弹）时写入 scrollTop 不生效，需等手势结束、滚动停止后再插入历史消息并补偿位置
+        waitScrollIdle() {
+            if (!$A.isIos()) {
+                return Promise.resolve()
+            }
+            return new Promise(resolve => {
+                const start = Date.now()
+                const check = () => {
+                    const el = this.$refs.scroller?.$el
+                    const idle = !this.__touching && Date.now() - (this.__scroll_at || 0) >= 150 && (!el || el.scrollTop >= 0)
+                    if (idle || this._isDestroyed || Date.now() - start > 10000) {
+                        resolve()
+                    } else {
+                        setTimeout(check, 50)
+                    }
+                }
+                check()
+            })
+        },
+
         onPointerover({pointerType}) {
             this.pointerMouse = pointerType === 'mouse';
         },
@@ -2919,14 +2952,22 @@ export default {
             if (this.prevId === 0 || this.preventPrevLoad > 0) {
                 return
             }
+            // 等待手势空闲期间请求已结束，需自行阻止重复加载
+            const dialogId = this.dialogId
+            this.preventPrevLoad++
             this.getMsgs({
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
                 msg_type: this.msgType,
                 prev_id: this.prevId,
-                save_before: _ => this.scrollDisabled = true,
+                save_before: _ => this.waitScrollIdle().then(_ => {
+                    this.scrollDisabled = true
+                }),
                 save_after: _ => this.scrollDisabled = false
             }).then(({data}) => {
+                if (dialogId !== this.dialogId) {
+                    return
+                }
                 const ids = data.list.map(item => item.id)
                 this.$nextTick(() => {
                     const scroller = this.$refs.scroller
@@ -2936,7 +2977,9 @@ export default {
                     })
                     this.onToOffset(scroller.getOffset() + reducer.size, true)
                 });
-            }).catch(() => {})
+            }).catch(() => {}).finally(_ => {
+                this.preventPrevLoad--
+            })
         },
 
         onDialogMenu(cmd) {

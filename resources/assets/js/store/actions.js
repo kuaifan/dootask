@@ -4267,6 +4267,7 @@ export default {
      * @param dispatch
      * @param getters
      * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?save_after, ?clear_before, ?spinner}
+     *   save_before 可返回 Promise，等其完成后再写入消息
      * @returns {Promise<unknown>}
      */
     getDialogMsgs({commit, state, dispatch, getters}, data) {
@@ -4310,8 +4311,8 @@ export default {
                 data,
                 spinner,
                 complete: _ => dispatch("cancelLoad", loadKey)
-            }).then(result => {
-                saveBefore()
+            }).then(async result => {
+                await saveBefore()
                 const resData = result.data;
                 if ($A.isJson(resData.dialog)) {
                     const ids = resData.list.map(({id}) => id)
