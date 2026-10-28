@@ -622,6 +622,13 @@ body.window-portrait {
         &.show-tabbar {
             .manage-box-main {
                 margin-bottom: 60px;
+                // 页面切换动画中，划入/划出的页面覆盖底部选项卡及安全区，避免高度跳变
+                .manage-view-top,
+                [data-view-cover] {
+                    bottom: calc(-60px - var(--navigation-bar-height));
+                    height: auto; // 页面自身 height: 100%（如 .page-file）会使 bottom 失效
+                    z-index: 100;
+                }
             }
             .mobile-tabbar {
                 display: flex;
@@ -629,6 +636,10 @@ body.window-portrait {
             @media (height <= 400px) {
                 .manage-box-main {
                     margin-bottom: 0;
+                    .manage-view-top,
+                    [data-view-cover] {
+                        bottom: 0;
+                    }
                 }
                 .mobile-tabbar {
                     display: none;

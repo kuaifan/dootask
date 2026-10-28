@@ -296,9 +296,19 @@
 
         <div class="manage-box-main" :role="routeName">
             <div class="manage-status-bar"><span></span></div>
-            <keep-alive>
-                <router-view class="manage-box-view" @on-click="onTabbarClick"></router-view>
-            </keep-alive>
+            <transition
+                :enter-active-class="viewTransition.enter"
+                :leave-active-class="viewTransition.leave"
+                @before-leave="onViewBeforeLeave"
+                @enter="onViewEnter"
+                @after-enter="tabbarHold = false"
+                @enter-cancelled="tabbarHold = false"
+                @after-leave="releaseViewCover"
+                @leave-cancelled="releaseViewCover">
+                <keep-alive>
+                    <router-view class="manage-box-view" @on-click="onTabbarClick"></router-view>
+                </keep-alive>
+            </transition>
             <div class="manage-navigation-bar"><span></span></div>
         </div>
 
@@ -458,8 +468,8 @@
         </DrawerOverlay>
 
         <!--移动端选项卡-->
-        <transition name="mobile-slide">
-            <MobileTabbar v-if="mobileTabbar" @on-click="onTabbarClick"/>
+        <transition :name="tabbarTransition">
+            <MobileTabbar v-if="mobileTabbar || tabbarHold" @on-click="onTabbarClick"/>
         </transition>
 
         <!--应用详情-->
@@ -528,6 +538,10 @@ export default {
     data() {
         return {
             loadIng: 0,
+
+            viewTransition: {enter: '', leave: ''},
+            tabbarTransition: 'mobile-slide',
+            viewCoverEl: null,
 
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
@@ -633,6 +647,16 @@ export default {
     },
 
     computed: {
+        // 划入动画期间保持Tabbar（存于 store，App.vue 据此延后沉浸底部安全区）
+        tabbarHold: {
+            get() {
+                return this.$store.state.mobileTabbarHold
+            },
+            set(val) {
+                this.$store.state.mobileTabbarHold = val
+            }
+        },
+
         ...mapState([
             'userInfo',
             'userIsAdmin',
@@ -692,9 +716,9 @@ export default {
          * @param userId
          * @returns {{"show-tabbar", "not-logged": boolean}}
          */
-        pageClass({mobileTabbar, userId}) {
+        pageClass({mobileTabbar, tabbarHold, userId}) {
             return {
-                'show-tabbar': mobileTabbar,
+                'show-tabbar': mobileTabbar || tabbarHold,
                 'not-logged': userId <= 0
             }
         },
@@ -942,8 +966,9 @@ export default {
     },
 
     watch: {
-        '$route' () {
+        '$route' (to, from) {
             this.chackPass();
+            this.updateViewTransition(to, from);
         },
 
         userIsAdmin: {
@@ -1084,6 +1109,82 @@ export default {
     },
 
     methods: {
+        /**
+         * App 竖屏下「应用 → 设置/日历/文件」右侧划入，返回时划出（与设置子页面效果一致）
+         * @param to
+         * @param from
+         */
+        updateViewTransition(to, from) {
+            this.releaseViewCover()
+            const isSubPage = route => /^manage-(setting|calendar|file)/.test(route.name || '')
+            if (this.$isEEUIApp && this.windowPortrait) {
+                if (from.name === 'manage-application' && isSubPage(to)) {
+                    // 划入动画结束后再隐藏底部选项卡
+                    this.tabbarHold = true
+                    this.tabbarTransition = 'none'
+                    this.viewTransition = {enter: 'mobile-dialog-enter-active', leave: 'manage-view-stay'}
+                    return
+                }
+                if (isSubPage(from) && to.name === 'manage-application') {
+                    this.tabbarTransition = 'mobile-slide'
+                    this.viewTransition = {enter: 'manage-view-stay', leave: 'mobile-dialog-leave-active manage-view-top'}
+                    return
+                }
+            }
+            this.tabbarHold = false
+            this.tabbarTransition = 'mobile-slide'
+            this.viewTransition = {enter: '', leave: ''}
+        },
+
+        /**
+         * 停留在下层的页面（应用）离开前记录滚动位置（keep-alive 移出 DOM 后会丢失）
+         * @param el
+         */
+        onViewBeforeLeave(el) {
+            if (this.viewTransition.leave !== 'manage-view-stay') {
+                return
+            }
+            el.__scrollSnapshot = [el, ...el.querySelectorAll('*')]
+                .filter(item => item.scrollTop > 0 || item.scrollLeft > 0)
+                .map(item => ({item, top: item.scrollTop, left: item.scrollLeft}))
+        },
+
+        /**
+         * 页面重新进入时恢复滚动位置
+         * @param el
+         */
+        onViewEnter(el) {
+            if (this.viewTransition.leave === 'manage-view-stay') {
+                // 划入页面保持置顶直到下层页面移除，避免划入先结束时下层页面透出闪一帧
+                el.setAttribute('data-view-cover', '')
+                this.viewCoverEl = el
+            }
+            const snapshot = el.__scrollSnapshot
+            if (!snapshot) {
+                return
+            }
+            delete el.__scrollSnapshot
+            if (this.viewTransition.enter !== 'manage-view-stay') {
+                return
+            }
+            snapshot.forEach(({item, top, left}) => {
+                if (el.contains(item)) {
+                    item.scrollTop = top
+                    item.scrollLeft = left
+                }
+            })
+        },
+
+        /**
+         * 移除划入页面的置顶
+         */
+        releaseViewCover() {
+            if (this.viewCoverEl) {
+                this.viewCoverEl.removeAttribute('data-view-cover')
+                this.viewCoverEl = null
+            }
+        },
+
         transformEmojiToHtml,
         // 插件/微应用菜单角标 {count, dot}
         microBadge(menu) {

@@ -69,6 +69,8 @@ export default {
 
     // 显示移动端Tabbar
     mobileTabbar: false,
+    // 页面划入动画期间保持Tabbar（见 manage.vue updateViewTransition）
+    mobileTabbarHold: false,
 
     // 请求时间
     callAt: [],

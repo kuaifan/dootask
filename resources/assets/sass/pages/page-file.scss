@@ -826,6 +826,8 @@ body.window-portrait {
             }
             .file-drag {
                 .file-list {
+                    // 沉浸底部安全区（见 App.vue immersiveNavigation）
+                    padding-bottom: calc(20px + var(--navigation-bar-height));
                     > ul {
                         grid-template-columns: repeat(auto-fill, 80px);
                         grid-gap: 4px;
@@ -847,7 +849,7 @@ body.window-portrait {
                     }
                 }
                 .file-table {
-                    margin: 16px 0 0;
+                    margin: 16px 0 var(--navigation-bar-height);
                 }
             }
         }

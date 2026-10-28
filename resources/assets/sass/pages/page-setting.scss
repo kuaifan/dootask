@@ -554,7 +554,8 @@ body.window-portrait {
             height: 100%;
             z-index: 1;
             > ul {
-                padding: 0 0 20px;
+                // 沉浸底部安全区（见 App.vue immersiveNavigation）
+                padding: 0 0 calc(20px + var(--navigation-bar-height));
                 > li {
                     position: relative;
                     padding: 0 32px;
@@ -597,6 +598,9 @@ body.window-portrait {
             background-color: #ffffff;
             .setting-content-title {
                 display: none;
+            }
+            .setting-content-view {
+                padding-bottom: var(--navigation-bar-height);
             }
         }
     }

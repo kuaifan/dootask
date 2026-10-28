@@ -1,5 +1,5 @@
 <template>
-    <div id="app" class="app-view" :class="{'immersive-status': immersiveStatus}">
+    <div id="app" class="app-view" :class="{'immersive-status': immersiveStatus, 'immersive-navigation': immersiveNavigation}">
         <!--顶部状态栏-->
         <div class="child-status-bar"></div>
 
@@ -75,6 +75,13 @@
     // 沉浸状态栏：隐藏占位，页面内容延伸到状态栏下方
     &.immersive-status {
         .child-status-bar {
+            display: none;
+        }
+    }
+
+    // 沉浸底部安全区：隐藏占位，页面内容延伸到底部安全区
+    &.immersive-navigation {
+        .child-navigation-bar {
             display: none;
         }
     }
@@ -163,7 +170,7 @@ export default {
     computed: {
         ...mapGetters(['aiVisible']),
 
-        ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize', 'isFirstPage', 'mobileTabbar', 'themeName']),
+        ...mapState(['ws', 'themeConf', 'windowOrientation', 'safeAreaSize', 'isFirstPage', 'mobileTabbar', 'mobileTabbarHold', 'themeName']),
 
         statusColor({routeName, windowLandscape}) {
             if (!routeName) {
@@ -184,6 +191,14 @@ export default {
          */
         immersiveStatus({routeName, windowPortrait}) {
             return windowPortrait && routeName === 'manage-dashboard'
+        },
+
+        /**
+         * 移动端设置/日历/文件使用沉浸底部安全区（划入动画期间保持占位，避免下层页面高度跳变）
+         * @returns {boolean}
+         */
+        immersiveNavigation({routeName, windowPortrait, mobileTabbarHold}) {
+            return windowPortrait && !mobileTabbarHold && /^manage-(setting|calendar|file)/.test(routeName || '')
         },
 
         navigationColor({routeName, windowLandscape, mobileTabbar}) {

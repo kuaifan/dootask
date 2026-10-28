@@ -305,6 +305,26 @@
     }
 }
 
+// 页面切换：划入/划出的页面置顶，另一页面原地停留至动画结束
+.manage-view-top,
+[data-view-cover] {
+    z-index: 1;
+    background-color: #ffffff;
+}
+
+.manage-view-stay {
+    animation: manage-view-stay-animation 0.3s;
+}
+
+@keyframes manage-view-stay-animation {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 // 录音发送（缩放）
 .mobile-send-enter-active {
     animation: mobile-send-enter-animation 0.3s forwards;
