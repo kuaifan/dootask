@@ -13,7 +13,7 @@ const replacements = [
 ];
 
 function patchSource(source, version) {
-    if (!['26.8.1', '26.15.3'].includes(version)) {
+    if (!['26.8.1', '26.15.3', '26.18.0'].includes(version)) {
         throw new Error(`Unsupported app-builder-lib ${version}; review the macOS keychain workaround before building.`);
     }
     const count = (text) => source.split(text).length - 1;
