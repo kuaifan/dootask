@@ -1187,3 +1187,98 @@ body.window-portrait {
         }
     }
 }
+
+// 任务详情挂载前的占位与骨架（见 TaskModal.vue）
+.task-detail-placeholder {
+    .task-info {
+        .scroller {
+            flex: 1;
+            padding: 0 5px;
+            .title {
+                .placeholder-title {
+                    font-weight: 500;
+                    font-size: 24px;
+                    padding: 5px 1px;
+                    line-height: 1.4;
+                    color: #606266;
+                    word-break: break-all;
+                }
+            }
+            .placeholder-skeleton {
+                // 尺寸与 TaskDetail 真实布局对齐（描述每行 24px、属性行 36px + 10px 间距），加载完成时不跳动
+                padding: 10px 1px 0;
+                animation: task-skeleton-animation 1.4s ease-in-out infinite;
+                .skeleton-line,
+                .skeleton-label,
+                .skeleton-tag,
+                .skeleton-avatar {
+                    flex-shrink: 0;
+                    background-color: #f0f0f0;
+                }
+                .skeleton-line,
+                .skeleton-label {
+                    height: 12px;
+                    border-radius: 6px;
+                }
+                .skeleton-desc {
+                    // 每行占 24px，与描述行高一致
+                    margin-bottom: 12px;
+                    .skeleton-line {
+                        margin: 6px 0;
+                    }
+                }
+                .skeleton-add {
+                    display: flex;
+                    align-items: center;
+                    height: 38px;
+                    margin-top: 12px;
+                }
+                .skeleton-row {
+                    display: flex;
+                    align-items: center;
+                    height: 36px;
+                    padding-left: 107px;
+                    position: relative;
+                    & + .skeleton-row {
+                        margin-top: 10px;
+                    }
+                    .skeleton-label {
+                        position: absolute;
+                        top: 12px;
+                        left: 0;
+                    }
+                    .skeleton-tag {
+                        width: 72px;
+                        height: 22px;
+                        border-radius: 4px;
+                    }
+                    .skeleton-avatar {
+                        width: 26px;
+                        height: 26px;
+                        margin-right: 6px;
+                        border-radius: 50%;
+                    }
+                    &.multi {
+                        height: 54px;
+                        align-items: flex-start;
+                        .skeleton-values {
+                            padding-top: 11px;
+                            .skeleton-line + .skeleton-line {
+                                margin-top: 12px;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@keyframes task-skeleton-animation {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
