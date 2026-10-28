@@ -2944,6 +2944,13 @@ body.window-portrait {
                         padding: 0 6px;
                     }
                 }
+                .dialog-search {
+                    border-radius: 0;
+                    background-color: #f8f8f8;
+                    .search-input {
+                        background-color: #ffffff;
+                    }
+                }
                 .dialog-block {
                     margin: 0 84px;
                     justify-content: center;
