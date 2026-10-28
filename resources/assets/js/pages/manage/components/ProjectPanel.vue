@@ -167,10 +167,11 @@
                                 v-else-if="!isDepartmentReadonly"
                                 trigger="click"
                                 size="medium"
+                                @visible-change="onColumnMenuVisible(column.id, $event)"
                                 @command="dropColumn(column, $event)">
                                 <Icon type="ios-more" />
                                 <EDropdownMenu slot="dropdown" class="project-panel-more-dropdown-menu">
-                                    <li class="project-panel-more-dropdown-warp">
+                                    <li v-if="columnMenuIds.includes(column.id)" class="project-panel-more-dropdown-warp">
                                         <ul>
                                             <EDropdownItem command="title">
                                                 <div class="item">
@@ -741,6 +742,8 @@ export default {
     data() {
         return {
             loading: false,
+
+            columnMenuIds: [],
 
             nowTime: $A.dayjs().unix(),
             nowInterval: null,
@@ -1512,6 +1515,12 @@ export default {
             }).finally(() => {
                 this.addColumnLoad = false;
             });
+        },
+
+        onColumnMenuVisible(columnId, visible) {
+            if (visible && !this.columnMenuIds.includes(columnId)) {
+                this.columnMenuIds.push(columnId)
+            }
         },
 
         dropColumn(column, command) {
