@@ -542,6 +542,7 @@ export default {
             viewTransition: {enter: '', leave: ''},
             tabbarTransition: 'mobile-slide',
             viewCoverEl: null,
+            viewLeavePath: '',
 
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
@@ -1116,6 +1117,7 @@ export default {
          */
         updateViewTransition(to, from) {
             this.releaseViewCover()
+            this.viewLeavePath = from.path
             const isSubPage = route => /^manage-(setting|calendar|file)/.test(route.name || '')
             if (this.$isEEUIApp && this.windowPortrait) {
                 if (from.name === 'manage-application' && isSubPage(to)) {
@@ -1137,16 +1139,16 @@ export default {
         },
 
         /**
-         * 停留在下层的页面（应用）离开前记录滚动位置（keep-alive 移出 DOM 后会丢失）
+         * 页面离开前记录滚动位置（keep-alive 移出 DOM 后会丢失）
          * @param el
          */
         onViewBeforeLeave(el) {
-            if (this.viewTransition.leave !== 'manage-view-stay') {
-                return
+            el.__scrollSnapshot = {
+                path: this.viewLeavePath,
+                items: [el, ...el.querySelectorAll('*')]
+                    .filter(item => item.scrollTop > 0 || item.scrollLeft > 0)
+                    .map(item => ({item, top: item.scrollTop, left: item.scrollLeft})),
             }
-            el.__scrollSnapshot = [el, ...el.querySelectorAll('*')]
-                .filter(item => item.scrollTop > 0 || item.scrollLeft > 0)
-                .map(item => ({item, top: item.scrollTop, left: item.scrollLeft}))
         },
 
         /**
@@ -1164,10 +1166,11 @@ export default {
                 return
             }
             delete el.__scrollSnapshot
-            if (this.viewTransition.enter !== 'manage-view-stay') {
+            // 同一页面实例换了内容（如切换到另一个项目）时不恢复
+            if (snapshot.path !== this.$route.path) {
                 return
             }
-            snapshot.forEach(({item, top, left}) => {
+            snapshot.items.forEach(({item, top, left}) => {
                 if (el.contains(item)) {
                     item.scrollTop = top
                     item.scrollLeft = left

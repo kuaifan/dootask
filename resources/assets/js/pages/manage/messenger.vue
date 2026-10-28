@@ -318,6 +318,7 @@ export default {
             firstLoad: true,
             activeNum: 0,
             tabActive: 'dialog',
+            tabScrollTop: {},   // 消息、通讯录共用列表，分别记忆滚动位置
 
             dialogSearchLoad: 0,
             dialogSearchKey: '',
@@ -691,6 +692,7 @@ export default {
 
         tabActive: {
             handler(val) {
+                this.restoreListScroll();
                 if (val == 'contacts') {
                     this.loadContactsView();
                     this.dialogSearchSelectedParams = null;
@@ -759,10 +761,20 @@ export default {
         },
 
         listScroll() {
+            this.tabScrollTop[this.tabActive] = this.$refs.list.scrollInfo().scrollY
             if (this.scrollE() < 10) {
                 this.getContactsNextPage()
             }
             this.operateVisible = false;
+        },
+
+        restoreListScroll() {
+            this.$nextTick(_ => {
+                const el = this.$refs.list?.scrollElement()
+                if (el && el.isConnected) {
+                    el.scrollTop = this.tabScrollTop[this.tabActive] || 0
+                }
+            })
         },
 
         scrollE() {
