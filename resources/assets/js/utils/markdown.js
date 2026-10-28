@@ -11,6 +11,13 @@ const MarkdownUtils = {
     mdi: null,
     mds: null,
 
+    // MarkdownConver 结果缓存（LRU，Map 按插入顺序淘汰最旧项）
+    converCache: new Map(),
+    converCacheMax: 200,
+
+    // 代码块未标注语言时参与自动识别的语言
+    autoLanguages: ['javascript', 'typescript', 'json', 'xml', 'css', 'scss', 'bash', 'shell', 'python', 'java', 'go', 'php', 'sql', 'yaml', 'markdown', 'c', 'cpp', 'csharp', 'kotlin', 'swift', 'rust', 'ruby', 'dockerfile', 'nginx', 'ini'],
+
     /**
      * 处理 AI 建议操作按钮语法
      * 格式: :::ai-action{type="xxx" task="123" msg="456" userid="789" related="123" status="applied"}:::
@@ -438,19 +445,34 @@ export function MarkdownConver(text) {
                     const lang = language ?? ''
                     return MarkdownUtils.highlightBlock(hljs.highlight(code, {language: lang}).value, lang)
                 }
-                return MarkdownUtils.highlightBlock(hljs.highlightAuto(code).value, '')
+                // 未标注语言时只在常用语言子集中识别（全量 192 种语言识别单个代码块可达数百毫秒）
+                return MarkdownUtils.highlightBlock(hljs.highlightAuto(code, MarkdownUtils.autoLanguages).value, '')
             },
         })
         MarkdownUtils.mdi.use(mila, {attrs: {target: '_blank', rel: 'noopener noreferrer'}})
         MarkdownUtils.mdi.use(mdKatex, {blockClass: 'katexmath-block rounded-md p-[10px]', errorColor: ' #cc0000'})
         MarkdownPluginUtils.initReasoningPlugin(MarkdownUtils.mdi);
     }
+    // 结果只取决于原文，缓存后消息被虚拟列表回收再挂载时无需重新解析
+    const cache = MarkdownUtils.converCache
+    const cacheKey = text
+    if (cache.has(cacheKey)) {
+        const html = cache.get(cacheKey)
+        cache.delete(cacheKey)
+        cache.set(cacheKey, html)
+        return html
+    }
     text = MarkdownPluginUtils.clearEmptyReasoning(text);
     text = mergeConsecutiveToolUse(text);
     text = MarkdownUtils.processAiAction(text);
     text = MarkdownUtils.processDeepLinks(text);
     text = MarkdownUtils.mdi.render(text);
-    return MarkdownUtils.formatMsg(text)
+    const html = MarkdownUtils.formatMsg(text)
+    cache.set(cacheKey, html)
+    if (cache.size > MarkdownUtils.converCacheMax) {
+        cache.delete(cache.keys().next().value)
+    }
+    return html
 }
 
 export function MarkdownPreview(text) {

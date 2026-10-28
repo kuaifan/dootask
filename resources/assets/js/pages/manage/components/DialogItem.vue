@@ -120,14 +120,6 @@ export default {
             type: Number,
             default: 0
         },
-        scrollIng: {
-            type: Number,
-            default: 0
-        },
-        readEnabled: {
-            type: Boolean,
-            default: false
-        },
         multiSelectMode: {
             type: Boolean,
             default: false
@@ -147,10 +139,6 @@ export default {
 
         isReply() {
             return this.simpleView || this.msgId === this.source.id
-        },
-
-        isNoRead() {
-            return this.isRightMsg || this.source.read_at
         },
 
         isUnreadStart() {
@@ -189,36 +177,7 @@ export default {
         },
     },
 
-    watch: {
-        readEnabled() {
-            this.msgRead();
-        },
-        windowActive() {
-            this.msgRead();
-        },
-        scrollIng() {
-            this.msgRead();
-        },
-    },
-
     methods: {
-        msgRead() {
-            if (this.isNoRead) {
-                return;
-            }
-            if (!this.readEnabled) {
-                return;
-            }
-            if (!this.windowActive) {
-                return;
-            }
-            if (!this.$el?.parentNode.classList.contains('item-enter')) {
-                return;
-            }
-            // 标记已读
-            this.$store.dispatch("dialogMsgRead", this.source);
-        },
-
         formatTodoUser(data) {
             if ($A.isJson(data)) {
                 const {userids} = data

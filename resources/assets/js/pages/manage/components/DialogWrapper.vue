@@ -225,7 +225,7 @@
                 <template #header v-if="!isChildComponent">
                     <div class="dialog-item head-box">
                         <div v-if="loadIng > 0 || prevId > 0" class="loading" :class="{filled: allMsgs.length === 0}">
-                            <span v-if="scrollOffset < 100"></span>
+                            <span v-if="scrollOffsetNear"></span>
                         </div>
                         <div v-else-if="allMsgs.length === 0" class="describe filled">{{$L('暂无消息')}}</div>
                     </div>
@@ -249,7 +249,7 @@
         <div v-if="!isStaticMode" v-show="!multiSelectMode" ref="footer" class="dialog-footer" @click="onClickFooter">
             <!--滚动到底部-->
             <div
-                v-if="scrollTail > 500 || (msgNew > 0 && allMsgs.length > 0)"
+                v-if="scrollTailFar || (msgNew > 0 && allMsgs.length > 0)"
                 class="dialog-goto"
                 v-touchclick="onToBottom">
                 <Badge :overflow-count="999" :count="msgNew">
@@ -892,6 +892,8 @@ export default {
 
             scrollTail: 0,
             scrollOffset: 0,
+            scrollTailFar: false,       // 距底部超过 500（模板只依赖此布尔值，避免每次滚动整体重渲染）
+            scrollOffsetNear: true,     // 距顶部小于 100
 
             replyListShow: false,
             replyListId: 0,
@@ -933,7 +935,6 @@ export default {
             scrollDirection: null,
             scrollAction: 0,
             scrollTmp: 0,
-            scrollIng: 0,
             scrollGroup: null,
 
             observers: [],
@@ -941,6 +942,7 @@ export default {
 
             unreadOne: 0,                       // 最早未读消息id
             startMsgId: 0,                      // 可见区域第一个消息id
+            unreadOneAbove: false,              // 最早未读消息在可见区域上方
             topPosLoad: 0,                      // 置顶跳转加载中
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
@@ -991,8 +993,8 @@ export default {
 
     computed: {
         msgExtraProps() {
-            const {dialogData, pointerMouse, isMyDialog, msgId, unreadOne, scrollIng, readEnabled, multiSelectMode, selectedMsgIdsSet} = this;
-            return {dialogData, pointerMouse, isMyDialog, msgId, unreadOne, scrollIng, readEnabled, multiSelectMode, selectedMsgIdsSet}
+            const {dialogData, pointerMouse, isMyDialog, msgId, unreadOne, multiSelectMode, selectedMsgIdsSet} = this;
+            return {dialogData, pointerMouse, isMyDialog, msgId, unreadOne, multiSelectMode, selectedMsgIdsSet}
         },
 
         ...mapState([
@@ -1340,11 +1342,16 @@ export default {
             return null
         },
 
-        positionMsg({msgNew, dialogData, allMsgs, startMsgId}) {
+        // 不直接放进 positionMsg：startMsgId 随渲染区间频繁变化，模板依赖它会让整个 Wrapper 跟着重渲染
+        unreadOneAboveCheck({dialogData, startMsgId}) {
+            return !!dialogData.unread_one && dialogData.unread_one < startMsgId
+        },
+
+        positionMsg({msgNew, dialogData, allMsgs, unreadOneAbove}) {
             const {unread, unread_one, mention, mention_ids} = dialogData
             const not = unread - msgNew
             const array = []
-            if (unread_one && unread_one < startMsgId) {
+            if (unreadOneAbove) {
                 array.push({
                     type: 'unread',
                     label: this.$L('未读消息(*)条', not),
@@ -1393,6 +1400,13 @@ export default {
     },
 
     watch: {
+        unreadOneAboveCheck: {
+            handler(above) {
+                this.unreadOneAbove = above
+            },
+            immediate: true
+        },
+
         dialogId: {
             handler(dialog_id, old_id) {
                 if (this.isStaticMode) {
@@ -1578,7 +1592,12 @@ export default {
             }
         },
 
+        readEnabled(enabled) {
+            enabled && this.onVisibleRead()
+        },
+
         windowActive(active) {
+            active && this.onVisibleRead()
             if (active && this.autoFocus) {
                 const lastDialog = $A.last(this.dialogIns)
                 if (lastDialog && lastDialog.uid === this._uid) {
@@ -1675,6 +1694,8 @@ export default {
             this.startMsgId = 0
             this.scrollTail = 0
             this.scrollOffset = 0
+            this.scrollTailFar = false
+            this.scrollOffsetNear = true
             this.searchShow = false
             this.positionShow = false
             this.msgPrepared = false
@@ -3232,6 +3253,8 @@ export default {
             const {offset, tail} = this.scrollInfo();
             this.scrollOffset = offset;
             this.scrollTail = tail;
+            this.scrollTailFar = tail > 500;
+            this.scrollOffsetNear = offset < 100;
             if (tail <= 10) {
                 this.msgNew = 0;
                 this.scrollToBottomRefresh && this.onReGetMsg()
@@ -3241,14 +3264,34 @@ export default {
             this.scrollDirection = this.scrollTmp <= this.scrollAction ? 'down' : 'up';
             setTimeout(_ => this.scrollTmp = this.scrollAction, 0);
             //
-            this.scrollIng++;
-            setTimeout(_=> this.scrollIng--, 100);
+            this.onThrottleVisibleRead();
         },
 
         onThrottleScroll: throttle(function (target) {
             if (this.operatePreventScroll === 0 && this.operateVisible) {
                 this.operateVisible = !!this.getSelectedTextInElement(target) && !target?.querySelector(`[unique="${this.operateItem.id}"]`)?.classList.contains('item-leave')
             }
+        }, 100),
+
+        // 将进入可视区的消息标记已读（统一在此处理，不经 extraProps 下发，避免滚动、渲染区间变化时所有消息重渲染）
+        onVisibleRead() {
+            const root = this.$refs.scroller?.$el
+            if (!this.readEnabled || !this.windowActive || !root) {
+                return
+            }
+            const ids = new Set(Array.from(root.querySelectorAll('div[role="listitem"].item-enter'), el => Number(el.getAttribute('unique'))))
+            if (ids.size === 0) {
+                return
+            }
+            this.allMsgs.forEach(msg => {
+                if (ids.has(msg.id) && !msg.read_at && msg.userid != this.userId) {
+                    this.$store.dispatch("dialogMsgRead", msg)
+                }
+            })
+        },
+
+        onThrottleVisibleRead: throttle(function () {
+            this.onVisibleRead()
         }, 100),
 
         onRange(range) {
