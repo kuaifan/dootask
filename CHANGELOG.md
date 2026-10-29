@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.38]
+
+### Bug Fixes
+
+- 修复 AI 助手浮动按钮有时点击没有反应的问题，点得稍慢一点也能正常打开。
+- 修复在 AI 助手中切换场景后，当前对话没有保存的问题；切换前正在生成的回复也会完整保存下来。
+
+### Performance
+
+- 点击 AI 助手后立即打开，不再因为加载历史会话而卡顿。
+
+### Miscellaneous
+
+- AI 助手每个场景最多保留最近 200 个历史会话，更早的会自动清理。
+
 ## [1.10.35]
 
 ### Features
