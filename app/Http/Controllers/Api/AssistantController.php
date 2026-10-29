@@ -430,6 +430,7 @@ class AssistantController extends AbstractController
         $sessions = AiAssistantSession::where('userid', $user->userid)
             ->where('session_key', $sessionKey)
             ->orderByDesc('updated_at')
+            ->limit(20) // 与前端 maxSessionsPerKey 保持一致，避免全量返回拖慢打开
             ->get();
 
         $list = [];
@@ -511,6 +512,19 @@ class AssistantController extends AbstractController
             'images' => Base::array2json($imageMap),
         ], $session?->id);
         $session->save();
+
+        // 每个场景最多保留 200 条会话，超出的按更新时间清理（含图片）
+        $staleSessions = AiAssistantSession::where('userid', $user->userid)
+            ->where('session_key', $sessionKey)
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->skip(200)
+            ->take(100)
+            ->get();
+        foreach ($staleSessions as $stale) {
+            $this->deleteSessionImages($stale);
+            $stale->delete();
+        }
 
         // 仅返回本次新增的图片URL
         $urls = [];

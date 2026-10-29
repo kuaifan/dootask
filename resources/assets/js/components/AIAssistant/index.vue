@@ -345,6 +345,7 @@ export default {
             sessionCacheKeyPrefix: 'aiAssistant.sessions',
             maxSessionsPerKey: 20,
             sessionStoreLoaded: false,
+            sessionStoreLoadingKey: null,
 
             // 欢迎提示词（防抖更新，避免场景切换时连续刷新导致闪屏）
             displayWelcomePrompts: [],
@@ -382,6 +383,8 @@ export default {
             this.displayWelcomePrompts = getWelcomePrompts(this.$store, this.$route?.params || {});
         }, 100);
         this.saveSessionStoreDebouncedMap = {};
+        // 已切走场景的会话列表(按 sessionKey),供后台流式继续写入并落库
+        this.sessionStoreCache = {};
     },
     mounted() {
         emitter.on('openAIAssistant', this.onOpenAIAssistant);
@@ -536,8 +539,8 @@ export default {
             this.renderHook = params.onRender || null;
             this.pendingAutoSubmit = !!params.autoSubmit;
 
-            // 会话管理(不再按场景分桶,统一对话池)
-            await this.initSession(params.sessionKey);
+            // 会话管理(历史列表后台加载,不阻塞弹窗打开)
+            this.initSession(params.sessionKey);
 
             this.showModal = true;
             this.fetchModelOptions();
@@ -1123,8 +1126,13 @@ export default {
                     : null;
                 return {entry, isCurrent: false, session};
             }
-            // 场景已切换，存储已被替换，放弃归位避免写串到别的场景
-            return {entry: null, isCurrent: false, session: null};
+            // 场景已切换，写回该场景缓存的会话列表
+            const store = this.sessionStoreCache[owner.sessionKey] || [];
+            const session = store.find(s => s.id === owner.sessionId) || null;
+            const entry = session
+                ? (session.responses || []).find(r => r.localId === owner.localId) || null
+                : null;
+            return {entry, isCurrent: false, session, sessionKey: owner.sessionKey};
         },
 
         /**
@@ -1170,7 +1178,7 @@ export default {
                 this.saveCurrentSession();
             } else if (target.session) {
                 target.session.updatedAt = Date.now();
-                this.saveSessionStore(target.session.id);
+                this.saveSessionStore(target.session.id, target.sessionKey);
             }
         },
 
@@ -1590,11 +1598,20 @@ export default {
          * 加载会话列表(按 sessionKey 桶过滤;浮窗固定 'global' 桶,专用入口用各自的桶)
          */
         async loadSessionStore(sessionKey) {
+            sessionKey = sessionKey || this.currentSessionKey;
+            if (this.sessionStoreLoadingKey === sessionKey) {
+                return;
+            }
+            this.sessionStoreLoadingKey = sessionKey;
             try {
                 const {data} = await this.$store.dispatch("call", {
                     url: 'assistant/session/list',
-                    data: {session_key: sessionKey || this.currentSessionKey},
+                    data: {session_key: sessionKey},
                 });
+                // 加载期间已切到其他桶,丢弃过期结果
+                if (this.currentSessionKey !== sessionKey) {
+                    return;
+                }
                 if (Array.isArray(data)) {
                     data.forEach(session => {
                         if (Array.isArray(session.responses)) {
@@ -1612,15 +1629,26 @@ export default {
                             Object.assign(this.serverImageMap, session.images);
                         }
                     });
-                    this.sessionStore = data;
-                } else {
-                    this.sessionStore = [];
+                    // 保留加载期间本地新产生、服务端尚未落库的会话
+                    // 仍在后台流式生成的会话以本地为准,避免被服务端的中间态覆盖
+                    const local = this.sessionStore || [];
+                    const streamingIds = new Set(this.activeSSEClients
+                        .filter(item => item.sessionKey === sessionKey)
+                        .map(item => item.sessionId));
+                    const serverIds = new Set(data.map(s => s.id));
+                    const localOnly = local.filter(s => !serverIds.has(s.id));
+                    const merged = data.map(s => streamingIds.has(s.id) ? (local.find(l => l.id === s.id) || s) : s);
+                    this.sessionStore = localOnly.concat(merged).slice(0, this.maxSessionsPerKey);
                 }
+                this.sessionStoreLoaded = true;
             } catch (e) {
+                // 失败不标记已加载,下次打开重试
                 console.warn('[AIAssistant] 加载会话失败:', e);
-                this.sessionStore = [];
+            } finally {
+                if (this.sessionStoreLoadingKey === sessionKey) {
+                    this.sessionStoreLoadingKey = null;
+                }
             }
-            this.sessionStoreLoaded = true;
         },
 
         /**
@@ -1640,9 +1668,12 @@ export default {
         /**
          * 持久化当前场景的会话数据
          */
-        async saveSessionStore(sessionId = this.currentSessionId) {
+        async saveSessionStore(sessionId = this.currentSessionId, sessionKey = this.currentSessionKey) {
             if (!sessionId) return;
-            const session = this.sessionStore.find(s => s.id === sessionId);
+            const store = sessionKey === this.currentSessionKey
+                ? this.sessionStore
+                : (this.sessionStoreCache[sessionKey] || []);
+            const session = store.find(s => s.id === sessionId);
             if (!session) return;
 
             // 收集本次需要上传的新图片（在 imageCache 中有 base64 但 serverImageMap 中没有的）
@@ -1662,7 +1693,7 @@ export default {
                     url: 'assistant/session/save',
                     method: 'post',
                     data: {
-                        session_key: this.currentSessionKey,
+                        session_key: sessionKey,
                         session_id: session.id,
                         title: session.title || '',
                         data: this.sanitizeResponsesForPersist(session.responses),
@@ -1720,7 +1751,7 @@ export default {
          * 切换 sessionKey 时切换桶并保存当前会话
          * 不再按 scene_key 自动恢复:同一桶内打开时保留当前 session_id,没有则建新会话
          */
-        async initSession(sessionKey) {
+        initSession(sessionKey) {
             // 专用入口未传 sessionKey 的兼容路径(不启用会话管理)
             if (!sessionKey) {
                 this.sessionEnabled = false;
@@ -1733,20 +1764,32 @@ export default {
 
             // 切到不同的 sessionKey 桶(浮窗 ↔ 专用入口):先保存当前会话
             const switchingBucket = this.sessionEnabled && this.currentSessionKey !== sessionKey;
-            if (switchingBucket && this.responses.length > 0) {
-                this.saveCurrentSession();
+            if (switchingBucket) {
+                if (this.responses.length > 0) {
+                    this.saveCurrentSession();
+                }
+                // 防抖保存依赖当前桶的 sessionStore/currentSessionKey,切桶前立即落库
+                this.flushSessionStoreSaves();
             }
 
             this.sessionEnabled = true;
 
-            if (switchingBucket || this.currentSessionKey !== sessionKey || !this.sessionStoreLoaded) {
+            if (switchingBucket || this.currentSessionKey !== sessionKey) {
+                // 切桶:旧桶列表暂存(后台流式仍可写入落库),换上目标桶的缓存,再清空当前会话指针
+                if (Array.isArray(this.sessionStore) && this.sessionStore.length > 0) {
+                    this.sessionStoreCache[this.currentSessionKey] = this.sessionStore;
+                }
                 this.currentSessionKey = sessionKey;
-                await this.loadSessionStore(sessionKey);
-                // 切桶后清空当前会话指针,下面再决定新建/恢复
+                this.sessionStore = this.sessionStoreCache[sessionKey] || [];
+                delete this.sessionStoreCache[sessionKey];
+                this.sessionStoreLoaded = false;
                 if (switchingBucket) {
                     this.currentSessionId = null;
                     this.responses = [];
                 }
+            }
+            if (!this.sessionStoreLoaded) {
+                this.loadSessionStore(sessionKey);
             }
 
             // 已有当前会话则保留;否则建一个空的新会话
@@ -1818,6 +1861,13 @@ export default {
                 this.saveSessionStoreDebouncedMap[sessionId] = fn;
             }
             fn();
+        },
+
+        /**
+         * 立即执行所有待保存的防抖任务
+         */
+        flushSessionStoreSaves() {
+            Object.values(this.saveSessionStoreDebouncedMap || {}).forEach(fn => fn.flush());
         },
 
         /**

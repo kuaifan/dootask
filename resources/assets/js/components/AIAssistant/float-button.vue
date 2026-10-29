@@ -327,8 +327,8 @@ export default {
             this.savePosition();
             this.dragging = false;
 
-            // 判断是否为点击（移动距离小于5px 且 按下时间小于200ms）
-            if (moveDistance < 5 && duration < 200) {
+            // 判断是否为点击（移动距离小于5px 且 按下时间小于500ms）
+            if (moveDistance < 5 && duration < 500) {
                 this.onClick();
             }
 
@@ -402,8 +402,8 @@ export default {
 
             this.dragging = false;
 
-            // 判断是否为点击（移动距离小于5px 且 按下时间小于200ms）
-            if (moveDistance < 5 && duration < 200) {
+            // 判断是否为点击（移动距离小于5px 且 按下时间小于500ms）
+            if (moveDistance < 5 && duration < 500) {
                 if (this.record.startCollapsed) {
                     // 从细条点击:仅展开,统一离边 12,启动 5s 自动收起
                     this.position.collapsed = false;
