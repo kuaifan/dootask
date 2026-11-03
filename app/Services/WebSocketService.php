@@ -5,6 +5,7 @@ namespace App\Services;
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 use App\Models\User;
+use App\Models\UserDevice;
 use App\Models\WebSocket;
 use App\Module\Base;
 use App\Module\Doo;
@@ -52,7 +53,9 @@ class WebSocketService implements WebSocketHandlerInterface
                     //
                     $count = 0;
                     $userid = Doo::userId();
-                    if ($userid > 0 && !Doo::userExpired()) {
+                    if ($userid > 0 && !Doo::userExpired() && UserDevice::check()) {
+                        // UserDevice::check() 与 HTTP 接口认证（User::authInfo()）保持一致，
+                        // 拒绝已被注销/撤销的设备令牌建立新的 WebSocket 连接
                         $count = User::whereUserid($userid)->whereEmail(Doo::userEmail())->whereEncrypt(Doo::userEncrypt())->count();
                     }
                     if ($count) {
