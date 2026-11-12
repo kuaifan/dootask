@@ -486,6 +486,16 @@ class ManticoreFile
             return ['error' => '文件不存在'];
         }
 
+        // 防止通过 "../" 逃逸出 uploads 目录：仅按前缀字符串校验 $relativePath
+        // 无法阻止穿越（前缀检查发生在拼接之前），这里对拼接、解析后的真实路径
+        // 做一次目录边界确认。
+        $uploadsRoot = realpath(public_path('uploads'));
+        $realFullPath = realpath($fullPath);
+        if ($uploadsRoot === false || $realFullPath === false || !str_starts_with($realFullPath, $uploadsRoot . DIRECTORY_SEPARATOR)) {
+            return ['error' => '不支持的文件路径'];
+        }
+        $fullPath = $realFullPath;
+
         $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
         $maxFileSize = self::getMaxFileSizeByExt($ext);
 
