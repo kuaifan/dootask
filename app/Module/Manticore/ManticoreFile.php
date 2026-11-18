@@ -481,7 +481,11 @@ class ManticoreFile
      */
     private static function extractFromPath(string $relativePath): string|array
     {
-        $fullPath = public_path($relativePath);
+        $fullPath = realpath(public_path($relativePath));
+        $uploadsBase = realpath(public_path('uploads'));
+        if ($fullPath === false || $uploadsBase === false || !str_starts_with($fullPath, $uploadsBase . DIRECTORY_SEPARATOR)) {
+            return ['error' => '文件不存在'];
+        }
         if (!file_exists($fullPath)) {
             return ['error' => '文件不存在'];
         }
